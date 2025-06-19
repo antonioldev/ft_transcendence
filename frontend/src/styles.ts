@@ -9,7 +9,7 @@ export function applyTitleStyles(): void {
         title.style.fontWeight = 'bold';
         title.style.textAlign = 'center';
         title.style.color = '#ff6b6b';
-        title.style.cursor = 'pointer';
+        title.style.userSelect = 'none';
     }
 }
 
@@ -61,7 +61,7 @@ export function applyLanguageStyles(): void {
         Object.assign(languageDisplay.style, {
             fontWeight: 'bold',
             textAlign: 'center',
-
+            userSelect: 'none',
             flex: '1',
             fontFamily: '"SF Mono", "Monaco", "Cascadia Code", "Roboto Mono", monospace'
         });
@@ -124,6 +124,7 @@ export function applyPauseDialogStyles(): void {
             fontFamily: '"SF Mono", "Monaco", "Cascadia Code", "Roboto Mono", monospace',
             fontSize: '1.5rem',
             textAlign: 'center',
+            userSelect: 'none',
             zIndex: '3'
         });
     });
