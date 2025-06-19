@@ -1,3 +1,5 @@
+import { gameStateManager, GameState } from './gameState.js';
+
 export function applyTitleStyles(): void {
     const title: HTMLElement | null = document.getElementById('main-title');
     if (title) {
@@ -94,10 +96,35 @@ export function applyOverlayStyles(): void {
             width: '100vw',            // Full viewport width
             height: '100vh',           // Full viewport height
             backgroundColor: '#000',   // Black background
-            zIndex: '1000',            // Above everything else
+            zIndex: '2',            // Above everything else
             justifyContent: 'center',  // put in the middle
             alignItems: 'center'
     
+        });
+    });
+}
+
+export function applyPauseDialogStyles(): void {
+    const pauseDialog: NodeListOf<Element> = document.querySelectorAll('.pause-dialog');
+    pauseDialog.forEach((dialog: Element) => {
+        const dialogEl = dialog as HTMLElement;
+
+        Object.assign(dialogEl.style, {
+            position: 'absolute',
+            top: '0',
+            left: '0',
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            display: 'none',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            color: 'white',
+            fontFamily: '"SF Mono", "Monaco", "Cascadia Code", "Roboto Mono", monospace',
+            fontSize: '1.5rem',
+            textAlign: 'center',
+            zIndex: '3'
         });
     });
 }
@@ -112,4 +139,16 @@ export function hideOverlay(overlayId: string): void {
     const overlay = document.getElementById(overlayId);
     if (overlay)
         overlay.style.display = 'none';
+}
+
+export function showPauseDialog(dialogId: string): void {
+    const dialog = document.getElementById(dialogId);
+    if (dialog)
+        dialog.style.display = 'flex';
+}
+
+export function hidePauseDialog(dialogId: string): void {
+    const dialog = document.getElementById(dialogId);
+    if (dialog)
+        dialog.style.display = 'none';
 }

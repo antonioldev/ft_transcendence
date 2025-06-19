@@ -1,6 +1,5 @@
-// babylon3d.ts
+import { hideOverlay, hidePauseDialog } from "./styles";
 
-// Declare Babylon.js types (since we're loading from CDN)
 declare var BABYLON: any;
 declare var Assets: any;
 
@@ -115,6 +114,20 @@ export async function initBabylon3D(): Promise<void> {
         
     } catch (error) {
         console.error("Error initializing Babylon 3D:", error);
+    }
+}
+
+export function pauseBabylon3D(): void {
+    if (engine) {
+        engine.stopRenderLoop();
+        console.log("Babylon render loop paused");
+    }
+}
+
+export function resumeBabylon3D(): void {
+    if (engine && scene) {
+        startRenderLoop();
+        console.log("Babylon render loop resumed");
     }
 }
 
