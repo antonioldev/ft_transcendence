@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=devide-width, inital-scale=1.0">
+        <title>ft_transcendence</title>
+
+        <!-- created a small 3d scene to test-->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.6.2/dat.gui.min.js"></script>
+        <script src="https://assets.babylonjs.com/generated/Assets.js"></script>
+        <script src="https://cdn.babylonjs.com/recast.js"></script>
+        <script src="https://cdn.babylonjs.com/ammo.js"></script>
+        <script src="https://cdn.babylonjs.com/havok/HavokPhysics_umd.js"></script>
+        <script src="https://cdn.babylonjs.com/cannon.js"></script>
+        <script src="https://cdn.babylonjs.com/Oimo.js"></script>
+        <script src="https://cdn.babylonjs.com/earcut.min.js"></script>
+        <script src="https://cdn.babylonjs.com/babylon.js"></script>
+        <script src="https://cdn.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
+        <script src="https://cdn.babylonjs.com/proceduralTexturesLibrary/babylonjs.proceduralTextures.min.js"></script>
+        <script src="https://cdn.babylonjs.com/postProcessesLibrary/babylonjs.postProcess.min.js"></script>
+        <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.js"></script>
+        <script src="https://cdn.babylonjs.com/serializers/babylonjs.serializers.min.js"></script>
+        <script src="https://cdn.babylonjs.com/gui/babylon.gui.min.js"></script>
+        <script src="https://cdn.babylonjs.com/addons/babylonjs.addons.min.js"></script>
+        <script src="https://cdn.babylonjs.com/inspector/babylon.inspector.bundle.js"></script>
+    </head>
+    </head>
+    <body>
+        <h1 id="main-title">ft_transcendence</h1>
+        <table id="list-buttons">
+            <tr><td><button type="button" class="buttons" id="play2D">Classic Mode</button></td></tr>
+            <tr><td><button type="button" class="buttons" id="play3D">Immersive Mode</button></td></tr>
+            <tr>
+                <td>
+                    <div class="language-selector">
+                        <button type="button" class="nav-btn" id="back">←</button>
+                        <span class="language-display" id="language_select">English</span>
+                        <button type="button" class="nav-btn" id="forward">→</button>
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+         <div id="game-2d" class="game-overlay">
+            <canvas id="game-canvas-2d" width="800" height="400"></canvas>
+        </div>
+
+        <div id="game-3d" class="game-overlay">
+            <canvas id="game-canvas-3d"></canvas>
+        </div>
+
+        <script type="module" src="main.js"></script>
+    </body>
+</html>
