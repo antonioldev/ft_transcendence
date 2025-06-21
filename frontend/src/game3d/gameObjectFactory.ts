@@ -34,7 +34,7 @@ export class GameObjectFactory {
             height: height
         }, scene);
         
-        const groundMaterial = new BABYLON.StandardMaterial(name + "Mat", scene);
+        const groundMaterial = new BABYLON.StandardMaterial(name + "Material", scene);
         groundMaterial.diffuseColor = color;
         ground.material = groundMaterial;
         
@@ -52,7 +52,7 @@ export class GameObjectFactory {
             width: size.x, 
             height: size.y, 
             depth: size.z }, scene);
-        const material = new BABYLON.StandardMaterial(name + "_mat", scene);
+        const material = new BABYLON.StandardMaterial(name + "Material", scene);
         material.diffuseColor = color;
         player.material = material;
         player.position = position;
@@ -66,7 +66,7 @@ export class GameObjectFactory {
         color: any
     ): any {
         const ball = BABYLON.MeshBuilder.CreateSphere(name, {}, scene);
-        const material = new BABYLON.StandardMaterial(name + "_mat", scene);
+        const material = new BABYLON.StandardMaterial(name + "Material", scene);
         material.diffuseColor = color;
         ball.material = material;
         ball.position = position;

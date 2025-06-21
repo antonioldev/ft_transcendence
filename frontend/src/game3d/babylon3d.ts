@@ -5,6 +5,7 @@ declare var BABYLON: any;
 let engine: any = null;
 let scene: any = null;
 let canvas: HTMLCanvasElement | null = null;
+const MOVEMENT_SPEED = 0.5;
 
 function createDefaultEngine(): any {
     return new BABYLON.Engine(canvas, true, { 
@@ -12,6 +13,16 @@ function createDefaultEngine(): any {
         stencil: true, 
         disableWebGL2Support: false 
     });
+}
+
+function moveLeft(player: any): void {
+    if (player.position.x > -22)
+        player.position.x -= MOVEMENT_SPEED;
+}
+
+function moveRight(player: any): void {
+    if (player.position.x < 22)
+        player.position.x += MOVEMENT_SPEED;
 }
 
 function createScene(): any {
@@ -32,7 +43,44 @@ function createScene(): any {
 
     const ball = GameObjectFactory.createBall(scene, "ball", new BABYLON.Vector3(0, 1, 35), new BABYLON.Color3(0.89, 0.89, 1));
 
+    var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+    var inputChanged = new BABYLON.GUI.TextBlock();
+    inputChanged.text = "Press keys";
+    inputChanged.color = "white";
+    inputChanged.fontSize = 24;
+    inputChanged.verticalAlignment = BABYLON.GUI.TextBlock.VERTICAL_ALIGNMENT_CENTER;
+    inputChanged.horizontalAlignment = BABYLON.GUI.TextBlock.HORIZONTAL_ALIGNMENT_CENTER;
+    inputChanged.width = 1;
+    inputChanged.height = .3;
+    advancedTexture.addControl(inputChanged);
+    const deviceSourceManager = new BABYLON.DeviceSourceManager(scene.getEngine());
+    deviceSourceManager.onDeviceConnectedObservable.add((deviceSource: any) => {
 
+    // If Keyboard, add an Observer to change text
+    if (deviceSource.deviceType === BABYLON.DeviceType.Keyboard) {
+        deviceSource.onInputChangedObservable.add((eventData: any) => {
+            console.log(`Key event - Device: ${BABYLON.DeviceType[deviceSource.deviceType]}, Input Index: ${eventData.inputIndex}`);
+            // inputChanged.text = `onInputChangedObservable inputIndex\n${BABYLON.DeviceType[deviceSource.deviceType]}(${eventData.inputIndex})`;
+            });
+        }
+    });
+    scene.registerBeforeRender(() => {
+        const keyboardSource = deviceSourceManager.getDeviceSource(BABYLON.DeviceType.Keyboard);
+        if (keyboardSource) {
+            if (keyboardSource.getInput(65) == 1) {
+                moveLeft(playerLeft);
+            }
+            else if (keyboardSource.getInput(68) == 1) {
+                moveRight(playerLeft);
+            }
+            if (keyboardSource.getInput(37) == 1) {
+                moveRight(playerRight);
+            }
+            else if (keyboardSource.getInput(39) == 1) {
+                moveLeft(playerRight);
+            }
+        }
+    });
     return scene;
 }
 
