@@ -59,9 +59,17 @@ export class GameObjectFactory {
         return player;
     }
 
-    // static createBall(
-    //     scene: any,
-    //     name: string,
-    //     position: any,
-    // )
+    static createBall(
+        scene: any,
+        name: string,
+        position: any,
+        color: any
+    ): any {
+        const ball = BABYLON.MeshBuilder.CreateSphere(name, {}, scene);
+        const material = new BABYLON.StandardMaterial(name + "_mat", scene);
+        material.diffuseColor = color;
+        ball.material = material;
+        ball.position = position;
+        return ball;
+    }
 }

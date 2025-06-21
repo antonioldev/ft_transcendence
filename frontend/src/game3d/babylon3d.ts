@@ -29,6 +29,10 @@ function createScene(): any {
     const playerLeft = GameObjectFactory.createPlayer(scene, "player1", new BABYLON.Vector3(0, 1, -45), new BABYLON.Vector3(5, 0.5, 0.5), new BABYLON.Color3(0.89, 0.89, 0));
     const playerRight = GameObjectFactory.createPlayer(scene, "player2", new BABYLON.Vector3(0, 1, 45), new BABYLON.Vector3(5, 0.5, 0.5), new BABYLON.Color3(1, 0, 0));
 
+
+    const ball = GameObjectFactory.createBall(scene, "ball", new BABYLON.Vector3(0, 1, 35), new BABYLON.Color3(0.89, 0.89, 1));
+
+
     return scene;
 }
 
