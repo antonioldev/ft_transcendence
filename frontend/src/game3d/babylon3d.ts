@@ -1,11 +1,13 @@
 import { GameObjectFactory } from './gameObjectFactory.js';
+import { GAME_CONFIG, getPlayerSize, getPlayerLeftPosition, getPlayerRightPosition, getBallStartPosition, getCamera1Position, getCamera2Position, getCamera1Viewport, getCamera2Viewport, getSoloCameraViewport} from './gameConfig.js';
+import { handlePlayerInput } from './inputController.js';
+
 
 declare var BABYLON: any;
 
 let engine: any = null;
 let scene: any = null;
 let canvas: HTMLCanvasElement | null = null;
-const MOVEMENT_SPEED = 0.5;
 
 function createDefaultEngine(): any {
     return new BABYLON.Engine(canvas, true, { 
@@ -15,33 +17,27 @@ function createDefaultEngine(): any {
     });
 }
 
-function moveLeft(player: any): void {
-    if (player.position.x > -22)
-        player.position.x -= MOVEMENT_SPEED;
-}
-
-function moveRight(player: any): void {
-    if (player.position.x < 22)
-        player.position.x += MOVEMENT_SPEED;
-}
-
 function createScene(): any {
 
     const scene = new BABYLON.Scene(engine);
 
-    const camera1 = GameObjectFactory.createCamera(scene, "camera1", new BABYLON.Vector3(0, 5, -70), new BABYLON.Viewport(0, 0, 0.5, 1));
-    const camera2 = GameObjectFactory.createCamera(scene, "camera2", new BABYLON.Vector3(0, 5, 70), new BABYLON.Viewport(0.5, 0, 0.5, 1));
+    const camera1 = GameObjectFactory.createCamera(
+        scene, "camera1", getCamera1Position(), getCamera1Viewport());
+    const camera2 = GameObjectFactory.createCamera(
+        scene, "camera2", getCamera2Position(), getCamera2Viewport());
     scene.activeCameras = [camera1, camera2];
 
     const light = GameObjectFactory.createLight(scene, "light1", new BABYLON.Vector3(1, 1, 0));
 
-    const ground = GameObjectFactory.createGround(scene, "ground", 50, 100, new BABYLON.Color3(0.4, 0.6, 0.4));
+    const ground = GameObjectFactory.createGround(scene, "ground", GAME_CONFIG.fieldWidth, GAME_CONFIG.fieldHeight, new BABYLON.Color3(0.4, 0.6, 0.4));
 
-    const playerLeft = GameObjectFactory.createPlayer(scene, "player1", new BABYLON.Vector3(0, 1, -45), new BABYLON.Vector3(5, 0.5, 0.5), new BABYLON.Color3(0.89, 0.89, 0));
-    const playerRight = GameObjectFactory.createPlayer(scene, "player2", new BABYLON.Vector3(0, 1, 45), new BABYLON.Vector3(5, 0.5, 0.5), new BABYLON.Color3(1, 0, 0));
+    const playerLeft = GameObjectFactory.createPlayer(
+        scene, "player1", getPlayerLeftPosition(), getPlayerSize(), new BABYLON.Color3(0.89, 0.89, 0));
+    const playerRight = GameObjectFactory.createPlayer(
+        scene, "player2", getPlayerRightPosition(), getPlayerSize(), new BABYLON.Color3(1, 0, 0));
 
+    const ball = GameObjectFactory.createBall(scene, "ball", getBallStartPosition(), new BABYLON.Color3(0.89, 0.89, 1));
 
-    const ball = GameObjectFactory.createBall(scene, "ball", new BABYLON.Vector3(0, 1, 35), new BABYLON.Color3(0.89, 0.89, 1));
 
     var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
     var inputChanged = new BABYLON.GUI.TextBlock();
@@ -64,23 +60,14 @@ function createScene(): any {
             });
         }
     });
+
     scene.registerBeforeRender(() => {
-        const keyboardSource = deviceSourceManager.getDeviceSource(BABYLON.DeviceType.Keyboard);
-        if (keyboardSource) {
-            if (keyboardSource.getInput(65) == 1) {
-                moveLeft(playerLeft);
-            }
-            else if (keyboardSource.getInput(68) == 1) {
-                moveRight(playerLeft);
-            }
-            if (keyboardSource.getInput(37) == 1) {
-                moveRight(playerRight);
-            }
-            else if (keyboardSource.getInput(39) == 1) {
-                moveLeft(playerRight);
-            }
-        }
-    });
+    const keyboardSource = deviceSourceManager.getDeviceSource(BABYLON.DeviceType.Keyboard);
+    if (keyboardSource) {
+        handlePlayerInput(keyboardSource, playerLeft, playerRight);
+    }
+});
+
     return scene;
 }
 
