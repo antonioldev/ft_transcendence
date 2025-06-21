@@ -1,7 +1,6 @@
-import { hideOverlay, hidePauseDialog } from "./styles";
+import { GameObjectFactory } from './gameObjectFactory.js';
 
 declare var BABYLON: any;
-declare var Assets: any;
 
 let engine: any = null;
 let scene: any = null;
@@ -19,43 +18,16 @@ function createScene(): any {
 
     const scene = new BABYLON.Scene(engine);
 
-    const camera1 = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -70), scene);
-    camera1.setTarget(BABYLON.Vector3.Zero());
-    camera1.viewport = new BABYLON.Viewport(0, 0, 0.5, 1);
-
-    const camera2 = new BABYLON.FreeCamera("camera2", new BABYLON.Vector3(0, 5, 70), scene);
-    camera2.setTarget(BABYLON.Vector3.Zero());
-    camera2.viewport = new BABYLON.Viewport(0.5, 0, 0.5, 1);
-    
+    const camera1 = GameObjectFactory.createCamera(scene, "camera1", new BABYLON.Vector3(0, 5, -70), new BABYLON.Viewport(0, 0, 0.5, 1));
+    const camera2 = GameObjectFactory.createCamera(scene, "camera2", new BABYLON.Vector3(0, 5, 70), new BABYLON.Viewport(0.5, 0, 0.5, 1));
     scene.activeCameras = [camera1, camera2];
 
-    const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(1, 1, 0)); 
+    const light = GameObjectFactory.createLight(scene, "light1", new BABYLON.Vector3(1, 1, 0));
 
-    var ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 50, height: 100}, scene);
-    // Main ground material
-    const groundMaterial = new BABYLON.StandardMaterial("groundMat", scene);
-    groundMaterial.diffuseColor = new BABYLON.Color3(0.4, 0.6, 0.4); // Green ground
-    ground.material = groundMaterial;
+    const ground = GameObjectFactory.createGround(scene, "ground", 50, 100, new BABYLON.Color3(0.4, 0.6, 0.4));
 
-    // Create grid overlay using wireframe
-    const gridGround = BABYLON.MeshBuilder.CreateGround("gridGround", {width: 50, height: 100, subdivisions: 10}, scene);
-    const gridMaterial = new BABYLON.StandardMaterial("gridMat", scene);
-    gridMaterial.wireframe = true;
-    gridMaterial.diffuseColor = new BABYLON.Color3(0.2, 0.2, 0.2);
-    gridGround.material = gridMaterial;
-    gridGround.position.y = 0.01;
-
-    var cube1 = BABYLON.MeshBuilder.CreateBox("player1", {width: 5, height: 0.5, depth: 0.5}, scene);
-    const material1 = new BABYLON.StandardMaterial("mat1", scene);
-    material1.diffuseColor = new BABYLON.Color3(0.89, 0.89, 0);
-    cube1.material = material1;
-    cube1.position = new BABYLON.Vector3(0, 1, -45);
-
-    var cube2 = BABYLON.MeshBuilder.CreateBox("player2", {width: 5, height: 0.5, depth: 0.5}, scene);
-    const material2 = new BABYLON.StandardMaterial("mat2", scene);
-    material1.diffuseColor = new BABYLON.Color3(1, 0, 0);
-    cube2.material = material2;
-    cube2.position = new BABYLON.Vector3(0, 1, 45);
+    const playerLeft = GameObjectFactory.createPlayer(scene, "player1", new BABYLON.Vector3(0, 1, -45), new BABYLON.Vector3(5, 0.5, 0.5), new BABYLON.Color3(0.89, 0.89, 0));
+    const playerRight = GameObjectFactory.createPlayer(scene, "player2", new BABYLON.Vector3(0, 1, 45), new BABYLON.Vector3(5, 0.5, 0.5), new BABYLON.Color3(1, 0, 0));
 
     return scene;
 }

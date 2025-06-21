@@ -5,6 +5,9 @@
       "build": "tsc",
       "dev": "tsc --watch"
     },
+	"dependencies": {
+      "@babylonjs/core": "^6.0.0"
+    },
     "devDependencies": {
       "typescript": "^5.0.0"
     }
