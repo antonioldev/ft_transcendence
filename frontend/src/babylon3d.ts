@@ -16,56 +16,48 @@ function createDefaultEngine(): any {
 }
 
 function createScene(): any {
-    const babylonScene = new BABYLON.Scene(engine);
 
-    // Create camera
-    const camera = new BABYLON.ArcRotateCamera(
-        "camera", 
-        BABYLON.Tools.ToRadians(0), 
-        BABYLON.Tools.ToRadians(57.3), 
-        10, 
-        BABYLON.Vector3.Zero(), 
-        babylonScene
-    );
+    const scene = new BABYLON.Scene(engine);
+
+    const camera1 = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -70), scene);
+    camera1.setTarget(BABYLON.Vector3.Zero());
+    camera1.viewport = new BABYLON.Viewport(0, 0, 0.5, 1);
+
+    const camera2 = new BABYLON.FreeCamera("camera2", new BABYLON.Vector3(0, 5, 70), scene);
+    camera2.setTarget(BABYLON.Vector3.Zero());
+    camera2.viewport = new BABYLON.Viewport(0.5, 0, 0.5, 1);
     
-    // Attach camera controls to canvas
-    camera.attachControl(canvas, true);
+    scene.activeCameras = [camera1, camera2];
 
-    // Create light
-    const light = new BABYLON.HemisphericLight(
-        "light", 
-        new BABYLON.Vector3(0, 1, 0), 
-        babylonScene
-    );
-    light.intensity = 0.7;
+    const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(1, 1, 0)); 
 
-    // Create ground
-    const ground = BABYLON.MeshBuilder.CreateGround(
-        "ground", 
-        { width: 6, height: 6 }, 
-        babylonScene
-    );
-    
-    // Ground material
-    const groundMaterial = new BABYLON.StandardMaterial("Ground Material", babylonScene);
+    var ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 50, height: 100}, scene);
+    // Main ground material
+    const groundMaterial = new BABYLON.StandardMaterial("groundMat", scene);
+    groundMaterial.diffuseColor = new BABYLON.Color3(0.4, 0.6, 0.4); // Green ground
     ground.material = groundMaterial;
-    
-    const groundTexture = new BABYLON.Texture(
-        Assets.textures.checkerboard_basecolor_png.path, 
-        babylonScene
-    );
-    groundMaterial.diffuseColor = BABYLON.Color3.Red();
-    ground.material.diffuseTexture = groundTexture;
 
-    // Load Yeti model
-    BABYLON.ImportMeshAsync(
-        Assets.meshes.Yeti.rootUrl + Assets.meshes.Yeti.filename, 
-        babylonScene
-    ).then(function({meshes}: any) {
-        meshes[0].scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
-    });
+    // Create grid overlay using wireframe
+    const gridGround = BABYLON.MeshBuilder.CreateGround("gridGround", {width: 50, height: 100, subdivisions: 10}, scene);
+    const gridMaterial = new BABYLON.StandardMaterial("gridMat", scene);
+    gridMaterial.wireframe = true;
+    gridMaterial.diffuseColor = new BABYLON.Color3(0.2, 0.2, 0.2);
+    gridGround.material = gridMaterial;
+    gridGround.position.y = 0.01;
 
-    return babylonScene;
+    var cube1 = BABYLON.MeshBuilder.CreateBox("player1", {width: 5, height: 0.5, depth: 0.5}, scene);
+    const material1 = new BABYLON.StandardMaterial("mat1", scene);
+    material1.diffuseColor = new BABYLON.Color3(0.89, 0.89, 0);
+    cube1.material = material1;
+    cube1.position = new BABYLON.Vector3(0, 1, -45);
+
+    var cube2 = BABYLON.MeshBuilder.CreateBox("player2", {width: 5, height: 0.5, depth: 0.5}, scene);
+    const material2 = new BABYLON.StandardMaterial("mat2", scene);
+    material1.diffuseColor = new BABYLON.Color3(1, 0, 0);
+    cube2.material = material2;
+    cube2.position = new BABYLON.Vector3(0, 1, 45);
+
+    return scene;
 }
 
 function startRenderLoop(): void {
@@ -133,7 +125,6 @@ export function resumeBabylon3D(): void {
 
 export function disposeBabylon3D(): void {
     console.log("Disposing Babylon 3D scene...");
-    
     // Stop render loop
     if (engine) {
         engine.stopRenderLoop();
