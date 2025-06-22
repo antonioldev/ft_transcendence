@@ -1,4 +1,5 @@
 declare var BABYLON: any;
+
 import { GAME_CONFIG } from './gameConfig.js';
 
 export function moveLeft(player: any): void {
@@ -24,4 +25,17 @@ export function handlePlayerInput(keyboardSource: any, playerLeft: any, playerRi
     else if (keyboardSource.getInput(39) == 1) {
         moveLeft(playerRight);
     }
+}
+
+export function getFollowTarget(player: any) {
+    const fieldBoundary = GAME_CONFIG.fieldWidth / 2;
+    const followLimit = fieldBoundary - GAME_CONFIG.edgeBuffer;
+    
+    let targetX = player.position.x;
+    if (targetX > followLimit)
+        targetX = followLimit;
+    else if (targetX < -followLimit)
+        targetX = -followLimit;
+
+    return new BABYLON.Vector3(targetX, player.position.y, player.position.z);
 }
