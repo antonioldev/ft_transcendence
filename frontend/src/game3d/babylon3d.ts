@@ -17,6 +17,15 @@ function createDefaultEngine(): any {
     });
 }
 
+function startRenderLoop(): void {
+    if (engine) {
+        engine.runRenderLoop(function () {
+            if (scene && scene.activeCamera)
+                scene.render();
+        });
+    }
+}
+
 function createScene(): any {
 
     const scene = new BABYLON.Scene(engine);
@@ -41,10 +50,6 @@ function createScene(): any {
 
     const ball = GameObjectFactory.createBall(scene, "ball", getBallStartPosition(), new BABYLON.Color3(0.89, 0.89, 1));
     
-    // var hk = new BABYLON.HavokPlugin();
-    // enable physics in the scene with a gravity
-    // scene.enablePhysics(new BABYLON.Vector3(0, -9.8, 0), hk);
-
 
     // var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
     // var inputChanged = new BABYLON.GUI.TextBlock();
@@ -85,20 +90,10 @@ function createScene(): any {
     return scene;
 }
 
-function startRenderLoop(): void {
-    if (engine) {
-        engine.runRenderLoop(function () {
-            if (scene && scene.activeCamera) {
-                scene.render();
-            }
-        });
-    }
-}
-
 export async function initBabylon3D(): Promise<void> {
     try {
         console.log("Initializing Babylon 3D scene...");
-        
+
         // Get canvas
         canvas = document.getElementById("game-canvas-3d") as HTMLCanvasElement;
         if (!canvas) {
@@ -121,9 +116,8 @@ export async function initBabylon3D(): Promise<void> {
 
         // Handle window resize
         const resizeHandler = () => {
-            if (engine) {
+            if (engine)
                 engine.resize();
-            }
         };
         window.addEventListener("resize", resizeHandler);
 
