@@ -41,6 +41,47 @@ export class GameObjectFactory {
         return ground;
     }
 
+    static createWalls(
+        scene: any,
+        name: string,
+        fieldWidth: number,
+        fieldHeight: number,
+        wallHeight: number,
+        wallThickness: number,
+        color: any
+    ):any[] {
+        const walls: any[] = [];
+        const wallMaterial = new BABYLON.StandardMaterial(name + "Material", scene);
+        wallMaterial.diffuseColor = color;
+
+        const topWall = BABYLON.MeshBuilder.CreateBox("topWall",
+            {width: fieldWidth, height: wallHeight, depth: wallThickness}, scene);
+        topWall.position = new BABYLON.Vector3(0, wallHeight / 2, fieldHeight / 2);
+        topWall.material = wallMaterial;
+        walls.push(topWall);
+
+        const bottomWall = BABYLON.MeshBuilder.CreateBox("bottomWall",
+            {width: fieldWidth, height: wallHeight, depth: wallThickness}, scene);
+        bottomWall.position = new BABYLON.Vector3(0, wallHeight / 2, -(fieldHeight / 2));
+        bottomWall.material = wallMaterial;
+        walls.push(bottomWall);
+
+        const leftWall = BABYLON.MeshBuilder.CreateBox("leftWall",
+            {width: wallThickness, height: wallHeight, depth: fieldHeight + 1}, scene);
+        leftWall.position = new BABYLON.Vector3(-(fieldWidth / 2), wallHeight / 2, 0);
+        leftWall.material = wallMaterial;
+        walls.push(bottomWall);
+
+        const rightWall = BABYLON.MeshBuilder.CreateBox("rightWall",
+            {width: wallThickness, height: wallHeight, depth: fieldHeight + 1}, scene);
+        rightWall.position = new BABYLON.Vector3(fieldWidth / 2, wallHeight / 2, 0);
+        rightWall.material = wallMaterial;
+        walls.push(rightWall);
+
+
+        return walls;
+    }
+
     static createPlayer(
         scene: any,
         name: string,

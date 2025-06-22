@@ -4,17 +4,23 @@ export const GAME_CONFIG = {
     // Field dimensions
     fieldWidth: 50,
     fieldHeight: 100,
+
+    // Walls
+    wallHeight: 1,
+    wallThickness: 1,
     
     // Player settings
     playerWidth: 5,
     playerHeight: 0.5,
     playerDepth: 0.5,
-    playerOffsetFromEdge: 5,
+    playerOffsetFromEdge: 2,
     playerSpeed: 0.5,
     
     // Camera settings
-    cameraHeight: 5,
-    cameraDistance: 20
+    cameraHeight: 10,
+    cameraDistance: 20,
+    followSpeed : 0.1,
+    edgeBuffer : 13
 };
 
 export function getPlayerSize() {
@@ -38,7 +44,7 @@ export function getPlayerBoundaries() {
 }
 
 export function getBallStartPosition() {
-    return new BABYLON.Vector3(0, 1, GAME_CONFIG.fieldHeight/2 - 10);
+    return new BABYLON.Vector3(0, 5, GAME_CONFIG.fieldHeight/2 - 10);
 }
 
 export function getCamera1Position() {
