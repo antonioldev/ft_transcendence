@@ -145,9 +145,8 @@ export function resumeBabylon3D(): void {
 export function disposeBabylon3D(): void {
     console.log("Disposing Babylon 3D scene...");
     // Stop render loop
-    if (engine) {
+    if (engine)
         engine.stopRenderLoop();
-    }
     
     // Dispose scene
     if (scene) {

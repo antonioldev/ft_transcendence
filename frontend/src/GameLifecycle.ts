@@ -1,13 +1,14 @@
 import { gameStateManager, GameState } from './gameState.js';
 import { hideOverlay, hidePauseDialog, showPauseDialog } from './styles.js';
 import { disposeBabylon3D, pauseBabylon3D, resumeBabylon3D } from './game3d/babylon3d.js';
-
+import { disposeBabylon2D, pauseBabylon2D, resumeBabylon2D } from './game2d/babylon2d.js';
 
 export function exitToMenu(): void {
     console.log("Exiting to menu...");
 
     const currentState = gameStateManager.getCurrentState();
     if (currentState === GameState.PAUSED_2D) {
+        disposeBabylon2D();
         hideOverlay('game-2d');
         hidePauseDialog('pause-dialog-2d');
     }
@@ -28,6 +29,7 @@ export function resumeGame(): void {
     if (currentState === GameState.PAUSED_2D) {
         gameStateManager.setState(GameState.PLAYING_2D);
         hidePauseDialog('pause-dialog-2d');
+        resumeBabylon2D();
     }
     else if (currentState === GameState.PAUSED_3D){
         gameStateManager.setState(GameState.PLAYING_3D);
@@ -43,6 +45,7 @@ export function pauseCurrentGame(): void {
     if (currentState === GameState.PLAYING_2D) {
         gameStateManager.setState(GameState.PAUSED_2D);
         showPauseDialog('pause-dialog-2d');
+        pauseBabylon2D();
     } else if (currentState === GameState.PLAYING_3D) {
         gameStateManager.setState(GameState.PAUSED_3D);
         showPauseDialog('pause-dialog-3d');

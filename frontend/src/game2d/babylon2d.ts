@@ -80,3 +80,37 @@ export async function initBabylon2D(): Promise<void> {
         console.error("Error initializing Babylon 2D:", error);
     }
 }
+
+export function pauseBabylon2D(): void {
+    if (engine) {
+        engine.stopRenderLoop();
+        console.log("Babylon render loop paused");
+    }
+}
+
+export function resumeBabylon2D(): void {
+    if (engine && scene) {
+        startRenderLoop();
+        console.log("Babylon render loop resumed");
+    }
+}
+
+export function disposeBabylon2D(): void {
+    console.log("Disposing Babylon 2D scene...");
+    if (engine)
+        engine.stopRenderLoop();
+
+    if (scene) {
+        scene.dispose();
+        scene = null;
+    }
+
+    if (engine) {
+        engine.dispose();
+        engine = null;
+    }
+
+    canvas = null;
+
+    console.log("Babylon 2D scene disposed.");
+}

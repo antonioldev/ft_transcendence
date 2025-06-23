@@ -21,32 +21,10 @@ function loadPage() {
 function handleEscKey(event: KeyboardEvent): void {
     if (event.key === 'Escape'){
         const currentState: GameState = gameStateManager.getCurrentState();
-        if (gameStateManager.isInGame()) {
-            pauseCurrentGame();  // Use the function instead of switch
-        } else if (gameStateManager.isPaused()) {
+        if (gameStateManager.isInGame())
+            pauseCurrentGame();
+        else if (gameStateManager.isPaused())
             resumeGame();
-        }
-        // switch (currentState) {
-        //     case GameState.MENU:
-        //         break;
-        //     case GameState.PLAYING_2D:
-        //         gameStateManager.setState(GameState.PAUSED_2D);
-        //         showPauseDialog('pause-dialog-2d');
-        //         break;
-        //     case GameState.PLAYING_3D:
-        //         gameStateManager.setState(GameState.PAUSED_3D);
-        //         showPauseDialog('pause-dialog-3d');
-        //         break;
-        //     case GameState.PAUSED_2D:
-        //         resumeGame();
-        //         break;
-        //     case GameState.PAUSED_3D:
-        //         resumeGame();
-        //         break;
-        //     default:
-        //         console.log ("Unkwon Game State");
-        //         break;
-        // }
     }
 }
 
