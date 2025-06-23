@@ -38,8 +38,8 @@ export function getPlayerRightPosition() {
 
 export function getPlayerBoundaries() {
     return {
-        left: -(GAME_CONFIG.fieldWidth/2 - GAME_CONFIG.playerWidth/2),
-        right: GAME_CONFIG.fieldWidth/2 - GAME_CONFIG.playerWidth/2
+        left: -(GAME_CONFIG.fieldWidth/2 - GAME_CONFIG.playerWidth/2 - GAME_CONFIG.wallThickness),
+        right: GAME_CONFIG.fieldWidth/2 - GAME_CONFIG.playerWidth/2 - GAME_CONFIG.wallThickness
     };
 }
 

@@ -36,9 +36,8 @@ export class GameObjectFactory {
         }, scene);
         
         const groundMaterial = new BABYLON.StandardMaterial(name + "Material", scene);
-        groundMaterial.emissiveColor = color; // Only emissive, no lighting
+        groundMaterial.emissiveColor = color;
         groundMaterial.disableLighting = true;
-        // groundMaterial.diffuseColor = color;
         ground.material = groundMaterial;
         
         return ground;
@@ -55,7 +54,8 @@ export class GameObjectFactory {
     ):any[] {
         const walls: any[] = [];
         const wallMaterial = new BABYLON.StandardMaterial(name + "Material", scene);
-        wallMaterial.diffuseColor = color;
+        wallMaterial.emissiveColor = color;
+        wallMaterial.disableLighting = true;
 
         const topWall = BABYLON.MeshBuilder.CreateBox("topWall",
             {width: fieldWidth, height: wallHeight, depth: wallThickness}, scene);
@@ -97,7 +97,8 @@ export class GameObjectFactory {
             height: size.y, 
             depth: size.z }, scene);
         const material = new BABYLON.StandardMaterial(name + "Material", scene);
-        material.diffuseColor = color;
+        material.emissiveColor = color;
+        material.disableLighting = true;
         player.material = material;
         player.position = position;
         return player;
@@ -111,6 +112,7 @@ export class GameObjectFactory {
     ): any {
         const ball = BABYLON.MeshBuilder.CreateSphere(name, {}, scene);
         const material = new BABYLON.StandardMaterial(name + "Material", scene);
+        
         material.diffuseColor = color;
         ball.material = material;
         ball.position = position;

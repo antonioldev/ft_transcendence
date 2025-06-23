@@ -1,5 +1,6 @@
-import { GAME_CONFIG, getPlayerSize, getPlayerLeftPosition, getPlayerRightPosition, getBallStartPosition, getCamera1Position, getCamera1Viewport} from './gameConfig.js';
 import { GameObjectFactory } from './gameObjectFactory.js';
+import { GAME_CONFIG, getPlayerSize, getPlayerLeftPosition, getPlayerRightPosition, getBallStartPosition, getCamera1Position, getCamera1Viewport} from './gameConfig.js';
+import { handlePlayerInput} from './inputController.js';
 
 declare var BABYLON: any;
 
@@ -47,6 +48,12 @@ function createScene(): any {
     
     const ball = GameObjectFactory.createBall(scene, "ball", getBallStartPosition(), BABYLON.Color3.White());
 
+    const deviceSourceManager = new BABYLON.DeviceSourceManager(scene.getEngine());
+    scene.registerBeforeRender(() => {
+        const keyboardSource = deviceSourceManager.getDeviceSource(BABYLON.DeviceType.Keyboard);
+        if (keyboardSource)
+            handlePlayerInput(keyboardSource, playerLeft, playerRight);
+    });
     return scene;
 }
 
