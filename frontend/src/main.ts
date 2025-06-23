@@ -1,7 +1,7 @@
 import { updateLanguageDisplay, previousLanguage, nextLanguage } from './translations.js';
 import { applyButtonStyles, applyLanguageStyles, applyTitleStyles, applyOverlayStyles, applyPauseDialogStyles, showOverlay, showPauseDialog } from './styles.js';
-import { initBabylon3D} from './game3d/babylon3d.js';
-import { initBabylon2D } from './game2d/babylon2d.js';
+import { initBabylon3D} from './game/game3d.js';
+import { initBabylon2D } from './game/game2d.js';
 import { gameStateManager, GameState } from './gameState.js';
 import { exitToMenu, resumeGame, pauseCurrentGame } from './GameLifecycle.js';
 

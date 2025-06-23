@@ -1,7 +1,7 @@
 import { gameStateManager, GameState } from './gameState.js';
 import { hideOverlay, hidePauseDialog, showPauseDialog } from './styles.js';
-import { disposeBabylon3D, pauseBabylon3D, resumeBabylon3D } from './game3d/babylon3d.js';
-import { disposeBabylon2D, pauseBabylon2D, resumeBabylon2D } from './game2d/babylon2d.js';
+import { disposeBabylon3D, pauseBabylon3D, resumeBabylon3D } from './game/game3d.js';
+import { disposeBabylon2D, pauseBabylon2D, resumeBabylon2D }  from './game/game2d.js';
 
 export function exitToMenu(): void {
     console.log("Exiting to menu...");
