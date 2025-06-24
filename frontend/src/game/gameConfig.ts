@@ -27,6 +27,9 @@ export const GAME_CONFIG = {
     followSpeed : 0.1,
     edgeBuffer : 13,
 
+    // Ball settings
+    ballSpeed : 5,
+
     // Input mappings
     input2D: {
         playerLeft: { left: 87, right: 83 },    // W/S keys
@@ -38,6 +41,7 @@ export const GAME_CONFIG = {
     }  
 };
 
+// Common Utility Functions
 export function getPlayerSize() {
     return new BABYLON.Vector3(GAME_CONFIG.playerWidth, GAME_CONFIG.playerHeight, GAME_CONFIG.playerDepth);
 }
@@ -58,23 +62,16 @@ export function getPlayerBoundaries() {
 }
 
 export function getBallStartPosition() {
-    return new BABYLON.Vector3(0, 5, GAME_CONFIG.fieldHeight/2 - 10);
+    return new BABYLON.Vector3(0, 1, 0);
 }
 
+// 3D View Utility Functions
 export function getCamera3DPlayer1Position() {
     return new BABYLON.Vector3(0, GAME_CONFIG.camera3DHeight, -(GAME_CONFIG.fieldHeight/2 + GAME_CONFIG.camera3DDistance));
 }
 
 export function getCamera3DPlayer2Position() {
     return new BABYLON.Vector3(0, GAME_CONFIG.camera3DHeight, GAME_CONFIG.fieldHeight/2 + GAME_CONFIG.camera3DDistance);
-}
-
-export function getCamera2DPosition() {
-    return new BABYLON.Vector3(0, GAME_CONFIG.camera2DHeight, 0);
-}
-
-export function get2DCameraViewport() {
-    return new BABYLON.Viewport(0, 0, 1, 1);
 }
 
 export function get3DCamera1Viewport() {
@@ -86,5 +83,14 @@ export function get3DCamera2Viewport() {
 }
 
 export function get3DSoloCameraViewport() {
+    return new BABYLON.Viewport(0, 0, 1, 1);
+}
+
+// 2D View Utility Functions
+export function getCamera2DPosition() {
+    return new BABYLON.Vector3(0, GAME_CONFIG.camera2DHeight, 0);
+}
+
+export function get2DCameraViewport() {
     return new BABYLON.Viewport(0, 0, 1, 1);
 }

@@ -18,6 +18,7 @@ import {
 
 import {handlePlayerInput, getFollowTarget} from "./inputController.js"
 import { GameObjectFactory } from "./gameObjectFactory.js";
+import { createFPSDisplay } from './gui.js';
 
 export class BabylonEngine {
     private engine: any = null;
@@ -113,8 +114,14 @@ export class BabylonEngine {
         
         const ball = GameObjectFactory.createBall(scene, "ball", getBallStartPosition(), BABYLON.Color3.White(), true);
 
+        var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+        const updateFPS = createFPSDisplay(advancedTexture, this.engine);
+
         const deviceSourceManager = new BABYLON.DeviceSourceManager(scene.getEngine());
         scene.registerBeforeRender(() => {
+            updateFPS();
+            const step = 1/60;
+            ball.position.z += step * GAME_CONFIG.ballSpeed;
             const keyboardSource = deviceSourceManager.getDeviceSource(BABYLON.DeviceType.Keyboard);
             if (keyboardSource)
                 handlePlayerInput(keyboardSource, playerLeft, playerRight, GAME_CONFIG.input2D);
@@ -146,30 +153,12 @@ export class BabylonEngine {
 
         const ball = GameObjectFactory.createBall(scene, "ball", getBallStartPosition(), new BABYLON.Color3(0.89, 0.89, 1), false);
         
-
-        // var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
-        // var inputChanged = new BABYLON.GUI.TextBlock();
-        // inputChanged.text = "Press keys";
-        // inputChanged.color = "white";
-        // inputChanged.fontSize = 24;
-        // inputChanged.verticalAlignment = BABYLON.GUI.TextBlock.VERTICAL_ALIGNMENT_CENTER;
-        // inputChanged.horizontalAlignment = BABYLON.GUI.TextBlock.HORIZONTAL_ALIGNMENT_CENTER;
-        // inputChanged.width = 1;
-        // inputChanged.height = .3;
-        // advancedTexture.addControl(inputChanged);
+        var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+        const updateFPS = createFPSDisplay(advancedTexture, this.engine);
 
         const deviceSourceManager = new BABYLON.DeviceSourceManager(scene.getEngine());
-        // deviceSourceManager.onDeviceConnectedObservable.add((deviceSource: any) => {
-
-        // // If Keyboard, add an Observer
-        // if (deviceSource.deviceType === BABYLON.DeviceType.Keyboard) {
-        //     deviceSource.onInputChangedObservable.add((eventData: any) => {
-        //         console.log(`Key event - Device: ${BABYLON.DeviceType[deviceSource.deviceType]}, Input Index: ${eventData.inputIndex}`);
-        //         });
-        //     }
-        // });
-
         scene.registerBeforeRender(() => {
+            updateFPS();
             const keyboardSource = deviceSourceManager.getDeviceSource(BABYLON.DeviceType.Keyboard);
             if (keyboardSource) {
                 handlePlayerInput(keyboardSource, playerLeft, playerRight, GAME_CONFIG.input3D);
@@ -186,3 +175,23 @@ export class BabylonEngine {
         return scene;
     }
 }
+
+// var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+// var inputChanged = new BABYLON.GUI.TextBlock();
+// inputChanged.text = "Press keys";
+// inputChanged.color = "white";
+// inputChanged.fontSize = 24;
+// inputChanged.verticalAlignment = BABYLON.GUI.TextBlock.VERTICAL_ALIGNMENT_CENTER;
+// inputChanged.horizontalAlignment = BABYLON.GUI.TextBlock.HORIZONTAL_ALIGNMENT_CENTER;
+// inputChanged.width = 1;
+// inputChanged.height = .3;
+// advancedTexture.addControl(inputChanged);
+// const deviceSourceManager = new BABYLON.DeviceSourceManager(scene.getEngine());
+// deviceSourceManager.onDeviceConnectedObservable.add((deviceSource: any) => {
+// // If Keyboard, add an Observer
+// if (deviceSource.deviceType === BABYLON.DeviceType.Keyboard) {
+//     deviceSource.onInputChangedObservable.add((eventData: any) => {
+//         console.log(`Key event - Device: ${BABYLON.DeviceType[deviceSource.deviceType]}, Input Index: ${eventData.inputIndex}`);
+//         });
+//     }
+// });
