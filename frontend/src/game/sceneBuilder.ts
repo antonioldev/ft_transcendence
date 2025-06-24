@@ -96,7 +96,7 @@ function createPlayer(scene: any, name: string, position: any, size: any, color:
 }
 
 function createBall(scene: any, name: string, position: any, color: any, is2D: boolean): any {
-    const ball = BABYLON.MeshBuilder.CreateSphere(name, {}, scene);
+    const ball = BABYLON.MeshBuilder.CreateSphere(name, {diameter: GAME_CONFIG.ballRadius * 2}, scene);
     ball.material = createMaterial(scene, name + "Material", color, is2D);
     ball.position = position;
     return ball;

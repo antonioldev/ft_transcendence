@@ -1,8 +1,7 @@
 import { updateLanguageDisplay, previousLanguage, nextLanguage } from './translations.js';
 import { applyButtonStyles, applyLanguageStyles, applyTitleStyles, applyOverlayStyles, applyPauseDialogStyles, showOverlay, showPauseDialog } from './styles.js';
 import { initBabylon2D, initBabylon3D} from './game/GameManager.js';
-import { gameStateManager, GameState } from './gameState.js';
-import { exitToMenu, resumeGame, pauseCurrentGame } from './GameLifecycle.js';
+import { gameStateManager, GameState} from './GameState.js';
 
 
 console.log("Typescript is working!")
@@ -21,18 +20,18 @@ function handleEscKey(event: KeyboardEvent): void {
     if (event.key === 'Escape'){
         const currentState: GameState = gameStateManager.getCurrentState();
         if (gameStateManager.isInGame())
-            pauseCurrentGame();
+            gameStateManager.pauseCurrentGame();
         else if (gameStateManager.isPaused())
-            resumeGame();
+            gameStateManager.resumeGame();
     }
 }
 
 function handleYesNoKey(event: KeyboardEvent): void {
     if (gameStateManager.isPaused()) {
         if (event.key === 'Y' || event.key === 'y')
-            exitToMenu();
+            gameStateManager.exitToMenu();
         else if (event.key === 'N' || event.key === 'n')
-            resumeGame();
+            gameStateManager.resumeGame();
     }
 }
 

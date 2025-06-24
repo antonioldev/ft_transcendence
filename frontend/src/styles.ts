@@ -1,4 +1,4 @@
-import { gameStateManager, GameState } from './gameState.js';
+import { gameStateManager, GameState } from './GameState.js';
 
 export function applyTitleStyles(): void {
     const title: HTMLElement | null = document.getElementById('main-title');

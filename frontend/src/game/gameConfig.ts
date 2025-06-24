@@ -1,11 +1,12 @@
 declare var BABYLON: any;
 
 const fieldWidth = 50;
+const fieldHeight = 100;
 
 export const GAME_CONFIG = {
     // Field dimensions
     fieldWidth: fieldWidth,
-    fieldHeight: 100,
+    fieldHeight: fieldHeight,
     fieldBoundary: fieldWidth / 2,
 
     // Walls
@@ -28,7 +29,41 @@ export const GAME_CONFIG = {
     edgeBuffer : 13,
 
     // Ball settings
-    ballSpeed : 5,
+    ballRadius: 0.5,
+    ballInitialSpeed : 0.2,
+    ballInitialVelocity: {
+        x: 0.2,
+        z: 0.15
+    },
+    ballMaxAngle: Math.PI / 4,
+
+    // Court boundaries (calculated from field dimensions)
+    courtBounds: {
+        minZ: -(fieldHeight / 2),      // Top wall
+        maxZ: fieldHeight / 2,         // Bottom wall  
+        minX: -(fieldWidth / 2),       // Left goal line
+        maxX: fieldWidth / 2           // Right goal line
+    },
+    
+    // Wall collision boundaries (accounting for ball radius)
+    wallBounds: {
+        minX: -(fieldWidth / 2) + 1,   // Left wall + wall thickness  
+        maxX: (fieldWidth / 2) - 1     // Right wall - wall thickness
+    },
+    
+    // Goal boundaries (behind paddles)
+    goalBounds: {
+        topGoal: -(fieldHeight / 2) + 2,    // Behind top player
+        bottomGoal: (fieldHeight / 2) - 2   // Behind bottom player  
+    },
+
+    // Game mechanics
+    serveRandomAngle: 0.3,  // Random Z velocity range on serve
+    scoreToWin: 5,          // Points needed to win
+    
+    // Physics
+    ballSpeedIncrease: 1.05, // Speed multiplier after paddle hit
+    maxBallSpeed: 0.8,       // Maximum ball speed
 
     // Input mappings
     input2D: {
@@ -65,6 +100,19 @@ export function getBallStartPosition() {
     return new BABYLON.Vector3(0, 1, 0);
 }
 
+export function getInitialBallVelocity(serveDirection: 'left' | 'right') {
+    const baseSpeed = GAME_CONFIG.ballInitialSpeed;
+    const randomX = (Math.random() - 0.5) * GAME_CONFIG.serveRandomAngle;
+    let randomZ;
+    if (serveDirection === 'left')
+        randomZ = -baseSpeed;
+    else
+        randomZ = baseSpeed;
+    return {
+        x: randomX,
+        z: randomZ
+    };
+}
 // 3D View Utility Functions
 export function getCamera3DPlayer1Position() {
     return new BABYLON.Vector3(0, GAME_CONFIG.camera3DHeight, -(GAME_CONFIG.fieldHeight/2 + GAME_CONFIG.camera3DDistance));

@@ -13,11 +13,10 @@ export class InputManager {
     }
 
     setupControls(players: {left: any, right: any}, gameMode: string): void {
-        if (gameMode === "2D") {
+        if (gameMode === "2D")
             this.inputConfig = GAME_CONFIG.input2D;
-        } else {
+        else
             this.inputConfig = GAME_CONFIG.input3D;
-        }
         this.players = players;
     }
 
