@@ -1,9 +1,12 @@
 declare var BABYLON: any;
 
+const fieldWidth = 50;
+
 export const GAME_CONFIG = {
     // Field dimensions
-    fieldWidth: 50,
+    fieldWidth: fieldWidth,
     fieldHeight: 100,
+    fieldBoundary: fieldWidth / 2,
 
     // Walls
     wallHeight: 1,

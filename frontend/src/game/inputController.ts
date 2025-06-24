@@ -31,8 +31,7 @@ export function handlePlayerInput(keyboardSource: any, playerLeft: any, playerRi
 }
 
 export function getFollowTarget(player: any) {
-    const fieldBoundary = GAME_CONFIG.fieldWidth / 2;
-    const followLimit = fieldBoundary - GAME_CONFIG.edgeBuffer;
+    const followLimit = GAME_CONFIG.fieldBoundary - GAME_CONFIG.edgeBuffer;
     
     let targetX = player.position.x;
     if (targetX > followLimit)
