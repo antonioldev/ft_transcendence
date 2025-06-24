@@ -117,7 +117,7 @@ export class BabylonEngine {
         scene.registerBeforeRender(() => {
             const keyboardSource = deviceSourceManager.getDeviceSource(BABYLON.DeviceType.Keyboard);
             if (keyboardSource)
-                handlePlayerInput(keyboardSource, playerLeft, playerRight, '2D');
+                handlePlayerInput(keyboardSource, playerLeft, playerRight, GAME_CONFIG.input2D);
         });
         this.scene = scene; 
         return scene;
@@ -172,7 +172,7 @@ export class BabylonEngine {
         scene.registerBeforeRender(() => {
             const keyboardSource = deviceSourceManager.getDeviceSource(BABYLON.DeviceType.Keyboard);
             if (keyboardSource) {
-                handlePlayerInput(keyboardSource, playerLeft, playerRight, '3D');
+                handlePlayerInput(keyboardSource, playerLeft, playerRight, GAME_CONFIG.input3D);
             }
 
             // Handle the camera rotation when player move

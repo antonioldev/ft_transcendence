@@ -14,19 +14,17 @@ function moveRight(player: any): void {
         player.position.x += GAME_CONFIG.playerSpeed;
 }
 
-export function handlePlayerInput(keyboardSource: any, playerLeft: any, playerRight: any, inputMode: '2D' | '3D'): void {
-    const inputConfig = inputMode === '2D' ? GAME_CONFIG.input2D : GAME_CONFIG.input3D;
-    
+export function handlePlayerInput(keyboardSource: any, playerLeft: any, playerRight: any, input: any): void {
     // Player Left
-    if (keyboardSource.getInput(inputConfig.playerLeft.left) === 1)
+    if (keyboardSource.getInput(input.playerLeft.left) === 1)
         moveLeft(playerLeft);
-    else if (keyboardSource.getInput(inputConfig.playerLeft.right) === 1)
+    else if (keyboardSource.getInput(input.playerLeft.right) === 1)
         moveRight(playerLeft);
 
     // Player Right  
-    if (keyboardSource.getInput(inputConfig.playerRight.left) === 1)
+    if (keyboardSource.getInput(input.playerRight.left) === 1)
         moveLeft(playerRight);
-    else if (keyboardSource.getInput(inputConfig.playerRight.right) === 1)
+    else if (keyboardSource.getInput(input.playerRight.right) === 1)
         moveRight(playerRight);
 }
 
