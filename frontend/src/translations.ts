@@ -11,7 +11,7 @@ interface Translations {
 }
 
 export let currentLanguageIndex: number = 0;
-export const languages: string[] = ['English', 'Italiano', 'Française'];
+export const languages: string[] = ['English', 'Italiano', 'Française', 'Brasileiro'];
 
 export const translations: Translations = {
     'English': {
@@ -34,6 +34,13 @@ export const translations: Translations = {
         gamePaused: 'Jeu en Pause',
         exitGame: 'Quitter le jeu?',
         pauseControls: 'Y - Oui | N - Non | ESC - Reprendre'
+    },
+    'Brasileiro': {
+        classicMode: 'Modo Clássico',
+        immersiveMode: 'Modo Imersivo',
+        gamePaused: 'Jogo pausado',
+        exitGame: 'Sair do jogo',
+        pauseControls: 'Y - Sim | N - Não | ESC - Voltar'
     }
  };
 
