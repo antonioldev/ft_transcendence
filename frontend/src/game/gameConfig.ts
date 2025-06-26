@@ -53,8 +53,8 @@ export const GAME_CONFIG = {
     
     // Goal boundaries (behind paddles)
     goalBounds: {
-        topGoal: -(fieldHeight / 2) + 2,    // Behind top player
-        bottomGoal: (fieldHeight / 2) - 2   // Behind bottom player  
+        rightGoal: -(fieldHeight / 2) + 2,    // Behind top player
+        leftGoal: (fieldHeight / 2) - 2   // Behind bottom player  
     },
 
     // Game mechanics
@@ -72,7 +72,7 @@ export const GAME_CONFIG = {
     },
     input3D: {
         playerLeft: { left: 65, right: 68 },    // A/D keys  
-        playerRight: { left: 37, right: 39 }    // Left/Right arrows
+        playerRight: { left: 39, right: 37 }    // Left/Right arrows
     }  
 };
 
@@ -113,14 +113,10 @@ export function getBallStartPosition() {
     return new BABYLON.Vector3(0, 1, 0);
 }
 
-export function getInitialBallVelocity(serveDirection: 'left' | 'right') {
+export function getInitialBallVelocity(serveDirection: number) {
     const baseSpeed = GAME_CONFIG.ballInitialSpeed;
     const randomX = (Math.random() - 0.5) * GAME_CONFIG.serveRandomAngle;
-    let randomZ;
-    if (serveDirection === 'left')
-        randomZ = -baseSpeed;
-    else
-        randomZ = baseSpeed;
+    const randomZ = serveDirection * baseSpeed;
     return {
         x: randomX,
         z: randomZ

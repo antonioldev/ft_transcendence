@@ -23,7 +23,9 @@ export class BabylonEngine {
         this.engine = new BABYLON.Engine(this.canvas, true, { 
             preserveDrawingBuffer: true, 
             stencil: true, 
-            disableWebGL2Support: false 
+            disableWebGL2Support: false,
+            antialias: false,
+            powerPreference: "high-performance"
         });
         return this.engine;
     }

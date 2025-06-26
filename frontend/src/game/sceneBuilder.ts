@@ -56,7 +56,10 @@ function createCamera(scene: any, name: string, position: any, viewport: any, is
     const camera = new BABYLON.FreeCamera(name, position, scene);
     camera.setTarget(BABYLON.Vector3.Zero());
     camera.viewport = viewport;
-    if (is2D) camera.rotation.z = -(Math.PI / 2);
+    if (is2D) {
+         camera.rotation.z = -(Math.PI / 2);
+         camera.fov = 1.1;
+    }
     return camera;
 }
 
@@ -116,7 +119,7 @@ function createBall(scene: any, name: string, position: any, color: any, is2D: b
 }
 
 export function build2DScene(scene: any, engine: any): GameObjects {
-    scene.clearColor = BABYLON.Color3.Black();
+    //scene.clearColor = BABYLON.Color3.Black();
 
     const camera = createCamera(scene, "camera1", getCamera2DPosition(), get2DCameraViewport(), true);
     scene.activeCamera = camera;

@@ -18,7 +18,7 @@ export class GUIManager {
         this.fpsText.text = "FPS: 0";
         this.fpsText.color = "white";
         this.fpsText.fontSize = 16;
-        this.fpsText.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
+        this.fpsText.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
         this.fpsText.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
         this.fpsText.top = "1px";
         this.fpsText.left = "-20px";

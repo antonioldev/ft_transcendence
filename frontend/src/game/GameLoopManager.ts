@@ -12,6 +12,11 @@ export class GameLoopManager {
     private inputManager: InputManager;
     private guiManager: GUIManager | null = null;
     private isRunning = false;
+    private halfPlayerWidth = GAME_CONFIG.playerWidth / 2;
+    private halfPlayerDepth = GAME_CONFIG.playerDepth / 2;
+    private wallMinX = GAME_CONFIG.wallBounds.minX + GAME_CONFIG.ballRadius;
+    private wallMaxX = GAME_CONFIG.wallBounds.maxX - GAME_CONFIG.ballRadius;
+
 
     private ballVelocity = { 
         x: GAME_CONFIG.ballInitialVelocity.x, 
@@ -43,55 +48,90 @@ export class GameLoopManager {
 
     private updateGame(): void {
         this.updateBallMovement();
-        this.checkWallCollisions();
-        this.checkGoalCollisions();
+        if (!this.checkWallCollisions())
+            if (!this.checkPaddleCollisions())
+                this.checkGoalCollisions();
         if (this.gameObjects.cameras.length > 1)
             this.update3DCameras();
     }
 
     private updateBallMovement(): void {
-        const step = 1/60;
         this.gameObjects.ball.position.x += this.ballVelocity.x;
         this.gameObjects.ball.position.z += this.ballVelocity.z;
     }
 
-    private checkWallCollisions(): void {
+    private checkWallCollisions(): boolean {
         const ballPosition = this.gameObjects.ball.position;
         
-        // Left wall collision
-        if (ballPosition.x <= GAME_CONFIG.wallBounds.minX + GAME_CONFIG.ballRadius) {
-            ballPosition.x = GAME_CONFIG.wallBounds.minX + GAME_CONFIG.ballRadius;
+        if (ballPosition.x <= this.wallMinX) {
+            ballPosition.x = this.wallMinX;
             this.ballVelocity.x = Math.abs(this.ballVelocity.x);
-            console.log("Ball hit top wall");
+            return true;
         }
         
-        // Right wall collision
-        if (ballPosition.x >= GAME_CONFIG.wallBounds.maxX - GAME_CONFIG.ballRadius) {
-            ballPosition.x = GAME_CONFIG.wallBounds.maxX - GAME_CONFIG.ballRadius;
+        if (ballPosition.x >= this.wallMaxX) {
+            ballPosition.x = this.wallMaxX;
             this.ballVelocity.x = -Math.abs(this.ballVelocity.x);
-            console.log("Ball hit bottom wall");
+            return true;
         }
+        return false;
     }
+
+    private checkPaddleCollisions(): boolean {
+        const ballPos = this.gameObjects.ball.position;
+        const ballRadius = GAME_CONFIG.ballRadius;
+        
+        // Check collision with left player (top of screen)
+        const leftPlayer = this.gameObjects.players.left;
+        const leftPlayerPos = leftPlayer.position;
+        
+        if (ballPos.z + ballRadius >= leftPlayerPos.z - this.halfPlayerDepth &&
+            ballPos.z - ballRadius <= leftPlayerPos.z + this.halfPlayerDepth &&
+            ballPos.x + ballRadius >= leftPlayerPos.x - this.halfPlayerWidth &&
+            ballPos.x - ballRadius <= leftPlayerPos.x + this.halfPlayerWidth) {
+            
+            this.ballVelocity.z = Math.abs(this.ballVelocity.z);
+            console.log("Ball hit left player");
+            return true;
+        }
+        
+        // Check collision with right player (bottom of screen)
+        const rightPlayer = this.gameObjects.players.right;
+        const rightPlayerPos = rightPlayer.position;
+        
+        if (ballPos.z + ballRadius >= rightPlayerPos.z - this.halfPlayerDepth &&
+            ballPos.z - ballRadius <= rightPlayerPos.z + this.halfPlayerDepth &&
+            ballPos.x + ballRadius >= rightPlayerPos.x - this.halfPlayerWidth &&
+            ballPos.x - ballRadius <= rightPlayerPos.x + this.halfPlayerWidth) {
+            
+            this.ballVelocity.z = -Math.abs(this.ballVelocity.z);
+            console.log("Ball hit right player");
+            return true;
+        }
+        
+        return false;
+    }
+
 
     private checkGoalCollisions(): void {
         const ballPosition = this.gameObjects.ball.position;
     
-        // Top goal (bottom player scores)
-        if (ballPosition.z <= GAME_CONFIG.goalBounds.topGoal) {
-            this.score.right++;
-            console.log(`Bottom player scores! Score: ${this.score.left} - ${this.score.right}`);
-            this.resetBall('right');
+        // Right player's goal (behind right player at top, negative Z)
+        if (ballPosition.z <= GAME_CONFIG.goalBounds.rightGoal) {
+            this.score.right++;  // Left player scores
+            console.log(`Right player scores! Score: ${this.score.left} - ${this.score.right}`);
+            this.resetBall(1);
         }
         
-        // Bottom goal (top player scores)
-        if (ballPosition.z >= GAME_CONFIG.goalBounds.bottomGoal) {
-            this.score.left++;
-            console.log(`Top player scores! Score: ${this.score.left} - ${this.score.right}`);
-            this.resetBall('left');
+        // Left player's goal (behind left player at bottom, positive Z)
+        if (ballPosition.z >= GAME_CONFIG.goalBounds.leftGoal) {
+            this.score.left++; // Right player scores
+            console.log(`Left player scores! Score: ${this.score.left} - ${this.score.right}`);
+            this.resetBall(-1);
         }
     }
 
-    private resetBall(serveDirection: 'left' | 'right'): void {
+    private resetBall(serveDirection: number): void {
         // Reset ball to center
         this.gameObjects.ball.position.x = 0;
         this.gameObjects.ball.position.z = 0;
