@@ -15,6 +15,8 @@ export class BabylonEngine {
 
     constructor(canvasId: string) {
         this.canvas = document.getElementById(canvasId) as HTMLCanvasElement;
+        if (!this.canvas)
+            throw new Error(`Canvas element not found`);
     }
 
     createEngine(): any {

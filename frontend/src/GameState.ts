@@ -10,7 +10,7 @@ import { hideOverlay, hidePauseDialog, showPauseDialog } from './styles.js';
 import { 
     disposeBabylon3D, pauseBabylon3D, resumeBabylon3D, 
     disposeBabylon2D, pauseBabylon2D, resumeBabylon2D 
-} from './game/GameManager.js';
+} from './game/EngineManager.js';
 
 class GameStateManager {
     private currentState: GameState = GameState.MENU;

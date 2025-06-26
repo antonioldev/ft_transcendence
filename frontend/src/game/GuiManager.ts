@@ -5,7 +5,7 @@ export class GUIManager {
     private scene: any;
     private engine: any;
     private advancedTexture: any;
-    private fpsUpdateFunction: (() => void) | null = null;
+    private fpsText: any = null;
 
     constructor(scene: any, engine: any) {
         this.scene = scene;
@@ -14,32 +14,28 @@ export class GUIManager {
     }
 
     createFPSDisplay(): void {
-        const fpsText = new BABYLON.GUI.TextBlock();
-        fpsText.text = "FPS: 0";
-        fpsText.color = "white";
-        fpsText.fontSize = 16;
-        fpsText.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
-        fpsText.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
-        fpsText.top = "1px";
-        fpsText.left = "-20px";
-        fpsText.width = "200px";
-        fpsText.height = "40px";
+        this.fpsText = new BABYLON.GUI.TextBlock();
+        this.fpsText.text = "FPS: 0";
+        this.fpsText.color = "white";
+        this.fpsText.fontSize = 16;
+        this.fpsText.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
+        this.fpsText.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
+        this.fpsText.top = "1px";
+        this.fpsText.left = "-20px";
+        this.fpsText.width = "200px";
+        this.fpsText.height = "40px";
         
-        this.advancedTexture.addControl(fpsText);
-        
-        this.fpsUpdateFunction = () => {
-            fpsText.text = "FPS: " + this.engine.getFps().toFixed(0);
-        };
+        this.advancedTexture.addControl(this.fpsText);
     }
 
     public updateFPS(): void {
-        if (this.fpsUpdateFunction) {
-            this.fpsUpdateFunction();
+        if (this.fpsText) {
+            this.fpsText.text = "FPS: " + this.engine.getFps().toFixed(0);
         }
     }
 
     dispose(): void {
         this.advancedTexture?.dispose();
-        this.fpsUpdateFunction = null;
+        this.fpsText = null;
     }
 }

@@ -1,6 +1,6 @@
 import { updateLanguageDisplay, previousLanguage, nextLanguage } from './translations.js';
 import { applyButtonStyles, applyLanguageStyles, applyTitleStyles, applyOverlayStyles, applyPauseDialogStyles, showOverlay, showPauseDialog } from './styles.js';
-import { initBabylon2D, initBabylon3D} from './game/GameManager.js';
+import { initBabylon2D, initBabylon3D} from './game/EngineManager.js';
 import { gameStateManager, GameState} from './GameState.js';
 
 
