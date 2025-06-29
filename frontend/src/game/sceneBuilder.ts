@@ -149,6 +149,18 @@ export function build2DScene(scene: any, engine: any): GameObjects {
 export function build3DScene(scene: any, engine: any): GameObjects {
     const camera1 = createCamera(scene, "camera1", getCamera3DPlayer1Position(), get3DCamera1Viewport(), false);
     const camera2 = createCamera(scene, "camera2", getCamera3DPlayer2Position(), get3DCamera2Viewport(), false);
+    // camera1.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
+
+    //     camera1.orthoTop = 45;
+    //     camera1.orthoBottom = -45;
+    //     camera1.orthoLeft = -45;
+    //     camera1.orthoRight = 45; 
+    // camera2.mode = BABYLON.Camera.
+    // camera2.lowerBetaLimit = Math.PI / 2;
+    // camera2.upperBetaLimit = Math.PI / 2;
+    // camera2.upperAlphaLimit = 0;
+    // camera2.lowerAlphaLimit = 0;
+    // camera2.lowerRadiusLimit = 300;
     scene.activeCameras = [camera1, camera2];
 
     const light = createLight(scene, "light1", new BABYLON.Vector3(1, 1, 0));

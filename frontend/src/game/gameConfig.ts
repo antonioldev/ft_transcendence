@@ -22,28 +22,24 @@ export const GAME_CONFIG = {
     
     // Camera settings
     camera2DHeight: 80,
-    
     camera3DHeight: 10,
     camera3DDistance: 20,
+
     followSpeed : 0.1,
     edgeBuffer : 13,
 
     // Ball settings
     ballRadius: 0.5,
     ballInitialSpeed : 0.2,
-    ballInitialVelocity: {
-        x: 0.2,
-        z: 0.15
-    },
-    ballMaxAngle: Math.PI / 4,
+    ballMaxAngle: Math.PI / 6,
 
     // Court boundaries (calculated from field dimensions)
-    courtBounds: {
-        minZ: -(fieldHeight / 2),      // Top wall
-        maxZ: fieldHeight / 2,         // Bottom wall  
-        minX: -(fieldWidth / 2),       // Left goal line
-        maxX: fieldWidth / 2           // Right goal line
-    },
+    // courtBounds: {
+    //     minZ: -(fieldHeight / 2),      // Top wall
+    //     maxZ: fieldHeight / 2,         // Bottom wall  
+    //     minX: -(fieldWidth / 2),       // Left goal line
+    //     maxX: fieldWidth / 2           // Right goal line
+    // },
     
     // Wall collision boundaries (accounting for ball radius)
     wallBounds: {
