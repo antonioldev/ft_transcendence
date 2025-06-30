@@ -58,8 +58,9 @@ export class GameLoopManager {
     }
 
     private updateBallMovement(): void {
-        this.gameObjects.ball.position.x += this.ballVelocity.x;
-        this.gameObjects.ball.position.z += this.ballVelocity.z;
+        const deltaTime = this.scene.getEngine().getDeltaTime() / 1000;
+        this.gameObjects.ball.position.x += this.ballVelocity.x * deltaTime * 60;
+        this.gameObjects.ball.position.z += this.ballVelocity.z * deltaTime * 60;
     }
 
     private checkWallCollisions(): boolean {

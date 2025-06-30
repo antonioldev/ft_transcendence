@@ -16,7 +16,7 @@ export const GAME_CONFIG = {
     // Player settings
     playerWidth: 8,
     playerHeight: 0.5,
-    playerDepth: 0.5,
+    playerDepth: 1.0,
     playerOffsetFromEdge: 2,
     playerSpeed: 0.5,
     
