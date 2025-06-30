@@ -2,6 +2,7 @@ declare var BABYLON: any;
 
 import { 
     GAME_CONFIG,
+    COLORS,
     getPlayerSize,
     getPlayerLeftPosition,
     getPlayerRightPosition,
@@ -26,6 +27,18 @@ export interface GameObjects {
     lights: any[];
 }
 
+interface Position {
+    x: number;
+    y: number;
+    z: number;
+}
+
+interface Size {
+    x: number;
+    y: number;
+    z: number;
+}
+
 function createMaterial(scene: any, name: string, color: any, is2D: boolean): any {
     const material = new BABYLON.StandardMaterial(name, scene);
     
@@ -43,7 +56,10 @@ function createCamera(scene: any, name: string, position: any, viewport: any, is
     const camera = new BABYLON.FreeCamera(name, position, scene);
     camera.setTarget(BABYLON.Vector3.Zero());
     camera.viewport = viewport;
-    if (is2D) camera.rotation.z = -(Math.PI / 2);
+    if (is2D) {
+         camera.rotation.z = -(Math.PI / 2);
+         camera.fov = 1.1;
+    }
     return camera;
 }
 
@@ -88,7 +104,7 @@ function createWalls(scene: any, name: string, fieldWidth: number, fieldHeight: 
     return walls;
 }
 
-function createPlayer(scene: any, name: string, position: any, size: any, color: any, is2D: boolean): any {
+function createPlayer(scene: any, name: string, position: Position, size: Size, color: any, is2D: boolean): any {
     const player = BABYLON.MeshBuilder.CreateBox(name, {width: size.x, height: size.y, depth: size.z}, scene);
     player.material = createMaterial(scene, name + "Material", color, is2D);
     player.position = position;
@@ -103,22 +119,22 @@ function createBall(scene: any, name: string, position: any, color: any, is2D: b
 }
 
 export function build2DScene(scene: any, engine: any): GameObjects {
-    scene.clearColor = BABYLON.Color3.Black();
+    //scene.clearColor = BABYLON.Color3.Black();
 
     const camera = createCamera(scene, "camera1", getCamera2DPosition(), get2DCameraViewport(), true);
     scene.activeCamera = camera;
 
     const light = createLight(scene, "light1", new BABYLON.Vector3(0, 1, 0));
     
-    const ground = createGround(scene, "ground", GAME_CONFIG.fieldWidth, GAME_CONFIG.fieldHeight, BABYLON.Color3.Black(), true);
+    const ground = createGround(scene, "ground", GAME_CONFIG.fieldWidth, GAME_CONFIG.fieldHeight, COLORS.field2D, true);
 
-    const walls = createWalls(scene, "walls", GAME_CONFIG.fieldWidth, GAME_CONFIG.fieldHeight, GAME_CONFIG.wallHeight, GAME_CONFIG.wallThickness, BABYLON.Color3.White(), true);
+    const walls = createWalls(scene, "walls", GAME_CONFIG.fieldWidth, GAME_CONFIG.fieldHeight, GAME_CONFIG.wallHeight, GAME_CONFIG.wallThickness, COLORS.walls2D, true);
     
-    const playerLeft = createPlayer(scene, "player1", getPlayerLeftPosition(), getPlayerSize(), BABYLON.Color3.Red(), true);
+    const playerLeft = createPlayer(scene, "player1", getPlayerLeftPosition(), getPlayerSize(), COLORS.player1_2D, true);
     
-    const playerRight = createPlayer(scene, "player2", getPlayerRightPosition(), getPlayerSize(), BABYLON.Color3.White(), true);
+    const playerRight = createPlayer(scene, "player2", getPlayerRightPosition(), getPlayerSize(), COLORS.player2_2D, true);
     
-    const ball = createBall(scene, "ball", getBallStartPosition(), BABYLON.Color3.White(), true);
+    const ball = createBall(scene, "ball", getBallStartPosition(), COLORS.ball2D, true);
 
     return {
         players: { left: playerLeft, right: playerRight },
@@ -133,19 +149,31 @@ export function build2DScene(scene: any, engine: any): GameObjects {
 export function build3DScene(scene: any, engine: any): GameObjects {
     const camera1 = createCamera(scene, "camera1", getCamera3DPlayer1Position(), get3DCamera1Viewport(), false);
     const camera2 = createCamera(scene, "camera2", getCamera3DPlayer2Position(), get3DCamera2Viewport(), false);
+    // camera1.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
+
+    //     camera1.orthoTop = 45;
+    //     camera1.orthoBottom = -45;
+    //     camera1.orthoLeft = -45;
+    //     camera1.orthoRight = 45; 
+    // camera2.mode = BABYLON.Camera.
+    // camera2.lowerBetaLimit = Math.PI / 2;
+    // camera2.upperBetaLimit = Math.PI / 2;
+    // camera2.upperAlphaLimit = 0;
+    // camera2.lowerAlphaLimit = 0;
+    // camera2.lowerRadiusLimit = 300;
     scene.activeCameras = [camera1, camera2];
 
     const light = createLight(scene, "light1", new BABYLON.Vector3(1, 1, 0));
 
-    const ground = createGround(scene, "ground", GAME_CONFIG.fieldWidth, GAME_CONFIG.fieldHeight, new BABYLON.Color3(0.4, 0.6, 0.4), false);
+    const ground = createGround(scene, "ground", GAME_CONFIG.fieldWidth, GAME_CONFIG.fieldHeight, COLORS.field3D, false);
 
-    const walls = createWalls(scene, "walls", GAME_CONFIG.fieldWidth, GAME_CONFIG.fieldHeight, GAME_CONFIG.wallHeight, GAME_CONFIG.wallThickness, new BABYLON.Color3(0.8, 0.8, 0.8), false);
+    const walls = createWalls(scene, "walls", GAME_CONFIG.fieldWidth, GAME_CONFIG.fieldHeight, GAME_CONFIG.wallHeight, GAME_CONFIG.wallThickness, COLORS.walls3D, false);
         
-    const playerLeft = createPlayer(scene, "player1", getPlayerLeftPosition(), getPlayerSize(), new BABYLON.Color3(0.89, 0.89, 0), false);
+    const playerLeft = createPlayer(scene, "player1", getPlayerLeftPosition(), getPlayerSize(), COLORS.player1_3D, false);
         
-    const playerRight = createPlayer(scene, "player2", getPlayerRightPosition(), getPlayerSize(), new BABYLON.Color3(1, 0, 0), false);
+    const playerRight = createPlayer(scene, "player2", getPlayerRightPosition(), getPlayerSize(), COLORS.player2_3D, false);
 
-    const ball = createBall(scene, "ball", getBallStartPosition(), new BABYLON.Color3(0.89, 0.89, 1), false);
+    const ball = createBall(scene, "ball", getBallStartPosition(), COLORS.ball3D, false);
 
     return {
         players: { left: playerLeft, right: playerRight },

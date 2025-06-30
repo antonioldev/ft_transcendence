@@ -15,13 +15,17 @@ export class BabylonEngine {
 
     constructor(canvasId: string) {
         this.canvas = document.getElementById(canvasId) as HTMLCanvasElement;
+        if (!this.canvas)
+            throw new Error(`Canvas element not found`);
     }
 
     createEngine(): any {
         this.engine = new BABYLON.Engine(this.canvas, true, { 
             preserveDrawingBuffer: true, 
             stencil: true, 
-            disableWebGL2Support: false 
+            disableWebGL2Support: false,
+            antialias: false,
+            powerPreference: "high-performance"
         });
         return this.engine;
     }

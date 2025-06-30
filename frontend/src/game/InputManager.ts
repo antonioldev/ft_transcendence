@@ -2,11 +2,21 @@ declare var BABYLON: any;
 
 import { GAME_CONFIG, getPlayerBoundaries } from "./gameConfig.js";
 
+interface PlayerControls {
+    left: number;
+    right: number;
+}
+  
+interface InputConfig {
+    playerLeft: PlayerControls;
+    playerRight: PlayerControls;
+}
+
 export class InputManager {
     private deviceSourceManager: any;
     private boundaries = getPlayerBoundaries();
     private players: {left: any, right: any} | null = null;
-    private inputConfig: any = null;
+    private inputConfig: InputConfig | null = null;
 
     constructor(scene: any) {
         this.deviceSourceManager = new BABYLON.DeviceSourceManager(scene.getEngine());
