@@ -1,4 +1,3 @@
-
 declare var BABYLON: any;
 
 import { GameObjects } from './sceneBuilder.js';

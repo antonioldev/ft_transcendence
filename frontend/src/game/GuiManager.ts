@@ -1,4 +1,3 @@
-// gui.ts - Single file for all GUI logic
 declare var BABYLON: any;
 
 export class GUIManager {

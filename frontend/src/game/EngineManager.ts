@@ -1,4 +1,3 @@
-// gameManager.ts - Single manager for both 2D and 3D
 import { BabylonEngine } from './BabylonEngine.js';
 
 class GameManager {
