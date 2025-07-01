@@ -4,16 +4,20 @@ FROM node:20-alpine
 # Sets up /app as the working directory for subsequent instructions
 WORKDIR /app
 
-# Dependency installation:
-COPY package* ./
+# Copy package files first (better for Docker layer caching)
+COPY package*.json ./
 
+# Install dependencies
 RUN npm install
 
-COPY . .
+# Copy source code
+COPY src/ ./src/
 
 EXPOSE 3000
 
-CMD ["node", "index.js"]
+ENV ADDRESS=0.0.0.0 PORT=3000
+
+CMD ["npm", "start"]
 
 # https://dev.to/code42cate/how-to-dockerize-and-deploy-fastify-apis-3f7i
 # https://fastify.dev/

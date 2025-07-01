@@ -1,0 +1,10 @@
+{
+  "name": "ft_transcendence-backend",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "fastify": "^4.24.3"
+  }
+}
