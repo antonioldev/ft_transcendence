@@ -2,6 +2,7 @@ import fastify, { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
 import pingRoute from './routes/pingRoute.js';
 import healthCheck from './routes/helthCheck.js';
 import helloWorld from './routes/helloword.js';
+import gameRoutes from './routes/gameRoutes.js'
 
 const {
     ADDRESS = '0.0.0.0',
@@ -16,6 +17,7 @@ const app: FastifyInstance = fastify({
 pingRoute(app);
 healthCheck(app);
 helloWorld(app);
+app.register(gameRoutes);
 
 const start = async (): Promise<void> => {
     try {
