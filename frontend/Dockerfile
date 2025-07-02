@@ -1,5 +1,5 @@
 # Build stage for TypeScript
-FROM node:20-alpine AS builder
+FROM node:alpine AS builder
 
 WORKDIR /app
 

@@ -1,5 +1,5 @@
 # Uses Node.js 20 on Alpine, providing a lightweight base image
-FROM node:20-alpine
+FROM node:alpine
 
 # Sets up /app as the working directory for subsequent instructions
 WORKDIR /app

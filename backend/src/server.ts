@@ -1,7 +1,7 @@
 import fastify, { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import pingRoute from './routes/pingRoute';
-import healthCheck from './routes/helthCheck';
-import helloWorld from './routes/helloword';
+import pingRoute from './routes/pingRoute.js';
+import healthCheck from './routes/helthCheck.js';
+import helloWorld from './routes/helloword.js';
 
 const {
     ADDRESS = '0.0.0.0',
