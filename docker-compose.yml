@@ -1,11 +1,23 @@
 services:
+## FRONTEND CONTAINER
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
     ports:
       - "8080:80"
+    container_name: transcendence-frontend
     depends_on:
       - backend
+## BACKEND CONTAINER
   backend:
-    build: ./backend
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
     ports:
       - "3000:3000"
+    volumes:
+      - ./backend/src:/app/src
+      - ./backend/package.json:/app/package.json
+    command: npm run dev
+    container_name: transcendence-backend

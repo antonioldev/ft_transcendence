@@ -2,6 +2,24 @@ NAME = transcendence
 FRONTEND_DIR = ./frontend
 BACKEND_DIR = ./backend
 
+################################################################################
+#################################   DEVELOPMENT  ###############################
+
+dev-up:
+	docker-compose -f docker-compose.yml up -d
+
+dev-down:
+	docker-compose -f docker-compose.yml down
+
+dev-logs:
+	docker-compose -f docker-compose.yml logs -f
+
+dev-fclean:
+	docker-compose -f docker-compose.yml down --rmi all
+
+dev-restart:
+	docker-compose -f docker-compose.yml restart
+
 #################################################################################
 #################################     BUILD     #################################
 
@@ -30,10 +48,10 @@ run: run-frontend run-backend
 #################################     STOP      #################################
 
 stop-frontend:
-	docker stop $(NAME)-frontend
+	-docker stop $(NAME)-frontend
 
 stop-backend:
-	docker stop $(NAME)-backend
+	-docker stop $(NAME)-backend
 
 stop: stop-frontend stop-backend
 
@@ -55,13 +73,15 @@ rmi-frontend:
 rmi-backend:
 	-docker rmi $(NAME)-backend
 
-fclean: stop clean rmi-frontend rmi-backend
+clean-previous:
+	docker image prune -f
+
+fclean: stop clean rmi-frontend rmi-backend clean-previous
 
 force-clean:
 	-docker stop $(NAME)-frontend $(NAME)-backend
 	-docker rm $(NAME)-frontend $(NAME)-backend
 	-docker rmi $(NAME)-frontend $(NAME)-backend
-
 
 #################################################################################
 #################################    REBUILD    #################################
@@ -89,3 +109,4 @@ logs: logs-frontend logs-backend
         stop stop-frontend stop-backend clean clean-frontend clean-backend \
         rmi-frontend rmi-backend fclean re re-frontend re-backend ps \
         logs logs-frontend logs-backend force-clean
+

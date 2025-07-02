@@ -1,6 +1,7 @@
 {
-  "name": "ft_transcendence-frontend",
+  "name": "transcendence-frontend",
   "version": "1.0.0",
+  "description": "Frontend for the pong game using Babylon.js",
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch"
@@ -10,5 +11,7 @@
   },
   "devDependencies": {
     "typescript": "^5.0.0"
-  }
+  },
+  "author": "Antonio Limotta",
+  "license": "MIT"
 }
