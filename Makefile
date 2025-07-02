@@ -92,6 +92,16 @@ re: stop clean build run
 
 
 #################################################################################
+#################################    UPDATES    #################################
+
+update-deps:
+	cd $(BACKEND_DIR) && npx npm-check-updates -u && npm install
+	cd $(FRONTEND_DIR) && npx npm-check-updates -u && npm install
+
+update: update-deps fclean build up
+
+
+#################################################################################
 #################################    STATUS     #################################
 
 ps:
