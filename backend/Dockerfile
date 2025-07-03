@@ -5,7 +5,7 @@ FROM node:alpine
 WORKDIR /app
 
 # Copy package files first (better for Docker layer caching)
-COPY package*.json ./
+COPY package*.json package-lock.json ./
 
 # Install dependencies
 RUN npm install
@@ -17,8 +17,6 @@ COPY tsconfig.json ./
 RUN npm run build
 
 EXPOSE 3000
-
-ENV ADDRESS=0.0.0.0 PORT=3000
 
 CMD ["npm", "start"]
 
