@@ -1,7 +1,6 @@
 import fastify, { FastifyInstance } from 'fastify';
 import pingRoute from './routes/pingRoute.js';
 import healthCheck from './routes/helthCheck.js';
-import helloWorld from './routes/helloword.js';
 import gameRoutes from './routes/gameRoutes.js';
 import config from './config/default.js';
 
@@ -19,7 +18,6 @@ if (config.debug === 'yes') {
 
 pingRoute(app);
 healthCheck(app);
-helloWorld(app);
 app.register(gameRoutes);
 
 const start = async (): Promise<void> => {

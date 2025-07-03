@@ -21,12 +21,11 @@ services:
       - "${BACKEND_PORT:-3000}:${BACKEND_PORT:-3000}"
     volumes:
       - ./backend/src:/app/src
-      - ./backend/package.json:/app/package.json
-      - ./backend/tsconfig.json:/app/tsconfig.json
-    environment:
-      - DEBUG=${DEBUG:-no}
-      - BACKEND_PORT=${BACKEND_PORT:-3000}
-      - BACKEND_HOST=${BACKEND_HOST:-0.0.0.0}
     env_file:
       - .env
     command: npm run dev
+    networks:
+      - app-network
+networks:
+  app-network:
+    driver: bridge
