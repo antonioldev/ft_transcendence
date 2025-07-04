@@ -1,12 +1,15 @@
-import fastify, { FastifyInstance } from 'fastify';
-import pingRoute from './routes/pingRoute.js';
+import Fastify from 'fastify';
 import healthCheck from './routes/helthCheck.js';
-import gameRoutes from './routes/gameRoutes.js';
+// import gameRoutes from './routes/gameRoutes.js';
+import websocketRoutes from './routes/webSocket.js';
 import config from './config/default.js';
+// import { error } from 'console';
 
-const app: FastifyInstance = fastify({
+const fastify = Fastify({
     logger: config.debug === 'yes' ? true : false
 });
+
+await fastify.register(import('@fastify/websocket'));
 
 if (config.debug === 'yes') {
     console.log('🐛 DEBUG MODE ENABLED');
@@ -16,26 +19,19 @@ if (config.debug === 'yes') {
     });
 }
 
-pingRoute(app);
-healthCheck(app);
-app.register(gameRoutes);
+healthCheck(fastify);
+fastify.register(websocketRoutes);
+// app.register(gameRoutes);
 
 const start = async (): Promise<void> => {
     try {
-        await app.listen({ 
+        await fastify.listen({ 
             port: config.server.port,
             host: config.server.host 
         });
         console.log(`Pong server ready on ${config.server.host}:${config.server.port}`);
-        
-        if (config.debug === 'yes') {
-            console.log('🐛 DEBUG MODE ENABLED');
-            console.log('🔍 Debug endpoints available:');
-            console.log(`  - Health: http://${config.server.host}:${config.server.port}/health`);
-            console.log(`  - Ping: http://${config.server.host}:${config.server.port}/ping`);
-        }
     } catch (err) {
-        app.log.error(err);
+        fastify.log.error(err);
         process.exit(1);
     }
 };

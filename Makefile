@@ -5,18 +5,14 @@ BACKEND_DIR = ./backend
 #################################################################################
 #################################     MAIN      #################################
 
-up:
+start:
 	docker-compose up -d
 
-start: up
-
-up-build:
+run:
 	docker-compose up --build -d
 
-down:
+stop:
 	docker-compose down
-
-stop: down
 
 build:
 	docker-compose build
