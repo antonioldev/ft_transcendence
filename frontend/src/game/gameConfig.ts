@@ -1,4 +1,5 @@
-declare var BABYLON: any;
+
+declare var BABYLON: any; //TODO need to find a way to keep one file for both back and front end
 
 const fieldWidth = 50;
 const fieldHeight = 100;
@@ -71,6 +72,12 @@ export const GAME_CONFIG = {
         playerRight: { left: 39, right: 37 }    // Left/Right arrows
     }  
 };
+
+
+
+// Add Babylon-specific configs
+// export { GAME_CONFIG };
+
 
 export const COLORS = {
     field2D: BABYLON.Color3.Black(),

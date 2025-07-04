@@ -9,7 +9,17 @@ const fastify = Fastify({
     logger: config.debug === 'yes' ? true : false
 });
 
-await fastify.register(import('@fastify/websocket'));
+await fastify.register(import('@fastify/websocket'), {
+	options: {
+		maxPayload: 1048576,
+		perMessageDeflate: false,
+		clientTracking: true,
+		maxConnections: 100,
+		// verifyClient: (info) => {
+		// 	return true;
+		// }
+	}
+});
 
 if (config.debug === 'yes') {
     console.log('🐛 DEBUG MODE ENABLED');
