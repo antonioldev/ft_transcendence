@@ -1,5 +1,5 @@
 # Uses Node.js 20 on Alpine, Alpine is used toproviding a lightweight base image
-FROM node:20-alpine AS builder
+FROM node:alpine AS builder
 
 # Sets up /app as the working directory
 WORKDIR /app
@@ -23,7 +23,7 @@ RUN npm run build
 
 # Use a smaller image for the final stage to reduce the image size
 # test show reduction from 228MB to 178MB
-FROM node:20-alpine AS runner
+FROM node:alpine AS runner
 
 # Set /app as the working directory
 WORKDIR /app
