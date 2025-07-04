@@ -1,6 +1,6 @@
 import { Player, Ball, AIBot } from './sprites';
 import { Clock } from './utils';
-import { RIGHT_PADDLE, LEFT_PADDLE} from './settings';
+import { LEFT_PADDLE, RIGHT_PADDLE } from './gameConfig.js';
 import { PlayerInput, GameState } from './types';
 
 

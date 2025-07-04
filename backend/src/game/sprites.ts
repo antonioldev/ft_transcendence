@@ -1,6 +1,7 @@
 import { Rect } from './utils';
-import { WINDOW_WIDTH, WINDOW_HEIGHT, PADDLE_HEIGHT, PADDLE_WIDTH, BALL, 
-	BALL_SIZE, RIGHT_PADDLE, LEFT_PADDLE, POS, SPEED, START_DELAY} from './settings';
+
+import { GAME_CONFIG, getBallStartPosition, getPlayerLeftPosition, 
+         getPlayerRightPosition, LEFT_PADDLE, RIGHT_PADDLE } from './gameConfig.js';
 
 export abstract class Paddle {
 	side: number;
@@ -11,23 +12,18 @@ export abstract class Paddle {
 
 	constructor(side: number) {
 		this.side = side;
+		const position = side === LEFT_PADDLE ? getPlayerLeftPosition() : getPlayerRightPosition();
 		this.rect = new Rect(
-			POS[this.side][0],
-			POS[this.side][1],
-			PADDLE_WIDTH,
-			PADDLE_HEIGHT
+			position.x,
+			position.z,
+			GAME_CONFIG.playerWidth,
+			GAME_CONFIG.playerDepth
 		);
 		this.oldRect = this.rect.instance();
 	}
 
 	move(dt: number, dy: number): void {
 		this.rect.cy += dy * this.speed * dt;
-
-		// clamp top and bottom (maybe don't need as clients will handle)
-		if (this.rect.top < 0)
-			this.rect.top = 0;
-		else if (this.rect.bottom > WINDOW_HEIGHT)
-			this.rect.bottom = WINDOW_HEIGHT;
 	}
 
 	cacheRect() {
@@ -36,7 +32,7 @@ export abstract class Paddle {
 }
 
 export class Player extends Paddle {
-	speed: number = SPEED['player'];
+	speed: number = GAME_CONFIG.playerSpeed;
 
 	constructor(side: number) {
 		super(side);
@@ -44,10 +40,10 @@ export class Player extends Paddle {
 }
 
 export class AIBot extends Paddle {
-	speed: number = SPEED['aibot'];
+	speed: number = GAME_CONFIG.playerSpeed;
 	direction: number = 0;
 	protected _view_timer: number = 0;
-	protected _target_y = POS[BALL][1];
+	protected _target_y = getBallStartPosition().z;
 	ball: Ball;
 	
 	constructor(side: number, ball: Ball) {
@@ -56,23 +52,23 @@ export class AIBot extends Paddle {
 	}
 
 	protected _predict_intercept_y(): number {
-		let r: number     = BALL_SIZE / 2
+		let r: number     = GAME_CONFIG.ballRadius
         let x0: number    = this.ball.rect.centerx
         let y0: number    = this.ball.rect.centery - r          // adj for ball size
         let vx: number    = this.ball.direction[0] * this.ball.speed
         let vy: number    = this.ball.direction[1] * this.ball.speed
-        let H_adj: number = WINDOW_HEIGHT - 2 * r               // adj for ball size
+        let H_adj: number = GAME_CONFIG.fieldHeight - 2 * r               // adj for ball size
 
 		let x_ai: number;
 		let x_opp: number;
 		let t: number;
 
 		if (vx == 0) {
-            return WINDOW_HEIGHT / 2
+            return GAME_CONFIG.fieldHeight / 2
 		}
 
 		x_ai  = this.side ? this.rect.left - r : this.rect.right + r;
-		x_opp = this.side ? (PADDLE_WIDTH + r) : WINDOW_WIDTH - (PADDLE_WIDTH + r);
+		x_opp = this.side ? (GAME_CONFIG.playerWidth + r) : GAME_CONFIG.fieldWidth - (GAME_CONFIG.playerWidth + r);
 
         if (vx > 0) {                                  // ball moving towards bot
             t = Math.abs((x_ai - x0) / vx)  
@@ -107,14 +103,15 @@ export class Ball {
 	rect: Rect;
 	oldRect: Rect;
 	direction: [number, number];
-	speed = SPEED.ball;
+	speed = GAME_CONFIG.ballInitialSpeed;
 	speedModifier = 0;
 	players: (Player)[];
 	startTime: number;
 	updateScore: (scoringPlayer: number) => void;
 
 	constructor(players: any[], updateScoreCallback: (side: number) => void) {
-		this.rect = new Rect(...POS[2], BALL_SIZE, BALL_SIZE);
+		const ballPos = getBallStartPosition();
+		this.rect = new Rect(ballPos.x, ballPos.z, GAME_CONFIG.ballRadius * 2, GAME_CONFIG.ballRadius * 2);
 		this.oldRect = this.rect.instance();
 		this.players = players;
 		this.updateScore = updateScoreCallback;
@@ -163,31 +160,34 @@ export class Ball {
 	}
 
 	wallCollision(): void {
-		if (this.rect.top <= 0) {
-			this.rect.top = 0;
-			this.direction[1] *= -1;
+		if (this.rect.top <= GAME_CONFIG.wallBounds.minX) {
+			this.rect.top = GAME_CONFIG.wallBounds.minX;
+			this.direction[0] *= -1; // Note: using index 0 for X direction
 		}
-		if (this.rect.bottom >= WINDOW_HEIGHT) {
-			this.rect.bottom = WINDOW_HEIGHT;
-			this.direction[1] *= -1;
+		if (this.rect.bottom >= GAME_CONFIG.wallBounds.maxX) {
+			this.rect.bottom = GAME_CONFIG.wallBounds.maxX;
+			this.direction[0] *= -1;
 		}
-		if (this.rect.right >= WINDOW_WIDTH || this.rect.left <= 0) {
-			const scorer = this.rect.cx < WINDOW_WIDTH / 2 ? RIGHT_PADDLE : LEFT_PADDLE;
+		
+		// Goal detection
+		if (this.rect.right >= GAME_CONFIG.goalBounds.leftGoal || this.rect.left <= GAME_CONFIG.goalBounds.rightGoal) {
+			const scorer = this.rect.cy < 0 ? RIGHT_PADDLE : LEFT_PADDLE;
 			this.updateScore(scorer);
 			this.reset();
 		}
 	}
 
 	reset(): void {
-		this.rect.cx = POS[BALL][0];
-		this.rect.cy = POS[BALL][1];
+		const ballPos = getBallStartPosition();
+		this.rect.cx = ballPos.x;
+		this.rect.cy = ballPos.z;
 		this.direction = this.randomDirection();
 		this.startTime = performance.now();
 	}
 
 	private delayTimer(): void {
 		const elapsed = (performance.now() - this.startTime);
-		this.speedModifier = elapsed >= START_DELAY ? 1 : 0;
+		this.speedModifier = elapsed >= GAME_CONFIG.startDelay ? 1 : 0;
 	}
 
 	update(dt: number): void {

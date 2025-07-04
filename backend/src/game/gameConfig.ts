@@ -60,8 +60,14 @@ export const GAME_CONFIG = {
     input3D: {
         playerLeft: { left: 65, right: 68 },    // A/D keys  
         playerRight: { left: 39, right: 37 }    // Left/Right arrows
-    }
+    },
+    // Timing
+    startDelay: 1.0,
 }
+
+export const LEFT_PADDLE = 0;
+export const RIGHT_PADDLE = 1;
+export const BALL = 2;
 
 export interface Position {
     x: number;
