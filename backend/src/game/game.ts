@@ -101,8 +101,9 @@ export class SinglePlayer extends Game {
 
 	constructor(id: string, broadcast_callback: (state: GameState) => Promise<void>) {
 		super(id, broadcast_callback);
-		this.players = [new Player(LEFT_PADDLE), new AIBot(RIGHT_PADDLE, this.ball)];
+		this.players = [new Player(LEFT_PADDLE), null as any];
 		this._init_ball();
+		this.players[RIGHT_PADDLE] = new AIBot(RIGHT_PADDLE, this.ball);
 	}
 	protected _handle_input(dt: number) {
 		this._process_queue(dt);
