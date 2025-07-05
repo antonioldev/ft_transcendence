@@ -1,5 +1,5 @@
 import { SinglePlayer, TwoPlayer } from '../game/game';
-import { LEFT_PADDLE, RIGHT_PADDLE} from '../game/settings';
+import { LEFT_PADDLE, RIGHT_PADDLE} from '../game/gameConfig';
 import { Client } from './client';
 import { GameState } from '../game/types';
 
@@ -45,11 +45,17 @@ export class GameSession {
 		}
 	}
 
-	async broadcast_callback(state: GameState): Promise<void> {
+	// async broadcast_callback(state: GameState): Promise<void> {
+	 broadcast_callback = async (state: GameState): Promise<void> => {
+		const message = {
+			type: 'game_state',
+			state: state
+		};
 		let deleted_clients: (Client)[] = [];
 		for (const client of this.clients) {
 			try {
-				await client.websocket.send(JSON.stringify({state}));
+				// await client.websocket.send(JSON.stringify({state}));
+				await client.websocket.send(JSON.stringify(message));
 			}
 			catch { 
 				deleted_clients.push(client);
