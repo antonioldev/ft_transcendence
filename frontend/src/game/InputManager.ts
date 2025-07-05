@@ -17,9 +17,14 @@ export class InputManager {
     private boundaries = getPlayerBoundaries();
     private players: {left: any, right: any} | null = null;
     private inputConfig: InputConfig | null = null;
+    private networkCallback: ((side: number, direction: 'left' | 'right' | 'stop') => void) | null = null;
 
     constructor(scene: any) {
         this.deviceSourceManager = new BABYLON.DeviceSourceManager(scene.getEngine());
+    }
+
+    setNetworkCallback(callback: (side: number, direction: 'left' | 'right' | 'stop') => void): void {
+        this.networkCallback = callback;
     }
 
     setupControls(players: {left: any, right: any}, gameMode: string): void {
@@ -34,36 +39,65 @@ export class InputManager {
         const keyboardSource = this.deviceSourceManager.getDeviceSource(BABYLON.DeviceType.Keyboard);
         if (keyboardSource && this.players && this.inputConfig) {
             this.handleInput(keyboardSource, this.players, this.inputConfig);
+            // this.handleInput(keyboardSource, this.players, this.inputConfig);
         }
     }
 
     private handleInput(keyboardSource: any, players: any, input: any): void {
-        // Player Left
+    // Player Left (side 0)
         if (keyboardSource.getInput(input.playerLeft.left) === 1) {
-            this.moveLeft(players.left);
+            if (players.left.position.x > this.boundaries.left) {
+                this.networkCallback?.(0, 'left');  // Only send to server
+            }
         } else if (keyboardSource.getInput(input.playerLeft.right) === 1) {
-            this.moveRight(players.left);
+            if (players.left.position.x < this.boundaries.right) {
+                this.networkCallback?.(0, 'right');  // Only send to server
+            }
+        } else {
+            this.networkCallback?.(0, 'stop');
         }
 
-        // Player Right  
+        // Player Right (side 1) - for two player local
         if (keyboardSource.getInput(input.playerRight.left) === 1) {
-            this.moveLeft(players.right);
+            if (players.right.position.x > this.boundaries.left) {
+                this.networkCallback?.(1, 'left');
+            }
         } else if (keyboardSource.getInput(input.playerRight.right) === 1) {
-            this.moveRight(players.right);
+            if (players.right.position.x < this.boundaries.right) {
+                this.networkCallback?.(1, 'right');
+            }
+        } else {
+            this.networkCallback?.(1, 'stop');
         }
     }
 
-    private moveLeft(player: any): void {
-        if (player.position.x > this.boundaries.left) {
-            player.position.x -= GAME_CONFIG.playerSpeed;
-        }
-    }
+    // private handleInput(keyboardSource: any, players: any, input: any): void {
+    //     // Player Left
+    //     if (keyboardSource.getInput(input.playerLeft.left) === 1) {
+    //         this.moveLeft(players.left);
+    //     } else if (keyboardSource.getInput(input.playerLeft.right) === 1) {
+    //         this.moveRight(players.left);
+    //     }
 
-    private moveRight(player: any): void {
-        if (player.position.x < this.boundaries.right) {
-            player.position.x += GAME_CONFIG.playerSpeed;
-        }
-    }
+    //     // Player Right  
+    //     if (keyboardSource.getInput(input.playerRight.left) === 1) {
+    //         this.moveLeft(players.right);
+    //     } else if (keyboardSource.getInput(input.playerRight.right) === 1) {
+    //         this.moveRight(players.right);
+    //     }
+    // }
+
+    // private moveLeft(player: any): void {
+    //     if (player.position.x > this.boundaries.left) {
+    //         player.position.x -= GAME_CONFIG.playerSpeed;
+    //     }
+    // }
+
+    // private moveRight(player: any): void {
+    //     if (player.position.x < this.boundaries.right) {
+    //         player.position.x += GAME_CONFIG.playerSpeed;
+    //     }
+    // }
 
     getFollowTarget(player: any) {
         const followLimit = GAME_CONFIG.fieldBoundary - GAME_CONFIG.edgeBuffer;

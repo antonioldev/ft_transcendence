@@ -68,11 +68,11 @@ abstract class Game {
 
 	get_state(): GameState {
 		return {
-			"paddle_left": {
+			"paddleLeft": {
 				"y":     this.players[LEFT_PADDLE].rect.centery,
 				"score": this.players[LEFT_PADDLE].score,
 			},
-			"paddle_right": {
+			"paddleRight": {
 				"y":     this.players[RIGHT_PADDLE].rect.centery,
 				"score": this.players[RIGHT_PADDLE].score,
 			},

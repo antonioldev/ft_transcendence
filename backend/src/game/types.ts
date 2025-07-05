@@ -6,8 +6,8 @@ export type PlayerInput = {
 }
 
 export type GameState = {
-	paddle_left: {y: number, score: number};
-	paddle_right: {y: number, score: number};
+	paddleLeft: {y: number, score: number};
+	paddleRight: {y: number, score: number};
 	ball: {x: number, y: number}
 }
 

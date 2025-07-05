@@ -44,11 +44,28 @@ class GameManager {
         this.engine?.dispose();
         this.engine = null;
     }
+
+    startSinglePlayer(): void {
+        if (this.engine) {
+            this.engine.startSinglePlayer();
+        }
+    }
+
+    startTwoPlayerLocal(): void {
+        if (this.engine) {
+            this.engine.startTwoPlayerLocal();
+        }
+}
 }
 
 // Export instances
 export const game2D = new GameManager();
 export const game3D = new GameManager();
+
+export const startSinglePlayer2D = () => game2D.startSinglePlayer();
+export const startSinglePlayer3D = () => game3D.startSinglePlayer();
+export const startTwoPlayerLocal2D = () => game2D.startTwoPlayerLocal();
+export const startTwoPlayerLocal3D = () => game3D.startTwoPlayerLocal();
 
 // Convenience functions
 export const initBabylon2D = () => game2D.init("game-canvas-2d", "2D");

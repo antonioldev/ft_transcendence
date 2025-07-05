@@ -3,13 +3,15 @@ declare var BABYLON: any;
 import { build2DScene, build3DScene } from './sceneBuilder.js';
 import { InputManager } from './InputManager.js';
 import { GUIManager } from './GuiManager.js';
-import { GameLoopManager } from './GameLoopManager.js';
+// import { GameLoopManager } from './GameLoopManager.js';
+import { NetworkGameManager } from './NetworkGameManager.js';
 
 export class BabylonEngine {
     private engine: any = null;
     private scene: any = null;
     private canvas: HTMLCanvasElement | null = null;
-    private gameLoopManager: GameLoopManager | null = null;
+    // private gameLoopManager: GameLoopManager | null = null;
+    private networkGameManager: NetworkGameManager | null = null;
     private inputManager: InputManager | null = null;
     private guiManager: GUIManager | null = null;
 
@@ -67,9 +69,13 @@ export class BabylonEngine {
             this.engine.stopRenderLoop();
         
         // Dispose managers
-        if (this.gameLoopManager) {
-            this.gameLoopManager.dispose();
-            this.gameLoopManager = null;
+        // if (this.gameLoopManager) {
+        //     this.gameLoopManager.dispose();
+        //     this.gameLoopManager = null;
+        // }
+        if (this.networkGameManager) {
+            this.networkGameManager.dispose();
+            this.networkGameManager = null;
         }
         
         if (this.guiManager) {
@@ -116,8 +122,9 @@ export class BabylonEngine {
         this.guiManager = new GUIManager(scene, this.engine);
         this.guiManager.createFPSDisplay();
         
-        this.gameLoopManager = new GameLoopManager(scene, gameObjects, this.inputManager, this.guiManager);
-        this.gameLoopManager.start();
+        // this.gameLoopManager = new GameLoopManager(scene, gameObjects, this.inputManager, this.guiManager);
+        // this.gameLoopManager.start();
+        this.networkGameManager = new NetworkGameManager(scene, gameObjects, this.inputManager, this.guiManager);
         
         this.scene = scene;
         return scene;
@@ -130,24 +137,16 @@ export class BabylonEngine {
     create3DScene(): any {
         return this.createScene("3D");
     }
-}
 
-// var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
-// var inputChanged = new BABYLON.GUI.TextBlock();
-// inputChanged.text = "Press keys";
-// inputChanged.color = "white";
-// inputChanged.fontSize = 24;
-// inputChanged.verticalAlignment = BABYLON.GUI.TextBlock.VERTICAL_ALIGNMENT_CENTER;
-// inputChanged.horizontalAlignment = BABYLON.GUI.TextBlock.HORIZONTAL_ALIGNMENT_CENTER;
-// inputChanged.width = 1;
-// inputChanged.height = .3;
-// advancedTexture.addControl(inputChanged);
-// const deviceSourceManager = new BABYLON.DeviceSourceManager(scene.getEngine());
-// deviceSourceManager.onDeviceConnectedObservable.add((deviceSource: any) => {
-// // If Keyboard, add an Observer
-// if (deviceSource.deviceType === BABYLON.DeviceType.Keyboard) {
-//     deviceSource.onInputChangedObservable.add((eventData: any) => {
-//         console.log(`Key event - Device: ${BABYLON.DeviceType[deviceSource.deviceType]}, Input Index: ${eventData.inputIndex}`);
-//         });
-//     }
-// });
+    startSinglePlayer(): void {
+        if (this.networkGameManager) {
+            this.networkGameManager.startSinglePlayer();
+        }
+    }
+
+    startTwoPlayerLocal(): void {
+        if (this.networkGameManager) {
+            this.networkGameManager.startTwoPlayerLocal();
+        }
+    }
+}
