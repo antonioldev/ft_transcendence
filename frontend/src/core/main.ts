@@ -1,10 +1,8 @@
-import { updateLanguageDisplay, previousLanguage, nextLanguage } from './translations.js';
-import { applyButtonStyles, applyLanguageStyles, applyTitleStyles, applyOverlayStyles, applyPauseDialogStyles, showOverlay, showPauseDialog } from './styles.js';
-import { initAndStartTwoPlayerLocal2D, initAndStartTwoPlayerLocal3D } from './game/EngineManager.js';
-import { gameStateManager, GameState} from './GameState.js';
-
-
-console.log("Typescript is working!")
+import { updateLanguageDisplay, previousLanguage, nextLanguage } from '../ui/translations.js';
+import { applyButtonStyles, applyLanguageStyles, applyTitleStyles, applyOverlayStyles, applyPauseDialogStyles, showOverlay, showPauseDialog } from '../ui/styles.js';
+import { init2D, init3D } from '../engine/GameEngine.js';
+import { GameState } from './constants.js';
+import { gameStateManager} from './GameState.js';
 
 function loadPage() {
     applyTitleStyles();
@@ -46,30 +44,15 @@ const backBtn = document.getElementById('back');
 const forwardBtn = document.getElementById('forward');
 
 play2D?.addEventListener('click', async function(): Promise<void> {
-    console.log("Play2D clicked");
     showOverlay('game-2d');
     gameStateManager.setState(GameState.PLAYING_2D);
-
-    setTimeout(async () => {
-        // await initBabylon2D();
-        console.log("Starting 2D game initialization...");
-        await initAndStartTwoPlayerLocal2D();
-        console.log("2D game started!");
-    }, 100);
+    setTimeout(() => init2D(), 100);
 });
 
 play3D?.addEventListener('click', async function(): Promise<void> {
-    console.log("Opening Immersive Mode");
     showOverlay('game-3d');
     gameStateManager.setState(GameState.PLAYING_3D);
-
-    // Wait a moment for overlay to show, then start Babylon
-    setTimeout(async () => {
-        // await initBabylon3D();
-        console.log("Starting 3D game initialization...");
-        await initAndStartTwoPlayerLocal3D();
-        console.log("3D game started!");//TODO choose
-    }, 100);
+    setTimeout(() => init3D(), 100);
 });
 
 backBtn?.addEventListener('click', previousLanguage);

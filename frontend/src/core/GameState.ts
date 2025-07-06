@@ -1,16 +1,6 @@
-export enum GameState {
-    MENU = 'menu',
-    PLAYING_2D = 'playing_2d',
-    PLAYING_3D = 'playing_3d',
-    PAUSED_2D = 'paused_2d',
-    PAUSED_3D = 'paused_3d'
-}
-
-import { hideOverlay, hidePauseDialog, showPauseDialog } from './styles.js';
-import { 
-    disposeBabylon3D, pauseBabylon3D, resumeBabylon3D, 
-    disposeBabylon2D, pauseBabylon2D, resumeBabylon2D 
-} from './game/EngineManager.js';
+import { hideOverlay, hidePauseDialog, showPauseDialog } from '../ui/styles.js';
+import { engine2D, engine3D } from '../engine/GameEngine.js';
+import { GameState } from './constants.js';
 
 class GameStateManager {
     private currentState: GameState = GameState.MENU;
@@ -26,7 +16,6 @@ class GameStateManager {
     }
 
     setState(newState: GameState): void {
-        console.log(`Game state: ${this.currentState} -> ${newState}`);
         this.previousState = this.currentState;
         this.currentState = newState;
     }
@@ -51,11 +40,11 @@ class GameStateManager {
         if (this.currentState === GameState.PLAYING_2D) {
             this.setState(GameState.PAUSED_2D);
             showPauseDialog('pause-dialog-2d');
-            pauseBabylon2D();
+            engine2D.pause();
         } else if (this.currentState === GameState.PLAYING_3D) {
             this.setState(GameState.PAUSED_3D);
             showPauseDialog('pause-dialog-3d');
-            pauseBabylon3D();
+            engine3D.pause();
         }
     }
 
@@ -63,23 +52,21 @@ class GameStateManager {
         if (this.currentState === GameState.PAUSED_2D) {
             this.setState(GameState.PLAYING_2D);
             hidePauseDialog('pause-dialog-2d');
-            resumeBabylon2D();
+            engine2D.resume();
         } else if (this.currentState === GameState.PAUSED_3D) {
             this.setState(GameState.PLAYING_3D);
             hidePauseDialog('pause-dialog-3d');
-            resumeBabylon3D();
+            engine3D.resume();
         }
     }
 
     exitToMenu(): void {
-        console.log("Exiting to menu...");
-
         if (this.currentState === GameState.PAUSED_2D) {
-            disposeBabylon2D();
+            engine2D.dispose();
             hideOverlay('game-2d');
             hidePauseDialog('pause-dialog-2d');
         } else if (this.currentState === GameState.PAUSED_3D) {
-            disposeBabylon3D();
+            engine3D.dispose();
             hideOverlay('game-3d');
             hidePauseDialog('pause-dialog-3d');
         }

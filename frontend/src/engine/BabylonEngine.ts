@@ -1,16 +1,15 @@
 declare var BABYLON: any;
 
 import { build2DScene, build3DScene } from './sceneBuilder.js';
-import { InputManager } from './InputManager.js';
-import { GUIManager } from './GuiManager.js';
-// import { GameLoopManager } from './GameLoopManager.js';
-import { NetworkGameManager } from './NetworkGameManager.js';
+import { InputManager } from '../game/InputManager.js';
+import { GUIManager } from '../game/GuiManager.js';
+import { NetworkGameManager } from '../game/NetworkGameManager.js';
+import { ViewMode } from '../core/constants.js';
 
 export class BabylonEngine {
     private engine: any = null;
     private scene: any = null;
     private canvas: HTMLCanvasElement | null = null;
-    // private gameLoopManager: GameLoopManager | null = null;
     private networkGameManager: NetworkGameManager | null = null;
     private inputManager: InputManager | null = null;
     private guiManager: GUIManager | null = null;
@@ -50,29 +49,21 @@ export class BabylonEngine {
     pause(): void {
         if (this.engine) {
             this.engine.stopRenderLoop();
-            console.log("Babylon render loop paused");
         }
     }
 
     resume(): void {
         if (this.engine && this.scene) {
             this.startRenderLoop();
-            console.log("Babylon render loop resumed");
         }
     }
 
     dispose(): void {
-        console.log("Disposing Babylon 3D scene...");
         
         // Stop render loop
         if (this.engine)
             this.engine.stopRenderLoop();
-        
-        // Dispose managers
-        // if (this.gameLoopManager) {
-        //     this.gameLoopManager.dispose();
-        //     this.gameLoopManager = null;
-        // }
+
         if (this.networkGameManager) {
             this.networkGameManager.dispose();
             this.networkGameManager = null;
@@ -101,29 +92,25 @@ export class BabylonEngine {
         }
         
         this.canvas = null;
-        
-        console.log("Babylon 3D scene disposed.");
     }
 
-    private createScene(mode: string): any {
+    private createScene(mode: ViewMode): any {
         const scene = new BABYLON.Scene(this.engine);
-        
+
         // Build scene based on mode
         let gameObjects;
-        if (mode === "2D")
+        if (mode === ViewMode.MODE_2D)
             gameObjects = build2DScene(scene, this.engine)
         else
             gameObjects = build3DScene(scene, this.engine)
-        
+
         // Setup managers (same for both modes)
         this.inputManager = new InputManager(scene);
         this.inputManager.setupControls(gameObjects.players, mode);
-        
+
         this.guiManager = new GUIManager(scene, this.engine);
         this.guiManager.createFPSDisplay();
-        
-        // this.gameLoopManager = new GameLoopManager(scene, gameObjects, this.inputManager, this.guiManager);
-        // this.gameLoopManager.start();
+
         this.networkGameManager = new NetworkGameManager(scene, gameObjects, this.inputManager, this.guiManager);
         
         this.scene = scene;
@@ -131,11 +118,11 @@ export class BabylonEngine {
     }
 
     create2DScene(): any {
-        return this.createScene("2D");
+        return this.createScene(ViewMode.MODE_2D);
     }
 
     create3DScene(): any {
-        return this.createScene("3D");
+        return this.createScene(ViewMode.MODE_3D);
     }
 
     startSinglePlayer(): void {

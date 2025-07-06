@@ -1,6 +1,8 @@
+import { MessageType, GameMode, Direction } from './constants.js';
+
 export type PlayerInput = {
 	id: string;
-	type: string;
+	type: MessageType.PLAYER_INPUT;
 	side: number;
 	dx: number;
 }
@@ -12,15 +14,15 @@ export type GameState = {
 }
 
 export type ClientMessage = {
-	type: 'join_game' | 'player_input';
-	gameMode?: 'singlePlayer' | 'two_player_remote';
-	side?: number;
-	direction?: 'left' | 'right' | 'stop';
+	type: MessageType;
+    gameMode?: GameMode;
+    side?: number;
+    direction?: Direction;
 }
 
 export type ServerMessage = {
-	type: 'game_state' | 'side_assignment' | 'game_started' | 'error';
-	state?: GameState;
-	side?: number;
-	message?: string;
+	type: MessageType;
+    state?: GameState;
+    side?: number;
+    message?: string;
 }

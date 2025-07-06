@@ -79,11 +79,9 @@ export function updateLanguageDisplay(): void {
 export function previousLanguage() {
     currentLanguageIndex = (currentLanguageIndex - 1 + languages.length) % languages.length;
     updateLanguageDisplay();
-    console.log(`Language changed to: ${languages[currentLanguageIndex]}`);
 }
 
 export function nextLanguage() {
     currentLanguageIndex = (currentLanguageIndex + 1) % languages.length;
     updateLanguageDisplay();
-    console.log(`Language changed to: ${languages[currentLanguageIndex]}`);
 }

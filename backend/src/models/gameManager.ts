@@ -1,11 +1,12 @@
-import { GameSession } from './gameSession.js';
+import { GameSession } from '../network/gameSession.js';
 import { Client } from './client.js';
+import { GameMode } from '../core/constants.js';
 
 class GameManager {
     private games: Map<string, GameSession> = new Map();
     private waitingPlayers: Client[] = [];
 
-    createGame(mode: string, client: Client): string {
+    createGame(mode: GameMode, client: Client): string {
         const gameId = `game_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         const gameSession = new GameSession(mode, gameId);
 
@@ -25,9 +26,9 @@ class GameManager {
         return false;
     }
 
-    findOrCreateGame(mode: string, client: Client): string {
+    findOrCreateGame(mode: GameMode, client: Client): string {
         //For single player, just create a game
-        if (mode === 'single_player') {
+        if (mode === GameMode.SINGLE_PLAYER) {
             return this.createGame(mode, client);
         }
 

@@ -2,6 +2,7 @@ import { Rect } from './utils';
 
 import { GAME_CONFIG, getBallStartPosition, getPlayerLeftPosition, 
          getPlayerRightPosition, LEFT_PADDLE, RIGHT_PADDLE } from './gameConfig.js';
+import { CollisionDirection } from './constants.js'
 
 export abstract class Paddle {
 	side: number;
@@ -23,7 +24,7 @@ export abstract class Paddle {
 	}
 
 	move(dt: number, dx: number): void {
-		const deltaSeconds = dt / 1000;//TODO shall we do?
+		const deltaSeconds = dt / 1000;
 		this.rect.x += dx * this.speed * deltaSeconds;
 	}
 
@@ -86,18 +87,6 @@ export class AIBot extends Paddle {
 		return target_y + r;
 	}
 
-	// update(dt: number): void {
-	// 	this._view_timer += dt;
-	// 	if (this._view_timer >= 1.0) {
-	// 		this._target_y   = this._predict_intercept_y()
-	// 		this._view_timer = 0.0
-	// 	}
-	// 	if (Math.abs(this.rect.centery - this._target_y) < 5) {   // dead-zone, avoids shaking
-	// 		return ;
-	// 	}
-	// 	const dy = this.rect.centery < this._target_y ? 1: -1;
-	// 	this.move(dt, dy) //TODO remove
-	// }
 	update(dt: number): void {
 		this._view_timer += dt;
 		if (this._view_timer >= 1.0) {
@@ -141,16 +130,16 @@ export class Ball {
 	move(dt: number): void {
 		const deltaSeconds = dt / 1000;
 		this.rect.x += this.direction[0] * this.speed * deltaSeconds * this.speedModifier;
-		this.collision('horizontal');
+		this.collision(CollisionDirection.HORIZONTAL);
 		this.rect.y += this.direction[1] * this.speed * deltaSeconds * this.speedModifier;
-		this.collision('vertical');
+		this.collision(CollisionDirection.VERTICAL);
 	}
 
-	private collision(direction: 'horizontal' | 'vertical'): void {
+	private collision(direction: CollisionDirection): void {
 		for (const paddle of this.players) {
 			if (!this.rect.colliderect(paddle.rect)) continue;
 
-			if (direction === 'horizontal') {
+			if (direction === CollisionDirection.HORIZONTAL) {
 				if (this.rect.right >= paddle.rect.left && this.oldRect.right <= paddle.oldRect.left) {
 					this.rect.right = paddle.rect.left;
 					this.direction[0] *= -1;
@@ -174,22 +163,6 @@ export class Ball {
 	}
 
 	wallCollision(): void {
-		// if (this.rect.top <= GAME_CONFIG.wallBounds.minX) { //TODO remove
-		// 	this.rect.top = GAME_CONFIG.wallBounds.minX;
-		// 	this.direction[0] *= -1; // Note: using index 0 for X direction
-		// }
-		// if (this.rect.bottom >= GAME_CONFIG.wallBounds.maxX) {
-		// 	this.rect.bottom = GAME_CONFIG.wallBounds.maxX;
-		// 	this.direction[0] *= -1;
-		// }
-		
-		// // Goal detection
-		// if (this.rect.right >= GAME_CONFIG.goalBounds.leftGoal || this.rect.left <= GAME_CONFIG.goalBounds.rightGoal) {
-		// 	const scorer = this.rect.y < 0 ? RIGHT_PADDLE : LEFT_PADDLE;
-		// 	this.updateScore(scorer);
-		// 	this.reset();
-		// }
-
 		// Wall collisions (left/right walls)
 		if (this.rect.left <= GAME_CONFIG.wallBounds.minX) {
 			this.rect.left = GAME_CONFIG.wallBounds.minX;

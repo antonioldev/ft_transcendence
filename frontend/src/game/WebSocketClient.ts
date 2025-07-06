@@ -1,3 +1,5 @@
+import { MessageType, GameMode, Direction } from '../core/constants.js'
+
 export interface GameStateData {
     paddleLeft: {x: number; score: number};
     paddleRight: {x: number; score: number};
@@ -5,17 +7,17 @@ export interface GameStateData {
 }
 
 export interface ServerMessage {
-    type: 'game_state' | 'side_assignment' | 'game_started' | 'error';
+    type: MessageType;
     state? : GameStateData;
     side?: number;
     message?: string;
 }
 
 export interface ClientMessage {
-    type: 'join_game' | 'player_input';
-    gameMode?: 'single_player' | 'two_player_local' | 'two_player_remote';
+    type: MessageType;
+    gameMode?: GameMode;
     side?: number;
-    direction?: 'left' | 'right' | 'stop';
+    direction?: Direction;
 }
 
 export class WebSocketClient {
@@ -32,7 +34,7 @@ export class WebSocketClient {
         this.ws = new WebSocket(url);
 
         this.ws.onopen = () => {
-            console.log('🌐 Connected to game server');
+            console.log('Connected to game server');
             if (this.connectionCallback) {
                 this.connectionCallback();
             }
@@ -60,37 +62,37 @@ export class WebSocketClient {
 
     private handleMessage(message: ServerMessage): void {
         switch (message.type) {
-            case 'game_state':
+            case MessageType.GAME_STATE:
                 if (message.state && this.gameStateCallback)
                     this.gameStateCallback(message.state);
                 break;
-            case 'game_started':
+            case MessageType.GAME_STARTED:
                 console.log('🎮 Game started:', message.message);
                 break;
-            case 'error':
-                console.error('🚨 Server error:', message.message);
+            case MessageType.ERROR:
+                console.error('❌  Server error:', message.message);
                 if (this.errorCallback)
                     this.errorCallback(message.message || 'Unknown error');
                 break;
             default:
-                console.log('📩 Received:', message);
+                console.log('📩 Received:', message); //TODO
         }
     }
 
-    joinGame(gameMode: 'single_player' | 'two_player_local' | 'two_player_remote'): void {
+    joinGame(gameMode: GameMode): void {
         if (this.ws && this.ws.readyState === WebSocket.OPEN) {
             const message: ClientMessage = {
-                type: 'join_game',
+                type: MessageType.JOIN_GAME,
                 gameMode: gameMode
             };
             this.ws.send(JSON.stringify(message));
         }
     }
 
-    sendPlayerInput(side: number, direction: 'left' | 'right' | 'stop'): void {
+    sendPlayerInput(side: number, direction: Direction): void {
         if (this.ws && this.ws.readyState === WebSocket.OPEN) {
             const message: ClientMessage = {
-                type: 'player_input',
+                type: MessageType.PLAYER_INPUT,
                 side: side,
                 direction: direction
         };

@@ -3,8 +3,9 @@ declare var BABYLON: any;
 import { WebSocketClient, GameStateData } from './WebSocketClient.js';
 import { InputManager } from './InputManager.js';
 import { GUIManager } from './GuiManager.js';
-import { GameObjects } from './sceneBuilder.js';
-import { GAME_CONFIG } from './gameConfig.js';
+import { GameObjects } from '../engine/sceneBuilder.js';
+import { GAME_CONFIG } from '../core/gameConfig.js';
+import { Direction, GameMode } from '../core/constants.js';
 
 export class NetworkGameManager {
     private scene: any;
@@ -16,47 +17,35 @@ export class NetworkGameManager {
     private playerSide = 0;
 
     constructor(scene: any, gameObjects: GameObjects, inputManager: InputManager, guiManager: GUIManager) {
-        console.log('🔧 NetworkGameManager constructor called');
         this.scene = scene;
         this.gameObjects = gameObjects;
         this.inputManager = inputManager;
         this.guiManager = guiManager;
-        console.log('📡 Creating WebSocket connection to ws://localhost:3000');
         this.webSocketClient = new WebSocketClient('ws://localhost:3000');
         this.setupWebSocketCallbacks();
-        console.log('✅ NetworkGameManager initialized');
     }
 
     private setupWebSocketCallbacks(): void {
-        console.log('🔗 Setting up WebSocket callbacks');
-        
         this.webSocketClient.onGameState((state: GameStateData) => {
-            console.log('📊 Game state received:', state);
             this.updateGameObjects(state);
         });
 
         this.webSocketClient.onConnection(() => {
-            console.log('🎮 WebSocket connection established - Ready to join game');
         });
 
         this.webSocketClient.onError((error: string) => {
-            console.error('🚨 WebSocket error:', error);
+            console.error('WebSocket error:', error);
         });
     }
 
     private updateGameObjects(state: GameStateData): void {
-        console.log('🎯 Updating game objects with state:', state);
         if (this.gameObjects.players.left) {
-        console.log('👈 Left player before:', this.gameObjects.players.left.position);
         this.gameObjects.players.left.position.x = state.paddleLeft.x;
-        console.log('👈 Left player after:', this.gameObjects.players.left.position);
     }
     
     if (this.gameObjects.ball) {
-        console.log('⚽ Ball before:', this.gameObjects.ball.position);
         this.gameObjects.ball.position.x = state.ball.x;
         this.gameObjects.ball.position.z = state.ball.z;
-        console.log('⚽ Ball after:', this.gameObjects.ball.position);
     }
 
         if (this.guiManager) {
@@ -66,7 +55,7 @@ export class NetworkGameManager {
 
     startSinglePlayer(): void {
         if (this.webSocketClient.isConnected()) {
-            this.webSocketClient.joinGame('single_player');
+            this.webSocketClient.joinGame(GameMode.SINGLE_PLAYER);
             this.playerSide = 0;
             this.start()
         } else {
@@ -75,42 +64,33 @@ export class NetworkGameManager {
     }
 
     startTwoPlayerLocal(): void {
-        console.log('🎮 startTwoPlayerLocal() called');
-        console.log('📡 WebSocket connected?', this.webSocketClient.isConnected());
-        
         if (this.webSocketClient.isConnected()) {
-            console.log('✅ WebSocket is connected, joining two player local game...');
-            this.webSocketClient.joinGame('two_player_local');
+            this.webSocketClient.joinGame(GameMode.TWO_PLAYER_LOCAL);
             this.start();
         } else {
             console.error('❌ Not connected to server');
             this.webSocketClient.onConnection(() => {
-                console.log('🔄 Connection established, now joining game...');
-                this.webSocketClient.joinGame('two_player_local');
+                console.log('🔄 Connection established, now joining game...');//TODO
+                this.webSocketClient.joinGame(GameMode.TWO_PLAYER_LOCAL);
                 this.start();
             });
         }
     }
 
     start(): void {
-        console.log("🚀 NetworkGameManager.start() called");
         if (this.isRunning) {
-            console.log("⚠️ Game already running, skipping start");
             return;
         }
         this.isRunning = true;
-        
-        console.log("🎯 Setting up input callback");
-        this.inputManager.setNetworkCallback((side: number, direction: 'left' | 'right' | 'stop') => {
-            console.log(`🎮 Input: side=${side}, direction=${direction}`);
+
+        this.inputManager.setNetworkCallback((side: number, direction: Direction) => {
             this.webSocketClient.sendPlayerInput(side, direction);
         });
-        
-        console.log("🔄 Registering render loop");
+
         this.scene.registerBeforeRender(() => {
             if (!this.isRunning)
                 return;
-            this.handleInput();
+            this.inputManager.updateInput();
 
             if (this.guiManager)
                 this.guiManager.updateFPS();
@@ -118,12 +98,6 @@ export class NetworkGameManager {
             if (this.gameObjects.cameras.length > 1)
                 this.update3DCamere();
         });
-        
-        console.log("✅ Game loop started successfully!");
-    }
-
-    private handleInput(): void {
-        this.inputManager.updateInput();
     }
 
     private update3DCamere(): void {
