@@ -49,7 +49,7 @@ export class NetworkGameManager {
     }
 
         if (this.guiManager) {
-            //TODO add results or other stuff
+            //TODO add results or other stuf
         }
     }
 
@@ -59,7 +59,10 @@ export class NetworkGameManager {
             this.playerSide = 0;
             this.start()
         } else {
-            console.error('❌ Not connected to server');
+            this.webSocketClient.onConnection(() => {
+                this.webSocketClient.joinGame(GameMode.SINGLE_PLAYER);
+                this.start();
+            });
         }
     }
 
@@ -68,9 +71,7 @@ export class NetworkGameManager {
             this.webSocketClient.joinGame(GameMode.TWO_PLAYER_LOCAL);
             this.start();
         } else {
-            console.error('❌ Not connected to server');
             this.webSocketClient.onConnection(() => {
-                console.log('🔄 Connection established, now joining game...');//TODO
                 this.webSocketClient.joinGame(GameMode.TWO_PLAYER_LOCAL);
                 this.start();
             });
