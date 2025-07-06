@@ -1,7 +1,11 @@
+// !!!!!!! Please update file in the root folder if you want to change or add something
+// Shared game configuration between frontend and backend
+
+import { Position, Size } from './types.js';
+
 const fieldWidth = 50;
 const fieldHeight = 100;
 
-//TODO need to find a way to keep one file for both back and front end
 export const GAME_CONFIG = {
     // Field dimensions
     fieldWidth: fieldWidth,
@@ -19,11 +23,10 @@ export const GAME_CONFIG = {
     playerOffsetFromEdge: 2,
     playerSpeed: 20,
     
-    // Camera settings (not used in backend but kept for consistency)
+    // Camera settings (mainly for frontend)
     camera2DHeight: 80,
     camera3DHeight: 10,
     camera3DDistance: 20,
-
     followSpeed: 0.1,
     edgeBuffer: 13,
 
@@ -52,7 +55,7 @@ export const GAME_CONFIG = {
     ballSpeedIncrease: 1.05, // Speed multiplier after paddle hit
     maxBallSpeed: 20,       // Maximum ball speed
 
-    // Input mappings (for reference)
+    // Input mappings
     input2D: {
         playerLeft: { left: 87, right: 83 },    // W/S keys
         playerRight: { left: 38, right: 40 }    // Up/Down arrows
@@ -61,32 +64,23 @@ export const GAME_CONFIG = {
         playerLeft: { left: 65, right: 68 },    // A/D keys  
         playerRight: { left: 39, right: 37 }    // Left/Right arrows
     },
+    
     // Timing
     startDelay: 1.0,
-}
+} as const;
 
+// Paddle/Player constants
 export const LEFT_PADDLE = 0;
 export const RIGHT_PADDLE = 1;
 export const BALL = 2;
 
-export interface Position {
-    x: number;
-    y: number;
-    z: number;
-}
-
-export interface Size {
-    x: number;
-    y: number;
-    z: number;
-}
-
+// Utility functions that work for both frontend and backend
 export function getPlayerSize(): Size {
     return {
         x: GAME_CONFIG.playerWidth,
         y: GAME_CONFIG.playerHeight,
         z: GAME_CONFIG.playerDepth
-    }
+    };
 }
 
 export function getPlayerLeftPosition(): Position {
@@ -94,7 +88,7 @@ export function getPlayerLeftPosition(): Position {
         x: 0,
         y: 1,
         z: -(GAME_CONFIG.fieldHeight/2 - GAME_CONFIG.playerOffsetFromEdge)
-    }
+    };
 }
 
 export function getPlayerRightPosition(): Position {

@@ -1,8 +1,8 @@
 import { Ball } from './Ball.js';
 import { Player, AIBot } from './Paddle.js';
 import { Clock } from './utils';
-import { LEFT_PADDLE, RIGHT_PADDLE } from './gameConfig.js';
-import { PlayerInput, GameState } from './types';
+import { LEFT_PADDLE, RIGHT_PADDLE } from '../shared/gameConfig.js';
+import { PlayerInput, GameStateData } from '../shared/types.js';
 
 
 // IMPORTANT: the queue is currently just a list, there is no async queue object in TS
@@ -15,9 +15,9 @@ abstract class Game {
 	running: boolean;
 	players!: (Player | AIBot)[];
 	ball!: Ball;
-	protected _broadcast: (state: GameState) => Promise<void>;
+	protected _broadcast: (state: GameStateData) => Promise<void>;
 
-	constructor(id: string, broadcast_callback: (state: GameState) => Promise<void>) {
+	constructor(id: string, broadcast_callback: (state: GameStateData) => Promise<void>) {
 		this.id = id;
 		this.clock = new Clock();
 		this.running = true;
@@ -66,7 +66,7 @@ abstract class Game {
 		this.queue.push(input)
 	}
 
-	get_state(): GameState {
+	get_state(): GameStateData {
 		return {
 			"paddleLeft": {
 				"x":     this.players[LEFT_PADDLE].rect.centerx,
@@ -99,7 +99,7 @@ abstract class Game {
 export class SinglePlayer extends Game {
 	players: [Player, AIBot]
 
-	constructor(id: string, broadcast_callback: (state: GameState) => Promise<void>) {
+	constructor(id: string, broadcast_callback: (state: GameStateData) => Promise<void>) {
 		super(id, broadcast_callback);
 		this.players = [new Player(LEFT_PADDLE), null as any];
 		this._init_ball();
@@ -114,7 +114,7 @@ export class SinglePlayer extends Game {
 export class TwoPlayer extends Game {
 	players: [Player, Player]
 
-	constructor(id: string, broadcast_callback: (state: GameState) => Promise<void>) {
+	constructor(id: string, broadcast_callback: (state: GameStateData) => Promise<void>) {
 		super(id, broadcast_callback)
 		this.players = [new Player(LEFT_PADDLE), new Player(RIGHT_PADDLE)]
 		this._init_ball();

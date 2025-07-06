@@ -8,20 +8,20 @@ BACKEND_DIR = ./backend
 start:
 	docker-compose up -d
 
-run:
-	docker-compose up --build -d
-
 stop:
 	docker-compose down
 
-build:
-	docker-compose build
+build: build-backend build-frontend
 
 build-frontend:
-	docker-compose build frontend
+	@mkdir -p frontend/src/shared
+	@cp -rf shared/* frontend/src/shared/
+	@docker-compose build frontend
 
 build-backend:
-	docker-compose build backend
+	@mkdir -p backend/src/shared
+	@cp -rf shared/* backend/src/shared/
+	@docker-compose build backend
 
 #################################################################################
 #################################     LOGS      #################################
@@ -75,7 +75,7 @@ update-deps:
 
 update: update-deps fclean up-build
 
-.PHONY: up start up-build down stop \
+.PHONY: start stop \
         build build-frontend build-backend \
         logs logs-frontend logs-backend \
         clean fclean re restart \

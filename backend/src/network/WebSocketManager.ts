@@ -1,8 +1,8 @@
 import { FastifyInstance } from 'fastify';
 import { gameManager } from '../models/GameManager.js';
-import { Client } from '../models/client.js';
-import { ClientMessage, ServerMessage } from '../core/types.js';
-import { MessageType, GameMode, Direction } from '../core/constants.js';
+import { Client } from '../models/Client.js';
+import { MessageType, Direction } from '../shared/constants.js';
+import { ClientMessage, ServerMessage } from '../shared/types.js';
 
 export class WebSocketManager {
     private clients = new Map<string, Client>();

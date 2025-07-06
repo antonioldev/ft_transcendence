@@ -1,7 +1,7 @@
 declare var BABYLON: any;
 
-import { GAME_CONFIG, getPlayerBoundaries } from "../core/gameConfig.js";
-import { Direction, ViewMode } from '../core/constants.js';
+import { GAME_CONFIG, getPlayerBoundaries } from '../shared/gameConfig.js';
+import { Direction, ViewMode } from '../shared/constants.js';
 
 interface PlayerControls {
     left: number;

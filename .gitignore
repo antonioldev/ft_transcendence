@@ -2,3 +2,5 @@
 .tests
 node_modules/
 dist/
+backend/src/shared
+frontend/src/shared

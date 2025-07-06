@@ -1,8 +1,8 @@
 import { SinglePlayer, TwoPlayer } from '../core/Game.js';
-import { LEFT_PADDLE, RIGHT_PADDLE} from '../core/gameConfig.js';
-import { Client } from '../models/client.js';
-import { GameState } from '../core/types.js';
-import { MessageType, GameMode } from '../core/constants.js';
+import { LEFT_PADDLE, RIGHT_PADDLE} from '../shared/gameConfig.js';
+import { Client } from '../models/Client.js';
+import { MessageType, GameMode } from '../shared/constants.js';
+import { GameStateData } from '../shared/types.js';
 
 // IMPORTANT: some methods are no longer async and might need to be, we can see in testing
 // I found it a little unclear when/where to use async in TS, we can discuss this later!
@@ -39,7 +39,7 @@ export class GameSession {
 
 	// async broadcast_callback(state: GameState): Promise<void> {
 	//  broadcast_callback = async (state: GameState): Promise<void> => {
-	async broadcastToClients(state: GameState): Promise<void> {
+	async broadcastToClients(state: GameStateData): Promise<void> {
 		const message = {
 			type: MessageType.GAME_STATE,
 			state: state

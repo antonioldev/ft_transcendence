@@ -1,6 +1,6 @@
 import { GameSession } from '../network/GameSession.js';
-import { Client } from './client.js';
-import { GameMode } from '../core/constants.js';
+import { Client } from './Client.js';
+import { GameMode } from '../shared/constants.js';
 
 class GameManager {
     private games: Map<string, GameSession> = new Map();

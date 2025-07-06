@@ -1,11 +1,12 @@
 declare var BABYLON: any;
 
-import { WebSocketClient, GameStateData } from './WebSocketClient.js';
+import { WebSocketClient } from './WebSocketClient.js';
 import { InputManager } from './InputManager.js';
 import { GUIManager } from './GuiManager.js';
 import { GameObjects } from '../engine/sceneBuilder.js';
-import { GAME_CONFIG } from '../core/gameConfig.js';
-import { Direction, GameMode } from '../core/constants.js';
+import { GAME_CONFIG } from '../shared/gameConfig.js';
+import { Direction, GameMode} from '../shared/constants.js';
+import { GameStateData } from '../shared/types.js';
 
 export class NetworkGameManager {
     private scene: any;

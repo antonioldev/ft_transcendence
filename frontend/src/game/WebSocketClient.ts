@@ -1,24 +1,5 @@
-import { MessageType, GameMode, Direction } from '../core/constants.js'
-
-export interface GameStateData {
-    paddleLeft: {x: number; score: number};
-    paddleRight: {x: number; score: number};
-    ball: {x: number; z: number};
-}
-
-export interface ServerMessage {
-    type: MessageType;
-    state? : GameStateData;
-    side?: number;
-    message?: string;
-}
-
-export interface ClientMessage {
-    type: MessageType;
-    gameMode?: GameMode;
-    side?: number;
-    direction?: Direction;
-}
+import { MessageType, GameMode, Direction } from '../shared/constants.js'
+import { ClientMessage, ServerMessage, GameStateData } from '../shared/types.js'
 
 export class WebSocketClient {
     private ws: WebSocket | null = null;

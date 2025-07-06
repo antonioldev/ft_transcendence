@@ -4,7 +4,7 @@ import { build2DScene, build3DScene } from './sceneBuilder.js';
 import { InputManager } from '../game/InputManager.js';
 import { GUIManager } from '../game/GuiManager.js';
 import { NetworkGameManager } from '../game/NetworkGameManager.js';
-import { ViewMode } from '../core/constants.js';
+import { ViewMode } from '../shared/constants.js';
 
 export class BabylonEngine {
     private engine: any = null;

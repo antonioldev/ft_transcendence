@@ -1,7 +1,7 @@
 import { updateLanguageDisplay, previousLanguage, nextLanguage } from '../ui/translations.js';
 import { applyButtonStyles, applyLanguageStyles, applyTitleStyles, applyOverlayStyles, applyPauseDialogStyles, showOverlay, showPauseDialog } from '../ui/styles.js';
 import { init2D, init3D } from '../engine/GameEngine.js';
-import { GameState } from './constants.js';
+import { GameState } from '../shared/constants.js';
 import { gameStateManager} from './GameState.js';
 
 function loadPage() {

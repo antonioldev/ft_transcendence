@@ -1,6 +1,6 @@
 import { hideOverlay, hidePauseDialog, showPauseDialog } from '../ui/styles.js';
 import { engine2D, engine3D } from '../engine/GameEngine.js';
-import { GameState } from './constants.js';
+import { GameState } from '../shared/constants.js';
 
 class GameStateManager {
     private currentState: GameState = GameState.MENU;

@@ -1,4 +1,4 @@
-import { ViewMode } from '../core/constants.js';
+import { ViewMode } from '../shared/constants.js';
 import { BabylonEngine } from './BabylonEngine.js';
 
 class GameEngine {

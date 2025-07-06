@@ -1,7 +1,10 @@
 declare var BABYLON: any;
 
-import { 
-    GAME_CONFIG,
+import { GAME_CONFIG } from "../shared/gameConfig.js";
+
+import { Position, Size } from '../shared/types.js';
+
+import {
     COLORS,
     getPlayerSize,
     getPlayerLeftPosition,
@@ -13,7 +16,7 @@ import {
     get2DCameraViewport,
     get3DCamera1Viewport,
     get3DCamera2Viewport
-} from '../core/gameConfig.js';
+} from '../core/utils.js'
 
 export interface GameObjects {
     players: {
@@ -25,18 +28,6 @@ export interface GameObjects {
     walls: any;
     cameras: any[];
     lights: any[];
-}
-
-interface Position {
-    x: number;
-    y: number;
-    z: number;
-}
-
-interface Size {
-    x: number;
-    y: number;
-    z: number;
 }
 
 function createMaterial(scene: any, name: string, color: any, is2D: boolean): any {
