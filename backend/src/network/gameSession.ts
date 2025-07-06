@@ -1,7 +1,7 @@
-import { SinglePlayer, TwoPlayer } from '../core/game';
-import { LEFT_PADDLE, RIGHT_PADDLE} from '../core/gameConfig';
-import { Client } from '../models/client';
-import { GameState } from '../core/types';
+import { SinglePlayer, TwoPlayer } from '../core/Game.js';
+import { LEFT_PADDLE, RIGHT_PADDLE} from '../core/gameConfig.js';
+import { Client } from '../models/client.js';
+import { GameState } from '../core/types.js';
 import { MessageType, GameMode } from '../core/constants.js';
 
 // IMPORTANT: some methods are no longer async and might need to be, we can see in testing

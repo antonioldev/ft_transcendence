@@ -1,4 +1,5 @@
-import { Player, Ball, AIBot } from './sprites';
+import { Ball } from './Ball.js';
+import { Player, AIBot } from './Paddle.js';
 import { Clock } from './utils';
 import { LEFT_PADDLE, RIGHT_PADDLE } from './gameConfig.js';
 import { PlayerInput, GameState } from './types';

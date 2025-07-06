@@ -1,4 +1,4 @@
-import { GameSession } from '../network/gameSession.js';
+import { GameSession } from '../network/GameSession.js';
 import { Client } from './client.js';
 import { GameMode } from '../core/constants.js';
 

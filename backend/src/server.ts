@@ -1,5 +1,5 @@
 import Fastify from 'fastify';
-import websocketRoutes from './network/webSocket.js';
+import { webSocketManager }  from './network/WebSocketManager.js';
 import config from './config/default.js';
 
 const fastify = Fastify({
@@ -12,13 +12,11 @@ await fastify.register(import('@fastify/websocket'), {
 		perMessageDeflate: false,
 		clientTracking: true,
 		maxConnections: 100,
-		// verifyClient: (info) => {
-		// 	return true;
-		// }
 	}
 });
 
-fastify.register(websocketRoutes);
+// fastify.register(websocketRoutes);
+await webSocketManager.setupRoutes(fastify);
 
 const start = async (): Promise<void> => {
     try {
