@@ -26,58 +26,58 @@ export class Clock {
 }
 
 export class Rect {
-	cx: number;
-	cy: number;
+	x: number;
+	y: number;
 	w: number;
 	h: number;
-	constructor(cx: number, cy: number, w: number, h: number) {
-		this.cx = cx
-		this.cy = cy
+	constructor(x: number, y: number, w: number, h: number) {
+		this.x = x
+		this.y = y
 		this.w = w
 		this.h = h
 	}
 
 	// --- Getters & Setters ---
 	get centerx(): number {
-		return this.cx;
+		return this.x;
 	}
 	set centerx(value: number) {
-		this.cx = value;
+		this.x = value;
 	}
 
 	get centery(): number {
-		return this.cy;
+		return this.y;
 	}
 	set centery(value: number) {
-		this.cy = value;
+		this.y = value;
 	}
 
 	get left(): number {
-		return this.cx - this.w / 2;
+		return this.x - this.w / 2;
 	}
 	set left(value: number) {
-		this.cx = value + this.w / 2;
+		this.x = value + this.w / 2;
 	}
 	
 	get right(): number {
-		return this.cx + this.w / 2;
+		return this.x + this.w / 2;
 	}
 	set right(value: number) {
-		this.cx = value - this.w / 2;
+		this.x = value - this.w / 2;
 	}
 
 	get top(): number {
-	return this.cy - this.h / 2;
+	return this.y - this.h / 2;
 	}
 	set top(value: number) {
-		this.cy = value + this.h / 2;
+		this.y = value + this.h / 2;
 	}
 
 	get bottom(): number {
-		return this.cy + this.h / 2;
+		return this.y + this.h / 2;
 	}
 	set bottom(value: number) {
-		this.cy = value - this.h / 2;
+		this.y = value - this.h / 2;
 	}
 
 	// --- Collision detection ---
@@ -92,14 +92,14 @@ export class Rect {
 
 	// --- Copy values from another Rect ---
 	copy(other: Rect): void {
-		this.cx = other.cx;
-		this.cy = other.cy;
+		this.x = other.x;
+		this.y = other.y;
 		this.w = other.w;
 		this.h = other.h;
 	}
 
 	// --- Return a new instance ---
 	instance(): Rect {
-		return new Rect(this.cx, this.cy, this.w, this.h);
+		return new Rect(this.x, this.y, this.w, this.h);
 	}
 }

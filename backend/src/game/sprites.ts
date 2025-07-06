@@ -22,8 +22,9 @@ export abstract class Paddle {
 		this.oldRect = this.rect.instance();
 	}
 
-	move(dt: number, dy: number): void {
-		this.rect.cy += dy * this.speed * dt;
+	move(dt: number, dx: number): void {
+		const deltaSeconds = dt / 1000;//TODO shall we do?
+		this.rect.x += dx * this.speed * deltaSeconds;
 	}
 
 	cacheRect() {
@@ -85,17 +86,29 @@ export class AIBot extends Paddle {
 		return target_y + r;
 	}
 
+	// update(dt: number): void {
+	// 	this._view_timer += dt;
+	// 	if (this._view_timer >= 1.0) {
+	// 		this._target_y   = this._predict_intercept_y()
+	// 		this._view_timer = 0.0
+	// 	}
+	// 	if (Math.abs(this.rect.centery - this._target_y) < 5) {   // dead-zone, avoids shaking
+	// 		return ;
+	// 	}
+	// 	const dy = this.rect.centery < this._target_y ? 1: -1;
+	// 	this.move(dt, dy) //TODO remove
+	// }
 	update(dt: number): void {
 		this._view_timer += dt;
 		if (this._view_timer >= 1.0) {
-			this._target_y   = this._predict_intercept_y()
+			this._target_y = this._predict_intercept_y()
 			this._view_timer = 0.0
 		}
-		if (Math.abs(this.rect.centery - this._target_y) < 5) {   // dead-zone, avoids shaking
-			return ;
+		if (Math.abs(this.rect.centerx - this._target_y) < 5) {
+			return;
 		}
-		const dy = this.rect.centery < this._target_y ? 1: -1;
-		this.move(dt, dy)
+		const dx = this.rect.centerx < this._target_y ? 1 : -1;
+		this.move(dt, dx)
 	}
 }
 
@@ -126,9 +139,10 @@ export class Ball {
 	}
 
 	move(dt: number): void {
-		this.rect.cx += this.direction[0] * this.speed * dt * this.speedModifier;
+		const deltaSeconds = dt / 1000;
+		this.rect.x += this.direction[0] * this.speed * deltaSeconds * this.speedModifier;
 		this.collision('horizontal');
-		this.rect.cy += this.direction[1] * this.speed * dt * this.speedModifier;
+		this.rect.y += this.direction[1] * this.speed * deltaSeconds * this.speedModifier;
 		this.collision('vertical');
 	}
 
@@ -160,18 +174,40 @@ export class Ball {
 	}
 
 	wallCollision(): void {
-		if (this.rect.top <= GAME_CONFIG.wallBounds.minX) {
-			this.rect.top = GAME_CONFIG.wallBounds.minX;
-			this.direction[0] *= -1; // Note: using index 0 for X direction
+		// if (this.rect.top <= GAME_CONFIG.wallBounds.minX) { //TODO remove
+		// 	this.rect.top = GAME_CONFIG.wallBounds.minX;
+		// 	this.direction[0] *= -1; // Note: using index 0 for X direction
+		// }
+		// if (this.rect.bottom >= GAME_CONFIG.wallBounds.maxX) {
+		// 	this.rect.bottom = GAME_CONFIG.wallBounds.maxX;
+		// 	this.direction[0] *= -1;
+		// }
+		
+		// // Goal detection
+		// if (this.rect.right >= GAME_CONFIG.goalBounds.leftGoal || this.rect.left <= GAME_CONFIG.goalBounds.rightGoal) {
+		// 	const scorer = this.rect.y < 0 ? RIGHT_PADDLE : LEFT_PADDLE;
+		// 	this.updateScore(scorer);
+		// 	this.reset();
+		// }
+
+		// Wall collisions (left/right walls)
+		if (this.rect.left <= GAME_CONFIG.wallBounds.minX) {
+			this.rect.left = GAME_CONFIG.wallBounds.minX;
+			this.direction[0] *= -1; // Reverse X direction
 		}
-		if (this.rect.bottom >= GAME_CONFIG.wallBounds.maxX) {
-			this.rect.bottom = GAME_CONFIG.wallBounds.maxX;
-			this.direction[0] *= -1;
+		if (this.rect.right >= GAME_CONFIG.wallBounds.maxX) {
+			this.rect.right = GAME_CONFIG.wallBounds.maxX;
+			this.direction[0] *= -1; // Reverse X direction
 		}
 		
-		// Goal detection
-		if (this.rect.right >= GAME_CONFIG.goalBounds.leftGoal || this.rect.left <= GAME_CONFIG.goalBounds.rightGoal) {
-			const scorer = this.rect.cy < 0 ? RIGHT_PADDLE : LEFT_PADDLE;
+		// Goal detection (top/bottom goals)
+		if (this.rect.top <= GAME_CONFIG.goalBounds.rightGoal) {
+			const scorer = LEFT_PADDLE;  // Left player scores
+			this.updateScore(scorer);
+			this.reset();
+		}
+		if (this.rect.bottom >= GAME_CONFIG.goalBounds.leftGoal) {
+			const scorer = RIGHT_PADDLE;  // Right player scores
 			this.updateScore(scorer);
 			this.reset();
 		}
@@ -179,8 +215,8 @@ export class Ball {
 
 	reset(): void {
 		const ballPos = getBallStartPosition();
-		this.rect.cx = ballPos.x;
-		this.rect.cy = ballPos.z;
+		this.rect.x = ballPos.x;
+		this.rect.y = ballPos.z;
 		this.direction = this.randomDirection();
 		this.startTime = performance.now();
 	}

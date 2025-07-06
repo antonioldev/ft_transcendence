@@ -73,16 +73,16 @@ async function websocketRoutes(fastify: FastifyInstance) {
                 return;
 
             // Convert direction to movement
-            let dy = 0;
-            if (data.direction === 'left') dy = -1;
-            else if (data.direction === 'right') dy = 1;
+            let dx = 0;
+            if (data.direction === 'left') dx = -1;
+            else if (data.direction === 'right') dx = 1;
 
             // Add input to game queue
             game.game.enqueue({
                 id: clientId,
                 type: 'player_input',
                 side: data.side || 0,
-                dy: dy
+                dx: dx
             });
         }
 

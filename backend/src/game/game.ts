@@ -44,18 +44,17 @@ abstract class Game {
 
 	protected _state_changed(): boolean {
 		return (
-			this.players[LEFT_PADDLE].rect.cy != this.players[LEFT_PADDLE].oldRect.cy ||
-			this.players[RIGHT_PADDLE].rect.cy != this.players[RIGHT_PADDLE].oldRect.cy ||
-			this.ball.rect.cx != this.ball.oldRect.cx ||
-			this.ball.rect.cy != this.ball.oldRect.cy
-		)
+		this.players[LEFT_PADDLE].rect.x != this.players[LEFT_PADDLE].oldRect.x ||
+		this.players[RIGHT_PADDLE].rect.x != this.players[RIGHT_PADDLE].oldRect.x ||
+		this.ball.rect.x != this.ball.oldRect.x ||
+		this.ball.rect.y != this.ball.oldRect.y)
 	}
 
 	protected _process_queue(dt: number): void {
 		while (this.queue.length > 0) {
 			const input = this.queue.shift();
 			if (input) {
-				this.players[input.side].move(dt, input.dy);
+				this.players[input.side].move(dt, input.dx);
 			}
 		}
 	}
@@ -69,16 +68,16 @@ abstract class Game {
 	get_state(): GameState {
 		return {
 			"paddleLeft": {
-				"y":     this.players[LEFT_PADDLE].rect.centery,
+				"x":     this.players[LEFT_PADDLE].rect.centerx,
 				"score": this.players[LEFT_PADDLE].score,
 			},
 			"paddleRight": {
-				"y":     this.players[RIGHT_PADDLE].rect.centery,
+				"x":     this.players[RIGHT_PADDLE].rect.centerx,
 				"score": this.players[RIGHT_PADDLE].score,
 			},
 			"ball": {
 				"x": this.ball.rect.centerx,
-				"y": this.ball.rect.centery,
+				"z": this.ball.rect.centery,
 			},
 		}
 	}
