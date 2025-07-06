@@ -19,7 +19,7 @@ export const GAME_CONFIG = {
     playerHeight: 0.5,
     playerDepth: 1.0,
     playerOffsetFromEdge: 2,
-    playerSpeed: 0.5,
+    playerSpeed: 20,
     
     // Camera settings
     camera2DHeight: 80,
@@ -31,7 +31,7 @@ export const GAME_CONFIG = {
 
     // Ball settings
     ballRadius: 0.5,
-    ballInitialSpeed : 0.2,
+    ballInitialSpeed : 10,
     ballMaxAngle: Math.PI / 6,
 
     // Court boundaries (calculated from field dimensions)
@@ -60,7 +60,7 @@ export const GAME_CONFIG = {
     
     // Physics
     ballSpeedIncrease: 1.05, // Speed multiplier after paddle hit
-    maxBallSpeed: 0.8,       // Maximum ball speed
+    maxBallSpeed: 20,       // Maximum ball speed
 
     // Input mappings
     input2D: {

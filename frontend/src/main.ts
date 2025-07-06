@@ -1,6 +1,6 @@
 import { updateLanguageDisplay, previousLanguage, nextLanguage } from './translations.js';
 import { applyButtonStyles, applyLanguageStyles, applyTitleStyles, applyOverlayStyles, applyPauseDialogStyles, showOverlay, showPauseDialog } from './styles.js';
-import { initBabylon2D, initBabylon3D, startSinglePlayer2D, startSinglePlayer3D, startTwoPlayerLocal2D, startTwoPlayerLocal3D } from './game/EngineManager.js';
+import { initAndStartTwoPlayerLocal2D, initAndStartTwoPlayerLocal3D } from './game/EngineManager.js';
 import { gameStateManager, GameState} from './GameState.js';
 
 
@@ -51,8 +51,10 @@ play2D?.addEventListener('click', async function(): Promise<void> {
     gameStateManager.setState(GameState.PLAYING_2D);
 
     setTimeout(async () => {
-        await initBabylon2D();
-        startTwoPlayerLocal2D();//TODO choose
+        // await initBabylon2D();
+        console.log("Starting 2D game initialization...");
+        await initAndStartTwoPlayerLocal2D();
+        console.log("2D game started!");
     }, 100);
 });
 
@@ -63,8 +65,10 @@ play3D?.addEventListener('click', async function(): Promise<void> {
 
     // Wait a moment for overlay to show, then start Babylon
     setTimeout(async () => {
-        await initBabylon3D();
-        startTwoPlayerLocal3D();//TODO choose
+        // await initBabylon3D();
+        console.log("Starting 3D game initialization...");
+        await initAndStartTwoPlayerLocal3D();
+        console.log("3D game started!");//TODO choose
     }, 100);
 });
 

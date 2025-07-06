@@ -47,16 +47,42 @@ class GameManager {
 
     startSinglePlayer(): void {
         if (this.engine) {
+            console.log("Starting single player mode...");
             this.engine.startSinglePlayer();
+        } else {
+            console.error("❌ Engine not initialized - call init() first");
         }
     }
 
     startTwoPlayerLocal(): void {
         if (this.engine) {
+            console.log("Starting two player local mode...");
             this.engine.startTwoPlayerLocal();
+        } else {
+            console.error("❌ Engine not initialized - call init() first");
         }
+    }
 }
-}
+
+export const initAndStartSinglePlayer2D = async () => {
+    await game2D.init("game-canvas-2d", "2D");
+    game2D.startSinglePlayer();
+};
+
+export const initAndStartSinglePlayer3D = async () => {
+    await game3D.init("game-canvas-3d", "3D");
+    game3D.startSinglePlayer();
+};
+
+export const initAndStartTwoPlayerLocal2D = async () => {
+    await game2D.init("game-canvas-2d", "2D");
+    game2D.startTwoPlayerLocal();
+};
+
+export const initAndStartTwoPlayerLocal3D = async () => {
+    await game3D.init("game-canvas-3d", "3D");
+    game3D.startTwoPlayerLocal();
+};
 
 // Export instances
 export const game2D = new GameManager();

@@ -1,7 +1,7 @@
 export interface GameStateData {
-    paddleLeft: {y: number; score: number};
-    paddleRight: {y: number; score: number};
-    ball: {x: number; y: number};
+    paddleLeft: {x: number; score: number};
+    paddleRight: {x: number; score: number};
+    ball: {x: number; z: number};
 }
 
 export interface ServerMessage {

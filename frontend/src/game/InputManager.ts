@@ -44,7 +44,7 @@ export class InputManager {
     }
 
     private handleInput(keyboardSource: any, players: any, input: any): void {
-    // Player Left (side 0)
+        // Player Left (side 0)
         if (keyboardSource.getInput(input.playerLeft.left) === 1) {
             if (players.left.position.x > this.boundaries.left) {
                 this.networkCallback?.(0, 'left');  // Only send to server
