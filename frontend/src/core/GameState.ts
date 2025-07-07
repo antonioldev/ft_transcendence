@@ -1,4 +1,4 @@
-import { hideOverlay, hidePauseDialog, showPauseDialog } from '../ui/styles.js';
+import { uiManager } from '../ui/UIManager.js';
 import { engine2D, engine3D } from '../engine/GameEngine.js';
 import { GameState } from '../shared/constants.js';
 
@@ -39,11 +39,11 @@ class GameStateManager {
     pauseCurrentGame(): void {
         if (this.currentState === GameState.PLAYING_2D) {
             this.setState(GameState.PAUSED_2D);
-            showPauseDialog('pause-dialog-2d');
+            uiManager.showPauseDialog('pause-dialog-2d');
             engine2D.pause();
         } else if (this.currentState === GameState.PLAYING_3D) {
             this.setState(GameState.PAUSED_3D);
-            showPauseDialog('pause-dialog-3d');
+            uiManager.showPauseDialog('pause-dialog-3d');
             engine3D.pause();
         }
     }
@@ -51,11 +51,11 @@ class GameStateManager {
     resumeGame(): void {
         if (this.currentState === GameState.PAUSED_2D) {
             this.setState(GameState.PLAYING_2D);
-            hidePauseDialog('pause-dialog-2d');
+            uiManager.hidePauseDialog('pause-dialog-2d');
             engine2D.resume();
         } else if (this.currentState === GameState.PAUSED_3D) {
             this.setState(GameState.PLAYING_3D);
-            hidePauseDialog('pause-dialog-3d');
+            uiManager.hidePauseDialog('pause-dialog-3d');
             engine3D.resume();
         }
     }
@@ -63,15 +63,14 @@ class GameStateManager {
     exitToMenu(): void {
         if (this.currentState === GameState.PAUSED_2D) {
             engine2D.dispose();
-            hideOverlay('game-2d');
-            hidePauseDialog('pause-dialog-2d');
+            uiManager.hidePauseDialog('pause-dialog-2d');
         } else if (this.currentState === GameState.PAUSED_3D) {
             engine3D.dispose();
-            hideOverlay('game-3d');
-            hidePauseDialog('pause-dialog-3d');
+            uiManager.hidePauseDialog('pause-dialog-3d');
         }
 
         this.setState(GameState.MENU);
+        uiManager.showScreen('main-menu');
     }
 
     startGame2D(): void {
