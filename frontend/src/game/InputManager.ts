@@ -40,7 +40,6 @@ export class InputManager {
         const keyboardSource = this.deviceSourceManager.getDeviceSource(BABYLON.DeviceType.Keyboard);
         if (keyboardSource && this.players && this.inputConfig) {
             this.handleInput(keyboardSource, this.players, this.inputConfig);
-            // this.handleInput(keyboardSource, this.players, this.inputConfig);
         }
     }
 
@@ -48,11 +47,11 @@ export class InputManager {
         // Player Left (side 0)
         if (keyboardSource.getInput(input.playerLeft.left) === 1) {
             if (players.left.position.x > this.boundaries.left) {
-                this.networkCallback?.(0, Direction.LEFT);  // Only send to server
+                this.networkCallback?.(0, Direction.LEFT);
             }
         } else if (keyboardSource.getInput(input.playerLeft.right) === 1) {
             if (players.left.position.x < this.boundaries.right) {
-                this.networkCallback?.(0, Direction.RIGHT);  // Only send to server
+                this.networkCallback?.(0, Direction.RIGHT);
             }
         } else {
             this.networkCallback?.(0, Direction.STOP);

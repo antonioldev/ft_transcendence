@@ -48,7 +48,7 @@ abstract class Game {
 		this.players[LEFT_PADDLE].rect.x != this.players[LEFT_PADDLE].oldRect.x ||
 		this.players[RIGHT_PADDLE].rect.x != this.players[RIGHT_PADDLE].oldRect.x ||
 		this.ball.rect.x != this.ball.oldRect.x ||
-		this.ball.rect.y != this.ball.oldRect.y)
+		this.ball.rect.y != this.ball.oldRect.y) //TODO this will always be true because the ball moves all the time
 	}
 
 	protected _process_queue(dt: number): void {

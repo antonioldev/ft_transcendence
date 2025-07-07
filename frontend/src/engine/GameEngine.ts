@@ -41,12 +41,14 @@ class GameEngine {
 
 export const init2D = async () => {
     await engine2D.init("game-canvas-2d", ViewMode.MODE_2D);
-    engine2D.startTwoPlayerLocal();
+    engine2D.startTwoPlayerLocal();//TODO select game mode
+    // engine2D.startSinglePlayer()
 };
 
 export const init3D = async () => {
     await engine3D.init("game-canvas-3d", ViewMode.MODE_3D);
     engine3D.startTwoPlayerLocal();
+    // engine3D.startSinglePlayer()
 };
 
 export const engine2D = new GameEngine();

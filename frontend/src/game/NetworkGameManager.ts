@@ -41,13 +41,20 @@ export class NetworkGameManager {
 
     private updateGameObjects(state: GameStateData): void {
         if (this.gameObjects.players.left) {
-        this.gameObjects.players.left.position.x = state.paddleLeft.x;
-    }
-    
-    if (this.gameObjects.ball) {
-        this.gameObjects.ball.position.x = state.ball.x;
-        this.gameObjects.ball.position.z = state.ball.z;
-    }
+            console.log(`Left paddle: ${state.paddleLeft.x} -> ${this.gameObjects.players.left.position.x}`);
+            this.gameObjects.players.left.position.x = state.paddleLeft.x;
+        }
+
+        if (this.gameObjects.players.right) {
+            console.log(`Right paddle: ${state.paddleRight.x} -> ${this.gameObjects.players.right.position.x}`);
+            this.gameObjects.players.right.position.x = state.paddleRight.x;
+        }
+
+
+        if (this.gameObjects.ball) {
+            this.gameObjects.ball.position.x = state.ball.x;
+            this.gameObjects.ball.position.z = state.ball.z;
+        }
 
         if (this.guiManager) {
             //TODO add results or other stuf
