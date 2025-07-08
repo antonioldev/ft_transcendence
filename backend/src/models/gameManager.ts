@@ -1,6 +1,6 @@
-import { GameSession } from '../network/GameSession';
-import { Client } from './Client';
-import { GameMode } from '../shared/constants';
+import { GameSession } from '../network/GameSession.js';
+import { Client } from './Client.js';
+import { GameMode } from '../shared/constants.js';
 
 /**
  * Manages game sessions and player interactions within the game.

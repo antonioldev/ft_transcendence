@@ -19,11 +19,12 @@ services:
       dockerfile: Dockerfile
     ports:
       - "${BACKEND_PORT:-3000}:${BACKEND_PORT:-3000}"
-    volumes:
-      - ./backend/src:/app/src
+    # volumes:
+    #   - ./backend/src:/app/src 
+    # ----------------------------------------------> CANNOT USE VOLUMES
     env_file:
       - .env
-    command: npm run dev
+    command: npm start
 #     networks:
 #       - app-network
 # networks:

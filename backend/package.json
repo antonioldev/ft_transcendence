@@ -6,8 +6,7 @@
   "main": "dist/server.js",
   "scripts": {
     "build": "tsc",
-    "start": "node dist/server.js",
-    "dev": "tsx watch src/server.ts"
+    "start": "node dist/server.js"
   },
   "dependencies": {
     "@fastify/websocket": "^11.1.0",
