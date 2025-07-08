@@ -1,16 +1,21 @@
 import { GameMode } from '../shared/constants.js';
-import { getAlert } from '../translations/translations.js';
-//https://nerdcave.com/tailwind-cheat-sheet TODO try to implement this
+
+//TODO try to implement this https://nerdcave.com/tailwind-cheat-sheet
+
+// The UIManager class is a singleton responsible for managing the UI styles and behavior of the application.
+// It provides methods to initialize styles, manage screens, and handle user interactions.
 class UIManager {
+    // Singleton instance
     private static instance: UIManager;
 
+    // Get the singleton instance of UIManager
     static getInstance(): UIManager {
         if (!UIManager.instance)
             UIManager.instance = new UIManager()
         return UIManager.instance;
     }
 
-    // Simplified color palette
+    // Simplified color palette for consistent theming
     private readonly colors = {
         primary: '#ff6b6b',      // Red accent
         background: '#1a1a1a',   // Dark background
@@ -20,9 +25,9 @@ class UIManager {
         overlay: 'rgba(0, 0, 0, 0.9)'
     };
 
-    // Simplified styles - only what we really need
+    // Centralized styles for UI elements
     private readonly styles = {
-        // Base screen
+        // Base screen styling
         screen: {
             display: 'none',
             position: 'fixed' as const,
@@ -36,13 +41,13 @@ class UIManager {
             zIndex: '10'
         },
 
-        // Main menu (no overlay)
+        // Main menu screen styling
         mainScreen: {
             display: 'block',
             backgroundColor: 'black'
         },
 
-        // All containers
+        // Container styling for modals and overlays
         container: {
             backgroundColor: this.colors.background,
             padding: '3rem',
@@ -51,7 +56,7 @@ class UIManager {
             border: `2px solid ${this.colors.primary}`
         },
 
-        // All titles
+        // Title styling for screens
         title: {
             fontSize: '2rem',
             color: this.colors.primary,
@@ -62,19 +67,19 @@ class UIManager {
             userSelect: 'none' as const
         },
 
-        // Main title is bigger
+        // Main title with larger font size
         mainTitle: {
             fontSize: '4rem'
         },
 
-        // All tables
+        // Table styling for buttons and inputs
         table: {
             margin: '2rem auto',
             borderCollapse: 'separate' as const,
             borderSpacing: '10px'
         },
 
-        // Primary buttons (main actions)
+        // Primary button styling for main actions
         primaryButton: {
             width: '350px',
             height: '50px',
@@ -88,7 +93,7 @@ class UIManager {
             borderRadius: '5px'
         },
 
-        // Secondary buttons (back, navigation)
+        // Secondary button styling for navigation
         secondaryButton: {
             width: '150px',
             height: '35px',
@@ -103,7 +108,7 @@ class UIManager {
             margin: '10px'
         },
 
-        // Language navigation (keep small)
+        // Language navigation button styling
         navButton: {
             background: 'none',
             border: 'none',
@@ -113,7 +118,7 @@ class UIManager {
             margin: '0 10px'
         },
 
-        // Language selector
+        // Language selector container styling
         languageSelector: {
             display: 'inline-flex',
             alignItems: 'center' as const,
@@ -133,7 +138,7 @@ class UIManager {
             color: this.colors.text
         },
 
-        // Form elements
+        // Form elements styling
         setupForm: {
             display: 'none',
             margin: '1rem 0'
@@ -167,7 +172,7 @@ class UIManager {
             fontStyle: 'italic' as const
         },
 
-        // Pause dialog
+        // Pause dialog styling
         pauseDialog: {
             position: 'absolute' as const,
             top: '0',
@@ -188,16 +193,19 @@ class UIManager {
         }
     };
 
+    // Utility method to apply styles to a single element
     private applyStyles(element: HTMLElement, styles: Record<string, any>): void {
         Object.assign(element.style, styles);
     }
 
+    // Utility method to apply styles to all elements matching a selector
     private applyStylesToAll(selector: string, styles: Record<string, any>): void {
         document.querySelectorAll(selector).forEach((element) => {
             this.applyStyles(element as HTMLElement, styles);
         });
     }
 
+    // Initialize all styles for the application
     initializeStyles(): void {
         this.setupScreens();
         this.setupButtons();
@@ -206,26 +214,27 @@ class UIManager {
         this.setupPauseDialogs();
     }
 
+    // Setup styles for screens
     private setupScreens(): void {
-        // All screens get base screen styling
+        // Apply base screen styling to all screens
         this.applyStylesToAll('.screen', this.styles.screen);
         
-        // Main menu is special (no overlay)
+        // Special styling for the main menu
         const mainMenu = document.getElementById('main-menu');
         if (mainMenu) {
             this.applyStyles(mainMenu, this.styles.mainScreen);
         }
 
-        // All containers
+        // Apply container styling
         this.applyStylesToAll('.screen-container', this.styles.container);
         
-        // All tables
+        // Apply table styling
         this.applyStylesToAll('.button-table, .input-table', this.styles.table);
 
-        // All titles
+        // Apply title styling
         this.applyStylesToAll('.screen-title', this.styles.title);
 
-        // Main title special styling
+        // Special styling for the main title
         const mainTitle = document.getElementById('main-title');
         if (mainTitle) {
             this.applyStyles(mainTitle, this.styles.title);
@@ -234,24 +243,19 @@ class UIManager {
         }
     }
 
+    // Setup styles for buttons
     private setupButtons(): void {
-        // Primary buttons (main actions)
+        // Apply primary button styling
         this.applyStylesToAll('.buttons', this.styles.primaryButton);
         
-        // Secondary buttons (back buttons)
-        // const backButtons = ['mode-back', 'setup-back'];
-        // backButtons.forEach((buttonId) => {
-        //     const button = document.getElementById(buttonId);
-        //     if (button) {
-        //         this.applyStyles(button, this.styles.secondaryButton);
-        //     }
-        // });
+        // Apply secondary button styling
         this.applyStylesToAll('.secondary-btn', this.styles.secondaryButton);
 
-        // Disabled buttons
+        // Apply disabled button styling
         this.applyStylesToAll('.disabled', { opacity: '0.5', cursor: 'not-allowed' });
     }
 
+    // Setup styles for forms
     private setupForms(): void {
         this.applyStylesToAll('.setup-form', this.styles.setupForm);
         this.applyStylesToAll('.input-label', this.styles.label);
@@ -259,17 +263,19 @@ class UIManager {
         this.applyStylesToAll('.setup-info', this.styles.info);
     }
 
+    // Setup styles for language navigation
     private setupLanguage(): void {
         this.applyStylesToAll('.language-selector', this.styles.languageSelector);
         this.applyStylesToAll('.language-display', this.styles.languageDisplay);
         this.applyStylesToAll('.nav-btn', this.styles.navButton);
     }
 
+    // Setup styles for pause dialogs
     private setupPauseDialogs(): void {
         this.applyStylesToAll('.pause-dialog', this.styles.pauseDialog);
     }
 
-    // Screen management (simplified)
+    // Screen management methods
     showScreen(screenId: string): void {
         // Hide all screens
         this.applyStylesToAll('.screen', { display: 'none' });
@@ -303,7 +309,7 @@ class UIManager {
         }
     }
 
-    // Utility methods (unchanged)
+    // Utility methods for player setup and validation
     getPlayerNames(gameMode: GameMode): { player1: string; player2?: string } {
         let player1Input: HTMLInputElement | null;
         let player2Input: HTMLInputElement | null = null;
@@ -334,7 +340,7 @@ class UIManager {
         return result;
     }
 
-    validatePlayerSetup(gameMode: GameMode): boolean { //TODO
+    validatePlayerSetup(gameMode: GameMode): boolean { //TODO implement this
         // const names = this.getPlayerNames(gameMode);
         
         // if (!names.player1 || names.player1.length === 0) {

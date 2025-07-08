@@ -8,6 +8,10 @@ import { GAME_CONFIG } from '../shared/gameConfig.js';
 import { Direction, GameMode} from '../shared/constants.js';
 import { GameStateData } from '../shared/types.js';
 
+/**
+ * Manages the networked game logic, including WebSocket communication,
+ * input handling, and game state updates.
+ */
 export class NetworkGameManager {
     private scene: any;
     private gameObjects: GameObjects;
@@ -17,21 +21,33 @@ export class NetworkGameManager {
     private isRunning = false;
     private playerSide = 0;
 
+    /**
+     * Initializes the NetworkGameManager with the required dependencies.
+     * @param scene - The Babylon.js scene object.
+     * @param gameObjects - The game objects to be managed.
+     * @param inputManager - Handles player input.
+     * @param guiManager - Manages the GUI elements.
+     */
     constructor(scene: any, gameObjects: GameObjects, inputManager: InputManager, guiManager: GUIManager) {
         this.scene = scene;
         this.gameObjects = gameObjects;
         this.inputManager = inputManager;
         this.guiManager = guiManager;
-        this.webSocketClient = new WebSocketClient('ws://localhost:3000');
+        this.webSocketClient = new WebSocketClient('ws://localhost:3000'); //TODO make this configurable, important for remote players
         this.setupWebSocketCallbacks();
     }
 
+    /**
+     * Sets up WebSocket event callbacks for handling game state updates,
+     * connection events, and errors.
+     */
     private setupWebSocketCallbacks(): void {
         this.webSocketClient.onGameState((state: GameStateData) => {
             this.updateGameObjects(state);
         });
 
         this.webSocketClient.onConnection(() => {
+            // Handle WebSocket connection event
         });
 
         this.webSocketClient.onError((error: string) => {
@@ -39,6 +55,10 @@ export class NetworkGameManager {
         });
     }
 
+    /**
+     * Updates the positions of game objects based on the received game state.
+     * @param state - The current game state data.
+     */
     private updateGameObjects(state: GameStateData): void {
         if (this.gameObjects.players.left) {
             console.log(`Left paddle: ${state.paddleLeft.x} -> ${this.gameObjects.players.left.position.x}`);
@@ -50,7 +70,6 @@ export class NetworkGameManager {
             this.gameObjects.players.right.position.x = state.paddleRight.x;
         }
 
-
         if (this.gameObjects.ball) {
             this.gameObjects.ball.position.x = state.ball.x;
             this.gameObjects.ball.position.z = state.ball.z;
@@ -61,11 +80,14 @@ export class NetworkGameManager {
         }
     }
 
+    /**
+     * Starts a single-player game mode.
+     */
     startSinglePlayer(): void {
         if (this.webSocketClient.isConnected()) {
             this.webSocketClient.joinGame(GameMode.SINGLE_PLAYER);
             this.playerSide = 0;
-            this.start()
+            this.start();
         } else {
             this.webSocketClient.onConnection(() => {
                 this.webSocketClient.joinGame(GameMode.SINGLE_PLAYER);
@@ -74,6 +96,9 @@ export class NetworkGameManager {
         }
     }
 
+    /**
+     * Starts a two-player local game mode.
+     */
     startTwoPlayerLocal(): void {
         if (this.webSocketClient.isConnected()) {
             this.webSocketClient.joinGame(GameMode.TWO_PLAYER_LOCAL);
@@ -86,6 +111,9 @@ export class NetworkGameManager {
         }
     }
 
+    /**
+     * Starts the game loop and sets up input handling and rendering updates.
+     */
     start(): void {
         if (this.isRunning) {
             return;
@@ -109,22 +137,31 @@ export class NetworkGameManager {
         });
     }
 
+    /**
+     * Updates the 3D camera targets to follow the players.
+     */
     private update3DCamere(): void {
         const [camera1, camera2] = this.gameObjects.cameras;
-    
-    if (camera1 && camera2) {
-        const targetLeft = this.inputManager.getFollowTarget(this.gameObjects.players.left);
-        const targetRight = this.inputManager.getFollowTarget(this.gameObjects.players.right);
 
-        camera1.setTarget(BABYLON.Vector3.Lerp(camera1.getTarget(), targetLeft, GAME_CONFIG.followSpeed));
-        camera2.setTarget(BABYLON.Vector3.Lerp(camera2.getTarget(), targetRight, GAME_CONFIG.followSpeed));
-    }
+        if (camera1 && camera2) {
+            const targetLeft = this.inputManager.getFollowTarget(this.gameObjects.players.left);
+            const targetRight = this.inputManager.getFollowTarget(this.gameObjects.players.right);
+
+            camera1.setTarget(BABYLON.Vector3.Lerp(camera1.getTarget(), targetLeft, GAME_CONFIG.followSpeed));
+            camera2.setTarget(BABYLON.Vector3.Lerp(camera2.getTarget(), targetRight, GAME_CONFIG.followSpeed));
+        }
     }
 
+    /**
+     * Stops the game loop.
+     */
     stop(): void {
         this.isRunning = false;
     }
 
+    /**
+     * Cleans up resources and disconnects the WebSocket client.
+     */
     dispose(): void {
         this.stop();
         this.webSocketClient.disconnect();

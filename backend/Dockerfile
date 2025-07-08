@@ -1,5 +1,6 @@
 # Uses Node.js 20 on Alpine, Alpine is used toproviding a lightweight base image
 FROM node:alpine AS builder
+# Using a builder stage to save space by only copying the necessary build artifacts to the final image
 
 # Sets up /app as the working directory
 WORKDIR /app

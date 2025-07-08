@@ -9,10 +9,17 @@ export const langs: string[] = ['English', 'Italiano', 'Français', 'Brasileiro'
 
 const allTranslations = [english, italian, french, portuguese];
 
+/**
+ * Retrieves the current translation object based on the selected language.
+ * @returns {Translation} The translation object for the current language.
+ */
 export function getCurrentTranslation(): Translation {
     return allTranslations[currentLang];
 }
 
+/**
+ * Updates the text content of various elements in the UI to match the current language.
+ */
 export function updateLanguageDisplay(): void {
     const t = getCurrentTranslation();
 
@@ -105,16 +112,27 @@ export function updateLanguageDisplay(): void {
     if (pauseControl3D) pauseControl3D.textContent = t.pauseControls3D;
 }
 
+/**
+ * Cycles to the next language in the list and updates the UI accordingly.
+ */
 export function nextLanguage(): void {
     currentLang = (currentLang + 1) % langs.length;
     updateLanguageDisplay();
 }
 
+/**
+ * Cycles to the previous language in the list and updates the UI accordingly.
+ */
 export function previousLanguage(): void {
     currentLang = (currentLang - 1 + langs.length) % langs.length;
     updateLanguageDisplay();
 }
 
+/**
+ * Retrieves an alert message for a specific player based on the current language.
+ * @param {('player1' | 'player2')} type - The type of player ('player1' or 'player2').
+ * @returns {string} The alert message for the specified player.
+ */
 export function getAlert(type: 'player1' | 'player2'): string {
     const t = getCurrentTranslation();
     return type === 'player1' ? t.alertPlayer1 : t.alertPlayer2;

@@ -24,12 +24,10 @@ export class GameSession {
     _create_game(): void {
 		switch (this.mode) {
 			case GameMode.SINGLE_PLAYER:
-				// this.game = new SinglePlayer(this.id, this.broadcast_callback);
 				this.game = new SinglePlayer(this.id, this.broadcastToClients.bind(this));
 				break;
 			case GameMode.TWO_PLAYER_LOCAL:
 			case GameMode.TWO_PLAYER_REMOTE:
-				// this.game = new TwoPlayer(this.id, this.broadcast_callback);
 				this.game = new TwoPlayer(this.id, this.broadcastToClients.bind(this));
 				break;
 			default:
@@ -37,8 +35,6 @@ export class GameSession {
 		}
 	}
 
-	// async broadcast_callback(state: GameState): Promise<void> {
-	//  broadcast_callback = async (state: GameState): Promise<void> => {
 	async broadcastToClients(state: GameStateData): Promise<void> {
 		const message = {
 			type: MessageType.GAME_STATE,
@@ -96,7 +92,7 @@ export class GameSession {
 		this.game.running = false;
 	}
 
-	// We might need to make this method async and await the send()
+	// TODO We might need to make this method async and await the send()
 	assign_sides() {
 		if (this.mode === GameMode.TWO_PLAYER_REMOTE) {
 			this.clients[0].websocket.send(JSON.stringify({"side": LEFT_PADDLE}));

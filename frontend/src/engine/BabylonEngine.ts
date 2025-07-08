@@ -6,6 +6,9 @@ import { GUIManager } from '../game/GuiManager.js';
 import { NetworkGameManager } from '../game/NetworkGameManager.js';
 import { ViewMode } from '../shared/constants.js';
 
+/**
+ * BabylonEngine is responsible for managing the Babylon.js engine, scenes, and game lifecycle.
+ */
 export class BabylonEngine {
     private engine: any = null;
     private scene: any = null;
@@ -14,12 +17,20 @@ export class BabylonEngine {
     private inputManager: InputManager | null = null;
     private guiManager: GUIManager | null = null;
 
+    /**
+     * Initializes the BabylonEngine with the given canvas ID.
+     * @param canvasId - The ID of the HTML canvas element to use for rendering.
+     */
     constructor(canvasId: string) {
         this.canvas = document.getElementById(canvasId) as HTMLCanvasElement;
         if (!this.canvas)
             throw new Error(`Canvas element not found`);
     }
 
+    /**
+     * Creates and initializes the Babylon.js engine.
+     * @returns The created engine instance.
+     */
     createEngine(): any {
         this.engine = new BABYLON.Engine(this.canvas, true, { 
             preserveDrawingBuffer: true, 
@@ -31,12 +42,18 @@ export class BabylonEngine {
         return this.engine;
     }
 
+    /**
+     * Resizes the engine to adapt to the current canvas size.
+     */
     resize(): void {
         if (this.engine) {
             this.engine.resize();
         }
     }
 
+    /**
+     * Starts the render loop for the engine.
+     */
     startRenderLoop(): void {
         if (this.engine) {
             this.engine.runRenderLoop(() => {
@@ -46,18 +63,27 @@ export class BabylonEngine {
         }
     }
 
+    /**
+     * Pauses the render loop of the engine.
+     */
     pause(): void {
         if (this.engine) {
             this.engine.stopRenderLoop();
         }
     }
 
+    /**
+     * Resumes the render loop of the engine.
+     */
     resume(): void {
         if (this.engine && this.scene) {
             this.startRenderLoop();
         }
     }
 
+    /**
+     * Disposes of all resources used by the engine, including scenes and managers.
+     */
     dispose(): void {
         
         // Stop render loop
@@ -94,6 +120,11 @@ export class BabylonEngine {
         this.canvas = null;
     }
 
+    /**
+     * Creates a scene based on the specified view mode (2D or 3D).
+     * @param mode - The view mode (2D or 3D) for the scene.
+     * @returns The created scene instance.
+     */
     private createScene(mode: ViewMode): any {
         const scene = new BABYLON.Scene(this.engine);
 
@@ -117,20 +148,34 @@ export class BabylonEngine {
         return scene;
     }
 
+    /**
+     * Creates and initializes a 2D scene.
+     * @returns The created 2D scene instance.
+     */
     create2DScene(): any {
         return this.createScene(ViewMode.MODE_2D);
     }
 
+    /**
+     * Creates and initializes a 3D scene.
+     * @returns The created 3D scene instance.
+     */
     create3DScene(): any {
         return this.createScene(ViewMode.MODE_3D);
     }
 
+    /**
+     * Starts a single-player game session.
+     */
     startSinglePlayer(): void {
         if (this.networkGameManager) {
             this.networkGameManager.startSinglePlayer();
         }
     }
 
+    /**
+     * Starts a two-player local game session.
+     */
     startTwoPlayerLocal(): void {
         if (this.networkGameManager) {
             this.networkGameManager.startTwoPlayerLocal();

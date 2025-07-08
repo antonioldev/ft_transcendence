@@ -1,17 +1,30 @@
 import { MessageType, GameMode, Direction } from '../shared/constants.js'
 import { ClientMessage, ServerMessage, GameStateData } from '../shared/types.js'
 
+/**
+ * WebSocketClient is responsible for managing the WebSocket connection
+ * to the game server, handling messages, and providing callbacks for
+ * game state updates, connection events, and errors.
+ */
 export class WebSocketClient {
     private ws: WebSocket | null = null;
     private gameStateCallback: ((state: GameStateData) => void) | null = null;
     private connectionCallback: (() => void) | null = null;
     private errorCallback: ((error: string) => void) | null = null;
 
+    /**
+     * Initializes the WebSocketClient and connects to the server.
+     * @param url - The WebSocket server URL.
+     */
     constructor(url: string) {
         this.connect(url);
     }
 
-    private connect(url:string): void {
+    /**
+     * Establishes a WebSocket connection to the specified URL.
+     * @param url - The WebSocket server URL.
+     */
+    private connect(url: string): void {
         this.ws = new WebSocket(url);
 
         this.ws.onopen = () => {
@@ -30,7 +43,7 @@ export class WebSocketClient {
             }
         };
 
-        this.ws.onclose =  () => {
+        this.ws.onclose = () => {
             console.log('❌ Disconnected from game server');
         };
 
@@ -38,9 +51,13 @@ export class WebSocketClient {
             console.error('❌ WebSocket error:', error);
             if (this.errorCallback)
                 this.errorCallback('Connection error');
-        }
+        };
     }
 
+    /**
+     * Handles incoming messages from the server.
+     * @param message - The message received from the server.
+     */
     private handleMessage(message: ServerMessage): void {
         switch (message.type) {
             case MessageType.GAME_STATE:
@@ -60,6 +77,10 @@ export class WebSocketClient {
         }
     }
 
+    /**
+     * Sends a request to join a game with the specified game mode.
+     * @param gameMode - The game mode to join.
+     */
     joinGame(gameMode: GameMode): void {
         if (this.ws && this.ws.readyState === WebSocket.OPEN) {
             const message: ClientMessage = {
@@ -70,29 +91,49 @@ export class WebSocketClient {
         }
     }
 
+    /**
+     * Sends player input to the server.
+     * @param side - The player's side.
+     * @param direction - The direction of the player's input.
+     */
     sendPlayerInput(side: number, direction: Direction): void {
         if (this.ws && this.ws.readyState === WebSocket.OPEN) {
             const message: ClientMessage = {
                 type: MessageType.PLAYER_INPUT,
                 side: side,
                 direction: direction
-        };
-        this.ws.send(JSON.stringify(message));
+            };
+            this.ws.send(JSON.stringify(message));
         }
     }
 
+    /**
+     * Registers a callback to be invoked when the game state is updated.
+     * @param callback - The callback function.
+     */
     onGameState(callback: (state: GameStateData) => void): void {
         this.gameStateCallback = callback;
     }
 
+    /**
+     * Registers a callback to be invoked when the connection is established.
+     * @param callback - The callback function.
+     */
     onConnection(callback: () => void): void {
         this.connectionCallback = callback;
     }
 
+    /**
+     * Registers a callback to be invoked when an error occurs.
+     * @param callback - The callback function.
+     */
     onError(callback: (error: string) => void): void {
         this.errorCallback = callback;
     }
 
+    /**
+     * Disconnects the WebSocket connection.
+     */
     disconnect(): void {
         if (this.ws) {
             this.ws.close();
@@ -100,6 +141,10 @@ export class WebSocketClient {
         }
     }
 
+    /**
+     * Checks if the WebSocket connection is currently open.
+     * @returns True if connected, false otherwise.
+     */
     isConnected(): boolean {
         return this.ws?.readyState === WebSocket.OPEN;
     }

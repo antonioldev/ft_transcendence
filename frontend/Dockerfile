@@ -1,5 +1,8 @@
+
+
 # Build stage for TypeScript
 FROM node:alpine AS builder
+# Using a builder stage to save space by only copying the necessary build artifacts to the final image
 
 WORKDIR /app
 

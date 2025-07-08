@@ -24,8 +24,8 @@ services:
     env_file:
       - .env
     command: npm run dev
-    networks:
-      - app-network
-networks:
-  app-network:
-    driver: bridge
+#     networks:
+#       - app-network
+# networks:
+#   app-network:
+#     driver: bridge

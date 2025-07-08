@@ -3,16 +3,18 @@ import { Player } from './Paddle'
 import { CollisionDirection } from '../shared/constants'
 import { GAME_CONFIG, getBallStartPosition, LEFT_PADDLE, RIGHT_PADDLE } from '../shared/gameConfig';
 
+// Represents the ball in the game, handling its movement, collisions, and scoring logic.
 export class Ball {
-    rect: Rect;
-    oldRect: Rect;
-    direction: [number, number];
-    speed = GAME_CONFIG.ballInitialSpeed;
-    speedModifier = 0;
-    players: (Player)[];
-    startTime: number;
-    updateScore: (scoringPlayer: number) => void;
+    rect: Rect; // Current position and size of the ball.
+    oldRect: Rect; // Previous position and size of the ball.
+    direction: [number, number]; // Direction vector of the ball's movement.
+    speed = GAME_CONFIG.ballInitialSpeed; // Initial speed of the ball.
+    speedModifier = 0; // Speed modifier based on game state (e.g., delay).
+    players: (Player)[]; // Array of players (paddles) in the game.
+    startTime: number; // Timestamp when the ball was initialized or reset.
+    updateScore: (scoringPlayer: number) => void; // Callback to update the score.
 
+    // Initializes the ball with players and a score update callback.
     constructor(players: any[], updateScoreCallback: (side: number) => void) {
         const ballPos = getBallStartPosition();
         this.rect = new Rect(ballPos.x, ballPos.z, GAME_CONFIG.ballRadius * 2, GAME_CONFIG.ballRadius * 2);
@@ -23,12 +25,14 @@ export class Ball {
         this.direction = this.randomDirection();
     }
 
+    // Generates a random initial direction for the ball.
     private randomDirection(): [number, number] {
         const x = Math.random() < 0.5 ? 1 : -1;
         const y = (Math.random() * 0.1 + 0.7) * (Math.random() < 0.5 ? -1 : 1);
         return [x, y];
     }
 
+    // Moves the ball based on its direction, speed, and elapsed time.
     move(dt: number): void {
         const deltaSeconds = dt / 1000;
         this.rect.x += this.direction[0] * this.speed * deltaSeconds * this.speedModifier;
@@ -37,6 +41,7 @@ export class Ball {
         this.collision(CollisionDirection.VERTICAL);
     }
 
+    // Handles collisions with paddles and adjusts the ball's direction accordingly.
     private collision(direction: CollisionDirection): void {
         for (const paddle of this.players) {
             if (!this.rect.colliderect(paddle.rect)) continue;
@@ -45,7 +50,7 @@ export class Ball {
                 if (this.rect.right >= paddle.rect.left && this.oldRect.right <= paddle.oldRect.left) {
                     this.rect.right = paddle.rect.left;
                     this.direction[0] *= -1;
-            }
+                }
                 else if (this.rect.left <= paddle.rect.right && this.oldRect.left >= paddle.oldRect.right) {
                     this.rect.left = paddle.rect.right;
                     this.direction[0] *= -1;
@@ -64,6 +69,7 @@ export class Ball {
         }
     }
 
+    // Handles collisions with walls and detects goals to update the score.
     wallCollision(): void {
         // Wall collisions (left/right walls)
         if (this.rect.left <= GAME_CONFIG.wallBounds.minX) {
@@ -88,6 +94,7 @@ export class Ball {
         }
     }
 
+    // Resets the ball to its initial position and direction.
     reset(): void {
         const ballPos = getBallStartPosition();
         this.rect.x = ballPos.x;
@@ -96,11 +103,13 @@ export class Ball {
         this.startTime = performance.now();
     }
 
+    // Delays the ball's movement until the start delay has elapsed.
     private delayTimer(): void {
         const elapsed = (performance.now() - this.startTime);
         this.speedModifier = elapsed >= GAME_CONFIG.startDelay ? 1 : 0;
     }
 
+    // Updates the ball's state, including movement, collisions, and scoring.
     update(dt: number): void {
         this.oldRect.copy(this.rect);
         this.delayTimer();

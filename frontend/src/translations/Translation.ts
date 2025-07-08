@@ -1,3 +1,7 @@
+/**
+ * Represents the structure of a translation object for different languages.
+ * Each property corresponds to a translatable string in the application.
+ */
 export interface Translation {
     appTitle: string;
     classicMode: string;

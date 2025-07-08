@@ -1,3 +1,6 @@
+// This file contains utility functions to build 2D and 3D game scenes using the BABYLON.js library.
+// It includes methods to create materials, cameras, lights, ground, walls, players, and balls for the game.
+
 declare var BABYLON: any;
 
 import { GAME_CONFIG } from '../shared/gameConfig.js';
@@ -19,6 +22,7 @@ import {
 } from '../core/utils.js'
 
 export interface GameObjects {
+    // Represents the game objects in the scene
     players: {
         left: any;
         right: any;
@@ -30,6 +34,7 @@ export interface GameObjects {
     lights: any[];
 }
 
+// Creates a material for the given scene
 function createMaterial(scene: any, name: string, color: any, is2D: boolean): any {
     const material = new BABYLON.StandardMaterial(name, scene);
     
@@ -42,7 +47,7 @@ function createMaterial(scene: any, name: string, color: any, is2D: boolean): an
     return material;
 }
 
-// Simple helper functions - no class needed
+// Creates a camera for the given scene
 function createCamera(scene: any, name: string, position: any, viewport: any, is2D: boolean): any {
     const camera = new BABYLON.FreeCamera(name, position, scene);
     camera.setTarget(BABYLON.Vector3.Zero());
@@ -54,16 +59,19 @@ function createCamera(scene: any, name: string, position: any, viewport: any, is
     return camera;
 }
 
+// Creates a light source for the given scene
 function createLight(scene: any, name: string, position: any): any {
     return new BABYLON.HemisphericLight(name, position, scene);
 }
 
+// Creates the ground for the game field
 function createGround(scene: any, name: string, width: number, height: number, color: any, is2D: boolean): any {
     const ground = BABYLON.MeshBuilder.CreateGround(name, { width, height }, scene);
     ground.material = createMaterial(scene, name + "Material", color, is2D);
     return ground;
 }
 
+// Creates the walls surrounding the game field
 function createWalls(scene: any, name: string, fieldWidth: number, fieldHeight: number, wallHeight: number, wallThickness: number, color: any, is2D: boolean): any[] {
     const walls: any[] = [];
     const material = createMaterial(scene, name + "Material", color, is2D);
@@ -95,6 +103,7 @@ function createWalls(scene: any, name: string, fieldWidth: number, fieldHeight: 
     return walls;
 }
 
+// Creates a player object in the scene
 function createPlayer(scene: any, name: string, position: Position, size: Size, color: any, is2D: boolean): any {
     const player = BABYLON.MeshBuilder.CreateBox(name, {width: size.x, height: size.y, depth: size.z}, scene);
     player.material = createMaterial(scene, name + "Material", color, is2D);
@@ -102,6 +111,7 @@ function createPlayer(scene: any, name: string, position: Position, size: Size, 
     return player;
 }
 
+// Creates a ball object in the scene
 function createBall(scene: any, name: string, position: any, color: any, is2D: boolean): any {
     const ball = BABYLON.MeshBuilder.CreateSphere(name, {diameter: GAME_CONFIG.ballRadius * 2}, scene);
     ball.material = createMaterial(scene, name + "Material", color, is2D);
@@ -109,6 +119,7 @@ function createBall(scene: any, name: string, position: any, color: any, is2D: b
     return ball;
 }
 
+// Builds and returns the 2D game scene
 export function build2DScene(scene: any, engine: any): GameObjects {
     //scene.clearColor = BABYLON.Color3.Black();
 
@@ -137,6 +148,7 @@ export function build2DScene(scene: any, engine: any): GameObjects {
     };
 }
 
+// Builds and returns the 3D game scene
 export function build3DScene(scene: any, engine: any): GameObjects {
     const camera1 = createCamera(scene, "camera1", getCamera3DPlayer1Position(), get3DCamera1Viewport(), false);
     const camera2 = createCamera(scene, "camera2", getCamera3DPlayer2Position(), get3DCamera2Viewport(), false);

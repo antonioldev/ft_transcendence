@@ -4,38 +4,46 @@ import { Clock } from './utils';
 import { LEFT_PADDLE, RIGHT_PADDLE } from '../shared/gameConfig';
 import { PlayerInput, GameStateData } from '../shared/types';
 
-
-// IMPORTANT: the queue is currently just a list, there is no async queue object in TS
-// we can test with this and see but likely we will have to create our own async queue class
-
+// The Game class serves as an abstract base class for managing the core game logic.
+// It handles the game loop, state updates, input processing, and broadcasting game state.
 abstract class Game {
+	// Unique identifier for the game instance
 	id: string;
+	// Clock instance to manage game loop timing
 	clock: Clock;
+	// Queue to store player inputs
 	queue: PlayerInput[] = [];
+	// Flag to indicate if the game is running
 	running: boolean;
+	// Array of players (can include AI bots)
 	players!: (Player | AIBot)[];
+	// Ball instance for the game
 	ball!: Ball;
+	// Callback function to broadcast the game state
 	protected _broadcast: (state: GameStateData) => Promise<void>;
 
 	constructor(id: string, broadcast_callback: (state: GameStateData) => Promise<void>) {
+		// Initialize game properties
 		this.id = id;
 		this.clock = new Clock();
 		this.running = true;
 		this._broadcast = broadcast_callback;
 	}
 
-    // --- protected methods ---
-
+	// Abstract method to handle input, implemented by derived classes
 	protected abstract _handle_input(dt: number): void;
 
+	// Initialize the ball and associate it with players
 	protected _init_ball() {
 		this.ball = new Ball(this.players, this._update_score);
 	}
 
+	// Update the score for the specified side
 	protected _update_score(side: number): void {
 		this.players[side].score += 1;
 	}
 
+	// Update the game state, including player and ball positions
 	protected _update_state(dt: number): void {
 		this.players[LEFT_PADDLE].cacheRect();
 		this.players[RIGHT_PADDLE].cacheRect();
@@ -43,6 +51,7 @@ abstract class Game {
 		this.ball.update(dt);
 	}
 
+	// Check if the game state has changed (e.g., player or ball positions)
 	protected _state_changed(): boolean {
 		return (
 		this.players[LEFT_PADDLE].rect.x != this.players[LEFT_PADDLE].oldRect.x ||
@@ -51,6 +60,7 @@ abstract class Game {
 		this.ball.rect.y != this.ball.oldRect.y) //TODO this will always be true because the ball moves all the time
 	}
 
+	// Process the input queue and apply player movements
 	protected _process_queue(dt: number): void {
 		while (this.queue.length > 0) {
 			const input = this.queue.shift();
@@ -60,12 +70,12 @@ abstract class Game {
 		}
 	}
 
-    // --- public methods ---
-
+	// Add a new input to the queue
 	enqueue(input: PlayerInput): void {
-		this.queue.push(input)
+		this.queue.push(input);
 	}
 
+	// Retrieve the current game state as a data object
 	get_state(): GameStateData {
 		return {
 			"paddleLeft": {
@@ -83,6 +93,7 @@ abstract class Game {
 		}
 	}
 
+	// Main game loop that updates the state and broadcasts changes
 	async run(): Promise<void> {
 		while (this.running) {
 			const dt = await this.clock.tick(60)
@@ -96,30 +107,41 @@ abstract class Game {
 	}
 }
 
+// SinglePlayer class represents a game mode with one human player and one AI bot.
 export class SinglePlayer extends Game {
-	players: [Player, AIBot]
+	// Array containing one Player and one AIBot
+	players: [Player, AIBot];
 
 	constructor(id: string, broadcast_callback: (state: GameStateData) => Promise<void>) {
+		// Initialize the base Game class
 		super(id, broadcast_callback);
+		// Create the human player and AI bot
 		this.players = [new Player(LEFT_PADDLE), null as any];
 		this._init_ball();
 		this.players[RIGHT_PADDLE] = new AIBot(RIGHT_PADDLE, this.ball);
 	}
+
+	// Handle input for the human player and update the AI bot
 	protected _handle_input(dt: number) {
 		this._process_queue(dt);
 		this.players[RIGHT_PADDLE].update(dt);
 	}
 }
 
+// TwoPlayer class represents a game mode with two human players.
 export class TwoPlayer extends Game {
-	players: [Player, Player]
+	// Array containing two human players
+	players: [Player, Player];
 
 	constructor(id: string, broadcast_callback: (state: GameStateData) => Promise<void>) {
-		super(id, broadcast_callback)
-		this.players = [new Player(LEFT_PADDLE), new Player(RIGHT_PADDLE)]
+		// Initialize the base Game class
+		super(id, broadcast_callback);
+		// Create two human players
+		this.players = [new Player(LEFT_PADDLE), new Player(RIGHT_PADDLE)];
 		this._init_ball();
 	}
 
+	// Handle input for both players
 	protected _handle_input(dt: number) {
 		this._process_queue(dt);
 	}
