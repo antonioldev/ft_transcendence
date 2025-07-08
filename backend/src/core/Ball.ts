@@ -1,7 +1,7 @@
-import { Rect } from './utils';
-import { Player } from './Paddle'
-import { CollisionDirection } from '../shared/constants'
-import { GAME_CONFIG, getBallStartPosition, LEFT_PADDLE, RIGHT_PADDLE } from '../shared/gameConfig';
+import { Rect } from './utils.js';
+import { Player } from './Paddle.js'
+import { CollisionDirection } from '../shared/constants.js'
+import { GAME_CONFIG, getBallStartPosition, LEFT_PADDLE, RIGHT_PADDLE } from '../shared/gameConfig.js';
 
 // Represents the ball in the game, handling its movement, collisions, and scoring logic.
 export class Ball {

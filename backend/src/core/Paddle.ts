@@ -1,7 +1,7 @@
-import { Rect } from './utils';
-import { Ball } from './Ball'
+import { Rect } from './utils.js';
+import { Ball } from './Ball.js'
 import { GAME_CONFIG, getBallStartPosition, getPlayerLeftPosition, 
-         getPlayerRightPosition, LEFT_PADDLE, RIGHT_PADDLE } from '../shared/gameConfig';
+         getPlayerRightPosition, LEFT_PADDLE, RIGHT_PADDLE } from '../shared/gameConfig.js';
 
 // Abstract class representing a paddle in the game.
 export abstract class Paddle {

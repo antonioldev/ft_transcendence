@@ -1,8 +1,8 @@
-import { SinglePlayer, TwoPlayer } from '../core/game';
-import { LEFT_PADDLE, RIGHT_PADDLE} from '../shared/gameConfig';
-import { Client } from '../models/Client';
-import { MessageType, GameMode } from '../shared/constants';
-import { GameStateData } from '../shared/types';
+import { SinglePlayer, TwoPlayer } from '../core/game.js';
+import { LEFT_PADDLE, RIGHT_PADDLE} from '../shared/gameConfig.js';
+import { Client } from '../models/Client.js';
+import { MessageType, GameMode } from '../shared/constants.js';
+import { GameStateData } from '../shared/types.js';
 
 // IMPORTANT: some methods are no longer async and might need to be, we can see in testing
 // I found it a little unclear when/where to use async in TS, we can discuss this later!

@@ -1,7 +1,11 @@
 # ft_transcendence
 This project is about creating a website for the mighty Pong contest!
 
-# How to create a WebSocket in Fastify
+## Notion Pages
+https://www.notion.so/transcendence-20ed2fbe756e8096b213eaec9850f049
+https://www.notion.so/ft_transcendence-20d8ccef5a8a80d88122e5a2d67d06f0
+
+## How to create a WebSocket in Fastify
 https://www.npmjs.com/package/@fastify/websocket
 
 

@@ -1,8 +1,8 @@
-import { Ball } from './Ball';
-import { Player, AIBot } from './Paddle';
-import { Clock } from './utils';
-import { LEFT_PADDLE, RIGHT_PADDLE } from '../shared/gameConfig';
-import { PlayerInput, GameStateData } from '../shared/types';
+import { Ball } from './Ball.js';
+import { Player, AIBot } from './Paddle.js';
+import { Clock } from './utils.js';
+import { LEFT_PADDLE, RIGHT_PADDLE } from '../shared/gameConfig.js';
+import { PlayerInput, GameStateData } from '../shared/types.js';
 
 // The Game class serves as an abstract base class for managing the core game logic.
 // It handles the game loop, state updates, input processing, and broadcasting game state.
