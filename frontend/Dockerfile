@@ -1,10 +1,13 @@
+
+
 # Build stage for TypeScript
-FROM node:18-alpine AS builder
+FROM node:alpine AS builder
+# Using a builder stage to save space by only copying the necessary build artifacts to the final image
 
 WORKDIR /app
 
 # Copy package files
-COPY package*.json ./
+COPY package*.json package-lock.json ./
 
 # Install dependencies
 RUN npm install
@@ -24,5 +27,6 @@ COPY --from=builder /app/dist/ /usr/share/nginx/html/
 
 # Copy HTML and other static files
 COPY src/*.html /usr/share/nginx/html/
+COPY src/favicon.ico /usr/share/nginx/html/
 
 EXPOSE 80

@@ -1,31 +1,84 @@
 NAME = transcendence
-PORT = 8080
 FRONTEND_DIR = ./frontend
+BACKEND_DIR = ./backend
 
-build:
-	docker build -t $(NAME) $(FRONTEND_DIR)
+#################################################################################
+#################################     MAIN      #################################
 
-run:
-	docker run -p $(PORT):80 --name $(NAME) $(NAME)
+run: build start
 
-up:
-	docker run -d -p $(PORT):80 --name $(NAME) $(NAME)
+start:
+	docker-compose up -d
 
 stop:
-	docker stop $(NAME)
+	docker-compose down
 
-clean:
-	docker rm $(NAME)
+build: build-backend build-frontend
 
-fclean: stop clean
-	docker rmi $(NAME)
+build-frontend:
+	@mkdir -p frontend/src/shared
+	@cp -rf shared/* frontend/src/shared/
+	@docker-compose build frontend
 
-re: stop clean build run
+build-backend:
+	@mkdir -p backend/src/shared
+	@cp -rf shared/* backend/src/shared/
+	@docker-compose build backend
 
-ps:
-	docker ps
+#################################################################################
+#################################     LOGS      #################################
 
 logs:
-	docker logs $(NAME)
+	docker-compose logs -f
 
-.PHONY: build run up stop clean fclean re ps logs
+logs-frontend:
+	docker-compose logs frontend
+
+logs-backend:
+	docker-compose logs backend
+
+#################################################################################
+#################################     CLEAN     #################################
+
+clean:
+	docker-compose down --remove-orphans
+
+fclean:
+	docker-compose down --rmi all --volumes --remove-orphans
+
+wipe-all:
+	docker system prune -a
+
+wipe-images:
+	docker image prune -a
+
+#################################################################################
+#################################    REBUILD    #################################
+
+re:
+	docker-compose down
+	docker-compose up --build
+
+restart:
+	docker-compose restart
+
+#################################################################################
+#################################    STATUS     #################################
+
+ps:
+	docker-compose ps
+
+#################################################################################
+#################################    UPDATES    #################################
+
+update-deps:
+	cd $(BACKEND_DIR) && npx npm-check-updates -u && npm install
+	cd $(FRONTEND_DIR) && npx npm-check-updates -u && npm install
+
+update: update-deps fclean up-build
+
+.PHONY: run start stop \
+        build build-frontend build-backend \
+        logs logs-frontend logs-backend \
+        clean fclean re restart \
+        ps update update-deps

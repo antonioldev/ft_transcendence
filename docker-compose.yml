@@ -1,5 +1,31 @@
 services:
+## FRONTEND CONTAINER
   frontend:
-    build: ./frontend
+    container_name: transcendence-frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
     ports:
-      - "8080:80"
+      - "${FRONTEND_PORT:-8080}:80"
+    env_file:
+      - .env
+    depends_on:
+      - backend
+## BACKEND CONTAINER
+  backend:
+    container_name: transcendence-backend
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "${BACKEND_PORT:-3000}:${BACKEND_PORT:-3000}"
+    volumes:
+      - ./backend/src:/app/src
+    env_file:
+      - .env
+    command: npm run dev
+#     networks:
+#       - app-network
+# networks:
+#   app-network:
+#     driver: bridge
