@@ -1,11 +1,11 @@
 import { updateLanguageDisplay, previousLanguage, nextLanguage } from '../translations/translations.js';
 import { uiManager } from '../ui/UIManager.js';
 import { init2D, init3D } from '../engine/GameEngine.js';
-import { GameState, ViewMode } from '../shared/constants.js';
+import { GameState, GameMode, ViewMode } from '../shared/constants.js';
 import { gameStateManager} from './GameState.js';
 
 let selectedViewMode: ViewMode | null = null;
-let selectedGameMode: string | null = null;
+let selectedGameMode: GameMode | null = null;
 
 function loadPage() {
     uiManager.initializeStyles();
@@ -44,19 +44,19 @@ function setupEventListeners() {
     const modeBack = document.getElementById('mode-back');
 
     soloMode?.addEventListener('click', () => {
-        selectedGameMode = 'solo';
+        selectedGameMode = GameMode.SINGLE_PLAYER;
         uiManager.showScreen('player-setup-overlay');
         uiManager.showSetupForm('solo');
     });
 
     localMode?.addEventListener('click', () => {
-        selectedGameMode = 'local';
+        selectedGameMode = GameMode.TWO_PLAYER_LOCAL;
         uiManager.showScreen('player-setup-overlay');
         uiManager.showSetupForm('local');
     });
 
     onlineMode?.addEventListener('click', () => {
-        selectedGameMode = 'online';
+        selectedGameMode = GameMode.TWO_PLAYER_REMOTE;
         uiManager.showScreen('player-setup-overlay');
         uiManager.showSetupForm('online');
     });
@@ -92,16 +92,17 @@ function setupEventListeners() {
     });
 }
 
-function startGameWithMode(viewMode: ViewMode, gameMode: string) {
+function startGameWithMode(viewMode: ViewMode, gameMode: GameMode) {
     if (viewMode === ViewMode.MODE_2D) {
         uiManager.showScreen('game-2d');
         gameStateManager.setState(GameState.PLAYING_2D);
-        // setTimeout(() => init2D(gameMode), 100);
-        setTimeout(() => init2D(), 100); //TODO add gamemode to init
+        setTimeout(() => init2D(gameMode), 100);
+        // setTimeout(() => init2D(), 100); //TODO add gamemode to init
     } else {
         uiManager.showScreen('game-3d');
         gameStateManager.setState(GameState.PLAYING_3D);
-        setTimeout(() => init3D(), 100);
+		setTimeout(() => init3D(gameMode), 100);
+        // setTimeout(() => init3D(), 100);
     }
 }
 

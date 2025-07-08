@@ -1,4 +1,4 @@
-import { ViewMode } from '../shared/constants.js';
+import { ViewMode, GameMode } from '../shared/constants.js';
 import { BabylonEngine } from './BabylonEngine.js';
 
 class GameEngine {
@@ -39,13 +39,13 @@ class GameEngine {
     startTwoPlayerLocal(): void { this.engine?.startTwoPlayerLocal(); }
 }
 
-export const init2D = async () => {
+export const init2D = async (gameMode: GameMode) => {
     await engine2D.init("game-canvas-2d", ViewMode.MODE_2D);
     engine2D.startTwoPlayerLocal();//TODO select game mode
     // engine2D.startSinglePlayer()
 };
 
-export const init3D = async () => {
+export const init3D = async (gameMode: GameMode) => {
     await engine3D.init("game-canvas-3d", ViewMode.MODE_3D);
     engine3D.startTwoPlayerLocal();
     // engine3D.startSinglePlayer()

@@ -1,5 +1,6 @@
+import { GameMode } from '../shared/constants.js';
 import { getAlert } from '../translations/translations.js';
-
+//https://nerdcave.com/tailwind-cheat-sheet TODO try to implement this
 class UIManager {
     private static instance: UIManager;
 
@@ -303,19 +304,19 @@ class UIManager {
     }
 
     // Utility methods (unchanged)
-    getPlayerNames(gameMode: string): { player1: string; player2?: string } {
+    getPlayerNames(gameMode: GameMode): { player1: string; player2?: string } {
         let player1Input: HTMLInputElement | null;
         let player2Input: HTMLInputElement | null = null;
 
         switch (gameMode) {
-            case 'solo':
+            case GameMode.SINGLE_PLAYER:
                 player1Input = document.getElementById('player1-name') as HTMLInputElement;
                 break;
-            case 'local':
+            case GameMode.TWO_PLAYER_LOCAL:
                 player1Input = document.getElementById('player1-name-local') as HTMLInputElement;
                 player2Input = document.getElementById('player2-name-local') as HTMLInputElement;
                 break;
-            case 'online':
+            case GameMode.TWO_PLAYER_REMOTE:
                 player1Input = document.getElementById('player1-name-online') as HTMLInputElement;
                 break;
             default:
@@ -333,18 +334,18 @@ class UIManager {
         return result;
     }
 
-    validatePlayerSetup(gameMode: string): boolean { //TODO
-        const names = this.getPlayerNames(gameMode);
+    validatePlayerSetup(gameMode: GameMode): boolean { //TODO
+        // const names = this.getPlayerNames(gameMode);
         
-        if (!names.player1 || names.player1.length === 0) {
-            alert(getAlert('player1'));
-            return false;
-        }
+        // if (!names.player1 || names.player1.length === 0) {
+        //     alert(getAlert('player1'));
+        //     return false;
+        // }
 
-        if (gameMode === 'local' && (!names.player2 || names.player2.length === 0)) {
-            alert(getAlert('player2'));
-            return false;
-        }
+        // if (gameMode === 'local' && (!names.player2 || names.player2.length === 0)) {
+        //     alert(getAlert('player2'));
+        //     return false;
+        // }
 
         return true;
     }
