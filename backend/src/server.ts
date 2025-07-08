@@ -1,6 +1,6 @@
 import Fastify from 'fastify';
-import { webSocketManager }  from './network/WebSocketManager.js';
-import config from './config/default.js';
+import { webSocketManager }  from './network/WebSocketManager';
+import config from './config/default';
 
 const fastify = Fastify({
     logger: config.debug === 'yes' ? true : false

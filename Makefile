@@ -5,6 +5,8 @@ BACKEND_DIR = ./backend
 #################################################################################
 #################################     MAIN      #################################
 
+run: build start
+
 start:
 	docker-compose up -d
 
@@ -75,7 +77,7 @@ update-deps:
 
 update: update-deps fclean up-build
 
-.PHONY: start stop \
+.PHONY: run start stop \
         build build-frontend build-backend \
         logs logs-frontend logs-backend \
         clean fclean re restart \

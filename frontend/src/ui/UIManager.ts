@@ -1,3 +1,5 @@
+import { getAlert } from '../translations/translations.js';
+
 class UIManager {
     private static instance: UIManager;
 
@@ -331,16 +333,16 @@ class UIManager {
         return result;
     }
 
-    validatePlayerSetup(gameMode: string): boolean {
+    validatePlayerSetup(gameMode: string): boolean { //TODO
         const names = this.getPlayerNames(gameMode);
         
         if (!names.player1 || names.player1.length === 0) {
-            alert('Please enter a name for Player 1');
+            alert(getAlert('player1'));
             return false;
         }
 
         if (gameMode === 'local' && (!names.player2 || names.player2.length === 0)) {
-            alert('Please enter a name for Player 2');
+            alert(getAlert('player2'));
             return false;
         }
 

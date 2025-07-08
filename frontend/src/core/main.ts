@@ -1,4 +1,4 @@
-import { updateLanguageDisplay, previousLanguage, nextLanguage } from '../ui/translations.js';
+import { updateLanguageDisplay, previousLanguage, nextLanguage } from '../translations/translations.js';
 import { uiManager } from '../ui/UIManager.js';
 import { init2D, init3D } from '../engine/GameEngine.js';
 import { GameState, ViewMode } from '../shared/constants.js';

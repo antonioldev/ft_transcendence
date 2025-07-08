@@ -1,6 +1,6 @@
 declare var BABYLON: any;
 
-import { GAME_CONFIG } from "../shared/gameConfig.js";
+import { GAME_CONFIG } from '../shared/gameConfig.js';
 
 import { Position, Size } from '../shared/types.js';
 

@@ -1,7 +1,7 @@
-import { Rect } from './utils.js';
-import { Player } from './Paddle.js'
-import { CollisionDirection } from '../shared/constants.js'
-import { GAME_CONFIG, getBallStartPosition, LEFT_PADDLE, RIGHT_PADDLE } from '../shared/gameConfig.js';
+import { Rect } from './utils';
+import { Player } from './Paddle'
+import { CollisionDirection } from '../shared/constants'
+import { GAME_CONFIG, getBallStartPosition, LEFT_PADDLE, RIGHT_PADDLE } from '../shared/gameConfig';
 
 export class Ball {
     rect: Rect;

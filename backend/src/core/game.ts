@@ -1,8 +1,8 @@
-import { Ball } from './Ball.js';
-import { Player, AIBot } from './Paddle.js';
+import { Ball } from './Ball';
+import { Player, AIBot } from './Paddle';
 import { Clock } from './utils';
-import { LEFT_PADDLE, RIGHT_PADDLE } from '../shared/gameConfig.js';
-import { PlayerInput, GameStateData } from '../shared/types.js';
+import { LEFT_PADDLE, RIGHT_PADDLE } from '../shared/gameConfig';
+import { PlayerInput, GameStateData } from '../shared/types';
 
 
 // IMPORTANT: the queue is currently just a list, there is no async queue object in TS

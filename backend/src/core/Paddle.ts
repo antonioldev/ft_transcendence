@@ -1,7 +1,7 @@
-import { Rect } from './utils.js';
-import { Ball } from './Ball.js'
+import { Rect } from './utils';
+import { Ball } from './Ball'
 import { GAME_CONFIG, getBallStartPosition, getPlayerLeftPosition, 
-         getPlayerRightPosition, LEFT_PADDLE, RIGHT_PADDLE } from '../shared/gameConfig.js';
+         getPlayerRightPosition, LEFT_PADDLE, RIGHT_PADDLE } from '../shared/gameConfig';
 
 export abstract class Paddle {
 	side: number;
