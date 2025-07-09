@@ -1,7 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import { gameManager } from '../models/gameManager.js';
 import { Client } from '../models/Client.js';
-import { MessageType, Direction } from '../shared/constants.js';
+import { MessageType, Direction, GameMode } from '../shared/constants.js';
 import { ClientMessage, ServerMessage } from '../shared/types.js';
 
 /**
@@ -92,7 +92,7 @@ export class WebSocketManager {
         data: ClientMessage,
         setCurrentGameId: (gameId: string) => void
     ): Promise<void> {
-        if (!data.gameMode) {
+        if (data.gameMode === undefined || data.gameMode === null) {
             await this.sendError(socket, 'Game mode required');
             return;
         }
