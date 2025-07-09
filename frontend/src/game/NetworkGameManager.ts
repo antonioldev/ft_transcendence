@@ -126,6 +126,8 @@ export class NetworkGameManager {
      */
     startSinglePlayer(): void {
         const players = this.getPlayerInfoFromUI(GameMode.SINGLE_PLAYER);
+
+        this.inputManager.configureInput(GameMode.SINGLE_PLAYER, 0);
         if (this.webSocketClient.isConnected()) {
             this.webSocketClient.joinGame(GameMode.SINGLE_PLAYER, players);
             this.playerSide = 0;
@@ -143,6 +145,7 @@ export class NetworkGameManager {
      */
     startTwoPlayerLocal(): void {
         const players = this.getPlayerInfoFromUI(GameMode.TWO_PLAYER_LOCAL);
+        this.inputManager.configureInput(GameMode.TWO_PLAYER_LOCAL, 0);
         if (this.webSocketClient.isConnected()) {
             this.webSocketClient.joinGame(GameMode.TWO_PLAYER_LOCAL, players);
             this.start();

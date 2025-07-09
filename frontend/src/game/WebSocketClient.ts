@@ -88,6 +88,7 @@ export class WebSocketClient {
                 gameMode: gameMode,
                 players: players
             };
+            console.log('🔍 Sending JOIN_GAME message:', JSON.stringify(message));
             this.ws.send(JSON.stringify(message));
         }
     }
