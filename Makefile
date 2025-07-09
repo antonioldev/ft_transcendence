@@ -44,17 +44,13 @@ logs-backend:
 
 clean:
 	docker-compose down --remove-orphans
-	@chmod -R u+w frontend/src/shared
-	@rm -rf frontend/src/shared
-	@chmod -R u+w backend/src/shared
-	@rm -rf backend/src/shared
 
 fclean:
 	docker-compose down --rmi all --volumes --remove-orphans
-	@chmod -R u+w frontend/src/shared
-	@rm -rf frontend/src/shared
-	@chmod -R u+w backend/src/shared
-	@rm -rf backend/src/shared
+	@chmod -R u+w frontend/src/shared || true
+	@rm -rf frontend/src/shared || true
+	@chmod -R u+w backend/src/shared || true
+	@rm -rf backend/src/shared || true
 	
 wipe-all:
 	docker system prune -a
