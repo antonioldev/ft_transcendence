@@ -36,6 +36,7 @@ export interface PlayerInput {
 export interface ClientMessage {
     type: MessageType; // Type of message
     gameMode?: GameMode; // Game mode (optional)
+    players?: PlayerInfo[];
     side?: number; // Player side (optional)
     direction?: Direction; // Movement direction (optional)
 }
@@ -46,4 +47,9 @@ export interface ServerMessage {
     state?: GameStateData; // Current game state (optional)
     side?: number; // Player side (optional)
     message?: string; // Additional message (optional)
+}
+
+export interface PlayerInfo {
+    id: string;        // Now: same as name, Future: real user ID from database
+    name: string;      // Display name (can have duplicates)
 }
