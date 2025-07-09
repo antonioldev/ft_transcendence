@@ -1,25 +1,42 @@
 /**
- * Represents a client connected to the system.
- * Each client has a unique ID, username, password, and a websocket connection.
+ * Represents a physical device/browser connection to the server
+ * One client can control multiple players (e.g., local multiplayer)
+ * This is about the WebSocket connection, not the game participant
  */
 export class Client {
-	id: string;
-	username: string;
-	password: string;
-	websocket: any;
+    id: string;
+    username: string;     // Username for future authentication (not used yet)
+    password: string;     // Password for future authentication (not used yet)
+    websocket: any;
 
-    /**
-     * Initializes a new instance of the Client class.
-     * @param id - The unique identifier for the client.
-     * @param username - The username of the client.
-     * @param password - The password of the client.
-     * @param websocket - The websocket connection associated with the client.
-     */
     constructor(id: string, username: string, password: string, websocket: any) {
         this.id = id;
-        this.username = username;
-        this.password = password;
-		this.websocket = websocket;
-	}
+        this.username = username;     // Keep for future use
+        this.password = password;     // Keep for future use
+        this.websocket = websocket;
+    }
+}
+
+/**
+ * Represents an actual game participant (human or AI)
+ * This is about the person playing, not the connection
+ * Multiple players can be controlled by one client (local multiplayer)
+ */
+export class Player {
+    id: string;           // Unique identifier for this player
+    name: string;         // Display name shown in game
+    score: number;        // Current score in the game
+    side: number;         // Which paddle this player controls (LEFT_PADDLE/RIGHT_PADDLE)
+    isAI: boolean;        // Whether this is an AI player
+    clientId?: string;    // Which client connection controls this player (undefined for AI)
+
+    constructor(id: string, name: string, side: number, isAI: boolean = false, clientId?: string) {
+        this.id = id;
+        this.name = name;
+        this.score = 0;
+        this.side = side;
+        this.isAI = isAI;
+        this.clientId = clientId;
+    }
 }
 

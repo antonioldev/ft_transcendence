@@ -71,8 +71,24 @@ class GameEngine {
  */
 export const init2D = async (gameMode: GameMode) => {
     await engine2D.init("game-canvas-2d", ViewMode.MODE_2D);
-    engine2D.startTwoPlayerLocal();//TODO select game mode
-    // engine2D.startSinglePlayer()
+    // engine2D.startGame(gameMode);//TODO shall we create a single function?
+    switch (gameMode) {
+        case GameMode.SINGLE_PLAYER:
+            engine2D.startSinglePlayer();
+            break;
+        case GameMode.TWO_PLAYER_LOCAL:
+            engine2D.startTwoPlayerLocal();
+            break;
+        case GameMode.TWO_PLAYER_REMOTE:
+            break; // TODO
+        case GameMode.TOURNAMENT_LOCAL:
+            break; // TODO
+        case GameMode.TOURNAMENT_REMOTE:
+            break; // TODO
+        default:
+            console.error("Unknown game mode:", gameMode);
+            break;
+    }
 };
 
 /**
@@ -81,8 +97,23 @@ export const init2D = async (gameMode: GameMode) => {
  */
 export const init3D = async (gameMode: GameMode) => {
     await engine3D.init("game-canvas-3d", ViewMode.MODE_3D);
-    engine3D.startTwoPlayerLocal();//TODO select game mode
-    // engine3D.startSinglePlayer()
+    switch (gameMode) {
+        case GameMode.SINGLE_PLAYER:
+            engine3D.startSinglePlayer();
+            break;
+        case GameMode.TWO_PLAYER_LOCAL:
+            engine3D.startTwoPlayerLocal();
+            break;
+        case GameMode.TWO_PLAYER_REMOTE:
+            break; // TODO
+        case GameMode.TOURNAMENT_LOCAL:
+            break; // TODO
+        case GameMode.TOURNAMENT_REMOTE:
+            break; // TODO
+        default:
+            console.error("Unknown game mode:", gameMode);
+            break;
+    }
 };
 
 export const engine2D = new GameEngine();

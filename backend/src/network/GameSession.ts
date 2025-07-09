@@ -1,6 +1,6 @@
 import { SinglePlayer, TwoPlayer } from '../core/game.js';
 import { LEFT_PADDLE, RIGHT_PADDLE} from '../shared/gameConfig.js';
-import { Client } from '../models/Client.js';
+import { Client, Player } from '../models/Client.js';
 import { MessageType, GameMode } from '../shared/constants.js';
 import { GameStateData } from '../shared/types.js';
 
@@ -11,6 +11,7 @@ export class GameSession {
 	mode: GameMode;
 	id: string;
 	clients: (Client)[] = [];
+	players: Player[] = []; 
 	full: boolean = false;
 	running: boolean = false;
 	game!: SinglePlayer | TwoPlayer;
