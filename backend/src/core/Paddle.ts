@@ -46,73 +46,70 @@ export class Player extends Paddle {
 	}
 }
 
-// Class representing an AI-controlled paddle.
-export class AIBot extends Paddle {
-	speed: number = GAME_CONFIG.playerSpeed; // Speed of the AI paddle.
-	direction: number = 0; // Direction of movement for the AI paddle.
-	protected _view_timer: number = 0; // Timer to control how often the AI updates its target.
-	protected _target_y = getBallStartPosition().z; // Predicted Y-coordinate of the ball's intercept.
-	private boundaries = getPlayerBoundaries();
-	ball: Ball; // Reference to the ball in the game.
 
+export class AIBot extends Paddle {
+	speed: number = GAME_CONFIG.playerSpeed;
+	direction: number = 0;
+	protected _view_timer: number = 0; 
+	protected _target_x = getBallStartPosition().x; 
+	private boundaries = getPlayerBoundaries();
+	ball: Ball;
+	
 	constructor(side: number, ball: Ball) {
 		super(side);
 		this.ball = ball;
 	}
-
-	// Predicts the Y-coordinate where the ball will intersect with the AI paddle.
-	protected _predict_intercept_y(): number {
+	
+	protected _predict_intercept_x(): number {
 		let r: number     = GAME_CONFIG.ballRadius;
+		const shift_z     = GAME_CONFIG.fieldHeight / 2;
+		const shift_x     = GAME_CONFIG.fieldWidth / 2;
         let x0: number    = this.ball.rect.centerx;
-        let y0: number    = this.ball.rect.centery - r;          // adj for ball size
+        let z0: number    = this.ball.rect.centery - r;          		
         let vx: number    = this.ball.direction[0] * this.ball.speed;
-        let vy: number    = this.ball.direction[1] * this.ball.speed;
-        let H_adj: number = GAME_CONFIG.fieldHeight - 2 * r;               // adj for ball size
+        let vz: number    = this.ball.direction[1] * this.ball.speed;
+        let W_adj: number = GAME_CONFIG.fieldWidth - 2 * r;
 
-		let x_ai: number;
-		let x_opp: number;
+		let z_ai: number;
+		let z_opp: number;
 		let t: number;
 
-		if (vx == 0) {
-            return GAME_CONFIG.fieldHeight / 2;
+		if (vz == 0) {
+            return GAME_CONFIG.fieldWidth / 2;
 		}
 
-		x_ai  = this.side ? this.rect.left - r : this.rect.right + r;
-		x_opp = this.side ? (GAME_CONFIG.playerWidth + r) : GAME_CONFIG.fieldWidth - (GAME_CONFIG.playerWidth + r);
-
-        if (vx > 0) {                                  // ball moving towards bot
-            t = Math.abs((x_ai - x0) / vx);  
+		z_ai  = this.side ? GAME_CONFIG.fieldHeight - GAME_CONFIG.playerHeight - r : GAME_CONFIG.playerHeight + r;
+		z_opp = this.side ? (GAME_CONFIG.playerHeight + r) : GAME_CONFIG.fieldHeight - (GAME_CONFIG.playerHeight + r);
+		
+        if (vz > 0) {                                  	// ball moving towards bot
+            t = Math.abs((z_ai - z0 - shift_z) / vz);  
 		}         
         else {
-            let dx_to_opp = Math.abs(x_opp - x0);         
-            let dx_back   = Math.abs(x_ai - x_opp);       
-            t = (dx_to_opp + dx_back) / Math.abs(vx);
+            let dz_to_opp = Math.abs(z_opp - z0 - shift_z);         
+            let dz_back   = Math.abs(z_ai - z_opp);       
+            t = (dz_to_opp + dz_back) / Math.abs(vz);
 		}
-        // calculate next y intercept
-        let total_y   = y0 + vy * t;
-        let wrapped_y = total_y % (2 * H_adj);
-		const target_y = wrapped_y < H_adj ? wrapped_y : 2 * H_adj - wrapped_y;
-		return target_y + r;
+        
+		// calculate next z intercept
+		const total_x   = x0 + W_adj/2 + vx * t;
+		const wrapped_x = ((total_x % (2 * W_adj)) + 2 * W_adj) % (2 * W_adj);
+		const target_x  = wrapped_x < W_adj ? wrapped_x : 2 * W_adj - wrapped_x;
+		return target_x - W_adj/2 + r;
 	}
 
-	// Updates the AI paddle's position based on the ball's predicted position.
 	update(dt: number): void {
 		this._view_timer += dt;
-		if (this._view_timer >= 1.0) {
-			this._target_y = this._predict_intercept_y(); // Update target position.
+		if (this._view_timer >= 1000.0) {
+			this._target_x = this._predict_intercept_x();
 			this._view_timer = 0.0;
 		}
-		// If the paddle is close enough to the target, stop moving.
-		if (Math.abs(this.rect.centerx - this._target_y) < 5) {
+		if (Math.abs(this.rect.centerx - this._target_x) < 2) {
 			return;
 		}
-		// Move the paddle towards the target position.
-		const dx = this.rect.centerx < this._target_y ? 1 : -1;
+		const dx = this.rect.centerx < this._target_x ? 1 : -1;
 		if (dx === -1 && this.rect.centerx > this.boundaries.left)
 			this.move(dt, dx);
 		else if (dx === 1 && this.rect.centerx < this.boundaries.right)
 			this.move(dt, dx);
-
-		// this.move(dt, dx);
 	}
 }

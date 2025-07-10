@@ -6,7 +6,7 @@ import { GAME_CONFIG } from '../shared/gameConfig.js';
 export const COLORS = {
     field2D: BABYLON.Color3.Black(),
     field3D: new BABYLON.Color3(0.4, 0.6, 0.4),
-    player1_2D: BABYLON.Color3.Red(),
+    player1_2D: BABYLON.Color3.Blue(),
     player2_2D: BABYLON.Color3.White(),
     player1_3D: new BABYLON.Color3(0.89, 0.89, 0),
     player2_3D: new BABYLON.Color3(1, 0, 0),
