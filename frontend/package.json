@@ -6,10 +6,11 @@
     "build": "tsc",
     "dev": "tsc --watch"
   },
-	"dependencies": {
-      "@babylonjs/core": "^8.14.2"
+  "dependencies": {
+    "@babylonjs/core": "^8.14.2"
   },
   "devDependencies": {
+    "@types/google.accounts": "^0.0.15",
     "typescript": "^5.8.3"
   },
   "author": "Antonio Limotta",

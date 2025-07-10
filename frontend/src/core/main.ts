@@ -4,8 +4,73 @@ import { init2D, init3D } from '../engine/GameController.js';  // ✅ Updated im
 import { GameState, GameMode, ViewMode } from '../shared/constants.js';
 import { gameStateManager } from './GameStateManager.js';
 
+// Global Type Declaration for Google GSI Client
+declare global {
+    interface Window {
+        google: typeof google.accounts;
+        handleCredentialResponse: (response: { credential: string }) => void; // Define your callback type
+    }
+}
+
 let selectedViewMode: ViewMode | null = null;
 let selectedGameMode: GameMode | null = null;
+
+const googleSignInContainer = document.getElementById('g_id_signin_container') as HTMLDivElement | null;
+let googleScriptLoaded: boolean = false;
+
+window.handleCredentialResponse = (response: { credential: string }) => {
+    console.log("Encoded JWT ID token: " + response.credential);
+
+    // TODO: Send this token to backend for verification and user authentication.
+    // fetch('/api/auth/google', { method: 'POST', body: JSON.stringify({ token: response.credential }) })
+    // .then(res => res.json() as Promise<any>)
+    // .then(data => { /* handle backend response */ });
+
+    const player1NameOnlineInput = document.getElementById('player1-name-online') as HTMLInputElement | null;
+    if (player1NameOnlineInput) {
+        player1NameOnlineInput.value = "Google User Logged In!";
+        player1NameOnlineInput.disabled = true; // Prevent editing after Google login
+    }
+    alert("Google Sign-In Successful! Check console for token.");
+};
+
+function loadGoogleSignIn(): void {
+    if (googleScriptLoaded) {
+        console.log("Google GSI script already loaded.");
+        renderGoogleSignInButton();
+        return;
+    }
+
+    console.log("Loading Google GSI script...");
+    const script = document.createElement('script');
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.onload = () => {
+        googleScriptLoaded = true;
+        console.log("Google GSI script loaded.");
+        renderGoogleSignInButton();
+    };
+    document.head.appendChild(script);
+}
+
+function renderGoogleSignInButton(): void {
+    if (window.google && window.google.accounts && window.google.accounts.id && googleSignInContainer) {
+        window.google.accounts.id.initialize({
+            client_id: "68741834840-3rbu03hithnm0jpaiajraddv3nsg3avr.apps.googleusercontent.com", // Create ENV variable for this
+            callback: window.handleCredentialResponse,
+        });
+
+        // Clear any existing content in the container before rendering
+        googleSignInContainer.innerHTML = '';
+
+        window.google.accounts.id.renderButton(
+            googleSignInContainer,
+            { size: "large", type: "standard", shape: "pill", theme: "filled_blue" }
+        );
+    } else {
+        console.error("Google GSI client not ready or container not found.");
+    }
+}
 
 // Main entry point for the application. Handles initialization and event setup.
 function loadPage() {
@@ -53,23 +118,27 @@ function setupEventListeners() {
         selectedGameMode = GameMode.SINGLE_PLAYER;
         uiManager.showScreen('player-setup-overlay');
         uiManager.showSetupForm('solo');
+        loadGoogleSignIn();
     });
 
     localMode?.addEventListener('click', () => {
         selectedGameMode = GameMode.TWO_PLAYER_LOCAL;
         uiManager.showScreen('player-setup-overlay');
         uiManager.showSetupForm('local');
+        if (googleSignInContainer) googleSignInContainer.innerHTML = '';
     });
 
     onlineMode?.addEventListener('click', () => {
         selectedGameMode = GameMode.TWO_PLAYER_REMOTE;
         uiManager.showScreen('player-setup-overlay');
         uiManager.showSetupForm('online');
+        loadGoogleSignIn();
     });
 
     modeBack?.addEventListener('click', () => {
         selectedViewMode = null;
         uiManager.showScreen('main-menu');
+        if (googleSignInContainer) googleSignInContainer.innerHTML = '';
     });
 
     // Player setup buttons.
@@ -79,6 +148,7 @@ function setupEventListeners() {
     setupBack?.addEventListener('click', () => {
         selectedGameMode = null;
         uiManager.showScreen('game-mode-overlay');
+        if (googleSignInContainer) googleSignInContainer.innerHTML = '';
     });
 
     startGame?.addEventListener('click', () => {
