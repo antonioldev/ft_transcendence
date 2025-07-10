@@ -48,16 +48,17 @@ export class Player extends Paddle {
 
 
 export class AIBot extends Paddle {
-	speed: number = GAME_CONFIG.playerSpeed;
-	direction: number = 0;
-	protected _view_timer: number = 0; 
-	protected _target_x = getBallStartPosition().x; 
-	private boundaries = getPlayerBoundaries();
-	ball: Ball;
-	
-	constructor(side: number, ball: Ball) {
+	private _view_timer = 0;
+	private _target_x   = getBallStartPosition().x;
+	private _boundaries = getPlayerBoundaries();
+
+	constructor(
+		side: number,
+		public ball: Ball,
+		public speed: number = GAME_CONFIG.playerSpeed,
+		public direction: number = 0
+	) {
 		super(side);
-		this.ball = ball;
 	}
 	
 	protected _predict_intercept_x(): number {
@@ -69,14 +70,9 @@ export class AIBot extends Paddle {
         let vx: number    = this.ball.direction[0] * this.ball.speed;
         let vz: number    = this.ball.direction[1] * this.ball.speed;
         let W_adj: number = GAME_CONFIG.fieldWidth - 2 * r;
+		let z_ai: number, z_opp: number, t: number;
 
-		let z_ai: number;
-		let z_opp: number;
-		let t: number;
-
-		if (vz == 0) {
-            return GAME_CONFIG.fieldWidth / 2;
-		}
+		if (vz == 0) {return GAME_CONFIG.fieldWidth / 2;}
 
 		z_ai  = this.side ? GAME_CONFIG.fieldHeight - GAME_CONFIG.playerHeight - r : GAME_CONFIG.playerHeight + r;
 		z_opp = this.side ? (GAME_CONFIG.playerHeight + r) : GAME_CONFIG.fieldHeight - (GAME_CONFIG.playerHeight + r);
@@ -98,18 +94,18 @@ export class AIBot extends Paddle {
 	}
 
 	update(dt: number): void {
+		// 1 second refresh limit
 		this._view_timer += dt;
 		if (this._view_timer >= 1000.0) {
 			this._target_x = this._predict_intercept_x();
 			this._view_timer = 0.0;
 		}
-		if (Math.abs(this.rect.centerx - this._target_x) < 2) {
-			return;
-		}
+		if (Math.abs(this.rect.centerx - this._target_x) < 2) {return;}  // dead zone, prevents pad shaking
+
 		const dx = this.rect.centerx < this._target_x ? 1 : -1;
-		if (dx === -1 && this.rect.centerx > this.boundaries.left)
+		if (dx === -1 && this.rect.centerx > this._boundaries.left)
 			this.move(dt, dx);
-		else if (dx === 1 && this.rect.centerx < this.boundaries.right)
+		else if (dx === 1 && this.rect.centerx < this._boundaries.right)
 			this.move(dt, dx);
 	}
 }
