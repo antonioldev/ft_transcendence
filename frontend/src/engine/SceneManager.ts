@@ -3,28 +3,29 @@ declare var BABYLON: any;
 import { build2DScene, build3DScene } from './sceneBuilder.js';
 import { InputManager } from '../game/InputManager.js';
 import { GUIManager } from '../game/GuiManager.js';
-import { NetworkGameManager } from '../game/NetworkGameManager.js';
+import { GameSession } from '../game/GameSession.js';
 import { ViewMode } from '../shared/constants.js';
 
 /**
- * BabylonEngine is responsible for managing the Babylon.js engine, scenes, and game lifecycle.
+ * SceneManager is responsible for managing the Babylon.js engine, scenes, and managers.
+ * It does NOT handle game starting - that's the GameSession's responsibility.
  */
-export class BabylonEngine {
+export class SceneManager {
     private engine: any = null;
     private scene: any = null;
     private canvas: HTMLCanvasElement | null = null;
-    private networkGameManager: NetworkGameManager | null = null;
+    private gameSession: GameSession | null = null;
     private inputManager: InputManager | null = null;
     private guiManager: GUIManager | null = null;
 
     /**
-     * Initializes the BabylonEngine with the given canvas ID.
+     * Initializes the SceneManager with the given canvas ID.
      * @param canvasId - The ID of the HTML canvas element to use for rendering.
      */
     constructor(canvasId: string) {
         this.canvas = document.getElementById(canvasId) as HTMLCanvasElement;
         if (!this.canvas)
-            throw new Error(`Canvas element not found`);
+            throw new Error(`Canvas element not found: ${canvasId}`);
     }
 
     /**
@@ -40,6 +41,42 @@ export class BabylonEngine {
             powerPreference: "high-performance"
         });
         return this.engine;
+    }
+
+    /**
+     * Creates a scene based on the specified view mode (2D or 3D).
+     * @param mode - The view mode (2D or 3D) for the scene.
+     * @returns The created scene instance.
+     */
+    createScene(mode: ViewMode): any {
+        const scene = new BABYLON.Scene(this.engine);
+
+        // Build scene based on mode
+        let gameObjects;
+        if (mode === ViewMode.MODE_2D)
+            gameObjects = build2DScene(scene, this.engine)
+        else
+            gameObjects = build3DScene(scene, this.engine)
+
+        // Setup managers (same for both modes)
+        this.inputManager = new InputManager(scene);
+        this.inputManager.setupControls(gameObjects.players, mode);
+
+        this.guiManager = new GUIManager(scene, this.engine);
+        this.guiManager.createFPSDisplay();
+
+        this.gameSession = new GameSession(scene, gameObjects, this.inputManager, this.guiManager);
+        
+        this.scene = scene;
+        return scene;
+    }
+
+    /**
+     * Gets the GameSession instance.
+     * @returns The GameSession instance or null if not created.
+     */
+    getGameSession(): GameSession | null {
+        return this.gameSession;
     }
 
     /**
@@ -82,7 +119,7 @@ export class BabylonEngine {
     }
 
     /**
-     * Disposes of all resources used by the engine, including scenes and managers.
+     * Disposes of all resources used by the SceneManager.
      */
     dispose(): void {
         
@@ -90,9 +127,9 @@ export class BabylonEngine {
         if (this.engine)
             this.engine.stopRenderLoop();
 
-        if (this.networkGameManager) {
-            this.networkGameManager.dispose();
-            this.networkGameManager = null;
+        if (this.gameSession) {
+            this.gameSession.dispose();
+            this.gameSession = null;
         }
         
         if (this.guiManager) {
@@ -118,67 +155,5 @@ export class BabylonEngine {
         }
         
         this.canvas = null;
-    }
-
-    /**
-     * Creates a scene based on the specified view mode (2D or 3D).
-     * @param mode - The view mode (2D or 3D) for the scene.
-     * @returns The created scene instance.
-     */
-    private createScene(mode: ViewMode): any {
-        const scene = new BABYLON.Scene(this.engine);
-
-        // Build scene based on mode
-        let gameObjects;
-        if (mode === ViewMode.MODE_2D)
-            gameObjects = build2DScene(scene, this.engine)
-        else
-            gameObjects = build3DScene(scene, this.engine)
-
-        // Setup managers (same for both modes)
-        this.inputManager = new InputManager(scene);
-        this.inputManager.setupControls(gameObjects.players, mode);
-
-        this.guiManager = new GUIManager(scene, this.engine);
-        this.guiManager.createFPSDisplay();
-
-        this.networkGameManager = new NetworkGameManager(scene, gameObjects, this.inputManager, this.guiManager);
-        
-        this.scene = scene;
-        return scene;
-    }
-
-    /**
-     * Creates and initializes a 2D scene.
-     * @returns The created 2D scene instance.
-     */
-    create2DScene(): any {
-        return this.createScene(ViewMode.MODE_2D);
-    }
-
-    /**
-     * Creates and initializes a 3D scene.
-     * @returns The created 3D scene instance.
-     */
-    create3DScene(): any {
-        return this.createScene(ViewMode.MODE_3D);
-    }
-
-    /**
-     * Starts a single-player game session.
-     */
-    startSinglePlayer(): void {
-        if (this.networkGameManager) {
-            this.networkGameManager.startSinglePlayer();
-        }
-    }
-
-    /**
-     * Starts a two-player local game session.
-     */
-    startTwoPlayerLocal(): void {
-        if (this.networkGameManager) {
-            this.networkGameManager.startTwoPlayerLocal();
-        }
     }
 }

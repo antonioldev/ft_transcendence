@@ -9,10 +9,10 @@ import { Direction, GameMode} from '../shared/constants.js';
 import { GameStateData, PlayerInfo } from '../shared/types.js';
 
 /**
- * Manages the networked game logic, including WebSocket communication,
- * input handling, and game state updates.
+ * GameSession is THE ONLY class responsible for starting and managing games.
+ * All game starting logic is centralized here.
  */
-export class NetworkGameManager {
+export class GameSession {
     private scene: any;
     private gameObjects: GameObjects;
     private inputManager: InputManager;
@@ -22,7 +22,7 @@ export class NetworkGameManager {
     private playerSide = 0;
 
     /**
-     * Initializes the NetworkGameManager with the required dependencies.
+     * Initializes the GameSession with the required dependencies.
      * @param scene - The Babylon.js scene object.
      * @param gameObjects - The game objects to be managed.
      * @param inputManager - Handles player input.
@@ -47,11 +47,11 @@ export class NetworkGameManager {
         });
 
         this.webSocketClient.onConnection(() => {
-            // Handle WebSocket connection event
+            console.log('🔗 Connected to game server');
         });
 
         this.webSocketClient.onError((error: string) => {
-            console.error('WebSocket error:', error);
+            console.error('❌ WebSocket error:', error);
         });
     }
 
@@ -61,12 +61,10 @@ export class NetworkGameManager {
      */
     private updateGameObjects(state: GameStateData): void {
         if (this.gameObjects.players.left) {
-            console.log(`Left paddle: ${state.paddleLeft.x} -> ${this.gameObjects.players.left.position.x}`);
             this.gameObjects.players.left.position.x = state.paddleLeft.x;
         }
 
         if (this.gameObjects.players.right) {
-            console.log(`Right paddle: ${state.paddleRight.x} -> ${this.gameObjects.players.right.position.x}`);
             this.gameObjects.players.right.position.x = state.paddleRight.x;
         }
 
@@ -76,27 +74,30 @@ export class NetworkGameManager {
         }
 
         if (this.guiManager) {
-            //TODO add results or other stuf
+            //TODO add score display or other game state info
         }
     }
 
+    /**
+     * Extracts player information from the UI based on game mode.
+     * @param gameMode - The current game mode.
+     * @returns Array of player information.
+     */
     private getPlayerInfoFromUI(gameMode: GameMode): PlayerInfo[] {
-        //TODO is only for testing
+        const getInputValue = (id: string, defaultName: string): string => {
+            const input = document.getElementById(id) as HTMLInputElement;
+            return input?.value.trim() || defaultName;
+        };
+
         switch (gameMode) {
             case GameMode.SINGLE_PLAYER: {
-                const soloInput = document.getElementById('player1-name') as HTMLInputElement;
-                const name = soloInput?.value.trim() || 'Player 1';
-                return [{
-                    id: name,    // For now, id = name
-                    name: name                    
-                }];
+                const name = getInputValue('player1-name', 'Player 1');
+                return [{ id: name, name: name }];
             }
         
             case GameMode.TWO_PLAYER_LOCAL: {
-                const localInput1 = document.getElementById('player1-name-local') as HTMLInputElement;
-                const localInput2 = document.getElementById('player2-name-local') as HTMLInputElement;
-                const name1 = localInput1?.value.trim() || 'Player 1';
-                const name2 = localInput2?.value.trim() || 'Player 2';
+                const name1 = getInputValue('player1-name-local', 'Player 1');
+                const name2 = getInputValue('player2-name-local', 'Player 2');
                 return [
                     { id: name1, name: name1 },
                     { id: name2, name: name2 }
@@ -104,63 +105,48 @@ export class NetworkGameManager {
             }
 
             case GameMode.TWO_PLAYER_REMOTE: {
-                const onlineInput = document.getElementById('player1-name-online') as HTMLInputElement;
-                const name1 = onlineInput?.value.trim() || 'Player 1';
-                return [{
-                    id: name1,    // For now, id = name
-                    name: name1
-                }];
+                const name1 = getInputValue('player1-name-online', 'Player 1');
+                return [{ id: name1, name: name1 }];
             }
         
             default: {
-                return [{
-                    id: 'Player 1',
-                    name: 'Player 1'
-                }];
+                return [{ id: 'Player 1', name: 'Player 1' }];
             }
         }
     }
 
     /**
-     * Starts a single-player game mode.
+     * ⭐ THE MAIN METHOD - Starts a game with the specified mode.
+     * This is the ONLY place where games are started.
+     * @param gameMode - The game mode to start.
+     * @param controlledSide - Which side this client controls (for remote games).
      */
-    startSinglePlayer(): void {
-        const players = this.getPlayerInfoFromUI(GameMode.SINGLE_PLAYER);
+    startGame(gameMode: GameMode, controlledSide: number = 0): void {
+        console.log(`🎮 Starting game: ${GameMode[gameMode]} (side: ${controlledSide})`);
+        
+        const players = this.getPlayerInfoFromUI(gameMode);
+        console.log('👥 Player names extracted:', players);
+        
+        this.inputManager.configureInput(gameMode, controlledSide);
+        this.playerSide = controlledSide;
 
-        this.inputManager.configureInput(GameMode.SINGLE_PLAYER, 0);
-        if (this.webSocketClient.isConnected()) {
-            this.webSocketClient.joinGame(GameMode.SINGLE_PLAYER, players);
-            this.playerSide = 0;
-            this.start();
-        } else {
-            this.webSocketClient.onConnection(() => {
-                this.webSocketClient.joinGame(GameMode.SINGLE_PLAYER, players);
-                this.start();
-            });
-        }
-    }
+        const joinGameAndStart = () => {
+            this.webSocketClient.joinGame(gameMode, players);
+            this.startGameLoop();
+        };
 
-    /**
-     * Starts a two-player local game mode.
-     */
-    startTwoPlayerLocal(): void {
-        const players = this.getPlayerInfoFromUI(GameMode.TWO_PLAYER_LOCAL);
-        this.inputManager.configureInput(GameMode.TWO_PLAYER_LOCAL, 0);
         if (this.webSocketClient.isConnected()) {
-            this.webSocketClient.joinGame(GameMode.TWO_PLAYER_LOCAL, players);
-            this.start();
+            joinGameAndStart();
         } else {
-            this.webSocketClient.onConnection(() => {
-                this.webSocketClient.joinGame(GameMode.TWO_PLAYER_LOCAL, players);
-                this.start();
-            });
+            this.webSocketClient.onConnection(joinGameAndStart);
         }
     }
 
     /**
      * Starts the game loop and sets up input handling and rendering updates.
+     * Private method - only called internally by startGame().
      */
-    start(): void {
+    private startGameLoop(): void {
         if (this.isRunning) {
             return;
         }
@@ -173,20 +159,21 @@ export class NetworkGameManager {
         this.scene.registerBeforeRender(() => {
             if (!this.isRunning)
                 return;
+                
             this.inputManager.updateInput();
 
             if (this.guiManager)
                 this.guiManager.updateFPS();
 
             if (this.gameObjects.cameras.length > 1)
-                this.update3DCamere();
+                this.update3DCameras();
         });
     }
 
     /**
      * Updates the 3D camera targets to follow the players.
      */
-    private update3DCamere(): void {
+    private update3DCameras(): void {
         const [camera1, camera2] = this.gameObjects.cameras;
 
         if (camera1 && camera2) {

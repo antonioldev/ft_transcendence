@@ -33,8 +33,9 @@ joinGame(gameMode: GameMode, players: PlayerInfo[]): void {
         }
     }
 
-# in FRONTEND/SRC/GAME/NETWORKGAMEMANAGER.ts
+# in FRONTEND/SRC/GAME/NETWORKGAMEMANAGER.ts -> become GameSession.ts
 # joining game send also list of players
+# This class manages the actual game session - networking, game state, input handling, and game loop. "GameSession" better describes its role as the central game coordinator.
 startSinglePlayer(): void {
         const players = this.getPlayerInfoFromUI(GameMode.SINGLE_PLAYER);
         if (this.webSocketClient.isConnected()) {
@@ -48,3 +49,9 @@ startSinglePlayer(): void {
             });
         }
     }
+
+# GameEngine.ts -> become GameController.ts
+# it creates and manages the Babylon.js scene, cameras, lights, and rendering setup. "SceneManager" is more accurate than "Engine."
+
+# GameEngine.ts -> become GameController.ts
+# This is the main entry point that controls the overall game lifecycle. "Controller" better describes its coordinating role.
