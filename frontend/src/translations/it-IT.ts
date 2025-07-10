@@ -24,5 +24,22 @@ export const italian: Translation = {
     pauseControls: 'Y - Sì | N - No | ESC - Riprendi',
     pauseControls3D: 'Y | N',
     alertPlayer1: 'Inserisci un nome per il Giocatore 1',
-    alertPlayer2: 'Inserisci un nome per il Giocatore 2'
+    alertPlayer2: 'Inserisci un nome per il Giocatore 2',
+    register: 'Registrati',
+    login: 'Accedi',
+    loginWithGoogle: 'Accedi con Google',
+    playOffline: 'Gioca Offline',
+    username: 'Nome utente:',
+    email: 'Email:',
+    password: 'Password:',
+    confirmPassword: 'Conferma Password:',
+    usernameOrEmail: 'Nome utente o Email:',
+    createAccount: 'Crea Account',
+    enterUsername: 'Inserisci nome utente',
+    enterEmail: 'Inserisci email',
+    enterPassword: 'Inserisci password',
+    confirmPasswordPlaceholder: 'Conferma password',
+    enterUsernameOrEmail: 'Inserisci nome utente o email',
+    viewMode: 'Modalità di visualizzazione',
+    backToMain: 'Torna al menu principale'
 };

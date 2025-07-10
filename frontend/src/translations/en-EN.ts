@@ -24,5 +24,22 @@ export const english: Translation = {
     pauseControls: 'Y - Yes | N - No | ESC - Resume',
     pauseControls3D: 'Y | N',
     alertPlayer1: 'Please enter a name for Player 1',
-    alertPlayer2: 'Please enter a name for Player 2'
+    alertPlayer2: 'Please enter a name for Player 2',
+    register: 'Register',
+    login: 'Login',
+    loginWithGoogle: 'Login with Google',
+    playOffline: 'Play Offline',
+    username: 'Username:',
+    email: 'Email:',
+    password: 'Password:',
+    confirmPassword: 'Confirm Password:',
+    usernameOrEmail: 'Username or Email:',
+    createAccount: 'Create Account',
+    enterUsername: 'Enter username',
+    enterEmail: 'Enter email',
+    enterPassword: 'Enter password',
+    confirmPasswordPlaceholder: 'Confirm password',
+    enterUsernameOrEmail: 'Enter username or email',
+    viewMode: 'View Mode',
+    backToMain: 'Back to Main'
 };

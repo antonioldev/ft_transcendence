@@ -24,5 +24,22 @@ export const portuguese: Translation = {
     pauseControls: 'Y - Sim | N - Não | ESC - Retomar',
     pauseControls3D: 'Y | N',
     alertPlayer1: 'Digite um nome para o Jogador 1',
-    alertPlayer2: 'Digite um nome para o Jogador 2'
+    alertPlayer2: 'Digite um nome para o Jogador 2',
+    register: 'Registrar',
+    login: 'Entrar',
+    loginWithGoogle: 'Entrar com Google',
+    playOffline: 'Jogar Offline',
+    username: 'Nome de usuário:',
+    email: 'Email:',
+    password: 'Senha:',
+    confirmPassword: 'Confirmar Senha:',
+    usernameOrEmail: 'Nome de usuário ou Email:',
+    createAccount: 'Criar Conta',
+    enterUsername: 'Digite o nome de usuário',
+    enterEmail: 'Digite o email',
+    enterPassword: 'Digite a senha',
+    confirmPasswordPlaceholder: 'Confirme a senha',
+    enterUsernameOrEmail: 'Digite o nome de usuário ou email',
+    viewMode: 'Modo de visualização',
+    backToMain: 'Voltar ao menu principal'
 };

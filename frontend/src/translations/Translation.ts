@@ -27,4 +27,21 @@ export interface Translation {
     pauseControls3D: string;
     alertPlayer1: string;
     alertPlayer2: string;
+    register: string;
+    login: string;
+    loginWithGoogle: string;
+    playOffline: string;
+    username: string;
+    email: string;
+    password: string;
+    confirmPassword: string;
+    usernameOrEmail: string;
+    createAccount: string;
+    enterUsername: string;
+    enterEmail: string;
+    enterPassword: string;
+    confirmPasswordPlaceholder: string;
+    enterUsernameOrEmail: string;
+    viewMode: string;
+    backToMain: string;
 }
