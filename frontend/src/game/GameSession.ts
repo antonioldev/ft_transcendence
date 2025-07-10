@@ -3,10 +3,9 @@ declare var BABYLON: any;
 import { WebSocketClient } from './WebSocketClient.js';
 import { InputManager } from './InputManager.js';
 import { GUIManager } from './GuiManager.js';
-import { GameObjects } from '../engine/sceneBuilder.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
 import { Direction, GameMode} from '../shared/constants.js';
-import { GameStateData, PlayerInfo } from '../shared/types.js';
+import { GameStateData, PlayerInfo, GameObjects } from '../shared/types.js';
 
 /**
  * GameSession is THE ONLY class responsible for starting and managing games.

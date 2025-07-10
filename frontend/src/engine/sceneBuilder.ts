@@ -5,7 +5,7 @@ declare var BABYLON: any;
 
 import { GAME_CONFIG } from '../shared/gameConfig.js';
 
-import { Position, Size } from '../shared/types.js';
+import { Position, Size, GameObjects } from '../shared/types.js';
 
 import {
     COLORS,
@@ -20,19 +20,6 @@ import {
     get3DCamera1Viewport,
     get3DCamera2Viewport
 } from '../core/utils.js'
-
-export interface GameObjects {
-    // Represents the game objects in the scene
-    players: {
-        left: any;
-        right: any;
-    };
-    ball: any;
-    ground: any;
-    walls: any;
-    cameras: any[];
-    lights: any[];
-}
 
 // Creates a material for the given scene
 function createMaterial(scene: any, name: string, color: any, is2D: boolean): any {

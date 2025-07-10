@@ -2,16 +2,7 @@ declare var BABYLON: any;
 
 import { GAME_CONFIG, getPlayerBoundaries } from '../shared/gameConfig.js';
 import { Direction, ViewMode, GameMode } from '../shared/constants.js';
-
-interface PlayerControls {
-    left: number;
-    right: number;
-}
-  
-interface InputConfig {
-    playerLeft: PlayerControls;
-    playerRight: PlayerControls;
-}
+import { PlayerControls, InputConfig } from '../shared/types.js';
 
 /**
  * Manages player input and interactions with the game environment.
