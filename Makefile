@@ -18,11 +18,13 @@ build: build-backend build-frontend
 build-frontend:
 	@mkdir -p frontend/src/shared
 	@cp -rf shared/* frontend/src/shared/
+	@chmod -R a-w frontend/src/shared
 	@docker-compose build frontend
 
 build-backend:
 	@mkdir -p backend/src/shared
 	@cp -rf shared/* backend/src/shared/
+	@chmod -R a-w backend/src/shared
 	@docker-compose build backend
 
 #################################################################################
@@ -45,7 +47,11 @@ clean:
 
 fclean:
 	docker-compose down --rmi all --volumes --remove-orphans
-
+	@chmod -R u+w frontend/src/shared || true
+	@rm -rf frontend/src/shared || true
+	@chmod -R u+w backend/src/shared || true
+	@rm -rf backend/src/shared || true
+	
 wipe-all:
 	docker system prune -a
 

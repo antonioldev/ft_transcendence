@@ -103,12 +103,14 @@ export function getPlayerRightPosition(): Position {
     };
 }
 
+const PLAYER_BOUNDARIES = {
+    left: -(GAME_CONFIG.fieldWidth / 2 - GAME_CONFIG.wallThickness - GAME_CONFIG.playerWidth / 2 - 0.2),
+    right: GAME_CONFIG.fieldWidth / 2 - GAME_CONFIG.wallThickness - GAME_CONFIG.playerWidth / 2 - 0.2
+};
+
 // Get the boundaries within which the paddle can move
 export function getPlayerBoundaries() {
-    return {
-        left: -(GAME_CONFIG.fieldWidth/2 - GAME_CONFIG.playerWidth/2 - GAME_CONFIG.wallThickness),
-        right: GAME_CONFIG.fieldWidth/2 - GAME_CONFIG.playerWidth/2 - GAME_CONFIG.wallThickness
-    };
+    return PLAYER_BOUNDARIES;
 }
 
 // Get the initial position of the ball

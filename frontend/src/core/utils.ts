@@ -19,6 +19,7 @@ export const COLORS = {
 // Utility functions for Babylon.js game objects
 // They get datas from gameConfig TypeScript and convert them to Babylon.js objects
 
+
 export function getPlayerSize() {
     // Returns the size of a player as a Vector3 object
     return new BABYLON.Vector3(GAME_CONFIG.playerWidth, GAME_CONFIG.playerHeight, GAME_CONFIG.playerDepth);

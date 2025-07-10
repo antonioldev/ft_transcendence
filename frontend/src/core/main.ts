@@ -1,8 +1,8 @@
 import { updateLanguageDisplay, previousLanguage, nextLanguage } from '../translations/translations.js';
 import { uiManager } from '../ui/UIManager.js';
-import { init2D, init3D } from '../engine/GameEngine.js';
+import { init2D, init3D } from '../engine/GameController.js';  // ✅ Updated import path
 import { GameState, GameMode, ViewMode } from '../shared/constants.js';
-import { gameStateManager } from './GameState.js';
+import { gameStateManager } from './GameStateManager.js';
 
 let selectedViewMode: ViewMode | null = null;
 let selectedGameMode: GameMode | null = null;
@@ -136,4 +136,3 @@ function handleYesNoKey(event: KeyboardEvent): void {
 
 // Load the page once the DOM content is fully loaded.
 document.addEventListener('DOMContentLoaded', loadPage);
-

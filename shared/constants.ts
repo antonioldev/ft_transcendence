@@ -16,7 +16,8 @@ export enum GameMode {
     SINGLE_PLAYER = 0,     // Single-player mode
     TWO_PLAYER_LOCAL = 1,  // Two players on the same device
     TWO_PLAYER_REMOTE = 2, // Two players over the network
-	TOURNAMENT = 3,        // Tournament mode
+	TOURNAMENT_LOCAL = 3,        // Tournament mode, all player same page
+    TOURNAMENT_REMOTE = 4
 }
 
 // Directions for player movement

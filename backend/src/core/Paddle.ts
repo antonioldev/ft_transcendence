@@ -1,7 +1,7 @@
 import { Rect } from './utils.js';
 import { Ball } from './Ball.js'
 import { GAME_CONFIG, getBallStartPosition, getPlayerLeftPosition, 
-         getPlayerRightPosition, LEFT_PADDLE, RIGHT_PADDLE } from '../shared/gameConfig.js';
+         getPlayerRightPosition, LEFT_PADDLE, RIGHT_PADDLE, getPlayerBoundaries } from '../shared/gameConfig.js';
 
 // Abstract class representing a paddle in the game.
 export abstract class Paddle {
@@ -9,6 +9,7 @@ export abstract class Paddle {
 	score: number = 0; // The score of the player or AI controlling the paddle.
 	rect: Rect; // The current position and dimensions of the paddle.
 	oldRect: Rect; // Cached position and dimensions of the paddle from the previous frame.
+
 	abstract speed: number; // Speed of the paddle, defined in subclasses.
 
 	constructor(side: number) {
@@ -51,6 +52,7 @@ export class AIBot extends Paddle {
 	direction: number = 0; // Direction of movement for the AI paddle.
 	protected _view_timer: number = 0; // Timer to control how often the AI updates its target.
 	protected _target_y = getBallStartPosition().z; // Predicted Y-coordinate of the ball's intercept.
+	private boundaries = getPlayerBoundaries();
 	ball: Ball; // Reference to the ball in the game.
 
 	constructor(side: number, ball: Ball) {
@@ -106,6 +108,11 @@ export class AIBot extends Paddle {
 		}
 		// Move the paddle towards the target position.
 		const dx = this.rect.centerx < this._target_y ? 1 : -1;
-		this.move(dt, dx);
+		if (dx === -1 && this.rect.centerx > this.boundaries.left)
+			this.move(dt, dx);
+		else if (dx === 1 && this.rect.centerx < this.boundaries.right)
+			this.move(dt, dx);
+
+		// this.move(dt, dx);
 	}
 }

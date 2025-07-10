@@ -1,5 +1,5 @@
 import { MessageType, GameMode, Direction } from '../shared/constants.js'
-import { ClientMessage, ServerMessage, GameStateData } from '../shared/types.js'
+import { ClientMessage, ServerMessage, GameStateData, PlayerInfo } from '../shared/types.js'
 
 /**
  * WebSocketClient is responsible for managing the WebSocket connection
@@ -81,12 +81,14 @@ export class WebSocketClient {
      * Sends a request to join a game with the specified game mode.
      * @param gameMode - The game mode to join.
      */
-    joinGame(gameMode: GameMode): void {
+    joinGame(gameMode: GameMode, players: PlayerInfo[]): void {
         if (this.ws && this.ws.readyState === WebSocket.OPEN) {
             const message: ClientMessage = {
                 type: MessageType.JOIN_GAME,
-                gameMode: gameMode
+                gameMode: gameMode,
+                players: players
             };
+            console.log('🔍 Sending JOIN_GAME message:', JSON.stringify(message));
             this.ws.send(JSON.stringify(message));
         }
     }

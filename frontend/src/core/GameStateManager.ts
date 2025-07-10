@@ -1,5 +1,5 @@
 import { uiManager } from '../ui/UIManager.js';
-import { engine2D, engine3D } from '../engine/GameEngine.js';
+import { gameController2D, gameController3D } from '../engine/GameController.js';
 import { GameState } from '../shared/constants.js';
 
 /**
@@ -74,11 +74,11 @@ class GameStateManager {
         if (this.currentState === GameState.PLAYING_2D) {
             this.setState(GameState.PAUSED_2D);
             uiManager.showPauseDialog('pause-dialog-2d');
-            engine2D.pause();
+            gameController2D.pause();
         } else if (this.currentState === GameState.PLAYING_3D) {
             this.setState(GameState.PAUSED_3D);
             uiManager.showPauseDialog('pause-dialog-3d');
-            engine3D.pause();
+            gameController3D.pause();
         }
     }
 
@@ -89,11 +89,11 @@ class GameStateManager {
         if (this.currentState === GameState.PAUSED_2D) {
             this.setState(GameState.PLAYING_2D);
             uiManager.hidePauseDialog('pause-dialog-2d');
-            engine2D.resume();
+            gameController2D.resume();
         } else if (this.currentState === GameState.PAUSED_3D) {
             this.setState(GameState.PLAYING_3D);
             uiManager.hidePauseDialog('pause-dialog-3d');
-            engine3D.resume();
+            gameController3D.resume();
         }
     }
 
@@ -102,10 +102,10 @@ class GameStateManager {
      */
     exitToMenu(): void {
         if (this.currentState === GameState.PAUSED_2D) {
-            engine2D.dispose();
+            gameController2D.dispose();
             uiManager.hidePauseDialog('pause-dialog-2d');
         } else if (this.currentState === GameState.PAUSED_3D) {
-            engine3D.dispose();
+            gameController3D.dispose();
             uiManager.hidePauseDialog('pause-dialog-3d');
         }
 
