@@ -47,3 +47,9 @@ export enum CollisionDirection {
     HORIZONTAL = 0,        // Horizontal collision
     VERTICAL = 1           // Vertical collision
 }
+
+export enum AuthState {
+    LOGGED_OUT = 0,
+    LOGGED_IN = 1, 
+    OFFLINE = 2
+}
