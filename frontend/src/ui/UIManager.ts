@@ -1,6 +1,5 @@
 import { GameMode } from '../shared/constants.js';
 
-// The UIManager class with REAL consolidation - merging duplicate styles into shared classes
 class UIManager {
     private static instance: UIManager;
 
@@ -19,9 +18,7 @@ class UIManager {
         overlay: 'rgba(0, 0, 0, 0.9)'
     };
 
-    // MASSIVELY consolidated styles - merged all similar elements
     private readonly styles = {
-        // ALL screens use this base style
         screen: {
             display: 'none',
             position: 'fixed' as const,
