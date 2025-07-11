@@ -9,6 +9,12 @@
     <script src="https://cdn.babylonjs.com/gui/babylon.gui.min.js"></script>
 </head>
 <body>
+    <!-- Log in info -->
+    <div id="user-info" style="display: none;">
+        <span id="user-name"></span>
+        <button type="button" id="logout-btn">Logout</button>
+    </div>
+
     <!-- Main Menu -->
     <main id="main-menu" class="screen">
         <header>
@@ -120,7 +126,7 @@
                 <button type="button" class="button" id="online-mode">Online 2 Players</button>
                 <button type="button" class="button" id="tournament-mode">Tournament</button>
                 <button type="button" class="button" id="tournament-online-mode">Tournament Online</button>
-                <button type="button" class="button" id="mode-back">Back to Main</button>
+                <button type="button" class="button secondary" id="mode-back">Back to Main</button>
             </div>
         </div>
     </div>

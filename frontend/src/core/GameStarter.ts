@@ -4,6 +4,9 @@ import { gameStateManager } from './GameStateManager.js';
 import { init2D, init3D } from '../engine/GameController.js';
 
 export function startGameWithMode(viewMode: ViewMode, gameMode: GameMode): void {
+
+    uiManager.hideUserInfo();
+    
     if (viewMode === ViewMode.MODE_2D) {
         uiManager.showScreen('game-2d');
         gameStateManager.setState(GameState.PLAYING_2D);

@@ -24,6 +24,7 @@ export class AuthManager {
         const loginBtn = document.getElementById('login-btn');
         const googleLoginBtn = document.getElementById('google-login-btn');
         const offlineBtn = document.getElementById('offline-btn');
+        const logoutBtn = document.getElementById('logout-btn');
 
         registerBtn?.addEventListener('click', () => {
             uiManager.showScreen('register-screen');
@@ -39,6 +40,9 @@ export class AuthManager {
 
         offlineBtn?.addEventListener('click', () => {
             this.handleOfflineMode();
+        });
+        logoutBtn?.addEventListener('click', () => {
+            this.logout();
         });
 
         // Register form listeners
@@ -91,6 +95,7 @@ export class AuthManager {
         // For now, simulate successful registration
         this.currentUser = { username, email };
         this.authState = AuthState.LOGGED_IN;
+        uiManager.showUserInfo(username);
         this.proceedToGameSelection();
     }
 
@@ -110,6 +115,7 @@ export class AuthManager {
         // For now, simulate successful login
         this.currentUser = { username: usernameOrEmail };
         this.authState = AuthState.LOGGED_IN;
+        uiManager.showUserInfo(this.currentUser.username);
         this.proceedToGameSelection();
     }
 
@@ -153,7 +159,14 @@ export class AuthManager {
     logout(): void {
         this.authState = AuthState.LOGGED_OUT;
         this.currentUser = null;
+        uiManager.hideUserInfo();
         uiManager.showScreen('main-menu');
+    }
+
+    checkAuthState(): void {
+        if (this.authState === AuthState.LOGGED_IN && this.currentUser) {
+            uiManager.showUserInfo(this.currentUser.username);
+        }
     }
 }
 

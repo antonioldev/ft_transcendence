@@ -1,6 +1,7 @@
 import { uiManager } from '../ui/UIManager.js';
 import { gameController2D, gameController3D } from '../engine/GameController.js';
 import { GameState } from '../shared/constants.js';
+import { authManager } from './AuthManager.js';
 
 /**
  * Manages the state of the game, including transitions between states
@@ -108,7 +109,7 @@ class GameStateManager {
             gameController3D.dispose();
             uiManager.hidePauseDialog('pause-dialog-3d');
         }
-
+        authManager.checkAuthState()
         this.setState(GameState.MENU);
         uiManager.showScreen('main-menu');
     }

@@ -130,6 +130,37 @@ class UIManager {
             zIndex: '100'
         },
 
+        userInfo: {
+            position: 'fixed' as const,
+            top: '20px',
+            right: '20px',
+            display: 'none', // Hidden by default
+            flexDirection: 'column' as const,
+            alignItems: 'center' as const,
+            zIndex: '1000',
+            fontFamily: '"SF Mono", "Monaco", "Cascadia Code", "Roboto Mono", monospace'
+        },
+        
+        userName: {
+            color: this.colors.text,
+            fontSize: '1rem',
+            fontWeight: 'bold',
+            marginBottom: '5px',
+            userSelect: 'none' as const
+        },
+        
+        logoutButton: {
+            fontFamily: '"SF Mono", "Monaco", "Cascadia Code", "Roboto Mono", monospace',
+            fontSize: '0.8rem',
+            padding: '5px 10px',
+            backgroundColor: this.colors.surface,
+            color: this.colors.text,
+            border: `1px solid ${this.colors.primary}`,
+            borderRadius: '3px',
+            cursor: 'pointer' as const,
+            fontWeight: 'normal'
+        },
+
         // VARIANTS - only the differences
         mainTitle: { fontSize: '4rem' },
         subtitle: { fontSize: '1.5rem', marginBottom: '1rem' },
@@ -252,9 +283,21 @@ class UIManager {
             this.applyStyles(mainTitle, this.styles.mainTitle);
             mainTitle.textContent = '🏓 PONG';
         }
+
+        const userInfo = document.getElementById('user-info');
+        if (userInfo)
+            this.applyStyles(userInfo, this.styles.userInfo);
+
+        const userName = document.getElementById('user-name');
+        if (userName)
+            this.applyStyles(userName, this.styles.userName);
+
+        const logoutBtn = document.getElementById('logout-btn');
+        if (logoutBtn)
+            this.applyStyles(logoutBtn, this.styles.logoutButton);
     }
 
-    // Rest of the methods unchanged...
+
     showScreen(screenId: string): void {
         this.applyStylesToAll('.screen', { display: 'none' });
         const screen = document.getElementById(screenId);
@@ -268,6 +311,23 @@ class UIManager {
         const targetForm = document.getElementById(`${formType}-setup`);
         if (targetForm) {
             targetForm.style.display = 'block';
+        }
+    }
+
+    showUserInfo(username: string): void {
+        const userInfo = document.getElementById('user-info');
+        const userName = document.getElementById('user-name');
+        
+        if (userInfo && userName) {
+            userName.textContent = username;
+            userInfo.style.display = 'flex';
+        }
+    }
+    
+    hideUserInfo(): void {
+        const userInfo = document.getElementById('user-info');
+        if (userInfo) {
+            userInfo.style.display = 'none';
         }
     }
 
