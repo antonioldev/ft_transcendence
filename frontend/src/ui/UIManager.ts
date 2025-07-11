@@ -29,74 +29,76 @@ class UIManager {
             backgroundColor: 'black',
             justifyContent: 'center' as const,
             alignItems: 'center' as const,
-            zIndex: '10'
+            zIndex: '10',
+            padding: '20px',
+            boxSizing: 'border-box' as const
         },
 
-        // ALL overlays share this style (login, register, game modes, etc.)
         overlay: {
             display: 'flex',
             backgroundColor: this.colors.overlay
         },
 
-        // ALL modal containers share this
         container: {
             backgroundColor: this.colors.background,
-            padding: '3rem',
+            padding: '2rem',
             borderRadius: '10px',
             textAlign: 'center' as const,
-            border: `2px solid ${this.colors.primary}`
+            border: `2px solid ${this.colors.primary}`,
+            width: '90vw',
+            maxWidth: '500px',
+            height: 'auto',
+            maxHeight: '85vh',
+            overflow: 'auto',
+            margin: '20px auto',
+            boxSizing: 'border-box' as const
         },
 
-        // ALL titles share this base (screen-title, main-title, mode-subtitle, pause-title)
         title: {
-            fontSize: '2rem',
+            fontSize: '1.8rem',
             color: this.colors.primary,
-            marginBottom: '2rem',
-            fontFamily: '"SF Mono", "Monaco", "Cascadia Code", "Roboto Mono", monospace',
+            marginBottom: '1.5rem',
             fontWeight: 'bold',
             textAlign: 'center' as const,
             userSelect: 'none' as const
         },
 
-        // ALL buttons share this base (primary, secondary, nav buttons)
         button: {
-            fontFamily: '"SF Mono", "Monaco", "Cascadia Code", "Roboto Mono", monospace',
             fontWeight: 'bold',
             cursor: 'pointer' as const,
             backgroundColor: this.colors.surface,
             color: this.colors.text,
             border: `2px solid ${this.colors.primary}`,
             borderRadius: '5px',
-            width: '350px',
-            height: '50px',
-            fontSize: '1rem'
-        },
-
-        // ALL input fields share this (username, email, password, player names)
-        input: {
-            width: '400px',
+            width: '100%',
+            maxWidth: '350px',
             height: '50px',
             fontSize: '1rem',
-            fontFamily: '"SF Mono", "Monaco", "Cascadia Code", "Roboto Mono", monospace',
+            boxSizing: 'border-box' as const
+        },
+
+        input: {
+            width: '100%',
+            maxWidth: '400px',
+            height: '50px',
+            fontSize: '1rem',
             padding: '8px',
             border: `2px solid ${this.colors.primary}`,
             borderRadius: '5px',
             backgroundColor: this.colors.surface,
             color: this.colors.text,
-            textAlign: 'center' as const
+            textAlign: 'center' as const,
+            boxSizing: 'border-box' as const
         },
 
-        // ALL labels share this (input-label from all forms)
         label: {
             fontSize: '1rem',
-            fontFamily: '"SF Mono", "Monaco", "Cascadia Code", "Roboto Mono", monospace',
             color: this.colors.text,
-            marginTop: '15px',
-            marginBottom: '5px',
+            marginTop: '5px',
+            // marginBottom: 'px',
             display: 'block'
         },
 
-        // ALL selectors share this (language and view mode selectors)
         selector: {
             display: 'inline-flex',
             alignItems: 'center' as const,
@@ -104,11 +106,9 @@ class UIManager {
             width: '350px',
             height: '50px',
             fontSize: '1rem',
-            fontWeight: 'bold',
-            fontFamily: '"SF Mono", "Monaco", "Cascadia Code", "Roboto Mono", monospace'
+            fontWeight: 'bold'
         },
 
-        // ALL pause dialog elements share base styles
         pauseDialog: {
             position: 'absolute' as const,
             top: '0',
@@ -121,46 +121,71 @@ class UIManager {
             justifyContent: 'center' as const,
             alignItems: 'center' as const,
             color: this.colors.text,
-            fontFamily: '"SF Mono", "Monaco", "Cascadia Code", "Roboto Mono", monospace',
             textAlign: 'center' as const,
             userSelect: 'none' as const,
             zIndex: '100'
         },
 
-        userInfo: {
+        // Auth area styling
+        authArea: {
             position: 'fixed' as const,
             top: '20px',
             right: '20px',
-            display: 'none', // Hidden by default
+            display: 'flex',
+            gap: '10px',
+            zIndex: '1000',
+            backgroundColor: 'rgba(0, 0, 0, 0.9)',
+            padding: '5px',
+            borderRadius: '8px'
+        },
+
+        userInfo: {
             flexDirection: 'column' as const,
             alignItems: 'center' as const,
-            zIndex: '1000',
-            fontFamily: '"SF Mono", "Monaco", "Cascadia Code", "Roboto Mono", monospace'
+            border: `1px solid ${this.colors.primary}`
         },
         
         userName: {
             color: this.colors.text,
+            minWidth: '120px',
             fontSize: '1rem',
             fontWeight: 'bold',
             marginBottom: '5px',
-            userSelect: 'none' as const
-        },
-        
-        logoutButton: {
-            fontFamily: '"SF Mono", "Monaco", "Cascadia Code", "Roboto Mono", monospace',
-            fontSize: '0.8rem',
+            userSelect: 'none' as const,
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
             padding: '5px 10px',
-            backgroundColor: this.colors.surface,
-            color: this.colors.text,
-            border: `1px solid ${this.colors.primary}`,
-            borderRadius: '3px',
-            cursor: 'pointer' as const,
-            fontWeight: 'normal'
+            borderRadius: '5px',
+            border: `1px solid ${this.colors.primary}`
         },
 
-        // VARIANTS - only the differences
-        mainTitle: { fontSize: '4rem' },
-        subtitle: { fontSize: '1.5rem', marginBottom: '1rem' },
+        // Form groups - consolidates button-group and input-group
+        formGroup: {
+            display: 'flex',
+            flexDirection: 'column' as const,
+            alignItems: 'center' as const,
+            gap: '15px',
+            margin: '1rem auto',
+            width: '100%',
+            maxWidth: '400px'
+        },
+        
+        fieldset: {
+            border: 'none',
+            padding: '0',
+            margin: '0'
+        },
+
+        modalFooter: {
+            marginTop: '2rem',
+            paddingTop: '1rem',
+            borderTop: `1px solid ${this.colors.surface}`
+        },
+
+        // VARIANTS - specific modifications to base styles
+        mainTitle: { 
+            fontSize: '4rem',
+            marginBottom: '3rem'
+        },
         
         secondary: { 
             width: '150px', 
@@ -169,6 +194,19 @@ class UIManager {
             backgroundColor: '#666',
             borderColor: 'white',
             margin: '10px'
+        },
+
+        playButton: {
+            fontSize: '3rem',
+            fontWeight: 'bold',
+            width: '100%',
+            maxWidth: '400px',
+            height: '100px',
+            marginBottom: '2rem',
+            backgroundColor: this.colors.primary,
+            color: 'white',
+            borderColor: this.colors.primary,
+            boxSizing: 'border-box' as const
         },
         
         navButton: {
@@ -181,17 +219,10 @@ class UIManager {
             color: this.colors.text
         },
 
-        buttonGroup: {
-            display: 'flex',
-            flexDirection: 'column' as const,
-            alignItems: 'center' as const,
-            gap: '15px',
-            margin: '2rem 0'
+        setupForm: { 
+            display: 'none', 
+            margin: '1rem 0' 
         },
-        
-        inputGroup: { marginBottom: '1rem' },
-        
-        setupForm: { display: 'none', margin: '1rem 0' },
         
         selectorText: {
             fontWeight: 'bold',
@@ -203,32 +234,14 @@ class UIManager {
         
         infoText: {
             fontSize: '0.9rem',
-            fontFamily: '"SF Mono", "Monaco", "Cascadia Code", "Roboto Mono", monospace',
             color: this.colors.textSecondary,
             fontStyle: 'italic' as const
         },
-        
-        srOnly: {
-            position: 'absolute' as const,
-            width: '1px',
-            height: '1px',
-            padding: '0',
-            margin: '-1px',
-            overflow: 'hidden',
-            clip: 'rect(0, 0, 0, 0)',
-            whiteSpace: 'nowrap' as const,
-            border: '0'
-        },
-        
-        fieldset: {
-            border: 'none',
-            padding: '0',
-            margin: '0'
-        },
-        
-        pauseTitle: { fontSize: '1.5rem', marginBottom: '1rem' },
-        pauseText: { fontSize: '1.2rem', marginBottom: '0.5rem' },
-        pauseControls: { fontSize: '1rem' }
+
+        // Pause content size variants
+        pauseLarge: { fontSize: '1.5rem', marginBottom: '1rem' },
+        pauseMedium: { fontSize: '1.2rem', marginBottom: '0.5rem' },
+        pauseSmall: { fontSize: '1rem' }
     };
 
     private applyStyles(element: HTMLElement, styles: Record<string, any>): void {
@@ -242,7 +255,18 @@ class UIManager {
     }
 
     initializeStyles(): void {
-        // Base styles - applied to ALL elements of that type
+        // Set global font family once
+        const globalFont = '"SF Mono", "Monaco", "Cascadia Code", "Roboto Mono", monospace';
+        document.body.style.fontFamily = globalFont;
+        document.documentElement.style.fontFamily = globalFont;
+        
+        // Remove default margins and padding
+        document.body.style.margin = '0';
+        document.body.style.padding = '0';
+        document.documentElement.style.margin = '0';
+        document.documentElement.style.padding = '0';
+        
+        // Base styles
         this.applyStylesToAll('.screen', this.styles.screen);
         this.applyStylesToAll('.overlay', this.styles.overlay);
         this.applyStylesToAll('.container', this.styles.container);
@@ -252,48 +276,48 @@ class UIManager {
         this.applyStylesToAll('.label', this.styles.label);
         this.applyStylesToAll('.selector', this.styles.selector);
         this.applyStylesToAll('.pause-dialog', this.styles.pauseDialog);
-        this.applyStylesToAll('.sr-only', this.styles.srOnly);
         this.applyStylesToAll('fieldset', this.styles.fieldset);
 
-        // Variants - only apply the differences
-        this.applyStylesToAll('.subtitle', this.styles.subtitle);
+        // Consolidated: button-group AND input-group both use same styling
+        this.applyStylesToAll('.button-group, .input-group', this.styles.formGroup);
+
+        // Auth areas - both use same base with variants
+        this.applyStylesToAll('#auth-buttons, #user-info', this.styles.authArea);
+        this.applyStylesToAll('#user-info', this.styles.userInfo);
+        this.applyStylesToAll('#user-name', this.styles.userName);
+
+        // Pause elements - all get base color/alignment, then size variants
+        this.applyStylesToAll('.pause-title, .pause-text, .pause-controls', {
+            color: this.colors.text,
+            textAlign: 'center' as const,
+            userSelect: 'none' as const
+        });
+        this.applyStylesToAll('.pause-title', this.styles.pauseLarge);
+        this.applyStylesToAll('.pause-text', this.styles.pauseMedium);
+        this.applyStylesToAll('.pause-controls', this.styles.pauseSmall);
+
+        // Specific variants
+        this.applyStylesToAll('.play-button', this.styles.playButton);
         this.applyStylesToAll('.secondary', this.styles.secondary);
         this.applyStylesToAll('.nav-button', this.styles.navButton);
-        this.applyStylesToAll('.button-group', this.styles.buttonGroup);
-        this.applyStylesToAll('.input-group', this.styles.inputGroup);
         this.applyStylesToAll('.setup-form', this.styles.setupForm);
         this.applyStylesToAll('.selector-text', this.styles.selectorText);
         this.applyStylesToAll('.info-text', this.styles.infoText);
-        this.applyStylesToAll('.pause-title', this.styles.pauseTitle);
-        this.applyStylesToAll('.pause-text', this.styles.pauseText);
-        this.applyStylesToAll('.pause-controls', this.styles.pauseControls);
+        this.applyStylesToAll('.modal-footer', this.styles.modalFooter);
 
         // Special cases
         const mainMenu = document.getElementById('main-menu');
         if (mainMenu) {
             mainMenu.style.display = 'block';
             mainMenu.style.backgroundColor = 'black';
+            mainMenu.style.position = 'relative';
         }
 
         const mainTitle = document.getElementById('main-title');
         if (mainTitle) {
             this.applyStyles(mainTitle, this.styles.mainTitle);
-            mainTitle.textContent = '🏓 PONG';
         }
-
-        const userInfo = document.getElementById('user-info');
-        if (userInfo)
-            this.applyStyles(userInfo, this.styles.userInfo);
-
-        const userName = document.getElementById('user-name');
-        if (userName)
-            this.applyStyles(userName, this.styles.userName);
-
-        const logoutBtn = document.getElementById('logout-btn');
-        if (logoutBtn)
-            this.applyStyles(logoutBtn, this.styles.logoutButton);
     }
-
 
     showScreen(screenId: string): void {
         this.applyStylesToAll('.screen', { display: 'none' });
@@ -311,10 +335,20 @@ class UIManager {
         }
     }
 
+    showAuthButtons(): void {
+        const authButtons = document.getElementById('auth-buttons');
+        const userInfo = document.getElementById('user-info');
+        
+        if (authButtons) authButtons.style.display = 'flex';
+        if (userInfo) userInfo.style.display = 'none';
+    }
+
     showUserInfo(username: string): void {
+        const authButtons = document.getElementById('auth-buttons');
         const userInfo = document.getElementById('user-info');
         const userName = document.getElementById('user-name');
         
+        if (authButtons) authButtons.style.display = 'none';
         if (userInfo && userName) {
             userName.textContent = username;
             userInfo.style.display = 'flex';
@@ -322,10 +356,26 @@ class UIManager {
     }
     
     hideUserInfo(): void {
-        const userInfo = document.getElementById('user-info');
-        if (userInfo) {
-            userInfo.style.display = 'none';
+        this.showAuthButtons();
+    }
+
+    showModal(modalId: string): void {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.style.display = 'flex';
         }
+    }
+
+    hideModal(modalId: string): void {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    }
+
+    hideAllModals(): void {
+        this.hideModal('login-modal');
+        this.hideModal('register-modal');
     }
 
     showPauseDialog(dialogId: string): void {
@@ -368,8 +418,32 @@ class UIManager {
         return result;
     }
 
-    validatePlayerSetup(gameMode: GameMode): boolean { //TODO implement this
+    validatePlayerSetup(gameMode: GameMode): boolean {
+        const names = this.getPlayerNames(gameMode);
+        
+        if (!names.player1.trim()) return false;
+        if (gameMode === GameMode.TWO_PLAYER_LOCAL && !names.player2?.trim()) return false;
+        
         return true;
+    }
+
+    setButtonState(buttonId: string, state: 'enabled' | 'disabled', tooltip?: string): void {
+        const button = document.getElementById(buttonId) as HTMLButtonElement;
+        if (!button) return;
+
+        if (state === 'disabled') {
+            button.disabled = true;
+            button.classList.add('disabled');
+            button.style.opacity = '0.5';
+            button.style.cursor = 'not-allowed';
+            if (tooltip) button.title = tooltip;
+        } else {
+            button.disabled = false;
+            button.classList.remove('disabled');
+            button.style.opacity = '1';
+            button.style.cursor = 'pointer';
+            button.title = '';
+        }
     }
 }
 
