@@ -30,6 +30,7 @@ export class GameModeManager {
     }
 
     private updateButtonStates(): void {
+        const t = getCurrentTranslation();
         const authState = authManager.getAuthState();
         
         // Get all buttons
@@ -45,16 +46,16 @@ export class GameModeManager {
             this.enableButton(tournamentOnlineMode);
             
             // Disable local modes
-            this.disableButton(localMode, "Available only offline");
-            this.disableButton(tournamentMode, "Available only offline");
+            this.disableButton(localMode, t.availableOnlyOffline);
+            this.disableButton(tournamentMode, t.availableOnlyOffline);
         } else if (authState === AuthState.OFFLINE) {
             // Enable local modes
             this.enableButton(localMode);
             this.enableButton(tournamentMode);
             
             // Disable online modes
-            this.disableButton(onlineMode, "Login required");
-            this.disableButton(tournamentOnlineMode, "Login required");
+            this.disableButton(onlineMode, t.loginRequired);
+            this.disableButton(tournamentOnlineMode, t.loginRequired);
         }
         
         // Solo is always enabled

@@ -41,5 +41,11 @@ export const italian: Translation = {
     confirmPasswordPlaceholder: 'Conferma password',
     enterUsernameOrEmail: 'Inserisci nome utente o email',
     viewMode: 'Modalità di visualizzazione',
-    backToMain: 'Torna al menu principale'
+    backToMain: 'Indietro',
+    pleaseFilllAllFields: 'Compila tutti i campi',
+    passwordsDoNotMatch: 'Le password non corrispondono',
+    availableOnlyOffline: 'Disponibile solo in modalità offline',
+    loginRequired: 'Login richiesto',
+    logout: 'Disconnetti',
+    tournamentOnline: 'Torneo Online',
 };

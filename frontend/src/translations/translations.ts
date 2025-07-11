@@ -27,6 +27,9 @@ export function updateLanguageDisplay(): void {
     const langDisplay = document.getElementById('language_select');
     if (langDisplay) langDisplay.textContent = langs[currentLang];
 
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) logoutBtn.textContent = t.logout;
+
     // Main menu
     const mainTitle = document.getElementById('main-title');
     if (mainTitle) mainTitle.textContent = t.appTitle;
@@ -123,6 +126,9 @@ export function updateLanguageDisplay(): void {
 
     const modeBack = document.getElementById('mode-back');
     if (modeBack) modeBack.textContent = t.backToMain;
+
+    const tournamentOnlineBtn = document.getElementById('tournament-online-mode');
+    if (tournamentOnlineBtn) tournamentOnlineBtn.textContent = t.tournamentOnline;
 
     // Player setup overlay
     const setupTitle = document.getElementById('setup-title');

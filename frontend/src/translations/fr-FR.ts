@@ -41,5 +41,11 @@ export const french: Translation = {
     confirmPasswordPlaceholder: 'Confirmez le mot de passe',
     enterUsernameOrEmail: "Entrez le nom d'utilisateur ou l'email",
     viewMode: 'Mode d\'affichage',
-    backToMain: 'Retour au menu principal'
+    backToMain: 'Retour',
+    pleaseFilllAllFields: 'Veuillez remplir tous les champs',
+    passwordsDoNotMatch: 'Les mots de passe ne correspondent pas',
+    availableOnlyOffline: 'Disponible uniquement en mode hors ligne',
+    loginRequired: 'Connexion requise',
+    logout: 'Déconnexion',
+    tournamentOnline: 'Tournoi en ligne',
 };

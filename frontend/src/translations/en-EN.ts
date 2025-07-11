@@ -41,5 +41,11 @@ export const english: Translation = {
     confirmPasswordPlaceholder: 'Confirm password',
     enterUsernameOrEmail: 'Enter username or email',
     viewMode: 'View Mode',
-    backToMain: 'Back to Main'
+    backToMain: 'Back to Main',
+    pleaseFilllAllFields: 'Please fill in all fields',
+    passwordsDoNotMatch: 'Passwords do not match',
+    availableOnlyOffline: 'Available only in offline mode',
+    loginRequired: 'Login required',
+    logout: 'Logout',
+    tournamentOnline: 'Tournament Online',
 };

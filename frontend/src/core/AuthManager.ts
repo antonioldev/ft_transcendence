@@ -1,11 +1,12 @@
 import { AuthState } from '../shared/constants.js';
 import { uiManager } from '../ui/UIManager.js';
+import { getCurrentTranslation } from '../translations/translations.js';
 
 export class AuthManager {
     private static instance: AuthManager;
     private authState: AuthState = AuthState.LOGGED_OUT;
     private currentUser: {username: string; email?: string} | null = null;
-
+    
     static getInstance(): AuthManager {
         if (!AuthManager.instance) {
             AuthManager.instance = new AuthManager();
@@ -74,18 +75,23 @@ export class AuthManager {
 
     private handleRegisterSubmit(): void {
         const username = (document.getElementById('register-username') as HTMLInputElement)?.value.trim();
-        const email = (document.getElementById('register-email') as HTMLInputElement)?.value.trim();
+        const email = (document.getElementById('register-email') as HTMLInputElement)?.value;
         const password = (document.getElementById('register-password') as HTMLInputElement)?.value;
         const confirmPassword = (document.getElementById('register-confirm-password') as HTMLInputElement)?.value;
-
+        const t = getCurrentTranslation();
         // Basic validation
+        // if (!email.checkValidity()) {
+        //     alert('Please enter a valid email address');
+        //     return;
+        // } // TODO add email validation
+
         if (!username || !email || !password || !confirmPassword) {
-            alert('Please fill in all fields');
+            alert(t.pleaseFilllAllFields);
             return;
         }
 
         if (password !== confirmPassword) {
-            alert('Passwords do not match');
+            alert(t.passwordsDoNotMatch);
             return;
         }
 
@@ -102,10 +108,11 @@ export class AuthManager {
     private handleLoginSubmit(): void {
         const usernameOrEmail = (document.getElementById('login-username') as HTMLInputElement)?.value.trim();
         const password = (document.getElementById('login-password') as HTMLInputElement)?.value;
-
+        const t = getCurrentTranslation();
+        
         // Basic validation
         if (!usernameOrEmail || !password) {
-            alert('Please fill in all fields');
+            alert(t.pleaseFilllAllFields);
             return;
         }
 

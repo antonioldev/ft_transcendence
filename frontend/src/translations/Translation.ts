@@ -44,4 +44,16 @@ export interface Translation {
     enterUsernameOrEmail: string;
     viewMode: string;
     backToMain: string;
+
+    // Missing keys for AuthManager alerts
+    pleaseFilllAllFields: string;
+    passwordsDoNotMatch: string;
+    
+    // Missing keys for GameModeManager tooltips  
+    availableOnlyOffline: string;
+    loginRequired: string;
+    
+    // Missing keys for other elements
+    logout: string;
+    tournamentOnline: string;
 }

@@ -41,5 +41,11 @@ export const portuguese: Translation = {
     confirmPasswordPlaceholder: 'Confirme a senha',
     enterUsernameOrEmail: 'Digite o nome de usuário ou email',
     viewMode: 'Modo de visualização',
-    backToMain: 'Voltar ao menu principal'
+    backToMain: 'Voltar',
+    pleaseFilllAllFields: 'Preencha todos os campos',
+    passwordsDoNotMatch: 'As senhas não coincidem',
+    availableOnlyOffline: 'Disponível apenas no modo offline',
+    loginRequired: 'Login obrigatório',
+    logout: 'Sair',
+    tournamentOnline: 'Torneio Online',
 };
