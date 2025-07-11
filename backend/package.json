@@ -9,14 +9,17 @@
     "start": "node dist/server.js"
   },
   "dependencies": {
-    "@fastify/jwt": "^9.1.0",
-    "@fastify/websocket": "^11.1.0",
-    "dotenv": "^17.2.0",
-    "fastify": "^5.4.0",
-    "google-auth-library": "^10.1.0"
+    "@fastify/cors": "^9.0.1",
+    "@fastify/jwt": "^8.0.1",
+    "@fastify/websocket": "^10.0.1",
+    "dotenv": "^16.4.5",
+    "fastify": "^4.27.0",
+    "google-auth-library": "^9.11.0"
   },
   "devDependencies": {
     "@types/node": "^24.0.10",
+    "@types/fastify-jwt": "*",
+    "@types/fastify-cors": "^2.1.0",
     "tsx": "^4.7.1",
     "typescript": "^5.8.3"
   }

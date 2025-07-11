@@ -23,7 +23,7 @@ window.handleCredentialResponse = async (response: { credential: string }) => {
     console.log("Encoded JWT ID token: " + response.credential);
 
     try {
-        const backendResponse = await fetch('/api/auth/google', {
+        const backendResponse = await fetch('http://localhost:3000/api/auth/google', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -48,8 +48,8 @@ window.handleCredentialResponse = async (response: { credential: string }) => {
     }
     alert("Google Sign-In Successful! Check console for token.");
     } catch (error) {
-        console.error("Erro durante o login:", error);
-        alert("Ocorreu um erro durante o login.");
+        console.error("Login error: ", error);
+        alert("Login error occured.");
 }
 };
 
@@ -76,7 +76,7 @@ function renderGoogleSignInButton(): void {
     const googleClientId = (window as any).GOOGLE_CLIENT_ID;
     
     if (!googleClientId) {
-        console.error("Google Client ID não encontrado. Verifique a configuração.");
+        console.error("Google Client ID is not set.");
         return;
     }
 

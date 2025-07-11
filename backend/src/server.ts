@@ -1,18 +1,25 @@
 import Fastify from 'fastify';
+import { FastifyInstance } from 'fastify';
 import fastifyJwt from '@fastify/jwt';
-import { webSocketManager }  from './network/WebSocketManager.js';
+import fastifyCors from '@fastify/cors';
+import { webSocketManager } from './network/WebSocketManager.js';
 import config from './config/default.js';
 import { authRoutes } from './routes/auth.js';
 import * as dotenv from 'dotenv';
 
 dotenv.config();
 
-const fastify = Fastify({
+const fastify: FastifyInstance<any, any, any, any, any, any, any, any> = Fastify({
     logger: config.debug === 'yes' ? true : false
 });
 
 fastify.register(fastifyJwt, {
     secret: process.env.JWT_SECRET!
+});
+
+fastify.register(fastifyCors, {
+    origin: 'http://localhost:8080',
+    methods: ['GET', 'POST'],
 });
 
 await fastify.register(authRoutes);

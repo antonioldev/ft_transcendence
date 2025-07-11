@@ -1,11 +1,10 @@
-import { FastifyInstance } from 'fastify';
+import { FastifyRequest, FastifyReply, FastifyInstance } from 'fastify';
 import { OAuth2Client } from 'google-auth-library';
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
-export async function authRoutes(fastify: FastifyInstance) {
-
-    fastify.post('/api/auth/google', async (request, reply) => {
+export async function authRoutes(fastify: FastifyInstance<any, any, any, any, any, any, any, any>) {
+    fastify.post('/api/auth/google', async (request: any, reply: any) => {
         try {
             const { token } = request.body as { token: string };
 
@@ -23,8 +22,6 @@ export async function authRoutes(fastify: FastifyInstance) {
             if (!payload) {
                 return reply.status(401).send({ error: 'Token do Google inválido' });
             }
-
-            // const user = await findOrCreateUser(payload);
 
             const userProfile = {
                 id: payload.sub,
