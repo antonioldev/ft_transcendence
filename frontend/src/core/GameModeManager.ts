@@ -40,46 +40,24 @@ export class GameModeManager {
         const tournamentMode = document.getElementById('tournament-mode') as HTMLButtonElement;
         const tournamentOnlineMode = document.getElementById('tournament-online-mode') as HTMLButtonElement;
     
+        uiManager.setButtonState('solo-mode', 'enabled');
         if (authState === AuthState.LOGGED_IN) {
             // Enable online modes
-            this.enableButton(onlineMode);
-            this.enableButton(tournamentOnlineMode);
+            uiManager.setButtonState('online-mode', 'enabled');
+            uiManager.setButtonState('tournament-online-mode', 'enabled');
             
             // Disable local modes
-            this.disableButton(localMode, t.availableOnlyOffline);
-            this.disableButton(tournamentMode, t.availableOnlyOffline);
-        } else if (authState === AuthState.OFFLINE) {
+            uiManager.setButtonState('local-mode', 'disabled', t.availableOnlyOffline);
+            uiManager.setButtonState('tournament-mode', 'disabled', t.availableOnlyOffline);
+        } else  {
             // Enable local modes
-            this.enableButton(localMode);
-            this.enableButton(tournamentMode);
+            uiManager.setButtonState('local-mode', 'enabled');
+            uiManager.setButtonState('tournament-mode', 'enabled');
             
             // Disable online modes
-            this.disableButton(onlineMode, t.loginRequired);
-            this.disableButton(tournamentOnlineMode, t.loginRequired);
+            uiManager.setButtonState('online-mode', 'disabled', t.loginRequired);
+            uiManager.setButtonState('tournament-online-mode', 'disabled', t.loginRequired);
         }
-        
-        // Solo is always enabled
-        this.enableButton(soloMode);
-    }
-    
-    private enableButton(button: HTMLButtonElement | null): void {
-        if (!button) return;
-        
-        button.disabled = false;
-        button.classList.remove('disabled');
-        button.style.opacity = '1';
-        button.style.cursor = 'pointer';
-        button.title = '';
-    }
-    
-    private disableButton(button: HTMLButtonElement | null, reason: string): void {
-        if (!button) return;
-        
-        button.disabled = true;
-        button.classList.add('disabled');
-        button.style.opacity = '0.5';
-        button.style.cursor = 'not-allowed';
-        button.title = reason; // Show reason on hover
     }
 
     private setupEventListeners(): void {
@@ -99,33 +77,39 @@ export class GameModeManager {
         const modeBack = document.getElementById('mode-back');
 
         soloMode?.addEventListener('click', () => {
-            this.selectedGameMode = GameMode.SINGLE_PLAYER;
-            uiManager.showScreen('player-setup-overlay');
-            uiManager.showSetupForm('solo');
+            this.handleGameModeSelection(GameMode.SINGLE_PLAYER, 'solo');
         });
 
         localMode?.addEventListener('click', () => {
-            this.selectedGameMode = GameMode.TWO_PLAYER_LOCAL;
-            uiManager.showScreen('player-setup-overlay');
-            uiManager.showSetupForm('local');
+            this.handleGameModeSelection(GameMode.TWO_PLAYER_LOCAL, 'local');
         });
 
         onlineMode?.addEventListener('click', () => {
-            this.selectedGameMode = GameMode.TWO_PLAYER_REMOTE;
-            uiManager.showScreen('player-setup-overlay');
-            uiManager.showSetupForm('online');
+            // Check if user is logged in before allowing online mode
+            if (authManager.getAuthState() === AuthState.LOGGED_IN) {
+                this.handleGameModeSelection(GameMode.TWO_PLAYER_REMOTE, 'online');
+            } else {
+                // Show login modal if user tries to access online mode
+                const t = getCurrentTranslation();
+                alert(t.loginRequired);
+                uiManager.showModal('login-modal');
+            }
         });
 
         tournamentMode?.addEventListener('click', () => {
-            this.selectedGameMode = GameMode.TOURNAMENT_LOCAL || GameMode.TWO_PLAYER_LOCAL;
-            uiManager.showScreen('player-setup-overlay');
-            uiManager.showSetupForm('local');
+            this.handleGameModeSelection(GameMode.TOURNAMENT_LOCAL || GameMode.TWO_PLAYER_LOCAL, 'local');
         });
 
         tournamentOnlineMode?.addEventListener('click', () => {
-            this.selectedGameMode = GameMode.TOURNAMENT_REMOTE;
-            uiManager.showScreen('player-setup-overlay');
-            uiManager.showSetupForm('online');
+            // Check if user is logged in before allowing online tournament
+            if (authManager.getAuthState() === AuthState.LOGGED_IN) {
+                this.handleGameModeSelection(GameMode.TOURNAMENT_REMOTE, 'online');
+            } else {
+                // Show login modal if user tries to access online tournament
+                const t = getCurrentTranslation();
+                alert(t.loginRequired);
+                uiManager.showModal('login-modal');
+            }
         });
 
         modeBack?.addEventListener('click', () => {
@@ -135,6 +119,34 @@ export class GameModeManager {
 
         // Player setup listeners
         this.setupPlayerSetupListeners();
+    }
+
+    // NEW: Unified game mode selection handler
+    private handleGameModeSelection(gameMode: GameMode, setupFormType: string): void {
+        this.selectedGameMode = gameMode;
+        uiManager.showScreen('player-setup-overlay');
+        uiManager.showSetupForm(setupFormType);
+        
+        // Pre-fill player name if user is logged in
+        this.prefillPlayerNames();
+    }
+
+    // NEW: Pre-fill player names for logged in users
+    private prefillPlayerNames(): void {
+        const currentUser = authManager.getCurrentUser();
+        if (!currentUser) return;
+
+        // Pre-fill single player name fields with logged in username
+        const soloInput = document.getElementById('player1-name') as HTMLInputElement;
+        const onlineInput = document.getElementById('player1-name-online') as HTMLInputElement;
+        
+        if (soloInput && !soloInput.value) {
+            soloInput.value = currentUser.username;
+        }
+        
+        if (onlineInput && !onlineInput.value) {
+            onlineInput.value = currentUser.username;
+        }
     }
 
     private setupPlayerSetupListeners(): void {
@@ -151,12 +163,15 @@ export class GameModeManager {
 
             // Validate player names
             if (!uiManager.validatePlayerSetup(this.selectedGameMode)) {
+                const t = getCurrentTranslation();
+                alert(t.pleaseFilllAllFields);
                 return;
             }
 
             // Get player names
             const playerNames = uiManager.getPlayerNames(this.selectedGameMode);
             const viewModes = this.getViewModes();
+            
             console.log('Starting game with players:', playerNames);
             console.log('View mode:', viewModes[this.currentViewModeIndex].name);
             console.log('Game mode:', this.selectedGameMode);
@@ -197,7 +212,10 @@ export class GameModeManager {
         }
     }
 
-    // Public getters for external access
+    public refreshButtonStates(): void {
+        this.updateButtonStates();
+    }
+
     getSelectedGameMode(): GameMode | null {
         return this.selectedGameMode;
     }

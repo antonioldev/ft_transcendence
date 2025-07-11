@@ -45,7 +45,7 @@ export class InputManager {
             gameMode === GameMode.TOURNAMENT_LOCAL
         );
         
-        console.log(`🎮 InputManager configured:`, {
+        console.log(`InputManager configured:`, {
             gameMode: GameMode[gameMode],
             controlledSide: controlledSide,
             isLocalMultiplayer: this.isLocalMultiplayer

@@ -3,6 +3,7 @@ import { uiManager } from '../ui/UIManager.js';
 import { AuthManager } from './AuthManager.js';
 import { GameModeManager } from './GameModeManager.js';
 import { setupKeyboardListeners } from './KeyboardManager.js';
+import { HistoryManager } from './HistoryManager.js';
 
 function loadPage() {
     // Initialize core systems
@@ -11,12 +12,15 @@ function loadPage() {
     GameModeManager.initialize();
     setupKeyboardListeners();
     
+    // NEW: Initialize history manager for browser back/forward support
+    HistoryManager.initialize();
+    
     // Initialize language display and setup language navigation
     updateLanguageDisplay();
     setupLanguageListeners();
     
-    // Show the main menu
-    uiManager.showScreen('main-menu');
+    // Don't manually show main menu - let history manager handle initial state
+    // uiManager.showScreen('main-menu'); // Remove this line
 }
 
 function setupLanguageListeners() {
