@@ -72,13 +72,6 @@ class UIManager {
             fontSize: '4rem'
         },
 
-        // Table styling for buttons and inputs
-        table: {
-            margin: '2rem auto',
-            borderCollapse: 'separate' as const,
-            borderSpacing: '10px'
-        },
-
         // Primary button styling for main actions
         primaryButton: {
             width: '350px',
@@ -118,8 +111,16 @@ class UIManager {
             margin: '0 10px'
         },
 
+        buttonGroup: {
+            display: 'flex',
+            flexDirection: 'column' as const,
+            alignItems: 'center' as const,
+            gap: '15px',
+            margin: '2rem 0'
+        },
+
         // Language selector container styling
-        languageSelector: {
+        selectorContainer: {
             display: 'inline-flex',
             alignItems: 'center' as const,
             justifyContent: 'space-between' as const,
@@ -130,7 +131,7 @@ class UIManager {
             fontFamily: '"SF Mono", "Monaco", "Cascadia Code", "Roboto Mono", monospace'
         },
 
-        languageDisplay: {
+        selectorDisplay: {
             fontWeight: 'bold',
             textAlign: 'center' as const,
             userSelect: 'none' as const,
@@ -148,13 +149,14 @@ class UIManager {
             fontSize: '1rem',
             fontFamily: '"SF Mono", "Monaco", "Cascadia Code", "Roboto Mono", monospace',
             color: this.colors.text,
-            marginBottom: '10px',
+            marginTop: '15px',
+            marginBottom: '5px',
             display: 'block'
         },
 
         input: {
-            width: '300px',
-            height: '40px',
+            width: '400px',
+            height: '50px',
             fontSize: '1rem',
             fontFamily: '"SF Mono", "Monaco", "Cascadia Code", "Roboto Mono", monospace',
             padding: '8px',
@@ -190,7 +192,7 @@ class UIManager {
             textAlign: 'center' as const,
             userSelect: 'none' as const,
             zIndex: '100'
-        }
+        },
     };
 
     // Utility method to apply styles to a single element
@@ -210,7 +212,7 @@ class UIManager {
         this.setupScreens();
         this.setupButtons();
         this.setupForms();
-        this.setupLanguage();
+        this.setupSelectors();
         this.setupPauseDialogs();
     }
 
@@ -224,12 +226,11 @@ class UIManager {
         if (mainMenu) {
             this.applyStyles(mainMenu, this.styles.mainScreen);
         }
-
+        
         // Apply container styling
         this.applyStylesToAll('.screen-container', this.styles.container);
         
-        // Apply table styling
-        this.applyStylesToAll('.button-table, .input-table', this.styles.table);
+        this.applyStylesToAll('.button-group', this.styles.buttonGroup);
 
         // Apply title styling
         this.applyStylesToAll('.screen-title', this.styles.title);
@@ -246,28 +247,30 @@ class UIManager {
     // Setup styles for buttons
     private setupButtons(): void {
         // Apply primary button styling
-        this.applyStylesToAll('.buttons', this.styles.primaryButton);
-        
-        // Apply secondary button styling
-        this.applyStylesToAll('.secondary-btn', this.styles.secondaryButton);
+        this.applyStylesToAll('.button-primary', this.styles.primaryButton);
+
+        // Apply secondary button styling  
+        this.applyStylesToAll('.button-secondary', this.styles.secondaryButton);
+
+        // Apply navigation button styling
+        this.applyStylesToAll('.button-nav', this.styles.navButton);
 
         // Apply disabled button styling
-        this.applyStylesToAll('.disabled', { opacity: '0.5', cursor: 'not-allowed' });
+        this.applyStylesToAll('.button-disabled', { opacity: '0.5', cursor: 'not-allowed' });
     }
 
     // Setup styles for forms
     private setupForms(): void {
         this.applyStylesToAll('.setup-form', this.styles.setupForm);
         this.applyStylesToAll('.input-label', this.styles.label);
-        this.applyStylesToAll('.name-input', this.styles.input);
+        this.applyStylesToAll('.input', this.styles.input);
         this.applyStylesToAll('.setup-info', this.styles.info);
     }
 
     // Setup styles for language navigation
-    private setupLanguage(): void {
-        this.applyStylesToAll('.language-selector', this.styles.languageSelector);
-        this.applyStylesToAll('.language-display', this.styles.languageDisplay);
-        this.applyStylesToAll('.nav-btn', this.styles.navButton);
+    private setupSelectors(): void {
+        this.applyStylesToAll('.selector-container', this.styles.selectorContainer);
+        this.applyStylesToAll('.selector-display', this.styles.selectorDisplay);
     }
 
     // Setup styles for pause dialogs
@@ -297,16 +300,14 @@ class UIManager {
 
     showPauseDialog(dialogId: string): void {
         const dialog = document.getElementById(dialogId);
-        if (dialog) {
+        if (dialog)
             dialog.style.display = 'flex';
-        }
     }
 
     hidePauseDialog(dialogId: string): void {
         const dialog = document.getElementById(dialogId);
-        if (dialog) {
+        if (dialog)
             dialog.style.display = 'none';
-        }
     }
 
     // Utility methods for player setup and validation

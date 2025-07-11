@@ -271,31 +271,31 @@ function updateUIForAuthState() {
     if (authState === AuthState.LOGGED_IN) {
         // Logged in: Enable online modes
         if (onlineMode) {
-            onlineMode.classList.remove('btn--disabled');
+            onlineMode.classList.remove('button-disabled');
             onlineMode.removeAttribute('disabled');
         }
         if (tournamentMode) {
-            tournamentMode.classList.remove('btn--disabled');
+            tournamentMode.classList.remove('button-disabled');
             tournamentMode.removeAttribute('disabled');
         }
         // Keep local modes enabled
         if (localMode) {
-            localMode.classList.remove('btn--disabled');
+            localMode.classList.remove('button-disabled');
             localMode.removeAttribute('disabled');
         }
     } else if (authState === AuthState.OFFLINE) {
         // Offline: Only local modes available
         if (onlineMode) {
-            onlineMode.classList.add('btn--disabled');
+            onlineMode.classList.add('button-disabled');
             onlineMode.setAttribute('disabled', 'true');
         }
         if (tournamentMode) {
             // For offline, let's enable local tournament
-            tournamentMode.classList.remove('btn--disabled');
+            tournamentMode.classList.remove('button-disabled');
             tournamentMode.removeAttribute('disabled');
         }
         if (localMode) {
-            localMode.classList.remove('btn--disabled');
+            localMode.classList.remove('button-disabled');
             localMode.removeAttribute('disabled');
         }
     }

@@ -16,15 +16,15 @@
         </header>
         
         <nav class="button-group" id="auth-buttons">
-            <button type="button" class="btn btn--primary" id="register-btn">Register</button>
-            <button type="button" class="btn btn--primary" id="login-btn">Login</button>
-            <button type="button" class="btn btn--primary" id="google-login-btn">Login with Google</button>
-            <button type="button" class="btn btn--primary" id="offline-btn">Play Offline</button>
+            <button type="button" class="button-primary" id="register-btn">Register</button>
+            <button type="button" class="button-primary" id="login-btn">Login</button>
+            <button type="button" class="button-primary" id="google-login-btn">Login with Google</button>
+            <button type="button" class="button-primary" id="offline-btn">Play Offline</button>
             
-            <div class="language-selector">
-                <button type="button" class="btn btn--nav" id="back" aria-label="Previous language">←</button>
-                <span class="language-display" id="language_select">English</span>
-                <button type="button" class="btn btn--nav" id="forward" aria-label="Next language">→</button>
+            <div class="selector-container">
+                <button type="button" class="button-nav" id="back">←</button>
+                <span class="selector-display" id="language_select">English</span>
+                <button type="button" class="button-nav" id="forward">→</button>
             </div>
         </nav>
     </main>
@@ -64,8 +64,8 @@
                 </fieldset>
                 
                 <div class="button-group">
-                    <button type="submit" class="btn btn--primary" id="register-submit">Create Account</button>
-                    <button type="button" class="btn btn--secondary" id="register-back">Back</button>
+                    <button type="submit" class="button-primary" id="register-submit">Create Account</button>
+                    <button type="button" class="button-secondary" id="register-back">Back</button>
                 </div>
             </form>
         </div>
@@ -83,7 +83,7 @@
                     <div class="input-group">
                         <label for="login-username" class="input-label">Username or Email:</label>
                         <input type="text" id="login-username" name="username" class="input" 
-                               placeholder="Enter username or email" required>
+                               placeholder="Enter username or email"  required>
                     </div>
                     
                     <div class="input-group">
@@ -94,8 +94,8 @@
                 </fieldset>
                 
                 <div class="button-group">
-                    <button type="submit" class="btn btn--primary" id="login-submit">Login</button>
-                    <button type="button" class="btn btn--secondary" id="login-back">Back</button>
+                    <button type="submit" class="button-primary" id="login-submit">Login</button>
+                    <button type="button" class="button-secondary" id="login-back">Back</button>
                 </div>
             </form>
         </div>
@@ -108,19 +108,19 @@
             
             <div class="mode-selector">
                 <h3 id="view-mode-title" class="mode-subtitle">View Mode</h3>
-                <div class="view-mode-selector">
-                    <button type="button" class="btn btn--nav" id="view-mode-back" aria-label="Previous view mode">←</button>
-                    <span class="mode-display" id="view-mode-display">Classic Mode</span>
-                    <button type="button" class="btn btn--nav" id="view-mode-forward" aria-label="Next view mode">→</button>
+                <div class="selector-container">
+                    <button type="button" class="button-nav" id="view-mode-back">←</button>
+                    <span class="selector-display" id="view-mode-display">Classic Mode</span>
+                    <button type="button" class="button-nav" id="view-mode-forward">→</button>
                 </div>
             </div>
 
             <div class="button-group" id="mode-buttons-table">
-                <button type="button" class="btn btn--primary" id="solo-mode">Solo (vs AI)</button>
-                <button type="button" class="btn btn--primary" id="local-mode">Local 2 Players</button>
-                <button type="button" class="btn btn--primary btn--disabled" id="online-mode" disabled>Online 2 Players</button>
-                <button type="button" class="btn btn--primary btn--disabled" id="tournament-mode" disabled>Tournament</button>
-                <button type="button" class="btn btn--secondary" id="mode-back">Back to Main</button>
+                <button type="button" class="button-primary" id="solo-mode">Solo (vs AI)</button>
+                <button type="button" class="button-primary" id="local-mode">Local 2 Players</button>
+                <button type="button" class="button-primary button-disabled" id="online-mode" disabled>Online 2 Players</button>
+                <button type="button" class="button-primary button-disabled" id="tournament-mode" disabled>Tournament</button>
+                <button type="button" class="button-secondary" id="mode-back">Back to Main</button>
             </div>
         </div>
     </div>
@@ -173,8 +173,8 @@
             </form>
 
             <div class="button-group">
-                <button type="button" class="btn btn--primary" id="start-game">Start Game</button>
-                <button type="button" class="btn btn--secondary" id="setup-back">Back</button>
+                <button type="button" class="button-primary" id="start-game">Start Game</button>
+                <button type="button" class="button-secondary" id="setup-back">Back</button>
             </div>
         </div>
     </div>
