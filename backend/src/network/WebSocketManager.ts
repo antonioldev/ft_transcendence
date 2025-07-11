@@ -1,8 +1,12 @@
 import { FastifyInstance } from 'fastify';
+import  Fastify from 'fastify';
+import { fastifyJwt } from '@fastify/jwt';
 import { gameManager } from '../models/gameManager.js';
 import { Client } from '../models/Client.js';
 import { MessageType, Direction, GameMode } from '../shared/constants.js';
 import { ClientMessage, ServerMessage } from '../shared/types.js';
+
+const fastify: FastifyInstance = Fastify();
 
 /**
  * Manages WebSocket connections, client interactions, and game-related messaging.
@@ -14,6 +18,13 @@ export class WebSocketManager {
      * Sets up WebSocket routes for the Fastify server.
      * @param fastify - The Fastify instance to configure.
      */
+
+    constructor(private fastify: FastifyInstance) {
+        const jwtSecret = process.env.JWT_SECRET || 'default_secret';
+        this.fastify.register(fastifyJwt, {
+            secret: jwtSecret,
+        });
+    }
     async setupRoutes(fastify: FastifyInstance): Promise<void> {
         fastify.get('/', { websocket: true }, (socket, req) => {
             this.handleConnection(socket);
@@ -235,4 +246,4 @@ export class WebSocketManager {
     }
 }
 
-export const webSocketManager = new WebSocketManager();
+export const webSocketManager = new WebSocketManager(fastify);

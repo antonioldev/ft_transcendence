@@ -6,6 +6,11 @@ FROM node:alpine AS builder
 
 WORKDIR /app
 
+ARG GOOGLE_CLIENT_ID
+
+# Ensure GOOGLE_CLIENT_ID is set
+RUN test -n "$GOOGLE_CLIENT_ID"
+
 # Copy package files
 COPY package*.json package-lock.json ./
 
@@ -18,6 +23,9 @@ COPY tsconfig.json ./
 
 # Build TypeScript
 RUN npm run build
+
+# Create a file with the Google Client ID
+RUN echo "window.GOOGLE_CLIENT_ID = '${GOOGLE_CLIENT_ID}';" > /app/dist/config.js
 
 # Production stage
 FROM nginx:alpine

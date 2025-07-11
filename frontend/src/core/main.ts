@@ -8,7 +8,8 @@ import { gameStateManager } from './GameStateManager.js';
 declare global {
     interface Window {
         google: typeof google.accounts;
-        handleCredentialResponse: (response: { credential: string }) => void; // Define your callback type
+        handleCredentialResponse: (response: { credential: string }) => void;
+        GOOGLE_CLIENT_ID: string
     }
 }
 
@@ -18,13 +19,27 @@ let selectedGameMode: GameMode | null = null;
 const googleSignInContainer = document.getElementById('g_id_signin_container') as HTMLDivElement | null;
 let googleScriptLoaded: boolean = false;
 
-window.handleCredentialResponse = (response: { credential: string }) => {
+window.handleCredentialResponse = async (response: { credential: string }) => {
     console.log("Encoded JWT ID token: " + response.credential);
 
-    // TODO: Send this token to backend for verification and user authentication.
-    // fetch('/api/auth/google', { method: 'POST', body: JSON.stringify({ token: response.credential }) })
-    // .then(res => res.json() as Promise<any>)
-    // .then(data => { /* handle backend response */ });
+    try {
+        const backendResponse = await fetch('/api/auth/google', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ token: response.credential }),
+        });
+
+        if (!backendResponse.ok) {
+            const errorData = await backendResponse.json();
+            throw new Error('Failed to authenticate with backend');
+        }
+
+        const { sessionToken } = await backendResponse.json();
+        console.log("Backend authentication successful. Token:", sessionToken);
+        // TODO: Armazene o 'sessionToken' para usar em futuras requisições autenticadas.
+        // ex: sessionStorage.setItem('sessionToken', sessionToken);
 
     const player1NameOnlineInput = document.getElementById('player1-name-online') as HTMLInputElement | null;
     if (player1NameOnlineInput) {
@@ -32,6 +47,10 @@ window.handleCredentialResponse = (response: { credential: string }) => {
         player1NameOnlineInput.disabled = true; // Prevent editing after Google login
     }
     alert("Google Sign-In Successful! Check console for token.");
+    } catch (error) {
+        console.error("Erro durante o login:", error);
+        alert("Ocorreu um erro durante o login.");
+}
 };
 
 function loadGoogleSignIn(): void {
@@ -54,9 +73,16 @@ function loadGoogleSignIn(): void {
 }
 
 function renderGoogleSignInButton(): void {
+    const googleClientId = (window as any).GOOGLE_CLIENT_ID;
+    
+    if (!googleClientId) {
+        console.error("Google Client ID não encontrado. Verifique a configuração.");
+        return;
+    }
+
     if (window.google && window.google.accounts && window.google.accounts.id && googleSignInContainer) {
         window.google.accounts.id.initialize({
-            client_id: "68741834840-3rbu03hithnm0jpaiajraddv3nsg3avr.apps.googleusercontent.com", // Create ENV variable for this
+            client_id: googleClientId,
             callback: window.handleCredentialResponse,
         });
 
@@ -69,7 +95,7 @@ function renderGoogleSignInButton(): void {
         );
     } else {
         console.error("Google GSI client not ready or container not found.");
-    }
+    }   
 }
 
 // Main entry point for the application. Handles initialization and event setup.

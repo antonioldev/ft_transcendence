@@ -1,10 +1,21 @@
 import Fastify from 'fastify';
+import fastifyJwt from '@fastify/jwt';
 import { webSocketManager }  from './network/WebSocketManager.js';
 import config from './config/default.js';
+import { authRoutes } from './routes/auth.js';
+import * as dotenv from 'dotenv';
+
+dotenv.config();
 
 const fastify = Fastify({
     logger: config.debug === 'yes' ? true : false
 });
+
+fastify.register(fastifyJwt, {
+    secret: process.env.JWT_SECRET!
+});
+
+await fastify.register(authRoutes);
 
 // Register the WebSocket plugin with specific options
 await fastify.register(import('@fastify/websocket'), {
