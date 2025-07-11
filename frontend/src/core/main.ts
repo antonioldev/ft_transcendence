@@ -1,6 +1,6 @@
 import { updateLanguageDisplay, previousLanguage, nextLanguage, getCurrentTranslation } from '../translations/translations.js';
 import { uiManager } from '../ui/UIManager.js';
-import { init2D, init3D } from '../engine/GameController.js';  // ✅ Updated import path
+import { init2D, init3D } from '../engine/GameController.js';
 import { GameState, GameMode, ViewMode, AuthState } from '../shared/constants.js';
 import { gameStateManager } from './GameStateManager.js';
 
@@ -42,7 +42,7 @@ function setupEventListeners() {
 }
 
 function setupAuthenticationListeners(){
-const registerBtn = document.getElementById('register-btn');
+    const registerBtn = document.getElementById('register-btn');
     const loginBtn = document.getElementById('login-btn');
     const googleLoginBtn = document.getElementById('google-login-btn');
     const offlineBtn = document.getElementById('offline-btn');
@@ -101,26 +101,57 @@ function setupGameModeListeners(){
     const soloMode = document.getElementById('solo-mode');
     const localMode = document.getElementById('local-mode');
     const onlineMode = document.getElementById('online-mode');
+    const tournamentMode = document.getElementById('tournament-mode');
+    const tournamentOnlineMode = document.getElementById('tournament-online-mode');
     const modeBack = document.getElementById('mode-back');
 
     soloMode?.addEventListener('click', () => {
+        // Solo is always available
         selectedGameMode = GameMode.SINGLE_PLAYER;
         uiManager.showScreen('player-setup-overlay');
         uiManager.showSetupForm('solo');
     });
 
     localMode?.addEventListener('click', () => {
+        // Local mode only available in offline
+        if (authState !== AuthState.OFFLINE) {
+            alert('Local multiplayer is only available in offline mode!');
+            return;
+        }
         selectedGameMode = GameMode.TWO_PLAYER_LOCAL;
         uiManager.showScreen('player-setup-overlay');
         uiManager.showSetupForm('local');
     });
 
     onlineMode?.addEventListener('click', () => {
+        // Online mode only available when logged in
         if (authState !== AuthState.LOGGED_IN) {
             alert('Please login or register to play online!');
             return;
         }
         selectedGameMode = GameMode.TWO_PLAYER_REMOTE;
+        uiManager.showScreen('player-setup-overlay');
+        uiManager.showSetupForm('online');
+    });
+
+    tournamentMode?.addEventListener('click', () => {
+        // Local tournament only available in offline
+        if (authState !== AuthState.OFFLINE) {
+            alert('Local tournament is only available in offline mode!');
+            return;
+        }
+        selectedGameMode = GameMode.TOURNAMENT_LOCAL; // You might need to add this enum value
+        uiManager.showScreen('player-setup-overlay');
+        uiManager.showSetupForm('local'); // or create a tournament setup form
+    });
+
+    tournamentOnlineMode?.addEventListener('click', () => {
+        // Online tournament only available when logged in
+        if (authState !== AuthState.LOGGED_IN) {
+            alert('Please login or register to play online tournaments!');
+            return;
+        }
+        selectedGameMode = GameMode.TOURNAMENT_REMOTE;
         uiManager.showScreen('player-setup-overlay');
         uiManager.showSetupForm('online');
     });
@@ -258,47 +289,8 @@ function updateViewModeDisplay() {
 
 // Navigation functions
 function proceedToGameSelection() {
-    updateUIForAuthState();
     uiManager.showScreen('game-mode-overlay');
     updateViewModeDisplay(); // Initialize the view mode display
-}
-
-function updateUIForAuthState() {
-    const onlineMode = document.getElementById('online-mode');
-    const localMode = document.getElementById('local-mode');
-    const tournamentMode = document.getElementById('tournament-mode');
-    
-    if (authState === AuthState.LOGGED_IN) {
-        // Logged in: Enable online modes
-        if (onlineMode) {
-            onlineMode.classList.remove('button-disabled');
-            onlineMode.removeAttribute('disabled');
-        }
-        if (tournamentMode) {
-            tournamentMode.classList.remove('button-disabled');
-            tournamentMode.removeAttribute('disabled');
-        }
-        // Keep local modes enabled
-        if (localMode) {
-            localMode.classList.remove('button-disabled');
-            localMode.removeAttribute('disabled');
-        }
-    } else if (authState === AuthState.OFFLINE) {
-        // Offline: Only local modes available
-        if (onlineMode) {
-            onlineMode.classList.add('button-disabled');
-            onlineMode.setAttribute('disabled', 'true');
-        }
-        if (tournamentMode) {
-            // For offline, let's enable local tournament
-            tournamentMode.classList.remove('button-disabled');
-            tournamentMode.removeAttribute('disabled');
-        }
-        if (localMode) {
-            localMode.classList.remove('button-disabled');
-            localMode.removeAttribute('disabled');
-        }
-    }
 }
 
 // Game starting logic

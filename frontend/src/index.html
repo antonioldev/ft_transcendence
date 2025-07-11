@@ -12,130 +12,130 @@
     <!-- Main Menu -->
     <main id="main-menu" class="screen">
         <header>
-            <h1 id="main-title" class="screen-title">ft_transcendence</h1>
+            <h1 id="main-title" class="title">ft_transcendence</h1>
         </header>
         
         <nav class="button-group" id="auth-buttons">
-            <button type="button" class="button-primary" id="register-btn">Register</button>
-            <button type="button" class="button-primary" id="login-btn">Login</button>
-            <button type="button" class="button-primary" id="google-login-btn">Login with Google</button>
-            <button type="button" class="button-primary" id="offline-btn">Play Offline</button>
+            <button type="button" class="button" id="register-btn">Register</button>
+            <button type="button" class="button" id="login-btn">Login</button>
+            <button type="button" class="button" id="google-login-btn">Login with Google</button>
+            <button type="button" class="button" id="offline-btn">Play Offline</button>
             
-            <div class="selector-container">
-                <button type="button" class="button-nav" id="back">←</button>
-                <span class="selector-display" id="language_select">English</span>
-                <button type="button" class="button-nav" id="forward">→</button>
+            <div class="selector">
+                <button type="button" class="nav-button" id="back">←</button>
+                <span class="selector-text" id="language_select">English</span>
+                <button type="button" class="nav-button" id="forward">→</button>
             </div>
         </nav>
     </main>
 
     <!-- Register Screen -->
-    <div id="register-screen" class="screen screen--overlay" role="dialog" aria-labelledby="register-title">
-        <div class="screen-container">
-            <h2 id="register-title" class="screen-title">Register</h2>
+    <div id="register-screen" class="screen overlay" role="dialog" aria-labelledby="register-title">
+        <div class="container">
+            <h2 id="register-title" class="title">Register</h2>
             
-            <form id="register-form" class="form">
+            <form id="register-form">
                 <fieldset>
                     <legend class="sr-only">Account Information</legend>
                     
                     <div class="input-group">
-                        <label for="register-username" class="input-label">Username:</label>
+                        <label for="register-username" class="label">Username:</label>
                         <input type="text" id="register-username" name="username" class="input" 
                                placeholder="Enter username" maxlength="20" required>
                     </div>
                     
                     <div class="input-group">
-                        <label for="register-email" class="input-label">Email:</label>
+                        <label for="register-email" class="label">Email:</label>
                         <input type="email" id="register-email" name="email" class="input" 
                                placeholder="Enter email" required>
                     </div>
                     
                     <div class="input-group">
-                        <label for="register-password" class="input-label">Password:</label>
+                        <label for="register-password" class="label">Password:</label>
                         <input type="password" id="register-password" name="password" class="input" 
                                placeholder="Enter password" required>
                     </div>
                     
                     <div class="input-group">
-                        <label for="register-confirm-password" class="input-label">Confirm Password:</label>
+                        <label for="register-confirm-password" class="label">Confirm Password:</label>
                         <input type="password" id="register-confirm-password" name="confirm-password" class="input" 
                                placeholder="Confirm password" required>
                     </div>
                 </fieldset>
                 
                 <div class="button-group">
-                    <button type="submit" class="button-primary" id="register-submit">Create Account</button>
-                    <button type="button" class="button-secondary" id="register-back">Back</button>
+                    <button type="submit" class="button" id="register-submit">Create Account</button>
+                    <button type="button" class="button secondary" id="register-back">Back</button>
                 </div>
             </form>
         </div>
     </div>
     
     <!-- Login Screen -->
-    <div id="login-screen" class="screen screen--overlay" role="dialog" aria-labelledby="login-title">
-        <div class="screen-container">
-            <h2 id="login-title" class="screen-title">Login</h2>
+    <div id="login-screen" class="screen overlay" role="dialog" aria-labelledby="login-title">
+        <div class="container">
+            <h2 id="login-title" class="title">Login</h2>
             
-            <form id="login-form" class="form">
+            <form id="login-form">
                 <fieldset>
                     <legend class="sr-only">Login Credentials</legend>
                     
                     <div class="input-group">
-                        <label for="login-username" class="input-label">Username or Email:</label>
+                        <label for="login-username" class="label">Username or Email:</label>
                         <input type="text" id="login-username" name="username" class="input" 
-                               placeholder="Enter username or email"  required>
+                               placeholder="Enter username or email" required>
                     </div>
                     
                     <div class="input-group">
-                        <label for="login-password" class="input-label">Password:</label>
+                        <label for="login-password" class="label">Password:</label>
                         <input type="password" id="login-password" name="password" class="input" 
                                placeholder="Enter password" required>
                     </div>
                 </fieldset>
                 
                 <div class="button-group">
-                    <button type="submit" class="button-primary" id="login-submit">Login</button>
-                    <button type="button" class="button-secondary" id="login-back">Back</button>
+                    <button type="submit" class="button" id="login-submit">Login</button>
+                    <button type="button" class="button secondary" id="login-back">Back</button>
                 </div>
             </form>
         </div>
     </div>
 
     <!-- Game Mode Selection -->
-    <div id="game-mode-overlay" class="screen screen--overlay" role="dialog" aria-labelledby="mode-title">
-        <div class="screen-container">
-            <h2 id="mode-title" class="screen-title">Select Game Mode</h2>
+    <div id="game-mode-overlay" class="screen overlay" role="dialog" aria-labelledby="mode-title">
+        <div class="container">
+            <h2 id="mode-title" class="title">Select Game Mode</h2>
             
             <div class="mode-selector">
-                <h3 id="view-mode-title" class="mode-subtitle">View Mode</h3>
-                <div class="selector-container">
-                    <button type="button" class="button-nav" id="view-mode-back">←</button>
-                    <span class="selector-display" id="view-mode-display">Classic Mode</span>
-                    <button type="button" class="button-nav" id="view-mode-forward">→</button>
+                <div class="selector">
+                    <button type="button" class="nav-button" id="view-mode-back">←</button>
+                    <span class="selector-text" id="view-mode-display">Classic Mode</span>
+                    <button type="button" class="nav-button" id="view-mode-forward">→</button>
                 </div>
             </div>
 
             <div class="button-group" id="mode-buttons-table">
-                <button type="button" class="button-primary" id="solo-mode">Solo (vs AI)</button>
-                <button type="button" class="button-primary" id="local-mode">Local 2 Players</button>
-                <button type="button" class="button-primary button-disabled" id="online-mode" disabled>Online 2 Players</button>
-                <button type="button" class="button-primary button-disabled" id="tournament-mode" disabled>Tournament</button>
-                <button type="button" class="button-secondary" id="mode-back">Back to Main</button>
+                <button type="button" class="button" id="solo-mode">Solo (vs AI)</button>
+                <button type="button" class="button" id="local-mode">Local 2 Players</button>
+                <button type="button" class="button" id="online-mode">Online 2 Players</button>
+                <button type="button" class="button" id="tournament-mode">Tournament</button>
+                <button type="button" class="button" id="tournament-online-mode">Tournament Online</button>
+                <button type="button" class="button" id="mode-back">Back to Main</button>
             </div>
         </div>
     </div>
 
     <!-- Player Setup -->
-    <div id="player-setup-overlay" class="screen screen--overlay" role="dialog" aria-labelledby="setup-title">
-        <div class="screen-container">
-            <h2 id="setup-title" class="screen-title">Player Setup</h2>
+    <div id="player-setup-overlay" class="screen overlay" role="dialog" aria-labelledby="setup-title">
+        <div class="container">
+            <h2 id="setup-title" class="title">Player Setup</h2>
 
             <!-- Solo Player Setup -->
-            <form id="solo-setup" class="setup-form form">
+            <form id="solo-setup" class="setup-form">
                 <fieldset>
                     <legend class="sr-only">Solo Player Information</legend>
                     <div class="input-group">
-                        <label for="player1-name" class="input-label">Player Name:</label>
+                        <label for="player1-name" class="label">Player Name:</label>
                         <input type="text" id="player1-name" name="player1-name" class="input" 
                                placeholder="Enter your name" maxlength="20" required>
                     </div>
@@ -143,16 +143,16 @@
             </form>
 
             <!-- Local 2 Player Setup -->
-            <form id="local-setup" class="setup-form form">
+            <form id="local-setup" class="setup-form">
                 <fieldset>
                     <legend class="sr-only">Local Players Information</legend>
                     <div class="input-group">
-                        <label for="player1-name-local" class="input-label">Player 1 Name:</label>
+                        <label for="player1-name-local" class="label">Player 1 Name:</label>
                         <input type="text" id="player1-name-local" name="player1-name" class="input" 
                                placeholder="Enter Player 1 name" maxlength="20" required>
                     </div>
                     <div class="input-group">
-                        <label for="player2-name-local" class="input-label">Player 2 Name:</label>
+                        <label for="player2-name-local" class="label">Player 2 Name:</label>
                         <input type="text" id="player2-name-local" name="player2-name" class="input" 
                                placeholder="Enter Player 2 name" maxlength="20" required>
                     </div>
@@ -160,43 +160,43 @@
             </form>
 
             <!-- Online Player Setup -->
-            <form id="online-setup" class="setup-form form">
+            <form id="online-setup" class="setup-form">
                 <fieldset>
                     <legend class="sr-only">Online Player Information</legend>
                     <div class="input-group">
-                        <label for="player1-name-online" class="input-label">Player Name:</label>
+                        <label for="player1-name-online" class="label">Player Name:</label>
                         <input type="text" id="player1-name-online" name="player1-name" class="input" 
                                placeholder="Enter your name" maxlength="20" required>
                     </div>
-                    <p class="setup-info">You'll be matched with another online player</p>
+                    <p class="info-text">You'll be matched with another online player</p>
                 </fieldset>
             </form>
 
             <div class="button-group">
-                <button type="button" class="button-primary" id="start-game">Start Game</button>
-                <button type="button" class="button-secondary" id="setup-back">Back</button>
+                <button type="button" class="button" id="start-game">Start Game</button>
+                <button type="button" class="button secondary" id="setup-back">Back</button>
             </div>
         </div>
     </div>
 
     <!-- Game Screens -->
-    <div id="game-2d" class="screen screen--overlay game-screen">
+    <div id="game-2d" class="screen overlay game-screen">
         <canvas id="game-canvas-2d" class="game-canvas" width="800" height="600" 
                 aria-label="2D Game Canvas"></canvas>
         <div class="pause-dialog" id="pause-dialog-2d" role="dialog" aria-labelledby="pause-title-2d">
             <h2 class="pause-title" id="pause-title-2d">Game Paused</h2>
             <p class="pause-text" id="pause-text-2d">Exit the game?</p>
-            <p class="pause-control" id="pause-controls-2d">Y - Yes | N - No | ESC - Resume</p>
+            <p class="pause-controls" id="pause-controls-2d">Y - Yes | N - No | ESC - Resume</p>
         </div>
     </div>
 
-    <div id="game-3d" class="screen screen--overlay game-screen">
+    <div id="game-3d" class="screen overlay game-screen">
         <canvas id="game-canvas-3d" class="game-canvas" width="1400" height="700" 
                 aria-label="3D Game Canvas"></canvas>
         <div class="pause-dialog" id="pause-dialog-3d" role="dialog" aria-labelledby="pause-title-3d">
             <h2 class="pause-title" id="pause-title-3d">Game Paused</h2>
             <p class="pause-text" id="pause-text-3d">Exit the game?</p>
-            <p class="pause-control" id="pause-controls-3d">Y | N</p>
+            <p class="pause-controls" id="pause-controls-3d">Y | N</p>
         </div>
     </div>
 
