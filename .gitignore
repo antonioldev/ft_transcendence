@@ -1,4 +1,4 @@
-.env
+
 .tests
 node_modules/
 dist/
@@ -92,7 +92,6 @@ __pypackages__/
 
 # Environments
 env
-.env
 .venv
 env/
 venv/
