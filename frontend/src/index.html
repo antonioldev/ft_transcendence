@@ -9,24 +9,28 @@
     <script src="https://cdn.babylonjs.com/gui/babylon.gui.min.js"></script>
 </head>
 <body>
-    <!-- Log in info -->
-    <div id="user-info" style="display: none;">
-        <span id="user-name"></span>
-        <button type="button" id="logout-btn">Logout</button>
-    </div>
-
     <!-- Main Menu -->
     <main id="main-menu" class="screen">
         <header>
+            <!-- Top-right user info (when logged in) -->
+            <div id="user-info" style="display: none;">
+                <span id="user-name"></span>
+                <button type="button" id="logout-btn">Logout</button>
+            </div>
+            <!-- Top-right auth buttons (when logged out) -->
+            <div id="auth-buttons" class="auth-buttons">
+                <button type="button" class="button secondary" id="login-btn">Login</button>
+                <button type="button" class="button secondary" id="register-btn">Register</button>
+            </div>
+            
             <h1 id="main-title" class="title">ft_transcendence</h1>
         </header>
         
-        <nav class="button-group" id="auth-buttons">
-            <button type="button" class="button" id="register-btn">Register</button>
-            <button type="button" class="button" id="login-btn">Login</button>
-            <button type="button" class="button" id="google-login-btn">Login with Google</button>
-            <button type="button" class="button" id="offline-btn">Play Offline</button>
+        <nav class="button-group">
+            <!-- Single PLAY button -->
+            <button type="button" class="button play-button" id="play-btn">PLAY</button>
             
+            <!-- Language selector -->
             <div class="selector">
                 <button type="button" class="nav-button" id="back">←</button>
                 <span class="selector-text" id="language_select">English</span>
@@ -35,15 +39,48 @@
         </nav>
     </main>
 
-    <!-- Register Screen -->
-    <div id="register-screen" class="screen overlay" role="dialog" aria-labelledby="register-title">
+    <!-- Login Modal -->
+    <div id="login-modal" class="screen overlay" style="display: none;">
         <div class="container">
-            <h2 id="register-title" class="title">Register</h2>
+            <h2 class="title">Login to Play</h2>
+            
+            <form id="login-form">
+                <fieldset>
+                    <div class="input-group">
+                        <label for="login-username" class="label">Username or Email:</label>
+                        <input type="text" id="login-username" name="username" class="input" 
+                               placeholder="Enter username or email" required>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="login-password" class="label">Password:</label>
+                        <input type="password" id="login-password" name="password" class="input" 
+                               placeholder="Enter password" required>
+                    </div>
+                </fieldset>
+                
+                <div class="button-group">
+                    <button type="submit" class="button" id="login-submit">Login</button>
+                    <button type="button" class="button" id="google-login-btn">Login with Google</button>
+                </div>
+            </form>
+            
+            <div class="modal-footer">
+                <p class="info-text">Don't have an account?</p>
+                <button type="button" class="button secondary" id="show-register">Create Account</button>
+            </div>
+            
+            <button type="button" class="button secondary" id="login-back">Back</button>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div id="register-modal" class="screen overlay" style="display: none;">
+        <div class="container">
+            <h2 class="title">Create Account</h2>
             
             <form id="register-form">
                 <fieldset>
-                    <legend class="sr-only">Account Information</legend>
-                    
                     <div class="input-group">
                         <label for="register-username" class="label">Username:</label>
                         <input type="text" id="register-username" name="username" class="input" 
@@ -71,39 +108,15 @@
                 
                 <div class="button-group">
                     <button type="submit" class="button" id="register-submit">Create Account</button>
-                    <button type="button" class="button secondary" id="register-back">Back</button>
                 </div>
             </form>
-        </div>
-    </div>
-    
-    <!-- Login Screen -->
-    <div id="login-screen" class="screen overlay" role="dialog" aria-labelledby="login-title">
-        <div class="container">
-            <h2 id="login-title" class="title">Login</h2>
             
-            <form id="login-form">
-                <fieldset>
-                    <legend class="sr-only">Login Credentials</legend>
-                    
-                    <div class="input-group">
-                        <label for="login-username" class="label">Username or Email:</label>
-                        <input type="text" id="login-username" name="username" class="input" 
-                               placeholder="Enter username or email" required>
-                    </div>
-                    
-                    <div class="input-group">
-                        <label for="login-password" class="label">Password:</label>
-                        <input type="password" id="login-password" name="password" class="input" 
-                               placeholder="Enter password" required>
-                    </div>
-                </fieldset>
-                
-                <div class="button-group">
-                    <button type="submit" class="button" id="login-submit">Login</button>
-                    <button type="button" class="button secondary" id="login-back">Back</button>
-                </div>
-            </form>
+            <div class="modal-footer">
+                <p class="info-text">Already have an account?</p>
+                <button type="button" class="button secondary" id="show-login">Login</button>
+            </div>
+            
+            <button type="button" class="button secondary" id="register-back">Back</button>
         </div>
     </div>
 
@@ -126,7 +139,7 @@
                 <button type="button" class="button" id="online-mode">Online 2 Players</button>
                 <button type="button" class="button" id="tournament-mode">Tournament</button>
                 <button type="button" class="button" id="tournament-online-mode">Tournament Online</button>
-                <button type="button" class="button secondary" id="mode-back">Back to Main</button>
+                <button type="button" class="button secondary" id="mode-back">Back</button>
             </div>
         </div>
     </div>
@@ -139,7 +152,6 @@
             <!-- Solo Player Setup -->
             <form id="solo-setup" class="setup-form">
                 <fieldset>
-                    <legend class="sr-only">Solo Player Information</legend>
                     <div class="input-group">
                         <label for="player1-name" class="label">Player Name:</label>
                         <input type="text" id="player1-name" name="player1-name" class="input" 
@@ -151,7 +163,6 @@
             <!-- Local 2 Player Setup -->
             <form id="local-setup" class="setup-form">
                 <fieldset>
-                    <legend class="sr-only">Local Players Information</legend>
                     <div class="input-group">
                         <label for="player1-name-local" class="label">Player 1 Name:</label>
                         <input type="text" id="player1-name-local" name="player1-name" class="input" 
@@ -168,7 +179,6 @@
             <!-- Online Player Setup -->
             <form id="online-setup" class="setup-form">
                 <fieldset>
-                    <legend class="sr-only">Online Player Information</legend>
                     <div class="input-group">
                         <label for="player1-name-online" class="label">Player Name:</label>
                         <input type="text" id="player1-name-online" name="player1-name" class="input" 
