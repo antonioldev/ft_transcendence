@@ -27,48 +27,72 @@ export function updateLanguageDisplay(): void {
     const langDisplay = document.getElementById('language_select');
     if (langDisplay) langDisplay.textContent = langs[currentLang];
 
-    const logoutBtn = document.getElementById('logout-btn');
-    if (logoutBtn) logoutBtn.textContent = t.logout;
-
     // Main menu
     const mainTitle = document.getElementById('main-title');
     if (mainTitle) mainTitle.textContent = t.appTitle;
 
+    const playBtn = document.getElementById('play-btn');
+    if (playBtn) playBtn.textContent = t.play;
+
+    // Auth buttons
     const registerBtn = document.getElementById('register-btn');
     if (registerBtn) registerBtn.textContent = t.register;
 
     const loginBtn = document.getElementById('login-btn');
     if (loginBtn) loginBtn.textContent = t.login;
 
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) logoutBtn.textContent = t.logout;
+
+    // Login modal
+    const loginUsernameLabel = document.querySelector('#login-modal label[for="login-username"]');
+    if (loginUsernameLabel) loginUsernameLabel.textContent = t.usernameOrEmail;
+
+    const loginUsernameInput = document.getElementById('login-username') as HTMLInputElement;
+    if (loginUsernameInput) loginUsernameInput.placeholder = t.enterUsernameOrEmail;
+
+    const loginPasswordLabel = document.querySelector('#login-modal label[for="login-password"]');
+    if (loginPasswordLabel) loginPasswordLabel.textContent = t.password;
+
+    const loginPasswordInput = document.getElementById('login-password') as HTMLInputElement;
+    if (loginPasswordInput) loginPasswordInput.placeholder = t.enterPassword;
+
+    const loginSubmit = document.getElementById('login-submit');
+    if (loginSubmit) loginSubmit.textContent = t.login;
+
     const googleLoginBtn = document.getElementById('google-login-btn');
     if (googleLoginBtn) googleLoginBtn.textContent = t.loginWithGoogle;
 
-    const offlineBtn = document.getElementById('offline-btn');
-    if (offlineBtn) offlineBtn.textContent = t.playOffline;
+    const loginBack = document.getElementById('login-back');
+    if (loginBack) loginBack.textContent = t.back;
 
-    // Register screen
-    const registerTitle = document.getElementById('register-title');
-    if (registerTitle) registerTitle.textContent = t.register;
+    const showRegister = document.getElementById('show-register');
+    if (showRegister) showRegister.textContent = t.createAccount;
 
-    const registerUsernameLabel = document.querySelector('label[for="register-username"]');
+    // Update "Don't have an account?" text
+    const loginFooter = document.querySelector('#login-modal .modal-footer .info-text');
+    if (loginFooter) loginFooter.textContent = t.dontHaveAccount;
+
+    // Register modal
+    const registerUsernameLabel = document.querySelector('#register-modal label[for="register-username"]');
     if (registerUsernameLabel) registerUsernameLabel.textContent = t.username;
 
     const registerUsernameInput = document.getElementById('register-username') as HTMLInputElement;
     if (registerUsernameInput) registerUsernameInput.placeholder = t.enterUsername;
 
-    const registerEmailLabel = document.querySelector('label[for="register-email"]');
+    const registerEmailLabel = document.querySelector('#register-modal label[for="register-email"]');
     if (registerEmailLabel) registerEmailLabel.textContent = t.email;
 
     const registerEmailInput = document.getElementById('register-email') as HTMLInputElement;
     if (registerEmailInput) registerEmailInput.placeholder = t.enterEmail;
 
-    const registerPasswordLabel = document.querySelector('label[for="register-password"]');
+    const registerPasswordLabel = document.querySelector('#register-modal label[for="register-password"]');
     if (registerPasswordLabel) registerPasswordLabel.textContent = t.password;
 
     const registerPasswordInput = document.getElementById('register-password') as HTMLInputElement;
     if (registerPasswordInput) registerPasswordInput.placeholder = t.enterPassword;
 
-    const registerConfirmPasswordLabel = document.querySelector('label[for="register-confirm-password"]');
+    const registerConfirmPasswordLabel = document.querySelector('#register-modal label[for="register-confirm-password"]');
     if (registerConfirmPasswordLabel) registerConfirmPasswordLabel.textContent = t.confirmPassword;
 
     const registerConfirmPasswordInput = document.getElementById('register-confirm-password') as HTMLInputElement;
@@ -80,34 +104,16 @@ export function updateLanguageDisplay(): void {
     const registerBack = document.getElementById('register-back');
     if (registerBack) registerBack.textContent = t.back;
 
-    // Login screen
-    const loginTitle = document.getElementById('login-title');
-    if (loginTitle) loginTitle.textContent = t.login;
+    const showLogin = document.getElementById('show-login');
+    if (showLogin) showLogin.textContent = t.login;
 
-    const loginUsernameLabel = document.querySelector('label[for="login-username"]');
-    if (loginUsernameLabel) loginUsernameLabel.textContent = t.usernameOrEmail;
-
-    const loginUsernameInput = document.getElementById('login-username') as HTMLInputElement;
-    if (loginUsernameInput) loginUsernameInput.placeholder = t.enterUsernameOrEmail;
-
-    const loginPasswordLabel = document.querySelector('label[for="login-password"]');
-    if (loginPasswordLabel) loginPasswordLabel.textContent = t.password;
-
-    const loginPasswordInput = document.getElementById('login-password') as HTMLInputElement;
-    if (loginPasswordInput) loginPasswordInput.placeholder = t.enterPassword;
-
-    const loginSubmit = document.getElementById('login-submit');
-    if (loginSubmit) loginSubmit.textContent = t.login;
-
-    const loginBack = document.getElementById('login-back');
-    if (loginBack) loginBack.textContent = t.back;
+    // Update "Already have an account?" text
+    const registerFooter = document.querySelector('#register-modal .modal-footer .info-text');
+    if (registerFooter) registerFooter.textContent = t.alreadyHaveAccount;
 
     // Game mode selection
     const modeTitle = document.getElementById('mode-title');
     if (modeTitle) modeTitle.textContent = t.selectGameMode;
-
-    const viewModeTitle = document.getElementById('view-mode-title');
-    if (viewModeTitle) viewModeTitle.textContent = t.viewMode;
 
     const viewModeDisplay = document.getElementById('view-mode-display');
     if (viewModeDisplay) viewModeDisplay.textContent = t.classicMode; // or t.immersiveMode depending on state
@@ -158,7 +164,7 @@ export function updateLanguageDisplay(): void {
     const onlineInput = document.getElementById('player1-name-online') as HTMLInputElement;
     if (onlineInput) onlineInput.placeholder = t.enterName;
 
-    const onlineInfo = document.querySelector('#online-setup .setup-info');
+    const onlineInfo = document.querySelector('#online-setup .info-text');
     if (onlineInfo) onlineInfo.textContent = t.onlineInfo;
 
     const startBtn = document.getElementById('start-game');

@@ -30,7 +30,6 @@ export interface Translation {
     register: string;
     login: string;
     loginWithGoogle: string;
-    playOffline: string;
     username: string;
     email: string;
     password: string;
@@ -44,16 +43,13 @@ export interface Translation {
     enterUsernameOrEmail: string;
     viewMode: string;
     backToMain: string;
-
-    // Missing keys for AuthManager alerts
     pleaseFilllAllFields: string;
     passwordsDoNotMatch: string;
-    
-    // Missing keys for GameModeManager tooltips  
+    dontHaveAccount: string;
+    alreadyHaveAccount: string;
     availableOnlyOffline: string;
     loginRequired: string;
-    
-    // Missing keys for other elements
     logout: string;
     tournamentOnline: string;
+    play: string;
 }
