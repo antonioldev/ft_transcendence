@@ -8,7 +8,8 @@ export enum MessageType {
     GAME_STATE = 2,        // Current game state update
     SIDE_ASSIGNMENT = 3,   // Assign player to a side (left/right)
     GAME_STARTED = 4,      // Notify that the game has started
-    ERROR = 5              // Error message
+    ERROR = 5,             // Error message
+    QUIT_GAME = 6          // Send this message when CTRL + Y
 }
 
 // Different game modes available

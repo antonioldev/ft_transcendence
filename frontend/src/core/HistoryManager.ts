@@ -1,7 +1,15 @@
 import { uiManager } from '../ui/UIManager.js';
 import { authManager } from './AuthManager.js';
-import { gameModeManager } from './GameModeManager.js';
+import { menuFlowManager } from './MenuFlowManager.js';
 
+/**
+ * Singleton class responsible for managing application navigation state and browser history.
+ * 
+ * The `HistoryManager` provides a centralized way to control navigation between different
+ * screens or overlays in a single-page application (SPA) context. It synchronizes the app's
+ * state with the browser's history API, enabling support for back/forward navigation and
+ * programmatic state transitions.
+ */
 export class HistoryManager {
     private static instance: HistoryManager;
     private currentState: string = 'main-menu';
@@ -101,7 +109,6 @@ export class HistoryManager {
         if (options.hideOverlayss) {
             uiManager.hideOverlays('login-modal');
             uiManager.hideOverlays('register-modal');
-            // uiManager.hideAllModals();
         }
         
         if (options.hideUserInfo) {
@@ -120,7 +127,7 @@ export class HistoryManager {
         }
         
         if (options.refreshGameMode) {
-            gameModeManager.refreshButtonStates();
+            menuFlowManager.refreshButtonStates();
         }
     }
 
@@ -155,12 +162,12 @@ export class HistoryManager {
     }
 
     // Go to game (used by start game button)
-    goToGame2D(): void {
-        this.pushState('game-2d');
+    goToGame2D(): void { // TODO check with teammate, false so doesn't save it
+        this.pushState('game-2d', false);
     }
 
-    goToGame3D(): void {
-        this.pushState('game-3d');
+    goToGame3D(): void {  // TODO check with teammate, false so doesn't save it
+        this.pushState('game-3d', false);
     }
 
     // Close modal and return to previous state

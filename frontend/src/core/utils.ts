@@ -1,7 +1,7 @@
 declare var BABYLON: any;
 
-import { gameController2D, gameController3D } from '../engine/GameController.js';
-import { gameStateManager } from './GameStateManager.js';
+import { gameController } from '../engine/GameController.js';
+import { appStateManager } from './AppStateManager.js';
 import { uiManager } from '../ui/UIManager.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
 
@@ -21,7 +21,6 @@ export const COLORS = {
 
 // Utility functions for Babylon.js game objects
 // They get datas from gameConfig TypeScript and convert them to Babylon.js objects
-
 
 export function getPlayerSize() {
     // Returns the size of a player as a Vector3 object
@@ -87,12 +86,10 @@ export function clearInput(id: string): void {
     }
 }
 
-
-
 /**
- * One function to rule them all - disposes everything safely
+ * One function to dispose current game using new architecture
  */
-export function disposeCurrentGame(): void {
+export async function disposeCurrentGame(): Promise<void> {
     console.log('🗑️ Disposing current game...');
     
     try {
@@ -100,20 +97,49 @@ export function disposeCurrentGame(): void {
         uiManager.hidePauseOverlays('pause-dialog-2d');
         uiManager.hidePauseOverlays('pause-dialog-3d');
         
-        // 2. Dispose both controllers (safe to call multiple times)
-        gameController2D.dispose();
-        gameController3D.dispose();
+        // 2.  NEW: Single call to dispose game using new controller
+        await gameController.endGame();
         
-        // 3. Reset game state
-        gameStateManager['currentState'] = null;  // Access private field
-        gameStateManager['currentViewMode'] = null;
+        // 3. Reset game state manager (it should handle this internally, but just in case)
+        appStateManager.resetToMenu();
         
-        console.log('✅ Game disposed successfully');
+        console.log(' Game disposed successfully with new architecture');
     } catch (error) {
         console.error('❌ Error during disposal:', error);
     }
 }
 
+/**
+ * Check if any game is currently active
+ */
 export function isAnyGameActive(): boolean {
-    return gameStateManager.isInGameOrPaused();
+    return appStateManager.isInGameOrPaused() || gameController.hasActiveGame();
+}
+
+/**
+ * Check if game is currently running (not paused)
+ */
+export function isGameRunning(): boolean {
+    return gameController.isGameRunning();
+}
+
+/**
+ * Check if game is currently paused
+ */
+export function isGamePaused(): boolean {
+    return gameController.isGamePaused();
+}
+
+/**
+ * Get current game info for debugging
+ */
+export function getGameInfo(): any {
+    return {
+        stateManager: appStateManager.getGameInfo ? appStateManager.getGameInfo() : 'N/A',
+        controller: {
+            hasActiveGame: gameController.hasActiveGame(),
+            isRunning: gameController.isGameRunning(),
+            isPaused: gameController.isGamePaused()
+        }
+    };
 }

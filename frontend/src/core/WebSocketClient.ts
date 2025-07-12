@@ -91,6 +91,24 @@ export class WebSocketClient {
     }
 
     /**
+     * NEW: Send quit game message (but keep connection open)
+     */
+    sendQuitGame(): void {
+        if (this.isConnected()) {
+            const message: ClientMessage = {
+                type: MessageType.QUIT_GAME
+            };
+            
+            try {
+                this.ws!.send(JSON.stringify(message));
+                console.log('🚪 Sent quit game message to server (WebSocket stays open)');
+            } catch (error) {
+                console.error('❌ Error sending quit message:', error);
+            }
+        }
+    }
+
+    /**
      * Disconnects the WebSocket connection.
      */
     disconnect(): void {

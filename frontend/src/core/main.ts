@@ -1,8 +1,8 @@
 import { updateLanguageDisplay, previousLanguage, nextLanguage } from '../translations/translations.js';
 import { uiManager } from '../ui/UIManager.js';
-import { webSocketClient } from '../game/WebSocketClient.js';
+import { webSocketClient } from './WebSocketClient.js';
 import { AuthManager } from './AuthManager.js';
-import { GameModeManager } from './GameModeManager.js';
+import { MenuFlowManager } from './MenuFlowManager.js';
 import { KeyboardManager } from './KeyboardManager.js';
 import { HistoryManager } from './HistoryManager.js';
 
@@ -10,7 +10,7 @@ function loadPage() {
     // Initialize classes
     uiManager.initializeStyles();
     AuthManager.initialize();
-    GameModeManager.initialize();
+    MenuFlowManager.initialize();
     KeyboardManager.initialize();
     HistoryManager.initialize();
 

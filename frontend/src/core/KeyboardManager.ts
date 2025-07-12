@@ -1,4 +1,4 @@
-import { gameStateManager } from './GameStateManager.js';
+import { appStateManager } from './AppStateManager.js';
 import { disposeCurrentGame } from './utils.js';
 
 /**
@@ -70,14 +70,14 @@ export class KeyboardManager {
      */
     private handleEscKey(): void {
         console.log('🎮 ESC key pressed', { 
-            isInGame: gameStateManager.isInGame(), 
-            isPaused: gameStateManager.isPaused() 
+            isInGame: appStateManager.isInGame(), 
+            isPaused: appStateManager.isPaused() 
         });
         
-        if (gameStateManager.isInGame())
-            gameStateManager.pauseCurrentGame();
-        else if (gameStateManager.isPaused())
-            gameStateManager.resumeGame();
+        if (appStateManager.isInGame())
+            appStateManager.pauseCurrentGame();
+        else if (appStateManager.isPaused())
+            appStateManager.resumeGame();
     }
 
     /**
@@ -85,13 +85,13 @@ export class KeyboardManager {
      * @param event - The keyboard event containing the pressed key.
      */
     private handleYesNoKey(event: KeyboardEvent): void {
-        if (gameStateManager.isPaused()) {
+        if (appStateManager.isPaused()) {
             console.log(`🎮 ${event.key} key pressed in pause state`);
             
             if (event.key === 'Y' || event.key === 'y')
-                gameStateManager.exitToMenu();
+                appStateManager.exitToMenu();
             else if (event.key === 'N' || event.key === 'n')
-                gameStateManager.resumeGame();
+                appStateManager.resumeGame();
         }
     }
 
