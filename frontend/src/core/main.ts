@@ -1,5 +1,6 @@
 import { updateLanguageDisplay, previousLanguage, nextLanguage } from '../translations/translations.js';
 import { uiManager } from '../ui/UIManager.js';
+import { webSocketClient } from '../game/WebSocketClient.js';
 import { AuthManager } from './AuthManager.js';
 import { GameModeManager } from './GameModeManager.js';
 import { setupKeyboardListeners } from './KeyboardManager.js';
@@ -11,13 +12,14 @@ function loadPage() {
     AuthManager.initialize();
     GameModeManager.initialize();
     setupKeyboardListeners();
-    
-    // NEW: Initialize history manager for browser back/forward support
     HistoryManager.initialize();
-    
-    // Initialize language display and setup language navigation
     updateLanguageDisplay();
     setupLanguageListeners();
+    
+    // Simple WebSocket status monitoring
+    webSocketClient.onStatusChange((status) => {
+        uiManager.updateConnectionStatus(status);
+    });
 }
 
 function setupLanguageListeners() {

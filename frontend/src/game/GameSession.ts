@@ -1,6 +1,7 @@
 declare var BABYLON: any;
 
-import { WebSocketClient } from './WebSocketClient.js';
+// import { WebSocketClient } from './WebSocketClient.js';
+import { webSocketClient } from './WebSocketClient.js';
 import { InputManager } from './InputManager.js';
 import { GUIManager } from './GuiManager.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
@@ -16,7 +17,7 @@ export class GameSession {
     private gameObjects: GameObjects;
     private inputManager: InputManager;
     private guiManager: GUIManager;
-    private webSocketClient: WebSocketClient;
+    // private webSocketClient: WebSocketClient;
     private isRunning = false;
     private playerSide = 0;
 
@@ -32,7 +33,7 @@ export class GameSession {
         this.gameObjects = gameObjects;
         this.inputManager = inputManager;
         this.guiManager = guiManager;
-        this.webSocketClient = new WebSocketClient('ws://localhost:3000'); //TODO make this configurable, important for remote players
+        // this.webSocketClient = new WebSocketClient('ws://localhost:3000'); //TODO make this configurable, important for remote players
         this.setupWebSocketCallbacks();
     }
 
@@ -41,15 +42,15 @@ export class GameSession {
      * connection events, and errors.
      */
     private setupWebSocketCallbacks(): void {
-        this.webSocketClient.onGameState((state: GameStateData) => {
+        webSocketClient.onGameState((state: GameStateData) => {
             this.updateGameObjects(state);
         });
 
-        this.webSocketClient.onConnection(() => {
+        webSocketClient.onConnection(() => {
             console.log('🔗 Connected to game server');
         });
 
-        this.webSocketClient.onError((error: string) => {
+        webSocketClient.onError((error: string) => {
             console.error('❌ WebSocket error:', error);
         });
     }
@@ -130,14 +131,14 @@ export class GameSession {
         this.playerSide = controlledSide;
 
         const joinGameAndStart = () => {
-            this.webSocketClient.joinGame(gameMode, players);
+            webSocketClient.joinGame(gameMode, players);
             this.startGameLoop();
         };
 
-        if (this.webSocketClient.isConnected()) {
+        if (webSocketClient.isConnected()) {
             joinGameAndStart();
         } else {
-            this.webSocketClient.onConnection(joinGameAndStart);
+            webSocketClient.onConnection(joinGameAndStart);
         }
     }
 
@@ -152,7 +153,7 @@ export class GameSession {
         this.isRunning = true;
 
         this.inputManager.setNetworkCallback((side: number, direction: Direction) => {
-            this.webSocketClient.sendPlayerInput(side, direction);
+            webSocketClient.sendPlayerInput(side, direction);
         });
 
         this.scene.registerBeforeRender(() => {
@@ -196,7 +197,7 @@ export class GameSession {
      */
     dispose(): void {
         this.stop();
-        this.webSocketClient.disconnect();
+        webSocketClient.disconnect();
         this.inputManager.dispose();
     }
 }

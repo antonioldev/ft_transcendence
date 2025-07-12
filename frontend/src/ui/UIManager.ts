@@ -1,4 +1,4 @@
-import { GameMode } from '../shared/constants.js';
+import { GameMode, ConnectionStatus } from '../shared/constants.js';
 
 class UIManager {
     private static instance: UIManager;
@@ -445,6 +445,75 @@ class UIManager {
             button.title = '';
         }
     }
+
+    updateConnectionStatus(status: ConnectionStatus): void {
+    let statusElement = document.getElementById('connection-status');
+    
+    if (!statusElement) {
+        statusElement = document.createElement('div');
+        statusElement.id = 'connection-status';
+        statusElement.style.cssText = `
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            z-index: 1000;
+        `;
+        document.body.appendChild(statusElement);
+    }
+
+    switch (status) {
+        case ConnectionStatus.CONNECTING:
+            statusElement.textContent = '🟡 Connecting...';
+            statusElement.style.backgroundColor = '#ffa500';
+            statusElement.style.color = 'white';
+            statusElement.style.padding = '8px 12px';
+            statusElement.style.display = 'block';
+            this.disableAllGameFeatures();
+            break;
+            
+        case ConnectionStatus.CONNECTED:
+            statusElement.textContent = '🟢';  // Just green dot
+            statusElement.style.backgroundColor = 'transparent';
+            statusElement.style.color = '#28a745';
+            statusElement.style.padding = '4px 8px';  // Smaller padding
+            statusElement.style.display = 'block';
+            this.enableGameFeatures();
+            break;
+            
+        case ConnectionStatus.FAILED:
+            statusElement.textContent = '🔴 Connection Failed';
+            statusElement.style.backgroundColor = '#dc3545';
+            statusElement.style.color = 'white';
+            statusElement.style.padding = '8px 12px';
+            statusElement.style.display = 'block';
+            this.disableAllGameFeatures();
+            break;
+    }
+}
+
+private disableAllGameFeatures(): void {
+    // Disable PLAY button and show message
+    const playBtn = document.getElementById('play-btn') as HTMLButtonElement;
+    if (playBtn) {
+        playBtn.disabled = true;
+        playBtn.style.opacity = '0.5';
+        playBtn.title = 'Server connection required';
+    }
+}
+
+private enableGameFeatures(): void {
+    // Enable PLAY button
+    const playBtn = document.getElementById('play-btn') as HTMLButtonElement;
+    if (playBtn) {
+        playBtn.disabled = false;
+        playBtn.style.opacity = '1';
+        playBtn.title = '';
+    }
+}
 }
 
 export const uiManager = UIManager.getInstance();

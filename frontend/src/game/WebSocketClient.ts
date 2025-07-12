@@ -1,4 +1,4 @@
-import { MessageType, GameMode, Direction } from '../shared/constants.js'
+import { ConnectionStatus, MessageType, GameMode, Direction } from '../shared/constants.js'
 import { ClientMessage, ServerMessage, GameStateData, PlayerInfo } from '../shared/types.js'
 
 /**
@@ -7,31 +7,54 @@ import { ClientMessage, ServerMessage, GameStateData, PlayerInfo } from '../shar
  * game state updates, connection events, and errors.
  */
 export class WebSocketClient {
+    private static instance: WebSocketClient;
     private ws: WebSocket | null = null;
+    private connectionStatus: ConnectionStatus = ConnectionStatus.CONNECTING;
+
     private gameStateCallback: ((state: GameStateData) => void) | null = null;
     private connectionCallback: (() => void) | null = null;
     private errorCallback: ((error: string) => void) | null = null;
+    private statusCallback: ((status: ConnectionStatus, message?: string) => void) | null = null;
 
     /**
      * Initializes the WebSocketClient and connects to the server.
      * @param url - The WebSocket server URL.
      */
-    constructor(url: string) {
-        this.connect(url);
+    private constructor() {
+        this.connect();
+    }
+
+    static getInstance(): WebSocketClient {
+        if (!WebSocketClient.instance) {
+            WebSocketClient.instance = new WebSocketClient();
+        }
+        return WebSocketClient.instance;
     }
 
     /**
      * Establishes a WebSocket connection to the specified URL.
      * @param url - The WebSocket server URL.
      */
-    private connect(url: string): void {
-        this.ws = new WebSocket(url);
+    private connect(): void {
+        this.connectionStatus = ConnectionStatus.CONNECTING;
+        this.notifyStatus(ConnectionStatus.CONNECTING);
+
+        this.ws = new WebSocket('ws://localhost:3000'); // TODO make it a variable
+
+        const timeout = setTimeout(() => {
+            if (this.connectionStatus === ConnectionStatus.CONNECTING) {
+                this.connectionStatus = ConnectionStatus.FAILED;
+                this.notifyStatus(ConnectionStatus.FAILED);
+                this.errorCallback?.('Connection timeout');
+            }
+        }, 5000);
 
         this.ws.onopen = () => {
-            console.log('Connected to game server');
-            if (this.connectionCallback) {
-                this.connectionCallback();
-            }
+            clearTimeout(timeout);
+            this.connectionStatus = ConnectionStatus.CONNECTED;
+            this.notifyStatus(ConnectionStatus.CONNECTED);
+            console.log('🔗 Connected to game server');
+            this.connectionCallback?.();
         };
 
         this.ws.onmessage = (event) => {
@@ -44,13 +67,18 @@ export class WebSocketClient {
         };
 
         this.ws.onclose = () => {
+            clearTimeout(timeout);
             console.log('❌ Disconnected from game server');
+            this.connectionStatus = ConnectionStatus.FAILED;
+            this.notifyStatus(ConnectionStatus.FAILED);
         };
 
         this.ws.onerror = (error) => {
-            console.error('❌ WebSocket error:', error);
-            if (this.errorCallback)
-                this.errorCallback('Connection error');
+            clearTimeout(timeout);
+            console.error('❌ WebSocket error');
+            this.connectionStatus = ConnectionStatus.FAILED;
+            this.notifyStatus(ConnectionStatus.FAILED);
+            this.errorCallback?.('Connection failed');
         };
     }
 
@@ -82,14 +110,13 @@ export class WebSocketClient {
      * @param gameMode - The game mode to join.
      */
     joinGame(gameMode: GameMode, players: PlayerInfo[]): void {
-        if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+        if (this.isConnected()) {
             const message: ClientMessage = {
                 type: MessageType.JOIN_GAME,
                 gameMode: gameMode,
                 players: players
             };
-            console.log('🔍 Sending JOIN_GAME message:', JSON.stringify(message));
-            this.ws.send(JSON.stringify(message));
+            this.ws!.send(JSON.stringify(message));
         }
     }
 
@@ -99,13 +126,13 @@ export class WebSocketClient {
      * @param direction - The direction of the player's input.
      */
     sendPlayerInput(side: number, direction: Direction): void {
-        if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+        if (this.isConnected()) {
             const message: ClientMessage = {
                 type: MessageType.PLAYER_INPUT,
                 side: side,
                 direction: direction
             };
-            this.ws.send(JSON.stringify(message));
+            this.ws!.send(JSON.stringify(message));
         }
     }
 
@@ -123,6 +150,8 @@ export class WebSocketClient {
      */
     onConnection(callback: () => void): void {
         this.connectionCallback = callback;
+        if (this.isConnected())
+            callback();
     }
 
     /**
@@ -142,12 +171,32 @@ export class WebSocketClient {
             this.ws = null;
         }
     }
+    
+    onStatusChange(callback: (status: ConnectionStatus) => void): void {
+        this.statusCallback = callback;
+        this.notifyStatus(this.connectionStatus);
+    }
 
-    /**
-     * Checks if the WebSocket connection is currently open.
-     * @returns True if connected, false otherwise.
-     */
+    // Status
     isConnected(): boolean {
-        return this.ws?.readyState === WebSocket.OPEN;
+        return this.connectionStatus === ConnectionStatus.CONNECTED;
+    }
+
+    getConnectionStatus(): ConnectionStatus {
+        return this.connectionStatus;
+    }
+
+    // Simple retry (just try to connect again)
+    retry(): void {
+        if (this.ws) {
+            this.ws.close();
+        }
+        this.connect();
+    }
+
+    private notifyStatus(status: ConnectionStatus): void {
+        this.statusCallback?.(status);
     }
 }
+
+export const webSocketClient = WebSocketClient.getInstance();

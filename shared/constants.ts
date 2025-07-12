@@ -53,3 +53,9 @@ export enum AuthState {
     LOGGED_IN = 1, 
     OFFLINE = 2
 }
+
+export enum ConnectionStatus {
+    CONNECTING = 0,    // Attempting to connect
+    CONNECTED = 1,     // Connected and ready
+    FAILED = 2         // Connection failed - show error
+}
