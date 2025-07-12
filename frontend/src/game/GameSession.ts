@@ -7,6 +7,7 @@ import { GUIManager } from './GuiManager.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
 import { Direction, GameMode} from '../shared/constants.js';
 import { GameStateData, PlayerInfo, GameObjects } from '../shared/types.js';
+import { authManager } from '../core/AuthManager.js';
 
 /**
  * GameSession is THE ONLY class responsible for starting and managing games.
@@ -84,36 +85,46 @@ export class GameSession {
      * @returns Array of player information.
      */
     private getPlayerInfoFromUI(gameMode: GameMode): PlayerInfo[] {
-        const getInputValue = (id: string, defaultName: string): string => {
-            const input = document.getElementById(id) as HTMLInputElement;
-            return input?.value.trim() || defaultName;
-        };
+    const currentUser = authManager.getCurrentUser();
+    if (currentUser) {
+        return [{ id: currentUser.username, name: currentUser.username }];
+    }
+    
+    const getInputValue = (id: string, defaultName: string): string => {
+        const input = document.getElementById(id) as HTMLInputElement;
+        return input?.value.trim() || defaultName;
+    };
 
-        switch (gameMode) {
-            case GameMode.SINGLE_PLAYER: {
-                const name = getInputValue('player1-name', 'Player 1');
-                return [{ id: name, name: name }];
-            }
+    switch (gameMode) {
+        case GameMode.SINGLE_PLAYER: {
+            const name = getInputValue('player1-name', 'Player 1');
+            return [{ id: name, name: name }];
+        }
         
-            case GameMode.TWO_PLAYER_LOCAL: {
-                const name1 = getInputValue('player1-name-local', 'Player 1');
-                const name2 = getInputValue('player2-name-local', 'Player 2');
-                return [
-                    { id: name1, name: name1 },
-                    { id: name2, name: name2 }
-                ];
-            }
+        case GameMode.TWO_PLAYER_LOCAL: {
+            const name1 = getInputValue('player1-name-local', 'Player 1');
+            const name2 = getInputValue('player2-name-local', 'Player 2');
+            return [
+                { id: name1, name: name1 },
+                { id: name2, name: name2 }
+            ];
+        }
 
-            case GameMode.TWO_PLAYER_REMOTE: {
-                const name1 = getInputValue('player1-name-online', 'Player 1');
-                return [{ id: name1, name: name1 }];
-            }
-        
-            default: {
-                return [{ id: 'Player 1', name: 'Player 1' }];
-            }
+        case GameMode.TOURNAMENT_LOCAL: { // TODO add more player
+            const name1 = getInputValue('player1-name-local', 'Player 1');
+            const name2 = getInputValue('player2-name-local', 'Player 2');
+            return [
+                { id: name1, name: name1 },
+                { id: name2, name: name2 }
+            ];
+        }
+
+        default: {
+            console.warn('Unexpected game mode in getPlayerInfoFromUI:', gameMode);
+            return [{ id: 'Player 1', name: 'Player 1' }];
         }
     }
+}
 
     /**
      * ⭐ THE MAIN METHOD - Starts a game with the specified mode.
@@ -122,10 +133,10 @@ export class GameSession {
      * @param controlledSide - Which side this client controls (for remote games).
      */
     startGame(gameMode: GameMode, controlledSide: number = 0): void {
-        console.log(`🎮 Starting game: ${GameMode[gameMode]} (side: ${controlledSide})`);
+        console.log(`Starting game: ${GameMode[gameMode]} (side: ${controlledSide})`);
         
-        const players = this.getPlayerInfoFromUI(gameMode);
-        console.log('👥 Player names extracted:', players);
+        const players = this.getPlayerInfoFromUI(gameMode); //TODO not right
+        console.log('Player names extracted:', players);
         
         this.inputManager.configureInput(gameMode, controlledSide);
         this.playerSide = controlledSide;

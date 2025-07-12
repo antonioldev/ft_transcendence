@@ -105,6 +105,7 @@ export class AuthManager {
         // Basic validation
         if (!usernameOrEmail || !password) {
             alert(t.pleaseFilllAllFields);
+            this.clearLoginForm();
             return;
         }
 
@@ -137,11 +138,13 @@ export class AuthManager {
         // Basic validation
         if (!username || !email || !password || !confirmPassword) {
             alert(t.pleaseFilllAllFields);
+            this.clearRegisterForm();
             return;
         }
 
         if (password !== confirmPassword) {
             alert(t.passwordsDoNotMatch);
+            this.clearRegisterForm();
             return;
         }
 
@@ -164,7 +167,7 @@ export class AuthManager {
         // TODO: Implement Google OAuth
         console.log('Google login clicked - to be implemented');
         alert('Google login will be implemented later');
-        
+        this.clearLoginForm();
         // After successful Google login:
         // this.currentUser = { username: googleUser.name, email: googleUser.email };
         // this.authState = AuthState.LOGGED_IN;

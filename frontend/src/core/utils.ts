@@ -76,3 +76,10 @@ export function get3DSoloCameraViewport() {
     // Returns the viewport configuration for a solo 3D camera
     return new BABYLON.Viewport(0, 0, 1, 1);
 }
+
+export function clearInput(id: string): void {
+    const input = document.getElementById(id) as HTMLInputElement;
+    if (input) {
+        input.value = '';
+    }
+}

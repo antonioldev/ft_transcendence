@@ -1,6 +1,7 @@
-/*
-    This class 
-*/
+import { uiManager } from '../ui/UIManager.js';
+import { authManager } from './AuthManager.js';
+import { gameModeManager } from './GameModeManager.js';
+
 export class HistoryManager {
     private static instance: HistoryManager;
     private currentState: string = 'main-menu';
@@ -15,7 +16,8 @@ export class HistoryManager {
     static initialize(): void {
         const historyManager = HistoryManager.getInstance();
         historyManager.setupEventListeners();
-        historyManager.handleInitialLoad();
+        historyManager.pushState('main-menu');
+        // historyManager.handleInitialLoad();
     }
 
     private setupEventListeners(): void {
@@ -57,99 +59,68 @@ export class HistoryManager {
      * @param addToHistory - Whether to add to history (used internally)
      */
     private navigateToState(state: string, addToHistory: boolean = true): void {
-        if (addToHistory) //todo remove testing
-            console.log(`Navigating to state: ${state}, SAVE into history`);
-        else
-            console.log(`Navigating to state: ${state}, NOT S history`);
+        console.log(`Navigating to state: ${state}`);
         
-        // Import managers dynamically to avoid circular dependencies
-        import('../ui/UIManager.js').then(({ uiManager }) => {
-            import('../core/AuthManager.js').then(({ authManager }) => {
-                import('../core/GameModeManager.js').then(({ GameModeManager }) => {
-                    
-                    switch (state) {
-                        case 'main-menu':
-                            this.showMainMenu(uiManager, authManager);
-                            break;
-                            
-                        case 'login':
-                            this.showLogin(uiManager);
-                            break;
-                            
-                        case 'register':
-                            this.showRegister(uiManager);
-                            break;
-                            
-                        case 'game-mode':
-                            this.showGameMode(uiManager);
-                            break;
-                            
-                        case 'player-setup':
-                            this.showPlayerSetup(uiManager);
-                            break;
-                            
-                        case 'game-2d':
-                            this.showGame2D(uiManager);
-                            break;
-                            
-                        case 'game-3d':
-                            this.showGame3D(uiManager);
-                            break;
-                            
-                        default:
-                            // Unknown state, go to main menu
-                            console.warn(`Unknown state: ${state}, redirecting to main menu`);
-                            this.pushState('main-menu');
-                            break;
-                    }
-                });
-            });
-        });
+        switch (state) {
+            case 'main-menu':
+                this.showScreen('main-menu', { hideModals: true, checkAuth: true });
+                break;
+            case 'login':
+                this.showScreen('main-menu', { modal: 'login-modal' });
+                break;
+            case 'register':
+                this.showScreen('main-menu', { modal: 'register-modal' });
+                break;
+            case 'game-mode':
+                this.showScreen('game-mode-overlay', { hideModals: true, refreshGameMode: true });
+                break;
+            case 'player-setup':
+                this.showScreen('player-setup-overlay', { hideModals: true });
+                break;
+            case 'game-2d':
+                this.showScreen('game-2d', { hideModals: true, hideUserInfo: true });
+                break;
+            case 'game-3d':
+                this.showScreen('game-3d', { hideModals: true, hideUserInfo: true });
+                break;
+            default:
+                console.warn(`Unknown state: ${state}, redirecting to main menu`);
+                this.pushState('main-menu');
+                break;
+        }
     }
 
-    // State handlers
-    private showMainMenu(uiManager: any, authManager: any): void {
-        uiManager.hideAllModals();
-        uiManager.showScreen('main-menu');
-        authManager.checkAuthState(); // Ensure auth UI is correct
-    }
-
-    private showLogin(uiManager: any): void {
-        uiManager.showScreen('main-menu'); // Keep main menu visible
-        uiManager.showModal('login-modal');
-    }
-
-    private showRegister(uiManager: any): void {
-        uiManager.showScreen('main-menu'); // Keep main menu visible  
-        uiManager.showModal('register-modal');
-    }
-
-    private showGameMode(uiManager: any): void {
-        uiManager.hideAllModals();
-        uiManager.showScreen('game-mode-overlay');
+    // ✅ Generic screen method
+    private showScreen(screenId: string, options: {
+        hideModals?: boolean;
+        hideUserInfo?: boolean;
+        modal?: string;
+        checkAuth?: boolean;
+        refreshGameMode?: boolean;
+    } = {}): void {
         
-        // Update game mode display
-        import('../core/GameModeManager.js').then(({ GameModeManager }) => {
-            const manager = GameModeManager.getInstance();
-            manager.refreshButtonStates();
-        });
-    }
-
-    private showPlayerSetup(uiManager: any): void {
-        uiManager.hideAllModals();
-        uiManager.showScreen('player-setup-overlay');
-    }
-
-    private showGame2D(uiManager: any): void {
-        uiManager.hideAllModals();
-        uiManager.hideUserInfo();
-        uiManager.showScreen('game-2d');
-    }
-
-    private showGame3D(uiManager: any): void {
-        uiManager.hideAllModals();
-        uiManager.hideUserInfo();
-        uiManager.showScreen('game-3d');
+        if (options.hideModals) {
+            uiManager.hideAllModals();
+        }
+        
+        if (options.hideUserInfo) {
+            uiManager.hideUserInfo();
+        }
+        
+        if (options.modal) {
+            uiManager.showScreen('main-menu'); // Keep main menu visible
+            uiManager.showModal(options.modal);
+        } else {
+            uiManager.showScreen(screenId);
+        }
+        
+        if (options.checkAuth) {
+            authManager.checkAuthState();
+        }
+        
+        if (options.refreshGameMode) {
+            gameModeManager.refreshButtonStates();
+        }
     }
 
     // Public methods for other managers to use

@@ -5,6 +5,7 @@ import { getCurrentTranslation } from '../translations/translations.js';
 import { startGameWithMode } from './GameStarter.js';
 import { historyManager } from './HistoryManager.js';
 import { webSocketClient } from '../game/WebSocketClient.js';
+import { clearInput } from './utils.js';
 
 export class GameModeManager {
     private static instance: GameModeManager;
@@ -37,26 +38,21 @@ export class GameModeManager {
         const isLoggedIn = authManager.isUserAuthenticated();
         const isOnline = webSocketClient.getConnectionStatus() === ConnectionStatus.CONNECTED;
         
-        uiManager.setButtonState('solo-mode', 'enabled');
-        
-        if (isLoggedIn && isOnline) {
-            // Enable online modes
-            uiManager.setButtonState('online-mode', 'enabled');
-            uiManager.setButtonState('tournament-online-mode', 'enabled');
-            
-            // Disable local modes
-            uiManager.setButtonState('local-mode', 'disabled', t.availableOnlyOffline);
-            uiManager.setButtonState('tournament-mode', 'disabled', t.availableOnlyOffline);
-        } else {
-            // Enable local modes
-            uiManager.setButtonState('local-mode', 'enabled');
-            uiManager.setButtonState('tournament-mode', 'enabled');
-            
-            // Disable online modes with appropriate message
-            if (!isOnline) {
-                uiManager.setButtonState('online-mode', 'disabled', 'Connection required');
-                uiManager.setButtonState('tournament-online-mode', 'disabled', 'Connection required');
+        if (isOnline)
+        {
+            uiManager.setButtonState('solo-mode', 'enabled');
+            if (isLoggedIn) {
+                // Enable online modes
+                uiManager.setButtonState('online-mode', 'enabled');
+                uiManager.setButtonState('tournament-online-mode', 'enabled');
+                // Disable local modes
+                uiManager.setButtonState('local-mode', 'disabled', t.availableOnlyOffline);
+                uiManager.setButtonState('tournament-mode', 'disabled', t.availableOnlyOffline);
             } else {
+                // Enable local modes
+                uiManager.setButtonState('local-mode', 'enabled');
+                uiManager.setButtonState('tournament-mode', 'enabled');
+                // Disable online modes
                 uiManager.setButtonState('online-mode', 'disabled', t.loginRequired);
                 uiManager.setButtonState('tournament-online-mode', 'disabled', t.loginRequired);
             }
@@ -71,7 +67,7 @@ export class GameModeManager {
         viewModeBack?.addEventListener('click', () => this.previousViewMode());
         viewModeForward?.addEventListener('click', () => this.nextViewMode());
 
-        // Game mode buttons
+        // Game mode buttons - UPDATED with direct logic
         const soloMode = document.getElementById('solo-mode');
         const localMode = document.getElementById('local-mode');
         const onlineMode = document.getElementById('online-mode');
@@ -79,80 +75,121 @@ export class GameModeManager {
         const tournamentOnlineMode = document.getElementById('tournament-online-mode');
         const modeBack = document.getElementById('mode-back');
 
+        // ✅ SOLO MODE - direct logic
         soloMode?.addEventListener('click', () => {
-            this.handleGameModeSelection(GameMode.SINGLE_PLAYER, 'solo');
+            this.selectedGameMode = GameMode.SINGLE_PLAYER;
+            
+            if (authManager.isUserAuthenticated()) {
+                console.log('Solo: logged in user, starting game directly');
+                startGameWithMode(this.selectedViewMode, GameMode.SINGLE_PLAYER);
+                return;
+            }
+            
+            console.log('Solo: guest user, showing setup');
+            historyManager.goToPlayerSetup();
+            uiManager.showSetupForm('solo');
+            this.clearPlayerNameFields();
         });
 
+        // ✅ LOCAL MODE - direct logic
         localMode?.addEventListener('click', () => {
-            this.handleGameModeSelection(GameMode.TWO_PLAYER_LOCAL, 'local');
+            if (authManager.isUserAuthenticated()) {
+                // Shouldn't happen (button disabled), but just in case
+                alert('Local mode not available for logged in users');
+                return;
+            }
+            
+            this.selectedGameMode = GameMode.TWO_PLAYER_LOCAL;
+            console.log('Local: guest user, showing setup');
+            historyManager.goToPlayerSetup();
+            uiManager.showSetupForm('local');
+            this.clearPlayerNameFields();
         });
 
+        // ✅ ONLINE MODE - direct logic
         onlineMode?.addEventListener('click', () => {
-            // Check if user is logged in before allowing online mode
-            if (authManager.isUserAuthenticated()) {
-                this.handleGameModeSelection(GameMode.TWO_PLAYER_REMOTE, 'online');
-            } else {
-                // Show login modal if user tries to access online mode
+            if (!authManager.isUserAuthenticated()) {
                 const t = getCurrentTranslation();
                 alert(t.loginRequired);
-                uiManager.showModal('login-modal');
+                return;
             }
+            
+            this.selectedGameMode = GameMode.TWO_PLAYER_REMOTE;
+            console.log('Online: logged in user, starting game directly');
+            startGameWithMode(this.selectedViewMode, GameMode.TWO_PLAYER_REMOTE);
         });
 
+        // ✅ TOURNAMENT LOCAL - direct logic
         tournamentMode?.addEventListener('click', () => {
-            this.handleGameModeSelection(GameMode.TOURNAMENT_LOCAL || GameMode.TWO_PLAYER_LOCAL, 'local');
+            if (authManager.isUserAuthenticated()) {
+                // Shouldn't happen (button disabled), but just in case
+                alert('Local tournament not available for logged in users');
+                return;
+            }
+            
+            this.selectedGameMode = GameMode.TOURNAMENT_LOCAL;
+            console.log('Tournament Local: guest user, showing setup');
+            historyManager.goToPlayerSetup();
+            uiManager.showSetupForm('local'); // Uses same form as local 2P
+            this.clearPlayerNameFields();
         });
 
+        // ✅ TOURNAMENT ONLINE - direct logic
         tournamentOnlineMode?.addEventListener('click', () => {
-            // Check if user is logged in before allowing online tournament
-            if (authManager.isUserAuthenticated()) {
-                this.handleGameModeSelection(GameMode.TOURNAMENT_REMOTE, 'online');
-            } else {
-                // Show login modal if user tries to access online tournament
+            if (!authManager.isUserAuthenticated()) {
                 const t = getCurrentTranslation();
                 alert(t.loginRequired);
-                uiManager.showModal('login-modal');
+                return;
             }
+            
+            this.selectedGameMode = GameMode.TOURNAMENT_REMOTE;
+            console.log('Tournament Online: logged in user, starting game directly');
+            startGameWithMode(this.selectedViewMode, GameMode.TOURNAMENT_REMOTE);
         });
 
         modeBack?.addEventListener('click', () => {
             this.selectedGameMode = null;
-            // uiManager.showScreen('main-menu');
-            historyManager.goToMainMenu()
+            historyManager.goToMainMenu();
         });
 
-        // Player setup listeners
+        // Player setup listeners - KEEP UNCHANGED
         this.setupPlayerSetupListeners();
     }
 
-    // NEW: Unified game mode selection handler
-    private handleGameModeSelection(gameMode: GameMode, setupFormType: string): void {
-        this.selectedGameMode = gameMode;
-        historyManager.goToPlayerSetup()
-        // uiManager.showScreen('player-setup-overlay');
-        uiManager.showSetupForm(setupFormType);
-        
-        // Pre-fill player name if user is logged in
-        this.prefillPlayerNames();
+    private clearPlayerNameFields(): void {
+        clearInput('player1-name');           // Solo
+        clearInput('player1-name-local');     // Local 2P
+        clearInput('player2-name-local');     // Local 2P
     }
+
+    // NEW: Unified game mode selection handler
+    // private handleGameModeSelection(gameMode: GameMode, setupFormType: string): void {
+    //     this.selectedGameMode = gameMode;
+    //     historyManager.goToPlayerSetup()
+    //     // uiManager.showScreen('player-setup-overlay');
+    //     uiManager.showSetupForm(setupFormType);
+        
+    //     // Pre-fill player name if user is logged in
+    //     this.prefillPlayerNames();
+    // }
 
     // NEW: Pre-fill player names for logged in users
-    private prefillPlayerNames(): void {
-        const currentUser = authManager.getCurrentUser();
-        if (!currentUser) return;
+    // private prefillPlayerNames(): void {
+    //     const currentUser = authManager.getCurrentUser();
+    //     if (!currentUser) return;
 
-        // Pre-fill single player name fields with logged in username
-        const soloInput = document.getElementById('player1-name') as HTMLInputElement;
-        const onlineInput = document.getElementById('player1-name-online') as HTMLInputElement;
+    //     // Pre-fill single player name fields with logged in username
+    //     const soloInput = document.getElementById('player1-name') as HTMLInputElement;
+    //     const onlineInput = document.getElementById('player1-name-online') as HTMLInputElement;
         
-        if (soloInput && !soloInput.value) {
-            soloInput.value = currentUser.username;
-        }
+    //     if (soloInput && !soloInput.value) {
+    //         soloInput.value = currentUser.username;
+    //     }
         
-        if (onlineInput && !onlineInput.value) {
-            onlineInput.value = currentUser.username;
-        }
-    }
+    //     if (onlineInput && !onlineInput.value) {
+    //         onlineInput.value = currentUser.username;
+    //     }
+    // }
 
     private setupPlayerSetupListeners(): void {
         const setupBack = document.getElementById('setup-back');
