@@ -1,5 +1,8 @@
 declare var BABYLON: any;
 
+import { gameController2D, gameController3D } from '../engine/GameController.js';
+import { gameStateManager } from './GameStateManager.js';
+import { uiManager } from '../ui/UIManager.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
 
 // Colors for Babylon.js (frontend only)
@@ -82,4 +85,35 @@ export function clearInput(id: string): void {
     if (input) {
         input.value = '';
     }
+}
+
+
+
+/**
+ * One function to rule them all - disposes everything safely
+ */
+export function disposeCurrentGame(): void {
+    console.log('🗑️ Disposing current game...');
+    
+    try {
+        // 1. Hide all pause dialogs first
+        uiManager.hidePauseOverlays('pause-dialog-2d');
+        uiManager.hidePauseOverlays('pause-dialog-3d');
+        
+        // 2. Dispose both controllers (safe to call multiple times)
+        gameController2D.dispose();
+        gameController3D.dispose();
+        
+        // 3. Reset game state
+        gameStateManager['currentState'] = null;  // Access private field
+        gameStateManager['currentViewMode'] = null;
+        
+        console.log('✅ Game disposed successfully');
+    } catch (error) {
+        console.error('❌ Error during disposal:', error);
+    }
+}
+
+export function isAnyGameActive(): boolean {
+    return gameStateManager.isInGameOrPaused();
 }

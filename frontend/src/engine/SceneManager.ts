@@ -8,7 +8,7 @@ import { ViewMode } from '../shared/constants.js';
 
 /**
  * SceneManager is responsible for managing the Babylon.js engine, scenes, and managers.
- * It does NOT handle game starting - that's the GameSession's responsibility.
+ * It handles scene creation and lifecycle but does not start games directly.
  */
 export class SceneManager {
     private engine: any = null;
@@ -28,6 +28,9 @@ export class SceneManager {
             throw new Error(`Canvas element not found: ${canvasId}`);
     }
 
+    // ========================================
+    // SCENE CREATION & SETUP
+    // ========================================
     /**
      * Creates and initializes the Babylon.js engine.
      * @returns The created engine instance.
@@ -44,7 +47,7 @@ export class SceneManager {
     }
 
     /**
-     * Creates a scene based on the specified view mode (2D or 3D).
+     * Creates a scene based on the specified view mode and sets up all managers.
      * @param mode - The view mode (2D or 3D) for the scene.
      * @returns The created scene instance.
      */
@@ -58,7 +61,7 @@ export class SceneManager {
         else
             gameObjects = build3DScene(scene, this.engine)
 
-        // Setup managers (same for both modes)
+        // Setup managers for both modes
         this.inputManager = new InputManager(scene);
         this.inputManager.setupControls(gameObjects.players, mode);
 
@@ -71,6 +74,9 @@ export class SceneManager {
         return scene;
     }
 
+    // ========================================
+    // GAME SESSION ACCESS
+    // ========================================
     /**
      * Gets the GameSession instance.
      * @returns The GameSession instance or null if not created.
@@ -79,15 +85,9 @@ export class SceneManager {
         return this.gameSession;
     }
 
-    /**
-     * Resizes the engine to adapt to the current canvas size.
-     */
-    resize(): void {
-        if (this.engine) {
-            this.engine.resize();
-        }
-    }
-
+    // ========================================
+    // RENDER CONTROL
+    // ========================================
     /**
      * Starts the render loop for the engine.
      */
@@ -118,15 +118,30 @@ export class SceneManager {
         }
     }
 
+    // ========================================
+    // UTILITY
+    // ========================================
+    /**
+     * Resizes the engine to adapt to the current canvas size.
+     */
+    resize(): void {
+        if (this.engine) {
+            this.engine.resize();
+        }
+    }
+
+    // ========================================
+    // CLEANUP
+    // ========================================
     /**
      * Disposes of all resources used by the SceneManager.
      */
     dispose(): void {
-        
-        // Stop render loop
+        // Stop render loop first
         if (this.engine)
             this.engine.stopRenderLoop();
 
+        // Dispose managers in reverse order of creation
         if (this.gameSession) {
             this.gameSession.dispose();
             this.gameSession = null;
@@ -142,13 +157,12 @@ export class SceneManager {
             this.inputManager = null;
         }
         
-        // Dispose scene
+        // Dispose Babylon.js objects
         if (this.scene) {
             this.scene.dispose();
             this.scene = null;
         }
         
-        // Dispose engine
         if (this.engine) {
             this.engine.dispose();
             this.engine = null;

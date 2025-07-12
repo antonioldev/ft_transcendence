@@ -3,11 +3,20 @@ import { uiManager } from '../ui/UIManager.js';
 import { getCurrentTranslation } from '../translations/translations.js';
 import { historyManager } from './HistoryManager.js';
 
+/**
+ * Manages user authentication state, login/logout workflows, and user registration.
+ * Handles the transition between guest and authenticated user states, including
+ * form validation, UI updates, and navigation control.
+ */
 export class AuthManager {
     private static instance: AuthManager;
     private authState: AuthState = AuthState.GUEST;
     private currentUser: {username: string; email?: string} | null = null;
-    
+
+    /**
+     * Gets the singleton instance of AuthManager.
+     * @returns The singleton instance.
+     */
     static getInstance(): AuthManager {
         if (!AuthManager.instance) {
             AuthManager.instance = new AuthManager();
@@ -15,21 +24,63 @@ export class AuthManager {
         return AuthManager.instance;
     }
 
+    /**
+     * Initializes the AuthManager by setting up event listeners.
+     */
     static initialize(): void {
         const authManager = AuthManager.getInstance();
         authManager.setupEventListeners();
     }
 
+    // ========================================
+    // EVENT LISTENERS SETUP
+    // ========================================
+    /**
+     * Sets up all event listeners for authentication-related UI elements.
+     */
     private setupEventListeners(): void {
         // Main menu authentication buttons (top-right)
         const registerBtn = document.getElementById('register-btn');
         const loginBtn = document.getElementById('login-btn');
         const logoutBtn = document.getElementById('logout-btn');
-
-        // NEW: PLAY button - main game entry point
         const playBtn = document.getElementById('play-btn');
 
-        // Top-right auth buttons - USE HISTORY MANAGER
+        // Setup primary navigation handlers
+        this.setupMainMenuHandlers(loginBtn, registerBtn, logoutBtn, playBtn);
+
+        // Modal switching buttons
+        const showRegister = document.getElementById('show-register');
+        const showLogin = document.getElementById('show-login');
+
+        this.setupModalSwitchingHandlers(showRegister, showLogin);
+
+        // Modal back buttons
+        const loginBack = document.getElementById('login-back');
+        const registerBack = document.getElementById('register-back');
+
+        this.setupModalBackHandlers(loginBack, registerBack);
+
+        // Form submission handlers
+        const loginSubmit = document.getElementById('login-submit');
+        const registerSubmit = document.getElementById('register-submit');
+        const googleLoginBtn = document.getElementById('google-login-btn');
+
+        this.setupFormSubmissionHandlers(loginSubmit, registerSubmit, googleLoginBtn);
+    }
+
+    /**
+     * Sets up event handlers for main menu authentication buttons.
+     * @param loginBtn - Login button element.
+     * @param registerBtn - Register button element.
+     * @param logoutBtn - Logout button element.
+     * @param playBtn - Play button element.
+     */
+    private setupMainMenuHandlers(
+        loginBtn: HTMLElement | null,
+        registerBtn: HTMLElement | null,
+        logoutBtn: HTMLElement | null,
+        playBtn: HTMLElement | null
+    ): void {
         loginBtn?.addEventListener('click', () => {
             historyManager.goToLogin();
         });
@@ -45,11 +96,17 @@ export class AuthManager {
         playBtn?.addEventListener('click', () => {
             historyManager.goToGameMode();
         });
+    }
 
-        // Modal switching buttons
-        const showRegister = document.getElementById('show-register');
-        const showLogin = document.getElementById('show-login');
-
+    /**
+     * Sets up event handlers for modal switching between login and register.
+     * @param showRegister - Button to switch to register modal.
+     * @param showLogin - Button to switch to login modal.
+     */
+    private setupModalSwitchingHandlers(
+        showRegister: HTMLElement | null,
+        showLogin: HTMLElement | null
+    ): void {
         showRegister?.addEventListener('click', () => {
             historyManager.goToRegister();
         });
@@ -57,11 +114,17 @@ export class AuthManager {
         showLogin?.addEventListener('click', () => {
             historyManager.goToLogin();
         });
+    }
 
-        // Modal back buttons - USE HISTORY MANAGER
-        const loginBack = document.getElementById('login-back');
-        const registerBack = document.getElementById('register-back');
-
+    /**
+     * Sets up event handlers for modal back buttons.
+     * @param loginBack - Back button in login modal.
+     * @param registerBack - Back button in register modal.
+     */
+    private setupModalBackHandlers(
+        loginBack: HTMLElement | null,
+        registerBack: HTMLElement | null
+    ): void {
         loginBack?.addEventListener('click', () => {
             historyManager.closeModal();
         });
@@ -69,12 +132,19 @@ export class AuthManager {
         registerBack?.addEventListener('click', () => {
             historyManager.closeModal();
         });
+    }
 
-        // Form submissions
-        const loginSubmit = document.getElementById('login-submit');
-        const registerSubmit = document.getElementById('register-submit');
-        const googleLoginBtn = document.getElementById('google-login-btn');
-
+    /**
+     * Sets up event handlers for form submissions and third-party login.
+     * @param loginSubmit - Login form submit button.
+     * @param registerSubmit - Register form submit button.
+     * @param googleLoginBtn - Google login button.
+     */
+    private setupFormSubmissionHandlers(
+        loginSubmit: HTMLElement | null,
+        registerSubmit: HTMLElement | null,
+        googleLoginBtn: HTMLElement | null
+    ): void {
         loginSubmit?.addEventListener('click', (e) => {
             e.preventDefault();
             this.handleLoginSubmit();
@@ -90,13 +160,13 @@ export class AuthManager {
         });
     }
 
-    // NEW: Handle PLAY button click - main entry point
-    private handlePlayButtonClick(): void {
-        // Always go to game mode selection regardless of auth state
-        // Game modes will be filtered based on auth state
-        historyManager.goToGameMode();
-    }
-
+    // ========================================
+    // AUTHENTICATION HANDLERS
+    // ========================================
+    /**
+     * Handles the login form submission process.
+     * Validates input fields, processes authentication, and updates UI state.
+     */
     private handleLoginSubmit(): void {
         const usernameOrEmail = (document.getElementById('login-username') as HTMLInputElement)?.value.trim();
         const password = (document.getElementById('login-password') as HTMLInputElement)?.value;
@@ -119,15 +189,17 @@ export class AuthManager {
         // Update UI to show logged in state
         uiManager.showUserInfo(this.currentUser.username);
         
-        // Clear form
+        // Clear form and navigate back to main menu
         this.clearLoginForm();
-        
-        // UPDATED: Use history manager to go back to main menu
         historyManager.goToMainMenu();
         
         console.log('Login successful - user can now access online modes');
     }
 
+    /**
+     * Handles the registration form submission process.
+     * Validates input fields, processes registration, and provides user feedback.
+     */
     private handleRegisterSubmit(): void {
         const username = (document.getElementById('register-username') as HTMLInputElement)?.value.trim();
         const email = (document.getElementById('register-email') as HTMLInputElement)?.value;
@@ -151,18 +223,20 @@ export class AuthManager {
         // TODO: Implement actual registration logic with backend
         console.log('Register attempt:', { username, email });
         
-        // NEW: No auto-login after registration
+        // Clear form and provide success feedback
         this.clearRegisterForm();
-        
-        // Show success message (could be improved with a toast/notification)
         alert('Registration successful! You can now login.');
         
-        // UPDATED: Use history manager to go to login
+        // Navigate to login after successful registration
         setTimeout(() => {
             historyManager.goToLogin();
         }, 500);
     }
 
+    /**
+     * Handles Google OAuth login process.
+     * Currently shows placeholder functionality for future implementation.
+     */
     private handleGoogleLogin(): void {
         // TODO: Implement Google OAuth
         console.log('Google login clicked - to be implemented');
@@ -172,10 +246,15 @@ export class AuthManager {
         // this.currentUser = { username: googleUser.name, email: googleUser.email };
         // this.authState = AuthState.LOGGED_IN;
         // uiManager.showUserInfo(this.currentUser.username);
-        // uiManager.hideModal('login-modal');
+        // uiManager.hideOverlays('login-modal');
     }
 
-    // NEW: Form clearing methods
+    // ========================================
+    // FORM MANAGEMENT
+    // ========================================
+    /**
+     * Clears all fields in the login form.
+     */
     private clearLoginForm(): void {
         const usernameInput = document.getElementById('login-username') as HTMLInputElement;
         const passwordInput = document.getElementById('login-password') as HTMLInputElement;
@@ -184,6 +263,9 @@ export class AuthManager {
         if (passwordInput) passwordInput.value = '';
     }
 
+    /**
+     * Clears all fields in the registration form.
+     */
     private clearRegisterForm(): void {
         const usernameInput = document.getElementById('register-username') as HTMLInputElement;
         const emailInput = document.getElementById('register-email') as HTMLInputElement;
@@ -196,23 +278,48 @@ export class AuthManager {
         if (confirmPasswordInput) confirmPasswordInput.value = '';
     }
 
-    // Public getters
+    // ========================================
+    // STATE GETTERS
+    // ========================================
+    /**
+     * Gets the current authentication state.
+     * @returns The current auth state (GUEST or LOGGED_IN).
+     */
     getAuthState(): AuthState {
         return this.authState;
     }
 
+    /**
+     * Gets the current user information.
+     * @returns User object with username and optional email, or null if not authenticated.
+     */
     getCurrentUser(): {username: string; email?: string} | null {
         return this.currentUser;
     }
 
+    /**
+     * Checks if the user is currently authenticated.
+     * @returns True if user is logged in, false otherwise.
+     */
     isUserAuthenticated(): boolean {
         return this.authState === AuthState.LOGGED_IN;
     }
 
+    /**
+     * Checks if the user is in guest mode.
+     * @returns True if user is a guest, false otherwise.
+     */
     isGuest(): boolean {
         return this.authState === AuthState.GUEST;
     }
 
+    // ========================================
+    // STATE MANAGEMENT
+    // ========================================
+    /**
+     * Logs out the current user and returns to guest state.
+     * Clears user data and updates UI accordingly.
+     */
     logout(): void {
         this.authState = AuthState.GUEST;
         this.currentUser = null;
@@ -221,6 +328,10 @@ export class AuthManager {
         console.log('Logged out - now in guest mode');
     }
 
+    /**
+     * Checks the current authentication state and updates UI accordingly.
+     * Should be called after page loads or state changes to ensure UI consistency.
+     */
     checkAuthState(): void {
         if (this.authState === AuthState.LOGGED_IN && this.currentUser) {
             uiManager.showUserInfo(this.currentUser.username);

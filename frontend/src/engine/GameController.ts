@@ -3,12 +3,15 @@ import { SceneManager } from './SceneManager.js';
 
 /**
  * GameController class manages the initialization, rendering, and lifecycle of the game.
- * It does NOT handle game starting - that's the GameSession's responsibility.
+ * It coordinates between scene management and game sessions.
  */
 class GameController {
     private sceneManager: SceneManager | null = null;
     private resizeHandler: (() => void) | null = null;
 
+    // ========================================
+    // INITIALIZATION
+    // ========================================
     /**
      * Initializes the game controller with the specified canvas and view mode.
      * @param canvasId - The ID of the canvas element.
@@ -23,10 +26,13 @@ class GameController {
             this.resizeHandler = () => this.sceneManager?.resize();
             window.addEventListener("resize", this.resizeHandler);
         } catch (error) {
-            console.error(`❌ Error initializing game ${mode}:`, error);
+            console.error(`Error initializing game ${mode}:`, error);
         }
     }
 
+    // ========================================
+    // GAME SESSION ACCESS
+    // ========================================
     /**
      * Gets the GameSession to control game flow.
      * @returns The GameSession instance or null if not initialized.
@@ -35,16 +41,26 @@ class GameController {
         return this.sceneManager?.getGameSession() || null;
     }
 
+    // ========================================
+    // RENDER CONTROL
+    // ========================================
     /**
      * Pauses the game rendering loop.
      */
-    pause(): void { this.sceneManager?.pause(); }
+    pause(): void { 
+        this.sceneManager?.pause(); 
+    }
 
     /**
      * Resumes the game rendering loop.
      */
-    resume(): void { this.sceneManager?.resume(); }
+    resume(): void { 
+        this.sceneManager?.resume(); 
+    }
 
+    // ========================================
+    // CLEANUP
+    // ========================================
     /**
      * Disposes of the game controller and cleans up resources.
      */
@@ -58,6 +74,15 @@ class GameController {
     }
 }
 
+// ========================================
+// CONTROLLER INSTANCES
+// ========================================
+export const gameController2D = new GameController();
+export const gameController3D = new GameController();
+
+// ========================================
+// INITIALIZATION FUNCTIONS
+// ========================================
 /**
  * Initializes the 2D game and starts the game in the specified mode.
  * @param gameMode - The game mode to start.
@@ -81,6 +106,3 @@ export const init3D = async (gameMode: GameMode) => {
         gameSession.startGame(gameMode);
     }
 };
-
-export const gameController2D = new GameController();
-export const gameController3D = new GameController();

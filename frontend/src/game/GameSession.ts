@@ -1,6 +1,5 @@
 declare var BABYLON: any;
 
-// import { WebSocketClient } from './WebSocketClient.js';
 import { webSocketClient } from './WebSocketClient.js';
 import { InputManager } from './InputManager.js';
 import { GUIManager } from './GuiManager.js';
@@ -10,7 +9,7 @@ import { GameStateData, PlayerInfo, GameObjects } from '../shared/types.js';
 import { authManager } from '../core/AuthManager.js';
 
 /**
- * GameSession is THE ONLY class responsible for starting and managing games.
+ * GameSession is the central class responsible for starting and managing games.
  * All game starting logic is centralized here.
  */
 export class GameSession {
@@ -18,7 +17,6 @@ export class GameSession {
     private gameObjects: GameObjects;
     private inputManager: InputManager;
     private guiManager: GUIManager;
-    // private webSocketClient: WebSocketClient;
     private isRunning = false;
     private playerSide = 0;
 
@@ -34,10 +32,12 @@ export class GameSession {
         this.gameObjects = gameObjects;
         this.inputManager = inputManager;
         this.guiManager = guiManager;
-        // this.webSocketClient = new WebSocketClient('ws://localhost:3000'); //TODO make this configurable, important for remote players
         this.setupWebSocketCallbacks();
     }
 
+    // ========================================
+    // WEBSOCKET INTEGRATION
+    // ========================================
     /**
      * Sets up WebSocket event callbacks for handling game state updates,
      * connection events, and errors.
@@ -48,11 +48,11 @@ export class GameSession {
         });
 
         webSocketClient.onConnection(() => {
-            console.log('🔗 Connected to game server');
+            console.log('Connected to game server');
         });
 
         webSocketClient.onError((error: string) => {
-            console.error('❌ WebSocket error:', error);
+            console.error('WebSocket error:', error);
         });
     }
 
@@ -61,13 +61,11 @@ export class GameSession {
      * @param state - The current game state data.
      */
     private updateGameObjects(state: GameStateData): void {
-        if (this.gameObjects.players.left) {
+        if (this.gameObjects.players.left)
             this.gameObjects.players.left.position.x = state.paddleLeft.x;
-        }
 
-        if (this.gameObjects.players.right) {
+        if (this.gameObjects.players.right)
             this.gameObjects.players.right.position.x = state.paddleRight.x;
-        }
 
         if (this.gameObjects.ball) {
             this.gameObjects.ball.position.x = state.ball.x;
@@ -75,67 +73,73 @@ export class GameSession {
         }
 
         if (this.guiManager) {
-            //TODO add score display or other game state info
+            // TODO add score display or other game state info
         }
     }
 
+    // ========================================
+    // PLAYER MANAGEMENT
+    // ========================================
     /**
      * Extracts player information from the UI based on game mode.
      * @param gameMode - The current game mode.
      * @returns Array of player information.
      */
     private getPlayerInfoFromUI(gameMode: GameMode): PlayerInfo[] {
-    const currentUser = authManager.getCurrentUser();
-    if (currentUser) {
-        return [{ id: currentUser.username, name: currentUser.username }];
-    }
-    
-    const getInputValue = (id: string, defaultName: string): string => {
-        const input = document.getElementById(id) as HTMLInputElement;
-        return input?.value.trim() || defaultName;
-    };
-
-    switch (gameMode) {
-        case GameMode.SINGLE_PLAYER: {
-            const name = getInputValue('player1-name', 'Player 1');
-            return [{ id: name, name: name }];
+        const currentUser = authManager.getCurrentUser();
+        if (currentUser) {
+            return [{ id: currentUser.username, name: currentUser.username }];
         }
         
-        case GameMode.TWO_PLAYER_LOCAL: {
-            const name1 = getInputValue('player1-name-local', 'Player 1');
-            const name2 = getInputValue('player2-name-local', 'Player 2');
-            return [
-                { id: name1, name: name1 },
-                { id: name2, name: name2 }
-            ];
-        }
+        const getInputValue = (id: string, defaultName: string): string => {
+            const input = document.getElementById(id) as HTMLInputElement;
+            return input?.value.trim() || defaultName;
+        };
 
-        case GameMode.TOURNAMENT_LOCAL: { // TODO add more player
-            const name1 = getInputValue('player1-name-local', 'Player 1');
-            const name2 = getInputValue('player2-name-local', 'Player 2');
-            return [
-                { id: name1, name: name1 },
-                { id: name2, name: name2 }
-            ];
-        }
+        switch (gameMode) {
+            case GameMode.SINGLE_PLAYER: {
+                const name = getInputValue('player1-name', 'Player 1');
+                return [{ id: name, name: name }];
+            }
+            
+            case GameMode.TWO_PLAYER_LOCAL: {
+                const name1 = getInputValue('player1-name-local', 'Player 1');
+                const name2 = getInputValue('player2-name-local', 'Player 2');
+                return [
+                    { id: name1, name: name1 },
+                    { id: name2, name: name2 }
+                ];
+            }
 
-        default: {
-            console.warn('Unexpected game mode in getPlayerInfoFromUI:', gameMode);
-            return [{ id: 'Player 1', name: 'Player 1' }];
+            case GameMode.TOURNAMENT_LOCAL: {
+                // TODO add more players for tournament mode
+                const name1 = getInputValue('player1-name-local', 'Player 1');
+                const name2 = getInputValue('player2-name-local', 'Player 2');
+                return [
+                    { id: name1, name: name1 },
+                    { id: name2, name: name2 }
+                ];
+            }
+
+            default: {
+                console.warn('Unexpected game mode in getPlayerInfoFromUI:', gameMode);
+                return [{ id: 'Player 1', name: 'Player 1' }];
+            }
         }
     }
-}
 
+    // ========================================
+    // GAME CONTROL
+    // ========================================
     /**
-     * ⭐ THE MAIN METHOD - Starts a game with the specified mode.
-     * This is the ONLY place where games are started.
+     * This is the main method for starting games.
      * @param gameMode - The game mode to start.
-     * @param controlledSide - Which side this client controls (for remote games).
+     * @param controlledSide - Which side this client controls for remote games.
      */
     startGame(gameMode: GameMode, controlledSide: number = 0): void {
         console.log(`Starting game: ${GameMode[gameMode]} (side: ${controlledSide})`);
         
-        const players = this.getPlayerInfoFromUI(gameMode); //TODO not right
+        const players = this.getPlayerInfoFromUI(gameMode);
         console.log('Player names extracted:', players);
         
         this.inputManager.configureInput(gameMode, controlledSide);
@@ -154,8 +158,18 @@ export class GameSession {
     }
 
     /**
+     * Stops the game loop.
+     */
+    stop(): void {
+        this.isRunning = false;
+    }
+
+    // ========================================
+    // GAME LOOP & UPDATES
+    // ========================================
+    /**
      * Starts the game loop and sets up input handling and rendering updates.
-     * Private method - only called internally by startGame().
+     * Private method called internally by startGame.
      */
     private startGameLoop(): void {
         if (this.isRunning) {
@@ -196,15 +210,11 @@ export class GameSession {
         }
     }
 
+    // ========================================
+    // CLEANUP
+    // ========================================
     /**
-     * Stops the game loop.
-     */
-    stop(): void {
-        this.isRunning = false;
-    }
-
-    /**
-     * Cleans up resources and disconnects the WebSocket client.
+     * Cleans up resources and stops the game session.
      */
     dispose(): void {
         this.stop();

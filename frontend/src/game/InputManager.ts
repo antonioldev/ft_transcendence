@@ -8,19 +8,30 @@ import { PlayerControls, InputConfig } from '../shared/types.js';
  * Manages player input and interactions with the game environment.
  */
 export class InputManager {
+    // ========================================
+    // BABYLON.JS INTEGRATION
+    // ========================================
     private deviceSourceManager: any;
-    private boundaries = getPlayerBoundaries();
-    private players: {left: any, right: any} | null = null;
-    private inputConfig: InputConfig | null = null;
-    private networkCallback: ((side: number, direction: Direction) => void) | null = null;
-    private gameMode: GameMode | null = null;
-    private controlledSide: number = 0;
-    private isLocalMultiplayer: boolean = false;
 
     constructor(scene: any) {
         // Initializes the input manager with the given scene
         this.deviceSourceManager = new BABYLON.DeviceSourceManager(scene.getEngine());
     }
+
+    // ========================================
+    // GAME STATE & CONFIGURATION
+    // ========================================
+    private boundaries = getPlayerBoundaries();
+    private players: {left: any, right: any} | null = null;
+    private inputConfig: InputConfig | null = null;
+    private gameMode: GameMode | null = null;
+    private controlledSide: number = 0;
+    private isLocalMultiplayer: boolean = false;
+
+    // ========================================
+    // NETWORK COMMUNICATION
+    // ========================================
+    private networkCallback: ((side: number, direction: Direction) => void) | null = null;
 
     /**
      * Sets the callback function to handle network updates for player movements.
@@ -30,6 +41,9 @@ export class InputManager {
         this.networkCallback = callback;
     }
 
+    // ========================================
+    // CONFIGURATION & SETUP
+    // ========================================
     /**
      * Configures input handling based on game mode and controlled side.
      * @param gameMode - The current game mode.
@@ -65,23 +79,30 @@ export class InputManager {
         this.players = players;
     }
 
+    // ========================================
+    // INPUT PROCESSING
+    // ========================================
     /**
      * Updates the input state by checking the current keyboard inputs.
      */
     updateInput(): void {
         const keyboardSource = this.deviceSourceManager.getDeviceSource(BABYLON.DeviceType.Keyboard);
-        if (keyboardSource && this.players && this.inputConfig) {
+        if (keyboardSource && this.players && this.inputConfig)
             this.handleInput(keyboardSource, this.players, this.inputConfig);
-        }
     }
 
     /**
-     * Determines if this client should listen to input for a specific player side.
-     * @param side - The player side (0 = left, 1 = right).
-     * @returns True if this client should handle input for this side.
+     * Processes keyboard input and triggers the appropriate network callback for player movements.
+     * @param keyboardSource - The keyboard input source.
+     * @param players - The player objects.
+     * @param input - The input configuration.
      */
-    private shouldListenToPlayer(side: number): boolean {
-        return this.isLocalMultiplayer || this.controlledSide === side;
+    private handleInput(keyboardSource: any, players: any, input: InputConfig): void {
+        // Handle Player Left (side 0)
+        this.handlePlayerInput(keyboardSource, players.left, input.playerLeft, 0);
+        
+        // Handle Player Right (side 1)
+        this.handlePlayerInput(keyboardSource, players.right, input.playerRight, 1);
     }
 
     /**
@@ -108,19 +129,17 @@ export class InputManager {
     }
 
     /**
-     * Processes keyboard input and triggers the appropriate network callback for player movements.
-     * @param keyboardSource - The keyboard input source.
-     * @param players - The player objects.
-     * @param input - The input configuration.
+     * Determines if this client should listen to input for a specific player side.
+     * @param side - The player side (0 = left, 1 = right).
+     * @returns True if this client should handle input for this side.
      */
-    private handleInput(keyboardSource: any, players: any, input: InputConfig): void {
-        // Handle Player Left (side 0)
-        this.handlePlayerInput(keyboardSource, players.left, input.playerLeft, 0);
-        
-        // Handle Player Right (side 1)
-        this.handlePlayerInput(keyboardSource, players.right, input.playerRight, 1);
+    private shouldListenToPlayer(side: number): boolean {
+        return this.isLocalMultiplayer || this.controlledSide === side;
     }
 
+    // ========================================
+    // CAMERA & UTILITY
+    // ========================================
     /**
      * Calculates the camera follow target position based on the player's position.
      * @param player - The player object to follow.
@@ -132,6 +151,9 @@ export class InputManager {
         return new BABYLON.Vector3(targetX, player.position.y, player.position.z);
     }
 
+    // ========================================
+    // CLEANUP
+    // ========================================
     /**
      * Disposes of the device source manager to clean up resources.
      */

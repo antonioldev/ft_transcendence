@@ -7,22 +7,10 @@ import { ClientMessage, ServerMessage, GameStateData, PlayerInfo } from '../shar
  * game state updates, connection events, and errors.
  */
 export class WebSocketClient {
+    // ========================================
+    // SINGLETON & INSTANCE MANAGEMENT
+    // ========================================
     private static instance: WebSocketClient;
-    private ws: WebSocket | null = null;
-    private connectionStatus: ConnectionStatus = ConnectionStatus.CONNECTING;
-
-    private gameStateCallback: ((state: GameStateData) => void) | null = null;
-    private connectionCallback: (() => void) | null = null;
-    private errorCallback: ((error: string) => void) | null = null;
-    private statusCallback: ((status: ConnectionStatus, message?: string) => void) | null = null;
-
-    /**
-     * Initializes the WebSocketClient and connects to the server.
-     * @param url - The WebSocket server URL.
-     */
-    private constructor() {
-        this.connect();
-    }
 
     static getInstance(): WebSocketClient {
         if (!WebSocketClient.instance) {
@@ -31,9 +19,29 @@ export class WebSocketClient {
         return WebSocketClient.instance;
     }
 
+    private constructor() {
+        this.connect();
+    }
+
+    // ========================================
+    // CONNECTION STATE
+    // ========================================
+    private ws: WebSocket | null = null;
+    private connectionStatus: ConnectionStatus = ConnectionStatus.CONNECTING;
+
+    // ========================================
+    // CALLBACK HANDLERS
+    // ========================================
+    private gameStateCallback: ((state: GameStateData) => void) | null = null;
+    private connectionCallback: (() => void) | null = null;
+    private errorCallback: ((error: string) => void) | null = null;
+    private statusCallback: ((status: ConnectionStatus, message?: string) => void) | null = null;
+
+    // ========================================
+    // CONNECTION MANAGEMENT
+    // ========================================
     /**
      * Establishes a WebSocket connection to the specified URL.
-     * @param url - The WebSocket server URL.
      */
     private connect(): void {
         this.connectionStatus = ConnectionStatus.CONNECTING;
@@ -83,6 +91,19 @@ export class WebSocketClient {
     }
 
     /**
+     * Disconnects the WebSocket connection.
+     */
+    disconnect(): void {
+        if (this.ws) {
+            this.ws.close();
+            this.ws = null;
+        }
+    }
+
+    // ========================================
+    // MESSAGE HANDLING
+    // ========================================
+    /**
      * Handles incoming messages from the server.
      * @param message - The message received from the server.
      */
@@ -105,9 +126,13 @@ export class WebSocketClient {
         }
     }
 
+    // ========================================
+    // GAME COMMUNICATION
+    // ========================================
     /**
      * Sends a request to join a game with the specified game mode.
      * @param gameMode - The game mode to join.
+     * @param players - Array of player information.
      */
     joinGame(gameMode: GameMode, players: PlayerInfo[]): void {
         if (this.isConnected()) {
@@ -136,6 +161,9 @@ export class WebSocketClient {
         }
     }
 
+    // ========================================
+    // CALLBACK REGISTRATION
+    // ========================================
     /**
      * Registers a callback to be invoked when the game state is updated.
      * @param callback - The callback function.
@@ -163,37 +191,37 @@ export class WebSocketClient {
     }
 
     /**
-     * Disconnects the WebSocket connection.
+     * Registers a callback to be invoked when connection status changes.
+     * @param callback - The callback function.
      */
-    disconnect(): void {
-        if (this.ws) {
-            this.ws.close();
-            this.ws = null;
-        }
-    }
-    
     onStatusChange(callback: (status: ConnectionStatus) => void): void {
         this.statusCallback = callback;
         this.notifyStatus(this.connectionStatus);
     }
 
-    // Status
+    // ========================================
+    // STATUS & UTILITY
+    // ========================================
+    /**
+     * Checks if the WebSocket is currently connected.
+     * @returns True if connected, false otherwise.
+     */
     isConnected(): boolean {
         return this.connectionStatus === ConnectionStatus.CONNECTED;
     }
 
+    /**
+     * Gets the current connection status.
+     * @returns The current connection status.
+     */
     getConnectionStatus(): ConnectionStatus {
         return this.connectionStatus;
     }
 
-    // Simple retry (just try to connect again)
-    retry(): void {
-        if (this.ws) {
-            this.ws.close();
-        }
-        this.connect();
-    }
-
+    /**
+     * Notifies registered callbacks about status changes.
+     * @param status - The new connection status.
+     */
     private notifyStatus(status: ConnectionStatus): void {
         this.statusCallback?.(status);
     }

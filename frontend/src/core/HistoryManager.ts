@@ -63,7 +63,7 @@ export class HistoryManager {
         
         switch (state) {
             case 'main-menu':
-                this.showScreen('main-menu', { hideModals: true, checkAuth: true });
+                this.showScreen('main-menu', { hideOverlayss: true, checkAuth: true });
                 break;
             case 'login':
                 this.showScreen('main-menu', { modal: 'login-modal' });
@@ -72,16 +72,16 @@ export class HistoryManager {
                 this.showScreen('main-menu', { modal: 'register-modal' });
                 break;
             case 'game-mode':
-                this.showScreen('game-mode-overlay', { hideModals: true, refreshGameMode: true });
+                this.showScreen('game-mode-overlay', { hideOverlayss: true, refreshGameMode: true });
                 break;
             case 'player-setup':
-                this.showScreen('player-setup-overlay', { hideModals: true });
+                this.showScreen('player-setup-overlay', { hideOverlayss: true });
                 break;
             case 'game-2d':
-                this.showScreen('game-2d', { hideModals: true, hideUserInfo: true });
+                this.showScreen('game-2d', { hideOverlayss: true, hideUserInfo: true });
                 break;
             case 'game-3d':
-                this.showScreen('game-3d', { hideModals: true, hideUserInfo: true });
+                this.showScreen('game-3d', { hideOverlayss: true, hideUserInfo: true });
                 break;
             default:
                 console.warn(`Unknown state: ${state}, redirecting to main menu`);
@@ -90,17 +90,18 @@ export class HistoryManager {
         }
     }
 
-    // ✅ Generic screen method
     private showScreen(screenId: string, options: {
-        hideModals?: boolean;
+        hideOverlayss?: boolean;
         hideUserInfo?: boolean;
         modal?: string;
         checkAuth?: boolean;
         refreshGameMode?: boolean;
     } = {}): void {
         
-        if (options.hideModals) {
-            uiManager.hideAllModals();
+        if (options.hideOverlayss) {
+            uiManager.hideOverlays('login-modal');
+            uiManager.hideOverlays('register-modal');
+            // uiManager.hideAllModals();
         }
         
         if (options.hideUserInfo) {
@@ -108,8 +109,8 @@ export class HistoryManager {
         }
         
         if (options.modal) {
-            uiManager.showScreen('main-menu'); // Keep main menu visible
-            uiManager.showModal(options.modal);
+            uiManager.showScreen('main-menu');
+            uiManager.showOverlays(options.modal);
         } else {
             uiManager.showScreen(screenId);
         }

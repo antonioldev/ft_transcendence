@@ -3,25 +3,30 @@ import { uiManager } from '../ui/UIManager.js';
 import { webSocketClient } from '../game/WebSocketClient.js';
 import { AuthManager } from './AuthManager.js';
 import { GameModeManager } from './GameModeManager.js';
-import { setupKeyboardListeners } from './KeyboardManager.js';
+import { KeyboardManager } from './KeyboardManager.js';
 import { HistoryManager } from './HistoryManager.js';
 
 function loadPage() {
-    // Initialize core systems
+    // Initialize classes
     uiManager.initializeStyles();
     AuthManager.initialize();
     GameModeManager.initialize();
-    setupKeyboardListeners();
+    KeyboardManager.initialize();
     HistoryManager.initialize();
+
+    // Setup language system
     updateLanguageDisplay();
     setupLanguageListeners();
-    
-    // Simple WebSocket status monitoring
+
+    // Setup WebSocket monitoring
     webSocketClient.onStatusChange((status) => {
         uiManager.updateConnectionStatus(status);
     });
 }
 
+/**
+ * Sets up language navigation button listeners.
+ */
 function setupLanguageListeners() {
     const backBtn = document.getElementById('back');
     const forwardBtn = document.getElementById('forward');
