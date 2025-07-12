@@ -1,6 +1,3 @@
-// This file contains utility functions to build 2D and 3D game scenes using the BABYLON.js library.
-// It includes methods to create materials, cameras, lights, ground, walls, players, and balls for the game.
-
 declare var BABYLON: any;
 
 import { GAME_CONFIG } from '../shared/gameConfig.js';
