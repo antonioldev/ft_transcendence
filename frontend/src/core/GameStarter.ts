@@ -8,12 +8,12 @@ export function startGameWithMode(viewMode: ViewMode, gameMode: GameMode): void 
     uiManager.hideUserInfo();
     
     if (viewMode === ViewMode.MODE_2D) {
-        historyManager.goToGame2D();  // ← Use history manager
-        gameStateManager.setState(GameState.PLAYING_2D);
+        historyManager.goToGame2D();
+        gameStateManager.startGame(ViewMode.MODE_2D);
         setTimeout(() => init2D(gameMode), 100);
     } else {
-        historyManager.goToGame3D();  // ← Use history manager
-        gameStateManager.setState(GameState.PLAYING_3D);
+        historyManager.goToGame3D();
+        gameStateManager.startGame(ViewMode.MODE_3D);
         setTimeout(() => init3D(gameMode), 100);
     }
 }

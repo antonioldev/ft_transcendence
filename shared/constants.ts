@@ -29,11 +29,8 @@ export enum Direction {
 
 // States the game can be in
 export enum GameState {
-    MENU = 0,              // Main menu
-    PLAYING_2D = 1,        // Playing in 2D mode
-    PLAYING_3D = 2,        // Playing in 3D mode
-    PAUSED_2D = 3,         // Paused in 2D mode
-    PAUSED_3D = 4          // Paused in 3D mode
+    PLAYING = 0,
+    PAUSED = 1
 }
 
 // View modes for the game
@@ -49,9 +46,8 @@ export enum CollisionDirection {
 }
 
 export enum AuthState {
-    LOGGED_OUT = 0,
-    LOGGED_IN = 1, 
-    OFFLINE = 2
+    GUEST = 0,
+    LOGGED_IN = 1
 }
 
 export enum ConnectionStatus {

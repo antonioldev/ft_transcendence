@@ -5,7 +5,7 @@ import { historyManager } from './HistoryManager.js';
 
 export class AuthManager {
     private static instance: AuthManager;
-    private authState: AuthState = AuthState.LOGGED_OUT;
+    private authState: AuthState = AuthState.GUEST;
     private currentUser: {username: string; email?: string} | null = null;
     
     static getInstance(): AuthManager {
@@ -42,7 +42,6 @@ export class AuthManager {
             this.logout();
         });
 
-        // NEW: PLAY button logic - USE HISTORY MANAGER
         playBtn?.addEventListener('click', () => {
             historyManager.goToGameMode();
         });
@@ -173,13 +172,6 @@ export class AuthManager {
         // uiManager.hideModal('login-modal');
     }
 
-    private proceedToGameSelection(): void {
-        // Import here to avoid circular dependency
-        import('./GameModeManager.js').then(({ GameModeManager }) => {
-            GameModeManager.showGameModeSelection();
-        });
-    }
-
     // NEW: Form clearing methods
     private clearLoginForm(): void {
         const usernameInput = document.getElementById('login-username') as HTMLInputElement;
@@ -214,16 +206,16 @@ export class AuthManager {
         return this.authState === AuthState.LOGGED_IN;
     }
 
-    isInOfflineMode(): boolean {
-        return this.authState === AuthState.LOGGED_OUT; // Simplified - logged out = offline mode
+    isGuest(): boolean {
+        return this.authState === AuthState.GUEST;
     }
 
     logout(): void {
-        this.authState = AuthState.LOGGED_OUT;
+        this.authState = AuthState.GUEST;
         this.currentUser = null;
-        uiManager.hideUserInfo(); // This will show auth buttons again
-        historyManager.goToMainMenu(); // Use history manager
-        console.log('Logged out - user now in offline mode');
+        uiManager.hideUserInfo();
+        historyManager.goToMainMenu();
+        console.log('Logged out - now in guest mode');
     }
 
     checkAuthState(): void {

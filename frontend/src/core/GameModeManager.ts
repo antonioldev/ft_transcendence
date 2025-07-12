@@ -1,9 +1,10 @@
-import { GameMode, ViewMode, AuthState } from '../shared/constants.js';
+import { GameMode, ViewMode, AuthState, ConnectionStatus } from '../shared/constants.js';
 import { uiManager } from '../ui/UIManager.js';
 import { authManager } from './AuthManager.js';
 import { getCurrentTranslation } from '../translations/translations.js';
 import { startGameWithMode } from './GameStarter.js';
 import { historyManager } from './HistoryManager.js';
+import { webSocketClient } from '../game/WebSocketClient.js';
 
 export class GameModeManager {
     private static instance: GameModeManager;
@@ -33,17 +34,12 @@ export class GameModeManager {
 
     private updateButtonStates(): void {
         const t = getCurrentTranslation();
-        const authState = authManager.getAuthState();
+        const isLoggedIn = authManager.isUserAuthenticated();
+        const isOnline = webSocketClient.getConnectionStatus() === ConnectionStatus.CONNECTED;
         
-        // Get all buttons
-        const soloMode = document.getElementById('solo-mode') as HTMLButtonElement;
-        const localMode = document.getElementById('local-mode') as HTMLButtonElement;
-        const onlineMode = document.getElementById('online-mode') as HTMLButtonElement;
-        const tournamentMode = document.getElementById('tournament-mode') as HTMLButtonElement;
-        const tournamentOnlineMode = document.getElementById('tournament-online-mode') as HTMLButtonElement;
-    
         uiManager.setButtonState('solo-mode', 'enabled');
-        if (authState === AuthState.LOGGED_IN) {
+        
+        if (isLoggedIn && isOnline) {
             // Enable online modes
             uiManager.setButtonState('online-mode', 'enabled');
             uiManager.setButtonState('tournament-online-mode', 'enabled');
@@ -51,14 +47,19 @@ export class GameModeManager {
             // Disable local modes
             uiManager.setButtonState('local-mode', 'disabled', t.availableOnlyOffline);
             uiManager.setButtonState('tournament-mode', 'disabled', t.availableOnlyOffline);
-        } else  {
+        } else {
             // Enable local modes
             uiManager.setButtonState('local-mode', 'enabled');
             uiManager.setButtonState('tournament-mode', 'enabled');
             
-            // Disable online modes
-            uiManager.setButtonState('online-mode', 'disabled', t.loginRequired);
-            uiManager.setButtonState('tournament-online-mode', 'disabled', t.loginRequired);
+            // Disable online modes with appropriate message
+            if (!isOnline) {
+                uiManager.setButtonState('online-mode', 'disabled', 'Connection required');
+                uiManager.setButtonState('tournament-online-mode', 'disabled', 'Connection required');
+            } else {
+                uiManager.setButtonState('online-mode', 'disabled', t.loginRequired);
+                uiManager.setButtonState('tournament-online-mode', 'disabled', t.loginRequired);
+            }
         }
     }
 
@@ -88,7 +89,7 @@ export class GameModeManager {
 
         onlineMode?.addEventListener('click', () => {
             // Check if user is logged in before allowing online mode
-            if (authManager.getAuthState() === AuthState.LOGGED_IN) {
+            if (authManager.isUserAuthenticated()) {
                 this.handleGameModeSelection(GameMode.TWO_PLAYER_REMOTE, 'online');
             } else {
                 // Show login modal if user tries to access online mode
@@ -104,7 +105,7 @@ export class GameModeManager {
 
         tournamentOnlineMode?.addEventListener('click', () => {
             // Check if user is logged in before allowing online tournament
-            if (authManager.getAuthState() === AuthState.LOGGED_IN) {
+            if (authManager.isUserAuthenticated()) {
                 this.handleGameModeSelection(GameMode.TOURNAMENT_REMOTE, 'online');
             } else {
                 // Show login modal if user tries to access online tournament

@@ -197,7 +197,6 @@ export class GameSession {
      */
     dispose(): void {
         this.stop();
-        webSocketClient.disconnect();
         this.inputManager.dispose();
     }
 }

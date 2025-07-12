@@ -1,4 +1,6 @@
-// HistoryManager.ts - Single route with browser back/forward support
+/*
+    This class 
+*/
 export class HistoryManager {
     private static instance: HistoryManager;
     private currentState: string = 'main-menu';
@@ -142,24 +144,12 @@ export class HistoryManager {
         uiManager.hideAllModals();
         uiManager.hideUserInfo();
         uiManager.showScreen('game-2d');
-        
-        import('../core/GameStateManager.js').then(({ gameStateManager }) => {
-            import('../shared/constants.js').then(({ GameState }) => {
-                gameStateManager.setState(GameState.PLAYING_2D);
-            });
-        });
     }
 
     private showGame3D(uiManager: any): void {
         uiManager.hideAllModals();
         uiManager.hideUserInfo();
         uiManager.showScreen('game-3d');
-        
-        import('../core/GameStateManager.js').then(({ gameStateManager }) => {
-            import('../shared/constants.js').then(({ GameState }) => {
-                gameStateManager.setState(GameState.PLAYING_3D);
-            });
-        });
     }
 
     // Public methods for other managers to use
