@@ -20,7 +20,7 @@ export class HistoryManager {
         // Listen for browser back/forward button clicks
         window.addEventListener('popstate', (event) => {
             const state = event.state?.screen || 'main-menu';
-            console.log(`🔙 Browser navigation to: ${state}`);
+            console.log(`Browser BACK navigation to: ${state}`);
             this.navigateToState(state, false); // false = don't push to history
         });
 
@@ -42,7 +42,6 @@ export class HistoryManager {
      */
     pushState(state: string, addToHistory: boolean = true): void {
         if (addToHistory) {
-            // Add to browser history (same URL, different state)
             history.pushState({ screen: state }, '', window.location.href);
         }
         
@@ -56,8 +55,11 @@ export class HistoryManager {
      * @param addToHistory - Whether to add to history (used internally)
      */
     private navigateToState(state: string, addToHistory: boolean = true): void {
-        console.log(`📱 Navigating to state: ${state}`);
-
+        if (addToHistory) //todo remove testing
+            console.log(`Navigating to state: ${state}, SAVE into history`);
+        else
+            console.log(`Navigating to state: ${state}, NOT S history`);
+        
         // Import managers dynamically to avoid circular dependencies
         import('../ui/UIManager.js').then(({ uiManager }) => {
             import('../core/AuthManager.js').then(({ authManager }) => {

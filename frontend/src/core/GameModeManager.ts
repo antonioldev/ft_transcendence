@@ -3,6 +3,7 @@ import { uiManager } from '../ui/UIManager.js';
 import { authManager } from './AuthManager.js';
 import { getCurrentTranslation } from '../translations/translations.js';
 import { startGameWithMode } from './GameStarter.js';
+import { historyManager } from './HistoryManager.js';
 
 export class GameModeManager {
     private static instance: GameModeManager;
@@ -24,7 +25,8 @@ export class GameModeManager {
 
     static showGameModeSelection(): void {
         const gameModeManager = GameModeManager.getInstance();
-        uiManager.showScreen('game-mode-overlay');
+        historyManager.goToGameMode();
+        // uiManager.showScreen('game-mode-overlay');
         gameModeManager.updateViewModeDisplay();
         gameModeManager.updateButtonStates();
     }
@@ -114,7 +116,8 @@ export class GameModeManager {
 
         modeBack?.addEventListener('click', () => {
             this.selectedGameMode = null;
-            uiManager.showScreen('main-menu');
+            // uiManager.showScreen('main-menu');
+            historyManager.goToMainMenu()
         });
 
         // Player setup listeners
@@ -124,7 +127,8 @@ export class GameModeManager {
     // NEW: Unified game mode selection handler
     private handleGameModeSelection(gameMode: GameMode, setupFormType: string): void {
         this.selectedGameMode = gameMode;
-        uiManager.showScreen('player-setup-overlay');
+        historyManager.goToPlayerSetup()
+        // uiManager.showScreen('player-setup-overlay');
         uiManager.showSetupForm(setupFormType);
         
         // Pre-fill player name if user is logged in
@@ -155,7 +159,8 @@ export class GameModeManager {
 
         setupBack?.addEventListener('click', () => {
             this.selectedGameMode = null;
-            uiManager.showScreen('game-mode-overlay');
+            historyManager.goToGameMode();
+            // uiManager.showScreen('game-mode-overlay');
         });
 
         startGame?.addEventListener('click', () => {

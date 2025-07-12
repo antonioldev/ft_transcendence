@@ -18,9 +18,6 @@ function loadPage() {
     // Initialize language display and setup language navigation
     updateLanguageDisplay();
     setupLanguageListeners();
-    
-    // Don't manually show main menu - let history manager handle initial state
-    // uiManager.showScreen('main-menu'); // Remove this line
 }
 
 function setupLanguageListeners() {

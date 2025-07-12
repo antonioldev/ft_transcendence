@@ -2,6 +2,7 @@ import { uiManager } from '../ui/UIManager.js';
 import { gameController2D, gameController3D } from '../engine/GameController.js';
 import { GameState } from '../shared/constants.js';
 import { authManager } from './AuthManager.js';
+import { historyManager } from './HistoryManager.js';
 
 /**
  * Manages the state of the game, including transitions between states
@@ -111,7 +112,7 @@ class GameStateManager {
         }
         authManager.checkAuthState()
         this.setState(GameState.MENU);
-        uiManager.showScreen('main-menu');
+        historyManager.goToMainMenu();
     }
 
     /**
