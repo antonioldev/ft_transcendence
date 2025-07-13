@@ -1,86 +1,165 @@
-import { ViewMode, GameMode } from '../shared/constants.js';
-import { SceneManager } from './SceneManager.js';
+import { Game } from './Game.js';
+import { GameConfig } from './GameConfig.js';
 
 /**
- * GameController class manages the initialization, rendering, and lifecycle of the game.
- * It does NOT handle game starting - that's the GameSession's responsibility.
+ * Simplified Game Controller - manages single game instance
+ * Replaces the old complex GameController + SceneManager + GameSession approach
  */
-class GameController {
-    private sceneManager: SceneManager | null = null;
-    private resizeHandler: (() => void) | null = null;
+export class GameController {
+    private currentGame: Game | null = null;
+    private isStarting: boolean = false;
+
+    // ========================================
+    // GAME MANAGEMENT
+    // ========================================
 
     /**
-     * Initializes the game controller with the specified canvas and view mode.
-     * @param canvasId - The ID of the canvas element.
-     * @param mode - The view mode (2D or 3D).
+     * Start a new game with the given configuration
      */
-    async init(canvasId: string, mode: ViewMode): Promise<void> {
+    async startGame(config: GameConfig): Promise<void> {
+        // Prevent multiple simultaneous starts
+        if (this.isStarting) {
+            console.warn('Game start already in progress');
+            return;
+        }
+
+        // Stop existing game if running
+        if (this.currentGame) {
+            await this.endGame();
+        }
+
+        this.isStarting = true;
+
         try {
-            this.sceneManager = new SceneManager(canvasId);
-            this.sceneManager.createEngine();
-            this.sceneManager.createScene(mode);
-            this.sceneManager.startRenderLoop();
-            this.resizeHandler = () => this.sceneManager?.resize();
-            window.addEventListener("resize", this.resizeHandler);
+            console.log('GameController: Starting new game');
+
+            // Create new game instance
+            this.currentGame = new Game(config);
+
+            // Initialize all components
+            await this.currentGame.initialize();
+
+            // Start the game
+            this.currentGame.start();
+
+            console.log('GameController: Game started successfully');
+
         } catch (error) {
-            console.error(`❌ Error initializing game ${mode}:`, error);
+            console.error('GameController: Error starting game:', error);
+            
+            // Cleanup on failure
+            if (this.currentGame) {
+                await this.currentGame.dispose();
+                this.currentGame = null;
+            }
+            
+            throw error;
+        } finally {
+            this.isStarting = false;
         }
     }
 
     /**
-     * Gets the GameSession to control game flow.
-     * @returns The GameSession instance or null if not initialized.
+     * End the current game and clean up
      */
-    getGameSession() {
-        return this.sceneManager?.getGameSession() || null;
+    async endGame(): Promise<void> {
+        if (!this.currentGame) {
+            return;
+        }
+
+        console.log('GameController: Ending current game');
+
+        try {
+            // Stop and dispose the game
+            this.currentGame.stop();
+            await this.currentGame.dispose();
+
+        } catch (error) {
+            console.error('GameController: Error ending game:', error);
+        } finally {
+            this.currentGame = null;
+        }
+
+        console.log('GameController: Game ended successfully');
+    }
+
+    // ========================================
+    // GAME CONTROL
+    // ========================================
+
+    /**
+     * Pause the current game
+     */
+    pauseGame(): void {
+        if (this.currentGame && this.currentGame.isGameRunning()) {
+            this.currentGame.pause();
+            console.log('GameController: Game paused');
+        }
     }
 
     /**
-     * Pauses the game rendering loop.
+     * Resume the current game
      */
-    pause(): void { this.sceneManager?.pause(); }
-
-    /**
-     * Resumes the game rendering loop.
-     */
-    resume(): void { this.sceneManager?.resume(); }
-
-    /**
-     * Disposes of the game controller and cleans up resources.
-     */
-    dispose(): void {
-        if (this.resizeHandler) {
-            window.removeEventListener("resize", this.resizeHandler);
-            this.resizeHandler = null;
+    resumeGame(): void {
+        if (this.currentGame && this.currentGame.isGameInitialized() && !this.currentGame.isGameRunning()) {
+            this.currentGame.resume();
+            console.log('GameController: Game resumed');
         }
-        this.sceneManager?.dispose();
-        this.sceneManager = null;
+    }
+
+    // ========================================
+    // STATE QUERIES
+    // ========================================
+
+    /**
+     * Check if a game is currently running
+     */
+    hasActiveGame(): boolean {
+        return this.currentGame !== null && this.currentGame.isGameInitialized();
+    }
+
+    /**
+     * Check if current game is running (not paused)
+     */
+    isGameRunning(): boolean {
+        return this.currentGame !== null && this.currentGame.isGameRunning();
+    }
+
+    /**
+     * Check if current game is paused
+     */
+    isGamePaused(): boolean {
+        return this.currentGame !== null && 
+               this.currentGame.isGameInitialized() && 
+               !this.currentGame.isGameRunning();
+    }
+
+    /**
+     * Get current game configuration
+     */
+    getCurrentGameConfig(): GameConfig | null {
+        return this.currentGame?.getConfig() || null;
+    }
+
+    // ========================================
+    // CLEANUP
+    // ========================================
+
+    /**
+     * Dispose the controller and any active game
+     */
+    async dispose(): Promise<void> {
+        console.log('GameController: Disposing controller');
+        
+        if (this.currentGame) {
+            await this.endGame();
+        }
     }
 }
 
-/**
- * Initializes the 2D game and starts the game in the specified mode.
- * @param gameMode - The game mode to start.
- */
-export const init2D = async (gameMode: GameMode) => {
-    await gameController2D.init("game-canvas-2d", ViewMode.MODE_2D);
-    const gameSession = gameController2D.getGameSession();
-    if (gameSession) {
-        gameSession.startGame(gameMode);
-    }
-};
+// ========================================
+// SINGLETON INSTANCES
+// ========================================
 
-/**
- * Initializes the 3D game and starts the game in the specified mode.
- * @param gameMode - The game mode to start.
- */
-export const init3D = async (gameMode: GameMode) => {
-    await gameController3D.init("game-canvas-3d", ViewMode.MODE_3D);
-    const gameSession = gameController3D.getGameSession();
-    if (gameSession) {
-        gameSession.startGame(gameMode);
-    }
-};
-
-export const gameController2D = new GameController();
-export const gameController3D = new GameController();
+// Single controller instance for the entire application
+export const gameController = new GameController();
