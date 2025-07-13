@@ -1,40 +1,47 @@
+declare var BABYLON: any;
+
 import { GameConfig } from './GameConfig.js';
-import { BabylonScene } from './BabylonScene.js';
-import { GameRenderer } from './GameRenderer.js';
+import { build2DScene, build3DScene } from './sceneBuilder.js';
 import { InputHandler } from './InputHandler.js';
 import { NetworkManager } from './NetworkManager.js';
-import { GUIManager } from './GuiManager.js';
+import { ViewMode } from '../shared/constants.js';
+import { GameStateData, GameObjects } from '../shared/types.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
 
-
 /**
- * Main class responsible for managing the lifecycle and core components of the game.
+ * Main Game class that handles everything for running one game instance.
  * 
- * The `Game` class handles initialization, starting, pausing, resuming, stopping, and disposing of the game.
- * It orchestrates the interaction between the rendering engine, input handling, networking, and GUI management.
+ * Merged from: Game + BabylonScene + GameRenderer + GUIManager
  * 
- * ### Core Responsibilities
- * - Initializes and connects all game subsystems (Babylon.js scene, renderer, input handler, network manager, GUI manager).
- * - Manages the main game loop and render loop.
- * - Handles game state transitions (start, pause, resume, stop, dispose).
- * - Provides state query methods for external consumers.
+ * Responsibilities:
+ * - Babylon.js engine/scene creation and management
+ * - Render loop control
+ * - Game object updates from network state
+ * - FPS display
+ * - Input and network coordination
+ * - Complete game session lifecycle
  */
 export class Game {
-    private babylonScene: BabylonScene | null = null;
-    private renderer: GameRenderer | null = null;
+    private engine: any = null;
+    private scene: any = null;
+    private canvas: HTMLCanvasElement | null = null;
+    private gameObjects: GameObjects | null = null;
     private inputHandler: InputHandler | null = null;
     private networkManager: NetworkManager | null = null;
-    private guiManager: GUIManager | null = null;
-
-    // State
+    private isRenderingActive: boolean = false;
+    private resizeHandler: (() => void) | null = null;
+    private advancedTexture: any = null;
+    private fpsText: any = null;
     private isInitialized: boolean = false;
     private isRunning: boolean = false;
     private isDisposed: boolean = false;
-
-    // Game loop
     private gameLoopObserver: any = null;
 
     constructor(private config: GameConfig) {
+        this.canvas = document.getElementById(config.canvasId) as HTMLCanvasElement;
+        if (!this.canvas) {
+            throw new Error(`Canvas element not found: ${config.canvasId}`);
+        }
         console.log('Game created with config:', {
             viewMode: config.viewMode,
             gameMode: config.gameMode,
@@ -47,42 +54,29 @@ export class Game {
     // INITIALIZATION
     // ========================================
 
-    // Initialize all game components
     async initialize(): Promise<void> {
         if (this.isInitialized || this.isDisposed) return;
 
         try {
             console.log('Initializing game...');
 
-            // 1. Create Babylon.js scene
-            this.babylonScene = new BabylonScene(this.config.canvasId, this.config.viewMode);
-            await this.babylonScene.initialize();
+            // Create Babylon.js engine and scene
+            await this.initializeBabylonEngine();
+            this.createScene();
+            this.setupResizeHandler();
 
-            // 2. Create renderer
-            this.renderer = new GameRenderer(this.babylonScene);
+            // Create GUI
+            this.createGUI();
 
-            // 3. Create input handler
-            const scene = this.babylonScene.getScene();
-            if (!scene)
-                throw new Error('Failed to get Babylon.js scene');
-            this.inputHandler = new InputHandler(this.config.gameMode, this.config.controls, scene);
-            
-            const gameObjects = this.babylonScene.getGameObjects();
-            if (!gameObjects)
-                throw new Error('Failed to get game objects from scene');
-            this.inputHandler.setGameObjects(gameObjects);
+            // Create input handler
+            this.inputHandler = new InputHandler(this.config.gameMode, this.config.controls, this.scene);
+            if (!this.gameObjects) throw new Error('Game objects not created');
+            this.inputHandler.setGameObjects(this.gameObjects);
 
-            // 4. Create GUI manager
-            const engine = this.babylonScene.getEngine();
-            if (!engine)
-                throw new Error('Failed to get Babylon.js engine');
-            this.guiManager = new GUIManager(scene, engine);
-            this.guiManager.createFPSDisplay();
-
-            // 5. Create network manager
+            // Create network manager
             this.networkManager = new NetworkManager(this.config.gameMode, this.config.players);
 
-            // 6. Connect components
+            // Connect components
             this.connectComponents();
 
             this.isInitialized = true;
@@ -95,10 +89,62 @@ export class Game {
         }
     }
 
+    // Initialize Babylon.js engine
+    private async initializeBabylonEngine(): Promise<void> {
+        this.engine = new BABYLON.Engine(this.canvas, true, { 
+            preserveDrawingBuffer: true, 
+            stencil: true, 
+            disableWebGL2Support: false,
+            antialias: false,
+            powerPreference: "high-performance"
+        });
+    }
+
+    // Create scene based on view mode
+    private createScene(): void {
+        this.scene = new BABYLON.Scene(this.engine);
+
+        if (this.config.viewMode === ViewMode.MODE_2D) {
+            this.gameObjects = build2DScene(this.scene, this.engine);
+        } else {
+            this.gameObjects = build3DScene(this.scene, this.engine);
+        }
+    }
+
+    // Create GUI elements
+    private createGUI(): void {
+        this.advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+        
+        // Create FPS display
+        this.fpsText = new BABYLON.GUI.TextBlock();
+        this.fpsText.text = "FPS: 0";
+        this.fpsText.color = "white";
+        this.fpsText.fontSize = 16;
+        this.fpsText.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
+        this.fpsText.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+        this.fpsText.top = "1px";
+        this.fpsText.left = "-20px";
+        this.fpsText.width = "200px";
+        this.fpsText.height = "40px";
+        
+        this.advancedTexture.addControl(this.fpsText);
+    }
+
+    // Setup window resize handler
+    private setupResizeHandler(): void {
+        this.resizeHandler = () => {
+            if (!this.isDisposed && this.engine) {
+                this.engine.resize();
+            }
+        };
+        window.addEventListener("resize", this.resizeHandler);
+    }
+
     // Connect all components together
     private connectComponents(): void {
-        if (!this.inputHandler || !this.networkManager || !this.renderer || !this.guiManager)
+        if (!this.inputHandler || !this.networkManager) {
             throw new Error('Components not initialized');
+        }
 
         // Input → Network
         this.inputHandler.onInput((input) => {
@@ -109,9 +155,7 @@ export class Game {
 
         // Network → Scene updates
         this.networkManager.onGameState((state) => {
-            if (this.babylonScene) {
-                this.babylonScene.updateGameObjects(state);
-            }
+            this.updateGameObjects(state);
         });
 
         // Network → Connection handling
@@ -122,20 +166,12 @@ export class Game {
         this.networkManager.onError((error) => {
             console.error('Network error:', error);
         });
-
-        // Renderer → FPS updates
-        this.renderer.setFPSUpdateCallback(() => {
-            if (this.guiManager) {
-                this.guiManager.updateFPS();
-            }
-        });
     }
 
     // ========================================
     // GAME CONTROL
     // ========================================
 
-    // Start the game
     start(): void {
         if (!this.isInitialized || this.isRunning || this.isDisposed) return;
 
@@ -143,12 +179,12 @@ export class Game {
             console.log('Starting game...');
 
             // Start network connection
-            if (this.networkManager)
+            if (this.networkManager) {
                 this.networkManager.joinGame();
+            }
 
             // Start render loop
-            if (this.renderer)
-                this.renderer.startRenderLoop();
+            this.startRenderLoop();
 
             // Start game loop
             this.startGameLoop();
@@ -161,47 +197,75 @@ export class Game {
         }
     }
 
-    // Pause the game
     pause(): void {
         if (!this.isRunning || this.isDisposed) return;
-
-        this.renderer?.pause();
+        this.stopRenderLoop();
         this.stopGameLoop();
         console.log('Game paused');
     }
 
-    // Resume the game
     resume(): void {
         if (!this.isInitialized || this.isRunning || this.isDisposed) return;
-
-        this.renderer?.resume();
+        this.startRenderLoop();
         this.startGameLoop();
         this.isRunning = true;
         console.log('Game resumed');
     }
 
-    // Stop the game
     stop(): void {
         if (!this.isRunning) return;
-
         this.isRunning = false;
-        this.renderer?.stopRenderLoop();
+        this.stopRenderLoop();
         this.stopGameLoop();
         console.log('Game stopped');
     }
 
     // ========================================
-    // GAME LOOP
+    // RENDER LOOP - These functions are in charge of the frame rendering
     // ========================================
 
-    // Start the game loop
+    private startRenderLoop(): void {
+        if (this.isDisposed || this.isRenderingActive || !this.engine || !this.scene) return;
+
+        this.isRenderingActive = true;
+
+        this.engine.runRenderLoop(() => {
+            if (!this.isRenderingActive || this.isDisposed) return;
+
+            try {
+                if (this.scene.activeCamera) {
+                    this.scene.render();
+                }
+
+                // Update FPS
+                if (this.fpsText && this.engine) {
+                    this.fpsText.text = "FPS: " + this.engine.getFps().toFixed(0);
+                }
+            } catch (error) {
+                console.error('Error in render loop:', error);
+            }
+        });
+
+        console.log('Render loop started');
+    }
+
+    private stopRenderLoop(): void {
+        if (!this.isRenderingActive) return;
+        this.isRenderingActive = false;
+        if (this.engine) {
+            this.engine.stopRenderLoop();
+        }
+        console.log('Render loop stopped');
+    }
+
+    // ========================================
+    // GAME LOOP - These are in charge of the logic check
+    // ========================================
+
     private startGameLoop(): void {
-        if (this.gameLoopObserver || !this.babylonScene) return;
+        if (this.gameLoopObserver || !this.scene?.onBeforeRenderObservable) return;
 
-        const scene = this.babylonScene.getScene();
-        if (!scene || !scene.onBeforeRenderObservable) return;
-
-        this.gameLoopObserver = scene.onBeforeRenderObservable.add(() => {
+        this.gameLoopObserver = this.scene.onBeforeRenderObservable.add(() => {
             if (!this.isRunning || this.isDisposed) return;
 
             try {
@@ -211,11 +275,9 @@ export class Game {
                 }
 
                 // Update 3D cameras if needed
-                if (this.babylonScene) {
-                    const gameObjects = this.babylonScene.getGameObjects();
-                    if (gameObjects && gameObjects.cameras.length > 1) {
-                        this.babylonScene.update3DCameras(GAME_CONFIG.followSpeed);
-                    }
+                const cameras = this.gameObjects?.cameras;
+                if (cameras && cameras.length > 1) {
+                    this.update3DCameras();
                 }
             } catch (error) {
                 console.error('Error in game loop:', error);
@@ -223,33 +285,78 @@ export class Game {
         });
     }
 
-    // Stop the game loop
     private stopGameLoop(): void {
-        if (this.gameLoopObserver && this.babylonScene) {
-            const scene = this.babylonScene.getScene();
-            if (scene && scene.onBeforeRenderObservable) {
-                scene.onBeforeRenderObservable.remove(this.gameLoopObserver);
-            }
+        if (this.gameLoopObserver && this.scene?.onBeforeRenderObservable) {
+            this.scene.onBeforeRenderObservable.remove(this.gameLoopObserver);
             this.gameLoopObserver = null;
         }
     }
 
-    // Check if game is initialized
+    // ========================================
+    // GAME STATE UPDATES
+    // ========================================
+
+    // Update game object positions from server state
+    private updateGameObjects(state: GameStateData): void {
+        if (this.isDisposed || !this.gameObjects) return;
+
+        try {
+            // Update paddle positions
+            if (this.gameObjects.players.left) {
+                this.gameObjects.players.left.position.x = state.paddleLeft.x;
+            }
+
+            if (this.gameObjects.players.right) {
+                this.gameObjects.players.right.position.x = state.paddleRight.x;
+            }
+
+            // Update ball position
+            if (this.gameObjects.ball) {
+                this.gameObjects.ball.position.x = state.ball.x;
+                this.gameObjects.ball.position.z = state.ball.z;
+            }
+        } catch (error) {
+            console.error('Error updating game objects:', error);
+        }
+    }
+
+    // Update 3D camera targets to follow players
+    private update3DCameras(): void {
+        if (this.isDisposed || !this.gameObjects?.cameras || this.gameObjects.cameras.length < 2) return;
+
+        try {
+            const [camera1, camera2] = this.gameObjects.cameras;
+            
+            if (camera1 && camera2 && this.gameObjects.players.left && this.gameObjects.players.right) {
+                const targetLeft = this.gameObjects.players.left.position.clone();
+                const targetRight = this.gameObjects.players.right.position.clone();
+
+                if (camera1.getTarget && camera2.getTarget) {
+                    camera1.setTarget(BABYLON.Vector3.Lerp(camera1.getTarget(), targetLeft, GAME_CONFIG.followSpeed));
+                    camera2.setTarget(BABYLON.Vector3.Lerp(camera2.getTarget(), targetRight, GAME_CONFIG.followSpeed));
+                }
+            }
+        } catch (error) {
+            console.error('Error updating 3D cameras:', error);
+        }
+    }
+
+    // ========================================
+    // STATE QUERIES
+    // ========================================
+
     isGameInitialized(): boolean {
         return this.isInitialized && !this.isDisposed;
     }
 
-    // Check if game is running
     isGameRunning(): boolean {
         return this.isRunning && !this.isDisposed;
     }
 
-    // Check if game is disposed
     isGameDisposed(): boolean {
         return this.isDisposed;
     }
 
-    // Get game configuration
     getConfig(): GameConfig {
         return this.config;
     }
@@ -258,7 +365,6 @@ export class Game {
     // CLEANUP
     // ========================================
 
-    // Dispose all game resources
     async dispose(): Promise<void> {
         if (this.isDisposed) return;
 
@@ -267,23 +373,19 @@ export class Game {
         this.isRunning = false;
 
         try {
-            // Stop game loop first
+            // Stop loops first
             this.stopGameLoop();
+            this.stopRenderLoop();
 
-            // Dispose components in reverse order
+            // Wait a frame to ensure loops stop
+            await new Promise(resolve => setTimeout(resolve, 16));
+
+            // Dispose components
             if (this.networkManager) {
                 this.networkManager.quitCurrentGame();
-                
-                // Small delay to ensure quit message is sent
                 await new Promise(resolve => setTimeout(resolve, 100));
-
                 this.networkManager.dispose();
                 this.networkManager = null;
-            }
-
-            if (this.guiManager) {
-                this.guiManager.dispose();
-                this.guiManager = null;
             }
 
             if (this.inputHandler) {
@@ -291,15 +393,38 @@ export class Game {
                 this.inputHandler = null;
             }
 
-            if (this.renderer) {
-                await this.renderer.dispose();
-                this.renderer = null;
+            // Remove resize handler
+            if (this.resizeHandler) {
+                window.removeEventListener("resize", this.resizeHandler);
+                this.resizeHandler = null;
             }
 
-            if (this.babylonScene) {
-                await this.babylonScene.dispose();
-                this.babylonScene = null;
+            // Dispose GUI
+            if (this.advancedTexture) {
+                this.advancedTexture.dispose();
+                this.advancedTexture = null;
             }
+            this.fpsText = null;
+
+            // Clear game objects reference
+            this.gameObjects = null;
+
+            // Dispose scene
+            if (this.scene) {
+                this.scene.onBeforeRenderObservable?.clear();
+                this.scene.onAfterRenderObservable?.clear();
+                this.scene.dispose();
+                this.scene = null;
+            }
+
+            // Dispose engine
+            if (this.engine) {
+                this.engine.dispose();
+                this.engine = null;
+            }
+
+            // Clear canvas reference
+            this.canvas = null;
 
             // Reset flags
             this.isInitialized = false;
