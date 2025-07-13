@@ -8,8 +8,7 @@ export enum MessageType {
     GAME_STATE = 2,        // Current game state update
     SIDE_ASSIGNMENT = 3,   // Assign player to a side (left/right)
     GAME_STARTED = 4,      // Notify that the game has started
-    ERROR = 5,             // Error message
-    QUIT_GAME = 6          // Send this message when CTRL + Y
+    ERROR = 5              // Error message
 }
 
 // Different game modes available
@@ -30,8 +29,11 @@ export enum Direction {
 
 // States the game can be in
 export enum GameState {
-    PLAYING = 0,
-    PAUSED = 1
+    MENU = 0,              // Main menu
+    PLAYING_2D = 1,        // Playing in 2D mode
+    PLAYING_3D = 2,        // Playing in 3D mode
+    PAUSED_2D = 3,         // Paused in 2D mode
+    PAUSED_3D = 4          // Paused in 3D mode
 }
 
 // View modes for the game
@@ -44,15 +46,4 @@ export enum ViewMode {
 export enum CollisionDirection {
     HORIZONTAL = 0,        // Horizontal collision
     VERTICAL = 1           // Vertical collision
-}
-
-export enum AuthState {
-    GUEST = 0,
-    LOGGED_IN = 1
-}
-
-export enum ConnectionStatus {
-    CONNECTING = 0,    // Attempting to connect
-    CONNECTED = 1,     // Connected and ready
-    FAILED = 2         // Connection failed - show error
 }

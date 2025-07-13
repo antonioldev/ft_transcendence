@@ -70,9 +70,6 @@ export class WebSocketManager {
                 case MessageType.PLAYER_INPUT:
                     await this.handlePlayerInput(client, data);
                     break;
-                case MessageType.QUIT_GAME:  // TODO I added because it was creating issue, need to check
-                    gameManager.removeClientFromGames(client);
-                break;
                 default:
                     await this.sendError(socket, 'Unknown message type');
             }
