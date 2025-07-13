@@ -68,23 +68,6 @@ export interface PlayerInfo {
     name: string;      // Display name (can have duplicates)
 }
 
-/**
- * Player information for game sessions
- */
-export interface PlayerInfo {
-    id: string;        // Now: same as name, Future: real user ID from database
-    name: string;      // Display name (can have duplicates)
-}
-
-
-/**
- * Represents the input data for a specific action or event.
- */
-export interface InputData{
-    side: number;
-    direction: Direction;
-}
-
 // ============================== FRONTEND-ONLY TYPES ==============================
 
 /**
