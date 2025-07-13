@@ -29,9 +29,7 @@ export class NetworkManager {
     // WEBSOCKET SETUP
     // ========================================
 
-    /**
-     * Setup WebSocket event callbacks
-     */
+    // Setup WebSocket event callbacks
     private setupWebSocketCallbacks(): void {
         // Game state updates
         webSocketClient.onGameState((state: GameStateData) => {
@@ -59,23 +57,17 @@ export class NetworkManager {
     // CALLBACK REGISTRATION
     // ========================================
 
-    /**
-     * Register callback for game state updates
-     */
+    // Register callback for game state updates
     onGameState(callback: (state: GameStateData) => void): void {
         this.gameStateCallback = callback;
     }
 
-    /**
-     * Register callback for connection established
-     */
+    // Register callback for connection established
     onConnection(callback: () => void): void {
         this.connectionCallback = callback;
     }
 
-    /**
-     * Register callback for errors
-     */
+    // Register callback for errors
     onError(callback: (error: string) => void): void {
         this.errorCallback = callback;
     }
@@ -84,9 +76,7 @@ export class NetworkManager {
     // GAME COMMUNICATION
     // ========================================
 
-    /**
-     * Join the game on the server
-     */
+    // Join the game on the server
     joinGame(): void {
         if (this.isDisposed) return;
 
@@ -102,9 +92,7 @@ export class NetworkManager {
         }
     }
 
-    /**
-     * Send join game request to server
-     */
+    // Send join game request to server
     private sendJoinRequest(): void {
         try {
             webSocketClient.joinGame(this.gameMode, this.players);
@@ -117,9 +105,7 @@ export class NetworkManager {
         }
     }
 
-    /**
-     * Send player input to server
-     */
+    // Send player input to server
     sendInput(input: InputData): void {
         if (this.isDisposed) return;
 
@@ -145,16 +131,12 @@ export class NetworkManager {
     // CONNECTION STATUS
     // ========================================
 
-    /**
-     * Check if connected to server
-     */
+    // Check if connected to server
     isConnected(): boolean {
         return webSocketClient.isConnected();
     }
 
-    /**
-     * Get connection status
-     */
+    // Get connection status
     getConnectionStatus(): string {
         return webSocketClient.isConnected() ? 'connected' : 'disconnected';
     }
@@ -163,9 +145,7 @@ export class NetworkManager {
     // CLEANUP
     // ========================================
 
-    /**
-     * Clean up network manager (but don't disconnect WebSocket as it's shared)
-     */
+    // Clean up network manager (but don't disconnect WebSocket as it's shared)
     dispose(): void {
         if (this.isDisposed) return;
 

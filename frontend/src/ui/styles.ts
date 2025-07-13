@@ -258,13 +258,8 @@ export const UI_STYLES = {
     pauseSmall: { fontSize: '1rem' },
 
     // ========================================
-    // MODAL & FORM SPECIFIC
+    // FORM SPECIFIC
     // ========================================
-    modalFooter: {
-        marginTop: '2rem',
-        paddingTop: '1rem',
-        borderTop: `1px solid ${UI_COLORS.surface}`
-    },
 
     setupForm: { 
         display: 'none', 

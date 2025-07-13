@@ -4,8 +4,6 @@ import { GameMode, Direction } from '../shared/constants.js';
 import { InputConfig, PlayerControls, GameObjects, InputData } from '../shared/types.js';
 import { getPlayerBoundaries } from '../shared/gameConfig.js';
 
-
-
 /**
  * Handles player input for the game, supporting both local and remote multiplayer modes.
  * 
@@ -36,9 +34,7 @@ export class InputHandler {
     // INITIALIZATION
     // ========================================
 
-    /**
-     * Setup device source manager
-     */
+    // Setup device source manager
     private setupDeviceManager(scene: any): void {
         try {
             this.deviceSourceManager = new BABYLON.DeviceSourceManager(scene.getEngine());
@@ -47,9 +43,7 @@ export class InputHandler {
         }
     }
 
-    /**
-     * Configure input based on game mode
-     */
+    // Configure input based on game mode
     private configureGameMode(): void {
         this.isLocalMultiplayer = (
             this.gameMode === GameMode.TWO_PLAYER_LOCAL || 
@@ -57,7 +51,7 @@ export class InputHandler {
         );
 
         // For remote games, we typically control side 0 (left)
-        // This could be configured differently based on server assignment
+        // This could be configured differently based on server assignment // TODO
         this.controlledSide = 0;
 
         console.log(`InputHandler configured:`, {
@@ -71,23 +65,17 @@ export class InputHandler {
     // SETUP
     // ========================================
 
-    /**
-     * Set game objects for position validation
-     */
+    // Set game objects for position validation
     setGameObjects(gameObjects: GameObjects): void {
         this.gameObjects = gameObjects;
     }
 
-    /**
-     * Set controlled side for remote games
-     */
+    // Set controlled side for remote games
     setControlledSide(side: number): void {
         this.controlledSide = side;
     }
 
-    /**
-     * Set input callback
-     */
+    // Set input callback
     onInput(callback: (input: InputData) => void): void {
         this.onInputCallback = callback;
     }
@@ -96,9 +84,7 @@ export class InputHandler {
     // INPUT PROCESSING
     // ========================================
 
-    /**
-     * Update input state - call this in render loop
-     */
+    // Update input state - call this in render loop
     updateInput(): void {
         if (this.isDisposed || !this.deviceSourceManager || !this.gameObjects) return;
 
@@ -112,9 +98,7 @@ export class InputHandler {
         }
     }
 
-    /**
-     * Process keyboard input for both players
-     */
+    // Process keyboard input for both players
     private processKeyboardInput(keyboardSource: any): void {
         if (!this.gameObjects) return;
 
@@ -135,9 +119,7 @@ export class InputHandler {
         );
     }
 
-    /**
-     * Handle input for a specific player
-     */
+    // Handle input for a specific player
     private handlePlayerInput(
         keyboardSource: any, 
         player: any, 
@@ -166,9 +148,7 @@ export class InputHandler {
         }
     }
 
-    /**
-     * Determine if we should listen to this player's input
-     */
+    // Determine if we should listen to this player's input
     private shouldListenToPlayer(side: number): boolean {
         return this.isLocalMultiplayer || this.controlledSide === side;
     }
@@ -177,9 +157,7 @@ export class InputHandler {
     // CAMERA UTILITY
     // ========================================
 
-    /**
-     * Get camera follow target for 3D mode
-     */
+    // Get camera follow target for 3D mode
     getFollowTarget(player: any): any {
         if (this.isDisposed || !player) {
             return new BABYLON.Vector3(0, 0, 0);
@@ -195,9 +173,7 @@ export class InputHandler {
     // CLEANUP
     // ========================================
 
-    /**
-     * Dispose input handler
-     */
+    // Dispose input handler
     async dispose(): Promise<void> {
         if (this.isDisposed) return;
 

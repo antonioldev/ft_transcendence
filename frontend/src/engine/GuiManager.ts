@@ -6,12 +6,10 @@ declare var BABYLON: any;
  * and handles the disposal of GUI resources when they are no longer needed.
  */
 export class GUIManager {
-    // ========================================
-    // BABYLON.JS INTEGRATION
-    // ========================================
     private scene: any;
     private engine: any;
     private advancedTexture: any;
+    private fpsText: any = null;
 
     constructor(scene: any, engine: any) {
         // Initialize the GUIManager with a scene and engine
@@ -21,17 +19,10 @@ export class GUIManager {
     }
 
     // ========================================
-    // UI ELEMENTS
-    // ========================================
-    private fpsText: any = null;
-
-    // ========================================
     // UI CREATION
     // ========================================
-    /**
-     * Creates an FPS display on the screen.
-     * The FPS display is a TextBlock positioned at the bottom center of the screen.
-     */
+
+    // Creates an FPS display on the screen.
     createFPSDisplay(): void {
         this.fpsText = new BABYLON.GUI.TextBlock();
         this.fpsText.text = "FPS: 0";
@@ -50,10 +41,8 @@ export class GUIManager {
     // ========================================
     // UI UPDATES
     // ========================================
-    /**
-     * Updates the FPS display with the current FPS value.
-     * This method should be called regularly (e.g., in a render loop).
-     */
+
+    // Updates the FPS display with the current FPS value.
     public updateFPS(): void {
         if (this.fpsText) {
             this.fpsText.text = "FPS: " + this.engine.getFps().toFixed(0);
@@ -63,10 +52,8 @@ export class GUIManager {
     // ========================================
     // CLEANUP
     // ========================================
-    /**
-     * Disposes of the GUI resources.
-     * This method should be called when the GUIManager is no longer needed.
-     */
+
+    // Disposes of the GUI resources.
     dispose(): void {
         this.advancedTexture?.dispose();
         this.fpsText = null;

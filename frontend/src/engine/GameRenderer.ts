@@ -22,9 +22,7 @@ export class GameRenderer {
     // RENDER LOOP CONTROL
     // ========================================
 
-    /**
-     * Start the render loop
-     */
+    // Start the render loop
     startRenderLoop(): void {
         if (this.isDisposed || this.isRenderingActive) return;
 
@@ -58,9 +56,7 @@ export class GameRenderer {
         console.log('Render loop started');
     }
 
-    /**
-     * Stop the render loop
-     */
+    // Stop the render loop
     stopRenderLoop(): void {
         if (!this.isRenderingActive) return;
 
@@ -74,16 +70,12 @@ export class GameRenderer {
         console.log('Render loop stopped');
     }
 
-    /**
-     * Pause rendering (same as stop for now)
-     */
+    // Pause rendering (same as stop for now)
     pause(): void {
         this.stopRenderLoop();
     }
 
-    /**
-     * Resume rendering
-     */
+    // Resume rendering
     resume(): void {
         this.startRenderLoop();
     }
@@ -92,16 +84,12 @@ export class GameRenderer {
     // FPS MANAGEMENT
     // ========================================
 
-    /**
-     * Set callback for FPS updates
-     */
+    // Set callback for FPS updates
     setFPSUpdateCallback(callback: () => void): void {
         this.fpsUpdateCallback = callback;
     }
 
-    /**
-     * Get current FPS
-     */
+    // Get current FPS
     getFPS(): number {
         const engine = this.babylonScene.getEngine();
         return engine ? engine.getFps() : 0;
@@ -111,9 +99,7 @@ export class GameRenderer {
     // WINDOW MANAGEMENT
     // ========================================
 
-    /**
-     * Setup window resize handler
-     */
+    // Setup window resize handler
     private setupResizeHandler(): void {
         this.resizeHandler = () => {
             if (!this.isDisposed) {
@@ -128,9 +114,7 @@ export class GameRenderer {
     // STATE CHECKS
     // ========================================
 
-    /**
-     * Check if rendering is currently active
-     */
+    // Check if rendering is currently active
     isRendering(): boolean {
         return this.isRenderingActive && !this.isDisposed;
     }
@@ -139,9 +123,7 @@ export class GameRenderer {
     // CLEANUP
     // ========================================
 
-    /**
-     * Dispose renderer and clean up resources
-     */
+    // Dispose renderer and clean up resources
     async dispose(): Promise<void> {
         if (this.isDisposed) return;
 

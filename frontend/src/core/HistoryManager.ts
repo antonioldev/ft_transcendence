@@ -1,6 +1,7 @@
 import { uiManager } from '../ui/UIManager.js';
 import { authManager } from './AuthManager.js';
 import { menuFlowManager } from './MenuFlowManager.js';
+import { AppState } from '../shared/constants.js';
 
 /**
  * Singleton class responsible for managing application navigation state and browser history.
@@ -24,8 +25,7 @@ export class HistoryManager {
     static initialize(): void {
         const historyManager = HistoryManager.getInstance();
         historyManager.setupEventListeners();
-        historyManager.pushState('main-menu');
-        // historyManager.handleInitialLoad();
+        historyManager.navigateTo('main-menu');
     }
 
     private setupEventListeners(): void {
@@ -33,7 +33,7 @@ export class HistoryManager {
         window.addEventListener('popstate', (event) => {
             const state = event.state?.screen || 'main-menu';
             console.log(`Browser BACK navigation to: ${state}`);
-            this.navigateToState(state, false); // false = don't push to history
+            this.navigateTo(state, false); // false = don't push to history
         });
 
         // Prevent page reload on form submissions
@@ -42,34 +42,14 @@ export class HistoryManager {
         });
     }
 
-    private handleInitialLoad(): void {
-        // On first page load, initialize with main menu
-        this.pushState('main-menu');
-    }
-
-    /**
-     * Navigate to a new state and add it to browser history
-     * @param state - The app state to navigate to
-     * @param addToHistory - Whether to add this to browser history (default: true)
-     */
-    pushState(state: string, addToHistory: boolean = true): void {
-        if (addToHistory) {
+    // Handle the navigation to different app states and add it to browser history
+    private navigateTo(state: string, addToHistory: boolean = true): void {
+        if (addToHistory)
             history.pushState({ screen: state }, '', window.location.href);
-        }
-        
         this.currentState = state;
-        this.navigateToState(state, false);
-    }
-
-    /**
-     * Handle the actual navigation to different app states
-     * @param state - The state to navigate to
-     * @param addToHistory - Whether to add to history (used internally)
-     */
-    private navigateToState(state: string, addToHistory: boolean = true): void {
         console.log(`Navigating to state: ${state}`);
         
-        switch (state) {
+        switch (state) { // TODO remove hard coded, use ENUM // TODO if using enum, we can try to remove the single functions below
             case 'main-menu':
                 this.showScreen('main-menu', { hideOverlayss: true, checkAuth: true });
                 break;
@@ -93,7 +73,7 @@ export class HistoryManager {
                 break;
             default:
                 console.warn(`Unknown state: ${state}, redirecting to main menu`);
-                this.pushState('main-menu');
+                this.navigateTo('main-menu');
                 break;
         }
     }
@@ -111,9 +91,8 @@ export class HistoryManager {
             uiManager.hideOverlays('register-modal');
         }
         
-        if (options.hideUserInfo) {
+        if (options.hideUserInfo)
             uiManager.hideUserInfo();
-        }
         
         if (options.modal) {
             uiManager.showScreen('main-menu');
@@ -122,13 +101,11 @@ export class HistoryManager {
             uiManager.showScreen(screenId);
         }
         
-        if (options.checkAuth) {
+        if (options.checkAuth)
             authManager.checkAuthState();
-        }
         
-        if (options.refreshGameMode) {
+        if (options.refreshGameMode)
             menuFlowManager.refreshButtonStates();
-        }
     }
 
     // Public methods for other managers to use
@@ -138,42 +115,42 @@ export class HistoryManager {
 
     // Go to main menu (used by logout, game exit, etc.)
     goToMainMenu(): void {
-        this.pushState('main-menu');
+        this.navigateTo('main-menu');
     }
 
     // Go to game mode selection (used by PLAY button)
     goToGameMode(): void {
-        this.pushState('game-mode');
+        this.navigateTo('game-mode');
     }
 
     // Go to login modal (used by login button)
     goToLogin(): void {
-        this.pushState('login');
+        this.navigateTo('login');
     }
 
     // Go to register modal (used by register button)  
     goToRegister(): void {
-        this.pushState('register');
+        this.navigateTo('register');
     }
 
     // Go to player setup (used by game mode selection)
     goToPlayerSetup(): void {
-        this.pushState('player-setup');
+        this.navigateTo('player-setup');
     }
 
     // Go to game (used by start game button)
     goToGame2D(): void { // TODO check with teammate, false so doesn't save it
-        this.pushState('game-2d', false);
+        this.navigateTo('game-2d', false);
     }
 
     goToGame3D(): void {  // TODO check with teammate, false so doesn't save it
-        this.pushState('game-3d', false);
+        this.navigateTo('game-3d', false);
     }
 
     // Close modal and return to previous state
     closeModal(): void {
         // For modals, we want to go back to main menu
-        this.pushState('main-menu');
+        this.navigateTo('main-menu');
     }
 
     // Browser back button simulation (for testing)

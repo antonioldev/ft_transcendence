@@ -6,7 +6,7 @@ import { MenuFlowManager } from './MenuFlowManager.js';
 import { KeyboardManager } from './KeyboardManager.js';
 import { HistoryManager } from './HistoryManager.js';
 
-function loadPage() {
+function loadPage(): void {
     // Initialize classes
     uiManager.initializeStyles();
     AuthManager.initialize();

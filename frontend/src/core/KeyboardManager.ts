@@ -8,10 +8,7 @@ import { disposeCurrentGame } from './utils.js';
 export class KeyboardManager {
     private static instance: KeyboardManager;
 
-    /**
-     * Gets the singleton instance of KeyboardManager.
-     * @returns The singleton instance.
-     */
+    // Gets the singleton instance of KeyboardManager.
     static getInstance(): KeyboardManager {
         if (!KeyboardManager.instance) {
             KeyboardManager.instance = new KeyboardManager();
@@ -19,17 +16,12 @@ export class KeyboardManager {
         return KeyboardManager.instance;
     }
 
-    /**
-     * Initializes the KeyboardManager by setting up event listeners.
-     * This ensures the keyboard manager is properly instantiated.
-     */
+    // Initializes the KeyboardManager by setting up event listeners. This ensures the keyboard manager is properly instantiated.
     static initialize(): void {
         KeyboardManager.getInstance();
     }
 
-    /**
-     * Private constructor that sets up event listeners when instance is created.
-     */
+    //Private constructor that sets up event listeners when instance is created.
     private constructor() {
         this.setupEventListeners();
     }
@@ -37,21 +29,18 @@ export class KeyboardManager {
     // ========================================
     // EVENT SETUP
     // ========================================
-    /**
-     * Sets up the main keyboard event listeners for the application.
-     */
+
+    // Sets up the main keyboard event listeners for the application.
     private setupEventListeners(): void {
         document.addEventListener('keydown', (event) => this.handleKeyDown(event));
-        console.log('🎮 KeyboardManager: Event listeners set up'); // Debug log
+        console.log(' KeyboardManager: Event listeners set up'); // Debug log
     }
 
     // ========================================
-    // INPUT PROCESSING
+    // INPUT HANDLERS
     // ========================================
-    /**
-     * Main keyboard input handler that routes keys to specific handlers.
-     * @param event - The keyboard event to process.
-     */
+
+    // Main keyboard input handler that routes keys to specific handlers.
     private handleKeyDown(event: KeyboardEvent): void {
         // Handle escape key for game pause and resume
         if (event.key === 'Escape')
@@ -62,12 +51,7 @@ export class KeyboardManager {
             this.handleYesNoKey(event);
     }
 
-    // ========================================
-    // GAME CONTROL HANDLERS
-    // ========================================
-    /**
-     * Handles escape key presses for game pause and resume functionality.
-     */
+    // Handles escape key presses for game pause and resume functionality.
     private handleEscKey(): void {
         console.log('🎮 ESC key pressed', { 
             isInGame: appStateManager.isInGame(), 
@@ -80,10 +64,7 @@ export class KeyboardManager {
             appStateManager.resumeGame();
     }
 
-    /**
-     * Handles Y/N key presses for pause dialog confirmation.
-     * @param event - The keyboard event containing the pressed key.
-     */
+    // Handles Y/N key presses for pause dialog confirmation.
     private handleYesNoKey(event: KeyboardEvent): void {
         if (appStateManager.isPaused()) {
             console.log(`🎮 ${event.key} key pressed in pause state`);
@@ -95,11 +76,7 @@ export class KeyboardManager {
         }
     }
 
-    /**
-     * Adds a custom key handler for specific key presses.
-     * @param key - The key to listen for.
-     * @param handler - The function to call when the key is pressed.
-     */
+    // Adds a custom key handler for specific key presses.
     addKeyHandler(key: string, handler: (event: KeyboardEvent) => void): void {
         document.addEventListener('keydown', (event) => {
             if (event.key === key) {

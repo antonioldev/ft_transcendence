@@ -56,3 +56,13 @@ export enum ConnectionStatus {
     CONNECTED = 1,     // Connected and ready
     FAILED = 2         // Connection failed - show error
 }
+
+export enum AppState {
+    MAIN_MENU = 'main-menu',
+    LOGIN = 'login',
+    REGISTER = 'register',
+    GAME_MODE = 'game-mode',
+    PLAYER_SETUP = 'player-setup',
+    GAME_2D = 'game-2d',
+    GAME_3D = 'game-3d'
+}

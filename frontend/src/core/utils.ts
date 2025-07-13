@@ -90,7 +90,7 @@ export function clearInput(id: string): void {
  * One function to dispose current game using new architecture
  */
 export async function disposeCurrentGame(): Promise<void> {
-    console.log('🗑️ Disposing current game...');
+    console.log('Disposing current game...');
     
     try {
         // 1. Hide all pause dialogs first

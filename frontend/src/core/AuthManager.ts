@@ -2,6 +2,7 @@ import { AuthState } from '../shared/constants.js';
 import { uiManager } from '../ui/UIManager.js';
 import { getCurrentTranslation } from '../translations/translations.js';
 import { historyManager } from './HistoryManager.js';
+import { clearInput } from './utils.js';
 
 /**
  * Manages user authentication state, login/logout workflows, and user registration.
@@ -13,10 +14,7 @@ export class AuthManager {
     private authState: AuthState = AuthState.GUEST;
     private currentUser: {username: string; email?: string} | null = null;
 
-    /**
-     * Gets the singleton instance of AuthManager.
-     * @returns The singleton instance.
-     */
+    // Gets the singleton instance of AuthManager.
     static getInstance(): AuthManager {
         if (!AuthManager.instance) {
             AuthManager.instance = new AuthManager();
@@ -24,9 +22,7 @@ export class AuthManager {
         return AuthManager.instance;
     }
 
-    /**
-     * Initializes the AuthManager by setting up event listeners.
-     */
+    // Initializes the AuthManager by setting up event listeners.
     static initialize(): void {
         const authManager = AuthManager.getInstance();
         authManager.setupEventListeners();
@@ -35,9 +31,8 @@ export class AuthManager {
     // ========================================
     // EVENT LISTENERS SETUP
     // ========================================
-    /**
-     * Sets up all event listeners for authentication-related UI elements.
-     */
+
+    // Sets up all event listeners for authentication-related UI elements.
     private setupEventListeners(): void {
         // Main menu authentication buttons (top-right)
         const registerBtn = document.getElementById('register-btn');
@@ -48,7 +43,7 @@ export class AuthManager {
         // Setup primary navigation handlers
         this.setupMainMenuHandlers(loginBtn, registerBtn, logoutBtn, playBtn);
 
-        // Modal switching buttons
+        // Small windows for log in and register
         const showRegister = document.getElementById('show-register');
         const showLogin = document.getElementById('show-login');
 
@@ -163,27 +158,25 @@ export class AuthManager {
     // ========================================
     // AUTHENTICATION HANDLERS
     // ========================================
-    /**
-     * Handles the login form submission process.
-     * Validates input fields, processes authentication, and updates UI state.
-     */
+
+    // Handles the login form submission process. Validates input fields, processes authentication, and updates UI state.
     private handleLoginSubmit(): void {
-        const usernameOrEmail = (document.getElementById('login-username') as HTMLInputElement)?.value.trim();
+        const username = (document.getElementById('login-username') as HTMLInputElement)?.value.trim();
         const password = (document.getElementById('login-password') as HTMLInputElement)?.value;
         const t = getCurrentTranslation();
         
         // Basic validation
-        if (!usernameOrEmail || !password) {
+        if (!username || !password) {
             alert(t.pleaseFilllAllFields);
             this.clearLoginForm();
             return;
         }
 
         // TODO: Implement actual login logic with backend
-        console.log('Login attempt:', { usernameOrEmail });
+        console.log('Login attempt:', { username });
         
-        // For now, simulate successful login
-        this.currentUser = { username: usernameOrEmail };
+        // For now we say yes you are in the database, simulate successful login
+        this.currentUser = { username: username };
         this.authState = AuthState.LOGGED_IN;
         
         // Update UI to show logged in state
@@ -196,10 +189,8 @@ export class AuthManager {
         console.log('Login successful - user can now access online modes');
     }
 
-    /**
-     * Handles the registration form submission process.
-     * Validates input fields, processes registration, and provides user feedback.
-     */
+    // Handles the registration form submission process.
+    // Validates input fields, processes registration, and provides user feedback.
     private handleRegisterSubmit(): void {
         const username = (document.getElementById('register-username') as HTMLInputElement)?.value.trim();
         const email = (document.getElementById('register-email') as HTMLInputElement)?.value;
@@ -207,7 +198,7 @@ export class AuthManager {
         const confirmPassword = (document.getElementById('register-confirm-password') as HTMLInputElement)?.value;
         const t = getCurrentTranslation();
 
-        // Basic validation
+        // Check if fiels are all full
         if (!username || !email || !password || !confirmPassword) {
             alert(t.pleaseFilllAllFields);
             this.clearRegisterForm();
@@ -233,10 +224,7 @@ export class AuthManager {
         }, 500);
     }
 
-    /**
-     * Handles Google OAuth login process.
-     * Currently shows placeholder functionality for future implementation.
-     */
+    // Handles Google OAuth login process.
     private handleGoogleLogin(): void {
         // TODO: Implement Google OAuth
         console.log('Google login clicked - to be implemented');
@@ -252,63 +240,41 @@ export class AuthManager {
     // ========================================
     // FORM MANAGEMENT
     // ========================================
-    /**
-     * Clears all fields in the login form.
-     */
+
+    // Clears all fields in the login form.
     private clearLoginForm(): void {
-        const usernameInput = document.getElementById('login-username') as HTMLInputElement;
-        const passwordInput = document.getElementById('login-password') as HTMLInputElement;
-        
-        if (usernameInput) usernameInput.value = '';
-        if (passwordInput) passwordInput.value = '';
+        clearInput('login-username');
+        clearInput('login-password');
     }
 
-    /**
-     * Clears all fields in the registration form.
-     */
+    // Clears all fields in the registration form.
     private clearRegisterForm(): void {
-        const usernameInput = document.getElementById('register-username') as HTMLInputElement;
-        const emailInput = document.getElementById('register-email') as HTMLInputElement;
-        const passwordInput = document.getElementById('register-password') as HTMLInputElement;
-        const confirmPasswordInput = document.getElementById('register-confirm-password') as HTMLInputElement;
-        
-        if (usernameInput) usernameInput.value = '';
-        if (emailInput) emailInput.value = '';
-        if (passwordInput) passwordInput.value = '';
-        if (confirmPasswordInput) confirmPasswordInput.value = '';
+        clearInput('register-username');
+        clearInput('register-email');
+        clearInput('register-password');
+        clearInput('register-confirm-password');
     }
 
     // ========================================
     // STATE GETTERS
     // ========================================
-    /**
-     * Gets the current authentication state.
-     * @returns The current auth state (GUEST or LOGGED_IN).
-     */
+
+    // Gets the current authentication state.
     getAuthState(): AuthState {
         return this.authState;
     }
 
-    /**
-     * Gets the current user information.
-     * @returns User object with username and optional email, or null if not authenticated.
-     */
+    // Gets the current user information.
     getCurrentUser(): {username: string; email?: string} | null {
         return this.currentUser;
     }
 
-    /**
-     * Checks if the user is currently authenticated.
-     * @returns True if user is logged in, false otherwise.
-     */
+    // Checks if the user is currently authenticated.
     isUserAuthenticated(): boolean {
         return this.authState === AuthState.LOGGED_IN;
     }
 
-    /**
-     * Checks if the user is in guest mode.
-     * @returns True if user is a guest, false otherwise.
-     */
+    // Checks if the user is in guest mode.
     isGuest(): boolean {
         return this.authState === AuthState.GUEST;
     }
@@ -316,10 +282,8 @@ export class AuthManager {
     // ========================================
     // STATE MANAGEMENT
     // ========================================
-    /**
-     * Logs out the current user and returns to guest state.
-     * Clears user data and updates UI accordingly.
-     */
+
+    // Logs out the current user and returns to guest state. Clears user data and updates UI accordingly.
     logout(): void {
         this.authState = AuthState.GUEST;
         this.currentUser = null;
@@ -328,10 +292,7 @@ export class AuthManager {
         console.log('Logged out - now in guest mode');
     }
 
-    /**
-     * Checks the current authentication state and updates UI accordingly.
-     * Should be called after page loads or state changes to ensure UI consistency.
-     */
+    // Checks the current authentication state and updates UI accordingly. Should be called after page loads or state changes to ensure UI consistency.
     checkAuthState(): void {
         if (this.authState === AuthState.LOGGED_IN && this.currentUser) {
             uiManager.showUserInfo(this.currentUser.username);
@@ -341,5 +302,4 @@ export class AuthManager {
     }
 }
 
-// Export singleton instance for easy access
 export const authManager = AuthManager.getInstance();

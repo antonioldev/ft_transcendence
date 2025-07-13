@@ -69,15 +69,6 @@ export interface PlayerInfo {
 }
 
 /**
- * Player information for game sessions
- */
-export interface PlayerInfo {
-    id: string;        // Now: same as name, Future: real user ID from database
-    name: string;      // Display name (can have duplicates)
-}
-
-
-/**
  * Represents the input data for a specific action or event.
  */
 export interface InputData{

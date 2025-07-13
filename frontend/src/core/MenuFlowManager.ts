@@ -1,4 +1,4 @@
-import { GameMode, ViewMode, AuthState, ConnectionStatus } from '../shared/constants.js';
+import { GameMode, ViewMode, ConnectionStatus } from '../shared/constants.js';
 import { uiManager } from '../ui/UIManager.js';
 import { authManager } from './AuthManager.js';
 import { getCurrentTranslation } from '../translations/translations.js';
@@ -13,7 +13,7 @@ import { clearInput } from './utils.js';
  * Manages the selection and initialization of game modes and view modes for the application.
  * 
  * Implements the singleton pattern to ensure a single instance throughout the app.
- * Handles UI state, event listeners, and game starting logic using a simplified architecture.
+ * Handles UI state, event listeners, and game starting logic.
  */
 export class MenuFlowManager {
     private static instance: MenuFlowManager;
@@ -44,7 +44,7 @@ export class MenuFlowManager {
     }
 
     // ========================================
-    // GAME STARTING - SIMPLIFIED! 🎉
+    // GAME STARTING
     // ========================================
     
     /**
@@ -58,11 +58,10 @@ export class MenuFlowManager {
             uiManager.hideUserInfo();
             
             // Navigate to appropriate game screen
-            if (viewMode === ViewMode.MODE_2D) {
+            if (viewMode === ViewMode.MODE_2D)
                 historyManager.goToGame2D();
-            } else {
+            else
                 historyManager.goToGame3D();
-            }
             
             // Update game state manager
             appStateManager.startGame(viewMode);
@@ -88,7 +87,7 @@ export class MenuFlowManager {
     }
 
     // ========================================
-    // UI STATE MANAGEMENT (unchanged)
+    // UI STATE MANAGEMENT
     // ========================================
     
     private updateButtonStates(): void {
@@ -114,7 +113,7 @@ export class MenuFlowManager {
     }
 
     // ========================================
-    // EVENT LISTENERS SETUP (mostly unchanged)
+    // EVENT LISTENERS SETUP
     // ========================================
     
     private setupEventListeners(): void {
@@ -148,7 +147,7 @@ export class MenuFlowManager {
     }
 
     // ========================================
-    // GAME MODE HANDLERS (updated to use new architecture)
+    // GAME MODE HANDLERS
     // ========================================
     
     private setupSoloModeHandler(soloMode: HTMLElement | null): void {
@@ -227,7 +226,7 @@ export class MenuFlowManager {
     }
 
     // ========================================
-    // PLAYER SETUP MANAGEMENT (updated)
+    // PLAYER SETUP MANAGEMENT
     // ========================================
     
     private clearPlayerNameFields(): void {
@@ -245,7 +244,6 @@ export class MenuFlowManager {
             historyManager.goToGameMode();
         });
 
-        //  Updated start game handler
         startGame?.addEventListener('click', async () => {
             if (this.selectedGameMode === null) return;
 
@@ -260,13 +258,12 @@ export class MenuFlowManager {
             console.log('View mode:', this.getViewModes()[this.currentViewModeIndex].name);
             console.log('Game mode:', this.selectedGameMode);
 
-            //  Use new simplified architecture
             await this.startGameWithMode(this.selectedViewMode, this.selectedGameMode);
         });
     }
 
     // ========================================
-    // VIEW MODE MANAGEMENT (unchanged)
+    // VIEW MODE MANAGEMENT
     // ========================================
     
     private getViewModes() {
@@ -300,7 +297,7 @@ export class MenuFlowManager {
     }
 
     // ========================================
-    // PUBLIC API (unchanged)
+    // PUBLIC API
     // ========================================
     
     public refreshButtonStates(): void {

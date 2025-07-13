@@ -1,9 +1,13 @@
 import { Game } from './Game.js';
 import { GameConfig } from './GameConfig.js';
 
+
 /**
- * Simplified Game Controller - manages single game instance
- * Replaces the old complex GameController + SceneManager + GameSession approach
+ * Controls the lifecycle and state of a single game instance.
+ * 
+ * The `GameController` class is responsible for starting, stopping, pausing, resuming,
+ * and disposing of a game. It manages the current game instance, ensures that only one
+ * game runs at a time, and provides methods to query the game's state.
  */
 export class GameController {
     private currentGame: Game | null = null;
@@ -13,9 +17,7 @@ export class GameController {
     // GAME MANAGEMENT
     // ========================================
 
-    /**
-     * Start a new game with the given configuration
-     */
+    // Start a new game with the given configuration
     async startGame(config: GameConfig): Promise<void> {
         // Prevent multiple simultaneous starts
         if (this.isStarting) {
@@ -59,9 +61,7 @@ export class GameController {
         }
     }
 
-    /**
-     * End the current game and clean up
-     */
+    // End the current game and clean up
     async endGame(): Promise<void> {
         if (!this.currentGame) {
             return;
@@ -87,9 +87,7 @@ export class GameController {
     // GAME CONTROL
     // ========================================
 
-    /**
-     * Pause the current game
-     */
+    // Pause the current game
     pauseGame(): void {
         if (this.currentGame && this.currentGame.isGameRunning()) {
             this.currentGame.pause();
@@ -97,9 +95,7 @@ export class GameController {
         }
     }
 
-    /**
-     * Resume the current game
-     */
+    // Resume the current game
     resumeGame(): void {
         if (this.currentGame && this.currentGame.isGameInitialized() && !this.currentGame.isGameRunning()) {
             this.currentGame.resume();
@@ -111,32 +107,24 @@ export class GameController {
     // STATE QUERIES
     // ========================================
 
-    /**
-     * Check if a game is currently running
-     */
+    // Check if a game is currently running
     hasActiveGame(): boolean {
         return this.currentGame !== null && this.currentGame.isGameInitialized();
     }
 
-    /**
-     * Check if current game is running (not paused)
-     */
+    // Check if current game is running (not paused)
     isGameRunning(): boolean {
         return this.currentGame !== null && this.currentGame.isGameRunning();
     }
 
-    /**
-     * Check if current game is paused
-     */
+    // Check if current game is paused
     isGamePaused(): boolean {
         return this.currentGame !== null && 
                this.currentGame.isGameInitialized() && 
                !this.currentGame.isGameRunning();
     }
 
-    /**
-     * Get current game configuration
-     */
+    // Get current game configuration
     getCurrentGameConfig(): GameConfig | null {
         return this.currentGame?.getConfig() || null;
     }
@@ -145,9 +133,7 @@ export class GameController {
     // CLEANUP
     // ========================================
 
-    /**
-     * Dispose the controller and any active game
-     */
+    // Dispose the controller and any active game
     async dispose(): Promise<void> {
         console.log('GameController: Disposing controller');
         
@@ -157,9 +143,4 @@ export class GameController {
     }
 }
 
-// ========================================
-// SINGLETON INSTANCES
-// ========================================
-
-// Single controller instance for the entire application
 export const gameController = new GameController();

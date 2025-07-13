@@ -79,9 +79,6 @@ class UIManager {
         this.applyStylesToAll('.pause-title', UI_STYLES.pauseLarge);
         this.applyStylesToAll('.pause-text', UI_STYLES.pauseMedium);
         this.applyStylesToAll('.pause-controls', UI_STYLES.pauseSmall);
-
-        // Modal & form specific
-        this.applyStylesToAll('.modal-footer', UI_STYLES.modalFooter);
         this.applyStylesToAll('.setup-form', UI_STYLES.setupForm);
 
         // Special cases
@@ -213,7 +210,8 @@ class UIManager {
             button.classList.add('disabled');
             button.style.opacity = '0.5';
             button.style.cursor = 'not-allowed';
-            if (tooltip) button.title = tooltip;
+            if (tooltip)
+                button.title = tooltip;
         } else {
             button.disabled = false;
             button.classList.remove('disabled');

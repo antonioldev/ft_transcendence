@@ -20,7 +20,6 @@ import { GAME_CONFIG } from '../shared/gameConfig.js';
  * - Provides state query methods for external consumers.
  */
 export class Game {
-    // Core components
     private babylonScene: BabylonScene | null = null;
     private renderer: GameRenderer | null = null;
     private inputHandler: InputHandler | null = null;
@@ -48,9 +47,7 @@ export class Game {
     // INITIALIZATION
     // ========================================
 
-    /**
-     * Initialize all game components
-     */
+    // Initialize all game components
     async initialize(): Promise<void> {
         if (this.isInitialized || this.isDisposed) return;
 
@@ -66,22 +63,19 @@ export class Game {
 
             // 3. Create input handler
             const scene = this.babylonScene.getScene();
-            if (!scene) {
+            if (!scene)
                 throw new Error('Failed to get Babylon.js scene');
-            }
             this.inputHandler = new InputHandler(this.config.gameMode, this.config.controls, scene);
             
             const gameObjects = this.babylonScene.getGameObjects();
-            if (!gameObjects) {
+            if (!gameObjects)
                 throw new Error('Failed to get game objects from scene');
-            }
             this.inputHandler.setGameObjects(gameObjects);
 
             // 4. Create GUI manager
             const engine = this.babylonScene.getEngine();
-            if (!engine) {
+            if (!engine)
                 throw new Error('Failed to get Babylon.js engine');
-            }
             this.guiManager = new GUIManager(scene, engine);
             this.guiManager.createFPSDisplay();
 
@@ -101,13 +95,10 @@ export class Game {
         }
     }
 
-    /**
-     * Connect all components together
-     */
+    // Connect all components together
     private connectComponents(): void {
-        if (!this.inputHandler || !this.networkManager || !this.renderer || !this.guiManager) {
+        if (!this.inputHandler || !this.networkManager || !this.renderer || !this.guiManager)
             throw new Error('Components not initialized');
-        }
 
         // Input → Network
         this.inputHandler.onInput((input) => {
@@ -144,9 +135,7 @@ export class Game {
     // GAME CONTROL
     // ========================================
 
-    /**
-     * Start the game
-     */
+    // Start the game
     start(): void {
         if (!this.isInitialized || this.isRunning || this.isDisposed) return;
 
@@ -154,14 +143,12 @@ export class Game {
             console.log('Starting game...');
 
             // Start network connection
-            if (this.networkManager) {
+            if (this.networkManager)
                 this.networkManager.joinGame();
-            }
 
             // Start render loop
-            if (this.renderer) {
+            if (this.renderer)
                 this.renderer.startRenderLoop();
-            }
 
             // Start game loop
             this.startGameLoop();
@@ -174,9 +161,7 @@ export class Game {
         }
     }
 
-    /**
-     * Pause the game
-     */
+    // Pause the game
     pause(): void {
         if (!this.isRunning || this.isDisposed) return;
 
@@ -185,9 +170,7 @@ export class Game {
         console.log('Game paused');
     }
 
-    /**
-     * Resume the game
-     */
+    // Resume the game
     resume(): void {
         if (!this.isInitialized || this.isRunning || this.isDisposed) return;
 
@@ -197,9 +180,7 @@ export class Game {
         console.log('Game resumed');
     }
 
-    /**
-     * Stop the game
-     */
+    // Stop the game
     stop(): void {
         if (!this.isRunning) return;
 
@@ -213,9 +194,7 @@ export class Game {
     // GAME LOOP
     // ========================================
 
-    /**
-     * Start the game loop
-     */
+    // Start the game loop
     private startGameLoop(): void {
         if (this.gameLoopObserver || !this.babylonScene) return;
 
@@ -244,9 +223,7 @@ export class Game {
         });
     }
 
-    /**
-     * Stop the game loop
-     */
+    // Stop the game loop
     private stopGameLoop(): void {
         if (this.gameLoopObserver && this.babylonScene) {
             const scene = this.babylonScene.getScene();
@@ -257,34 +234,22 @@ export class Game {
         }
     }
 
-    // ========================================
-    // STATE GETTERS
-    // ========================================
-
-    /**
-     * Check if game is initialized
-     */
+    // Check if game is initialized
     isGameInitialized(): boolean {
         return this.isInitialized && !this.isDisposed;
     }
 
-    /**
-     * Check if game is running
-     */
+    // Check if game is running
     isGameRunning(): boolean {
         return this.isRunning && !this.isDisposed;
     }
 
-    /**
-     * Check if game is disposed
-     */
+    // Check if game is disposed
     isGameDisposed(): boolean {
         return this.isDisposed;
     }
 
-    /**
-     * Get game configuration
-     */
+    // Get game configuration
     getConfig(): GameConfig {
         return this.config;
     }
@@ -293,9 +258,7 @@ export class Game {
     // CLEANUP
     // ========================================
 
-    /**
-     * Dispose all game resources
-     */
+    // Dispose all game resources
     async dispose(): Promise<void> {
         if (this.isDisposed) return;
 

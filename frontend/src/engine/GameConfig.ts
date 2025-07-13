@@ -2,9 +2,7 @@ import { ViewMode, GameMode } from '../shared/constants.js';
 import { PlayerInfo, InputConfig } from '../shared/types.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
 
-/**
- * Complete configuration for starting a game
- */
+// Complete configuration for starting a game
 export interface GameConfig {
     canvasId: string;
     viewMode: ViewMode;
@@ -13,13 +11,9 @@ export interface GameConfig {
     controls: InputConfig;
 }
 
-/**
- * Factory for creating game configurations
- */
+// Factory for creating game configurations
 export class GameConfigFactory {
-    /**
-     * Creates a complete game configuration
-     */
+    // Creates a complete game configuration
     static createConfig(
         viewMode: ViewMode, 
         gameMode: GameMode, 
@@ -34,9 +28,7 @@ export class GameConfigFactory {
         };
     }
 
-    /**
-     * Extracts player information from UI based on game mode
-     */
+    // Extracts player information from UI based on game mode
     static getPlayersFromUI(gameMode: GameMode): PlayerInfo[] {
         const getInputValue = (id: string, defaultName: string): string => {
             const input = document.getElementById(id) as HTMLInputElement;

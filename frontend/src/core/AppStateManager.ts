@@ -44,12 +44,10 @@ class AppStateManager {
     }
 
     // ========================================
-    // GAME LIFECYCLE - SIMPLIFIED! 🎉
+    // GAME LIFECYCLE
     // ========================================
     
-    /**
-     * Start a new game - just track state, GameController handles the rest
-     */
+    // Start a new game - just track state, GameController handles the rest
     startGame(viewMode: ViewMode): void {
         this.currentState = GameState.PLAYING;
         this.currentViewMode = viewMode;
@@ -58,9 +56,7 @@ class AppStateManager {
         console.log(`AppStateManager: Game started in ${ViewMode[viewMode]} mode`);
     }
 
-    /**
-     * Pause current game - delegate to GameController
-     */
+    // Pause current game - delegate to GameController
     pauseCurrentGame(): void {
         if (this.currentState !== GameState.PLAYING || this.isExiting) return;
 
@@ -79,9 +75,7 @@ class AppStateManager {
         console.log('AppStateManager: Game paused');
     }
 
-    /**
-     * Resume game - delegate to GameController
-     */
+    // Resume game - delegate to GameController
     resumeGame(): void {
         if (this.currentState !== GameState.PAUSED || this.isExiting) return;
 
@@ -100,9 +94,7 @@ class AppStateManager {
         console.log('AppStateManager: Game resumed');
     }
 
-    /**
-     * Exit to menu
-     */
+    // Exit to menu
     async exitToMenu(): Promise<void> {
         if (!this.isInGameOrPaused() || this.isExiting) return;
 
@@ -134,9 +126,7 @@ class AppStateManager {
         }
     }
 
-    /**
-     * Reset to menu state
-     */
+    // Reset to menu state
     resetToMenu(): void {
         this.currentState = null;
         this.currentViewMode = null;
@@ -148,27 +138,10 @@ class AppStateManager {
     }
 
     // ========================================
-    // ERROR HANDLING
-    // ========================================
-    
-    /**
-     * Handle game errors by returning to menu
-     */
-    handleGameError(error: any): void {
-        console.error('AppStateManager: Game error occurred:', error);
-        
-        // Force exit to menu
-        this.isExiting = false; // Reset flag to allow exit
-        this.exitToMenu();
-    }
-
-    // ========================================
     // UTILITY
     // ========================================
     
-    /**
-     * Get current game info for debugging
-     */
+    // Get current game info for debugging
     getGameInfo(): any {
         return {
             state: this.currentState ? GameState[this.currentState] : 'None',

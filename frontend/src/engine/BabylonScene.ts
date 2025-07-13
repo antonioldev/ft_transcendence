@@ -31,9 +31,7 @@ export class BabylonScene {
     // INITIALIZATION
     // ========================================
     
-    /**
-     * Initialize the Babylon.js engine and scene
-     */
+    // Initialize the Babylon.js engine and scene
     async initialize(): Promise<void> {
         if (this.isDisposed) return;
 
@@ -64,10 +62,6 @@ export class BabylonScene {
         }
     }
 
-    // ========================================
-    // ACCESSORS
-    // ========================================
-
     getScene(): any {
         return this.scene;
     }
@@ -81,12 +75,10 @@ export class BabylonScene {
     }
 
     // ========================================
-    // GAME STATE UPDATES
+    // GAME STATE
     // ========================================
 
-    /**
-     * Update game object positions from server state
-     */
+    // Update game object positions from server state
     updateGameObjects(state: GameStateData): void {
         if (this.isDisposed || !this.gameObjects) return;
 
@@ -110,9 +102,7 @@ export class BabylonScene {
         }
     }
 
-    /**
-     * Update 3D camera targets to follow players
-     */
+    // Update 3D camera targets to follow players
     update3DCameras(followSpeed: number): void {
         if (this.isDisposed || !this.gameObjects || !this.gameObjects.cameras || this.gameObjects.cameras.length < 2) return;
 
@@ -120,7 +110,6 @@ export class BabylonScene {
             const [camera1, camera2] = this.gameObjects.cameras;
             
             if (camera1 && camera2 && this.gameObjects.players.left && this.gameObjects.players.right) {
-                // Simple follow logic - can be enhanced later
                 const targetLeft = this.gameObjects.players.left.position.clone();
                 const targetRight = this.gameObjects.players.right.position.clone();
 
@@ -134,13 +123,7 @@ export class BabylonScene {
         }
     }
 
-    // ========================================
-    // UTILITY
-    // ========================================
-
-    /**
-     * Resize the engine
-     */
+    // Resize the engine
     resize(): void {
         if (this.engine && !this.isDisposed) {
             this.engine.resize();
@@ -151,9 +134,7 @@ export class BabylonScene {
     // CLEANUP
     // ========================================
 
-    /**
-     * Dispose all Babylon.js resources
-     */
+    // Dispose all Babylon.js resources
     async dispose(): Promise<void> {
         if (this.isDisposed) return;
         
