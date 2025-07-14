@@ -1,0 +1,1 @@
+// Program to sanitize info before sending to SQL and ensure SQL injection avoidance
