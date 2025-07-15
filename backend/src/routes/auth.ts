@@ -9,7 +9,7 @@ export async function authRoutes(fastify: FastifyInstance<any, any, any, any, an
             const { token } = request.body as { token: string };
 
             if (!token) {
-                return reply.status(400).send({ error: 'Token não fornecido' });
+                return reply.status(400).send({ error: 'Token not provided' });
             }
 
             const ticket = await googleClient.verifyIdToken({
@@ -20,7 +20,7 @@ export async function authRoutes(fastify: FastifyInstance<any, any, any, any, an
             const payload = ticket.getPayload();
 
             if (!payload) {
-                return reply.status(401).send({ error: 'Token do Google inválido' });
+                return reply.status(401).send({ error: 'Invalid Google Token' });
             }
 
             const userProfile = {
@@ -30,13 +30,15 @@ export async function authRoutes(fastify: FastifyInstance<any, any, any, any, an
                 picture: payload.picture
             };
 
+            console.log('User successfully verified', userProfile);
+
             const sessionToken = fastify.jwt.sign({ user: userProfile });
 
             return reply.send({ sessionToken });
 
         } catch (error) {
-            fastify.log.error('Falha na autenticação do Google', error);
-            return reply.status(500).send({ error: 'Falha na autenticação' });
+            fastify.log.error('Google authentication failed', error);
+            return reply.status(500).send({ error: 'Authentication failed' });
         }
     });
 }
