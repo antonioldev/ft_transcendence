@@ -1,10 +1,16 @@
 import Fastify from 'fastify';
 import { webSocketManager }  from './network/WebSocketManager.js';
 import config from './config/default.js';
+import { initialisazeDatabase } from './database/db-init.js';
+import { registerDatabaseFunctions } from './data/database.js';
 
 const fastify = Fastify({
     logger: config.debug === 'yes' ? true : false
 });
+
+// init the database
+const db = initialisazeDatabase('./database/transcendence.sqlite');
+registerDatabaseFunctions(db);
 
 // Register the WebSocket plugin with specific options
 await fastify.register(import('@fastify/websocket'), {
@@ -19,6 +25,9 @@ await fastify.register(import('@fastify/websocket'), {
 		maxConnections: 100,
 	}
 });
+
+// add the connection to the database
+
 
 // Setup WebSocket routes using the webSocketManager
 await webSocketManager.setupRoutes(fastify);

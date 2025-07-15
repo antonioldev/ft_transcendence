@@ -9,11 +9,15 @@ WORKDIR /app
 COPY package*.json package-lock.json ./
 
 # Install dependencies
-RUN npm install
+RUN npm install && apk add --no-cache neovim
 
 # Copy source code
 COPY src/ ./src/
 COPY tsconfig.json ./
+COPY src/database/init.sql /app/dist/database/init.sql
+
+# Build the database
+RUN mkdir -p /app/database
 
 # Build the application
 RUN npm run build
