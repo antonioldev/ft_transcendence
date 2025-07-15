@@ -136,7 +136,7 @@ export function getUserbyUsername(email: string) {
 		const userName = user.get(email) as { username: string};
 		return userName;
 	} catch (err) {
-		console.error('Error ingetUserEmail:', err);
+		console.error('Error in get User username:', err);
 		return null;
 	}	
 }
@@ -146,7 +146,7 @@ export function getUserbyEmail(email: string) {
 		const user = db.prepare('SELECT * FROM users WHERE email = ?');
 		return user.get(email);
 	} catch (err) {
-		console.error('Error ingetUserEmail:', err);
+		console.error('Error in get User Email:', err);
 		return null;
 	}
 }
@@ -161,7 +161,7 @@ export function retrieveUserID(email: string): number {
 		}
 		return userID.id;
 	} catch (err) {
-		console.error('Error ingetUserbyID:', err);
+		console.error('Error in get User ID:', err);
 		return -1;
 	}
 }
@@ -177,7 +177,7 @@ export function getUserNbVictory(id: number): number {
 		}
 		return userVictory.victories;
 	} catch (err) {
-		console.error('Error ingetUserbyID:', err);
+		console.error('Error in get User victory nb:', err);
 		return -1;
 	}
 }
@@ -192,7 +192,7 @@ export function getUserNbDefeat(id: number) {
 		}
 		return userDefeats.defeats;
 	} catch (err) {
-		console.error('Error ingetUserbyID:', err);
+		console.error('Error in get User defeat nb:', err);
 		return -1;
 	}
 }
@@ -207,7 +207,7 @@ export function getUserNbGames(id: number) {
 		}
 		return userGames.games;
 	} catch (err) {
-		console.error('Error ingetUserbyID:', err);
+		console.error('Error in get User games nb:', err);
 		return -1;
 	}
 }
@@ -258,6 +258,7 @@ export function registerGame(
 			player2_score,
 			duration_seconds
 		);
+		
 		return true;
 	} catch (error) {
 		console.error("Error in createGame:", error);
@@ -286,11 +287,15 @@ export function updateGameInfo(id: number, player1_score: number, player2_score:
 			return false;			
 		}
 		const gameDuration = Math.floor((endTime - startTime.getTime()) / 1000);
-		const gameInfo = db.prepare('UPDATE games SET player1_score = ?, player2_score = ?, winner = ?, looser = ?, duration_seconds = ? WHERE id = ?');
+		const gameInfo = db.prepare('UPDATE games SET player1_score = ?, player2_score = ?, winner_id = ?, looser_id = ?, duration_seconds = ? WHERE id = ?');
 		gameInfo.run(player1_score, player2_score, winner, looser, gameDuration, id);
+		updateUserVictory(winner, 1);
+		updateUserDefeat(looser, 1);
+		updateUserGame(winner, 1);
+		updateUserGame(looser, 1);
 		return true;
 	} catch (err) {
-		console.error('Error in delete game: ', err);
+		console.error('Error in update game: ', err);
 		return false;
 	}
 }
@@ -302,7 +307,7 @@ export function getGameStartTime(id: number): Date | null {
 		const startTime = gameStartTime.get(id) as { played_at: string };
 		return new Date(startTime.played_at);
 	} catch (err) {
-		console.error('Error in delete game: ', err);
+		console.error('Error in select start of the game: ', err);
 		return null;
 	}
 }
@@ -314,7 +319,7 @@ export function getGamePlayer1(id: number): number {
 		const ret = game.get(id) as {player1_id: number};
 		return ret.player1_id;
 	} catch (err) {
-		console.error('Error in delete game: ', err);
+		console.error('Error in player 1 of the game: ', err);
 		return -1;
 	}
 }
@@ -325,7 +330,7 @@ export function getGamePlayer2(id: number): number {
 		const ret = game.get(id) as {player2_id: number};
 		return ret.player2_id;
 	} catch (err) {
-		console.error('Error in delete game: ', err);
+		console.error('Error in player 2 of the game: ', err);
 		return -1;
 	}
 }
@@ -336,7 +341,7 @@ export function getGamePlayer1Score(id: number): number {
 		const ret = game.get(id) as {player1_score: number};
 		return ret.player1_score;
 	} catch (err) {
-		console.error('Error in delete game: ', err);
+		console.error('Error in player 1 score of the game: ', err);
 		return -1;
 	}
 }
@@ -347,29 +352,29 @@ export function getGamePlayer2Score(id: number): number {
 		const ret = game.get(id) as {player2_score: number};
 		return ret.player2_score;
 	} catch (err) {
-		console.error('Error in delete game: ', err);
+		console.error('Error in player 2 of the game: ', err);
 		return -1;
 	}
 }
 
 export function getGameWinner(id: number): number {
 	try {
-		const game = db.prepare('SELECT winner FROM games WHERE id = ?');
-		const ret = game.get(id) as {winner: number};
-		return ret.winner;
+		const game = db.prepare('SELECT winner_id FROM games WHERE id = ?');
+		const ret = game.get(id) as {winner_id: number};
+		return ret.winner_id;
 	} catch (err) {
-		console.error('Error in delete game: ', err);
+		console.error('Error in select winner of the game: ', err);
 		return -1;
 	}
 }
 
 export function getGameLooser(id: number): number {
 	try {
-		const game = db.prepare('SELECT looser FROM games WHERE id = ?');
-		const ret = game.get(id) as {looser: number};
-		return ret.looser;
+		const game = db.prepare('SELECT looser_id FROM games WHERE id = ?');
+		const ret = game.get(id) as {looser_id: number};
+		return ret.looser_id;
 	} catch (err) {
-		console.error('Error in delete game: ', err);
+		console.error('Error in select looser of the game: ', err);
 		return -1;
 	}
 }
@@ -380,7 +385,7 @@ export function getGameDuration(id: number): number {
 		const ret = game.get(id) as {duration_seconds: number};
 		return ret.duration_seconds;
 	} catch (err) {
-		console.error('Error in delete game: ', err);
+		console.error('Error in select duration of the game: ', err);
 		return -1;
 	}
 }

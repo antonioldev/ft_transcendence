@@ -1,8 +1,8 @@
 import Fastify from 'fastify';
 import { webSocketManager }  from './network/WebSocketManager.js';
 import config from './config/default.js';
-import { initialisazeDatabase } from './database/db-init';
-import { registerDatabaseFunctions } from './data/database';
+import { initialisazeDatabase } from './database/db-init.js';
+import { registerDatabaseFunctions } from './data/database.js';
 
 const fastify = Fastify({
     logger: config.debug === 'yes' ? true : false

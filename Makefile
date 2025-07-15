@@ -1,6 +1,7 @@
 NAME = transcendence
 FRONTEND_DIR = ./frontend
 BACKEND_DIR = ./backend
+VOLUME = ./backend/src/database/transcendence.sqlite
 
 #################################################################################
 #################################     MAIN      #################################
@@ -53,6 +54,7 @@ fclean:
 	@rm -rf backend/src/shared || true
 	
 wipe-all:
+	@rm -f $(VOLUME)
 	docker system prune -a
 
 wipe-images:
@@ -73,6 +75,12 @@ restart:
 
 ps:
 	docker-compose ps
+
+backend-sh:
+	docker exec -it transcendence-backend /bin/sh
+
+frontend-sh:
+	docker exec -it transcendence-frontend /bin/sh
 
 #################################################################################
 #################################    UPDATES    #################################

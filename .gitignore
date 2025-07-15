@@ -5,7 +5,8 @@ dist/
 backend/src/shared
 frontend/src/shared
 
-
+# sqlite file that containt dabatase of the game
+./backend/src/database/transcendence.sqlite
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

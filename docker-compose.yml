@@ -21,7 +21,7 @@ services:
       - "${BACKEND_PORT:-3000}:${BACKEND_PORT:-3000}"
     volumes:
     #   - ./backend/src:/app/src
-      - transcendence-db:/app/database
+      - ./backend/src/database:/app/database
     # ----------------------------------------------> CANNOT USE VOLUMES
     env_file:
       - .env
@@ -33,6 +33,6 @@ services:
 # networks:
 #   app-network:
 #     driver: bridge
-volumes:
-  transcendence-db:
-      driver: local
+# volumes:
+#   transcendence-db:
+#       driver: local

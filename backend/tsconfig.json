@@ -12,9 +12,9 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true
   },
-  "ts-node": {
-    "esm": true
-  },
+  // "ts-node": {
+  //   "esm": true
+  // },
   "include": ["src/**/*", "src/database/db-testing.ts"],
   "exclude": ["node_modules", "dist"]
 }
