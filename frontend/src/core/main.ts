@@ -73,7 +73,7 @@ function loadGoogleSignIn(): void {
 }
 
 function renderGoogleSignInButton(): void {
-    const googleClientId = (window as any).GOOGLE_CLIENT_ID;
+    const googleClientId = window.GOOGLE_CLIENT_ID;
     
     if (!googleClientId) {
         console.error("Google Client ID is not set.");
