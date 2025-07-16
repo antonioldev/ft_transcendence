@@ -46,6 +46,8 @@ export interface ClientMessage {
     type: MessageType; // Type of message
     gameMode?: GameMode; // Game mode (optional)
     players?: PlayerInfo[];
+    registerUser?: RegisterUser[]; // Used for create a new registration (not Google auth)
+    loginUser?: LoginUser[]; // Use to confirm the ID of the user (not Google auth)
     side?: number; // Player side (optional)
     direction?: Direction; // Movement direction (optional)
 }
@@ -75,6 +77,23 @@ export interface InputData{
     side: number;
     direction: Direction;
 }
+
+// ============================== AUTHENTIFICATION TYPES ==============================
+
+/**
+ * Represents the register/login structure without google that will be saved in db
+ */
+export interface RegisterUser {
+    username: string;
+    email: string;
+    password: string;
+}
+
+export interface LoginUser {
+    username: string;
+    password: string;
+}
+
 
 // ============================== FRONTEND-ONLY TYPES ==============================
 

@@ -156,6 +156,30 @@ export class WebSocketClient {
     }
 
     // ========================================
+    // LOGIN/REGISTRATION 
+    // ========================================
+
+    registerNewUser(registrationInfo: RegisterUser[]): void {
+        if (this.isConnected()) {
+            const message: ClientMessage = {
+                type: MessageType.REGISTER_USER,
+                registerUser: registrationInfo
+            };
+            this.ws!.send(JSON.stringify(message));
+        }        
+    }
+
+    loginUser(loginInfo: LoginUser[]): void {
+        if (this.isConnected()) {
+            const message: ClientMessage = {
+                type: MessageType.LOGIN_USER,
+                loginUser: loginInfo
+            };
+            this.ws!.send(JSON.stringify(message));
+        }          
+    }
+
+    // ========================================
     // CALLBACK REGISTRATION
     // ========================================
 

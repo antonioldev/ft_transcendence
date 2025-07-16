@@ -3,6 +3,7 @@ import { uiManager } from '../ui/UIManager.js';
 import { getCurrentTranslation } from '../translations/translations.js';
 import { historyManager } from './HistoryManager.js';
 import { clearInput } from './utils.js';
+import { WebSocketClient } from './webSocketClient.js';
 
 /**
  * Manages user authentication state, login/logout workflows, and user registration.
@@ -12,7 +13,7 @@ import { clearInput } from './utils.js';
 export class AuthManager {
     private static instance: AuthManager;
     private authState: AuthState = AuthState.GUEST;
-    private currentUser: {username: string; email?: string} | null = null;
+    private currentUser: {username: string; password: string; email?: string} | null = null;
 
     // Gets the singleton instance of AuthManager.
     static getInstance(): AuthManager {
@@ -174,10 +175,16 @@ export class AuthManager {
 
         // TODO: Implement actual login logic with backend
         console.log('Login attempt:', { username });
-        
         // For now we say yes you are in the database, simulate successful login
-        this.currentUser = { username: username };
-        this.authState = AuthState.LOGGED_IN;
+        this.currentUser = { username: username; password: password };
+        try {
+            WebSocketClient.loginUser(this.currentUser);
+            console.log('Login attempt: ', { username});
+            this.authState = AuthState.LOGGED_IN;
+        } catch (error) {
+            console.error('Error sending login request:', error);
+            this.authState = AuthState.LOGGED_FAILED;
+        }
         
         // Update UI to show logged in state
         uiManager.showUserInfo(this.currentUser.username);
@@ -277,6 +284,7 @@ export class AuthManager {
     // Checks if the user is in guest mode.
     isGuest(): boolean {
         return this.authState === AuthState.GUEST;
+
     }
 
     // ========================================

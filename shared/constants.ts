@@ -9,7 +9,9 @@ export enum MessageType {
     SIDE_ASSIGNMENT = 3,   // Assign player to a side (left/right)
     GAME_STARTED = 4,      // Notify that the game has started
     ERROR = 5,             // Error message
-    QUIT_GAME = 6          // Send this message when CTRL + Y
+    QUIT_GAME = 6,         // Send this message when CTRL + Y
+    REGISTER_USER,         // New User want to register --> going to create a new row in db
+    LOGIN_USER             // User want to connect to their account --> calling function for validate info
 }
 
 // Different game modes available
@@ -48,7 +50,8 @@ export enum CollisionDirection {
 
 export enum AuthState {
     GUEST = 0,
-    LOGGED_IN = 1
+    LOGGED_IN = 1,
+    LOGGED_FAILED
 }
 
 export enum ConnectionStatus {

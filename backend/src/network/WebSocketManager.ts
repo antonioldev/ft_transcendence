@@ -70,6 +70,8 @@ export class WebSocketManager {
                 case MessageType.PLAYER_INPUT:
                     await this.handlePlayerInput(client, data);
                     break;
+                case MessageType.LOGIN_USER;
+                    await this.handleLoginUser()
                 case MessageType.QUIT_GAME:  // TODO I added because it was creating issue, need to check
                     gameManager.removeClientFromGames(client);
                 break;
@@ -147,6 +149,13 @@ export class WebSocketManager {
             side: data.side,
             dx: dx
         });
+    }
+        /**
+     * Handles the disconnection of a client, removing them from games and cleaning up resources.
+     * @param data - The user information that are used to confirm login
+     */
+    private handleLoginUser(data: ClientMessage): void {
+        // add the login user function 
     }
 
     /**
