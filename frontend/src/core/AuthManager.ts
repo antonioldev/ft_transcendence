@@ -3,7 +3,8 @@ import { uiManager } from '../ui/UIManager.js';
 import { getCurrentTranslation } from '../translations/translations.js';
 import { historyManager } from './HistoryManager.js';
 import { clearInput } from './utils.js';
-import { WebSocketClient } from './webSocketClient.js';
+import { WebSocketClient } from './WebSocketClient.js';
+import { RegisterUser } from '../shared/types.js';
 
 /**
  * Manages user authentication state, login/logout workflows, and user registration.
@@ -165,6 +166,7 @@ export class AuthManager {
         const username = (document.getElementById('login-username') as HTMLInputElement)?.value.trim();
         const password = (document.getElementById('login-password') as HTMLInputElement)?.value;
         const t = getCurrentTranslation();
+        const wsClient = WebSocketClient.getInstance(); // or use a shared instance if you already have one
         
         // Basic validation
         if (!username || !password) {
@@ -176,24 +178,33 @@ export class AuthManager {
         // TODO: Implement actual login logic with backend
         console.log('Login attempt:', { username });
         // For now we say yes you are in the database, simulate successful login
-        this.currentUser = { username: username; password: password };
+        this.currentUser = { username: username, password: password };
         try {
-            WebSocketClient.loginUser(this.currentUser);
+            wsClient.loginUser(this.currentUser);
             console.log('Login attempt: ', { username});
             this.authState = AuthState.LOGGED_IN;
         } catch (error) {
             console.error('Error sending login request:', error);
             this.authState = AuthState.LOGGED_FAILED;
         }
-        
-        // Update UI to show logged in state
-        uiManager.showUserInfo(this.currentUser.username);
-        
-        // Clear form and navigate back to main menu
-        this.clearLoginForm();
-        historyManager.goToMainMenu();
-        
-        console.log('Login successful - user can now access online modes');
+        // check if server sentback an error to block the loggin 
+
+        if (this.authState === AuthState.LOGGED_IN) {
+            // Update UI to show logged in state
+            uiManager.showUserInfo(this.currentUser.username);
+            
+            // Clear form and navigate back to main menu
+            this.clearLoginForm();
+            historyManager.goToMainMenu();
+            
+            console.log('Login successful - user can now access online modes');
+        } else {
+            alert(t.dontHaveAccount);
+            this.clearLoginForm();
+            return;
+            // reset to guest default
+        }
+
     }
 
     // Handles the registration form submission process.
@@ -204,6 +215,7 @@ export class AuthManager {
         const password = (document.getElementById('register-password') as HTMLInputElement)?.value;
         const confirmPassword = (document.getElementById('register-confirm-password') as HTMLInputElement)?.value;
         const t = getCurrentTranslation();
+        const wsClient = WebSocketClient.getInstance();
 
         // Check if fiels are all full
         if (!username || !email || !password || !confirmPassword) {
@@ -219,11 +231,25 @@ export class AuthManager {
         }
 
         // TODO: Implement actual registration logic with backend
-        console.log('Register attempt:', { username, email });
+        const user: RegisterUser = { username, email, password };
+        try {
+            wsClient.registerNewUser(user);
+            console.log('Register attempt: ', { username, email});
+            this.authState = AuthState.LOGGED_IN;
+        } catch (error) {
+            console.error('Error sending registration request:', error);
+            this.authState = AuthState.LOGGED_FAILED;
+        }
         
         // Clear form and provide success feedback
-        this.clearRegisterForm();
-        alert('Registration successful! You can now login.');
+        if (this.authState === AuthState.LOGGED_IN) {
+            this.clearRegisterForm();
+            alert('Registration successful! You can now login.');
+        } else {
+            this.clearRegisterForm();
+            alert('Registration Failed. Please retry.');            
+        }
+        // check if server sentback an error to block the loggin 
         
         // Navigate to login after successful registration
         setTimeout(() => {

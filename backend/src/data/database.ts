@@ -118,11 +118,22 @@ export function updateUserGame(id: number, Game: number): boolean {
 
 
 // GET USER INFO 
-export function userExist(id: number): boolean {
+export function userExist(id?: number, username?: string, email?: string): boolean {
 	try {
-		const user = db.prepare('SELECT * FROM users WHERE id = ?');
-		const userExist = user.get(id);
-		return userExist !== undefined;
+		if (id !== undefined) {
+			const user = db.prepare('SELECT * FROM users WHERE id = ?');
+			const userExist = user.get(id);
+			return userExist !== undefined;
+		} else if (username && username.trim() !== '') {
+			const user = db.prepare('SELECT * FROM users WHERE username = ?');
+			const userExist = user.get(username);
+			return userExist !== undefined;
+		} else if (email && email.trim() !== '') {
+			const user = db.prepare('SELECT * FROM users WHERE email = ?');
+			const userExist = user.get(email);
+			return userExist !== undefined;			
+		}
+		return false;
 	} catch (err) {
 		console.error("Error user doesn't exist:", err);
 		return false;
@@ -130,24 +141,45 @@ export function userExist(id: number): boolean {
 }
 
 
-export function getUserbyUsername(email: string) {
+export function getUserUsername(email: string): string {
 	try {
 		const user = db.prepare('SELECT username FROM users WHERE email = ?');
-		const userName = user.get(email) as { username: string};
-		return userName;
+		const userName = user.get(email) as {username: string}| undefined;
+		if (userName) {
+			return userName.username;
+		}
+		return "";
 	} catch (err) {
 		console.error('Error in get User username:', err);
-		return null;
+		return "";
 	}	
 }
 
-export function getUserbyEmail(email: string) {
+export function getUserEmail(username: string): string {
 	try {
-		const user = db.prepare('SELECT * FROM users WHERE email = ?');
-		return user.get(email);
+		const user = db.prepare('SELECT email FROM users WHERE username = ?');
+		const userEmail = user.get(username)  as {email: string}| undefined;
+		if (userEmail) {
+			return userEmail.email;
+		}
+		return "";;
 	} catch (err) {
 		console.error('Error in get User Email:', err);
-		return null;
+		return "";
+	}
+}
+
+export function getUserPwd(email: string): string {
+	try {
+		const user = db.prepare('SELECT pwd FROM users WHERE email = ?');
+		const userPwd =  user.get(email)  as {pwd: string}| undefined;
+		if (userPwd) {
+			return userPwd.pwd;
+		}
+		return "";;
+	} catch (err) {
+		console.error('Error in get User Email:', err);
+		return "";
 	}
 }
 

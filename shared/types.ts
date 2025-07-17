@@ -46,8 +46,8 @@ export interface ClientMessage {
     type: MessageType; // Type of message
     gameMode?: GameMode; // Game mode (optional)
     players?: PlayerInfo[];
-    registerUser?: RegisterUser[]; // Used for create a new registration (not Google auth)
-    loginUser?: LoginUser[]; // Use to confirm the ID of the user (not Google auth)
+    registerUser?: RegisterUser; // Used for create a new registration (not Google auth)
+    loginUser?: LoginUser; // Use to confirm the ID of the user (not Google auth)
     side?: number; // Player side (optional)
     direction?: Direction; // Movement direction (optional)
 }

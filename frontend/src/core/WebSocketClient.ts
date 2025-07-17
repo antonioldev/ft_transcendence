@@ -1,5 +1,5 @@
 import { ConnectionStatus, MessageType, GameMode, Direction } from '../shared/constants.js'
-import { ClientMessage, ServerMessage, GameStateData, PlayerInfo } from '../shared/types.js'
+import { ClientMessage, ServerMessage, GameStateData, PlayerInfo, RegisterUser, LoginUser } from '../shared/types.js'
 
 /**
  * WebSocketClient is responsible for managing the WebSocket connection
@@ -122,6 +122,7 @@ export class WebSocketClient {
                 if (this.errorCallback)
                     this.errorCallback(message.message || 'Unknown error');
                 break;
+                //TODO add the login and registration message handle from server
             default:
                 break; //TODO
         }
@@ -159,7 +160,8 @@ export class WebSocketClient {
     // LOGIN/REGISTRATION 
     // ========================================
 
-    registerNewUser(registrationInfo: RegisterUser[]): void {
+    registerNewUser(registrationInfo: RegisterUser): void {
+        console.log("In registration user");
         if (this.isConnected()) {
             const message: ClientMessage = {
                 type: MessageType.REGISTER_USER,
@@ -169,7 +171,8 @@ export class WebSocketClient {
         }        
     }
 
-    loginUser(loginInfo: LoginUser[]): void {
+    loginUser(loginInfo: LoginUser): void {
+        console.log("In login user");
         if (this.isConnected()) {
             const message: ClientMessage = {
                 type: MessageType.LOGIN_USER,

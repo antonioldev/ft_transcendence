@@ -11,7 +11,8 @@ export enum MessageType {
     ERROR = 5,             // Error message
     QUIT_GAME = 6,         // Send this message when CTRL + Y
     REGISTER_USER,         // New User want to register --> going to create a new row in db
-    LOGIN_USER             // User want to connect to their account --> calling function for validate info
+    LOGIN_USER,            // User want to connect to their account --> calling function for validate info
+    SUCCESS,             
 }
 
 // Different game modes available

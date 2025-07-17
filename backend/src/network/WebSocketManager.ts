@@ -3,6 +3,7 @@ import { gameManager } from '../models/gameManager.js';
 import { Client } from '../models/Client.js';
 import { MessageType, Direction, GameMode } from '../shared/constants.js';
 import { ClientMessage, ServerMessage } from '../shared/types.js';
+import * as db from "../data/validation.js";
 
 /**
  * Manages WebSocket connections, client interactions, and game-related messaging.
@@ -70,8 +71,14 @@ export class WebSocketManager {
                 case MessageType.PLAYER_INPUT:
                     await this.handlePlayerInput(client, data);
                     break;
-                case MessageType.LOGIN_USER;
-                    await this.handleLoginUser()
+                case MessageType.LOGIN_USER:
+                    console.log("HandleMessage WSM: calling Login_user");
+                    await this.handleLoginUser(socket, data);
+                    break;
+                case MessageType.REGISTER_USER:
+                    console.log("HandleMessage WSM: calling Register_user");
+                    await this.handleRegisterNewUser(socket, data);
+                    break;
                 case MessageType.QUIT_GAME:  // TODO I added because it was creating issue, need to check
                     gameManager.removeClientFromGames(client);
                 break;
@@ -150,12 +157,67 @@ export class WebSocketManager {
             dx: dx
         });
     }
-        /**
+    /**
      * Handles the disconnection of a client, removing them from games and cleaning up resources.
      * @param data - The user information that are used to confirm login
      */
-    private handleLoginUser(data: ClientMessage): void {
-        // add the login user function 
+    private async handleLoginUser(socket: any, data: ClientMessage): Promise<void> {
+        console.log("handleLoginUser WSM called()");
+        const loginInfo = data.loginUser;
+        if (!loginInfo || !loginInfo.username || !loginInfo.password) {
+            console.warn("Missing login information");
+            return;
+        }
+        console.log("handleLoginUser WSM: structure contain username and password", loginInfo.username, loginInfo.password);
+        try {
+            switch (db.verifyLogin(loginInfo.username, loginInfo.password)) {
+                case 0:
+                    console.log("handleLoginUser WSM: sending success");
+                    await this.sendSuccess(socket, "User ID confirmed");
+                    return;
+                case 1:
+                    console.log("handleLoginUser WSM: sending error 1 no user in db");
+                    await this.sendError(socket, "User doesn't exist");
+                    return;
+                case 2:
+                    console.log("handleLoginUser WSM: sending error 2 incorrect ID/PWD");
+                    await this.sendError(socket, "Username or password are incorrect");
+                    return;
+            }
+        } catch (error) {
+            console.error('❌ Error checking user login information:', error);
+            await this.sendError(socket, 'Failed to log user');
+        }
+    }
+    /**
+     * Handles the disconnection of a client, removing them from games and cleaning up resources.
+     * @param data - The user information that are used to confirm login
+     */
+    private async handleRegisterNewUser(socket: any, data: ClientMessage): Promise<void> {
+        const regInfo = data.registerUser;
+        if (!regInfo) {
+            console.warn("Missing registration object");
+            return;
+        }
+        const { username, email, password } = regInfo;
+    
+        if (!username || !email || !password) {
+            console.warn("Missing registration fields:", username, email, password);
+            return;
+        }
+        try {
+            switch (db.registerNewUser(username, email, password)) {
+                case 0:
+                    await this.sendSuccess(socket, "User registered successfully");
+                    return;
+                case 1:
+                    await this.sendError(socket, "User already exists");
+                    return;
+            }
+        } catch (error) {
+            console.error('❌ Error registering user:', error);
+            await this.sendError(socket, 'Failed to register user');
+        }
     }
 
     /**
@@ -167,6 +229,24 @@ export class WebSocketManager {
         this.clients.delete(client.id);
     }
 
+    /**
+     * Sends an error message to a client.
+     * @param socket - The WebSocket connection object.
+     * @param message - The messagee to send.
+     */
+    private async sendSuccess(socket: any, message: string): Promise<void> {
+        const errorMsg: ServerMessage = {
+            type: MessageType.SUCCESS,
+            message: message
+        };
+        
+        try {
+            await socket.send(JSON.stringify(errorMsg));
+        } catch (error) {
+            console.error('❌ Failed to send success message:', error);
+        }
+    }    
+    
     /**
      * Sends an error message to a client.
      * @param socket - The WebSocket connection object.
