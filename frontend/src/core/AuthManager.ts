@@ -175,6 +175,25 @@ export class AuthManager {
             return;
         }
 
+        this.currentUser = { username: username, password: password };
+
+        // Register the callback function
+        wsClient.onLoginSuccess((message) => {
+            this.authState = AuthState.LOGGED_IN;
+            uiManager.showUserInfo(this.currentUser.username);
+            
+            // Clear form and navigate back to main menu
+            this.clearLoginForm();
+            historyManager.goToMainMenu();
+            
+            console.log('Login successful - user can now access online modes');
+            alert(message || 'Registration failed. User already exist. Please login');
+            setTimeout(() => {
+                historyManager.goToLogin();
+            }, 500);
+        });
+
+
         // TODO: Implement actual login logic with backend
         console.log('Login attempt:', { username });
         // For now we say yes you are in the database, simulate successful login
@@ -230,8 +249,37 @@ export class AuthManager {
             return;
         }
 
-        // TODO: Implement actual registration logic with backend
         const user: RegisterUser = { username, email, password };
+
+        // register the callback in case of success or failure
+        wsClient.onRegistrationFailure((message) => {
+            this.authState = AuthState.LOGGED_FAILED;
+            this.clearRegisterForm();
+            alert(message || 'Registration failed. User already exist. Please login');
+            setTimeout(() => {
+                historyManager.goToLogin();
+            }, 500);
+        });
+
+        wsClient.onError((message) => {
+            this.authState = AuthState.LOGGED_FAILED;
+            this.clearRegisterForm();
+            alert(message || 'Registration failed. An error occured. Please try again');
+            setTimeout(() => {
+                historyManager.goToLogin();
+            }, 500);
+        });
+
+        wsClient.onRegistrationSuccess((message) => {
+            this.authState = AuthState.LOGGED_IN;
+            this.clearRegisterForm();
+            alert(message || 'Registration successful! You can now login.');
+            setTimeout(() => {
+                historyManager.goToLogin();
+            }, 500);
+        });
+
+        // Apptempt to register new user
         try {
             wsClient.registerNewUser(user);
             console.log('Register attempt: ', { username, email});
@@ -239,22 +287,10 @@ export class AuthManager {
         } catch (error) {
             console.error('Error sending registration request:', error);
             this.authState = AuthState.LOGGED_FAILED;
+            this.clearRegisterForm();
+            alert('Registration failed due to connection error.');  
         }
         
-        // Clear form and provide success feedback
-        if (this.authState === AuthState.LOGGED_IN) {
-            this.clearRegisterForm();
-            alert('Registration successful! You can now login.');
-        } else {
-            this.clearRegisterForm();
-            alert('Registration Failed. Please retry.');            
-        }
-        // check if server sentback an error to block the loggin 
-        
-        // Navigate to login after successful registration
-        setTimeout(() => {
-            historyManager.goToLogin();
-        }, 500);
     }
 
     // Handles Google OAuth login process.

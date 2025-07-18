@@ -12,7 +12,11 @@ export enum MessageType {
     QUIT_GAME = 6,         // Send this message when CTRL + Y
     REGISTER_USER,         // New User want to register --> going to create a new row in db
     LOGIN_USER,            // User want to connect to their account --> calling function for validate info
-    SUCCESS,             
+    SUCCESS_LOGIN,         // Successfully login a user 
+    SUCCESS_REGISTRATION,  // Succesfylly register new user
+    LOGIN_FAILURE,         // failure to identify the user
+    USER_EXIST,            // failure in login user -- id or pwd not matching
+    USER_NOTEXIST          // failure in login user -- do not exist in db   
 }
 
 // Different game modes available

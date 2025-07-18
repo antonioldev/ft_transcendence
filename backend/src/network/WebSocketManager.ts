@@ -173,15 +173,15 @@ export class WebSocketManager {
             switch (db.verifyLogin(loginInfo.username, loginInfo.password)) {
                 case 0:
                     console.log("handleLoginUser WSM: sending success");
-                    await this.sendSuccess(socket, "User ID confirmed");
+                    await this.sendSuccessLogin(socket, "User ID confirmed");
                     return;
                 case 1:
                     console.log("handleLoginUser WSM: sending error 1 no user in db");
-                    await this.sendError(socket, "User doesn't exist");
+                    await this.sendErrorUserNotExist(socket, "User doesn't exist");
                     return;
                 case 2:
                     console.log("handleLoginUser WSM: sending error 2 incorrect ID/PWD");
-                    await this.sendError(socket, "Username or password are incorrect");
+                    await this.sendErrorLogin(socket, "Username or password are incorrect");
                     return;
             }
         } catch (error) {
@@ -208,10 +208,10 @@ export class WebSocketManager {
         try {
             switch (db.registerNewUser(username, email, password)) {
                 case 0:
-                    await this.sendSuccess(socket, "User registered successfully");
+                    await this.sendSuccessRegistration(socket, "User registered successfully");
                     return;
                 case 1:
-                    await this.sendError(socket, "User already exists");
+                    await this.sendErrorUserExist(socket, "User already exists");
                     return;
             }
         } catch (error) {
@@ -221,22 +221,39 @@ export class WebSocketManager {
     }
 
     /**
-     * Handles the disconnection of a client, removing them from games and cleaning up resources.
-     * @param client - The client that disconnected.
-     */
-    private handleDisconnection(client: Client): void {
-        gameManager.removeClientFromGames(client);
-        this.clients.delete(client.id);
-    }
-
-    /**
-     * Sends an error message to a client.
+     * Sends an status message to a client to confirm login/registration or error
      * @param socket - The WebSocket connection object.
      * @param message - The messagee to send.
      */
-    private async sendSuccess(socket: any, message: string): Promise<void> {
+    private async sendSuccessLogin(socket: any, message: string): Promise<void> {
+        const successMsg: ServerMessage = {
+            type: MessageType.SUCCESS_LOGIN,
+            message: message
+        };
+        
+        try {
+            await socket.send(JSON.stringify(successMsg));
+        } catch (error) {
+            console.error('❌ Failed to send success message:', error);
+        }
+    }  
+
+    private async sendSuccessRegistration(socket: any, message: string): Promise<void> {
+        const successMsg: ServerMessage = {
+            type: MessageType.SUCCESS_REGISTRATION,
+            message: message
+        };
+        
+        try {
+            await socket.send(JSON.stringify(successMsg));
+        } catch (error) {
+            console.error('❌ Failed to send success message:', error);
+        }
+    }  
+
+    private async sendErrorLogin(socket: any, message: string): Promise<void> {
         const errorMsg: ServerMessage = {
-            type: MessageType.SUCCESS,
+            type: MessageType.LOGIN_FAILURE,
             message: message
         };
         
@@ -245,7 +262,42 @@ export class WebSocketManager {
         } catch (error) {
             console.error('❌ Failed to send success message:', error);
         }
-    }    
+    }  
+
+    private async sendErrorUserNotExist(socket: any, message: string): Promise<void> {
+        const errorMsg: ServerMessage = {
+            type: MessageType.USER_NOTEXIST,
+            message: message
+        };
+        
+        try {
+            await socket.send(JSON.stringify(errorMsg));
+        } catch (error) {
+            console.error('❌ Failed to send success message:', error);
+        }
+    }  
+
+    private async sendErrorUserExist(socket: any, message: string): Promise<void> {
+        const errorMsg: ServerMessage = {
+            type: MessageType.USER_EXIST,
+            message: message
+        };
+        
+        try {
+            await socket.send(JSON.stringify(errorMsg));
+        } catch (error) {
+            console.error('❌ Failed to send success message:', error);
+        }
+    }  
+
+    /**
+     * Handles the disconnection of a client, removing them from games and cleaning up resources.
+     * @param client - The client that disconnected.
+     */
+    private handleDisconnection(client: Client): void {
+        gameManager.removeClientFromGames(client);
+        this.clients.delete(client.id);
+    }  
     
     /**
      * Sends an error message to a client.

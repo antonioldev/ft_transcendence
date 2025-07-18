@@ -14,6 +14,10 @@ export class WebSocketClient {
     private connectionCallback: (() => void) | null = null;
     private errorCallback: ((error: string) => void) | null = null;
     private statusCallback: ((status: ConnectionStatus, message?: string) => void) | null = null;
+    private loginFailureCallback: ((message?: string) => void) | null = null;
+    private loginSuccess: ((message?: string) => void) | null = null;
+    private RegistrationSuccess: ((message?: string) => void) | null = null;
+    private RegistrationFailureCallback: ((message?: string) => void) | null = null;
 
     static getInstance(): WebSocketClient {
         if (!WebSocketClient.instance) {
@@ -122,7 +126,31 @@ export class WebSocketClient {
                 if (this.errorCallback)
                     this.errorCallback(message.message || 'Unknown error');
                 break;
-                //TODO add the login and registration message handle from server
+            case MessageType.SUCCESS_LOGIN:
+                console.error('✅ Login success:', message.message);
+                if (this.loginSuccess)
+                    this.onLoginSuccess(message.message);
+                break;
+            case MessageType.SUCCESS_REGISTRATION:
+                console.error('✅ Registration success:', message.message);
+                if (this.RegistrationSuccess)
+                    this.onRegistrationSuccess(message.message);
+                break;
+            case MessageType.LOGIN_FAILURE:
+                console.error('🚫 Login failed:', message.message);
+                if (this.loginFailureCallback)
+                    this.onLoginFailure(message.message);
+                break;
+            case MessageType.USER_NOTEXIST:
+                console.error('🚫 Login failed:', message.message);
+                if (this.loginFailureCallback)
+                    this.onLoginFailure(message.message);
+                break;
+            case MessageType.USER_EXISTD:
+                console.error('🚫 Registration failed:', message.message);
+                if (this.RegistrationFailureCallback)
+                    this.onRegistrationFailure(message.message);
+                break;
             default:
                 break; //TODO
         }
@@ -208,6 +236,24 @@ export class WebSocketClient {
         this.statusCallback = callback;
         this.notifyStatus(this.connectionStatus);
     }
+
+    onLoginFailure(callback: (message?: string) => void): void {
+        this.loginFailureCallback = callback;
+    }
+
+    onRegistrationFailure(callback: (message?: string) => void): void {
+        this.RegistrationFailureCallback = callback;
+    }
+
+    onLoginSuccess(callback: (message?: string) => void): void {
+        this.loginSuccess = callback;
+    }
+
+    onRegistrationSuccess(callback: (message?: string) => void): void {
+        this.RegistrationSuccess = callback;
+    }
+
+
 
     // ========================================
     // STATUS & UTILITY
