@@ -16,16 +16,19 @@ export function verifyLogin(username: string, password: string): number {
 
 export function registerNewUser(username: string, email: string, password:string): number {
     // const hs_pwd = function to hash password to add here 
-    if (dbFunction.userExist(0, "", email)) {
-        return 1;
+    let checkvalue = dbFunction.userExist(undefined, username, email);
+    if (checkvalue === 1) {
+        return 1; // user exist (checked by email)
+    } else if (checkvalue === 2) {
+        return 2; // username already taken
     }
     console.log("Validation.ts, registerNewUser: info sent", username, email, password);
 
     try {
         dbFunction.registerUser(username, email, password);
-        return 0;
+        return 0; // registration success
     } catch (err) {
         console.error("registerUser: fail to register ", err);
-        return 2;
+        return 3; // registration error
     }
 }

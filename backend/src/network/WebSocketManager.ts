@@ -213,6 +213,9 @@ export class WebSocketManager {
                 case 1:
                     await this.sendErrorUserExist(socket, "User already exists");
                     return;
+                case 2:
+                    await this.sendErrorUsernameTaken(socket, "Username is already registered");
+                    return;
             }
         } catch (error) {
             console.error('❌ Error registering user:', error);
@@ -289,6 +292,19 @@ export class WebSocketManager {
             console.error('❌ Failed to send success message:', error);
         }
     }  
+
+    private async sendErrorUsernameTaken(socket: any, message: string): Promise<void> {
+        const errorMsg: ServerMessage = {
+            type: MessageType.USERNAME_TAKEN,
+            message: message
+        };
+        
+        try {
+            await socket.send(JSON.stringify(errorMsg));
+        } catch (error) {
+            console.error('❌ Failed to send success message:', error);
+        }
+    } 
 
     /**
      * Handles the disconnection of a client, removing them from games and cleaning up resources.

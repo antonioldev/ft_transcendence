@@ -14,9 +14,10 @@ export enum MessageType {
     LOGIN_USER,            // User want to connect to their account --> calling function for validate info
     SUCCESS_LOGIN,         // Successfully login a user 
     SUCCESS_REGISTRATION,  // Succesfylly register new user
-    LOGIN_FAILURE,         // failure to identify the user
-    USER_EXIST,            // failure in login user -- id or pwd not matching
-    USER_NOTEXIST          // failure in login user -- do not exist in db   
+    LOGIN_FAILURE,         // failure in login user -- id or pwd not matching
+    USERNAME_TAKEN,         // failure to register new user -- username already exist in database  
+    USER_EXIST,            // failure to register new user -- exist in db
+    USER_NOTEXIST         // failure in login user -- do not exist in db 
 }
 
 // Different game modes available
@@ -56,7 +57,7 @@ export enum CollisionDirection {
 export enum AuthState {
     GUEST = 0,
     LOGGED_IN = 1,
-    LOGGED_FAILED
+    LOGGED_FAILED = 2
 }
 
 export enum ConnectionStatus {

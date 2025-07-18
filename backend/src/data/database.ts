@@ -118,26 +118,25 @@ export function updateUserGame(id: number, Game: number): boolean {
 
 
 // GET USER INFO 
-export function userExist(id?: number, username?: string, email?: string): boolean {
-	try {
-		if (id !== undefined) {
-			const user = db.prepare('SELECT * FROM users WHERE id = ?');
-			const userExist = user.get(id);
-			return userExist !== undefined;
-		} else if (username && username.trim() !== '') {
-			const user = db.prepare('SELECT * FROM users WHERE username = ?');
-			const userExist = user.get(username);
-			return userExist !== undefined;
-		} else if (email && email.trim() !== '') {
-			const user = db.prepare('SELECT * FROM users WHERE email = ?');
-			const userExist = user.get(email);
-			return userExist !== undefined;			
-		}
-		return false;
-	} catch (err) {
-		console.error("Error user doesn't exist:", err);
-		return false;
-	}		
+export function userExist(id?: number, username?: string, email?: string): number {
+    try {
+        if (id !== undefined) {
+            const user = db.prepare('SELECT * FROM users WHERE id = ?').get(id);
+            if (user) return 1;
+        }
+        if (email && email.trim() !== '') {
+            const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
+            if (user) return 1;
+        }
+        if (username && username.trim() !== '') {
+            const user = db.prepare('SELECT * FROM users WHERE username = ?').get(username);
+            if (user) return 2;
+        }
+        return 0;
+    } catch (err) {
+        console.error("Error in userExist:", err);
+        return 0;
+    }
 }
 
 

@@ -4,7 +4,7 @@ import { getCurrentTranslation } from '../translations/translations.js';
 import { historyManager } from './HistoryManager.js';
 import { clearInput } from './utils.js';
 import { WebSocketClient } from './WebSocketClient.js';
-import { RegisterUser } from '../shared/types.js';
+import { RegisterUser, LoginUser } from '../shared/types.js';
 
 /**
  * Manages user authentication state, login/logout workflows, and user registration.
@@ -175,53 +175,42 @@ export class AuthManager {
             return;
         }
 
-        this.currentUser = { username: username, password: password };
+        const user: LoginUser = { username, password };
 
         // Register the callback function
         wsClient.onLoginSuccess((message) => {
             this.authState = AuthState.LOGGED_IN;
-            uiManager.showUserInfo(this.currentUser.username);
-            
+            uiManager.showUserInfo(user.username);
             // Clear form and navigate back to main menu
             this.clearLoginForm();
-            historyManager.goToMainMenu();
-            
-            console.log('Login successful - user can now access online modes');
-            alert(message || 'Registration failed. User already exist. Please login');
-            setTimeout(() => {
-                historyManager.goToLogin();
-            }, 500);
+            historyManager.goToMainMenu();     
+            console.log(message);
         });
 
+        wsClient.onLoginFailure((message) => {
+            this.authState = AuthState.LOGGED_FAILED;
+            if (message === "User doesn't exist") {
+                alert(t.dontHaveAccount);
+                this.clearLoginForm();
+                setTimeout(() => {
+                    historyManager.goToRegister();
+                }, 500);
+            } else {
+                alert(t.passwordsDoNotMatch);
+                this.clearLoginForm();
+            }
+        });
 
-        // TODO: Implement actual login logic with backend
         console.log('Login attempt:', { username });
-        // For now we say yes you are in the database, simulate successful login
-        this.currentUser = { username: username, password: password };
         try {
-            wsClient.loginUser(this.currentUser);
+            wsClient.loginUser(user);
             console.log('Login attempt: ', { username});
             this.authState = AuthState.LOGGED_IN;
+            uiManager.showUserInfo(user.username);
         } catch (error) {
             console.error('Error sending login request:', error);
             this.authState = AuthState.LOGGED_FAILED;
-        }
-        // check if server sentback an error to block the loggin 
-
-        if (this.authState === AuthState.LOGGED_IN) {
-            // Update UI to show logged in state
-            uiManager.showUserInfo(this.currentUser.username);
-            
-            // Clear form and navigate back to main menu
-            this.clearLoginForm();
-            historyManager.goToMainMenu();
-            
-            console.log('Login successful - user can now access online modes');
-        } else {
-            alert(t.dontHaveAccount);
-            this.clearLoginForm();
-            return;
-            // reset to guest default
+            alert('Loggin failed due to connection error.');  
         }
 
     }
@@ -255,10 +244,14 @@ export class AuthManager {
         wsClient.onRegistrationFailure((message) => {
             this.authState = AuthState.LOGGED_FAILED;
             this.clearRegisterForm();
-            alert(message || 'Registration failed. User already exist. Please login');
-            setTimeout(() => {
-                historyManager.goToLogin();
-            }, 500);
+            if (message === "Username is already registered") {
+                alert(message || 'Registration failed. Username already register. Please choose another one');
+            } else {
+                alert(message || 'Registration failed. User already exist. Please login');
+                setTimeout(() => {
+                    historyManager.goToLogin();
+                }, 500);
+            }
         });
 
         wsClient.onError((message) => {
