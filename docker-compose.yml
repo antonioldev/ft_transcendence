@@ -22,7 +22,6 @@ services:
     volumes:
     #   - ./backend/src:/app/src
       - ./backend/src/database:/app/database
-    # ----------------------------------------------> CANNOT USE VOLUMES
     env_file:
       - .env
     command: npm start

@@ -1,7 +1,9 @@
 import { uiManager } from '../ui/UIManager.js';
 import { authManager } from './AuthManager.js';
+import { appStateManager } from './AppStateManager.js';
 import { menuFlowManager } from './MenuFlowManager.js';
 import { AppState } from '../shared/constants.js';
+import { EL} from '../ui/elements.js';
 
 /**
  * Singleton class responsible for managing application navigation state and browser history.
@@ -13,7 +15,7 @@ import { AppState } from '../shared/constants.js';
  */
 export class HistoryManager {
     private static instance: HistoryManager;
-    private currentState: string = 'main-menu';
+    private currentState: string = AppState.MAIN_MENU;
 
     static getInstance(): HistoryManager {
         if (!HistoryManager.instance) {
@@ -25,13 +27,23 @@ export class HistoryManager {
     static initialize(): void {
         const historyManager = HistoryManager.getInstance();
         historyManager.setupEventListeners();
-        historyManager.navigateTo('main-menu');
+        historyManager.navigateTo(AppState.MAIN_MENU);
     }
 
     private setupEventListeners(): void {
         // Listen for browser back/forward button clicks
         window.addEventListener('popstate', (event) => {
-            const state = event.state?.screen || 'main-menu';
+
+            if (appStateManager.isInGame()) {
+                const currentGame = appStateManager.getCurrentGame();
+                currentGame?.pause();
+                return;
+            } else if (appStateManager.isPaused()) {
+                appStateManager.exitToMenu();
+                return;
+            }
+
+            const state = event.state?.screen || AppState.MAIN_MENU;
             console.log(`Browser BACK navigation to: ${state}`);
             this.navigateTo(state, false); // false = don't push to history
         });
@@ -43,37 +55,34 @@ export class HistoryManager {
     }
 
     // Handle the navigation to different app states and add it to browser history
-    private navigateTo(state: string, addToHistory: boolean = true): void {
+    navigateTo(state: string, addToHistory: boolean = true): void { // TODO check with teammate, false so doesn't save it
         if (addToHistory)
             history.pushState({ screen: state }, '', window.location.href);
         this.currentState = state;
         console.log(`Navigating to state: ${state}`);
         
         switch (state) { // TODO remove hard coded, use ENUM // TODO if using enum, we can try to remove the single functions below
-            case 'main-menu':
-                this.showScreen('main-menu', { hideOverlayss: true, checkAuth: true });
+            case AppState.MAIN_MENU:
+                this.showScreen(EL.SCREENS.MAIN_MENU, { hideOverlayss: true, checkAuth: true });
                 break;
-            case 'login':
-                this.showScreen('main-menu', { modal: 'login-modal' });
+            case AppState.LOGIN:
+                this.showScreen(EL.SCREENS.MAIN_MENU, { modal: EL.SCREENS.LOGIN_MODAL });
                 break;
-            case 'register':
-                this.showScreen('main-menu', { modal: 'register-modal' });
+            case AppState.REGISTER:
+                this.showScreen(EL.SCREENS.MAIN_MENU, { modal: EL.SCREENS.REGISTER_MODAL });
                 break;
-            case 'game-mode':
-                this.showScreen('game-mode-overlay', { hideOverlayss: true, refreshGameMode: true });
+            case AppState.GAME_MODE:
+                this.showScreen(EL.SCREENS.GAME_MODE_OVERLAY, { hideOverlayss: true, refreshGameMode: true });
                 break;
-            case 'player-setup':
-                this.showScreen('player-setup-overlay', { hideOverlayss: true });
+            case AppState.PLAYER_SETUP:
+                this.showScreen(EL.SCREENS.PLAYER_SETUP_OVERLAY, { hideOverlayss: true });
                 break;
-            case 'game-2d':
-                this.showScreen('game-2d', { hideOverlayss: true, hideUserInfo: true });
-                break;
-            case 'game-3d':
-                this.showScreen('game-3d', { hideOverlayss: true, hideUserInfo: true });
+            case AppState.GAME_3D:
+                this.showScreen(EL.SCREENS.GAME_3D, { hideOverlayss: true, hideUserInfo: true });
                 break;
             default:
                 console.warn(`Unknown state: ${state}, redirecting to main menu`);
-                this.navigateTo('main-menu');
+                this.navigateTo(AppState.MAIN_MENU);
                 break;
         }
     }
@@ -87,16 +96,16 @@ export class HistoryManager {
     } = {}): void {
         
         if (options.hideOverlayss) {
-            uiManager.hideOverlays('login-modal');
-            uiManager.hideOverlays('register-modal');
+            uiManager.setElementVisibility(EL.SCREENS.LOGIN_MODAL, false);
+            uiManager.setElementVisibility(EL.SCREENS.REGISTER_MODAL, false);
         }
         
         if (options.hideUserInfo)
-            uiManager.hideUserInfo();
+            uiManager.showAuthButtons();
         
         if (options.modal) {
-            uiManager.showScreen('main-menu');
-            uiManager.showOverlays(options.modal);
+            uiManager.showScreen(EL.SCREENS.MAIN_MENU);
+            uiManager.setElementVisibility(options.modal, true);
         } else {
             uiManager.showScreen(screenId);
         }
@@ -105,62 +114,7 @@ export class HistoryManager {
             authManager.checkAuthState();
         
         if (options.refreshGameMode)
-            menuFlowManager.refreshButtonStates();
-    }
-
-    // Public methods for other managers to use
-    getCurrentState(): string {
-        return this.currentState;
-    }
-
-    // Go to main menu (used by logout, game exit, etc.)
-    goToMainMenu(): void {
-        this.navigateTo('main-menu');
-    }
-
-    // Go to game mode selection (used by PLAY button)
-    goToGameMode(): void {
-        this.navigateTo('game-mode');
-    }
-
-    // Go to login modal (used by login button)
-    goToLogin(): void {
-        this.navigateTo('login');
-    }
-
-    // Go to register modal (used by register button)  
-    goToRegister(): void {
-        this.navigateTo('register');
-    }
-
-    // Go to player setup (used by game mode selection)
-    goToPlayerSetup(): void {
-        this.navigateTo('player-setup');
-    }
-
-    // Go to game (used by start game button)
-    goToGame2D(): void { // TODO check with teammate, false so doesn't save it
-        this.navigateTo('game-2d', false);
-    }
-
-    goToGame3D(): void {  // TODO check with teammate, false so doesn't save it
-        this.navigateTo('game-3d', false);
-    }
-
-    // Close modal and return to previous state
-    closeModal(): void {
-        // For modals, we want to go back to main menu
-        this.navigateTo('main-menu');
-    }
-
-    // Browser back button simulation (for testing)
-    goBack(): void {
-        window.history.back();
-    }
-
-    // Browser forward button simulation (for testing)
-    goForward(): void {
-        window.history.forward();
+            menuFlowManager.updateButtonStates();
     }
 }
 

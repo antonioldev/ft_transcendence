@@ -3,22 +3,40 @@
 
 // Types of messages exchanged between client and server
 export enum MessageType {
-    JOIN_GAME = 0,         // Client requests to join a game
-    PLAYER_INPUT = 1,      // Player input data
-    GAME_STATE = 2,        // Current game state update
-    SIDE_ASSIGNMENT = 3,   // Assign player to a side (left/right)
-    GAME_STARTED = 4,      // Notify that the game has started
-    ERROR = 5,             // Error message
-    QUIT_GAME = 6          // Send this message when CTRL + Y
+    JOIN_GAME,          // CLIENT -> SERVER: Client requests to start a game
+    PLAYER_INPUT,       // CLIENT -> SERVER: Player input data
+    GAME_STATE,         // SERVER -> CLIENTS: Current game state update
+    SIDE_ASSIGNMENT,    // SERVER -> CLIENTS: Assign player to a side (left/right)
+    // GAME_STARTED,       // SERVER -> CLIENT: Welcome to game (after JOIN_GAME)
+    ERROR,              // SERVER -> CLIENTS: Error message
+    QUIT_GAME,          // CLIENT -> SERVER: Send this message when CTRL + Y
+
+    PAUSE_REQUEST,      // CLIENT -> SERVER: Client requests pause (ESC key)
+    RESUME_REQUEST,     // CLIENT -> SERVER: Client requests resume (N key)  
+    PAUSED,             // SERVER -> CLIENTS: Server confirms pause to all clients
+    RESUMED,            // SERVER -> CLIENTS: Server confirms resume to all clients
+    GAME_ENDED,         // SERVER -> CLIENTS: Server notifies game ended (when someone quits with Y)
+
+    WELCOME,             // SERVER -> CLIENT: Welcome message on connection
+}
+
+export enum WebSocketEvent {
+    GAME_STATE = 'gameState',
+    CONNECTION = 'connection',
+    ERROR = 'error',
+    GAME_PAUSED = 'gamePaused',
+    GAME_RESUMED = 'gameResumed',
+    GAME_ENDED = 'gameEnded',
+    STATUS_CHANGE = 'statusChange',
 }
 
 // Different game modes available
 export enum GameMode {
-    SINGLE_PLAYER = 0,     // Single-player mode
-    TWO_PLAYER_LOCAL = 1,  // Two players on the same device
-    TWO_PLAYER_REMOTE = 2, // Two players over the network
-	TOURNAMENT_LOCAL = 3,        // Tournament mode, all player same page
-    TOURNAMENT_REMOTE = 4
+    SINGLE_PLAYER = 'solo-mode',
+    TWO_PLAYER_LOCAL = 'local-mode',            // Two players on the same device
+    TWO_PLAYER_REMOTE = 'online-mode',          // Two players over the network
+	TOURNAMENT_LOCAL = 'tournament-mode',       // Tournament mode, all player same page
+    TOURNAMENT_REMOTE = 'tournament-online-mode'// Tournament mode, over the network
 }
 
 // Directions for player movement
@@ -63,6 +81,5 @@ export enum AppState {
     REGISTER = 'register',
     GAME_MODE = 'game-mode',
     PLAYER_SETUP = 'player-setup',
-    GAME_2D = 'game-2d',
     GAME_3D = 'game-3d'
 }

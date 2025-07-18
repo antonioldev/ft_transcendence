@@ -1,8 +1,9 @@
-import { AuthState } from '../shared/constants.js';
+import { AuthState, AppState } from '../shared/constants.js';
 import { uiManager } from '../ui/UIManager.js';
 import { getCurrentTranslation } from '../translations/translations.js';
 import { historyManager } from './HistoryManager.js';
-import { clearInput } from './utils.js';
+import { clearForm } from './utils.js';
+import { EL, getElementById, requireElementById} from '../ui/elements.js';
 
 /**
  * Manages user authentication state, login/logout workflows, and user registration.
@@ -35,30 +36,30 @@ export class AuthManager {
     // Sets up all event listeners for authentication-related UI elements.
     private setupEventListeners(): void {
         // Main menu authentication buttons (top-right)
-        const registerBtn = document.getElementById('register-btn');
-        const loginBtn = document.getElementById('login-btn');
-        const logoutBtn = document.getElementById('logout-btn');
-        const playBtn = document.getElementById('play-btn');
+        const registerBtn = requireElementById(EL.BUTTONS.REGISTER);
+        const loginBtn = requireElementById(EL.BUTTONS.LOGIN);
+        const logoutBtn = requireElementById(EL.BUTTONS.LOGOUT);
+        const playBtn = requireElementById(EL.BUTTONS.PLAY);
 
         // Setup primary navigation handlers
         this.setupMainMenuHandlers(loginBtn, registerBtn, logoutBtn, playBtn);
 
         // Small windows for log in and register
-        const showRegister = document.getElementById('show-register');
-        const showLogin = document.getElementById('show-login');
+        const showRegister = requireElementById(EL.BUTTONS.SHOW_REGISTER);
+        const showLogin = requireElementById(EL.BUTTONS.SHOW_LOGIN);
 
         this.setupModalSwitchingHandlers(showRegister, showLogin);
 
         // Modal back buttons
-        const loginBack = document.getElementById('login-back');
-        const registerBack = document.getElementById('register-back');
+        const loginBack = requireElementById(EL.BUTTONS.LOGIN_BACK);
+        const registerBack = requireElementById(EL.BUTTONS.REGISTER_BACK);
 
         this.setupModalBackHandlers(loginBack, registerBack);
 
         // Form submission handlers
-        const loginSubmit = document.getElementById('login-submit');
-        const registerSubmit = document.getElementById('register-submit');
-        const googleLoginBtn = document.getElementById('google-login-btn');
+        const loginSubmit = requireElementById(EL.BUTTONS.LOGIN_SUBMIT);
+        const registerSubmit = requireElementById(EL.BUTTONS.REGISTER_SUBMIT);
+        const googleLoginBtn = requireElementById(EL.BUTTONS.GOOGLE_LOGIN);
 
         this.setupFormSubmissionHandlers(loginSubmit, registerSubmit, googleLoginBtn);
     }
@@ -77,11 +78,11 @@ export class AuthManager {
         playBtn: HTMLElement | null
     ): void {
         loginBtn?.addEventListener('click', () => {
-            historyManager.goToLogin();
+            historyManager.navigateTo(AppState.LOGIN);
         });
 
         registerBtn?.addEventListener('click', () => {
-            historyManager.goToRegister();
+            historyManager.navigateTo(AppState.REGISTER);
         });
 
         logoutBtn?.addEventListener('click', () => {
@@ -89,7 +90,7 @@ export class AuthManager {
         });
 
         playBtn?.addEventListener('click', () => {
-            historyManager.goToGameMode();
+            historyManager.navigateTo(AppState.GAME_MODE);
         });
     }
 
@@ -103,11 +104,11 @@ export class AuthManager {
         showLogin: HTMLElement | null
     ): void {
         showRegister?.addEventListener('click', () => {
-            historyManager.goToRegister();
+            historyManager.navigateTo(AppState.REGISTER);
         });
 
         showLogin?.addEventListener('click', () => {
-            historyManager.goToLogin();
+            historyManager.navigateTo(AppState.LOGIN);
         });
     }
 
@@ -121,11 +122,11 @@ export class AuthManager {
         registerBack: HTMLElement | null
     ): void {
         loginBack?.addEventListener('click', () => {
-            historyManager.closeModal();
+            historyManager.navigateTo(AppState.MAIN_MENU);
         });
 
         registerBack?.addEventListener('click', () => {
-            historyManager.closeModal();
+            historyManager.navigateTo(AppState.MAIN_MENU);
         });
     }
 
@@ -161,14 +162,14 @@ export class AuthManager {
 
     // Handles the login form submission process. Validates input fields, processes authentication, and updates UI state.
     private handleLoginSubmit(): void {
-        const username = (document.getElementById('login-username') as HTMLInputElement)?.value.trim();
-        const password = (document.getElementById('login-password') as HTMLInputElement)?.value;
+        const username = getElementById<HTMLInputElement>(EL.AUTH.LOGIN_USERNAME)?.value.trim();
+        const password = getElementById<HTMLInputElement>(EL.AUTH.LOGIN_PASSWORD)?.value;
         const t = getCurrentTranslation();
         
         // Basic validation
         if (!username || !password) {
             alert(t.pleaseFilllAllFields);
-            this.clearLoginForm();
+            clearForm([EL.AUTH.LOGIN_USERNAME, EL.AUTH.LOGIN_PASSWORD]);
             return;
         }
 
@@ -183,8 +184,8 @@ export class AuthManager {
         uiManager.showUserInfo(this.currentUser.username);
         
         // Clear form and navigate back to main menu
-        this.clearLoginForm();
-        historyManager.goToMainMenu();
+        clearForm([EL.AUTH.LOGIN_USERNAME, EL.AUTH.LOGIN_PASSWORD]);
+        historyManager.navigateTo(AppState.MAIN_MENU);;
         
         console.log('Login successful - user can now access online modes');
     }
@@ -192,22 +193,24 @@ export class AuthManager {
     // Handles the registration form submission process.
     // Validates input fields, processes registration, and provides user feedback.
     private handleRegisterSubmit(): void {
-        const username = (document.getElementById('register-username') as HTMLInputElement)?.value.trim();
-        const email = (document.getElementById('register-email') as HTMLInputElement)?.value;
-        const password = (document.getElementById('register-password') as HTMLInputElement)?.value;
-        const confirmPassword = (document.getElementById('register-confirm-password') as HTMLInputElement)?.value;
+        const username = getElementById<HTMLInputElement>(EL.AUTH.REGISTER_USERNAME)?.value.trim();
+        const email = getElementById<HTMLInputElement>(EL.AUTH.REGISTER_EMAIL)?.value;
+        const password = getElementById<HTMLInputElement>(EL.AUTH.REGISTER_PASSWORD)?.value;
+        const confirmPassword = getElementById<HTMLInputElement>(EL.AUTH.REGISTER_CONFIRM_PASSWORD)?.value;
         const t = getCurrentTranslation();
 
         // Check if fiels are all full
         if (!username || !email || !password || !confirmPassword) {
             alert(t.pleaseFilllAllFields);
-            this.clearRegisterForm();
+            clearForm([ EL.AUTH.REGISTER_USERNAME, EL.AUTH.REGISTER_EMAIL,
+                EL.AUTH.REGISTER_PASSWORD, EL.AUTH.REGISTER_CONFIRM_PASSWORD]);
             return;
         }
 
         if (password !== confirmPassword) {
             alert(t.passwordsDoNotMatch);
-            this.clearRegisterForm();
+            clearForm([ EL.AUTH.REGISTER_USERNAME, EL.AUTH.REGISTER_EMAIL,
+                EL.AUTH.REGISTER_PASSWORD, EL.AUTH.REGISTER_CONFIRM_PASSWORD]);
             return;
         }
 
@@ -215,12 +218,13 @@ export class AuthManager {
         console.log('Register attempt:', { username, email });
         
         // Clear form and provide success feedback
-        this.clearRegisterForm();
+        clearForm([ EL.AUTH.REGISTER_USERNAME, EL.AUTH.REGISTER_EMAIL,
+            EL.AUTH.REGISTER_PASSWORD, EL.AUTH.REGISTER_CONFIRM_PASSWORD]);
         alert('Registration successful! You can now login.');
         
         // Navigate to login after successful registration
         setTimeout(() => {
-            historyManager.goToLogin();
+            historyManager.navigateTo(AppState.LOGIN);
         }, 500);
     }
 
@@ -229,30 +233,12 @@ export class AuthManager {
         // TODO: Implement Google OAuth
         console.log('Google login clicked - to be implemented');
         alert('Google login will be implemented later');
-        this.clearLoginForm();
+        clearForm([EL.AUTH.LOGIN_USERNAME, EL.AUTH.LOGIN_PASSWORD]);
         // After successful Google login:
         // this.currentUser = { username: googleUser.name, email: googleUser.email };
         // this.authState = AuthState.LOGGED_IN;
         // uiManager.showUserInfo(this.currentUser.username);
         // uiManager.hideOverlays('login-modal');
-    }
-
-    // ========================================
-    // FORM MANAGEMENT
-    // ========================================
-
-    // Clears all fields in the login form.
-    private clearLoginForm(): void {
-        clearInput('login-username');
-        clearInput('login-password');
-    }
-
-    // Clears all fields in the registration form.
-    private clearRegisterForm(): void {
-        clearInput('register-username');
-        clearInput('register-email');
-        clearInput('register-password');
-        clearInput('register-confirm-password');
     }
 
     // ========================================
@@ -287,8 +273,8 @@ export class AuthManager {
     logout(): void {
         this.authState = AuthState.GUEST;
         this.currentUser = null;
-        uiManager.hideUserInfo();
-        historyManager.goToMainMenu();
+        uiManager.showAuthButtons();
+        historyManager.navigateTo(AppState.MAIN_MENU);;
         console.log('Logged out - now in guest mode');
     }
 

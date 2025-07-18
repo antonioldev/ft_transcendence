@@ -163,7 +163,7 @@
             </form>
 
             <!-- Local 2 Player Setup -->
-            <form id="local-setup" class="setup-form">
+            <form id="two-players-setup" class="setup-form">
                 <fieldset>
                     <div class="input-group">
                         <label for="player1-name-local" class="label">Player 1 Name:</label>
@@ -178,15 +178,30 @@
                 </fieldset>
             </form>
 
-            <!-- Online Player Setup -->
-            <form id="online-setup" class="setup-form">
+            <!-- Tournament Setup -->
+            <form id="tournament-setup" class="setup-form">
                 <fieldset>
                     <div class="input-group">
-                        <label for="player1-name-online" class="label">Player Name:</label>
-                        <input type="text" id="player1-name-online" name="player1-name" class="input" 
-                               placeholder="Enter your name" maxlength="20" required>
+                        <label for="player1-name-tournament" class="label">Player 1 Name:</label>
+                        <input type="text" id="player1-name-tournament" name="player1-name" class="input" 
+                               placeholder="Enter Player 1 name" maxlength="20" required>
                     </div>
-                    <p class="info-text">You'll be matched with another online player</p>
+                    <div class="input-group">
+                        <label for="player2-name-tournament" class="label">Player 2 Name:</label>
+                        <input type="text" id="player2-name-tournament" name="player2-name" class="input" 
+                               placeholder="Enter Player 2 name" maxlength="20" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="player3-name-tournament" class="label">Player 3 Name:</label>
+                        <input type="text" id="player3-name-tournament" name="player3-name" class="input" 
+                               placeholder="Enter Player 3 name" maxlength="20" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="player4-name-tournament" class="label">Player 4 Name:</label>
+                        <input type="text" id="player4-name-tournament" name="player4-name" class="input" 
+                               placeholder="Enter Player 4 name" maxlength="20" required>
+                    </div>
+                    <p class="info-text">Tournament will be implemented in a future update</p>
                 </fieldset>
             </form>
 
@@ -198,16 +213,6 @@
     </div>
 
     <!-- Game Screens -->
-    <div id="game-2d" class="screen overlay game-screen">
-        <canvas id="game-canvas-2d" class="game-canvas" width="800" height="600" 
-                aria-label="2D Game Canvas"></canvas>
-        <div class="pause-dialog" id="pause-dialog-2d" role="dialog" aria-labelledby="pause-title-2d">
-            <h2 class="pause-title" id="pause-title-2d">Game Paused</h2>
-            <p class="pause-text" id="pause-text-2d">Exit the game?</p>
-            <p class="pause-controls" id="pause-controls-2d">Y - Yes | N - No | ESC - Resume</p>
-        </div>
-    </div>
-
     <div id="game-3d" class="screen overlay game-screen">
         <canvas id="game-canvas-3d" class="game-canvas" width="1400" height="700" 
                 aria-label="3D Game Canvas"></canvas>

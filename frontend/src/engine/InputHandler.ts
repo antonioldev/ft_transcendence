@@ -7,10 +7,9 @@ import { getPlayerBoundaries } from '../shared/gameConfig.js';
 /**
  * Handles player input for the game, supporting both local and remote multiplayer modes.
  * 
- * The `InputHandler` class manages device input sources (such as keyboard), processes player controls,
- * validates movement boundaries, and dispatches input events to the game logic. It supports configuration
- * for different game modes (single player, local multiplayer, remote multiplayer), and can be integrated
- * with Babylon.js scenes for device management and camera utilities.
+ * The `InputHandler` class manages device input sources (keyboard), processes player controls,
+ * validates movement boundaries, and dispatches input events directly to the WebSocket. It supports 
+ * different game modes and integrates with Babylon.js scenes for device management.
  */
 export class InputHandler {
     private deviceSourceManager: any = null;
@@ -55,7 +54,7 @@ export class InputHandler {
         this.controlledSide = 0;
 
         console.log(`InputHandler configured:`, {
-            gameMode: GameMode[this.gameMode],
+            gameMode: this.gameMode,
             controlledSide: this.controlledSide,
             isLocalMultiplayer: this.isLocalMultiplayer
         });
@@ -151,22 +150,6 @@ export class InputHandler {
     // Determine if we should listen to this player's input
     private shouldListenToPlayer(side: number): boolean {
         return this.isLocalMultiplayer || this.controlledSide === side;
-    }
-
-    // ========================================
-    // CAMERA UTILITY
-    // ========================================
-
-    // Get camera follow target for 3D mode
-    getFollowTarget(player: any): any {
-        if (this.isDisposed || !player) {
-            return new BABYLON.Vector3(0, 0, 0);
-        }
-
-        // This logic could be moved to BabylonScene, but keeping here for now
-        const followLimit = 25 - 13; // fieldBoundary - edgeBuffer
-        let targetX = Math.max(-followLimit, Math.min(followLimit, player.position.x));
-        return new BABYLON.Vector3(targetX, player.position.y, player.position.z);
     }
 
     // ========================================

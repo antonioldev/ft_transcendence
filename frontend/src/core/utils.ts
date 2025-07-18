@@ -1,8 +1,5 @@
 declare var BABYLON: any;
 
-import { gameController } from '../engine/GameController.js';
-import { appStateManager } from './AppStateManager.js';
-import { uiManager } from '../ui/UIManager.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
 
 // Colors for Babylon.js (frontend only)
@@ -79,67 +76,11 @@ export function get3DSoloCameraViewport() {
     return new BABYLON.Viewport(0, 0, 1, 1);
 }
 
-export function clearInput(id: string): void {
-    const input = document.getElementById(id) as HTMLInputElement;
-    if (input) {
-        input.value = '';
-    }
-}
-
-/**
- * One function to dispose current game using new architecture
- */
-export async function disposeCurrentGame(): Promise<void> {
-    console.log('Disposing current game...');
-    
-    try {
-        // 1. Hide all pause dialogs first
-        uiManager.hidePauseOverlays('pause-dialog-2d');
-        uiManager.hidePauseOverlays('pause-dialog-3d');
-        
-        // 2.  NEW: Single call to dispose game using new controller
-        await gameController.endGame();
-        
-        // 3. Reset game state manager (it should handle this internally, but just in case)
-        appStateManager.resetToMenu();
-        
-        console.log(' Game disposed successfully with new architecture');
-    } catch (error) {
-        console.error('❌ Error during disposal:', error);
-    }
-}
-
-/**
- * Check if any game is currently active
- */
-export function isAnyGameActive(): boolean {
-    return appStateManager.isInGameOrPaused() || gameController.hasActiveGame();
-}
-
-/**
- * Check if game is currently running (not paused)
- */
-export function isGameRunning(): boolean {
-    return gameController.isGameRunning();
-}
-
-/**
- * Check if game is currently paused
- */
-export function isGamePaused(): boolean {
-    return gameController.isGamePaused();
-}
-
-/**
- * Get current game info for debugging
- */
-export function getGameInfo(): any {
-    return {
-        stateManager: appStateManager.getGameInfo ? appStateManager.getGameInfo() : 'N/A',
-        controller: {
-            hasActiveGame: gameController.hasActiveGame(),
-            isRunning: gameController.isGameRunning(),
-            isPaused: gameController.isGamePaused()
+export function clearForm(fieldIds: string[]): void {
+    fieldIds.forEach(id => {
+        const input = document.getElementById(id) as HTMLInputElement;
+        if (input) {
+            input.value = '';
         }
-    };
+    });
 }

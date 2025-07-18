@@ -15,7 +15,7 @@ export class WebSocketManager {
      * @param fastify - The Fastify instance to configure.
      */
     async setupRoutes(fastify: FastifyInstance): Promise<void> {
-        fastify.get('/', { websocket: true }, (socket, req) => {
+        fastify.get('/', { websocket: true } as any, (socket, req) => {
             this.handleConnection(socket);
         });
     }
@@ -70,8 +70,14 @@ export class WebSocketManager {
                 case MessageType.PLAYER_INPUT:
                     await this.handlePlayerInput(client, data);
                     break;
+                case MessageType.PAUSE_REQUEST:
+                    await this.handlePauseRequest(client); // TODO server need to check and confirm to clients
+                    break;
+                case MessageType.RESUME_REQUEST:
+                    await this.handleResumeRequest(client); // TODO server need to check and confirm to clients
+                    break;
                 case MessageType.QUIT_GAME:  // TODO I added because it was creating issue, need to check
-                    gameManager.removeClientFromGames(client);
+                    await this.handleQuitGame(client);
                 break;
                 default:
                     await this.sendError(socket, 'Unknown message type');
@@ -135,6 +141,9 @@ export class WebSocketManager {
             return;
         }
 
+        if (game.isPaused())
+            return;
+
         // Convert direction to movement
         let dx = 0;
         if (data.direction === Direction.LEFT) dx = -1;
@@ -147,6 +156,63 @@ export class WebSocketManager {
             side: data.side,
             dx: dx
         });
+    }
+
+    /**
+     * Handles the request from a client to pause a game
+     * @param client - The client that send the request.
+     */
+    private async handlePauseRequest(client: Client): Promise<void> {
+        const game = this.findClientGame(client);
+        if (!game) {
+            console.warn(`Client ${client.id} not in any game for pause request`);
+            return;
+        }
+
+        if (!game.canClientControlGame(client)){
+            console.warn(`Client ${client.id} not authorized to pause game`);
+            return;
+        }
+
+        const success = await game.pauseGame(client);
+        if (!success)
+            console.warn(`Failed to pause game for client ${client.id}`);
+    }
+
+    /**
+     * Handles the request from a client to resume a game
+     * @param client - The client that send the request.
+     */
+    private async handleResumeRequest(client: Client): Promise<void> {
+        const game = this.findClientGame(client);
+        if (!game) {
+            console.warn(`Client ${client.id} not in any game for resume request`);
+            return;
+        }
+
+        if (!game.canClientControlGame(client)){
+            console.warn(`Client ${client.id} not authorized to resume game`);
+            return;
+        }
+
+        const success = await game.resumeGame(client);
+        if (!success)
+            console.warn(`Failed to resume game for client ${client.id}`);
+    }
+
+    private async handleQuitGame(client: Client): Promise<void> {
+        const game = this.findClientGame(client);
+        if (!game) {
+            console.warn(`Client ${client.id} not in any game to quit`);
+            return;
+        }
+    
+        await game.broadcastMessage(MessageType.GAME_ENDED);
+        console.log(`Game ${game.id} ended by client ${client.id}`);
+        
+        // Then do the cleanup (your original working code)
+        gameManager.removeClientFromGames(client);
+
     }
 
     /**
@@ -182,7 +248,7 @@ export class WebSocketManager {
      */
     private async sendWelcomeMessage(socket: any): Promise<void> {
         const welcome: ServerMessage = {
-            type: MessageType.GAME_STARTED,
+            type: MessageType.WELCOME,
             message: 'Connected to game server'
         };
         

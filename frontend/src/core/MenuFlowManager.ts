@@ -1,13 +1,14 @@
-import { GameMode, ViewMode, ConnectionStatus } from '../shared/constants.js';
+import { GameMode, ViewMode, ConnectionStatus, AppState } from '../shared/constants.js';
 import { uiManager } from '../ui/UIManager.js';
 import { authManager } from './AuthManager.js';
 import { getCurrentTranslation } from '../translations/translations.js';
 import { historyManager } from './HistoryManager.js';
 import { webSocketClient } from './WebSocketClient.js';
 import { appStateManager } from './AppStateManager.js';
-import { gameController } from '../engine/GameController.js';
 import { GameConfigFactory } from '../engine/GameConfig.js';
-import { clearInput } from './utils.js';
+import { clearForm } from './utils.js';
+import { EL, getElementById} from '../ui/elements.js';
+
 
 /**
  * Manages the selection and initialization of game modes and view modes for the application.
@@ -21,13 +22,9 @@ export class MenuFlowManager {
     private selectedGameMode: GameMode | null = null;
     private currentViewModeIndex = 0;
 
-    // ========================================
-    // SINGLETON PATTERN
-    // ========================================
     static getInstance(): MenuFlowManager {
-        if (!MenuFlowManager.instance) {
+        if (!MenuFlowManager.instance)
             MenuFlowManager.instance = new MenuFlowManager();
-        }
         return MenuFlowManager.instance;
     }
 
@@ -38,7 +35,7 @@ export class MenuFlowManager {
 
     static showGameModeSelection(): void {
         const menuFlowManager = MenuFlowManager.getInstance();
-        historyManager.goToGameMode();
+        historyManager.navigateTo(AppState.GAME_MODE);
         menuFlowManager.updateViewModeDisplay();
         menuFlowManager.updateButtonStates();
     }
@@ -46,70 +43,68 @@ export class MenuFlowManager {
     // ========================================
     // GAME STARTING
     // ========================================
-    
-    /**
-     *  NEW: Simplified game starting using new architecture
-     */
+
     private async startGameWithMode(viewMode: ViewMode, gameMode: GameMode): Promise<void> {
         try {
-            console.log(`Starting game: ${GameMode[gameMode]} in ${ViewMode[viewMode]} mode`);
-            
-            // Hide user info during game
-            uiManager.hideUserInfo();
-            
-            // Navigate to appropriate game screen
-            if (viewMode === ViewMode.MODE_2D)
-                historyManager.goToGame2D();
-            else
-                historyManager.goToGame3D();
-            
-            // Update game state manager
-            appStateManager.startGame(viewMode);
-            
-            // Get players from UI
-            const players = GameConfigFactory.getPlayersFromUI(gameMode);
-            
-            // Create game configuration
-            const config = GameConfigFactory.createConfig(viewMode, gameMode, players);
-            
-            //  SINGLE CLEAN CALL - No more complex initialization chain!
-            await gameController.startGame(config);
-            
+            console.log(`Starting game: ${gameMode} in ${ViewMode[viewMode]} mode`);
+            await this.initializeGameSession(viewMode, gameMode);         
             console.log('Game started successfully with new architecture');
             
         } catch (error) {
             console.error('Error starting game:', error);
-            
-            // Return to main menu on error
-            historyManager.goToMainMenu();
-            appStateManager.resetToMenu();
+            this.handleGameStartError();
         }
+    }
+
+    private async initializeGameSession(viewMode: ViewMode, gameMode: GameMode): Promise<void> {
+        uiManager.showAuthButtons();                                    // Hide user info during game
+        historyManager.navigateTo(AppState.GAME_3D, false);             // Navigate to appropriate game screen
+        appStateManager.setGameState(viewMode);                         // Update game state manager
+        const players = GameConfigFactory.getPlayersFromUI(gameMode);   // Get players from UI
+        const config = GameConfigFactory.createConfig(viewMode, gameMode, players); // Create game configuration
+        await appStateManager.startGame(config);
+    }
+
+    private handleGameStartError(): void {
+        // Return to main menu on error
+        historyManager.navigateTo(AppState.MAIN_MENU);;
+        appStateManager.resetToMenu();    
     }
 
     // ========================================
     // UI STATE MANAGEMENT
     // ========================================
     
-    private updateButtonStates(): void {
+    updateButtonStates(): void {
         const t = getCurrentTranslation();
         const isLoggedIn = authManager.isUserAuthenticated();
-        const isOnline = webSocketClient.getConnectionStatus() === ConnectionStatus.CONNECTED;
+        const isOnline = webSocketClient.isConnected();
         
         if (isOnline) {
-            uiManager.setButtonState('solo-mode', 'enabled');
-            
-            if (isLoggedIn) {
-                uiManager.setButtonState('online-mode', 'enabled');
-                uiManager.setButtonState('tournament-online-mode', 'enabled');
-                uiManager.setButtonState('local-mode', 'disabled', t.availableOnlyOffline);
-                uiManager.setButtonState('tournament-mode', 'disabled', t.availableOnlyOffline);
-            } else {
-                uiManager.setButtonState('local-mode', 'enabled');
-                uiManager.setButtonState('tournament-mode', 'enabled');
-                uiManager.setButtonState('online-mode', 'disabled', t.loginRequired);
-                uiManager.setButtonState('tournament-online-mode', 'disabled', t.loginRequired);
-            }
+    uiManager.setButtonState([EL.GAME_MODES.SOLO], 'enabled');
+
+        if (isLoggedIn) {
+            uiManager.setButtonState(
+                [EL.GAME_MODES.ONLINE, EL.GAME_MODES.TOURNAMENT_ONLINE],
+                'enabled'
+            );
+            uiManager.setButtonState(
+                [EL.GAME_MODES.LOCAL, EL.GAME_MODES.TOURNAMENT],
+                'disabled',
+                t.availableOnlyOffline
+            );
+        } else {
+            uiManager.setButtonState(
+                [EL.GAME_MODES.LOCAL, EL.GAME_MODES.TOURNAMENT],
+                'enabled'
+            );
+            uiManager.setButtonState(
+                [EL.GAME_MODES.ONLINE, EL.GAME_MODES.TOURNAMENT_ONLINE],
+                'disabled',
+                t.loginRequired
+            );
         }
+}
     }
 
     // ========================================
@@ -118,130 +113,104 @@ export class MenuFlowManager {
     
     private setupEventListeners(): void {
         // View mode navigation controls
-        const viewModeBack = document.getElementById('view-mode-back');
-        const viewModeForward = document.getElementById('view-mode-forward');
-
+        const viewModeBack = getElementById(EL.BUTTONS.VIEW_MODE_BACK);
+        const viewModeForward = getElementById(EL.BUTTONS.VIEW_MODE_FORWARD);
         viewModeBack?.addEventListener('click', () => this.previousViewMode());
         viewModeForward?.addEventListener('click', () => this.nextViewMode());
-
+    
         // Game mode selection buttons
-        const soloMode = document.getElementById('solo-mode');
-        const localMode = document.getElementById('local-mode');
-        const onlineMode = document.getElementById('online-mode');
-        const tournamentMode = document.getElementById('tournament-mode');
-        const tournamentOnlineMode = document.getElementById('tournament-online-mode');
-        const modeBack = document.getElementById('mode-back');
+        this.setupGameModeButtons();
+        this.setupPlayerSetupListeners();
+    }
 
-        this.setupSoloModeHandler(soloMode);
-        this.setupLocalModeHandler(localMode);
-        this.setupOnlineModeHandler(onlineMode);
-        this.setupTournamentModeHandler(tournamentMode);
-        this.setupTournamentOnlineModeHandler(tournamentOnlineMode);
-
-        modeBack?.addEventListener('click', () => {
-            this.selectedGameMode = null;
-            historyManager.goToMainMenu();
+    private setupGameModeButtons(): void {
+        this.setupGameModeHandler(GameMode.SINGLE_PLAYER, 'solo', {
+            requiresAuth: false,
+            requiresSetup: true,
+            availableOfflineOnly: false
         });
 
-        this.setupPlayerSetupListeners();
+        this.setupGameModeHandler(GameMode.TWO_PLAYER_LOCAL, 'two-players', {
+            requiresAuth: false,
+            requiresSetup: true,
+            availableOfflineOnly: true,
+            errorMessage: 'Local mode not available for logged-in users'
+        });
+        
+        this.setupGameModeHandler(GameMode.TWO_PLAYER_REMOTE, 'two-players', {
+            requiresAuth: true,
+            requiresSetup: false,
+            availableOfflineOnly: false
+        });
+        
+        this.setupGameModeHandler(GameMode.TOURNAMENT_LOCAL, 'tournament', {
+            requiresAuth: false,
+            requiresSetup: true,
+            availableOfflineOnly: true,
+            errorMessage: 'Local tournament not available for logged-in users'
+        });
+        
+        this.setupGameModeHandler(GameMode.TOURNAMENT_REMOTE, 'tournament', {
+            requiresAuth: true,
+            requiresSetup: false,
+            availableOfflineOnly: false
+        });
+
+        const backButton = getElementById(EL.BUTTONS.MODE_BACK);
+        backButton?.addEventListener('click', () => this.handleModeBackButton());
+    }
+    
+    private handleModeBackButton(): void {
+        this.selectedGameMode = null;
+        historyManager.navigateTo(AppState.MAIN_MENU);;
     }
 
     // ========================================
     // GAME MODE HANDLERS
     // ========================================
-    
-    private setupSoloModeHandler(soloMode: HTMLElement | null): void {
-        soloMode?.addEventListener('click', async () => {
-            this.selectedGameMode = GameMode.SINGLE_PLAYER;
-            
-            if (authManager.isUserAuthenticated()) {
-                console.log('Solo: logged in user, starting game directly');
-                await this.startGameWithMode(this.selectedViewMode, GameMode.SINGLE_PLAYER);
+
+    private setupGameModeHandler(gameMode: GameMode, form: string, config: {
+                requiresAuth: boolean; requiresSetup: boolean; availableOfflineOnly: boolean; errorMessage?: string;}) {
+        const button = getElementById(gameMode);
+
+        button?.addEventListener('click', async () => {
+            if (config.availableOfflineOnly && authManager.isUserAuthenticated()) {
+                alert(config.errorMessage || 'This mode is not available for logged-in users.');
                 return;
             }
-            
-            console.log('Solo: guest user, showing setup');
-            historyManager.goToPlayerSetup();
-            uiManager.showSetupForm('solo');
-            this.clearPlayerNameFields();
-        });
-    }
 
-    private setupLocalModeHandler(localMode: HTMLElement | null): void {
-        localMode?.addEventListener('click', () => {
-            if (authManager.isUserAuthenticated()) {
-                alert('Local mode not available for logged in users');
-                return;
-            }
-            
-            this.selectedGameMode = GameMode.TWO_PLAYER_LOCAL;
-            console.log('Local: guest user, showing setup');
-            historyManager.goToPlayerSetup();
-            uiManager.showSetupForm('local');
-            this.clearPlayerNameFields();
-        });
-    }
-
-    private setupOnlineModeHandler(onlineMode: HTMLElement | null): void {
-        onlineMode?.addEventListener('click', async () => {
-            if (!authManager.isUserAuthenticated()) {
+            if (config.requiresAuth && !authManager.isUserAuthenticated()) {
                 const t = getCurrentTranslation();
                 alert(t.loginRequired);
                 return;
             }
-            
-            this.selectedGameMode = GameMode.TWO_PLAYER_REMOTE;
-            console.log('Online: logged in user, starting game directly');
-            await this.startGameWithMode(this.selectedViewMode, GameMode.TWO_PLAYER_REMOTE);
-        });
-    }
 
-    private setupTournamentModeHandler(tournamentMode: HTMLElement | null): void {
-        tournamentMode?.addEventListener('click', () => {
-            if (authManager.isUserAuthenticated()) {
-                alert('Local tournament not available for logged in users');
-                return;
-            }
-            
-            this.selectedGameMode = GameMode.TOURNAMENT_LOCAL;
-            console.log('Tournament Local: guest user, showing setup');
-            historyManager.goToPlayerSetup();
-            uiManager.showSetupForm('local');
-            this.clearPlayerNameFields();
-        });
-    }
+            this.selectedGameMode = gameMode;
 
-    private setupTournamentOnlineModeHandler(tournamentOnlineMode: HTMLElement | null): void {
-        tournamentOnlineMode?.addEventListener('click', async () => {
-            if (!authManager.isUserAuthenticated()) {
-                const t = getCurrentTranslation();
-                alert(t.loginRequired);
-                return;
-            }
-            
-            this.selectedGameMode = GameMode.TOURNAMENT_REMOTE;
-            console.log('Tournament Online: logged in user, starting game directly');
-            await this.startGameWithMode(this.selectedViewMode, GameMode.TOURNAMENT_REMOTE);
+            if (config.requiresSetup && !authManager.isUserAuthenticated()) {
+                historyManager.navigateTo(AppState.PLAYER_SETUP);
+                uiManager.showSetupForm(form);
+                clearForm([ EL.PLAYER_SETUP.PLAYER1_NAME, EL.PLAYER_SETUP.PLAYER1_NAME_LOCAL,
+                    EL.PLAYER_SETUP.PLAYER2_NAME_LOCAL, EL.PLAYER_SETUP.PLAYER1_NAME_TOURNAMENT,
+                    EL.PLAYER_SETUP.PLAYER2_NAME_TOURNAMENT, EL.PLAYER_SETUP.PLAYER3_NAME_TOURNAMENT,
+                    EL.PLAYER_SETUP.PLAYER4_NAME_TOURNAMENT]);
+            } else
+                await this.startGameWithMode(this.selectedViewMode, this.selectedGameMode);
+
         });
     }
 
     // ========================================
     // PLAYER SETUP MANAGEMENT
     // ========================================
-    
-    private clearPlayerNameFields(): void {
-        clearInput('player1-name');
-        clearInput('player1-name-local');
-        clearInput('player2-name-local');
-    }
 
     private setupPlayerSetupListeners(): void {
-        const setupBack = document.getElementById('setup-back');
-        const startGame = document.getElementById('start-game');
+        const setupBack = getElementById(EL.BUTTONS.SETUP_BACK);
+        const startGame = getElementById(EL.BUTTONS.START_GAME);
 
         setupBack?.addEventListener('click', () => {
             this.selectedGameMode = null;
-            historyManager.goToGameMode();
+            historyManager.navigateTo(AppState.GAME_MODE);
         });
 
         startGame?.addEventListener('click', async () => {
@@ -290,30 +259,10 @@ export class MenuFlowManager {
 
     private updateViewModeDisplay(): void {
         const viewModes = this.getViewModes();
-        const viewModeDisplay = document.getElementById('view-mode-display');
+        const viewModeDisplay = getElementById(EL.DISPLAY.VIEW_MODE_DISPLAY);
         if (viewModeDisplay) {
             viewModeDisplay.textContent = viewModes[this.currentViewModeIndex].name;
         }
-    }
-
-    // ========================================
-    // PUBLIC API
-    // ========================================
-    
-    public refreshButtonStates(): void {
-        this.updateButtonStates();
-    }
-
-    getSelectedGameMode(): GameMode | null {
-        return this.selectedGameMode;
-    }
-
-    getSelectedViewMode(): ViewMode {
-        return this.selectedViewMode;
-    }
-
-    resetGameMode(): void {
-        this.selectedGameMode = null;
     }
 }
 

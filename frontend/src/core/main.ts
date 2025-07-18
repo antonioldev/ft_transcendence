@@ -5,6 +5,8 @@ import { AuthManager } from './AuthManager.js';
 import { MenuFlowManager } from './MenuFlowManager.js';
 import { KeyboardManager } from './KeyboardManager.js';
 import { HistoryManager } from './HistoryManager.js';
+import { ConnectionStatus, WebSocketEvent } from '../shared/constants.js';
+import { EL, getElementById } from '../ui/elements.js';
 
 function loadPage(): void {
     // Initialize classes
@@ -19,7 +21,7 @@ function loadPage(): void {
     setupLanguageListeners();
 
     // Setup WebSocket monitoring
-    webSocketClient.onStatusChange((status) => {
+    webSocketClient.registerCallback(WebSocketEvent.STATUS_CHANGE, (status: ConnectionStatus) => {
         uiManager.updateConnectionStatus(status);
     });
 }
@@ -28,8 +30,8 @@ function loadPage(): void {
  * Sets up language navigation button listeners.
  */
 function setupLanguageListeners() {
-    const backBtn = document.getElementById('back');
-    const forwardBtn = document.getElementById('forward');
+    const backBtn = getElementById(EL.BUTTONS.BACK);
+    const forwardBtn = getElementById(EL.BUTTONS.FORWARD);
 
     backBtn?.addEventListener('click', previousLanguage);
     forwardBtn?.addEventListener('click', nextLanguage);

@@ -1,5 +1,4 @@
 import { appStateManager } from './AppStateManager.js';
-import { disposeCurrentGame } from './utils.js';
 
 /**
  * Manages global keyboard input for the application, particularly
@@ -58,31 +57,25 @@ export class KeyboardManager {
             isPaused: appStateManager.isPaused() 
         });
         
+        const currentGame = appStateManager.getCurrentGame();
         if (appStateManager.isInGame())
-            appStateManager.pauseCurrentGame();
+            currentGame?.pause();
         else if (appStateManager.isPaused())
-            appStateManager.resumeGame();
+            currentGame?.resume();
     }
 
     // Handles Y/N key presses for pause dialog confirmation.
     private handleYesNoKey(event: KeyboardEvent): void {
         if (appStateManager.isPaused()) {
-            console.log(`🎮 ${event.key} key pressed in pause state`);
+            console.log(`🎮 ${event.key} key pressed in pause state`);    
             
             if (event.key === 'Y' || event.key === 'y')
                 appStateManager.exitToMenu();
-            else if (event.key === 'N' || event.key === 'n')
-                appStateManager.resumeGame();
-        }
-    }
-
-    // Adds a custom key handler for specific key presses.
-    addKeyHandler(key: string, handler: (event: KeyboardEvent) => void): void {
-        document.addEventListener('keydown', (event) => {
-            if (event.key === key) {
-                handler(event);
+            else if (event.key === 'N' || event.key === 'n') {
+                const currentGame = appStateManager.getCurrentGame();
+                currentGame?.resume();
             }
-        });
+        }
     }
 }
 
