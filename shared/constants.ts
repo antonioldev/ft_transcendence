@@ -75,3 +75,9 @@ export enum AppState {
     GAME_2D = 'game-2d',
     GAME_3D = 'game-3d'
 }
+
+export enum UserManagement {
+    SEND_USER_PROFILE,      // Type for front to backend comm
+    REQUEST_USER_PROFILE,    // Type for back to frontend comm
+    UPDATE_USER_PROFILE     // Request to update user information 
+}

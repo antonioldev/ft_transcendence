@@ -1,5 +1,6 @@
 // DB command to create, update and remove information from db and tables
 import Database from 'better-sqlite3';
+import { UserProfile } from '../../shared/types.js';
 
 enum UserField{
 	EMAIL,
@@ -241,6 +242,34 @@ export function getUserNbGames(id: number) {
 		console.error('Error in get User games nb:', err);
 		return -1;
 	}
+}
+
+export function getUserProfile(username: string): UserProfile | null {
+  const userInfo = db.prepare(`
+    SELECT id, username, email, display_name, avatar_url, victories, defeats, games
+    FROM users WHERE username = ?
+  `).get(username);
+
+  if (!userInfo) return null;
+
+  const friends = db.prepare(`
+    SELECT u.id, u.username
+    FROM friends f
+    JOIN users u ON u.id = f.friend_id
+    WHERE f.user_id = ?
+  `).all(userInfo.id);
+
+  return {
+    id: userInfo.id,
+    username: userInfo.username,
+    email: userInfo.email,
+    displayName: userInfo.display_name,
+    avatarUrl: userInfo.avatar_url,
+    victories: userInfo.victories,
+    defeats: userInfo.defeats,
+    games: userInfo.games,
+    friends,
+  };
 }
 
 /**

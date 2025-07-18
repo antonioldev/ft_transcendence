@@ -1,8 +1,8 @@
 import { FastifyInstance } from 'fastify';
 import { gameManager } from '../models/gameManager.js';
 import { Client } from '../models/Client.js';
-import { MessageType, Direction, GameMode } from '../shared/constants.js';
-import { ClientMessage, ServerMessage } from '../shared/types.js';
+import { MessageType, Direction, GameMode, UserManagement } from '../shared/constants.js';
+import { ClientMessage, ServerMessage, GetUserProfile, UserProfile } from '../shared/types.js';
 import * as db from "../data/validation.js";
 
 /**
@@ -78,6 +78,10 @@ export class WebSocketManager {
                 case MessageType.REGISTER_USER:
                     console.log("HandleMessage WSM: calling Register_user");
                     await this.handleRegisterNewUser(socket, data);
+                    break;
+                case UserManagement.REQUEST_USER_PROFILE:
+                    console.log("HandleMessage WSM: Requesting user profile");
+                    await this.handleUserProfileRequest(socket, data);
                     break;
                 case MessageType.QUIT_GAME:  // TODO I added because it was creating issue, need to check
                     gameManager.removeClientFromGames(client);
@@ -305,6 +309,43 @@ export class WebSocketManager {
             console.error('❌ Failed to send success message:', error);
         }
     } 
+
+    /**
+     * Handle displaying information
+    */
+    private async handleUserProfileRequest(socket: any, data: GetUserProfile) {
+        const userName = data.username;
+        if (!userName) {
+            console.warn("Missing userID");
+            return;
+        }
+        try { 
+            const userInfo = db.requestUserInformation(userName);
+            if (userInfo) {
+                await this.sendUserProfile(socket, userInfo);
+                return;
+            } else {
+                await this.sendErrorUserNotExist(socket, "User doesn't exist");
+                return;
+            }
+        } catch (error) {
+            console.error('❌ Error get user profile:', error);
+            await this.sendError(socket, 'Failed to get user profile information');
+        }        
+    }
+
+    private async sendUserProfile(socket: any, data: UserProfile): Promise<void> {
+        const userProfile: UserProfile = {
+            type: UserManagement.SEND_USER_PROFILE,
+            data: data,
+        };
+        
+        try {
+            await socket.send(JSON.stringify(userProfile));
+        } catch (error) {
+            console.error('❌ Failed to send user Profile Information:', error);
+        }
+    }  
 
     /**
      * Handles the disconnection of a client, removing them from games and cleaning up resources.

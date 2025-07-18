@@ -94,6 +94,28 @@ export interface LoginUser {
     password: string;
 }
 
+// ============================== USER MANAGEMENT TYPES ==============================
+
+export interface GetUserProfile {
+  type: UserManagement;
+  data: { username: string };
+}
+
+export interface UserProfile {
+  type: UserManagement;
+  data: {
+    userId: number;
+    username: string;
+    email: string;
+    displayName?: string;
+    avatarUrl?: string;
+    victories: number;
+    defeats: number;
+    games: number;
+    friends: { id: number; username: string }[];
+  };
+}
+
 
 // ============================== FRONTEND-ONLY TYPES ==============================
 
