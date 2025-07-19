@@ -1,4 +1,6 @@
-declare var BABYLON: any;
+declare var BABYLON: typeof import('@babylonjs/core') & {
+    GUI: typeof import('@babylonjs/gui');
+}; //declare var BABYLON: any;
 
 import { GameConfig } from './GameConfig.js';
 import { buildScene } from './sceneBuilder.js';
@@ -37,12 +39,16 @@ export class Game {
     private isDisposed: boolean = false;
     private gameLoopObserver: any = null;
     private isPausedByServer: boolean = false;
+    private lastFrameTime: number = 0;
+    private fpsLimit: number = 60;
 
     constructor(private config: GameConfig) {
-        this.canvas = document.getElementById(config.canvasId) as HTMLCanvasElement;
-        if (!this.canvas) {
+        const element = document.getElementById(config.canvasId);
+        if (element instanceof HTMLCanvasElement)
+            this.canvas = element;
+        else
             throw new Error(`Canvas element not found: ${config.canvasId}`);
-        }
+        
         console.log('Game created with config:', {
             viewMode: config.viewMode,
             gameMode: config.gameMode,
@@ -259,19 +265,25 @@ export class Game {
         if (this.isDisposed || this.isRenderingActive || !this.engine || !this.scene) return;
 
         this.isRenderingActive = true;
+        this.lastFrameTime = performance.now();
 
         this.engine.runRenderLoop(() => {
             if (!this.isRenderingActive || this.isDisposed) return;
 
+            const currentTime = performance.now();
+            const deltaTime = currentTime - this.lastFrameTime;
+            if (deltaTime < (1000 / this.fpsLimit)) return;
+
             try {
-                if (this.scene.activeCamera) {
+                if (this.scene && this.scene.activeCamera)
                     this.scene.render();
-                }
 
                 // Update FPS
-                if (this.fpsText && this.engine) {
-                    this.fpsText.text = "FPS: " + this.engine.getFps().toFixed(0);
-                }
+                if (this.fpsText && this.engine)
+                    this.fpsText.text = "FPS: " + Math.round(1000 / deltaTime);
+                    // this.fpsText.text = "FPS: " + this.engine.getFps().toFixed(0);
+
+                this.lastFrameTime = currentTime;
             } catch (error) {
                 console.error('Error in render loop:', error);
             }

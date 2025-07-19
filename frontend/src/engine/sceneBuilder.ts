@@ -1,8 +1,8 @@
-declare var BABYLON: any;
+declare var BABYLON: typeof import('@babylonjs/core'); //declare var BABYLON: any;
 
 import { GAME_CONFIG } from '../shared/gameConfig.js';
 
-import { Position, Size, GameObjects } from '../shared/types.js';
+import { Size, GameObjects } from '../shared/types.js';
 import { ViewMode } from '../shared/constants.js';
 
 import {
@@ -57,10 +57,10 @@ function createTexturedMaterial(scene: any, name: string): any {
     material.diffuseTexture = new BABYLON.Texture("assets/textures/hearth/ground/brown_mud_leaves_01_diff_1k.jpg", scene);
     material.bumpTexture = new BABYLON.Texture("assets/textures/hearth/ground/brown_mud_leaves_01_nor_dx_1k.jpg", scene);
     
-    material.diffuseTexture.uScale = 2.0;
-    material.diffuseTexture.vScale = 2.0;
-    material.bumpTexture.uScale = 2.0;
-    material.bumpTexture.vScale = 2.0;
+    // material.diffuseTexture.uScale = 2.0;
+    // material.diffuseTexture.vScale = 2.0;
+    // material.bumpTexture.uScale = 2.0;
+    // material.bumpTexture.vScale = 2.0;
     return material; // TODO how to include texture
 }
 
@@ -108,7 +108,7 @@ function createWalls(scene: any, name: string, fieldWidth: number, fieldHeight: 
 }
 
 // Creates a player object in the scene
-function createPlayer(scene: any, name: string, position: Position, size: Size, color: any, mode: ViewMode): any {
+function createPlayer(scene: any, name: string, position: any, size: Size, color: any, mode: ViewMode): any {
     const player = BABYLON.MeshBuilder.CreateBox(name, {width: size.x, height: size.y, depth: size.z}, scene);
     player.material = createMaterial(scene, name + "Material", color, mode);
     player.position = position;

@@ -1,4 +1,5 @@
-declare var BABYLON: any;
+declare var BABYLON: typeof import('@babylonjs/core'); //declare var BABYLON: any;
+
 
 import { GameMode, Direction } from '../shared/constants.js';
 import { InputConfig, PlayerControls, GameObjects, InputData } from '../shared/types.js';
