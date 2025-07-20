@@ -4,7 +4,6 @@ import { Client, Player } from '../models/Client.js';
 import { MessageType, GameMode } from '../shared/constants.js';
 import { GameStateData, ServerMessage } from '../shared/types.js';
 
-// IMPORTANT: some methods are no longer async and might need to be, we can see in testing
 // I found it a little unclear when/where to use async in TS, we can discuss this later!
 
 export class GameSession {
@@ -21,7 +20,7 @@ export class GameSession {
     constructor(mode: GameMode, game_id: string) {
         this.mode = mode
 		this.id = game_id
-        this.game = new Game(game_id, mode, this.broadcastToClients)
+        this.game = new Game(game_id, mode, this.broadcastToClients.bind(this))
 	}
 
 	async broadcastToClients(state: GameStateData): Promise<void> {

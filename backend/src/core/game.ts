@@ -10,8 +10,8 @@ import { PlayerInput, GameStateData } from '../shared/types.js';
 export class Game {
 	// Unique identifier for the game instance
 	id: string;
-	// Clock instance to manage game loop timing
 	mode: GameMode;
+	// Clock instance to manage game loop timing
 	clock: Clock;
 	// Queue to store player inputs
 	queue: PlayerInput[] = [];
@@ -36,10 +36,11 @@ export class Game {
 		this._init();
 	}
 
-	// Initialize the ball and associate it with players
+	// Initialize the ball and players
 	private _init() {
 		this.players = [new Player(LEFT_PADDLE), null as any];
 		this.ball = new Ball(this.players, this._update_score);
+		console.log(this.mode);
 		if (this.mode === GameMode.SINGLE_PLAYER) {
 			this.players[RIGHT_PADDLE] = new AIBot(RIGHT_PADDLE, this.ball);
 		}
