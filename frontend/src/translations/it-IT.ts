@@ -50,4 +50,5 @@ export const italian: Translation = {
     logout: 'Disconnetti',
     tournamentOnline: 'Torneo Online',
     play: 'GIOCA',
+    loading: 'Caricamento...'
 };

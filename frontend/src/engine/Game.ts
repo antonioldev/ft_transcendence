@@ -10,6 +10,7 @@ import { GameStateData, GameObjects } from '../shared/types.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
 import { appStateManager } from '../core/AppStateManager.js';
 import { WebSocketEvent } from '../shared/constants.js';
+import { getText } from '../translations/translations.js';
 
 /**
  * Main Game class that handles everything for running one game instance.
@@ -41,13 +42,22 @@ export class Game {
     private isPausedByServer: boolean = false;
     private lastFrameTime: number = 0;
     private fpsLimit: number = 60;
+    private loadingUI: any = null;
+    private progressBar: any = null;
 
     constructor(private config: GameConfig) {
         const element = document.getElementById(config.canvasId);
-        if (element instanceof HTMLCanvasElement)
+        
+        if (element instanceof HTMLCanvasElement) {
             this.canvas = element;
-        else
-            throw new Error(`Canvas element not found: ${config.canvasId}`);
+            const gl = this.canvas.getContext('webgl');
+            
+            if (gl) {
+                const renderer = gl.getParameter(gl.RENDERER);
+                console.log('WebGL Renderer:', renderer); // TODO remove some warning
+            }
+        } else 
+            throw new Error(`Canvas element not found or is not a canvas: ${config.canvasId}`);
         
         console.log('Game created with config:', {
             viewMode: config.viewMode,
@@ -69,11 +79,12 @@ export class Game {
 
             // Create Babylon.js engine and scene
             await this.initializeBabylonEngine();
-            this.createScene();
+            this.createGUI();
+            await this.createScene();
             this.setupResizeHandler();
 
             // Create GUI
-            this.createGUI();
+            
 
             // Create input handler
             this.inputHandler = new InputHandler(this.config.gameMode, this.config.controls, this.scene);
@@ -105,13 +116,12 @@ export class Game {
     }
 
     // Create scene based on view mode
-    private createScene(): void {
+    private async  createScene(): Promise<void> {
         this.scene = new BABYLON.Scene(this.engine);
-        this.scene.createDefaultEnvironment({ // TODO
-    createGround: false, // Don't create another ground
-    createSkybox: false  // Optional: add skybox for better lighting
-});
-        this.gameObjects = buildScene(this.scene, this.engine, this.config.viewMode)
+        this.scene.createDefaultEnvironment({ createGround: false, createSkybox: false });
+        this.createLoadingUI();
+        this.gameObjects = await buildScene(this.scene, this.engine, this.config.viewMode, this.updateLoadingProgress.bind(this));
+        this.hideLoadingUI();
     }
 
     // Create GUI elements
@@ -145,9 +155,8 @@ export class Game {
 
     // Connect all components together
     private connectComponents(): void {
-        if (!this.inputHandler) {
+        if (!this.inputHandler)
             throw new Error('Components not initialized');
-        }
 
         this.inputHandler.onInput((input) => {
             webSocketClient.sendPlayerInput(input.side, input.direction);
@@ -313,15 +322,14 @@ export class Game {
 
             try {
                 // Update input
-                if (this.inputHandler) {
+                if (this.inputHandler)
                     this.inputHandler.updateInput();
-                }
 
                 // Update 3D cameras if needed
                 const cameras = this.gameObjects?.cameras;
-                if (cameras && cameras.length > 1) {
+                if (cameras && cameras.length > 1)
                     this.update3DCameras();
-                }
+
             } catch (error) {
                 console.error('Error in game loop:', error);
             }
@@ -422,6 +430,11 @@ export class Game {
             }
             this.fpsText = null;
 
+            if (this.loadingUI) {
+                this.loadingUI.dispose();
+                this.loadingUI = null;
+            }
+
             // Clear game objects reference
             this.gameObjects = null;
 
@@ -449,6 +462,52 @@ export class Game {
 
         } catch (error) {
             console.error('Error disposing game:', error);
+        }
+    }
+
+    private createLoadingUI(): void {
+        this.loadingUI = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("LoadingUI");
+
+        const background = new BABYLON.GUI.Rectangle();
+        background.background = "rgba(0,0,0,0.8)";
+        background.thickness = 0;
+        this.loadingUI.addControl(background);
+
+        const text = new BABYLON.GUI.TextBlock("loadingText", getText(this.loadingUI));
+        text.color = BABYLON.Color3.White().toHexString();
+        text.fontSize = 64;
+        text.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+        text.textVerticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
+        // text.top = "-50px";
+        this.loadingUI.addControl(text);
+
+        const progressBar = new BABYLON.GUI.Slider();
+        progressBar.minimum = 0;
+        progressBar.maximum = 100;
+        progressBar.value = 0;
+        progressBar.height = "20px";
+        progressBar.width = "60%";
+        progressBar.color = "#ff6b6b";
+        progressBar.background = "#444";
+        progressBar.thumbWidth = "0px";
+        // progressBar.color
+        // progressBar.barColor = "#ff6b6b";
+        progressBar.isThumbClamped = true;
+        progressBar.isEnabled = false;
+
+        this.loadingUI.addControl(progressBar);
+        this.progressBar = progressBar;
+    }
+
+    private updateLoadingProgress(progress: number): void{
+        if(this.progressBar)
+            this.progressBar.value = progress;
+    }
+
+    private hideLoadingUI(): void {
+        if (this.loadingUI) {
+            this.loadingUI.dispose();
+            this.loadingUI = null;
         }
     }
 }

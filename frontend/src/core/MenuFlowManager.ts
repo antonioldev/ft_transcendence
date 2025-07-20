@@ -48,7 +48,7 @@ export class MenuFlowManager {
         try {
             console.log(`Starting game: ${gameMode} in ${ViewMode[viewMode]} mode`);
             await this.initializeGameSession(viewMode, gameMode);         
-            console.log('Game started successfully with new architecture');
+            console.log('Game started successfully');
             
         } catch (error) {
             console.error('Error starting game:', error);

@@ -50,4 +50,5 @@ export const english: Translation = {
     logout: 'Logout',
     tournamentOnline: 'Tournament Online',
     play: 'PLAY',
+    loading: 'Loading...'
 };

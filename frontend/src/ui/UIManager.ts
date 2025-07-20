@@ -183,15 +183,12 @@ class UIManager {
             player1: player1Input?.value.trim() || 'Player 1'
         };
 
-        if (player2Input) {
+        if (player2Input)
             result.player2 = player2Input.value.trim() || 'Player 2';
-        }
-        if (player3Input) {
+        if (player3Input)
             result.player3 = player3Input.value.trim() || 'Player 3';
-        }
-        if (player4Input) {
+        if (player4Input)
             result.player4 = player4Input.value.trim() || 'Player 4';
-        }
 
         return result;
     }
@@ -201,9 +198,8 @@ class UIManager {
         
         if (!names.player1.trim()) return false;
         if (gameMode === GameMode.TWO_PLAYER_LOCAL && !names.player2?.trim()) return false;
-        if ((gameMode === GameMode.TOURNAMENT_LOCAL || gameMode === GameMode.TOURNAMENT_REMOTE)) {
+        if ((gameMode === GameMode.TOURNAMENT_LOCAL || gameMode === GameMode.TOURNAMENT_REMOTE))
             if (!names.player2?.trim() || !names.player3?.trim() || !names.player4?.trim()) return false;
-        }
         
         return true;
     }
