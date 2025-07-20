@@ -12,6 +12,14 @@ export class Clock {
 		return new Promise(resolve => setTimeout(resolve, ms));
 	}
 
+	getDeltaTime() {
+		
+	}
+
+	getTimeout() {
+
+	}
+
 	// Calculate the time elapsed since the last tick and optionally enforce a frame rate.
 	async tick(fps: number = 0): Promise<number> {
 		const currentTime = performance.now();
