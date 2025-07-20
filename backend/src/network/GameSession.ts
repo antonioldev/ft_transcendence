@@ -1,4 +1,4 @@
-import { SinglePlayer, TwoPlayer } from '../core/game.js';
+import { Game } from '../core/game.js';
 import { LEFT_PADDLE, RIGHT_PADDLE} from '../shared/gameConfig.js';
 import { Client, Player } from '../models/Client.js';
 import { MessageType, GameMode } from '../shared/constants.js';
@@ -14,28 +14,14 @@ export class GameSession {
 	players: Player[] = []; 
 	full: boolean = false;
 	running: boolean = false;
-	game!: SinglePlayer | TwoPlayer;
+	game!: Game;
 	private paused: boolean = false;
 	private requestedBy: Client | null = null;
 
     constructor(mode: GameMode, game_id: string) {
         this.mode = mode
 		this.id = game_id
-        this._create_game()
-	}
-
-    _create_game(): void {
-		switch (this.mode) {
-			case GameMode.SINGLE_PLAYER:
-				this.game = new SinglePlayer(this.id, this.broadcastToClients.bind(this));
-				break;
-			case GameMode.TWO_PLAYER_LOCAL:
-			case GameMode.TWO_PLAYER_REMOTE:
-				this.game = new TwoPlayer(this.id, this.broadcastToClients.bind(this));
-				break;
-			default:
-				throw new Error(`Invalid game mode: ${this.mode}`);
-		}
+        this.game = new Game(game_id, mode, this.broadcastToClients)
 	}
 
 	async broadcastToClients(state: GameStateData): Promise<void> {
