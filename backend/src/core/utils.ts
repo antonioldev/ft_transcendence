@@ -1,10 +1,12 @@
 // The Clock class provides utility methods for managing time and frame updates.
 export class Clock {
 	private lastTime: number;
+	fps: number
 
-	constructor() {
+	constructor(fps: number) {
 		// Initialize the clock with the current time.
 		this.lastTime = performance.now();
+		this.fps = fps;
 	}
 
 	// Pause execution for a specified number of milliseconds.
@@ -13,10 +15,11 @@ export class Clock {
 	}
 
 	getDeltaTime() {
-		
+		return performance.now() - this.lastTime;
 	}
 
-	getTimeout() {
+	getTimeout(dt: number) {
+		return Math.max(0, (1000 / this.fps) - dt)
 
 	}
 

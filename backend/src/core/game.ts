@@ -30,7 +30,7 @@ export class Game {
 		// Initialize game properties
 		this.id = id;
 		this.mode = mode;
-		this.clock = new Clock();
+		this.clock = new Clock(60);
 		this.running = true;
 		this._broadcast = broadcast_callback;
 		this._init();
@@ -148,9 +148,9 @@ export class Game {
 			const dt = this.clock.getDeltaTime();
 			this._update_state(dt);
 			if (this._state_changed()) {
-				let state = this.get_state();
-				this._broadcast(state);
+				this._broadcast(this.get_state());
 			}
+            setTimeout(() => this.run(), this.clock.getTimeout(dt));
 		}
 	}
 
