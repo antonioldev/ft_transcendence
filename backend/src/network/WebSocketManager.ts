@@ -114,7 +114,7 @@ export class WebSocketManager {
             if (game) {
                 // Start game if ready
                 if (game.full && !game.running) {
-                    await game.start();
+                    game.start();
                 }
             }
         } catch (error) {

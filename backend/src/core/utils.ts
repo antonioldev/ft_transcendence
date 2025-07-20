@@ -15,7 +15,10 @@ export class Clock {
 	}
 
 	getDeltaTime() {
-		return performance.now() - this.lastTime;
+		const currentTime = performance.now();
+		const dt = currentTime - this.lastTime;
+		this.lastTime = currentTime;
+		return (dt);
 	}
 
 	getTimeout(dt: number) {

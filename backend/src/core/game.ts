@@ -140,18 +140,15 @@ export class Game {
 
 	run() {
 		if (!this.running) return;
+		const dt = this.clock.getDeltaTime();
 		
-		if (this.paused) {
-			this.clock.sleep(16)
-		}
-		else {
-			const dt = this.clock.getDeltaTime();
+		if (!this.paused) {
 			this._update_state(dt);
 			if (this._state_changed()) {
 				this._broadcast(this.get_state());
 			}
-            setTimeout(() => this.run(), this.clock.getTimeout(dt));
 		}
+		setTimeout(() => this.run(), this.clock.getTimeout(dt));
 	}
 
 	// Pause the game

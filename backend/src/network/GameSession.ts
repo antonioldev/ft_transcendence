@@ -86,11 +86,11 @@ export class GameSession {
 		}
 	}
 
-	async start() {
+	start() {
 		this.assign_sides();
 		if (!this.running) {
 			this.running = true;
-			await this.game.run();
+			this.game.run();
 		}
 	}
 
