@@ -4,43 +4,22 @@ export class Clock {
 	fps: number
 
 	constructor(fps: number) {
-		// Initialize the clock with the current time.
+		// Initialize the clock with the current time and desired fps.
 		this.lastTime = performance.now();
 		this.fps = fps;
 	}
 
-	// Pause execution for a specified number of milliseconds.
-	sleep(ms: number) {
-		return new Promise(resolve => setTimeout(resolve, ms));
-	}
-
-	getDeltaTime() {
+	// get the time elapsed since the last frame
+	tick() {
 		const currentTime = performance.now();
 		const dt = currentTime - this.lastTime;
 		this.lastTime = currentTime;
 		return (dt);
 	}
 
+	// get the timeout duration for the current frame
 	getTimeout(dt: number) {
 		return Math.max(0, (1000 / this.fps) - dt)
-
-	}
-
-	// Calculate the time elapsed since the last tick and optionally enforce a frame rate.
-	async tick(fps: number = 0): Promise<number> {
-		const currentTime = performance.now();
-		let deltaTime = currentTime - this.lastTime;
-		this.lastTime = currentTime;
-
-		if (fps > 0) {
-			// Calculate the sleep time needed to maintain the desired frame rate.
-			const sleepTime = Math.max(0, (1000 / fps) - deltaTime);
-			if (sleepTime > 0) {
-				await this.sleep(sleepTime);
-				deltaTime += sleepTime;
-			}
-		}
-		return deltaTime;
 	}
 }
 

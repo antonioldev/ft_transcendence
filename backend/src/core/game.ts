@@ -121,26 +121,10 @@ export class Game {
 		}
 	}
 
-	// // Main game loop that updates the state and broadcasts changes
-	// async run(): Promise<void> {
-	// 	while (this.running) {
-	// 		const dt = await this.clock.tick(60)
-	// 		if (this.paused)
-	// 			await this.clock.sleep(16);
-	// 		else {
-	// 			this._update_state(dt)
-
-	// 			if (this._state_changed()) {
-	// 				let state = this.get_state()
-	// 				await this._broadcast(state)
-	// 			}
-	// 		}
-	// 	}
-	// }
-
+	// continuosly updates the game state and broadcasts to all clients
 	run() {
 		if (!this.running) return;
-		const dt = this.clock.getDeltaTime();
+		const dt = this.clock.tick();
 		
 		if (!this.paused) {
 			this._update_state(dt);
@@ -148,7 +132,7 @@ export class Game {
 				this._broadcast(this.get_state());
 			}
 		}
-		setTimeout(() => this.run(), this.clock.getTimeout(dt));
+		setTimeout(this.run.bind(this), this.clock.getTimeout(dt));
 	}
 
 	// Pause the game
