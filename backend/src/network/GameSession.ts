@@ -23,7 +23,7 @@ export class GameSession {
         this.game = new Game(game_id, mode, this.broadcastToClients.bind(this))
 	}
 
-	async broadcastToClients(state: GameStateData): Promise<void> {
+	broadcastToClients(state: GameStateData) {
 		const message = {
 			type: MessageType.GAME_STATE,
 			state: state
@@ -32,7 +32,7 @@ export class GameSession {
 		for (const client of this.clients) {
 			try {
 				// await client.websocket.send(JSON.stringify({state}));
-				await client.websocket.send(JSON.stringify(message));
+				client.websocket.send(JSON.stringify(message));
 			}
 			catch { 
 				deleted_clients.push(client);
@@ -43,7 +43,7 @@ export class GameSession {
 		}
 	}
 
-	private async broadcastMessage(messageType: MessageType): Promise<void> {
+	private broadcastMessage(messageType: MessageType): void {
 		const message: ServerMessage = {
 			type: messageType
 		};
@@ -51,7 +51,7 @@ export class GameSession {
 		for (const client of this.clients) {
 			try {
 				// await client.websocket.send(JSON.stringify({state}));
-				await client.websocket.send(JSON.stringify(message));
+				client.websocket.send(JSON.stringify(message));
 			}
 			catch { 
 				deleted_clients.push(client);
@@ -94,7 +94,7 @@ export class GameSession {
 		}
 	}
 
-	async pauseGame(client: Client): Promise<boolean> {
+	pauseGame(client: Client): boolean {
 		if (this.paused) {
 			console.log(`Game ${this.id} is already paused`);
 			return false;
@@ -108,7 +108,7 @@ export class GameSession {
 			this.paused = true;
 			this.requestedBy = client;
 
-			await this.broadcastMessage(MessageType.PAUSED);
+			this.broadcastMessage(MessageType.PAUSED);
 			
 			console.log(`Game ${this.id} paused by client ${client.id}`);
 			return true;
@@ -118,7 +118,7 @@ export class GameSession {
 		}
 	}
 
-	async resumeGame(client: Client): Promise<boolean> {
+	resumeGame(client: Client): boolean {
 		if (!this.paused) {
 			console.log(`Game ${this.id} is not paused`);
 			return false;
@@ -132,7 +132,7 @@ export class GameSession {
 			this.paused = false;
 			this.requestedBy = null;
 
-			await this.broadcastMessage(MessageType.RESUMED);
+			this.broadcastMessage(MessageType.RESUMED);
 			
 			console.log(`Game ${this.id} resumed by client ${client.id}`);
 			return true;
@@ -142,11 +142,11 @@ export class GameSession {
 		}
 	}
 
-	async endGame(client: Client): Promise<void> {
+	endGame(client: Client): void {
 		try {
 			console.log(`Game ${this.id} ended by client ${client.id}`);
 			this.stop();
-			await this.broadcastMessage(MessageType.GAME_ENDED);
+			this.broadcastMessage(MessageType.GAME_ENDED);
 		} catch (error) {
 			console.error(`Error ending game ${this.id}:`, error);
 		}

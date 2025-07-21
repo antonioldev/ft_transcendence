@@ -24,9 +24,9 @@ export class Game {
 	// Ball instance for the game
 	ball!: Ball;
 	// Callback function to broadcast the game state
-	private _broadcast: (state: GameStateData) => Promise<void>;
+	private _broadcast: (state: GameStateData) => void;
 
-	constructor(id: string, mode: GameMode, broadcast_callback: (state: GameStateData) => Promise<void>) {
+	constructor(id: string, mode: GameMode, broadcast_callback: (state: GameStateData) => void) {
 		// Initialize game properties
 		this.id = id;
 		this.mode = mode;
