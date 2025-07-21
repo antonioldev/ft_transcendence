@@ -3,7 +3,7 @@ import { Player, AIBot } from './Paddle.js';
 import { Clock } from './utils.js';
 import { LEFT_PADDLE, RIGHT_PADDLE } from '../shared/gameConfig.js';
 import { GameMode, MessageType} from '../shared/constants.js';
-import { PlayerInput, GameStateData } from '../shared/types.js';
+import { PlayerInput, GameStateData, ServerMessage } from '../shared/types.js';
 
 // The Game class serves as an abstract base class for managing the core game logic.
 // It handles the game loop, state updates, input processing, and broadcasting game state.
@@ -17,9 +17,9 @@ export class Game {
 	players!: (Player | AIBot)[];
 	ball!: Ball;
 	// Callback function to broadcast the game state
-	private _broadcast: (type: MessageType, state: GameStateData) => void;
+	private _broadcast: (message: ServerMessage) => void;
 
-	constructor(mode: GameMode, broadcast_callback: (type: MessageType, state: GameStateData) => void) {
+	constructor(mode: GameMode, broadcast_callback: (message: ServerMessage) => void) {
 		// Initialize game properties
 		this.mode = mode;
 		this.clock = new Clock(60);
@@ -121,7 +121,10 @@ export class Game {
 		const dt = this.clock.tick();
 		if (!this.paused) {
 			this._update_state(dt);
-			this._broadcast(MessageType.GAME_STATE, this.get_state());
+			this._broadcast({
+				type: MessageType.GAME_STATE, 
+				state: this.get_state()
+			});
 		}
 		setTimeout(this.run.bind(this), this.clock.getTimeout(dt));
 	}

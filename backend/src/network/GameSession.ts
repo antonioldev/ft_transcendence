@@ -20,11 +20,7 @@ export class GameSession {
         this.game = new Game(mode, this.broadcast.bind(this))
 	}
 
-	broadcast(type: MessageType, state: any = null): void {
-		const message: ServerMessage = {
-			type: type,
-			state: state
-		}
+	broadcast(message: ServerMessage): void {
 		let deleted_clients: (Client)[] = [];
 		for (const client of this.clients) {
 			try {
@@ -84,7 +80,7 @@ export class GameSession {
 			this.paused = true;
 			this.requestedBy = client;
 
-			this.broadcast(MessageType.PAUSED);
+			this.broadcast({type: MessageType.PAUSED});
 			
 			console.log(`Game ${this.id} paused by client ${client.id}`);
 			return true;
@@ -108,7 +104,7 @@ export class GameSession {
 			this.paused = false;
 			this.requestedBy = null;
 
-			this.broadcast(MessageType.RESUMED);
+			this.broadcast({type: MessageType.RESUMED});
 			
 			console.log(`Game ${this.id} resumed by client ${client.id}`);
 			return true;
@@ -122,7 +118,7 @@ export class GameSession {
 		try {
 			console.log(`Game ${this.id} ended by client ${client.id}`);
 			this.stop();
-			this.broadcast(MessageType.GAME_ENDED);
+			this.broadcast({type: MessageType.GAME_ENDED});
 		} catch (error) {
 			console.error(`Error ending game ${this.id}:`, error);
 		}
@@ -135,7 +131,6 @@ export class GameSession {
 		this.requestedBy = null;
 	}
 
-	// TODO We might need to make this method async and await the send()
 	assign_sides() {
 		if (this.mode === GameMode.TWO_PLAYER_REMOTE) {
 			this.clients[0].websocket.send(JSON.stringify({"side": LEFT_PADDLE}));
