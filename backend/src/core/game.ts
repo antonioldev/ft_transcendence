@@ -123,8 +123,7 @@ export class Game {
 			this._update_state(dt);
 			this._broadcast(this.get_state());
 		}
-		const timeout = this.clock.getTimeout(dt);
-		setTimeout(this.run.bind(this), timeout);
+		setTimeout(this.run.bind(this), this.clock.getTimeout(dt));
 	}
 
 	// Pause the game
