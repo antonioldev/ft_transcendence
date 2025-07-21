@@ -33,6 +33,7 @@ export class Game {
 		this.players = [new Player(LEFT_PADDLE), null as any];
 		this.ball = new Ball(this.players, this._update_score);
 
+		// necessary to handle circular dependency of Ball and AIBot
 		if (this.mode === GameMode.SINGLE_PLAYER) {
 			this.players[RIGHT_PADDLE] = new AIBot(RIGHT_PADDLE, this.ball);
 		}
@@ -82,17 +83,17 @@ export class Game {
 	// Retrieve the current game state as a data object
 	get_state(): GameStateData {
 		return {
-			"paddleLeft": {
-				"x":     this.players[LEFT_PADDLE].rect.centerx,
-				"score": this.players[LEFT_PADDLE].score,
+			paddleLeft: {
+				x:     this.players[LEFT_PADDLE].rect.centerx,
+				score: this.players[LEFT_PADDLE].score,
 			},
-			"paddleRight": {
-				"x":     this.players[RIGHT_PADDLE].rect.centerx,
-				"score": this.players[RIGHT_PADDLE].score,
+			paddleRight: {
+				x:     this.players[RIGHT_PADDLE].rect.centerx,
+				score: this.players[RIGHT_PADDLE].score,
 			},
-			"ball": {
-				"x": this.ball.rect.centerx,
-				"z": this.ball.rect.centery,
+			ball: {
+				x: this.ball.rect.centerx,
+				z: this.ball.rect.centery,
 			},
 		}
 	}
