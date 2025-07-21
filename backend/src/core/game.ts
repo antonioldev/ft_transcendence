@@ -40,7 +40,7 @@ export class Game {
 	private _init() {
 		this.players = [new Player(LEFT_PADDLE), null as any];
 		this.ball = new Ball(this.players, this._update_score);
-		console.log(this.mode);
+
 		if (this.mode === GameMode.SINGLE_PLAYER) {
 			this.players[RIGHT_PADDLE] = new AIBot(RIGHT_PADDLE, this.ball);
 		}
@@ -73,7 +73,7 @@ export class Game {
 	}
 
 	// Check if the game state has changed (e.g., player or ball positions)
-	// probably unecessary overhead for not much returns
+	// probably unecessary overhead for not much performance gain
 	private _state_changed(): boolean {
 		if (this.paused)
 			return false;

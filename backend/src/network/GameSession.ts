@@ -4,8 +4,6 @@ import { Client, Player } from '../models/Client.js';
 import { MessageType, GameMode } from '../shared/constants.js';
 import { GameStateData, ServerMessage } from '../shared/types.js';
 
-// I found it a little unclear when/where to use async in TS, we can discuss this later!
-
 export class GameSession {
 	mode: GameMode;
 	id: string;
