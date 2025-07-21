@@ -132,6 +132,12 @@ export class WebSocketClient {
                 console.error('🚫 Registration failed:', message.message);
                 this.triggerCallback(WebSocketEvent.REGISTRATION_FAILURE, message.message || "Username is already registered");
                 break;
+            case MessageType.SEND_USER_STATS:
+                this.triggerCallback(WebSocketEvent.USER_STATS, message.stats);
+                break;
+            case MessageType.SEND_GAME_HISTORY:
+                this.triggerCallback(WebSocketEvent.GAME_HISTORY, message.gameHistory);
+                break;
             default:
                 console.warn(`Unhandled message type: ${message.type}`);
                 break;
@@ -202,6 +208,32 @@ export class WebSocketClient {
             };
             this.ws!.send(JSON.stringify(message));
         }          
+    }
+
+    // ========================================
+    // DASHBOARD
+    // ========================================
+
+    requestUserStats(username: string): void {
+        console.log("IN requestUserStats");
+        if (this.isConnected()) {
+            const message: ClientMessage = {
+                type: MessageType.REQUEST_USER_STATS,
+                username: username
+            };
+            this.ws!.send(JSON.stringify(message));
+        }
+    }
+
+    requestUserGameHistory(username: string): void {
+        console.log("IN requestUserGameHistory");
+        if (this.isConnected()) {
+            const message: ClientMessage = {
+                type: MessageType.REQUEST_GAME_HISTORY,
+                username: username
+            };
+            this.ws!.send(JSON.stringify(message));
+        }
     }
 
     // ========================================

@@ -1,6 +1,6 @@
 // Program to sanitize info before sending to SQL and ensure SQL injection avoidance
 import * as dbFunction from '../data/database.js';
-import { UserProfileData } from '../shared/types.js';
+import { UserProfileData, UserStats, GameHistoryEntry } from '../shared/types.js';
 
 export function verifyLogin(username: string, password: string): number {
     if (!dbFunction.userExist(undefined,username,undefined))
@@ -41,4 +41,43 @@ export function requestUserInformation(username: string): UserProfileData | unde
     if (userInfo === undefined)
         return undefined;
     return userInfo;    
+}
+
+export function getUserStats(username: string): UserStats | undefined {
+  if (!username) return undefined;
+
+  return {
+    victories: 12,
+    defeats: 8,
+    games: 20,
+    winRatio: 0.6
+  };
+}
+
+export function getGameHistoryForUser(username: string): GameHistoryEntry[] | undefined {
+  if (!username) return undefined;
+
+  return [
+    {
+      playedAt: '2025-07-15 10:32',
+      opponent: 'rival_one',
+      score: '10 - 7',
+      result: 'Win',
+      duration: 300
+    },
+    {
+      playedAt: '2025-07-14 18:45',
+      opponent: 'challengerX',
+      score: '6 - 10',
+      result: 'Loss',
+      duration: 280
+    },
+    {
+      playedAt: '2025-07-13 13:10',
+      opponent: 'alpha',
+      score: '12 - 11',
+      result: 'Win',
+      duration: 350
+    }
+  ];
 }

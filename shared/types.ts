@@ -50,6 +50,7 @@ export interface ClientMessage {
     loginUser?: LoginUser; // Use to confirm the ID of the user (not Google auth)
     side?: number; // Player side (optional)
     direction?: Direction; // Movement direction (optional)
+    username?: string;
 }
 
 /**
@@ -60,6 +61,8 @@ export interface ServerMessage {
     state?: GameStateData; // Current game state (optional)
     side?: number; // Player side (optional)
     message?: string; // Additional message (optional)
+    stats?: UserStats;
+    gameHistory?: GameHistoryEntry[];
 }
 
 /**
@@ -115,6 +118,23 @@ export interface UserProfileMessage {
   data: UserProfileData;
 }
 
+// ============================== DASHBOARD TYPES ==============================
+
+export interface UserStats {
+  victories: number;
+  defeats: number;
+  games: number;
+  winRatio: number;
+  [key: string]: number;
+}
+
+export interface GameHistoryEntry {
+  playedAt: string;
+  opponent: string;
+  score: string;
+  result: string;
+  duration: number;
+}
 
 
 // ============================== FRONTEND-ONLY TYPES ==============================

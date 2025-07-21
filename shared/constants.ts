@@ -25,6 +25,10 @@ export enum MessageType {
     USER_EXIST,            // failure to register new user -- exist in db
     USER_NOTEXIST,         // failure in login user -- do not exist in db 
     SEND_USER_PROFILE,      // Type for front to backend comm
+    REQUEST_USER_STATS,
+    SEND_USER_STATS,
+    REQUEST_GAME_HISTORY,
+    SEND_GAME_HISTORY,
     REQUEST_USER_PROFILE,    // Type for back to frontend comm
     UPDATE_USER_PROFILE     // Request to update user information 
 
@@ -41,7 +45,9 @@ export enum WebSocketEvent {
     LOGIN_SUCCESS = 'LOGIN_SUCCESS',
     LOGIN_FAILURE = 'LOGIN_FAILURE',
     REGISTRATION_SUCCESS = 'REGISTRATION_SUCCESS',
-    REGISTRATION_FAILURE = 'REGISTRATION_FAILURE'
+    REGISTRATION_FAILURE = 'REGISTRATION_FAILURE',
+    USER_STATS = 'USER_STATS',
+    GAME_HISTORY = 'GAME_HISTORY'
 }
 
 // Different game modes available
@@ -96,7 +102,8 @@ export enum AppState {
     REGISTER = 'register',
     GAME_MODE = 'game-mode',
     PLAYER_SETUP = 'player-setup',
-    GAME_3D = 'game-3d'
+    GAME_3D = 'game-3d',
+    STATS_DASHBOARD = 'STATS_DASHBOARD'
 }
 
 export enum UserManagement {

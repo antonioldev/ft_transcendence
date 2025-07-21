@@ -80,6 +80,9 @@ export class HistoryManager {
             case AppState.GAME_3D:
                 this.showScreen(EL.SCREENS.GAME_3D, { hideOverlayss: true, hideUserInfo: true });
                 break;
+            case AppState.STATS_DASHBOARD:
+                this.showScreen(EL.SCREENS.STATS_DASHBOARD, { hideOverlayss: true });
+                break;
             default:
                 console.warn(`Unknown state: ${state}, redirecting to main menu`);
                 this.navigateTo(AppState.MAIN_MENU);

@@ -4,7 +4,7 @@ import { Client } from '../models/Client.js';
 import { MessageType, Direction, GameMode, UserManagement } from '../shared/constants.js';
 import { ClientMessage, ServerMessage, GetUserProfile, UserProfileData } from '../shared/types.js';
 import * as db from "../data/validation.js";
-import { UserProfileMessage } from '../shared/types.js';
+import { UserStats, GameHistoryEntry } from '../shared/types.js';
 
 /**
  * Manages WebSocket connections, client interactions, and game-related messaging.
@@ -86,6 +86,15 @@ export class WebSocketManager {
                     console.log("HandleMessage WSM: calling Register_user");
                     await this.handleRegisterNewUser(socket, data);
                     break;
+                case MessageType.REQUEST_USER_STATS:
+                    console.log("HandleMessage WSM: calling get User stats");
+                    await this.handleUserStats(socket, message);
+                    break;
+                case MessageType.REQUEST_GAME_HISTORY:
+                    console.log("HandleMessage WSM: calling get User game history");
+                    await this.handleUserGameHistory(socket, message);
+                    break;
+
                 // case MessageType.REQUEST_USER_PROFILE:
                 //     console.log("HandleMessage WSM: Requesting user profile");
                 //     await this.handleUserProfileRequest(socket, data);
@@ -385,6 +394,50 @@ export class WebSocketManager {
         }
     } 
 
+
+    private async handleUserStats(socket: any, message: string) {
+        const stats = db.getUserStats(message); // from DB
+        if (!stats)
+            this.sendError(socket, 'user not recognised');
+        else
+            this.sendUserStats(socket, stats);
+    }
+
+
+    private async handleUserGameHistory(socket: any, message: string) {
+        const history = db.getGameHistoryForUser(message); // from DB
+        if (!history)
+            this.sendError(socket, 'user not recognised');
+        else
+            this.sendUserGameHistory(socket, history);
+    }
+
+    private async sendUserStats(socket: any, data: UserStats): Promise<void> {
+        const msg: ServerMessage = {
+            type: MessageType.SEND_USER_STATS,
+            stats: data
+        };
+        
+        try {
+            await socket.send(JSON.stringify(msg));
+        } catch (error) {
+            console.error('❌ Failed to send success message:', error);
+        }
+    } 
+
+    private async sendUserGameHistory(socket: any, data: GameHistoryEntry[]): Promise<void> {
+        const msg: ServerMessage = {
+            type: MessageType.SEND_GAME_HISTORY,
+            gameHistory: data
+        };
+        
+        try {
+            await socket.send(JSON.stringify(msg));
+        } catch (error) {
+            console.error('❌ Failed to send success message:', error);
+        }
+    } 
+
     /**
      * Handle displaying information
     */
@@ -409,18 +462,18 @@ export class WebSocketManager {
     //     }        
     // }
 
-    private async sendUserProfile(socket: any, data: UserProfileData): Promise<void> {
-        const userProfile: UserProfileMessage= {
-            type: MessageType.SEND_USER_PROFILE,
-            data: data,
-        };
+    // private async sendUserProfile(socket: any, data: UserProfileData): Promise<void> {
+    //     const userProfile: UserProfileMessage= {
+    //         type: MessageType.SEND_USER_PROFILE,
+    //         data: data,
+    //     };
         
-        try {
-            await socket.send(JSON.stringify(userProfile));
-        } catch (error) {
-            console.error('❌ Failed to send user Profile Information:', error);
-        }
-    }  
+    //     try {
+    //         await socket.send(JSON.stringify(userProfile));
+    //     } catch (error) {
+    //         console.error('❌ Failed to send user Profile Information:', error);
+    //     }
+    // }  
 
     /**
      * Sends an error message to a client.

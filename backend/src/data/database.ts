@@ -439,5 +439,3 @@ export function getGameDuration(id: number): number {
 		return -1;
 	}
 }
-
-//UPDATE TABLES after a game

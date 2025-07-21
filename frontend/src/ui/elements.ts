@@ -15,7 +15,8 @@ export const EL = {
     REGISTER_MODAL: 'register-modal',
     GAME_MODE_OVERLAY: 'game-mode-overlay',
     PLAYER_SETUP_OVERLAY: 'player-setup-overlay',
-    GAME_3D: 'game-3d'
+    GAME_3D: 'game-3d',
+    STATS_DASHBOARD: 'stats-dashboard'
   },
 
   // ========================================
@@ -48,7 +49,10 @@ export const EL = {
 
     // Modal switching
     SHOW_REGISTER: 'show-register',
-    SHOW_LOGIN: 'show-login'
+    SHOW_LOGIN: 'show-login',
+
+    // Dashboard view
+    OPEN_STATS: 'open-stats-btn'
   },
 
   // ========================================

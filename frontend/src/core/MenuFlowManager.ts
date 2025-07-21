@@ -3,6 +3,7 @@ import { uiManager } from '../ui/UIManager.js';
 import { authManager } from './AuthManager.js';
 import { getCurrentTranslation } from '../translations/translations.js';
 import { historyManager } from './HistoryManager.js';
+import { dashboardManager } from './DashboardManager.js';
 import { webSocketClient } from './WebSocketClient.js';
 import { appStateManager } from './AppStateManager.js';
 import { GameConfigFactory } from '../engine/GameConfig.js';
@@ -121,6 +122,8 @@ export class MenuFlowManager {
         // Game mode selection buttons
         this.setupGameModeButtons();
         this.setupPlayerSetupListeners();
+        this.showDashboard();
+
     }
 
     private setupGameModeButtons(): void {
@@ -230,6 +233,22 @@ export class MenuFlowManager {
             await this.startGameWithMode(this.selectedViewMode, this.selectedGameMode);
         });
     }
+
+    private showDashboard(): void {
+        const dashboardBtn = getElementById(EL.BUTTONS.OPEN_STATS);
+            dashboardBtn?.addEventListener('click', () => {
+            if (!authManager.isUserAuthenticated()) return;
+            const user = authManager.getCurrentUser();
+            if (!user) return;
+            dashboardManager.clear();
+            // Request new stats from backend
+            webSocketClient.requestUserStats(user.username);
+            webSocketClient.requestUserGameHistory(user.username);
+            // Show dashboard panel
+            historyManager.navigateTo(AppState.STATS_DASHBOARD);
+        });
+    }
+
 
     // ========================================
     // VIEW MODE MANAGEMENT
