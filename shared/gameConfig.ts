@@ -32,7 +32,7 @@ export const GAME_CONFIG = {
 
     // Ball settings
     ballRadius: 0.5, // Radius of the ball
-    ballInitialSpeed: 10, // Initial speed of the ball
+    ballInitialSpeed: 20, // Initial speed of the ball
     ballMaxAngle: Math.PI / 6, // Maximum angle of the ball trajectory
     
     // Wall collision boundaries (accounting for ball radius)
