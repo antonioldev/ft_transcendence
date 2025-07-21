@@ -133,8 +133,14 @@ export class GameSession {
 
 	assign_sides() {
 		if (this.mode === GameMode.TWO_PLAYER_REMOTE) {
-			this.clients[0].websocket.send(JSON.stringify({"side": LEFT_PADDLE}));
-			this.clients[1].websocket.send(JSON.stringify({"side": RIGHT_PADDLE}));
+			this.clients[0].websocket.send(JSON.stringify({
+				type: MessageType.SIDE_ASSIGNMENT,
+				side: LEFT_PADDLE
+			}));
+			this.clients[1].websocket.send(JSON.stringify({
+				type: MessageType.SIDE_ASSIGNMENT,
+				side: RIGHT_PADDLE
+			}));
 		}
 	}
 
