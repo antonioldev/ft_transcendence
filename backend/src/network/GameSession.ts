@@ -12,42 +12,22 @@ export class GameSession {
 	full: boolean = false;
 	running: boolean = false;
 	private paused: boolean = false;
-	private requestedBy: Client | null = null;
+	private requestedBy: Client | null = null; // do we need this?
 
     constructor(mode: GameMode, game_id: string) {
 		this.id = game_id
         this.mode = mode
-        this.game = new Game(mode, this.broadcastToClients.bind(this))
+        this.game = new Game(mode, this.broadcast.bind(this))
 	}
 
-	broadcastToClients(state: GameStateData) {
-		const message = {
-			type: MessageType.GAME_STATE,
-			state: state
-		};
-		let deleted_clients: (Client)[] = [];
-		for (const client of this.clients) {
-			try {
-				// await client.websocket.send(JSON.stringify({state}));
-				client.websocket.send(JSON.stringify(message));
-			}
-			catch { 
-				deleted_clients.push(client);
-			}
-		}
-		for (const client of deleted_clients) {
-			this.remove_client(client);
-		}
-	}
-
-	private broadcastMessage(messageType: MessageType): void {
+	broadcast(type: MessageType, state: any = null): void {
 		const message: ServerMessage = {
-			type: messageType
-		};
+			type: type,
+			state: state
+		}
 		let deleted_clients: (Client)[] = [];
 		for (const client of this.clients) {
 			try {
-				// await client.websocket.send(JSON.stringify({state}));
 				client.websocket.send(JSON.stringify(message));
 			}
 			catch { 
@@ -104,7 +84,7 @@ export class GameSession {
 			this.paused = true;
 			this.requestedBy = client;
 
-			this.broadcastMessage(MessageType.PAUSED);
+			this.broadcast(MessageType.PAUSED);
 			
 			console.log(`Game ${this.id} paused by client ${client.id}`);
 			return true;
@@ -128,7 +108,7 @@ export class GameSession {
 			this.paused = false;
 			this.requestedBy = null;
 
-			this.broadcastMessage(MessageType.RESUMED);
+			this.broadcast(MessageType.RESUMED);
 			
 			console.log(`Game ${this.id} resumed by client ${client.id}`);
 			return true;
@@ -142,7 +122,7 @@ export class GameSession {
 		try {
 			console.log(`Game ${this.id} ended by client ${client.id}`);
 			this.stop();
-			this.broadcastMessage(MessageType.GAME_ENDED);
+			this.broadcast(MessageType.GAME_ENDED);
 		} catch (error) {
 			console.error(`Error ending game ${this.id}:`, error);
 		}
@@ -161,7 +141,6 @@ export class GameSession {
 			this.clients[0].websocket.send(JSON.stringify({"side": LEFT_PADDLE}));
 			this.clients[1].websocket.send(JSON.stringify({"side": RIGHT_PADDLE}));
 		}
-		// tournament 
 	}
 
 	canClientControlGame(client: Client) {
