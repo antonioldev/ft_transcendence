@@ -1,4 +1,4 @@
-import { AuthState, AppState } from '../shared/constants.js';
+import { AuthState, AppState, WebSocketEvent } from '../shared/constants.js';
 import { uiManager } from '../ui/UIManager.js';
 import { getCurrentTranslation } from '../translations/translations.js';
 import { historyManager } from './HistoryManager.js';
@@ -177,20 +177,19 @@ export class AuthManager {
         }
 
         const user: LoginUser = { username, password };
-
         // Register the callback function
-        wsClient.onLoginSuccess((message) => {
+        wsClient.registerCallback(WebSocketEvent.LOGIN_SUCCESS, (msg: string) => {
             this.authState = AuthState.LOGGED_IN;
             uiManager.showUserInfo(user.username);
             // Clear form and navigate back to main menu
             clearForm([EL.AUTH.LOGIN_USERNAME, EL.AUTH.LOGIN_PASSWORD]);
             historyManager.navigateTo(AppState.MAIN_MENU);;     
-            console.log(message);
+            console.log(msg);
         });
 
-        wsClient.onLoginFailure((message) => {
+        wsClient.registerCallback(WebSocketEvent.LOGIN_FAILURE, (msg: string) => {
             this.authState = AuthState.LOGGED_FAILED;
-            if (message === "User doesn't exist") {
+            if (msg === "User doesn't exist") {
                 alert(t.dontHaveAccount);
                 clearForm([EL.AUTH.LOGIN_USERNAME, EL.AUTH.LOGIN_PASSWORD]); 
                 setTimeout(() => {
@@ -244,35 +243,35 @@ export class AuthManager {
         const user: RegisterUser = { username, email, password };
 
         // register the callback in case of success or failure
-        wsClient.onRegistrationFailure((message) => {
+        wsClient.registerCallback(WebSocketEvent.REGISTRATION_FAILURE, (msg: string) => {
             this.authState = AuthState.LOGGED_FAILED;
             clearForm([ EL.AUTH.REGISTER_USERNAME, EL.AUTH.REGISTER_EMAIL,
             EL.AUTH.REGISTER_PASSWORD, EL.AUTH.REGISTER_CONFIRM_PASSWORD]);
-            if (message === "Username is already registered") {
-                alert(message || 'Registration failed. Username already register. Please choose another one');
+            if (msg === "Username is already registered") {
+                alert(msg || 'Registration failed. Username already register. Please choose another one');
             } else {
-                alert(message || 'Registration failed. User already exist. Please login');
+                alert(msg || 'Registration failed. User already exist. Please login');
                 setTimeout(() => {
                     historyManager.navigateTo(AppState.LOGIN);
                 }, 500);
             }
         });
 
-        wsClient.onError((message) => {
+        wsClient.registerCallback(WebSocketEvent.ERROR, (msg: string) => {
             this.authState = AuthState.LOGGED_FAILED;
             clearForm([ EL.AUTH.REGISTER_USERNAME, EL.AUTH.REGISTER_EMAIL,
             EL.AUTH.REGISTER_PASSWORD, EL.AUTH.REGISTER_CONFIRM_PASSWORD]);
-            alert(message || 'Registration failed. An error occured. Please try again');
+            alert(msg || 'Registration failed. An error occured. Please try again');
             setTimeout(() => {
                 historyManager.navigateTo(AppState.LOGIN);
             }, 500);
         });
 
-        wsClient.onRegistrationSuccess((message) => {
+        wsClient.registerCallback(WebSocketEvent.REGISTRATION_SUCCESS, (msg: string) => {
             this.authState = AuthState.LOGGED_IN;
             clearForm([ EL.AUTH.REGISTER_USERNAME, EL.AUTH.REGISTER_EMAIL,
             EL.AUTH.REGISTER_PASSWORD, EL.AUTH.REGISTER_CONFIRM_PASSWORD]);
-            alert(message || 'Registration successful! You can now login.');
+            alert(msg || 'Registration successful! You can now login.');
             setTimeout(() => {
                 historyManager.navigateTo(AppState.LOGIN);
             }, 500);

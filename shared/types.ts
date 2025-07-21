@@ -1,4 +1,4 @@
-import { MessageType, GameMode, Direction, GameState } from './constants.js';
+import { MessageType, GameMode, Direction, GameState, UserManagement } from './constants.js';
 
 // ============================== SHARED TYPES  ==============================
 
@@ -96,25 +96,28 @@ export interface LoginUser {
 
 // ============================== USER MANAGEMENT TYPES ==============================
 
+export interface UserProfileData {
+  userId: number;
+  username: string;
+  email: string;
+  displayName?: string;
+  avatarUrl?: string;
+  victories: number;
+  defeats: number;
+  games: number;
+  friends: { id: number; username: string }[];
+}
+
 export interface GetUserProfile {
-  type: UserManagement;
+  type: MessageType;
   data: { username: string };
 }
 
-export interface UserProfile {
-  type: UserManagement;
-  data: {
-    userId: number;
-    username: string;
-    email: string;
-    displayName?: string;
-    avatarUrl?: string;
-    victories: number;
-    defeats: number;
-    games: number;
-    friends: { id: number; username: string }[];
-  };
+export interface UserProfileMessage {
+  type: MessageType;
+  data: UserProfileData;
 }
+
 
 
 // ============================== FRONTEND-ONLY TYPES ==============================

@@ -11,10 +11,6 @@ export class WebSocketClient {
     private ws: WebSocket | null = null;
     private connectionStatus: ConnectionStatus = ConnectionStatus.CONNECTING;
     private callbacks: { [event: string]: Function | null } = {};
-    private loginFailureCallback: ((message: string) => void) | null = null;
-    private loginSuccess: ((message: string) => void) | null = null;
-    private RegistrationSuccess: ((message: string) => void) | null = null;
-    private RegistrationFailureCallback: ((message: string) => void) | null = null;
 
     static getInstance(): WebSocketClient {
         if (!WebSocketClient.instance) {
@@ -114,33 +110,27 @@ export class WebSocketClient {
                 break;
             case MessageType.SUCCESS_LOGIN:
                 console.error('✅ Login success:', message.message);
-                if (this.loginSuccess)
-                    this.loginSuccess(message.message || "✅ Login success");
+                this.triggerCallback(WebSocketEvent.LOGIN_SUCCESS, message.message || "✅ Login success");
                 break;
             case MessageType.SUCCESS_REGISTRATION:
                 console.error('✅ Registration success:', message.message);
-                if (this.RegistrationSuccess)
-                    this.RegistrationSuccess(message.message || "✅ Registration success");
+                this.triggerCallback(WebSocketEvent.REGISTRATION_SUCCESS, message.message || "✅ Registration success");
                 break;
             case MessageType.LOGIN_FAILURE:
                 console.error('🚫 Login failed:', message.message);
-                if (this.loginFailureCallback)
-                    this.loginFailureCallback(message.message || "🚫 Login failed: ID/Password not matching");
+                this.triggerCallback(WebSocketEvent.LOGIN_FAILURE, message.message || "🚫 Login failed: ID/Password not matching");
                 break;
             case MessageType.USER_NOTEXIST:
                 console.error('🚫 Login failed:', message.message);
-                if (this.loginFailureCallback)
-                    this.loginFailureCallback(message.message || "User doesn't exist");
+                this.triggerCallback(WebSocketEvent.LOGIN_FAILURE, message.message || "User doesn't exist");
                 break;
             case MessageType.USER_EXIST:
                 console.error('🚫 Registration failed:', message.message);
-                if (this.RegistrationFailureCallback)
-                    this.RegistrationFailureCallback(message.message || "🚫 Registration failed: user exist");
+                this.triggerCallback(WebSocketEvent.REGISTRATION_FAILURE, message.message || "🚫 Registration failed: user exist");
                 break;
             case MessageType.USERNAME_TAKEN:
                 console.error('🚫 Registration failed:', message.message);
-                if (this.RegistrationFailureCallback)
-                    this.RegistrationFailureCallback(message.message || "Username is already registered");
+                this.triggerCallback(WebSocketEvent.REGISTRATION_FAILURE, message.message || "Username is already registered");
                 break;
             default:
                 console.warn(`Unhandled message type: ${message.type}`);
@@ -232,24 +222,6 @@ export class WebSocketClient {
             }
         }
     }
-
-    onLoginFailure(callback: (message?: string) => void): void {
-        this.loginFailureCallback = callback;
-    }
-
-    onRegistrationFailure(callback: (message: string) => void): void {
-        this.RegistrationFailureCallback = callback;
-    }
-
-    onLoginSuccess(callback: (message: string) => void): void {
-        this.loginSuccess = callback;
-    }
-
-    onRegistrationSuccess(callback: (message: string) => void): void {
-        this.RegistrationSuccess = callback;
-    }
-
-
     
     // ========================================
     // STATUS & UTILITY

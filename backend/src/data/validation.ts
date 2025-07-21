@@ -1,6 +1,6 @@
 // Program to sanitize info before sending to SQL and ensure SQL injection avoidance
 import * as dbFunction from '../data/database.js';
-import { UserProfile } from '../../shared/types.js';
+import { UserProfileData } from '../shared/types.js';
 
 export function verifyLogin(username: string, password: string): number {
     if (!dbFunction.userExist(undefined,username,undefined))
@@ -34,7 +34,7 @@ export function registerNewUser(username: string, email: string, password:string
     }
 }
 
-export function requestUserInformation(username: string): UserProfile {
+export function requestUserInformation(username: string): UserProfileData | undefined | null {
     if (!dbFunction.userExist(undefined,username,undefined))
         return undefined;
     const userInfo = dbFunction.getUserProfile(username);

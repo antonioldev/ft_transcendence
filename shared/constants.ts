@@ -23,7 +23,11 @@ export enum MessageType {
     LOGIN_FAILURE,         // failure in login user -- id or pwd not matching
     USERNAME_TAKEN,         // failure to register new user -- username already exist in database  
     USER_EXIST,            // failure to register new user -- exist in db
-    USER_NOTEXIST         // failure in login user -- do not exist in db 
+    USER_NOTEXIST,         // failure in login user -- do not exist in db 
+    SEND_USER_PROFILE,      // Type for front to backend comm
+    REQUEST_USER_PROFILE,    // Type for back to frontend comm
+    UPDATE_USER_PROFILE     // Request to update user information 
+
 }
 
 export enum WebSocketEvent {
@@ -34,6 +38,10 @@ export enum WebSocketEvent {
     GAME_RESUMED = 'gameResumed',
     GAME_ENDED = 'gameEnded',
     STATUS_CHANGE = 'statusChange',
+    LOGIN_SUCCESS = 'LOGIN_SUCCESS',
+    LOGIN_FAILURE = 'LOGIN_FAILURE',
+    REGISTRATION_SUCCESS = 'REGISTRATION_SUCCESS',
+    REGISTRATION_FAILURE = 'REGISTRATION_FAILURE'
 }
 
 // Different game modes available
