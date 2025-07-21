@@ -180,10 +180,10 @@ export class AuthManager {
         // Register the callback function
         wsClient.registerCallback(WebSocketEvent.LOGIN_SUCCESS, (msg: string) => {
             this.authState = AuthState.LOGGED_IN;
-            uiManager.showUserInfo(user.username);
             // Clear form and navigate back to main menu
             clearForm([EL.AUTH.LOGIN_USERNAME, EL.AUTH.LOGIN_PASSWORD]);
-            historyManager.navigateTo(AppState.MAIN_MENU);;     
+            historyManager.navigateTo(AppState.MAIN_MENU);
+            uiManager.showUserInfo(user.username);     
             console.log(msg);
         });
 
@@ -205,8 +205,6 @@ export class AuthManager {
         try {
             wsClient.loginUser(user);
             console.log('Login attempt: ', { username});
-            this.authState = AuthState.LOGGED_IN;
-            uiManager.showUserInfo(user.username);
         } catch (error) {
             console.error('Error sending login request:', error);
             this.authState = AuthState.LOGGED_FAILED;
