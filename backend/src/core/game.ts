@@ -56,32 +56,15 @@ export class Game {
 
 	// Update the game state, including player and ball positions
 	private _update_state(dt: number): void {
-		if (this.paused)
-			return;
+		// cache preceeding rect positions for collision calculations
 		this.players[LEFT_PADDLE].cacheRect();
 		this.players[RIGHT_PADDLE].cacheRect();
 		this._handle_input(dt);
 		this.ball.update(dt);
 	}
 
-	// Check if the game state has changed (e.g., player or ball positions)
-	// probably unecessary overhead for not much performance gain
-	private _state_changed(): boolean {
-		if (this.paused)
-			return false;
-		return (
-		this.players[LEFT_PADDLE].rect.x != this.players[LEFT_PADDLE].oldRect.x ||
-		this.players[RIGHT_PADDLE].rect.x != this.players[RIGHT_PADDLE].oldRect.x ||
-		this.ball.rect.x != this.ball.oldRect.x ||
-		this.ball.rect.y != this.ball.oldRect.y) //TODO this will always be true because the ball moves all the time
-	}
-
 	// Process the input queue and apply player movements
 	private _process_queue(dt: number): void {
-		if (this.paused) {
-			this.queue = [];
-			return;
-		}
 		while (this.queue.length > 0) {
 			const input = this.queue.shift();
 			if (input) {
@@ -116,6 +99,7 @@ export class Game {
 
 	// continuosly updates the game state and broadcasts to all clients
 	run() {
+		// base case to end the game loop
 		if (!this.running) return;
 		
 		const dt = this.clock.tick();
@@ -126,6 +110,7 @@ export class Game {
 				state: this.get_state()
 			});
 		}
+		// queue next iteration of run() on the event loop after a timeout of 60fps
 		setTimeout(this.run.bind(this), this.clock.getTimeout(dt));
 	}
 
@@ -133,6 +118,7 @@ export class Game {
 	pause(): void {
 		if(!this.paused) {
 			this.paused = true;
+			this.queue = []
 		}
 	}
 
