@@ -73,6 +73,7 @@ export class Game {
 	}
 
 	// Check if the game state has changed (e.g., player or ball positions)
+	// probably unecessary overhead for not much returns
 	private _state_changed(): boolean {
 		if (this.paused)
 			return false;
@@ -124,15 +125,14 @@ export class Game {
 	// continuosly updates the game state and broadcasts to all clients
 	run() {
 		if (!this.running) return;
-		const dt = this.clock.tick();
 		
+		const dt = this.clock.tick();
 		if (!this.paused) {
 			this._update_state(dt);
-			if (this._state_changed()) {
-				this._broadcast(this.get_state());
-			}
+			this._broadcast(this.get_state());
 		}
-		setTimeout(this.run.bind(this), this.clock.getTimeout(dt));
+		const timeout = this.clock.getTimeout(dt);
+		setTimeout(this.run.bind(this), timeout);
 	}
 
 	// Pause the game
