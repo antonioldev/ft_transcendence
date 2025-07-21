@@ -71,7 +71,7 @@ class UIManager {
         this.applyStylesToAll('.connection-status', UI_STYLES.connectionStatus);
 
         // Game dialogs & overlays
-        this.applyStylesToAll('.pause-dialog', UI_STYLES.pauseDialog);
+        this.applyStylesToAll('.game-overlay', UI_STYLES.gameOverlay);
         this.applyStylesToAll('.pause-title, .pause-text, .pause-controls', {
             color: UI_COLORS.text,
             textAlign: 'center' as const,
@@ -81,6 +81,10 @@ class UIManager {
         this.applyStylesToAll('.pause-text', UI_STYLES.pauseMedium);
         this.applyStylesToAll('.pause-controls', UI_STYLES.pauseSmall);
         this.applyStylesToAll('.setup-form', UI_STYLES.setupForm);
+
+        this.applyStylesToAll('.loading-content', UI_STYLES.loadingContent);
+        this.applyStylesToAll('.progress-bar', UI_STYLES.progressBar);
+        this.applyStylesToAll('#progress-fill', UI_STYLES.progressFill);
 
         // Special cases
         const mainMenu = document.getElementById('main-menu');

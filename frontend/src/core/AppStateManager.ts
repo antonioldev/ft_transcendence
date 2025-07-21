@@ -39,6 +39,7 @@ class AppStateManager {
             console.log('AppStateManager: Starting new game');
             this.currentGame = new Game(config);
             await this.currentGame?.initialize();
+            await this.currentGame.connect();
             this.currentGame?.start();
             console.log('AppStateManager: Game started successfully');
         } catch (error) {

@@ -138,7 +138,11 @@ export const EL = {
     PAUSE_DIALOG_3D: 'pause-dialog-3d',
     PAUSE_TITLE_3D: 'pause-title-3d',
     PAUSE_TEXT_3D: 'pause-text-3d',
-    PAUSE_CONTROLS_3D: 'pause-controls-3d'
+    PAUSE_CONTROLS_3D: 'pause-controls-3d',
+
+    LOADING_SCREEN: 'loading-screen',
+    PROGRESS_FILL: 'progress-fill',
+    PROGRESS_TEXT: 'progress-text'
   },
 
   // ========================================
