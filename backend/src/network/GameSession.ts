@@ -5,20 +5,19 @@ import { MessageType, GameMode } from '../shared/constants.js';
 import { GameStateData, ServerMessage } from '../shared/types.js';
 
 export class GameSession {
-	mode: GameMode;
 	id: string;
+	mode: GameMode;
 	clients: (Client)[] = [];
-	players: Player[] = []; 
+	game: Game;
 	full: boolean = false;
 	running: boolean = false;
-	game!: Game;
 	private paused: boolean = false;
 	private requestedBy: Client | null = null;
 
     constructor(mode: GameMode, game_id: string) {
-        this.mode = mode
 		this.id = game_id
-        this.game = new Game(game_id, mode, this.broadcastToClients.bind(this))
+        this.mode = mode
+        this.game = new Game(mode, this.broadcastToClients.bind(this))
 	}
 
 	broadcastToClients(state: GameStateData) {
@@ -69,7 +68,6 @@ export class GameSession {
 			else if (this.mode === GameMode.TWO_PLAYER_REMOTE && this.clients.length === 2) {
 				this.full = true;
 			}
-			// tournament
 		}
 	}
 
@@ -178,3 +176,4 @@ export class GameSession {
 		return this.paused;
 	}
 }
+

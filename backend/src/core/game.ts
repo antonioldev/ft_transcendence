@@ -8,27 +8,19 @@ import { PlayerInput, GameStateData } from '../shared/types.js';
 // The Game class serves as an abstract base class for managing the core game logic.
 // It handles the game loop, state updates, input processing, and broadcasting game state.
 export class Game {
-	// Unique identifier for the game instance
-	id: string;
 	mode: GameMode;
 	// Clock instance to manage game loop timing
 	clock: Clock;
-	// Queue to store player inputs
 	queue: PlayerInput[] = [];
-	// Flag to indicate if the game is running
 	running: boolean;
-	// Flag to indicate if the game is paused
 	paused: boolean = false;
-	// Array of players (can include AI bots)
 	players!: (Player | AIBot)[];
-	// Ball instance for the game
 	ball!: Ball;
 	// Callback function to broadcast the game state
 	private _broadcast: (state: GameStateData) => void;
 
-	constructor(id: string, mode: GameMode, broadcast_callback: (state: GameStateData) => void) {
+	constructor(mode: GameMode, broadcast_callback: (state: GameStateData) => void) {
 		// Initialize game properties
-		this.id = id;
 		this.mode = mode;
 		this.clock = new Clock(60);
 		this.running = true;
