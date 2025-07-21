@@ -1,8 +1,11 @@
 import { uiManager } from '../ui/UIManager.js';
-import { gameController } from '../engine/GameController.js';
-import { GameState, ViewMode } from '../shared/constants.js';
+import { GameState, ViewMode, AppState } from '../shared/constants.js';
 import { authManager } from './AuthManager.js';
 import { historyManager } from './HistoryManager.js';
+import { Game } from '../engine/Game.js';
+import { GameConfig } from '../engine/GameConfig.js';
+import { webSocketClient } from './WebSocketClient.js';
+import { EL, getElementById} from '../ui/elements.js';
 
 
 /**
@@ -14,143 +17,129 @@ class AppStateManager {
     private currentState: GameState | null = null;
     private currentViewMode: ViewMode | null = null;
     private isExiting: boolean = false;
-
-    // ========================================
-    // STATE GETTERS
-    // ========================================
-    
-    getCurrentState(): GameState | null {
-        return this.currentState;
-    }
-
-    getCurrentViewMode(): ViewMode | null {
-        return this.currentViewMode;
-    }
-
-    // ========================================
-    // STATE CHECKS
-    // ========================================
-    
-    isInGameOrPaused(): boolean {
-        return this.currentState !== null && !this.isExiting;
-    }
-
-    isInGame(): boolean {
-        return this.currentState === GameState.PLAYING && !this.isExiting;
-    }
-
-    isPaused(): boolean {
-        return this.currentState === GameState.PAUSED && !this.isExiting;
-    }
+    private currentGame: Game | null = null;
+    private isStarting: boolean = false;
 
     // ========================================
     // GAME LIFECYCLE
     // ========================================
     
-    // Start a new game - just track state, GameController handles the rest
-    startGame(viewMode: ViewMode): void {
-        this.currentState = GameState.PLAYING;
-        this.currentViewMode = viewMode;
-        this.isExiting = false;
-        
-        console.log(`AppStateManager: Game started in ${ViewMode[viewMode]} mode`);
-    }
-
-    // Pause current game - delegate to GameController
-    pauseCurrentGame(): void {
-        if (this.currentState !== GameState.PLAYING || this.isExiting) return;
-
-        this.currentState = GameState.PAUSED;
-        
-        // Show appropriate pause dialog
-        if (this.currentViewMode === ViewMode.MODE_2D) {
-            uiManager.showPauseOverlays('pause-dialog-2d');
-        } else if (this.currentViewMode === ViewMode.MODE_3D) {
-            uiManager.showPauseOverlays('pause-dialog-3d');
+    async startGame(config: GameConfig): Promise<void> {
+        if (this.isStarting) {
+            console.warn('AppStateManager: Game start already in progress');
+            return;
         }
 
-        // Delegate to GameController
-        gameController.pauseGame();
-        
-        console.log('AppStateManager: Game paused');
-    }
+        if (this.currentGame)
+            await this.endGame();
 
-    // Resume game - delegate to GameController
-    resumeGame(): void {
-        if (this.currentState !== GameState.PAUSED || this.isExiting) return;
+        this.isStarting = true;
 
-        this.currentState = GameState.PLAYING;
-        
-        // Hide pause dialogs
-        if (this.currentViewMode === ViewMode.MODE_2D) {
-            uiManager.hidePauseOverlays('pause-dialog-2d');
-        } else if (this.currentViewMode === ViewMode.MODE_3D) {
-            uiManager.hidePauseOverlays('pause-dialog-3d');
+        try {
+            console.log('AppStateManager: Starting new game');
+            this.currentGame = new Game(config);
+            await this.currentGame?.initialize();
+            this.currentGame?.start();
+            console.log('AppStateManager: Game started successfully');
+        } catch (error) {
+            console.error('AppStateManager: Error starting game:', error);
+            if (this.currentGame) {
+                await this.currentGame.dispose();
+                this.currentGame = null;
+            }
+            throw error;
+        } finally {
+            this.isStarting = false;
         }
-
-        // Delegate to GameController
-        gameController.resumeGame();
-        
-        console.log('AppStateManager: Game resumed');
     }
 
-    // Exit to menu
+    async endGame(): Promise<void> {
+        if (!this.currentGame) {
+            return;
+        }
+    
+        console.log('AppStateManager: Ending current game');
+    
+        try {
+            this.currentGame.stop();
+            await this.currentGame.dispose();
+        } catch (error) {
+            console.error('AppStateManager: Error ending game:', error);
+        } finally {
+            this.currentGame = null;
+        }
+    
+        console.log('AppStateManager: Game ended successfully');
+    }
+
     async exitToMenu(): Promise<void> {
-        if (!this.isInGameOrPaused() || this.isExiting) return;
+        if (!this.isInGame() && !this.isPaused()) return;
+        if (this.isExiting) return;
 
         this.isExiting = true;
 
         try {
             console.log('AppStateManager: Exiting to menu...');
-
-            // Hide pause dialogs immediately
-            if (this.currentViewMode === ViewMode.MODE_2D) {
-                uiManager.hidePauseOverlays('pause-dialog-2d');
-            } else if (this.currentViewMode === ViewMode.MODE_3D) {
-                uiManager.hidePauseOverlays('pause-dialog-3d');
-            }
-
-            // SINGLE CALL - GameController handles all cleanups
-            await gameController.endGame();
-
-            // Reset our state
+            uiManager.setElementVisibility('pause-dialog-3d', false);
+            webSocketClient.sendQuitGame();
+            await this.endGame();
             this.resetToMenu();
-            
             console.log('AppStateManager: Successfully exited to main menu');
-
         } catch (error) {
             console.error('AppStateManager: Error during game exit:', error);
-            
-            // Reset state even if there's an error
             this.resetToMenu();
         }
     }
 
-    // Reset to menu state
     resetToMenu(): void {
         this.currentState = null;
         this.currentViewMode = null;
         this.isExiting = false;
-
-        // Return to main menu and restore auth state
         authManager.checkAuthState();
-        historyManager.goToMainMenu();
+        historyManager.navigateTo(AppState.MAIN_MENU);;
+    }
+
+    setGameState(viewMode: ViewMode): void {
+        this.currentState = GameState.PLAYING;
+        this.currentViewMode = viewMode;
+        this.isExiting = false;
+        console.log(`AppStateManager: Game started in ${ViewMode[viewMode]} mode`);
     }
 
     // ========================================
-    // UTILITY
+    // PAUSE/RESUME HANDLING
     // ========================================
+    onServerConfirmedPause(): void {
+        this.handleServerStateChange(GameState.PAUSED, true);
+    }
+
+    onServerConfirmedResume(): void {
+        this.handleServerStateChange(GameState.PLAYING, false);
+    }
+
+    private handleServerStateChange(newState: GameState, showPauseOverlay: boolean): void {
+        this.currentState = newState;
+        uiManager.setElementVisibility(EL.GAME.PAUSE_DIALOG_3D, showPauseOverlay);
+        console.log(`AppStateManager: Game ${newState === GameState.PAUSED ? 'paused' : 'resumed'} and UI updated`);
+    }
+
+    // ========================================
+    // STATE CHECKS
+    // ========================================
+    isInGame(): boolean {
+        return this.currentGame !== null && 
+               this.currentState === GameState.PLAYING && 
+               !this.isExiting;
+    }
     
-    // Get current game info for debugging
-    getGameInfo(): any {
-        return {
-            state: this.currentState ? GameState[this.currentState] : 'None',
-            viewMode: this.currentViewMode ? ViewMode[this.currentViewMode] : 'None',
-            isExiting: this.isExiting,
-            hasActiveGame: gameController.hasActiveGame(),
-            isGameRunning: gameController.isGameRunning(),
-            isGamePaused: gameController.isGamePaused()
-        };
+    isPaused(): boolean {
+        return this.currentGame !== null && 
+               this.currentState === GameState.PAUSED && 
+               !this.isExiting;
+    }
+
+        getCurrentGame(): Game | null {
+        return this.currentGame;
     }
 }
 

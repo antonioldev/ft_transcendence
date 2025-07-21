@@ -1,4 +1,4 @@
-import { ConnectionStatus, MessageType, GameMode, Direction } from '../shared/constants.js'
+import { ConnectionStatus, MessageType, GameMode, Direction, WebSocketEvent } from '../shared/constants.js'
 import { ClientMessage, ServerMessage, GameStateData, PlayerInfo, RegisterUser, LoginUser } from '../shared/types.js'
 
 /**
@@ -10,10 +10,7 @@ export class WebSocketClient {
     private static instance: WebSocketClient;
     private ws: WebSocket | null = null;
     private connectionStatus: ConnectionStatus = ConnectionStatus.CONNECTING;
-    private gameStateCallback: ((state: GameStateData) => void) | null = null;
-    private connectionCallback: (() => void) | null = null;
-    private errorCallback: ((error: string) => void) | null = null;
-    private statusCallback: ((status: ConnectionStatus, message?: string) => void) | null = null;
+    private callbacks: { [event: string]: Function | null } = {};
     private loginFailureCallback: ((message: string) => void) | null = null;
     private loginSuccess: ((message: string) => void) | null = null;
     private RegistrationSuccess: ((message: string) => void) | null = null;
@@ -45,7 +42,7 @@ export class WebSocketClient {
             if (this.connectionStatus === ConnectionStatus.CONNECTING) {
                 this.connectionStatus = ConnectionStatus.FAILED;
                 this.notifyStatus(ConnectionStatus.FAILED);
-                this.errorCallback?.('Connection timeout');
+                this.triggerCallback(WebSocketEvent.ERROR, 'Connection timeout');
             }
         }, 5000);
 
@@ -54,7 +51,7 @@ export class WebSocketClient {
             this.connectionStatus = ConnectionStatus.CONNECTED;
             this.notifyStatus(ConnectionStatus.CONNECTED);
             console.log('🔗 Connected to game server');
-            this.connectionCallback?.();
+            this.triggerCallback(WebSocketEvent.CONNECTION);
         };
 
         this.ws.onmessage = (event) => {
@@ -78,24 +75,8 @@ export class WebSocketClient {
             console.error('❌ WebSocket error');
             this.connectionStatus = ConnectionStatus.FAILED;
             this.notifyStatus(ConnectionStatus.FAILED);
-            this.errorCallback?.('Connection failed');
+            this.triggerCallback(WebSocketEvent.ERROR, 'Connection failed');
         };
-    }
-
-    // NEW: Send quit game message (but keep ws connection open) //TODO doesn't work with browser <-
-    sendQuitGame(): void {
-        if (this.isConnected()) {
-            const message: ClientMessage = {
-                type: MessageType.QUIT_GAME
-            };
-            
-            try {
-                this.ws!.send(JSON.stringify(message));
-                console.log('🚪 Sent quit game message to server (WebSocket stays open)');
-            } catch (error) {
-                console.error('❌ Error sending quit message:', error);
-            }
-        }
     }
 
     // Disconnects the WebSocket connection.
@@ -111,20 +92,25 @@ export class WebSocketClient {
     // ========================================
 
     // Handles incoming messages from the server.
-    // @param message - The message received from the server.
     private handleMessage(message: ServerMessage): void {
         switch (message.type) {
             case MessageType.GAME_STATE:
-                if (message.state && this.gameStateCallback)
-                    this.gameStateCallback(message.state);
+                this.triggerCallback(WebSocketEvent.GAME_STATE, message.state);
                 break;
-            case MessageType.GAME_STARTED:
-                console.log('🎮 Game started:', message.message);
+            case MessageType.PAUSED:
+                this.triggerCallback(WebSocketEvent.GAME_PAUSED);
+                break;
+            case MessageType.RESUMED:
+                this.triggerCallback(WebSocketEvent.GAME_RESUMED);
+                break;
+            case MessageType.GAME_ENDED:
+                this.triggerCallback(WebSocketEvent.GAME_ENDED);
+                break;
+            case MessageType.WELCOME:
+                console.log('Server says:', message.message);
                 break;
             case MessageType.ERROR:
-                console.error('❌  Server error:', message.message);
-                if (this.errorCallback)
-                    this.errorCallback(message.message || 'Unknown error');
+                this.triggerCallback(WebSocketEvent.ERROR, message.message);
                 break;
             case MessageType.SUCCESS_LOGIN:
                 console.error('✅ Login success:', message.message);
@@ -157,7 +143,8 @@ export class WebSocketClient {
                     this.RegistrationFailureCallback(message.message || "Username is already registered");
                 break;
             default:
-                break; //TODO
+                console.warn(`Unhandled message type: ${message.type}`);
+                break;
         }
     }
 
@@ -165,27 +152,39 @@ export class WebSocketClient {
     // GAME COMMUNICATION
     // ========================================
 
-    // Sends a request to join a game with the specified game mode.
     joinGame(gameMode: GameMode, players: PlayerInfo[]): void {
-        if (this.isConnected()) {
-            const message: ClientMessage = {
-                type: MessageType.JOIN_GAME,
-                gameMode: gameMode,
-                players: players
-            };
-            this.ws!.send(JSON.stringify(message));
-        }
+        this.sendMessage(MessageType.JOIN_GAME, { gameMode, players });
     }
 
-    // Sends player input to the server.
     sendPlayerInput(side: number, direction: Direction): void {
-        if (this.isConnected()) {
-            const message: ClientMessage = {
-                type: MessageType.PLAYER_INPUT,
-                side: side,
-                direction: direction
-            };
+        this.sendMessage(MessageType.PLAYER_INPUT, { side, direction });
+    }
+    
+    sendPauseRequest(): void {
+        this.sendMessage(MessageType.PAUSE_REQUEST);
+    }
+    
+    sendResumeRequest(): void {
+        this.sendMessage(MessageType.RESUME_REQUEST);
+    }
+
+    sendQuitGame(): void { //TODO doesn't work with browser <-
+        this.sendMessage(MessageType.QUIT_GAME);
+    }
+
+    private sendMessage(type: MessageType, data: any = {}): void {
+        if (!this.isConnected()) {
+            console.error('WebSocket is not connected. Cannot send message.');
+            return;
+        }
+    
+        const message: ClientMessage = { type, ...data };
+    
+        try {
             this.ws!.send(JSON.stringify(message));
+            console.log(`Message sent: ${type}`, message);
+        } catch (error) {
+            console.error(`Error sending message of type ${type}:`, error);
         }
     }
 
@@ -219,27 +218,19 @@ export class WebSocketClient {
     // CALLBACK REGISTRATION
     // ========================================
 
-    // Registers a callback to be invoked when the game state is updated.
-    onGameState(callback: (state: GameStateData) => void): void {
-        this.gameStateCallback = callback;
+    registerCallback(event: WebSocketEvent, callback: Function): void {
+        this.callbacks[event] = callback;
     }
-
-    // Registers a callback to be invoked when the connection is established.
-    onConnection(callback: () => void): void {
-        this.connectionCallback = callback;
-        if (this.isConnected())
-            callback();
-    }
-
-    // Registers a callback to be invoked when an error occurs.
-    onError(callback: (error: string) => void): void {
-        this.errorCallback = callback;
-    }
-
-    // Registers a callback to be invoked when connection status changes.
-    onStatusChange(callback: (status: ConnectionStatus) => void): void {
-        this.statusCallback = callback;
-        this.notifyStatus(this.connectionStatus);
+    
+    triggerCallback(event: WebSocketEvent, data?: any): void {
+        const callback = this.callbacks[event];
+        if (callback) {
+            try {
+                callback(data);
+            } catch (error) {
+                console.error(`Error triggering callback for event ${event}:`, error);
+            }
+        }
     }
 
     onLoginFailure(callback: (message?: string) => void): void {
@@ -259,7 +250,7 @@ export class WebSocketClient {
     }
 
 
-
+    
     // ========================================
     // STATUS & UTILITY
     // ========================================
@@ -269,14 +260,9 @@ export class WebSocketClient {
         return this.connectionStatus === ConnectionStatus.CONNECTED;
     }
 
-    // Gets the current connection status.
-    getConnectionStatus(): ConnectionStatus {
-        return this.connectionStatus;
-    }
-
     // Notifies registered callbacks about status changes.
     private notifyStatus(status: ConnectionStatus): void {
-        this.statusCallback?.(status);
+        this.triggerCallback(WebSocketEvent.STATUS_CHANGE, status);
     }
 }
 

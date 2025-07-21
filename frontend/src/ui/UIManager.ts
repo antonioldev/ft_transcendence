@@ -1,5 +1,6 @@
 import { GameMode, ConnectionStatus } from '../shared/constants.js';
 import { UI_COLORS, UI_STYLES } from './styles.js';
+import { EL, getElementById} from './elements.js';
 
 class UIManager {
     private static instance: UIManager;
@@ -118,17 +119,17 @@ class UIManager {
     // AUTHENTICATION UI
     // ========================================
     showAuthButtons(): void {
-        const authButtons = document.getElementById('auth-buttons');
-        const userInfo = document.getElementById('user-info');
+        const authButtons = getElementById(EL.DISPLAY.AUTH_BUTTONS);
+        const userInfo = getElementById(EL.DISPLAY.USER_INFO);
         
         if (authButtons) authButtons.style.display = 'flex';
         if (userInfo) userInfo.style.display = 'none';
     }
 
     showUserInfo(username: string): void {
-        const authButtons = document.getElementById('auth-buttons');
-        const userInfo = document.getElementById('user-info');
-        const userName = document.getElementById('user-name');
+        const authButtons = getElementById(EL.DISPLAY.AUTH_BUTTONS);
+        const userInfo = getElementById(EL.DISPLAY.USER_INFO);
+        const userName = getElementById(EL.DISPLAY.USER_NAME);
         
         if (authButtons) authButtons.style.display = 'none';
         if (userInfo && userName) {
@@ -137,19 +138,10 @@ class UIManager {
         }
     }
     
-    hideUserInfo(): void {
-        this.showAuthButtons();
-    }
-
     // ========================================
     // OVERLAY & MODAL MANAGEMENT
     // ========================================
-    showOverlays(modalId: string): void { this.setElementVisibility(modalId, true); }
-    hideOverlays(modalId: string): void { this.setElementVisibility(modalId, false); }
-    showPauseOverlays(dialogId: string): void { this.setElementVisibility(dialogId, true); }
-    hidePauseOverlays(dialogId: string): void { this.setElementVisibility(dialogId, false); }
-
-    private setElementVisibility(elementId: string, visible: boolean): void {
+    setElementVisibility(elementId: string, visible: boolean): void {
         const element = document.getElementById(elementId);
         if (element) {
             element.style.display = visible ? 'flex' : 'none';
@@ -159,31 +151,46 @@ class UIManager {
     // ========================================
     // PLAYER INPUT & VALIDATION
     // ========================================
-    getPlayerNames(gameMode: GameMode): { player1: string; player2?: string } {
+    getPlayerNames(gameMode: GameMode): { player1: string; player2?: string; player3?: string; player4?: string } {
         let player1Input: HTMLInputElement | null;
         let player2Input: HTMLInputElement | null = null;
+        let player3Input: HTMLInputElement | null = null;
+        let player4Input: HTMLInputElement | null = null;
 
         switch (gameMode) {
             case GameMode.SINGLE_PLAYER:
-                player1Input = document.getElementById('player1-name') as HTMLInputElement;
+                player1Input = getElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER1_NAME);
                 break;
             case GameMode.TWO_PLAYER_LOCAL:
-                player1Input = document.getElementById('player1-name-local') as HTMLInputElement;
-                player2Input = document.getElementById('player2-name-local') as HTMLInputElement;
+                player1Input = getElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER1_NAME_LOCAL);
+                player2Input = getElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER2_NAME_LOCAL);
                 break;
             case GameMode.TWO_PLAYER_REMOTE:
-                player1Input = document.getElementById('player1-name-online') as HTMLInputElement;
+                player1Input = getElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER1_NAME_ONLINE);
+                break;
+            case GameMode.TOURNAMENT_LOCAL:
+            case GameMode.TOURNAMENT_REMOTE:
+                player1Input = getElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER1_NAME_TOURNAMENT);
+                player2Input = getElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER2_NAME_TOURNAMENT);
+                player3Input = getElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER3_NAME_TOURNAMENT);
+                player4Input = getElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER4_NAME_TOURNAMENT);
                 break;
             default:
                 return { player1: 'Player 1' };
         }
 
-        const result: { player1: string; player2?: string } = {
+        const result: { player1: string; player2?: string; player3?: string; player4?: string } = {
             player1: player1Input?.value.trim() || 'Player 1'
         };
 
         if (player2Input) {
             result.player2 = player2Input.value.trim() || 'Player 2';
+        }
+        if (player3Input) {
+            result.player3 = player3Input.value.trim() || 'Player 3';
+        }
+        if (player4Input) {
+            result.player4 = player4Input.value.trim() || 'Player 4';
         }
 
         return result;
@@ -194,6 +201,9 @@ class UIManager {
         
         if (!names.player1.trim()) return false;
         if (gameMode === GameMode.TWO_PLAYER_LOCAL && !names.player2?.trim()) return false;
+        if ((gameMode === GameMode.TOURNAMENT_LOCAL || gameMode === GameMode.TOURNAMENT_REMOTE)) {
+            if (!names.player2?.trim() || !names.player3?.trim() || !names.player4?.trim()) return false;
+        }
         
         return true;
     }
@@ -201,64 +211,57 @@ class UIManager {
     // ========================================
     // BUTTON STATE MANAGEMENT
     // ========================================
-    setButtonState(buttonId: string, state: 'enabled' | 'disabled', tooltip?: string): void {
-        const button = document.getElementById(buttonId) as HTMLButtonElement;
-        if (!button) return;
+    setButtonState(buttonIds: string[], state: 'enabled' | 'disabled', tooltip?: string): void {
+        buttonIds.forEach(buttonId => {
+            const button = document.getElementById(buttonId) as HTMLButtonElement;
 
-        if (state === 'disabled') {
-            button.disabled = true;
-            button.classList.add('disabled');
-            button.style.opacity = '0.5';
-            button.style.cursor = 'not-allowed';
-            if (tooltip)
-                button.title = tooltip;
-        } else {
-            button.disabled = false;
-            button.classList.remove('disabled');
-            button.style.opacity = '1';
-            button.style.cursor = 'pointer';
-            button.title = '';
-        }
-    }
+            if (!button)
+                return;
 
-    private setGameFeaturesEnabled(enable: boolean): void {
-        const buttonIds = ['play-btn', 'login-btn', 'register-btn'];
-        const disabled = enable;
-        const opacity = '1';
-        const title = '';
-        
-        buttonIds.forEach(id => {
-            const button = document.getElementById(id) as HTMLButtonElement;
-            if (button) {
-                button.disabled = disabled;
-                button.style.opacity = opacity;
-                button.title = title;
+            if (state === 'disabled') {
+                button.disabled = true;
+                button.classList.add('disabled');
+                button.style.opacity = '0.5';
+                button.style.cursor = 'not-allowed';
+                if (tooltip)
+                    button.title = tooltip;
+            } else {
+                button.disabled = false;
+                button.classList.remove('disabled');
+                button.style.opacity = '1';
+                button.style.cursor = 'pointer';
+                button.title = '';
             }
         });
+        
     }
 
     // ========================================
     // CONNECTION STATUS
     // ========================================
     updateConnectionStatus(status: ConnectionStatus): void {
-        const statusElement = document.getElementById('connection-status')!;
+        const statusElement = getElementById(EL.DISPLAY.CONNECTION_STATUS);
         if (!statusElement) return;
+        
         statusElement.style.display = 'block';
 
         switch (status) {
             case ConnectionStatus.CONNECTING:
                 statusElement.textContent = '🟡';
-                this.setGameFeaturesEnabled(true);
+                this.setButtonState([EL.BUTTONS.PLAY, EL.BUTTONS.LOGIN,
+                    EL.BUTTONS.REGISTER ], 'disabled');
                 break;
                 
             case ConnectionStatus.CONNECTED:
                 statusElement.textContent = '🟢';
-                this.setGameFeaturesEnabled(false);
+                this.setButtonState([EL.BUTTONS.PLAY, EL.BUTTONS.LOGIN,
+                    EL.BUTTONS.REGISTER ], 'enabled');
                 break;
                 
             case ConnectionStatus.FAILED:
                 statusElement.textContent = '🔴';
-                this.setGameFeaturesEnabled(true);
+                this.setButtonState([EL.BUTTONS.PLAY, EL.BUTTONS.LOGIN,
+                    EL.BUTTONS.REGISTER ], 'disabled');
                 break;
         }
     }

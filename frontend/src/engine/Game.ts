@@ -1,12 +1,13 @@
 declare var BABYLON: any;
 
 import { GameConfig } from './GameConfig.js';
-import { build2DScene, build3DScene } from './sceneBuilder.js';
+import { buildScene } from './sceneBuilder.js';
 import { InputHandler } from './InputHandler.js';
-import { NetworkManager } from './NetworkManager.js';
-import { ViewMode } from '../shared/constants.js';
+import { webSocketClient } from '../core/WebSocketClient.js';
 import { GameStateData, GameObjects } from '../shared/types.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
+import { appStateManager } from '../core/AppStateManager.js';
+import { WebSocketEvent } from '../shared/constants.js';
 
 /**
  * Main Game class that handles everything for running one game instance.
@@ -27,7 +28,6 @@ export class Game {
     private canvas: HTMLCanvasElement | null = null;
     private gameObjects: GameObjects | null = null;
     private inputHandler: InputHandler | null = null;
-    private networkManager: NetworkManager | null = null;
     private isRenderingActive: boolean = false;
     private resizeHandler: (() => void) | null = null;
     private advancedTexture: any = null;
@@ -36,6 +36,7 @@ export class Game {
     private isRunning: boolean = false;
     private isDisposed: boolean = false;
     private gameLoopObserver: any = null;
+    private isPausedByServer: boolean = false;
 
     constructor(private config: GameConfig) {
         this.canvas = document.getElementById(config.canvasId) as HTMLCanvasElement;
@@ -73,9 +74,6 @@ export class Game {
             if (!this.gameObjects) throw new Error('Game objects not created');
             this.inputHandler.setGameObjects(this.gameObjects);
 
-            // Create network manager
-            this.networkManager = new NetworkManager(this.config.gameMode, this.config.players);
-
             // Connect components
             this.connectComponents();
 
@@ -103,12 +101,11 @@ export class Game {
     // Create scene based on view mode
     private createScene(): void {
         this.scene = new BABYLON.Scene(this.engine);
-
-        if (this.config.viewMode === ViewMode.MODE_2D) {
-            this.gameObjects = build2DScene(this.scene, this.engine);
-        } else {
-            this.gameObjects = build3DScene(this.scene, this.engine);
-        }
+        this.scene.createDefaultEnvironment({ // TODO
+    createGround: false, // Don't create another ground
+    createSkybox: false  // Optional: add skybox for better lighting
+});
+        this.gameObjects = buildScene(this.scene, this.engine, this.config.viewMode)
     }
 
     // Create GUI elements
@@ -142,30 +139,19 @@ export class Game {
 
     // Connect all components together
     private connectComponents(): void {
-        if (!this.inputHandler || !this.networkManager) {
+        if (!this.inputHandler) {
             throw new Error('Components not initialized');
         }
 
-        // Input → Network
         this.inputHandler.onInput((input) => {
-            if (this.networkManager) {
-                this.networkManager.sendInput(input);
-            }
+            webSocketClient.sendPlayerInput(input.side, input.direction);
         });
-
-        // Network → Scene updates
-        this.networkManager.onGameState((state) => {
-            this.updateGameObjects(state);
-        });
-
-        // Network → Connection handling
-        this.networkManager.onConnection(() => {
-            console.log('Connected to game server');
-        });
-
-        this.networkManager.onError((error) => {
-            console.error('Network error:', error);
-        });
+        webSocketClient.registerCallback(WebSocketEvent.GAME_STATE, (state: GameStateData) => { this.updateGameObjects(state); });
+        webSocketClient.registerCallback(WebSocketEvent.CONNECTION, () => { console.log('Connected...'); });
+        webSocketClient.registerCallback(WebSocketEvent.ERROR, (error: string) => { console.error('Network error:', error); });
+        webSocketClient.registerCallback(WebSocketEvent.GAME_PAUSED, () => { this.onServerPausedGame(); });
+        webSocketClient.registerCallback(WebSocketEvent.GAME_RESUMED, () => { this.onServerResumedGame(); });
+        webSocketClient.registerCallback(WebSocketEvent.GAME_ENDED, () => { this.onServerEndedGame(); });
     }
 
     // ========================================
@@ -179,9 +165,7 @@ export class Game {
             console.log('Starting game...');
 
             // Start network connection
-            if (this.networkManager) {
-                this.networkManager.joinGame();
-            }
+            webSocketClient.joinGame(this.config.gameMode, this.config.players)
 
             // Start render loop
             this.startRenderLoop();
@@ -198,27 +182,74 @@ export class Game {
     }
 
     pause(): void {
-        if (!this.isRunning || this.isDisposed) return;
-        this.stopRenderLoop();
-        this.stopGameLoop();
-        console.log('Game paused');
+        if (this.isDisposed || this.isPausedByServer) return;
+        console.log('Game: Requesting pause from server...');
+        webSocketClient.sendPauseRequest();
     }
 
     resume(): void {
-        if (!this.isInitialized || this.isRunning || this.isDisposed) return;
-        this.startRenderLoop();
-        this.startGameLoop();
-        this.isRunning = true;
-        console.log('Game resumed');
+        if (this.isDisposed || !this.isPausedByServer) return;
+        console.log('Game: Requesting resume from server...');
+        webSocketClient.sendResumeRequest();
     }
 
     stop(): void {
-        if (!this.isRunning) return;
         this.isRunning = false;
+        this.isPausedByServer = false;
         this.stopRenderLoop();
         this.stopGameLoop();
         console.log('Game stopped');
     }
+
+    // Handle server confirming game is paused
+    private onServerPausedGame(): void {
+        if (this.isDisposed || !this.isRunning) return;
+
+        console.log('Game: Server confirmed game is paused');
+        
+        this.isPausedByServer = true;
+        this.isRunning = false;
+        appStateManager.onServerConfirmedPause();
+        
+        this.stopRenderLoop();
+        this.stopGameLoop();
+        
+        console.log('Game paused by server');
+    }
+
+    // Handle server confirming game is resumed
+    private onServerResumedGame(): void {
+        if (this.isDisposed || this.isRunning || !this.isPausedByServer) return;
+
+        console.log('Game: Server confirmed game is resumed');
+        
+        this.isPausedByServer = false;
+        this.isRunning = true;
+        appStateManager.onServerConfirmedResume();
+
+        this.startRenderLoop();
+        this.startGameLoop();
+        
+        console.log('Game resumed by server');
+    }
+
+    // Handle server ending the game
+    private onServerEndedGame(): void {
+        if (this.isDisposed) return;
+
+        console.log('Game: Server ended the game');
+        
+        // Stop everything
+        this.isRunning = false;
+        this.isPausedByServer = false;
+        this.stopRenderLoop();
+        this.stopGameLoop();
+
+        appStateManager.exitToMenu();
+        
+        console.log('Game ended by server');
+    }
+
 
     // ========================================
     // RENDER LOOP - These functions are in charge of the frame rendering
@@ -342,26 +373,6 @@ export class Game {
     }
 
     // ========================================
-    // STATE QUERIES
-    // ========================================
-
-    isGameInitialized(): boolean {
-        return this.isInitialized && !this.isDisposed;
-    }
-
-    isGameRunning(): boolean {
-        return this.isRunning && !this.isDisposed;
-    }
-
-    isGameDisposed(): boolean {
-        return this.isDisposed;
-    }
-
-    getConfig(): GameConfig {
-        return this.config;
-    }
-
-    // ========================================
     // CLEANUP
     // ========================================
 
@@ -371,6 +382,7 @@ export class Game {
         console.log('Disposing game...');
         this.isDisposed = true;
         this.isRunning = false;
+        this.isPausedByServer = false;
 
         try {
             // Stop loops first
@@ -379,14 +391,6 @@ export class Game {
 
             // Wait a frame to ensure loops stop
             await new Promise(resolve => setTimeout(resolve, 16));
-
-            // Dispose components
-            if (this.networkManager) {
-                this.networkManager.quitCurrentGame();
-                await new Promise(resolve => setTimeout(resolve, 100));
-                this.networkManager.dispose();
-                this.networkManager = null;
-            }
 
             if (this.inputHandler) {
                 await this.inputHandler.dispose();

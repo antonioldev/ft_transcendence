@@ -1,6 +1,7 @@
 import { ViewMode, GameMode } from '../shared/constants.js';
 import { PlayerInfo, InputConfig } from '../shared/types.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
+import { EL } from '../ui/elements.js';
 
 // Complete configuration for starting a game
 export interface GameConfig {
@@ -20,7 +21,7 @@ export class GameConfigFactory {
         players: PlayerInfo[]
     ): GameConfig {
         return {
-            canvasId: viewMode === ViewMode.MODE_2D ? 'game-canvas-2d' : 'game-canvas-3d',
+            canvasId: EL.GAME.CANVAS_3D,
             viewMode,
             gameMode,
             players,
@@ -37,13 +38,13 @@ export class GameConfigFactory {
 
         switch (gameMode) {
             case GameMode.SINGLE_PLAYER: {
-                const name = getInputValue('player1-name', 'Player 1');
+                const name = getInputValue(EL.PLAYER_SETUP.PLAYER1_NAME, 'Player 1');
                 return [{ id: name, name: name }];
             }
             
             case GameMode.TWO_PLAYER_LOCAL: {
-                const name1 = getInputValue('player1-name-local', 'Player 1');
-                const name2 = getInputValue('player2-name-local', 'Player 2');
+                const name1 = getInputValue(EL.PLAYER_SETUP.PLAYER1_NAME_LOCAL, 'Player 1');
+                const name2 = getInputValue(EL.PLAYER_SETUP.PLAYER2_NAME_LOCAL, 'Player 2');
                 return [
                     { id: name1, name: name1 },
                     { id: name2, name: name2 }
@@ -51,16 +52,21 @@ export class GameConfigFactory {
             }
 
             case GameMode.TWO_PLAYER_REMOTE: {
-                const name = getInputValue('player1-name-online', 'Player 1');
+                const name = getInputValue(EL.PLAYER_SETUP.PLAYER1_NAME_ONLINE, 'Player 1');
                 return [{ id: name, name: name }];
             }
 
-            case GameMode.TOURNAMENT_LOCAL: {
-                const name1 = getInputValue('player1-name-local', 'Player 1');
-                const name2 = getInputValue('player2-name-local', 'Player 2');
+            case GameMode.TOURNAMENT_LOCAL: 
+            case GameMode.TOURNAMENT_REMOTE: {
+                const name1 = getInputValue(EL.PLAYER_SETUP.PLAYER1_NAME_TOURNAMENT, 'Player 1');
+                const name2 = getInputValue(EL.PLAYER_SETUP.PLAYER2_NAME_TOURNAMENT, 'Player 2');
+                const name3 = getInputValue(EL.PLAYER_SETUP.PLAYER3_NAME_TOURNAMENT, 'Player 3');
+                const name4 = getInputValue(EL.PLAYER_SETUP.PLAYER4_NAME_TOURNAMENT, 'Player 4');
                 return [
                     { id: name1, name: name1 },
-                    { id: name2, name: name2 }
+                    { id: name2, name: name2 },
+                    { id: name3, name: name3 },
+                    { id: name4, name: name4 }
                 ];
             }
 

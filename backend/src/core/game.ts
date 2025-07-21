@@ -15,6 +15,8 @@ abstract class Game {
 	queue: PlayerInput[] = [];
 	// Flag to indicate if the game is running
 	running: boolean;
+	// Flag to indicate if the game is paused
+	paused: boolean = false;
 	// Array of players (can include AI bots)
 	players!: (Player | AIBot)[];
 	// Ball instance for the game
@@ -45,6 +47,8 @@ abstract class Game {
 
 	// Update the game state, including player and ball positions
 	protected _update_state(dt: number): void {
+		if (this.paused)
+			return;
 		this.players[LEFT_PADDLE].cacheRect();
 		this.players[RIGHT_PADDLE].cacheRect();
 		this._handle_input(dt);
@@ -53,6 +57,8 @@ abstract class Game {
 
 	// Check if the game state has changed (e.g., player or ball positions)
 	protected _state_changed(): boolean {
+		if (this.paused)
+			return false;
 		return (
 		this.players[LEFT_PADDLE].rect.x != this.players[LEFT_PADDLE].oldRect.x ||
 		this.players[RIGHT_PADDLE].rect.x != this.players[RIGHT_PADDLE].oldRect.x ||
@@ -62,6 +68,10 @@ abstract class Game {
 
 	// Process the input queue and apply player movements
 	protected _process_queue(dt: number): void {
+		if (this.paused) {
+			this.queue = [];
+			return;
+		}
 		while (this.queue.length > 0) {
 			const input = this.queue.shift();
 			if (input) {
@@ -72,7 +82,8 @@ abstract class Game {
 
 	// Add a new input to the queue
 	enqueue(input: PlayerInput): void {
-		this.queue.push(input);
+		if (!this.paused)
+			this.queue.push(input);
 	}
 
 	// Retrieve the current game state as a data object
@@ -97,13 +108,36 @@ abstract class Game {
 	async run(): Promise<void> {
 		while (this.running) {
 			const dt = await this.clock.tick(60)
-			this._update_state(dt)
+			if (this.paused)
+				await this.clock.sleep(16);
+			else {
+				this._update_state(dt)
 
-			if (this._state_changed()) {
-				let state = this.get_state()
-				await this._broadcast(state)
+				if (this._state_changed()) {
+					let state = this.get_state()
+					await this._broadcast(state)
+				}
 			}
 		}
+	}
+
+	// Pause the game
+	pause(): void {
+		if(!this.paused) {
+			this.paused = true;
+		}
+	}
+
+	// Resume the game
+	resume(): void {
+		if (this.paused) {
+			this.paused = false;
+		}
+	}
+
+	// Returns if the game is currently paused
+	isPaused(): boolean {
+		return this.paused;
 	}
 }
 
