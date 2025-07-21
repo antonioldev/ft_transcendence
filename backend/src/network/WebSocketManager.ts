@@ -78,7 +78,7 @@ export class WebSocketManager {
                     break;
                 case MessageType.QUIT_GAME:  // TODO I added because it was creating issue, need to check
                     await this.handleQuitGame(client);
-                break;
+                    break;
                 default:
                     await this.sendError(socket, 'Unknown message type');
             }

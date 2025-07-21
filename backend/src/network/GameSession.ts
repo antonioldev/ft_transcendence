@@ -5,8 +5,9 @@ import { MessageType, GameMode } from '../shared/constants.js';
 import { GameStateData, ServerMessage } from '../shared/types.js';
 
 export class GameSession {
-	id: string;
 	mode: GameMode;
+	id: string;
+	capacity!: number;
 	clients: (Client)[] = [];
 	game: Game;
 	full: boolean = false;
@@ -38,10 +39,12 @@ export class GameSession {
 	add_client(client: Client) {
 		if (!this.full) {
 			this.clients.push(client);
-			if ((this.mode === GameMode.SINGLE_PLAYER || this.mode === GameMode.TWO_PLAYER_LOCAL) && this.clients.length === 1) {
+			if (this.mode === GameMode.TWO_PLAYER_REMOTE && this.clients.length === 2) {
 				this.full = true;
 			}
-			else if (this.mode === GameMode.TWO_PLAYER_REMOTE && this.clients.length === 2) {
+			else if (this.mode === GameMode.TOURNAMENT_REMOTE && this.clients.length === this.capacity)
+				this.full = true;
+			else {
 				this.full = true;
 			}
 		}
@@ -157,3 +160,17 @@ export class GameSession {
 	}
 }
 
+export class TournamentLocal extends GameSession {
+	capacity: number;
+	active_players: number[] = []
+
+	constructor(mode: GameMode, game_id: string, capacity: number) {
+		super(mode, game_id);
+		this.capacity = capacity;
+		this.game = new Game(mode=GameMode.TWO_PLAYER_LOCAL, this.broadcast.bind(this))
+	}
+
+	start() {
+		
+	}
+}
