@@ -65,6 +65,7 @@ export class GameSession {
 		this.assign_sides();
 		if (!this.running) {
 			this.running = true;
+			this.game.running = true;
 			this.game.run();
 		}
 	}
@@ -167,10 +168,21 @@ export class TournamentLocal extends GameSession {
 	constructor(mode: GameMode, game_id: string, capacity: number) {
 		super(mode, game_id);
 		this.capacity = capacity;
-		this.game = new Game(mode=GameMode.TWO_PLAYER_LOCAL, this.broadcast.bind(this))
+		this.game = new Game(GameMode.TWO_PLAYER_LOCAL, this.broadcast.bind(this))
+		this.select_players();
 	}
 
 	start() {
+		if (!this.running) return ;	
+
+		if (!this.game.running) {
+			this.game = new Game(GameMode.TWO_PLAYER_LOCAL, this.broadcast.bind(this));
+			this.select_players()
+		}
+		
+	}
+	
+	select_players() {
 		
 	}
 }

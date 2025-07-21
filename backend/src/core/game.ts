@@ -12,7 +12,7 @@ export class Game {
 	// Clock instance to manage game loop timing
 	clock: Clock;
 	queue: PlayerInput[] = [];
-	running: boolean;
+	running: boolean = false;
 	paused: boolean = false;
 	players!: (Player | AIBot)[];
 	ball!: Ball;
@@ -23,7 +23,6 @@ export class Game {
 		// Initialize game properties
 		this.mode = mode;
 		this.clock = new Clock(60);
-		this.running = true;
 		this._broadcast = broadcast_callback;
 		this._init();
 	}
