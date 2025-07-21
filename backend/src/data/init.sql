@@ -6,21 +6,11 @@
 CREATE TABLE IF NOT EXISTS users (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	username TEXT UNIQUE NOT NULL,
-	avatar_url TEXT;
 	email TEXT UNIQUE NOT NULL,
 	pwd TEXT NOT NULL,
 	victories INTEGER DEFAULT 0,
 	defeats INTEGER DEFAULT 0,
 	games INTEGER DEFAULT 0
-);
-
--- friends table 
-CREATE TABLE IF NOT EXISTS friends (
-  user_id INTEGER NOT NULL,
-  friend_id INTEGER NOT NULL,
-  FOREIGN KEY (user_id) REFERENCES users(id),
-  FOREIGN KEY (friend_id) REFERENCES users(id),
-  UNIQUE (user_id, friend_id)
 );
 
 -- Empty table for game info
@@ -38,4 +28,13 @@ CREATE TABLE IF NOT EXISTS games (
     FOREIGN KEY (player2_id) REFERENCES users(id),
     FOREIGN KEY (winner_id) REFERENCES users(id),
 	FOREIGN KEY (looser_id) REFERENCES users(id)
-)
+);
+
+-- friends table 
+-- CREATE TABLE IF NOT EXISTS friends (
+--  user_id INTEGER NOT NULL,
+--  friend_id INTEGER NOT NULL,
+--  FOREIGN KEY (user_id) REFERENCES users(id),
+--  FOREIGN KEY (friend_id) REFERENCES users(id),
+--  UNIQUE (user_id, friend_id)
+--);

@@ -100,12 +100,9 @@ export interface UserProfileData {
   userId: number;
   username: string;
   email: string;
-  displayName?: string;
-  avatarUrl?: string;
   victories: number;
   defeats: number;
   games: number;
-  friends: { id: number; username: string }[];
 }
 
 export interface GetUserProfile {

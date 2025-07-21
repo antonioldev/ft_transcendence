@@ -246,29 +246,19 @@ export function getUserNbGames(id: number) {
 
 export function getUserProfile(username: string): UserProfileData | null {
   const userInfo = db.prepare(`
-    SELECT id, username, email, display_name, avatar_url, victories, defeats, games
+    SELECT id, username, email, victories, defeats, games
     FROM users WHERE username = ?
   `).get(username) as UserProfileData | undefined;
 
   if (!userInfo) return null;
 
-  const friends = db.prepare(`
-    SELECT u.id, u.username
-    FROM friends f
-    JOIN users u ON u.id = f.friend_id
-    WHERE f.user_id = ?
-  `).all(userInfo.userId) as { id: number; username: string }[];
-
   return {
     userId: userInfo.userId,
     username: userInfo.username,
     email: userInfo.email,
-    displayName: userInfo.displayName,
-    avatarUrl: userInfo.avatarUrl,
     victories: userInfo.victories,
     defeats: userInfo.defeats,
-    games: userInfo.games,
-    friends
+    games: userInfo.games
   };
 }
 
