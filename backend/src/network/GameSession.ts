@@ -39,11 +39,12 @@ export class GameSession {
 	add_client(client: Client) {
 		if (!this.full) {
 			this.clients.push(client);
-			if (this.mode === GameMode.TWO_PLAYER_REMOTE && this.clients.length === 2) {
-				this.full = true;
+			if (this.mode === GameMode.TWO_PLAYER_REMOTE) {
+				if (this.clients.length === 2) this.full = true;
 			}
-			else if (this.mode === GameMode.TOURNAMENT_REMOTE && this.clients.length === this.capacity)
-				this.full = true;
+			else if (this.mode === GameMode.TOURNAMENT_REMOTE) {
+				if (this.clients.length === this.capacity) this.full = true;
+			}
 			else {
 				this.full = true;
 			}
