@@ -21,7 +21,7 @@ export const GAME_CONFIG = {
     playerHeight: 0.5, // Height of the paddle
     playerDepth: 1.0, // Depth of the paddle
     playerOffsetFromEdge: 2, // Distance from the edge of the field
-    playerSpeed: 20, // Speed of the paddle
+    playerSpeed: 25, // Speed of the paddle
     
     // Camera settings (mainly for frontend)
     camera2DHeight: 80, // Camera height in 2D mode
