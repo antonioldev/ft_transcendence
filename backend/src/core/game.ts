@@ -1,5 +1,5 @@
 import { Ball } from './Ball.js';
-import { Player, AIBot } from './Paddle.js';
+import { Paddle, AIBot } from './Paddle.js';
 import { Clock } from './utils.js';
 import { LEFT_PADDLE, RIGHT_PADDLE } from '../shared/gameConfig.js';
 import { GameMode, MessageType} from '../shared/constants.js';
@@ -14,7 +14,7 @@ export class Game {
 	queue: PlayerInput[] = [];
 	running: boolean = false;
 	paused: boolean = false;
-	players!: (Player | AIBot)[];
+	paddles!: (Paddle | AIBot)[];
 	ball!: Ball;
 	// Callback function to broadcast the game state
 	private _broadcast: (message: ServerMessage) => void;
@@ -29,36 +29,36 @@ export class Game {
 
 	// Initialize the ball and players
 	private _init() {
-		this.players = [new Player(LEFT_PADDLE), null as any];
-		this.ball = new Ball(this.players, this._update_score);
+		this.paddles = [new Paddle(LEFT_PADDLE), null as any];
+		this.ball = new Ball(this.paddles, this._update_score);
 
 		// necessary to handle circular dependency of Ball and AIBot
 		if (this.mode === GameMode.SINGLE_PLAYER) {
-			this.players[RIGHT_PADDLE] = new AIBot(RIGHT_PADDLE, this.ball);
+			this.paddles[RIGHT_PADDLE] = new AIBot(RIGHT_PADDLE, this.ball);
 		}
 		else {
-			this.players[RIGHT_PADDLE] = new Player(RIGHT_PADDLE);
+			this.paddles[RIGHT_PADDLE] = new Paddle(RIGHT_PADDLE);
 		}
 	}
 
 	// Abstract method to handle input, implemented by derived classes
 	private _handle_input(dt: number): void {
 		this._process_queue(dt);
-		if (this.players[RIGHT_PADDLE] instanceof AIBot) {
-			this.players[RIGHT_PADDLE].update(dt);
+		if (this.paddles[RIGHT_PADDLE] instanceof AIBot) {
+			this.paddles[RIGHT_PADDLE].update(dt);
 		}
 	}
 
 	// Update the score for the specified side
 	private _update_score(side: number): void {
-		this.players[side].score += 1;
+		this.paddles[side].score += 1;
 	}
 
 	// Update the game state, including player and ball positions
 	private _update_state(dt: number): void {
 		// cache preceeding rect positions for collision calculations
-		this.players[LEFT_PADDLE].cacheRect();
-		this.players[RIGHT_PADDLE].cacheRect();
+		this.paddles[LEFT_PADDLE].cacheRect();
+		this.paddles[RIGHT_PADDLE].cacheRect();
 		this._handle_input(dt);
 		this.ball.update(dt);
 	}
@@ -68,7 +68,7 @@ export class Game {
 		while (this.queue.length > 0) {
 			const input = this.queue.shift();
 			if (input) {
-				this.players[input.side].move(dt, input.dx);
+				this.paddles[input.side].move(dt, input.dx);
 			}
 		}
 	}
@@ -83,12 +83,12 @@ export class Game {
 	get_state(): GameStateData {
 		return {
 			paddleLeft: {
-				x:     this.players[LEFT_PADDLE].rect.centerx,
-				score: this.players[LEFT_PADDLE].score,
+				x:     this.paddles[LEFT_PADDLE].rect.centerx,
+				score: this.paddles[LEFT_PADDLE].score,
 			},
 			paddleRight: {
-				x:     this.players[RIGHT_PADDLE].rect.centerx,
-				score: this.players[RIGHT_PADDLE].score,
+				x:     this.paddles[RIGHT_PADDLE].rect.centerx,
+				score: this.paddles[RIGHT_PADDLE].score,
 			},
 			ball: {
 				x: this.ball.rect.centerx,
