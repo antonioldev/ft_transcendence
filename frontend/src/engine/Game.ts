@@ -10,9 +10,7 @@ import { GameStateData, GameObjects } from '../shared/types.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
 import { appStateManager } from '../core/AppStateManager.js';
 import { WebSocketEvent } from '../shared/constants.js';
-import { getText } from '../translations/translations.js';
 import { EL } from '../ui/elements.js';
-import { Engine } from '@babylonjs/core';
 
 /**
  * Main Game class that handles everything for running one game instance.
@@ -30,7 +28,6 @@ import { Engine } from '@babylonjs/core';
 export class Game {
     private engine: any = null;
     private scene: any = null;
-    private loadingScene: any = null;
     private canvas: HTMLCanvasElement | null = null;
     private gameObjects: GameObjects | null = null;
     private inputHandler: InputHandler | null = null;
@@ -41,8 +38,9 @@ export class Game {
     private isInitialized: boolean = false;
     private isRunning: boolean = false;
     private isDisposed: boolean = false;
-    private gameLoopObserver: any = null;
     private isPausedByServer: boolean = false;
+    private gameLoopObserver: any = null;
+    
     private lastFrameTime: number = 0;
     private fpsLimit: number = 60;
 
@@ -76,15 +74,16 @@ export class Game {
         if (this.isInitialized || this.isDisposed) return;
         
         // BABYLON.SceneLoader.ShowLoadingScreen = true;
-        // BABYLON.SceneLoader.ShowLoadingScreen = false;
+        BABYLON.SceneLoader.ShowLoadingScreen = false;
         
-        // this.setLoadingScreenVisible(true);
+        this.updateLoadingProgress(0);
+        this.setLoadingScreenVisible(true);
         try {
             console.log('Initializing game...');
 
             this.engine = await this.initializeBabylonEngine();
             if (!this.engine) throw new Error('Engine not created');
-            this.engine.displayLoadingUI()
+            // this.engine.displayLoadingUI()
             this.scene = await this.createScene()
             if (!this.scene) throw new Error('Scene not created');
             
@@ -114,7 +113,7 @@ export class Game {
     }
 
     // Initialize Babylon.js engine
-    private async initializeBabylonEngine(): Promise<Engine> {
+    private async initializeBabylonEngine(): Promise<any> {
         const engine = new BABYLON.Engine(this.canvas, true, { 
             preserveDrawingBuffer: true, 
             stencil: true, 
@@ -191,32 +190,14 @@ export class Game {
     start(): void {
         if (!this.isInitialized || this.isRunning || this.isDisposed) return;
 
-        // const loading = document.getElementById(EL.GAME.LOADING_SCREEN);
-        // if (loading)
-        //     loading.style.display = 'none';
-        // BABYLON.SceneLoader.ShowLoadingScreen = true;
-        // this.engine.displayLoadingUI();
         try {
             console.log('Starting game...');
-
-            // Start network connection
-            // webSocketClient.joinGame(this.config.gameMode, this.config.players)
-
-            // Start render loop
-            // this.startRenderLoop();
 
             // Start game loop
             this.startGameLoop();
 
             this.isRunning = true;
             console.log('Game started successfully');
-            // this.setLoadingScreenVisible(false);
-            this.engine.hideLoadingUI();
-            // const loading = document.getElementById(EL.GAME.LOADING_SCREEN);
-            //  if (loading) {
-            //     console.log('Loading screen found, hiding it');
-            //     loading.style.display = 'none';
-    // }
 
         } catch (error) {
             console.error('Error starting game:', error);
@@ -366,6 +347,7 @@ export class Game {
         this.gameLoopObserver = setInterval(() => {
             if (!this.isRunning || this.isDisposed) return;
             try {
+                this.setLoadingScreenVisible(false);
                 // Update input
                 if (this.inputHandler)
                     this.inputHandler.updateInput();
@@ -479,6 +461,9 @@ export class Game {
             }
             this.fpsText = null;
 
+            this.setLoadingScreenVisible(false);
+            this.updateLoadingProgress(0);
+
             // Clear game objects reference
             this.gameObjects = null;
 
@@ -488,11 +473,6 @@ export class Game {
                 this.scene.onAfterRenderObservable?.clear();
                 this.scene.dispose();
                 this.scene = null;
-            }
-            
-            if (this.loadingScene) {
-                this.loadingScene.dispose();
-                this.loadingScene = null;
             }
 
             // Dispose engine
@@ -524,74 +504,26 @@ export class Game {
             progressText.textContent = progress + '%';
     }
 
-    // setLoadingScreenVisible(visible: boolean): void {
-    // const loadingScreen = document.getElementById('loading-screen');
-    // if (loadingScreen) {
-    //     loadingScreen.style.display = visible ? 'flex' : 'none';
-    // }
-// }
+    setLoadingScreenVisible(visible: boolean): void {
+        const loadingScreen = document.getElementById('loading-screen');
+        if (loadingScreen) {
+            loadingScreen.style.display = visible ? 'flex' : 'none';
+        }
+    }
 
 }
 
 BABYLON.DefaultLoadingScreen.prototype.displayLoadingUI = function () {
-    console.log('displayLoadingUI called');
     if ((this as any)._isLoading)
         return;
-    (this as any)._isLoading = true;
 
-    const loadingScreen = document.getElementById(EL.GAME.LOADING_SCREEN);
-    console.log('Loading screen element found:', !!loadingScreen);
-    if (loadingScreen) {
-        loadingScreen.style.display = 'flex';
-        console.log('Loading screen should be visible now');
-    }
+    (this as any)._isLoading = true;
 };
 
 BABYLON.DefaultLoadingScreen.prototype.hideLoadingUI = function () {
-    console.log('hideLoadingUI called');
-    const loadingScreen = document.getElementById(EL.GAME.LOADING_SCREEN);
-    if (loadingScreen)
-        loadingScreen.style.display = 'none';
+    const loading = document.getElementById(EL.GAME.LOADING_SCREEN);
+    if (loading)
+        loading.style.display = 'none';
     (this as any)._isLoading = false;
-};
-
-// BABYLON.DefaultLoadingScreen.prototype.displayLoadingUI = function () {
-//     if ((this as any)._isLoading)
-//         return;
-
-//     (this as any)._isLoading = true;
-
-//     // const loadingDiv= document.createElement('div');
-//     // loadingDiv.id = "customLoadingScreenDiv";
-//     // loadingDiv.innerHTML = "Scene is currently loading...";
-
-//     // const customStyle = document.createElement('style');
-//     // customStyle.type = 'text/css';
-//     // customStyle.innerHTML = `
-//     //     #customLoadingScreenDiv {
-//     //         position: absolute;
-//     //         top: 0; left: 0; right: 0; bottom: 0;
-//     //         display: flex;
-//     //         align-items: center;
-//     //         justify-content: center;
-//     //         background-color: rgba(187, 70, 75, 0.8);
-//     //         color: white;
-//     //         font-size: 32px;
-//     //         z-index: 9999;
-//     //     }
-//     // `;
-
-//     // document.head.appendChild(customStyle);
-//     // document.body.appendChild(loadingDiv);
-// };
-
-// BABYLON.DefaultLoadingScreen.prototype.hideLoadingUI = function () {
-//     // console.error("I've been called!")
-//     // const div = document.getElementById("customLoadingScreenDiv");
-//     // if (div) div.remove();
-//     const loading = document.getElementById(EL.GAME.LOADING_SCREEN);
-//     if (loading)
-//         loading.style.display = 'none';
-//     (this as any)._isLoading = false;
     
-// };
+};

@@ -139,7 +139,7 @@ class AppStateManager {
                !this.isExiting;
     }
 
-        getCurrentGame(): Game | null {
+    getCurrentGame(): Game | null {
         return this.currentGame;
     }
 }

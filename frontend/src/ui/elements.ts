@@ -141,6 +141,7 @@ export const EL = {
     PAUSE_CONTROLS_3D: 'pause-controls-3d',
 
     LOADING_SCREEN: 'loading-screen',
+    LOADING_TEXT: 'loading',
     PROGRESS_FILL: 'progress-fill',
     PROGRESS_TEXT: 'progress-text'
   },

@@ -195,6 +195,10 @@ export function updateLanguageDisplay(): void {
 
     const pauseControl3d = getElementById(EL.GAME.PAUSE_CONTROLS_3D);
     if (pauseControl3d) pauseControl3d.textContent = t.pauseControls3D;
+
+    // Loading
+    const loading = getElementById(EL.GAME.LOADING_TEXT);
+    if (loading) loading.textContent = t.loading;
 }
 
 // Cycles to the next language in the list and updates the UI accordingly.

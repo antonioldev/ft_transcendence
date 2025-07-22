@@ -274,8 +274,8 @@ export const UI_STYLES = {
     progressFill: {
         height: '100%',
         backgroundColor: UI_COLORS.primary,
-        width: '0%',
-        transition: 'width 0.3s ease'
+        minWidth: '0%',
+        maxWidth: '100%'
     },
 
     // ========================================
