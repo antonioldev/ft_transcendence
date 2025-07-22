@@ -22,7 +22,7 @@ export class Game {
 	constructor(mode: GameMode, broadcast_callback: (message: ServerMessage) => void) {
 		// Initialize game properties
 		this.mode = mode;
-		this.clock = new Clock(60);
+		this.clock = new Clock();
 		this._broadcast = broadcast_callback;
 		this._init();
 	}
@@ -97,21 +97,21 @@ export class Game {
 		}
 	}
 
-	// continuosly updates the game state and broadcasts to all clients
-	run() {
-		// base case to end the game loop
-		if (!this.running) return;
-		
-		const dt = this.clock.tick();
-		if (!this.paused) {
-			this._update_state(dt);
-			this._broadcast({
-				type: MessageType.GAME_STATE, 
-				state: this.get_state()
-			});
+	// Main game loop that updates the state and broadcasts changes
+	async run(): Promise<void> {
+		while (this.running) {
+			const dt = await this.clock.tick(60);
+			if (this.paused) {
+				await this.clock.sleep(16);
+			}
+			else {
+				this._update_state(dt);
+				this._broadcast({
+					type: MessageType.GAME_STATE,
+					state: this.get_state()
+				});
+			}
 		}
-		// queue next iteration of run() on the event loop after a timeout of 60fps
-		setTimeout(this.run.bind(this), this.clock.getTimeout(dt));
 	}
 
 	// Pause the game
