@@ -4,13 +4,12 @@ import { GAME_CONFIG, getBallStartPosition, getPlayerLeftPosition,
          getPlayerRightPosition, LEFT_PADDLE, RIGHT_PADDLE, getPlayerBoundaries } from '../shared/gameConfig.js';
 
 // Abstract class representing a paddle in the game.
-export abstract class Paddle {
+export class Paddle {
 	side: number; // Indicates which side (left or right) the paddle belongs to.
 	score: number = 0; // The score of the player or AI controlling the paddle.
 	rect: Rect; // The current position and dimensions of the paddle.
 	oldRect: Rect; // Cached position and dimensions of the paddle from the previous frame.
-
-	abstract speed: number; // Speed of the paddle, defined in subclasses.
+	speed: number = GAME_CONFIG.playerSpeed; // Speed of the player paddle.
 
 	constructor(side: number) {
 		this.side = side;
@@ -36,16 +35,6 @@ export abstract class Paddle {
 		this.oldRect.copy(this.rect);
 	}
 }
-
-// Class representing a human-controlled player paddle.
-export class Player extends Paddle {
-	speed: number = GAME_CONFIG.playerSpeed; // Speed of the player paddle.
-
-	constructor(side: number) {
-		super(side);
-	}
-}
-
 
 export class AIBot extends Paddle {
 	private _view_timer = 0;

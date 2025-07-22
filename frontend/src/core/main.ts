@@ -7,6 +7,8 @@ import { KeyboardManager } from './KeyboardManager.js';
 import { HistoryManager } from './HistoryManager.js';
 import { ConnectionStatus, WebSocketEvent } from '../shared/constants.js';
 import { EL, getElementById } from '../ui/elements.js';
+import { DashboardManager } from './DashboardManager.js';
+
 
 function loadPage(): void {
     // Initialize classes
@@ -15,6 +17,7 @@ function loadPage(): void {
     MenuFlowManager.initialize();
     KeyboardManager.initialize();
     HistoryManager.initialize();
+    DashboardManager.initialize();
 
     // Setup language system
     updateLanguageDisplay();

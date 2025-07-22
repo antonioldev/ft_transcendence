@@ -1,5 +1,5 @@
 import { Rect } from './utils.js';
-import { Player } from './Paddle.js'
+import { Paddle } from './Paddle.js'
 import { CollisionDirection } from '../shared/constants.js'
 import { GAME_CONFIG, getBallStartPosition, LEFT_PADDLE, RIGHT_PADDLE } from '../shared/gameConfig.js';
 
@@ -10,16 +10,16 @@ export class Ball {
     direction: [number, number]; // Direction vector of the ball's movement.
     speed = GAME_CONFIG.ballInitialSpeed; // Initial speed of the ball.
     speedModifier = 0; // Speed modifier based on game state (e.g., delay).
-    players: (Player)[]; // Array of players (paddles) in the game.
+    paddles: (Paddle)[]; // Array of players (paddles) in the game.
     startTime: number; // Timestamp when the ball was initialized or reset.
     updateScore: (scoringPlayer: number) => void; // Callback to update the score.
 
     // Initializes the ball with players and a score update callback.
-    constructor(players: any[], updateScoreCallback: (side: number) => void) {
+    constructor(paddles: any[], updateScoreCallback: (side: number) => void) {
         const ballPos = getBallStartPosition();
         this.rect = new Rect(ballPos.x, ballPos.z, GAME_CONFIG.ballRadius * 2, GAME_CONFIG.ballRadius * 2);
         this.oldRect = this.rect.instance();
-        this.players = players;
+        this.paddles = paddles;
         this.updateScore = updateScoreCallback;
         this.startTime = performance.now();
         this.direction = this.randomDirection();
@@ -43,7 +43,7 @@ export class Ball {
 
     // Handles collisions with paddles and adjusts the ball's direction accordingly.
     private collision(direction: CollisionDirection): void {
-        for (const paddle of this.players) {
+        for (const paddle of this.paddles) {
             if (!this.rect.colliderect(paddle.rect)) continue;
 
             if (direction === CollisionDirection.HORIZONTAL) {

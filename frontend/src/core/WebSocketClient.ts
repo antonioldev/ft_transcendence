@@ -1,5 +1,5 @@
 import { ConnectionStatus, MessageType, GameMode, Direction, WebSocketEvent } from '../shared/constants.js'
-import { ClientMessage, ServerMessage, GameStateData, PlayerInfo } from '../shared/types.js'
+import { ClientMessage, ServerMessage, GameStateData, PlayerInfo, RegisterUser, LoginUser } from '../shared/types.js'
 
 /**
  * WebSocketClient is responsible for managing the WebSocket connection
@@ -108,6 +108,36 @@ export class WebSocketClient {
             case MessageType.ERROR:
                 this.triggerCallback(WebSocketEvent.ERROR, message.message);
                 break;
+            case MessageType.SUCCESS_LOGIN:
+                console.error('✅ Login success:', message.message);
+                this.triggerCallback(WebSocketEvent.LOGIN_SUCCESS, message.message || "✅ Login success");
+                break;
+            case MessageType.SUCCESS_REGISTRATION:
+                console.error('✅ Registration success:', message.message);
+                this.triggerCallback(WebSocketEvent.REGISTRATION_SUCCESS, message.message || "✅ Registration success");
+                break;
+            case MessageType.LOGIN_FAILURE:
+                console.error('🚫 Login failed:', message.message);
+                this.triggerCallback(WebSocketEvent.LOGIN_FAILURE, message.message || "🚫 Login failed: ID/Password not matching");
+                break;
+            case MessageType.USER_NOTEXIST:
+                console.error('🚫 Login failed:', message.message);
+                this.triggerCallback(WebSocketEvent.LOGIN_FAILURE, message.message || "User doesn't exist");
+                break;
+            case MessageType.USER_EXIST:
+                console.error('🚫 Registration failed:', message.message);
+                this.triggerCallback(WebSocketEvent.REGISTRATION_FAILURE, message.message || "🚫 Registration failed: user exist");
+                break;
+            case MessageType.USERNAME_TAKEN:
+                console.error('🚫 Registration failed:', message.message);
+                this.triggerCallback(WebSocketEvent.REGISTRATION_FAILURE, message.message || "Username is already registered");
+                break;
+            case MessageType.SEND_USER_STATS:
+                this.triggerCallback(WebSocketEvent.USER_STATS, message.stats);
+                break;
+            case MessageType.SEND_GAME_HISTORY:
+                this.triggerCallback(WebSocketEvent.GAME_HISTORY, message.gameHistory);
+                break;
             default:
                 console.warn(`Unhandled message type: ${message.type}`);
                 break;
@@ -151,6 +181,58 @@ export class WebSocketClient {
             console.log(`Message sent: ${type}`, message);
         } catch (error) {
             console.error(`Error sending message of type ${type}:`, error);
+        }
+    }
+
+    // ========================================
+    // LOGIN/REGISTRATION 
+    // ========================================
+
+    registerNewUser(registrationInfo: RegisterUser): void {
+        console.log("In registration user");
+        if (this.isConnected()) {
+            const message: ClientMessage = {
+                type: MessageType.REGISTER_USER,
+                registerUser: registrationInfo
+            };
+            this.ws!.send(JSON.stringify(message));
+        }        
+    }
+
+    loginUser(loginInfo: LoginUser): void {
+        console.log("In login user");
+        if (this.isConnected()) {
+            const message: ClientMessage = {
+                type: MessageType.LOGIN_USER,
+                loginUser: loginInfo
+            };
+            this.ws!.send(JSON.stringify(message));
+        }          
+    }
+
+    // ========================================
+    // DASHBOARD
+    // ========================================
+
+    requestUserStats(username: string): void {
+        console.log("IN requestUserStats");
+        if (this.isConnected()) {
+            const message: ClientMessage = {
+                type: MessageType.REQUEST_USER_STATS,
+                username: username
+            };
+            this.ws!.send(JSON.stringify(message));
+        }
+    }
+
+    requestUserGameHistory(username: string): void {
+        console.log("IN requestUserGameHistory");
+        if (this.isConnected()) {
+            const message: ClientMessage = {
+                type: MessageType.REQUEST_GAME_HISTORY,
+                username: username
+            };
+            this.ws!.send(JSON.stringify(message));
         }
     }
 

@@ -52,7 +52,10 @@ fclean:
 	@rm -rf frontend/src/shared || true
 	@chmod -R u+w backend/src/shared || true
 	@rm -rf backend/src/shared || true
-	
+
+clean-db:
+	@rm -f backend/src/database/transcendence.sqlite
+
 wipe-all:
 	@rm -f $(VOLUME)
 	docker system prune -a

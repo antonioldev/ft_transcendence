@@ -80,6 +80,11 @@ export class HistoryManager {
             case AppState.GAME_3D:
                 this.showScreen(EL.SCREENS.GAME_3D, { hideOverlayss: true, hideUserInfo: true });
                 break;
+            case AppState.STATS_DASHBOARD:
+                console.log(`Navigating to state: ${state}`);
+                console.log(EL.SCREENS.STATS_DASHBOARD);
+                this.showScreen(EL.SCREENS.STATS_DASHBOARD, { hideOverlayss: true });
+                break;
             default:
                 console.warn(`Unknown state: ${state}, redirecting to main menu`);
                 this.navigateTo(AppState.MAIN_MENU);
@@ -94,7 +99,8 @@ export class HistoryManager {
         checkAuth?: boolean;
         refreshGameMode?: boolean;
     } = {}): void {
-        
+        console.log("Showing screen with ID:", screenId);
+
         if (options.hideOverlayss) {
             uiManager.setElementVisibility(EL.SCREENS.LOGIN_MODAL, false);
             uiManager.setElementVisibility(EL.SCREENS.REGISTER_MODAL, false);

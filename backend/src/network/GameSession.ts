@@ -1,72 +1,31 @@
-import { SinglePlayer, TwoPlayer } from '../core/game.js';
+import { Game } from '../core/game.js';
 import { LEFT_PADDLE, RIGHT_PADDLE} from '../shared/gameConfig.js';
 import { Client, Player } from '../models/Client.js';
 import { MessageType, GameMode } from '../shared/constants.js';
 import { GameStateData, ServerMessage } from '../shared/types.js';
 
-// IMPORTANT: some methods are no longer async and might need to be, we can see in testing
-// I found it a little unclear when/where to use async in TS, we can discuss this later!
-
 export class GameSession {
 	mode: GameMode;
 	id: string;
+	capacity!: number;
 	clients: (Client)[] = [];
-	players: Player[] = []; 
+	game: Game;
 	full: boolean = false;
 	running: boolean = false;
-	game!: SinglePlayer | TwoPlayer;
 	private paused: boolean = false;
-	private requestedBy: Client | null = null;
+	private requestedBy: Client | null = null; // do we need this?
 
     constructor(mode: GameMode, game_id: string) {
-        this.mode = mode
 		this.id = game_id
-        this._create_game()
+        this.mode = mode
+        this.game = new Game(mode, this.broadcast.bind(this))
 	}
 
-    _create_game(): void {
-		switch (this.mode) {
-			case GameMode.SINGLE_PLAYER:
-				this.game = new SinglePlayer(this.id, this.broadcastToClients.bind(this));
-				break;
-			case GameMode.TWO_PLAYER_LOCAL:
-			case GameMode.TWO_PLAYER_REMOTE:
-				this.game = new TwoPlayer(this.id, this.broadcastToClients.bind(this));
-				break;
-			default:
-				throw new Error(`Invalid game mode: ${this.mode}`);
-		}
-	}
-
-	async broadcastToClients(state: GameStateData): Promise<void> {
-		const message = {
-			type: MessageType.GAME_STATE,
-			state: state
-		};
+	broadcast(message: ServerMessage): void {
 		let deleted_clients: (Client)[] = [];
 		for (const client of this.clients) {
 			try {
-				// await client.websocket.send(JSON.stringify({state}));
-				await client.websocket.send(JSON.stringify(message));
-			}
-			catch { 
-				deleted_clients.push(client);
-			}
-		}
-		for (const client of deleted_clients) {
-			this.remove_client(client);
-		}
-	}
-
-	private async broadcastMessage(messageType: MessageType): Promise<void> {
-		const message: ServerMessage = {
-			type: messageType
-		};
-		let deleted_clients: (Client)[] = [];
-		for (const client of this.clients) {
-			try {
-				// await client.websocket.send(JSON.stringify({state}));
-				await client.websocket.send(JSON.stringify(message));
+				client.websocket.send(JSON.stringify(message));
 			}
 			catch { 
 				deleted_clients.push(client);
@@ -80,13 +39,15 @@ export class GameSession {
 	add_client(client: Client) {
 		if (!this.full) {
 			this.clients.push(client);
-			if ((this.mode === GameMode.SINGLE_PLAYER || this.mode === GameMode.TWO_PLAYER_LOCAL) && this.clients.length === 1) {
+			if (this.mode === GameMode.TWO_PLAYER_REMOTE) {
+				if (this.clients.length === 2) this.full = true;
+			}
+			else if (this.mode === GameMode.TOURNAMENT_REMOTE) {
+				if (this.clients.length === this.capacity) this.full = true;
+			}
+			else {
 				this.full = true;
 			}
-			else if (this.mode === GameMode.TWO_PLAYER_REMOTE && this.clients.length === 2) {
-				this.full = true;
-			}
-			// tournament
 		}
 	}
 
@@ -105,11 +66,12 @@ export class GameSession {
 		this.assign_sides();
 		if (!this.running) {
 			this.running = true;
+			this.game.running = true;
 			await this.game.run();
 		}
 	}
 
-	async pauseGame(client: Client): Promise<boolean> {
+	pauseGame(client: Client): boolean {
 		if (this.paused) {
 			console.log(`Game ${this.id} is already paused`);
 			return false;
@@ -123,7 +85,7 @@ export class GameSession {
 			this.paused = true;
 			this.requestedBy = client;
 
-			await this.broadcastMessage(MessageType.PAUSED);
+			this.broadcast({type: MessageType.PAUSED});
 			
 			console.log(`Game ${this.id} paused by client ${client.id}`);
 			return true;
@@ -133,7 +95,7 @@ export class GameSession {
 		}
 	}
 
-	async resumeGame(client: Client): Promise<boolean> {
+	resumeGame(client: Client): boolean {
 		if (!this.paused) {
 			console.log(`Game ${this.id} is not paused`);
 			return false;
@@ -147,7 +109,7 @@ export class GameSession {
 			this.paused = false;
 			this.requestedBy = null;
 
-			await this.broadcastMessage(MessageType.RESUMED);
+			this.broadcast({type: MessageType.RESUMED});
 			
 			console.log(`Game ${this.id} resumed by client ${client.id}`);
 			return true;
@@ -157,11 +119,11 @@ export class GameSession {
 		}
 	}
 
-	async endGame(client: Client): Promise<void> {
+	endGame(client: Client): void {
 		try {
 			console.log(`Game ${this.id} ended by client ${client.id}`);
 			this.stop();
-			await this.broadcastMessage(MessageType.GAME_ENDED);
+			this.broadcast({type: MessageType.GAME_ENDED});
 		} catch (error) {
 			console.error(`Error ending game ${this.id}:`, error);
 		}
@@ -174,13 +136,17 @@ export class GameSession {
 		this.requestedBy = null;
 	}
 
-	// TODO We might need to make this method async and await the send()
 	assign_sides() {
 		if (this.mode === GameMode.TWO_PLAYER_REMOTE) {
-			this.clients[0].websocket.send(JSON.stringify({"side": LEFT_PADDLE}));
-			this.clients[1].websocket.send(JSON.stringify({"side": RIGHT_PADDLE}));
+			this.clients[0].websocket.send(JSON.stringify({
+				type: MessageType.SIDE_ASSIGNMENT,
+				side: LEFT_PADDLE
+			}));
+			this.clients[1].websocket.send(JSON.stringify({
+				type: MessageType.SIDE_ASSIGNMENT,
+				side: RIGHT_PADDLE
+			}));
 		}
-		// tournament 
 	}
 
 	canClientControlGame(client: Client) {
