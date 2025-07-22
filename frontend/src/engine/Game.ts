@@ -294,31 +294,25 @@ export class Game {
     // ========================================
 
     private startGameLoop(): void {
-        if (this.gameLoopObserver || !this.scene?.onBeforeRenderObservable) return;
-
-        this.gameLoopObserver = this.scene.onBeforeRenderObservable.add(() => {
+        if (this.gameLoopObserver) return;
+        this.gameLoopObserver = setInterval(() => {
             if (!this.isRunning || this.isDisposed) return;
-
             try {
                 // Update input
-                if (this.inputHandler) {
+                if (this.inputHandler)
                     this.inputHandler.updateInput();
-                }
-
                 // Update 3D cameras if needed
                 const cameras = this.gameObjects?.cameras;
-                if (cameras && cameras.length > 1) {
+                if (cameras && cameras.length > 1)
                     this.update3DCameras();
-                }
             } catch (error) {
                 console.error('Error in game loop:', error);
             }
-        });
+        }, 16);
     }
-
     private stopGameLoop(): void {
-        if (this.gameLoopObserver && this.scene?.onBeforeRenderObservable) {
-            this.scene.onBeforeRenderObservable.remove(this.gameLoopObserver);
+        if (this.gameLoopObserver) {
+            clearInterval(this.gameLoopObserver);
             this.gameLoopObserver = null;
         }
     }
