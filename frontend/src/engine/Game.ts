@@ -40,6 +40,8 @@ export class Game {
     private isDisposed: boolean = false;
     private isPausedByServer: boolean = false;
     private gameLoopObserver: any = null;
+    private score1Text: any = null;
+    private score2Text: any = null;
     
     private lastFrameTime: number = 0;
     private fpsLimit: number = 60;
@@ -49,12 +51,18 @@ export class Game {
         
         if (element instanceof HTMLCanvasElement) {
             this.canvas = element;
-            const gl = this.canvas.getContext('webgl');
+            const gl = this.canvas.getContext('webgl') || this.canvas.getContext('webgl2');
             
             if (gl) {
-                const renderer = gl.getParameter(gl.RENDERER);
-                console.log('WebGL Renderer:', renderer); // TODO remove some warning
-            }
+                gl.getExtension('WEBGL_color_buffer_float');
+                gl.getExtension('EXT_color_buffer_half_float');}
+            // if (gl) {
+            //     let renderer = gl.getParameter(gl.RENDERER);
+            //     renderer = gl.getExtension('WEBGL_color_buffer_float');
+            //     renderer = gl.getExtension('EXT_color_buffer_half_float');
+            //     console.log('WebGL Renderer:', renderer); // TODO remove some warning
+            // }
+            
         } else 
             throw new Error(`Canvas element not found or is not a canvas: ${config.canvasId}`);
         
@@ -128,6 +136,7 @@ export class Game {
     private async  createScene(): Promise<any> {
         const scene = new BABYLON.Scene(this.engine);
         scene.createDefaultEnvironment({ createGround: false, createSkybox: false });
+        scene.clearColor = new BABYLON.Color4(0, 0, 0, 1);
         return scene;
     }
 
@@ -148,6 +157,73 @@ export class Game {
         this.fpsText.height = "40px";
         
         this.advancedTexture.addControl(this.fpsText);
+
+        // Create score container
+        const scoreContainer = new BABYLON.GUI.StackPanel();
+        scoreContainer.isVertical = true;
+        scoreContainer.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
+        scoreContainer.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+        scoreContainer.top = "-30px";
+        scoreContainer.height = "80px";
+
+        // Player names row
+        const playersRow = new BABYLON.GUI.StackPanel();
+        playersRow.isVertical = false;
+        playersRow.height = "30px";
+
+        const player1Label = new BABYLON.GUI.TextBlock();
+        player1Label.text = "Player 1";
+        player1Label.color = "white";
+        player1Label.fontSize = 18;
+        player1Label.width = "120px";
+
+        const vsLabel = new BABYLON.GUI.TextBlock();
+        vsLabel.text = "vs";
+        vsLabel.color = "#ffff00";
+        vsLabel.fontSize = 16;
+        vsLabel.width = "40px";
+
+        const player2Label = new BABYLON.GUI.TextBlock();
+        player2Label.text = "Player 2";
+        player2Label.color = "white";
+        player2Label.fontSize = 18;
+        player2Label.width = "120px";
+
+        playersRow.addControl(player1Label);
+        playersRow.addControl(vsLabel);
+        playersRow.addControl(player2Label);
+
+        // Scores row
+        const scoresRow = new BABYLON.GUI.StackPanel();
+        scoresRow.isVertical = false;
+        scoresRow.height = "40px";
+
+        this.score1Text = new BABYLON.GUI.TextBlock();
+        this.score1Text.text = "0";
+        this.score1Text.color = "white";
+        this.score1Text.fontSize = 24;
+        this.score1Text.width = "120px";
+
+        const scoreSeparator = new BABYLON.GUI.TextBlock();
+        scoreSeparator.text = "-";
+        scoreSeparator.color = "white";
+        scoreSeparator.fontSize = 20;
+        scoreSeparator.width = "40px";
+
+        this.score2Text = new BABYLON.GUI.TextBlock();
+        this.score2Text.text = "0";
+        this.score2Text.color = "white";
+        this.score2Text.fontSize = 24;
+        this.score2Text.width = "120px";
+
+        scoresRow.addControl(this.score1Text);
+        scoresRow.addControl(scoreSeparator);
+        scoresRow.addControl(this.score2Text);
+
+        scoreContainer.addControl(playersRow);
+        scoreContainer.addControl(scoresRow);
+
+        this.advancedTexture.addControl(scoreContainer);
     }
 
     // Setup window resize handler
@@ -357,18 +433,21 @@ export class Game {
 
         try {
             // Update paddle positions
-            if (this.gameObjects.players.left) {
+            if (this.gameObjects.players.left)
                 this.gameObjects.players.left.position.x = state.paddleLeft.x;
-            }
-
-            if (this.gameObjects.players.right) {
+            if (this.gameObjects.players.right)
                 this.gameObjects.players.right.position.x = state.paddleRight.x;
-            }
 
             // Update ball position
             if (this.gameObjects.ball) {
                 this.gameObjects.ball.position.x = state.ball.x;
                 this.gameObjects.ball.position.z = state.ball.z;
+            }
+
+            // Update Score
+            if (this.score1Text && this.score2Text) {
+                this.score1Text.text = state.paddleLeft.score.toString();
+                this.score2Text.text = state.paddleRight.score.toString();
             }
         } catch (error) {
             console.error('Error updating game objects:', error);
@@ -433,6 +512,8 @@ export class Game {
                 this.advancedTexture = null;
             }
             this.fpsText = null;
+            this.score1Text = null;
+            this.score2Text = null;
 
             this.setLoadingScreenVisible(false);
             this.updateLoadingProgress(0);

@@ -38,8 +38,9 @@ function createCamera(scene: any, name: string, position: any, viewport: any, mo
     camera.setTarget(BABYLON.Vector3.Zero());
     camera.viewport = viewport;
     if (mode === ViewMode.MODE_2D) {
-         camera.rotation.z = -(Math.PI / 2);
-         camera.fov = 1.1;
+        camera.rotation.z = -(Math.PI / 2);
+        camera.fov = 1.1;
+        camera.setTarget(new BABYLON.Vector3(0, 0, 0)); // TODO move the camera down
     }
     return camera;
 }

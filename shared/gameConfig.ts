@@ -24,9 +24,9 @@ export const GAME_CONFIG = {
     playerSpeed: 10, // Speed of the paddle
     
     // Camera settings (mainly for frontend)
-    camera2DHeight: 30, // Camera height in 2D mode
-    camera3DHeight: 10, // Camera height in 3D mode
-    camera3DDistance: 15, // Distance of the camera in 3D mode
+    camera2DHeight: 25, // Camera height in 2D mode
+    camera3DHeight: 4, // Camera height in 3D mode
+    camera3DDistance: 10, // Distance of the camera in 3D mode
     followSpeed: 0.1, // Speed at which the camera follows the ball
     edgeBuffer: 13, // Buffer space at the edges of the field
 
