@@ -15,7 +15,8 @@ import { EL, getElementById, requireElementById} from '../ui/elements.js';
 export class AuthManager {
     private static instance: AuthManager;
     private authState: AuthState = AuthState.GUEST;
-    private currentUser: {username: string; password: string; email?: string} | null = null;
+    // private currentUserLogin: {username: string; password: string; email?: string} | null = null;
+    private currentUser: {username: string} | null = null;
 
     // Gets the singleton instance of AuthManager.
     static getInstance(): AuthManager {
@@ -180,6 +181,7 @@ export class AuthManager {
         // Register the callback function
         wsClient.registerCallback(WebSocketEvent.LOGIN_SUCCESS, (msg: string) => {
             this.authState = AuthState.LOGGED_IN;
+            this.currentUser = {username};
             // Clear form and navigate back to main menu
             clearForm([EL.AUTH.LOGIN_USERNAME, EL.AUTH.LOGIN_PASSWORD]);
             historyManager.navigateTo(AppState.MAIN_MENU);

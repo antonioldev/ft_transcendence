@@ -116,8 +116,10 @@ export class MenuFlowManager {
         // View mode navigation controls
         const viewModeBack = getElementById(EL.BUTTONS.VIEW_MODE_BACK);
         const viewModeForward = getElementById(EL.BUTTONS.VIEW_MODE_FORWARD);
+        const backBtn = getElementById(EL.BUTTONS.DASHBOARD_BACK);
         viewModeBack?.addEventListener('click', () => this.previousViewMode());
         viewModeForward?.addEventListener('click', () => this.nextViewMode());
+        backBtn?.addEventListener('click', () => { historyManager.navigateTo(AppState.MAIN_MENU);});
     
         // Game mode selection buttons
         this.setupGameModeButtons();
@@ -235,16 +237,32 @@ export class MenuFlowManager {
     }
 
     private showDashboard(): void {
-        const dashboardBtn = getElementById(EL.BUTTONS.OPEN_STATS);
-            dashboardBtn?.addEventListener('click', () => {
-            if (!authManager.isUserAuthenticated()) return;
+        console.log(EL.BUTTONS.DASHBOARD);
+        const dashboardBtn = getElementById(EL.BUTTONS.DASHBOARD);
+        if (!dashboardBtn) {
+            console.error("Dashboard button not found when trying to attach listener");
+        }
+        console.log("Attaching dashboard click handler");
+        dashboardBtn?.addEventListener('click', () => {
+            console.log("Dashboard clicked");
+            if (!authManager.isUserAuthenticated()) {
+                console.log("authManager is not auth so returning");
+                return;
+            }
             const user = authManager.getCurrentUser();
-            if (!user) return;
+            if (!user) {
+                console.log("user is null so returning");
+                return;
+            }
             dashboardManager.clear();
             // Request new stats from backend
+            console.log("clearing the dashboard");
             webSocketClient.requestUserStats(user.username);
+            console.log("request user data was called");
             webSocketClient.requestUserGameHistory(user.username);
+            console.log("request user game history was called");
             // Show dashboard panel
+            console.log("Navigating to dashboard...");
             historyManager.navigateTo(AppState.STATS_DASHBOARD);
         });
     }

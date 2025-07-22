@@ -36,6 +36,7 @@ export const EL = {
     SETUP_BACK: 'setup-back',
     LOGIN_BACK: 'login-back',
     REGISTER_BACK: 'register-back',
+    DASHBOARD_BACK: 'dashboard-back',
 
     // View mode navigation
     VIEW_MODE_BACK: 'view-mode-back',
@@ -52,7 +53,7 @@ export const EL = {
     SHOW_LOGIN: 'show-login',
 
     // Dashboard view
-    OPEN_STATS: 'open-stats-btn'
+    DASHBOARD: 'dashboard-btn'
   },
 
   // ========================================
@@ -131,6 +132,13 @@ export const EL = {
     CONNECTION_STATUS: 'connection-status'
   },
 
+    // ========================================
+    // DASHBOARD ELEMENTS
+    // ========================================
+    DASHBOARD: {
+    USER_STATS_CHART: 'user-stats-chart',
+    GAME_HISTORY_TABLE: 'game-history-table'
+  },
   // ========================================
   // GAME ELEMENTS
   // ========================================
@@ -168,7 +176,8 @@ type ElementIdValues =
   | typeof EL.PLAYER_SETUP[keyof typeof EL.PLAYER_SETUP]
   | typeof EL.DISPLAY[keyof typeof EL.DISPLAY]
   | typeof EL.GAME[keyof typeof EL.GAME]
-  | typeof EL.CONTAINERS[keyof typeof EL.CONTAINERS];
+  | typeof EL.CONTAINERS[keyof typeof EL.CONTAINERS]
+  | typeof EL.DASHBOARD[keyof typeof EL.DASHBOARD];
 
 /**
  * Type-safe helper function to get element by ID
