@@ -15,7 +15,8 @@ export const EL = {
     REGISTER_MODAL: 'register-modal',
     GAME_MODE_OVERLAY: 'game-mode-overlay',
     PLAYER_SETUP_OVERLAY: 'player-setup-overlay',
-    GAME_3D: 'game-3d'
+    GAME_3D: 'game-3d',
+    STATS_DASHBOARD: 'stats-dashboard'
   },
 
   // ========================================
@@ -35,6 +36,7 @@ export const EL = {
     SETUP_BACK: 'setup-back',
     LOGIN_BACK: 'login-back',
     REGISTER_BACK: 'register-back',
+    DASHBOARD_BACK: 'dashboard-back',
 
     // View mode navigation
     VIEW_MODE_BACK: 'view-mode-back',
@@ -48,7 +50,10 @@ export const EL = {
 
     // Modal switching
     SHOW_REGISTER: 'show-register',
-    SHOW_LOGIN: 'show-login'
+    SHOW_LOGIN: 'show-login',
+
+    // Dashboard view
+    DASHBOARD: 'dashboard-btn'
   },
 
   // ========================================
@@ -127,6 +132,13 @@ export const EL = {
     CONNECTION_STATUS: 'connection-status'
   },
 
+    // ========================================
+    // DASHBOARD ELEMENTS
+    // ========================================
+    DASHBOARD: {
+    USER_STATS_CHART: 'user-stats-chart',
+    GAME_HISTORY_TABLE: 'game-history-table'
+  },
   // ========================================
   // GAME ELEMENTS
   // ========================================
@@ -164,7 +176,8 @@ type ElementIdValues =
   | typeof EL.PLAYER_SETUP[keyof typeof EL.PLAYER_SETUP]
   | typeof EL.DISPLAY[keyof typeof EL.DISPLAY]
   | typeof EL.GAME[keyof typeof EL.GAME]
-  | typeof EL.CONTAINERS[keyof typeof EL.CONTAINERS];
+  | typeof EL.CONTAINERS[keyof typeof EL.CONTAINERS]
+  | typeof EL.DASHBOARD[keyof typeof EL.DASHBOARD];
 
 /**
  * Type-safe helper function to get element by ID

@@ -17,6 +17,7 @@
             <!-- Top-right user info (when logged in) -->
             <div id="user-info" style="display: none;">
                 <span id="user-name"></span>
+                <button type="button" id="dashboard-btn">Dashboard</button>
                 <button type="button" id="logout-btn">Logout</button>
             </div>
             <!-- Top-right auth buttons (when logged out) -->
@@ -221,6 +222,24 @@
             <p class="pause-text" id="pause-text-3d">Exit the game?</p>
             <p class="pause-controls" id="pause-controls-3d">Y | N</p>
         </div>
+    </div>
+
+    <!-- Stats Dashboard -->
+    <div id="stats-dashboard" class="screen overlay" style="display: none;">
+    <h2>User Stats</h2>
+    <canvas id="user-stats-chart"></canvas>
+
+    <h2>Game History</h2>
+    <table id="game-history-table">
+        <thead>
+        <tr>
+            <th>Date</th><th>Opponent</th><th>Score</th><th>Result</th><th>Duration</th>
+        </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <button id="dashboard-back">Back</button>
     </div>
 
     <script type="module" src="./core/main.js"></script>

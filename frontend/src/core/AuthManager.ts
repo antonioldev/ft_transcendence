@@ -1,8 +1,10 @@
-import { AuthState, AppState } from '../shared/constants.js';
+import { AuthState, AppState, WebSocketEvent } from '../shared/constants.js';
 import { uiManager } from '../ui/UIManager.js';
 import { getCurrentTranslation } from '../translations/translations.js';
 import { historyManager } from './HistoryManager.js';
 import { clearForm } from './utils.js';
+import { WebSocketClient } from './WebSocketClient.js';
+import { RegisterUser, LoginUser } from '../shared/types.js';
 import { EL, getElementById, requireElementById} from '../ui/elements.js';
 
 /**
@@ -13,7 +15,8 @@ import { EL, getElementById, requireElementById} from '../ui/elements.js';
 export class AuthManager {
     private static instance: AuthManager;
     private authState: AuthState = AuthState.GUEST;
-    private currentUser: {username: string; email?: string} | null = null;
+    // private currentUserLogin: {username: string; password: string; email?: string} | null = null;
+    private currentUser: {username: string} | null = null;
 
     // Gets the singleton instance of AuthManager.
     static getInstance(): AuthManager {
@@ -165,6 +168,7 @@ export class AuthManager {
         const username = getElementById<HTMLInputElement>(EL.AUTH.LOGIN_USERNAME)?.value.trim();
         const password = getElementById<HTMLInputElement>(EL.AUTH.LOGIN_PASSWORD)?.value;
         const t = getCurrentTranslation();
+        const wsClient = WebSocketClient.getInstance(); // or use a shared instance if you already have one
         
         // Basic validation
         if (!username || !password) {
@@ -173,21 +177,42 @@ export class AuthManager {
             return;
         }
 
-        // TODO: Implement actual login logic with backend
+        const user: LoginUser = { username, password };
+        // Register the callback function
+        wsClient.registerCallback(WebSocketEvent.LOGIN_SUCCESS, (msg: string) => {
+            this.authState = AuthState.LOGGED_IN;
+            this.currentUser = {username};
+            // Clear form and navigate back to main menu
+            clearForm([EL.AUTH.LOGIN_USERNAME, EL.AUTH.LOGIN_PASSWORD]);
+            historyManager.navigateTo(AppState.MAIN_MENU);
+            uiManager.showUserInfo(user.username);     
+            console.log(msg);
+        });
+
+        wsClient.registerCallback(WebSocketEvent.LOGIN_FAILURE, (msg: string) => {
+            this.authState = AuthState.LOGGED_FAILED;
+            if (msg === "User doesn't exist") {
+                alert(t.dontHaveAccount);
+                clearForm([EL.AUTH.LOGIN_USERNAME, EL.AUTH.LOGIN_PASSWORD]); 
+                setTimeout(() => {
+                    historyManager.navigateTo(AppState.REGISTER);
+                }, 500);
+            } else {
+                alert(t.passwordsDoNotMatch);
+                clearForm([EL.AUTH.LOGIN_USERNAME, EL.AUTH.LOGIN_PASSWORD]); 
+            }
+        });
+
         console.log('Login attempt:', { username });
-        
-        // For now we say yes you are in the database, simulate successful login
-        this.currentUser = { username: username };
-        this.authState = AuthState.LOGGED_IN;
-        
-        // Update UI to show logged in state
-        uiManager.showUserInfo(this.currentUser.username);
-        
-        // Clear form and navigate back to main menu
-        clearForm([EL.AUTH.LOGIN_USERNAME, EL.AUTH.LOGIN_PASSWORD]);
-        historyManager.navigateTo(AppState.MAIN_MENU);;
-        
-        console.log('Login successful - user can now access online modes');
+        try {
+            wsClient.loginUser(user);
+            console.log('Login attempt: ', { username});
+        } catch (error) {
+            console.error('Error sending login request:', error);
+            this.authState = AuthState.LOGGED_FAILED;
+            alert('Loggin failed due to connection error.');  
+        }
+
     }
 
     // Handles the registration form submission process.
@@ -198,6 +223,7 @@ export class AuthManager {
         const password = getElementById<HTMLInputElement>(EL.AUTH.REGISTER_PASSWORD)?.value;
         const confirmPassword = getElementById<HTMLInputElement>(EL.AUTH.REGISTER_CONFIRM_PASSWORD)?.value;
         const t = getCurrentTranslation();
+        const wsClient = WebSocketClient.getInstance();
 
         // Check if fiels are all full
         if (!username || !email || !password || !confirmPassword) {
@@ -214,18 +240,56 @@ export class AuthManager {
             return;
         }
 
-        // TODO: Implement actual registration logic with backend
-        console.log('Register attempt:', { username, email });
-        
-        // Clear form and provide success feedback
-        clearForm([ EL.AUTH.REGISTER_USERNAME, EL.AUTH.REGISTER_EMAIL,
+        const user: RegisterUser = { username, email, password };
+
+        // register the callback in case of success or failure
+        wsClient.registerCallback(WebSocketEvent.REGISTRATION_FAILURE, (msg: string) => {
+            this.authState = AuthState.LOGGED_FAILED;
+            clearForm([ EL.AUTH.REGISTER_USERNAME, EL.AUTH.REGISTER_EMAIL,
             EL.AUTH.REGISTER_PASSWORD, EL.AUTH.REGISTER_CONFIRM_PASSWORD]);
-        alert('Registration successful! You can now login.');
+            if (msg === "Username is already registered") {
+                alert(msg || 'Registration failed. Username already register. Please choose another one');
+            } else {
+                alert(msg || 'Registration failed. User already exist. Please login');
+                setTimeout(() => {
+                    historyManager.navigateTo(AppState.LOGIN);
+                }, 500);
+            }
+        });
+
+        wsClient.registerCallback(WebSocketEvent.ERROR, (msg: string) => {
+            this.authState = AuthState.LOGGED_FAILED;
+            clearForm([ EL.AUTH.REGISTER_USERNAME, EL.AUTH.REGISTER_EMAIL,
+            EL.AUTH.REGISTER_PASSWORD, EL.AUTH.REGISTER_CONFIRM_PASSWORD]);
+            alert(msg || 'Registration failed. An error occured. Please try again');
+            setTimeout(() => {
+                historyManager.navigateTo(AppState.LOGIN);
+            }, 500);
+        });
+
+        wsClient.registerCallback(WebSocketEvent.REGISTRATION_SUCCESS, (msg: string) => {
+            this.authState = AuthState.LOGGED_IN;
+            clearForm([ EL.AUTH.REGISTER_USERNAME, EL.AUTH.REGISTER_EMAIL,
+            EL.AUTH.REGISTER_PASSWORD, EL.AUTH.REGISTER_CONFIRM_PASSWORD]);
+            alert(msg || 'Registration successful! You can now login.');
+            setTimeout(() => {
+                historyManager.navigateTo(AppState.LOGIN);
+            }, 500);
+        });
+
+        // Apptempt to register new user
+        try {
+            wsClient.registerNewUser(user);
+            console.log('Register attempt: ', { username, email});
+            this.authState = AuthState.LOGGED_IN;
+        } catch (error) {
+            console.error('Error sending registration request:', error);
+            this.authState = AuthState.LOGGED_FAILED;
+            clearForm([ EL.AUTH.REGISTER_USERNAME, EL.AUTH.REGISTER_EMAIL,
+            EL.AUTH.REGISTER_PASSWORD, EL.AUTH.REGISTER_CONFIRM_PASSWORD]);
+            alert('Registration failed due to connection error.');  
+        }
         
-        // Navigate to login after successful registration
-        setTimeout(() => {
-            historyManager.navigateTo(AppState.LOGIN);
-        }, 500);
     }
 
     // Handles Google OAuth login process.
@@ -263,6 +327,7 @@ export class AuthManager {
     // Checks if the user is in guest mode.
     isGuest(): boolean {
         return this.authState === AuthState.GUEST;
+
     }
 
     // ========================================

@@ -3,6 +3,7 @@ import { uiManager } from '../ui/UIManager.js';
 import { authManager } from './AuthManager.js';
 import { getCurrentTranslation } from '../translations/translations.js';
 import { historyManager } from './HistoryManager.js';
+import { dashboardManager } from './DashboardManager.js';
 import { webSocketClient } from './WebSocketClient.js';
 import { appStateManager } from './AppStateManager.js';
 import { GameConfigFactory } from '../engine/GameConfig.js';
@@ -115,12 +116,16 @@ export class MenuFlowManager {
         // View mode navigation controls
         const viewModeBack = getElementById(EL.BUTTONS.VIEW_MODE_BACK);
         const viewModeForward = getElementById(EL.BUTTONS.VIEW_MODE_FORWARD);
+        const backBtn = getElementById(EL.BUTTONS.DASHBOARD_BACK);
         viewModeBack?.addEventListener('click', () => this.previousViewMode());
         viewModeForward?.addEventListener('click', () => this.nextViewMode());
+        backBtn?.addEventListener('click', () => { historyManager.navigateTo(AppState.MAIN_MENU);});
     
         // Game mode selection buttons
         this.setupGameModeButtons();
         this.setupPlayerSetupListeners();
+        this.showDashboard();
+
     }
 
     private setupGameModeButtons(): void {
@@ -230,6 +235,38 @@ export class MenuFlowManager {
             await this.startGameWithMode(this.selectedViewMode, this.selectedGameMode);
         });
     }
+
+    private showDashboard(): void {
+        console.log(EL.BUTTONS.DASHBOARD);
+        const dashboardBtn = getElementById(EL.BUTTONS.DASHBOARD);
+        if (!dashboardBtn) {
+            console.error("Dashboard button not found when trying to attach listener");
+        }
+        console.log("Attaching dashboard click handler");
+        dashboardBtn?.addEventListener('click', () => {
+            console.log("Dashboard clicked");
+            if (!authManager.isUserAuthenticated()) {
+                console.log("authManager is not auth so returning");
+                return;
+            }
+            const user = authManager.getCurrentUser();
+            if (!user) {
+                console.log("user is null so returning");
+                return;
+            }
+            dashboardManager.clear();
+            // Request new stats from backend
+            console.log("clearing the dashboard");
+            webSocketClient.requestUserStats(user.username);
+            console.log("request user data was called");
+            webSocketClient.requestUserGameHistory(user.username);
+            console.log("request user game history was called");
+            // Show dashboard panel
+            console.log("Navigating to dashboard...");
+            historyManager.navigateTo(AppState.STATS_DASHBOARD);
+        });
+    }
+
 
     // ========================================
     // VIEW MODE MANAGEMENT

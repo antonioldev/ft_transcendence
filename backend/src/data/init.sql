@@ -28,4 +28,13 @@ CREATE TABLE IF NOT EXISTS games (
     FOREIGN KEY (player2_id) REFERENCES users(id),
     FOREIGN KEY (winner_id) REFERENCES users(id),
 	FOREIGN KEY (looser_id) REFERENCES users(id)
-)
+);
+
+-- friends table 
+-- CREATE TABLE IF NOT EXISTS friends (
+--  user_id INTEGER NOT NULL,
+--  friend_id INTEGER NOT NULL,
+--  FOREIGN KEY (user_id) REFERENCES users(id),
+--  FOREIGN KEY (friend_id) REFERENCES users(id),
+--  UNIQUE (user_id, friend_id)
+--);

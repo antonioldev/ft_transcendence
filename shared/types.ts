@@ -1,4 +1,4 @@
-import { MessageType, GameMode, Direction, GameState } from './constants.js';
+import { MessageType, GameMode, Direction, GameState, UserManagement } from './constants.js';
 
 // ============================== SHARED TYPES  ==============================
 
@@ -46,8 +46,11 @@ export interface ClientMessage {
     type: MessageType; // Type of message
     gameMode?: GameMode; // Game mode (optional)
     players?: PlayerInfo[];
+    registerUser?: RegisterUser; // Used for create a new registration (not Google auth)
+    loginUser?: LoginUser; // Use to confirm the ID of the user (not Google auth)
     side?: number; // Player side (optional)
     direction?: Direction; // Movement direction (optional)
+    username?: string;
 }
 
 /**
@@ -58,6 +61,8 @@ export interface ServerMessage {
     state?: GameStateData; // Current game state (optional)
     side?: number; // Player side (optional)
     message?: string; // Additional message (optional)
+    stats?: UserStats;
+    gameHistory?: GameHistoryEntry[];
 }
 
 /**
@@ -75,6 +80,62 @@ export interface InputData{
     side: number;
     direction: Direction;
 }
+
+// ============================== AUTHENTIFICATION TYPES ==============================
+
+/**
+ * Represents the register/login structure without google that will be saved in db
+ */
+export interface RegisterUser {
+    username: string;
+    email: string;
+    password: string;
+}
+
+export interface LoginUser {
+    username: string;
+    password: string;
+}
+
+// ============================== USER MANAGEMENT TYPES ==============================
+
+export interface UserProfileData {
+  userId: number;
+  username: string;
+  email: string;
+  victories: number;
+  defeats: number;
+  games: number;
+}
+
+export interface GetUserProfile {
+  type: MessageType;
+  data: { username: string };
+}
+
+export interface UserProfileMessage {
+  type: MessageType;
+  data: UserProfileData;
+}
+
+// ============================== DASHBOARD TYPES ==============================
+
+export interface UserStats {
+  victories: number;
+  defeats: number;
+  games: number;
+  winRatio: number;
+  [key: string]: number;
+}
+
+export interface GameHistoryEntry {
+  playedAt: string;
+  opponent: string;
+  score: string;
+  result: string;
+  duration: number;
+}
+
 
 // ============================== FRONTEND-ONLY TYPES ==============================
 
