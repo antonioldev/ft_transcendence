@@ -249,7 +249,7 @@ export const UI_STYLES = {
         color: UI_COLORS.text,
         textAlign: 'center' as const,
         userSelect: 'none' as const,
-        zIndex: '1000' !important
+        zIndex: '1000'
     },
 
     // Pause dialog text sizes

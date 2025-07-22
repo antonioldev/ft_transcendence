@@ -342,11 +342,29 @@ export class Game {
     // ========================================
 
     private startGameLoop(): void {
-        if (this.gameLoopObserver || !this.scene?.onBeforeRenderObservable) return;
+        if (this.gameLoopObserver) return;
+        // if (this.gameLoopObserver || !this.scene) return;
 
-        this.gameLoopObserver = this.scene.onBeforeRenderObservable.add(() => {
+        // this.gameLoopObserver = this.scene.onBeforeRenderObservable.add(() => {
+        //     if (!this.isRunning || this.isDisposed) return;
+
+        //     try {
+        //         // Update input
+        //         if (this.inputHandler)
+        //             this.inputHandler.updateInput();
+
+        //         // Update 3D cameras if needed
+        //         const cameras = this.gameObjects?.cameras;
+        //         if (cameras && cameras.length > 1)
+        //             this.update3DCameras();
+
+        //     } catch (error) {
+        //         console.error('Error in game loop:', error);
+        //     }
+        // });
+
+        this.gameLoopObserver = setInterval(() => {
             if (!this.isRunning || this.isDisposed) return;
-
             try {
                 // Update input
                 if (this.inputHandler)
@@ -360,12 +378,16 @@ export class Game {
             } catch (error) {
                 console.error('Error in game loop:', error);
             }
-        });
+        }, 16);
     }
 
     private stopGameLoop(): void {
-        if (this.gameLoopObserver && this.scene?.onBeforeRenderObservable) {
-            this.scene.onBeforeRenderObservable.remove(this.gameLoopObserver);
+        // if (this.gameLoopObserver && this.scene?.onBeforeRenderObservable) {
+        //     this.scene.onBeforeRenderObservable.remove(this.gameLoopObserver);
+        //     this.gameLoopObserver = null;
+        // }
+        if (this.gameLoopObserver) {
+            clearInterval(this.gameLoopObserver);
             this.gameLoopObserver = null;
         }
     }
