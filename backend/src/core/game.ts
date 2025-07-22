@@ -5,8 +5,7 @@ import { LEFT_PADDLE, RIGHT_PADDLE } from '../shared/gameConfig.js';
 import { GameMode, MessageType} from '../shared/constants.js';
 import { PlayerInput, GameStateData, ServerMessage } from '../shared/types.js';
 
-// The Game class serves as an abstract base class for managing the core game logic.
-// It handles the game loop, state updates, input processing, and broadcasting game state.
+// The Game class runs the core game logic for all game modes.
 export class Game {
 	mode: GameMode;
 	// Clock instance to manage game loop timing
@@ -29,15 +28,12 @@ export class Game {
 
 	// Initialize the ball and players
 	private _init() {
-		this.paddles = [new Paddle(LEFT_PADDLE), null as any];
+		this.paddles = [new Paddle(LEFT_PADDLE), new Paddle(RIGHT_PADDLE)];
 		this.ball = new Ball(this.paddles, this._update_score);
 
 		// necessary to handle circular dependency of Ball and AIBot
 		if (this.mode === GameMode.SINGLE_PLAYER) {
 			this.paddles[RIGHT_PADDLE] = new AIBot(RIGHT_PADDLE, this.ball);
-		}
-		else {
-			this.paddles[RIGHT_PADDLE] = new Paddle(RIGHT_PADDLE);
 		}
 	}
 
