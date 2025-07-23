@@ -2,6 +2,7 @@ import { ViewMode, GameMode } from '../shared/constants.js';
 import { PlayerInfo, InputConfig } from '../shared/types.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
 import { EL } from '../ui/elements.js';
+import { authManager } from '../core/AuthManager.js';
 
 // Complete configuration for starting a game
 export interface GameConfig {
@@ -39,41 +40,51 @@ export class GameConfigFactory {
         switch (gameMode) {
             case GameMode.SINGLE_PLAYER: {
                 const name = getInputValue(EL.PLAYER_SETUP.PLAYER1_NAME, 'Player 1');
-                return [{ id: name, name: name }];
+                return [{ id: name, name: name, isGuest: true }];
             }
             
             case GameMode.TWO_PLAYER_LOCAL: {
                 const name1 = getInputValue(EL.PLAYER_SETUP.PLAYER1_NAME_LOCAL, 'Player 1');
                 const name2 = getInputValue(EL.PLAYER_SETUP.PLAYER2_NAME_LOCAL, 'Player 2');
                 return [
-                    { id: name1, name: name1 },
-                    { id: name2, name: name2 }
+                    { id: name1, name: name1, isGuest: true },
+                    { id: name2, name: name2, isGuest: true }
                 ];
             }
 
-            case GameMode.TWO_PLAYER_REMOTE: {
-                const name = getInputValue(EL.PLAYER_SETUP.PLAYER1_NAME_ONLINE, 'Player 1');
-                return [{ id: name, name: name }];
-            }
+            // case GameMode.TWO_PLAYER_REMOTE: {
+            //     const name = getInputValue(EL.PLAYER_SETUP.PLAYER1_NAME_ONLINE, 'Player 1');
+            //     return [{ id: name, name: name }];
+            // } case GameMode.TOURNAMENT_REMOTE: 
 
-            case GameMode.TOURNAMENT_LOCAL: 
-            case GameMode.TOURNAMENT_REMOTE: {
+            case GameMode.TOURNAMENT_LOCAL: {
                 const name1 = getInputValue(EL.PLAYER_SETUP.PLAYER1_NAME_TOURNAMENT, 'Player 1');
                 const name2 = getInputValue(EL.PLAYER_SETUP.PLAYER2_NAME_TOURNAMENT, 'Player 2');
                 const name3 = getInputValue(EL.PLAYER_SETUP.PLAYER3_NAME_TOURNAMENT, 'Player 3');
                 const name4 = getInputValue(EL.PLAYER_SETUP.PLAYER4_NAME_TOURNAMENT, 'Player 4');
                 return [
-                    { id: name1, name: name1 },
-                    { id: name2, name: name2 },
-                    { id: name3, name: name3 },
-                    { id: name4, name: name4 }
+                    { id: name1, name: name1, isGuest: true },
+                    { id: name2, name: name2, isGuest: true },
+                    { id: name3, name: name3, isGuest: true },
+                    { id: name4, name: name4, isGuest: true }
                 ];
             }
 
             default: {
                 console.warn('Unexpected game mode:', gameMode);
-                return [{ id: 'Player 1', name: 'Player 1' }];
+                return [{ id: 'Player 1', name: 'Player 1', isGuest: true }];
             }
         }
+    }
+
+    static getAuthenticatedPlayer(): PlayerInfo[] {
+        const currentUser = authManager.getCurrentUser();
+        if (!currentUser) throw new Error('No authenticated user');
+        
+        return [{
+            id: currentUser.username,
+            name: currentUser.username,
+            isGuest: false
+        }];
     }
 }

@@ -9,6 +9,7 @@ import { appStateManager } from './AppStateManager.js';
 import { GameConfigFactory } from '../engine/GameConfig.js';
 import { clearForm } from './utils.js';
 import { EL, getElementById} from '../ui/elements.js';
+import { PlayerInfo } from '../shared/types.js';
 
 
 /**
@@ -61,7 +62,12 @@ export class MenuFlowManager {
         uiManager.showAuthButtons();                                    // Hide user info during game
         historyManager.navigateTo(AppState.GAME_3D, false);             // Navigate to appropriate game screen
         appStateManager.setGameState(viewMode);                         // Update game state manager
-        const players = GameConfigFactory.getPlayersFromUI(gameMode);   // Get players from UI
+        // const players = GameConfigFactory.getPlayersFromUI(gameMode);   // Get players from UI
+        let players: PlayerInfo[];
+        if (authManager.isUserAuthenticated())
+            players = GameConfigFactory.getAuthenticatedPlayer(); // New method
+        else
+            players = GameConfigFactory.getPlayersFromUI(gameMode);
         const config = GameConfigFactory.createConfig(viewMode, gameMode, players); // Create game configuration
         await appStateManager.startGame(config);
     }
