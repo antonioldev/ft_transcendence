@@ -61,7 +61,7 @@ export class HistoryManager {
         this.currentState = state;
         console.log(`Navigating to state: ${state}`);
         
-        switch (state) { // TODO remove hard coded, use ENUM // TODO if using enum, we can try to remove the single functions below
+        switch (state) {
             case AppState.MAIN_MENU:
                 this.showScreen(EL.SCREENS.MAIN_MENU, { hideOverlayss: true, checkAuth: true });
                 break;

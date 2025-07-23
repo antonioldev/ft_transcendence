@@ -38,7 +38,9 @@ class AppStateManager {
         try {
             console.log('AppStateManager: Starting new game');
             this.currentGame = new Game(config);
+            await this.currentGame.connect();
             await this.currentGame?.initialize();
+            // await this.currentGame.connect();
             this.currentGame?.start();
             console.log('AppStateManager: Game started successfully');
         } catch (error) {
@@ -138,7 +140,7 @@ class AppStateManager {
                !this.isExiting;
     }
 
-        getCurrentGame(): Game | null {
+    getCurrentGame(): Game | null {
         return this.currentGame;
     }
 }

@@ -52,4 +52,7 @@ export interface Translation {
     logout: string;
     tournamentOnline: string;
     play: string;
+    loading: string;
 }
+
+export type TranslationKey = keyof Translation;

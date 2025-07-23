@@ -4,23 +4,19 @@ import { french } from './fr-FR.js';
 import { portuguese } from './pt-PT.js';
 import type { Translation } from './Translation.js';
 import { EL, getElementById } from '../ui/elements.js';
+import { TranslationKey } from './Translation.js';
 
 export let currentLang = 0;
 export const langs: string[] = ['English', 'Italiano', 'Français', 'Brasileiro'];
 
 const allTranslations = [english, italian, french, portuguese];
 
-/**
- * Retrieves the current translation object based on the selected language.
- * @returns {Translation} The translation object for the current language.
- */
+// Retrieves the current translation object based on the selected language.
 export function getCurrentTranslation(): Translation {
     return allTranslations[currentLang];
 }
 
-/**
- * Updates the text content of various elements in the UI to match the current language.
- */
+// Updates the text content of various elements in the UI to match the current language.
 export function updateLanguageDisplay(): void {
     const t = getCurrentTranslation();
 
@@ -199,30 +195,26 @@ export function updateLanguageDisplay(): void {
 
     const pauseControl3d = getElementById(EL.GAME.PAUSE_CONTROLS_3D);
     if (pauseControl3d) pauseControl3d.textContent = t.pauseControls3D;
+
+    // Loading
+    const loading = getElementById(EL.GAME.LOADING_TEXT);
+    if (loading) loading.textContent = t.loading;
 }
 
-/**
- * Cycles to the next language in the list and updates the UI accordingly.
- */
+// Cycles to the next language in the list and updates the UI accordingly.
 export function nextLanguage(): void {
     currentLang = (currentLang + 1) % langs.length;
     updateLanguageDisplay();
 }
 
-/**
- * Cycles to the previous language in the list and updates the UI accordingly.
- */
+// Cycles to the previous language in the list and updates the UI accordingly.
 export function previousLanguage(): void {
     currentLang = (currentLang - 1 + langs.length) % langs.length;
     updateLanguageDisplay();
 }
 
-/**
- * Retrieves an alert message for a specific player based on the current language.
- * @param {('player1' | 'player2')} type - The type of player ('player1' or 'player2').
- * @returns {string} The alert message for the specified player.
- */
-export function getAlert(type: 'player1' | 'player2'): string {
+// Retrieves a specific item based on current language
+export function getText(key: TranslationKey): string {
     const t = getCurrentTranslation();
-    return type === 'player1' ? t.alertPlayer1 : t.alertPlayer2;
+    return t[key];
 }

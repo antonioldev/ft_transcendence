@@ -164,7 +164,7 @@ export class WebSocketClient {
         this.sendMessage(MessageType.RESUME_REQUEST);
     }
 
-    sendQuitGame(): void { //TODO doesn't work with browser <-
+    sendQuitGame(): void {
         this.sendMessage(MessageType.QUIT_GAME);
     }
 

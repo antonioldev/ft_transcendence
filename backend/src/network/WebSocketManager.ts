@@ -94,7 +94,6 @@ export class WebSocketManager {
                     console.log("HandleMessage WSM: calling get User game history");
                     await this.handleUserGameHistory(socket, message);
                     break;
-
                 // case MessageType.REQUEST_USER_PROFILE:
                 //     console.log("HandleMessage WSM: Requesting user profile");
                 //     await this.handleUserProfileRequest(socket, data);
@@ -229,8 +228,8 @@ export class WebSocketManager {
             console.warn(`Client ${client.id} not in any game to quit`);
             return;
         }
-    
-        await game.broadcastMessage(MessageType.GAME_ENDED);
+
+        await game.broadcast({ type: MessageType.GAME_ENDED });
         console.log(`Game ${game.id} ended by client ${client.id}`);
         
         // Then do the cleanup (your original working code)

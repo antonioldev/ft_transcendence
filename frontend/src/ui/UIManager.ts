@@ -71,7 +71,7 @@ class UIManager {
         this.applyStylesToAll('.connection-status', UI_STYLES.connectionStatus);
 
         // Game dialogs & overlays
-        this.applyStylesToAll('.pause-dialog', UI_STYLES.pauseDialog);
+        this.applyStylesToAll('.game-overlay', UI_STYLES.gameOverlay);
         this.applyStylesToAll('.pause-title, .pause-text, .pause-controls', {
             color: UI_COLORS.text,
             textAlign: 'center' as const,
@@ -81,6 +81,10 @@ class UIManager {
         this.applyStylesToAll('.pause-text', UI_STYLES.pauseMedium);
         this.applyStylesToAll('.pause-controls', UI_STYLES.pauseSmall);
         this.applyStylesToAll('.setup-form', UI_STYLES.setupForm);
+
+        this.applyStylesToAll('.loading-content', UI_STYLES.loadingContent);
+        this.applyStylesToAll('.progress-bar', UI_STYLES.progressBar);
+        this.applyStylesToAll('#progress-fill', UI_STYLES.progressFill);
 
         // Special cases
         const mainMenu = document.getElementById('main-menu');
@@ -183,15 +187,12 @@ class UIManager {
             player1: player1Input?.value.trim() || 'Player 1'
         };
 
-        if (player2Input) {
+        if (player2Input)
             result.player2 = player2Input.value.trim() || 'Player 2';
-        }
-        if (player3Input) {
+        if (player3Input)
             result.player3 = player3Input.value.trim() || 'Player 3';
-        }
-        if (player4Input) {
+        if (player4Input)
             result.player4 = player4Input.value.trim() || 'Player 4';
-        }
 
         return result;
     }
@@ -201,9 +202,8 @@ class UIManager {
         
         if (!names.player1.trim()) return false;
         if (gameMode === GameMode.TWO_PLAYER_LOCAL && !names.player2?.trim()) return false;
-        if ((gameMode === GameMode.TOURNAMENT_LOCAL || gameMode === GameMode.TOURNAMENT_REMOTE)) {
+        if ((gameMode === GameMode.TOURNAMENT_LOCAL || gameMode === GameMode.TOURNAMENT_REMOTE))
             if (!names.player2?.trim() || !names.player3?.trim() || !names.player4?.trim()) return false;
-        }
         
         return true;
     }

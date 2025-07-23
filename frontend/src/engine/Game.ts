@@ -1,4 +1,6 @@
-declare var BABYLON: any;
+declare var BABYLON: typeof import('@babylonjs/core') & {
+    GUI: typeof import('@babylonjs/gui');
+}; //declare var BABYLON: any;
 
 import { GameConfig } from './GameConfig.js';
 import { buildScene } from './sceneBuilder.js';
@@ -7,7 +9,9 @@ import { webSocketClient } from '../core/WebSocketClient.js';
 import { GameStateData, GameObjects } from '../shared/types.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
 import { appStateManager } from '../core/AppStateManager.js';
-import { WebSocketEvent } from '../shared/constants.js';
+import { GameMode, WebSocketEvent } from '../shared/constants.js';
+import { EL } from '../ui/elements.js';
+import { ViewMode } from '../shared/constants.js';
 
 /**
  * Main Game class that handles everything for running one game instance.
@@ -35,14 +39,34 @@ export class Game {
     private isInitialized: boolean = false;
     private isRunning: boolean = false;
     private isDisposed: boolean = false;
-    private gameLoopObserver: any = null;
     private isPausedByServer: boolean = false;
+    private gameLoopObserver: any = null;
+    private score1Text: any = null;
+    private score2Text: any = null;
+    
+    private lastFrameTime: number = 0;
+    private fpsLimit: number = 60;
 
     constructor(private config: GameConfig) {
-        this.canvas = document.getElementById(config.canvasId) as HTMLCanvasElement;
-        if (!this.canvas) {
-            throw new Error(`Canvas element not found: ${config.canvasId}`);
-        }
+        const element = document.getElementById(config.canvasId);
+        
+        if (element instanceof HTMLCanvasElement) {
+            this.canvas = element;
+            const gl = this.canvas.getContext('webgl') || this.canvas.getContext('webgl2');
+            
+            if (gl) {
+                gl.getExtension('WEBGL_color_buffer_float');
+                gl.getExtension('EXT_color_buffer_half_float');}
+            // if (gl) {
+            //     let renderer = gl.getParameter(gl.RENDERER);
+            //     renderer = gl.getExtension('WEBGL_color_buffer_float');
+            //     renderer = gl.getExtension('EXT_color_buffer_half_float');
+            //     console.log('WebGL Renderer:', renderer); // TODO remove some warning
+            // }
+            
+        } else 
+            throw new Error(`Canvas element not found or is not a canvas: ${config.canvasId}`);
+        
         console.log('Game created with config:', {
             viewMode: config.viewMode,
             gameMode: config.gameMode,
@@ -57,26 +81,36 @@ export class Game {
 
     async initialize(): Promise<void> {
         if (this.isInitialized || this.isDisposed) return;
-
+        
+        // BABYLON.SceneLoader.ShowLoadingScreen = true;
+        BABYLON.SceneLoader.ShowLoadingScreen = false;
+        
+        this.updateLoadingProgress(0);
+        this.setLoadingScreenVisible(true);
         try {
             console.log('Initializing game...');
 
-            // Create Babylon.js engine and scene
-            await this.initializeBabylonEngine();
-            this.createScene();
+            this.engine = await this.initializeBabylonEngine();
+            if (!this.engine) throw new Error('Engine not created');
+            // this.engine.displayLoadingUI()
+            this.scene = await this.createScene()
+            if (!this.scene) throw new Error('Scene not created');
+            
+            // Build game objects
+            this.gameObjects = await buildScene(this.scene, this.engine, this.config.viewMode, this.updateLoadingProgress.bind(this));
+            if (!this.gameObjects) throw new Error('Game objects not created');
+            // Build game scene in background
+            // await this.createGameScene();
+            this.createGUI(); // Create FPS GUI on engine
+            this.startRenderLoop();
             this.setupResizeHandler();
 
-            // Create GUI
-            this.createGUI();
-
-            // Create input handler
+            // Create input handler for game scene
             this.inputHandler = new InputHandler(this.config.gameMode, this.config.controls, this.scene);
-            if (!this.gameObjects) throw new Error('Game objects not created');
+            
             this.inputHandler.setGameObjects(this.gameObjects);
 
-            // Connect components
             this.connectComponents();
-
             this.isInitialized = true;
             console.log('Game initialized successfully');
 
@@ -88,30 +122,45 @@ export class Game {
     }
 
     // Initialize Babylon.js engine
-    private async initializeBabylonEngine(): Promise<void> {
-        this.engine = new BABYLON.Engine(this.canvas, true, { 
+    private async initializeBabylonEngine(): Promise<any> {
+        const engine = new BABYLON.Engine(this.canvas, true, { 
             preserveDrawingBuffer: true, 
             stencil: true, 
             disableWebGL2Support: false,
             antialias: false,
             powerPreference: "high-performance"
         });
+        return engine;
     }
 
     // Create scene based on view mode
-    private createScene(): void {
-        this.scene = new BABYLON.Scene(this.engine);
-        this.scene.createDefaultEnvironment({ // TODO
-    createGround: false, // Don't create another ground
-    createSkybox: false  // Optional: add skybox for better lighting
-});
-        this.gameObjects = buildScene(this.scene, this.engine, this.config.viewMode)
+    private async  createScene(): Promise<any> {
+        const scene = new BABYLON.Scene(this.engine);
+        scene.createDefaultEnvironment({ createGround: false, createSkybox: false });
+        scene.clearColor = new BABYLON.Color4(0, 0, 0, 1);
+        return scene;
     }
 
     // Create GUI elements
     private createGUI(): void {
-        this.advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
-        
+        // this.advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+        this.advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI", true, this.scene);
+        this.advancedTexture.layer.layerMask = 0x20000000;
+
+        if (this.config.viewMode === ViewMode.MODE_3D && this.config.gameMode === GameMode.TWO_PLAYER_LOCAL) {
+            const dividerLine = new BABYLON.GUI.Rectangle();
+            dividerLine.widthInPixels = 2;
+            dividerLine.height = "100%";
+            dividerLine.color = "black";
+            dividerLine.background = "black";
+            dividerLine.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
+            dividerLine.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+            dividerLine.left = "0px";
+            dividerLine.top = "0px";
+            
+            this.advancedTexture.addControl(dividerLine);
+        }
+
         // Create FPS display
         this.fpsText = new BABYLON.GUI.TextBlock();
         this.fpsText.text = "FPS: 0";
@@ -125,6 +174,73 @@ export class Game {
         this.fpsText.height = "40px";
         
         this.advancedTexture.addControl(this.fpsText);
+
+        // Create score container
+        const scoreContainer = new BABYLON.GUI.StackPanel();
+        scoreContainer.isVertical = true;
+        scoreContainer.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
+        scoreContainer.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+        scoreContainer.top = "-30px";
+        scoreContainer.height = "80px";
+
+        // Player names row
+        const playersRow = new BABYLON.GUI.StackPanel();
+        playersRow.isVertical = false;
+        playersRow.height = "30px";
+
+        const player1Label = new BABYLON.GUI.TextBlock();
+        player1Label.text = "Player 1";
+        player1Label.color = "white";
+        player1Label.fontSize = 18;
+        player1Label.width = "120px";
+
+        // const vsLabel = new BABYLON.GUI.TextBlock();
+        // vsLabel.text = "vs";
+        // vsLabel.color = "#ffff00";
+        // vsLabel.fontSize = 16;
+        // vsLabel.width = "40px";
+
+        const player2Label = new BABYLON.GUI.TextBlock();
+        player2Label.text = "Player 2";
+        player2Label.color = "white";
+        player2Label.fontSize = 18;
+        player2Label.width = "120px";
+
+        playersRow.addControl(player1Label);
+        // playersRow.addControl(vsLabel);
+        playersRow.addControl(player2Label);
+
+        // Scores row
+        const scoresRow = new BABYLON.GUI.StackPanel();
+        scoresRow.isVertical = false;
+        scoresRow.height = "40px";
+
+        this.score1Text = new BABYLON.GUI.TextBlock();
+        this.score1Text.text = "0";
+        this.score1Text.color = "white";
+        this.score1Text.fontSize = 24;
+        this.score1Text.width = "120px";
+
+        // const scoreSeparator = new BABYLON.GUI.TextBlock();
+        // scoreSeparator.text = "-";
+        // scoreSeparator.color = "white";
+        // scoreSeparator.fontSize = 20;
+        // scoreSeparator.width = "40px";
+
+        this.score2Text = new BABYLON.GUI.TextBlock();
+        this.score2Text.text = "0";
+        this.score2Text.color = "white";
+        this.score2Text.fontSize = 24;
+        this.score2Text.width = "120px";
+
+        scoresRow.addControl(this.score1Text);
+        // scoresRow.addControl(scoreSeparator);
+        scoresRow.addControl(this.score2Text);
+
+        scoreContainer.addControl(playersRow);
+        scoreContainer.addControl(scoresRow);
+
+        this.advancedTexture.addControl(scoreContainer);
     }
 
     // Setup window resize handler
@@ -139,9 +255,8 @@ export class Game {
 
     // Connect all components together
     private connectComponents(): void {
-        if (!this.inputHandler) {
+        if (!this.inputHandler)
             throw new Error('Components not initialized');
-        }
 
         this.inputHandler.onInput((input) => {
             webSocketClient.sendPlayerInput(input.side, input.direction);
@@ -154,6 +269,13 @@ export class Game {
         webSocketClient.registerCallback(WebSocketEvent.GAME_ENDED, () => { this.onServerEndedGame(); });
     }
 
+    async connect(): Promise<void> {
+        console.log('Connecting to server...');
+        // Make this return a Promise that resolves when connected
+        webSocketClient.joinGame(this.config.gameMode, this.config.players)
+        console.log('Connected to server');
+    }
+
     // ========================================
     // GAME CONTROL
     // ========================================
@@ -163,12 +285,6 @@ export class Game {
 
         try {
             console.log('Starting game...');
-
-            // Start network connection
-            webSocketClient.joinGame(this.config.gameMode, this.config.players)
-
-            // Start render loop
-            this.startRenderLoop();
 
             // Start game loop
             this.startGameLoop();
@@ -259,19 +375,25 @@ export class Game {
         if (this.isDisposed || this.isRenderingActive || !this.engine || !this.scene) return;
 
         this.isRenderingActive = true;
+        this.lastFrameTime = performance.now();
 
         this.engine.runRenderLoop(() => {
             if (!this.isRenderingActive || this.isDisposed) return;
 
+            const currentTime = performance.now();
+            const deltaTime = currentTime - this.lastFrameTime;
+            if (deltaTime < (1000 / this.fpsLimit)) return;
+
             try {
-                if (this.scene.activeCamera) {
+                if (this.scene && this.scene.activeCamera)
                     this.scene.render();
-                }
 
                 // Update FPS
-                if (this.fpsText && this.engine) {
-                    this.fpsText.text = "FPS: " + this.engine.getFps().toFixed(0);
-                }
+                if (this.fpsText && this.engine)
+                    this.fpsText.text = "FPS: " + Math.round(1000 / deltaTime);
+                    // this.fpsText.text = "FPS: " + this.engine.getFps().toFixed(0);
+
+                this.lastFrameTime = currentTime;
             } catch (error) {
                 console.error('Error in render loop:', error);
             }
@@ -298,12 +420,13 @@ export class Game {
         this.gameLoopObserver = setInterval(() => {
             if (!this.isRunning || this.isDisposed) return;
             try {
+                this.setLoadingScreenVisible(false);
                 // Update input
                 if (this.inputHandler)
                     this.inputHandler.updateInput();
                 // Update 3D cameras if needed
                 const cameras = this.gameObjects?.cameras;
-                if (cameras && cameras.length > 1)
+                if (cameras && cameras.length > 2)
                     this.update3DCameras();
             } catch (error) {
                 console.error('Error in game loop:', error);
@@ -327,18 +450,21 @@ export class Game {
 
         try {
             // Update paddle positions
-            if (this.gameObjects.players.left) {
+            if (this.gameObjects.players.left)
                 this.gameObjects.players.left.position.x = state.paddleLeft.x;
-            }
-
-            if (this.gameObjects.players.right) {
+            if (this.gameObjects.players.right)
                 this.gameObjects.players.right.position.x = state.paddleRight.x;
-            }
 
             // Update ball position
             if (this.gameObjects.ball) {
                 this.gameObjects.ball.position.x = state.ball.x;
                 this.gameObjects.ball.position.z = state.ball.z;
+            }
+
+            // Update Score
+            if (this.score1Text && this.score2Text) {
+                this.score1Text.text = state.paddleLeft.score.toString();
+                this.score2Text.text = state.paddleRight.score.toString();
             }
         } catch (error) {
             console.error('Error updating game objects:', error);
@@ -403,6 +529,11 @@ export class Game {
                 this.advancedTexture = null;
             }
             this.fpsText = null;
+            this.score1Text = null;
+            this.score2Text = null;
+
+            this.setLoadingScreenVisible(false);
+            this.updateLoadingProgress(0);
 
             // Clear game objects reference
             this.gameObjects = null;
@@ -433,4 +564,37 @@ export class Game {
             console.error('Error disposing game:', error);
         }
     }
+
+
+    private updateLoadingProgress(progress: number): void{
+        const progressBar = document.getElementById(EL.GAME.PROGRESS_FILL);
+        if (progressBar)
+            progressBar.style.width = progress + '%';
+        const progressText = document.getElementById(EL.GAME.PROGRESS_TEXT);
+        if (progressText)
+            progressText.textContent = progress + '%';
+    }
+
+    setLoadingScreenVisible(visible: boolean): void {
+        const loadingScreen = document.getElementById('loading-screen');
+        if (loadingScreen) {
+            loadingScreen.style.display = visible ? 'flex' : 'none';
+        }
+    }
+
 }
+
+BABYLON.DefaultLoadingScreen.prototype.displayLoadingUI = function () {
+    if ((this as any)._isLoading)
+        return;
+
+    (this as any)._isLoading = true;
+};
+
+BABYLON.DefaultLoadingScreen.prototype.hideLoadingUI = function () {
+    const loading = document.getElementById(EL.GAME.LOADING_SCREEN);
+    if (loading)
+        loading.style.display = 'none';
+    (this as any)._isLoading = false;
+    
+};

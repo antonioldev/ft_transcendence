@@ -1,4 +1,4 @@
-declare var BABYLON: any;
+declare var BABYLON: typeof import('@babylonjs/core'); // declare var BABYLON: any;
 
 import { GAME_CONFIG } from '../shared/gameConfig.js';
 
