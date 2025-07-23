@@ -153,8 +153,8 @@ export async function buildScene(
     onProgress?.(50);
     if (mode === ViewMode.MODE_2D)
     {
-        cameras = createCamera(scene, "camera1", getCamera2DPosition(), get2DCameraViewport(), mode);
-        scene.activeCamera = cameras;
+        cameras = [createCamera(scene, "camera1", getCamera2DPosition(), get2DCameraViewport(), mode)];
+        // scene.activeCamera = [cameras];
         playerLeft = createPlayer(scene, "player1", getPlayerLeftPosition(), getPlayerSize(), COLORS.player1_2D, mode);
         playerRight = createPlayer(scene, "player2", getPlayerRightPosition(), getPlayerSize(), COLORS.player2_2D, mode);
     } else {
@@ -162,11 +162,21 @@ export async function buildScene(
             createCamera(scene, "camera1", getCamera3DPlayer1Position(), get3DCamera1Viewport(), mode),
             createCamera(scene, "camera2", getCamera3DPlayer2Position(), get3DCamera2Viewport(), mode)
         ];
-        scene.activeCameras = [cameras[0], cameras[1]];
+        // scene.activeCameras = [cameras[0], cameras[1]];
         playerLeft = createPlayer(scene, "player1", getPlayerLeftPosition(), getPlayerSize(), COLORS.player1_3D, mode);
         playerRight = createPlayer(scene, "player2", getPlayerRightPosition(), getPlayerSize(), COLORS.player2_3D, mode);
         createHDRIEnvironment(scene);
     }
+
+    const guiCamera = createCamera(scene, "guiCamera", BABYLON.Vector3.Zero(), new BABYLON.Viewport(0, 0, 1, 1), mode);
+    guiCamera.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
+    guiCamera.orthoTop = 1;
+    guiCamera.orthoBottom = -1;
+    guiCamera.orthoLeft = -1;
+    guiCamera.orthoRight = 1;
+    guiCamera.layerMask = 0x20000000;
+    cameras.push(guiCamera);
+    scene.activeCameras = cameras;
     onProgress?.(90);
     return {
         players: { left: playerLeft, right: playerRight },

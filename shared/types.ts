@@ -57,6 +57,7 @@ export interface ServerMessage {
 export interface PlayerInfo {
     id: string;        // Now: same as name, Future: real user ID from database
     name: string;      // Display name (can have duplicates)
+    isGuest: boolean;   // check if player is on database or just alias
 }
 
 // Represents the input data for a specific action or event.

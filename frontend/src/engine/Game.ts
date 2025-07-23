@@ -9,8 +9,9 @@ import { webSocketClient } from '../core/WebSocketClient.js';
 import { GameStateData, GameObjects } from '../shared/types.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
 import { appStateManager } from '../core/AppStateManager.js';
-import { WebSocketEvent } from '../shared/constants.js';
+import { GameMode, WebSocketEvent } from '../shared/constants.js';
 import { EL } from '../ui/elements.js';
+import { ViewMode } from '../shared/constants.js';
 
 /**
  * Main Game class that handles everything for running one game instance.
@@ -142,8 +143,24 @@ export class Game {
 
     // Create GUI elements
     private createGUI(): void {
-        this.advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
-        
+        // this.advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+        this.advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI", true, this.scene);
+        this.advancedTexture.layer.layerMask = 0x20000000;
+
+        if (this.config.viewMode === ViewMode.MODE_3D && this.config.gameMode === GameMode.TWO_PLAYER_LOCAL) {
+            const dividerLine = new BABYLON.GUI.Rectangle();
+            dividerLine.widthInPixels = 2;
+            dividerLine.height = "100%";
+            dividerLine.color = "black";
+            dividerLine.background = "black";
+            dividerLine.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
+            dividerLine.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+            dividerLine.left = "0px";
+            dividerLine.top = "0px";
+            
+            this.advancedTexture.addControl(dividerLine);
+        }
+
         // Create FPS display
         this.fpsText = new BABYLON.GUI.TextBlock();
         this.fpsText.text = "FPS: 0";
@@ -177,11 +194,11 @@ export class Game {
         player1Label.fontSize = 18;
         player1Label.width = "120px";
 
-        const vsLabel = new BABYLON.GUI.TextBlock();
-        vsLabel.text = "vs";
-        vsLabel.color = "#ffff00";
-        vsLabel.fontSize = 16;
-        vsLabel.width = "40px";
+        // const vsLabel = new BABYLON.GUI.TextBlock();
+        // vsLabel.text = "vs";
+        // vsLabel.color = "#ffff00";
+        // vsLabel.fontSize = 16;
+        // vsLabel.width = "40px";
 
         const player2Label = new BABYLON.GUI.TextBlock();
         player2Label.text = "Player 2";
@@ -190,7 +207,7 @@ export class Game {
         player2Label.width = "120px";
 
         playersRow.addControl(player1Label);
-        playersRow.addControl(vsLabel);
+        // playersRow.addControl(vsLabel);
         playersRow.addControl(player2Label);
 
         // Scores row
@@ -204,11 +221,11 @@ export class Game {
         this.score1Text.fontSize = 24;
         this.score1Text.width = "120px";
 
-        const scoreSeparator = new BABYLON.GUI.TextBlock();
-        scoreSeparator.text = "-";
-        scoreSeparator.color = "white";
-        scoreSeparator.fontSize = 20;
-        scoreSeparator.width = "40px";
+        // const scoreSeparator = new BABYLON.GUI.TextBlock();
+        // scoreSeparator.text = "-";
+        // scoreSeparator.color = "white";
+        // scoreSeparator.fontSize = 20;
+        // scoreSeparator.width = "40px";
 
         this.score2Text = new BABYLON.GUI.TextBlock();
         this.score2Text.text = "0";
@@ -217,7 +234,7 @@ export class Game {
         this.score2Text.width = "120px";
 
         scoresRow.addControl(this.score1Text);
-        scoresRow.addControl(scoreSeparator);
+        // scoresRow.addControl(scoreSeparator);
         scoresRow.addControl(this.score2Text);
 
         scoreContainer.addControl(playersRow);
@@ -409,7 +426,7 @@ export class Game {
                     this.inputHandler.updateInput();
                 // Update 3D cameras if needed
                 const cameras = this.gameObjects?.cameras;
-                if (cameras && cameras.length > 1)
+                if (cameras && cameras.length > 2)
                     this.update3DCameras();
             } catch (error) {
                 console.error('Error in game loop:', error);
