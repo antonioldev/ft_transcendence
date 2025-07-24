@@ -13,7 +13,9 @@
     "@types/babylonjs": "^2.3.31",
     "install": "^0.13.0",
     "npm": "^11.4.2",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "@types/google.accounts": "^0.0.14",
+    "@types/node": "^20.11.20"
   },
   "author": "Antonio Limotta",
   "license": "MIT"
