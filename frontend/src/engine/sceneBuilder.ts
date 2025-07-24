@@ -1,193 +1,3 @@
-// declare var BABYLON: typeof import('@babylonjs/core'); //declare var BABYLON: any;
-
-// import { GAME_CONFIG } from '../shared/gameConfig.js';
-// import { Size, GameObjects } from '../shared/types.js';
-// import { ViewMode } from '../shared/constants.js';
-// import {
-//     COLORS,
-//     getPlayerSize,
-//     getPlayerLeftPosition,
-//     getPlayerRightPosition,
-//     getBallStartPosition,
-//     getCamera2DPosition,
-//     getCamera3DPlayer1Position,
-//     getCamera3DPlayer2Position,
-//     get2DCameraViewport,
-//     get3DCamera1Viewport,
-//     get3DCamera2Viewport
-// } from '../core/utils.js'
-
-// export type LoadingProgressCallback = (progress: number) => void;
-
-// // Creates a material for the given scene
-// function createMaterial(scene: any, name: string, color: any, mode: ViewMode): any {
-//     const material = new BABYLON.StandardMaterial(name, scene);
-    
-//     if (mode === ViewMode.MODE_2D) {
-//         material.emissiveColor = color;
-//         material.disableLighting = true;
-//     } else {
-//         material.diffuseColor = color;
-//     }
-//     return material;
-// }
-
-// // Creates a camera for the given scene
-// function createCamera(scene: any, name: string, position: any, viewport: any, mode: ViewMode): any {
-//     const camera = new BABYLON.FreeCamera(name, position, scene);
-//     camera.setTarget(BABYLON.Vector3.Zero());
-//     camera.viewport = viewport;
-//     if (mode === ViewMode.MODE_2D) {
-//         camera.rotation.z = -(Math.PI / 2);
-//         camera.fov = 1.1;
-//         camera.setTarget(new BABYLON.Vector3(0, 0, 0)); // TODO move the camera down
-//     }
-//     return camera;
-// }
-
-// // Creates a light source for the given scene
-// function createLight(scene: any, name: string, position: any): any {
-//     const light = new BABYLON.HemisphericLight(name, position, scene);
-//     return light;
-// }
-
-// function createTexturedMaterial(scene: any, name: string): any {
-//     const material = new BABYLON.StandardMaterial(name, scene);
-    
-//     // Just the diffuse texture - nothing else
-//     material.diffuseTexture = new BABYLON.Texture("assets/textures/hearth/ground/brown_mud_leaves_01_diff_1k.jpg", scene);
-//     material.bumpTexture = new BABYLON.Texture("assets/textures/hearth/ground/brown_mud_leaves_01_nor_dx_1k.jpg", scene);
-    
-//     // material.diffuseTexture.uScale = 2.0;
-//     // material.diffuseTexture.vScale = 2.0;
-//     // material.bumpTexture.uScale = 2.0;
-//     // material.bumpTexture.vScale = 2.0;
-//     return material; // TODO how to include texture
-// }
-
-// // Creates the ground for the game field
-// function createGround(scene: any, name: string, width: number, height: number, mode: ViewMode): any {
-//     const ground = BABYLON.MeshBuilder.CreateGround(name, { width, height }, scene);
-//     const color = mode === ViewMode.MODE_2D ? COLORS.field2D : COLORS.field3D;
-//     ground.material = createMaterial(scene, name + "Material", color, mode);
-//     // ground.material = createTexturedMaterial(scene, name + "Material");
-//     return ground;
-// }
-
-
-// // Creates the walls surrounding the game field
-// function createWalls(scene: any, name: string, fieldWidth: number, fieldHeight: number, wallHeight: number, wallThickness: number, mode: ViewMode): any[] {
-//     const walls: any[] = [];
-//     const color = mode === ViewMode.MODE_2D ? COLORS.walls2D : COLORS.walls3D;
-//     const material = createMaterial(scene, name + "Material", color, mode);
-
-//     // Top wall
-//     const topWall = BABYLON.MeshBuilder.CreateBox("topWall", {width: fieldWidth, height: wallHeight, depth: wallThickness}, scene);
-//     topWall.position = new BABYLON.Vector3(0, wallHeight / 2, fieldHeight / 2);
-//     topWall.material = material;
-//     walls.push(topWall);
-
-//     // Bottom wall
-//     const bottomWall = BABYLON.MeshBuilder.CreateBox("bottomWall", {width: fieldWidth, height: wallHeight, depth: wallThickness}, scene);
-//     bottomWall.position = new BABYLON.Vector3(0, wallHeight / 2, -(fieldHeight / 2));
-//     bottomWall.material = material;
-//     walls.push(bottomWall);
-
-//     // Left wall
-//     const leftWall = BABYLON.MeshBuilder.CreateBox("leftWall", {width: wallThickness, height: wallHeight, depth: fieldHeight + 1}, scene);
-//     leftWall.position = new BABYLON.Vector3(-(fieldWidth / 2), wallHeight / 2, 0);
-//     leftWall.material = material;
-//     walls.push(leftWall);
-
-//     // Right wall
-//     const rightWall = BABYLON.MeshBuilder.CreateBox("rightWall", {width: wallThickness, height: wallHeight, depth: fieldHeight + 1}, scene);
-//     rightWall.position = new BABYLON.Vector3(fieldWidth / 2, wallHeight / 2, 0);
-//     rightWall.material = material;
-//     walls.push(rightWall);
-
-//     return walls;
-// }
-
-// // Creates a player object in the scene
-// function createPlayer(scene: any, name: string, position: any, size: Size, color: any, mode: ViewMode): any {
-//     const player = BABYLON.MeshBuilder.CreateBox(name, {width: size.x, height: size.y, depth: size.z}, scene);
-//     player.material = createMaterial(scene, name + "Material", color, mode);
-//     player.position = position;
-//     return player;
-// }
-
-// // Creates a ball object in the scene
-// function createBall(scene: any, name: string, position: any, mode: ViewMode): any {
-//     const ball = BABYLON.MeshBuilder.CreateSphere(name, {diameter: GAME_CONFIG.ballRadius * 2}, scene);
-//     const color = mode === ViewMode.MODE_2D ? COLORS.ball2D : COLORS.ball3D;
-//     ball.material = createMaterial(scene, name + "Material", color, mode);
-//     ball.position = position;
-//     return ball;
-// }
-
-// function createHDRIEnvironment(scene: any): void {
-//     // Load the HDRI texture
-//     const hdrTexture = new BABYLON.HDRCubeTexture("assets/test.hdr", scene, 1024);
-//     // Set as environment texture (skybox + reflections)
-//     scene.environmentTexture = hdrTexture;
-    
-//     // Optional: Create visible skybox
-//     scene.createDefaultSkybox(hdrTexture, true, 1000);
-// }
-
-// export async function buildScene(
-//     scene: any, engine: any, mode: ViewMode, onProgress?: LoadingProgressCallback): Promise<GameObjects> {
-//     let cameras: any;
-//     let playerLeft: any;
-//     let playerRight: any;
-
-//     onProgress?.(10);
-    
-//     const lights = createLight(scene, "light1", new BABYLON.Vector3(0, 10, 0)); // TODO testing light
-//     // const lights = [
-//     //     new BABYLON.DirectionalLight("light1", new BABYLON.Vector3(-1, -0.5, 0), scene),
-//     //     new BABYLON.DirectionalLight("light2", new BABYLON.Vector3(1, -0.5, 0), scene)];
-//     const ground = createGround(scene, "ground", GAME_CONFIG.fieldWidth, GAME_CONFIG.fieldHeight, mode);
-//     const walls = createWalls(scene, "walls", GAME_CONFIG.fieldWidth, GAME_CONFIG.fieldHeight, GAME_CONFIG.wallHeight, GAME_CONFIG.wallThickness, mode);
-//     const ball = createBall(scene, "ball", getBallStartPosition(), mode);
-//     onProgress?.(50);
-//     if (mode === ViewMode.MODE_2D)
-//     {
-//         cameras = [createCamera(scene, "camera1", getCamera2DPosition(), get2DCameraViewport(), mode)];
-//         // scene.activeCamera = [cameras];
-//         playerLeft = createPlayer(scene, "player1", getPlayerLeftPosition(), getPlayerSize(), COLORS.player1_2D, mode);
-//         playerRight = createPlayer(scene, "player2", getPlayerRightPosition(), getPlayerSize(), COLORS.player2_2D, mode);
-//     } else {
-//         cameras = [
-//             createCamera(scene, "camera1", getCamera3DPlayer1Position(), get3DCamera1Viewport(), mode),
-//             createCamera(scene, "camera2", getCamera3DPlayer2Position(), get3DCamera2Viewport(), mode)
-//         ];
-//         // scene.activeCameras = [cameras[0], cameras[1]];
-//         playerLeft = createPlayer(scene, "player1", getPlayerLeftPosition(), getPlayerSize(), COLORS.player1_3D, mode);
-//         playerRight = createPlayer(scene, "player2", getPlayerRightPosition(), getPlayerSize(), COLORS.player2_3D, mode);
-//         createHDRIEnvironment(scene);
-//     }
-
-//     const guiCamera = createCamera(scene, "guiCamera", BABYLON.Vector3.Zero(), new BABYLON.Viewport(0, 0, 1, 1), mode);
-//     guiCamera.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
-//     guiCamera.orthoTop = 1;
-//     guiCamera.orthoBottom = -1;
-//     guiCamera.orthoLeft = -1;
-//     guiCamera.orthoRight = 1;
-//     guiCamera.layerMask = 0x20000000;
-//     cameras.push(guiCamera);
-//     scene.activeCameras = cameras;
-//     onProgress?.(90);
-//     return {
-//         players: { left: playerLeft, right: playerRight },
-//         ball,
-//         ground,
-//         walls,
-//         cameras,
-//         lights
-//     };
-// }
-
 declare var BABYLON: typeof import('@babylonjs/core'); //declare var BABYLON: any;
 
 import { GAME_CONFIG } from '../shared/gameConfig.js';
@@ -207,19 +17,27 @@ import {
     get3DCamera2Viewport
 } from '../core/utils.js';
 import { MAP_ASSETS } from './sceneAssets.js';
-import { createColorMaterial, createMaterial, createEnvironment } from './materialFactory.js';
+import { createMaterial, createEnvironment } from './materialFactory.js';
 
 export type LoadingProgressCallback = (progress: number) => void;
 
 // Creates a camera for the given scene
 function createCamera(scene: any, name: string, position: any, viewport: any, mode: ViewMode): any {
-    const camera = new BABYLON.FreeCamera(name, position, scene);
-    camera.setTarget(BABYLON.Vector3.Zero());
-    camera.viewport = viewport;
+
+    let camera;
+    if (mode === ViewMode.MODE_3D) {
+        camera = new BABYLON.FreeCamera(name, position, scene);
+        camera.setTarget(BABYLON.Vector3.Zero());
+        camera.viewport = viewport;
+    }
+    
     if (mode === ViewMode.MODE_2D) {
+        camera = new BABYLON.FreeCamera(name, position, scene); // position is new BABYLON.Vector3(0, 25, 0);
+        camera.setTarget(new BABYLON.Vector3(3, 0, 0));
+        camera.viewport = viewport; //
         camera.rotation.z = -(Math.PI / 2);
         camera.fov = 1.1;
-        camera.setTarget(new BABYLON.Vector3(0, 0, 0)); // TODO move the camera down
+        // camera.setTarget(new BABYLON.Vector3(0, 5, 0)); // TODO move the camera down
     }
     return camera;
 }
@@ -227,83 +45,87 @@ function createCamera(scene: any, name: string, position: any, viewport: any, mo
 // Creates a light source for the given scene
 function createLight(scene: any, name: string, position: any): any {
     const light = new BABYLON.HemisphericLight(name, position, scene);
+    light.intensity = 1.2;
+    light.diffuse = new BABYLON.Color3(1, 1, 1);
+    light.specular = new BABYLON.Color3(1, 1, 1);
     return light;
 }
 
 // Creates the ground for the game field
 function createGround(scene: any, name: string, width: number, height: number, mode: ViewMode): any {
+
     const ground = BABYLON.MeshBuilder.CreateGround(name, { width, height }, scene);
     const color = mode === ViewMode.MODE_2D ? COLORS.field2D : COLORS.field3D;
     
-    // Use ground textures for 3D mode
-    const textureSet = mode === ViewMode.MODE_3D ? MAP_ASSETS.ground : undefined;
-    
-    ground.material = createMaterial(scene, name + "Material", color, mode, textureSet);
+    const groundTextureScale = { u: width / 10, v: height / 10 };
+    ground.material = createMaterial(scene, name + "Material", color, mode, MAP_ASSETS.ground, groundTextureScale);
     return ground;
 }
 
-// Creates the walls surrounding the game field
 function createWalls(scene: any, name: string, fieldWidth: number, fieldHeight: number, wallHeight: number, wallThickness: number, mode: ViewMode): any[] {
-    const walls: any[] = [];
-    const color = mode === ViewMode.MODE_2D ? COLORS.walls2D : COLORS.walls3D;
-    
-    // Use wall textures for 3D mode
-    const textureSet = mode === ViewMode.MODE_3D ? MAP_ASSETS.walls : undefined;
-    const material = createMaterial(scene, name + "Material", color, mode, textureSet);
+   const walls: any[] = [];
+   const color = mode === ViewMode.MODE_2D ? COLORS.walls2D : COLORS.walls3D;
+   
+   // Single texture scaling for all walls
+   const wallTextureScale = {u: fieldWidth / 2, v: wallThickness};
+   const material = createMaterial(scene, "wallMaterial", color, mode, MAP_ASSETS.walls, wallTextureScale);
 
-    // Top wall
-    const topWall = BABYLON.MeshBuilder.CreateBox("topWall", {width: fieldWidth, height: wallHeight, depth: wallThickness}, scene);
-    topWall.position = new BABYLON.Vector3(0, wallHeight / 2, fieldHeight / 2);
-    topWall.material = material;
-    walls.push(topWall);
+   // Top wall
+   const topWall = BABYLON.MeshBuilder.CreateBox("topWall", {width: fieldWidth, height: wallHeight, depth: wallThickness}, scene);
+   topWall.position = new BABYLON.Vector3(0, wallHeight / 2, fieldHeight / 2 - (wallThickness / 2));
+   topWall.material = material;
+   walls.push(topWall);
 
-    // Bottom wall
-    const bottomWall = BABYLON.MeshBuilder.CreateBox("bottomWall", {width: fieldWidth, height: wallHeight, depth: wallThickness}, scene);
-    bottomWall.position = new BABYLON.Vector3(0, wallHeight / 2, -(fieldHeight / 2));
-    bottomWall.material = material;
-    walls.push(bottomWall);
+   // Bottom wall
+   const bottomWall = BABYLON.MeshBuilder.CreateBox("bottomWall", {width: fieldWidth - wallThickness, height: wallHeight, depth: wallThickness}, scene);
+   bottomWall.position = new BABYLON.Vector3(0, wallHeight / 2, -(fieldHeight / 2) + (wallThickness / 2));
+   bottomWall.material = material;
+   walls.push(bottomWall);
 
-    // Left wall
-    const leftWall = BABYLON.MeshBuilder.CreateBox("leftWall", {width: wallThickness, height: wallHeight, depth: fieldHeight + 1}, scene);
-    leftWall.position = new BABYLON.Vector3(-(fieldWidth / 2), wallHeight / 2, 0);
-    leftWall.material = material;
-    walls.push(leftWall);
+   // Left wall
+   const leftWall = BABYLON.MeshBuilder.CreateBox("leftWall", {width: fieldHeight, height: wallHeight, depth: wallThickness}, scene);
+   leftWall.position = new BABYLON.Vector3(-(fieldWidth / 2), wallHeight / 2, 0);
+   leftWall.rotation.y = Math.PI / 2;
+   leftWall.material = material;
+   walls.push(leftWall);
 
-    // Right wall
-    const rightWall = BABYLON.MeshBuilder.CreateBox("rightWall", {width: wallThickness, height: wallHeight, depth: fieldHeight + 1}, scene);
-    rightWall.position = new BABYLON.Vector3(fieldWidth / 2, wallHeight / 2, 0);
-    rightWall.material = material;
-    walls.push(rightWall);
+   // Right wall
+   const rightWall = BABYLON.MeshBuilder.CreateBox("rightWall", {width: fieldHeight, height: wallHeight, depth: wallThickness}, scene);
+   rightWall.position = new BABYLON.Vector3(fieldWidth / 2, wallHeight / 2, 0);
+   rightWall.rotation.y = Math.PI / 2;
+   rightWall.material = material;
+   walls.push(rightWall);
 
-    return walls;
+   return walls;
 }
 
 // Creates a player object in the scene
 function createPlayer(scene: any, name: string, position: any, size: Size, color: any, mode: ViewMode): any {
-    const player = BABYLON.MeshBuilder.CreateBox(name, {width: size.x, height: size.y, depth: size.z}, scene);
     
-    // Use paddle textures for 3D mode, color material for 2D
-    if (mode === ViewMode.MODE_3D)
-        player.material = createMaterial(scene, name + "Material", color, mode, MAP_ASSETS.paddle);
-    else
-        player.material = createColorMaterial(scene, name + "Material", color, mode);
-    
+    // Capsule - Creation of the object
+    const player = BABYLON.MeshBuilder.CreateCapsule(name, {radius: size.z / 2, height: size.x, tessellation: 16 }, scene);
+    player.rotation.z = Math.PI / 2;
     player.position = position;
+
+    // or box
+    // const player = BABYLON.MeshBuilder.CreateBox(name, {width: size.x, height: size.y, depth: size.z}, scene);
+    
+    // Creation of material
+    const playerScale = {u: size.x, v: size.z};
+    player.material = createMaterial(scene, name + "Material", color, mode, MAP_ASSETS.paddle, playerScale);
+     
     return player;
 }
 
 // Creates a ball object in the scene
 function createBall(scene: any, name: string, position: any, mode: ViewMode): any {
+
     const ball = BABYLON.MeshBuilder.CreateSphere(name, {diameter: GAME_CONFIG.ballRadius * 2}, scene);
-    const color = mode === ViewMode.MODE_2D ? COLORS.ball2D : COLORS.ball3D;
-    
-    // Use ball textures for 3D mode, color material for 2D
-    if (mode === ViewMode.MODE_3D)
-        ball.material = createMaterial(scene, name + "Material", color, mode, MAP_ASSETS.ball);
-    else
-        ball.material = createColorMaterial(scene, name + "Material", color, mode);
-    
     ball.position = position;
+
+    const color = mode === ViewMode.MODE_2D ? COLORS.ball2D : COLORS.ball3D;
+    ball.material = createMaterial(scene, name + "Material", color, mode, MAP_ASSETS.ball);
+    
     return ball;
 }
 

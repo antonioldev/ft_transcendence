@@ -147,16 +147,15 @@ export class Game {
         this.advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI", true, this.scene);
         this.advancedTexture.layer.layerMask = 0x20000000;
 
+        
         if (this.config.viewMode === ViewMode.MODE_3D && this.config.gameMode === GameMode.TWO_PLAYER_LOCAL) {
             const dividerLine = new BABYLON.GUI.Rectangle();
-            dividerLine.widthInPixels = 2;
+            dividerLine.widthInPixels = 5;
             dividerLine.height = "100%";
             dividerLine.color = "black";
             dividerLine.background = "black";
             dividerLine.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
-            dividerLine.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
-            dividerLine.left = "0px";
-            dividerLine.top = "0px";
+            dividerLine.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
             
             this.advancedTexture.addControl(dividerLine);
         }
@@ -167,7 +166,7 @@ export class Game {
         this.fpsText.color = "white";
         this.fpsText.fontSize = 16;
         this.fpsText.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
-        this.fpsText.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+        this.fpsText.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
         this.fpsText.top = "1px";
         this.fpsText.left = "-20px";
         this.fpsText.width = "200px";
@@ -194,12 +193,6 @@ export class Game {
         player1Label.fontSize = 18;
         player1Label.width = "120px";
 
-        // const vsLabel = new BABYLON.GUI.TextBlock();
-        // vsLabel.text = "vs";
-        // vsLabel.color = "#ffff00";
-        // vsLabel.fontSize = 16;
-        // vsLabel.width = "40px";
-
         const player2Label = new BABYLON.GUI.TextBlock();
         player2Label.text = "Player 2";
         player2Label.color = "white";
@@ -207,7 +200,6 @@ export class Game {
         player2Label.width = "120px";
 
         playersRow.addControl(player1Label);
-        // playersRow.addControl(vsLabel);
         playersRow.addControl(player2Label);
 
         // Scores row
@@ -221,12 +213,6 @@ export class Game {
         this.score1Text.fontSize = 24;
         this.score1Text.width = "120px";
 
-        // const scoreSeparator = new BABYLON.GUI.TextBlock();
-        // scoreSeparator.text = "-";
-        // scoreSeparator.color = "white";
-        // scoreSeparator.fontSize = 20;
-        // scoreSeparator.width = "40px";
-
         this.score2Text = new BABYLON.GUI.TextBlock();
         this.score2Text.text = "0";
         this.score2Text.color = "white";
@@ -234,7 +220,6 @@ export class Game {
         this.score2Text.width = "120px";
 
         scoresRow.addControl(this.score1Text);
-        // scoresRow.addControl(scoreSeparator);
         scoresRow.addControl(this.score2Text);
 
         scoreContainer.addControl(playersRow);

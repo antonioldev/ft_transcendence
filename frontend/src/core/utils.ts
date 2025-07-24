@@ -42,7 +42,7 @@ export function getBallStartPosition() {
 // Camera position utility functions
 export function getCamera2DPosition() {
     // Returns the position of the 2D camera
-    return new BABYLON.Vector3(0, GAME_CONFIG.camera2DHeight, 0);
+    return new BABYLON.Vector3(3, GAME_CONFIG.camera2DHeight, 0);
 }
 
 export function getCamera3DPlayer1Position() {
