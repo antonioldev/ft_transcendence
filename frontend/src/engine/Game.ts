@@ -63,7 +63,7 @@ export class Game {
             //     renderer = gl.getExtension('EXT_color_buffer_half_float');
             //     console.log('WebGL Renderer:', renderer); // TODO remove some warning
             // }
-            
+            this.canvas.focus();
         } else 
             throw new Error(`Canvas element not found or is not a canvas: ${config.canvasId}`);
         

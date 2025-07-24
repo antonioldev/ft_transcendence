@@ -19,7 +19,7 @@ export const MAP_ASSETS = {
         normal: "assets/textures/map1/paddle/paddle_nor_gl_1k.jpg",
         roughness: "assets/textures/map1/paddle/paddle_rough_1k.jpg"
     },
-    skybox: "assets/test2k.hdr"
+    skybox: "assets/test.hdr"
 };
 
 export type TextureSet = {

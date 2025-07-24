@@ -88,7 +88,7 @@ export class MenuFlowManager {
         const isOnline = webSocketClient.isConnected();
         
         if (isOnline) {
-    uiManager.setButtonState([EL.GAME_MODES.SOLO], 'enabled');
+            uiManager.setButtonState([EL.GAME_MODES.SOLO], 'enabled');
 
         if (isLoggedIn) {
             uiManager.setButtonState(
