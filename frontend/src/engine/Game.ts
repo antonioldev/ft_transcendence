@@ -30,6 +30,7 @@ import { uiManager } from '../ui/UIManager.js';
  * - Complete game session lifecycle
  */
 export class Game {
+    private static currentInstance: Game | null = null;
     private engine: any = null;
     private scene: any = null;
     private canvas: HTMLCanvasElement | null = null;
@@ -51,8 +52,11 @@ export class Game {
     private fpsLimit: number = 60;
 
     constructor(private config: GameConfig) {
+        if (Game.currentInstance)
+            Game.currentInstance.dispose();
+        Game.currentInstance = this;
+
         const element = document.getElementById(config.canvasId);
-        
         if (element instanceof HTMLCanvasElement) {
             this.canvas = element;
             const gl = this.canvas.getContext('webgl') || this.canvas.getContext('webgl2');
@@ -62,15 +66,19 @@ export class Game {
                 gl.getExtension('EXT_color_buffer_half_float');
             }
             this.canvas.focus();
-        } else 
-            throw new Error(`Canvas element not found or is not a canvas: ${config.canvasId}`);
-        
+        } else
+            Logger.errorAndThrow(`Canvas element not found or is not a canvas: ${config.canvasId}`);
+
         Logger.info('Game created with config', 'Game', {
             viewMode: config.viewMode,
             gameMode: config.gameMode,
             canvasId: config.canvasId,
             players: config.players
         });
+    }
+
+    static getCurrentInstance(): Game | null {
+        return Game.currentInstance;
     }
 
     // ========================================
@@ -274,24 +282,38 @@ export class Game {
         }
     }
 
-    pause(): void {
-        if (this.isDisposed || this.isPausedByServer) return;
+    static pause(): void {
+        const game = Game.currentInstance;
+        if (!game || game.isDisposed || game.isPausedByServer) return;
+        
         Logger.info('Requesting pause from server...', 'Game');
         webSocketClient.sendPauseRequest();
     }
 
-    resume(): void {
-        if (this.isDisposed || !this.isPausedByServer) return;
+    static resume(): void {
+        const game = Game.currentInstance;
+        if (!game || game.isDisposed || !game.isPausedByServer) return;
+        
         Logger.info('Requesting resume from server...', 'Game');
         webSocketClient.sendResumeRequest();
     }
 
-    stop(): void {
-        this.isRunning = false;
-        this.isPausedByServer = false;
-        this.stopRenderLoop();
-        this.stopGameLoop();
+    static stop(): void {
+        const game = Game.currentInstance;
+        if (!game) return;
+        
+        game.isRunning = false;
+        game.isPausedByServer = false;
+        game.stopRenderLoop();
+        game.stopGameLoop();
         Logger.info('Game stopped', 'Game');
+    }
+
+    static async disposeGame(): Promise<void> {
+        const game = Game.currentInstance;
+        if (!game) return;
+        
+        await game.dispose();
     }
 
     // Handle server confirming game is paused
@@ -410,6 +432,7 @@ export class Game {
         }
         }, 16);
     }
+
     private stopGameLoop(): void {
         if (this.gameLoopObserver) {
             clearInterval(this.gameLoopObserver);
@@ -472,7 +495,6 @@ export class Game {
     // ========================================
     // CLEANUP
     // ========================================
-
     async dispose(): Promise<void> {
         if (this.isDisposed) return;
 
@@ -481,12 +503,16 @@ export class Game {
         this.isRunning = false;
         this.isPausedByServer = false;
 
+        // Clear static reference if this is the current instance
+        if (Game.currentInstance === this) {
+            Game.currentInstance = null;
+        }
+
         try {
-            // Stop loops first
+            // ... rest of dispose method stays the same
             this.stopGameLoop();
             this.stopRenderLoop();
 
-            // Wait a frame to ensure loops stop
             await new Promise(resolve => setTimeout(resolve, 16));
 
             if (this.inputHandler) {
@@ -494,13 +520,11 @@ export class Game {
                 this.inputHandler = null;
             }
 
-            // Remove resize handler
             if (this.resizeHandler) {
                 window.removeEventListener("resize", this.resizeHandler);
                 this.resizeHandler = null;
             }
 
-            // Dispose GUI
             if (this.advancedTexture) {
                 this.advancedTexture.dispose();
                 this.advancedTexture = null;
@@ -512,10 +536,8 @@ export class Game {
             uiManager.setLoadingScreenVisible(false);
             uiManager.updateLoadingProgress(0);
 
-            // Clear game objects reference
             this.gameObjects = null;
 
-            // Dispose scene
             if (this.scene) {
                 this.scene.onBeforeRenderObservable?.clear();
                 this.scene.onAfterRenderObservable?.clear();
@@ -523,16 +545,12 @@ export class Game {
                 this.scene = null;
             }
 
-            // Dispose engine
             if (this.engine) {
                 this.engine.dispose();
                 this.engine = null;
             }
 
-            // Clear canvas reference
             this.canvas = null;
-
-            // Reset flags
             this.isInitialized = false;
 
             Logger.info('Game disposed successfully', 'Game');

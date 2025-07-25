@@ -1,4 +1,5 @@
 import { Logger } from './LogManager.js';
+import { Game } from '../engine/Game.js';
 import { appStateManager } from './AppStateManager.js';
 
 /**
@@ -54,11 +55,11 @@ export class KeyboardManager {
             isPaused: appStateManager.isPaused() 
         });
         
-        const currentGame = appStateManager.getCurrentGame();
-        if (appStateManager.isInGame())
-            currentGame?.pause();
-        else if (appStateManager.isPaused())
-            currentGame?.resume();
+        if (appStateManager.isInGame()) {
+            Game.pause();
+        } else if (appStateManager.isPaused()) {
+            Game.resume();
+        }
     }
 
     // Handles Y/N key presses for pause dialog confirmation.
@@ -69,8 +70,7 @@ export class KeyboardManager {
             if (event.key === 'Y' || event.key === 'y')
                 appStateManager.exitToMenu();
             else if (event.key === 'N' || event.key === 'n') {
-                const currentGame = appStateManager.getCurrentGame();
-                currentGame?.resume();
+                Game.resume();
             }
         }
     }

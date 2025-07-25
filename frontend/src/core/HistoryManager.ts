@@ -5,6 +5,7 @@ import { appStateManager } from './AppStateManager.js';
 import { webSocketClient } from './WebSocketClient.js';
 import { AppState } from '../shared/constants.js';
 import { EL} from '../ui/elements.js';
+import { Game } from '../engine/Game.js';
 
 /**
  * Singleton class responsible for managing application navigation state and browser history.
@@ -33,10 +34,8 @@ export class HistoryManager {
     private setupEventListeners(): void {
         // Listen for browser back/forward button clicks
         window.addEventListener('popstate', (event) => {
-
             if (appStateManager.isInGame()) {
-                const currentGame = appStateManager.getCurrentGame();
-                currentGame?.pause();
+                Game.pause();
                 return;
             } else if (appStateManager.isPaused()) {
                 appStateManager.exitToMenu();
