@@ -15,14 +15,12 @@ import { EL, getElementById, requireElementById} from '../ui/elements.js';
 export class AuthManager {
     private static instance: AuthManager;
     private authState: AuthState = AuthState.GUEST;
-    // private currentUserLogin: {username: string; password: string; email?: string} | null = null;
     private currentUser: {username: string} | null = null;
 
     // Gets the singleton instance of AuthManager.
     static getInstance(): AuthManager {
-        if (!AuthManager.instance) {
+        if (!AuthManager.instance)
             AuthManager.instance = new AuthManager();
-        }
         return AuthManager.instance;
     }
 

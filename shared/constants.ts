@@ -97,13 +97,13 @@ export enum ConnectionStatus {
 }
 
 export enum AppState {
-    MAIN_MENU = 'main-menu',
-    LOGIN = 'login',
-    REGISTER = 'register',
-    GAME_MODE = 'game-mode',
-    PLAYER_SETUP = 'player-setup',
-    GAME_3D = 'game-3d',
-    STATS_DASHBOARD = 'STATS_DASHBOARD'
+    MAIN_MENU ,// = 'main-menu',
+    LOGIN ,//= 'login',
+    REGISTER ,//= 'register',
+    GAME_MODE ,//= 'game-mode',
+    PLAYER_SETUP ,//= 'player-setup',
+    GAME_3D ,//= 'game-3d',
+    STATS_DASHBOARD ,//= 'STATS_DASHBOARD'
 }
 
 export enum UserManagement {

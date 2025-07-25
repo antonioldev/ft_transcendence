@@ -15,12 +15,11 @@ import { EL} from '../ui/elements.js';
  */
 export class HistoryManager {
     private static instance: HistoryManager;
-    private currentState: string = AppState.MAIN_MENU;
+    private currentState: AppState = AppState.MAIN_MENU;
 
     static getInstance(): HistoryManager {
-        if (!HistoryManager.instance) {
+        if (!HistoryManager.instance)
             HistoryManager.instance = new HistoryManager();
-        }
         return HistoryManager.instance;
     }
 
@@ -55,7 +54,7 @@ export class HistoryManager {
     }
 
     // Handle the navigation to different app states and add it to browser history
-    navigateTo(state: string, addToHistory: boolean = true): void { // TODO check with teammate, false so doesn't save it
+    navigateTo(state: AppState, addToHistory: boolean = true): void { // TODO check with teammate, false so doesn't save it
         if (addToHistory)
             history.pushState({ screen: state }, '', window.location.href);
         this.currentState = state;

@@ -256,7 +256,6 @@ export class Game {
 
     async connect(): Promise<void> {
         console.log('Connecting to server...');
-        // Make this return a Promise that resolves when connected
         webSocketClient.joinGame(this.config.gameMode, this.config.players)
         console.log('Connected to server');
     }

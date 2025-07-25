@@ -5,7 +5,7 @@ import { historyManager } from './HistoryManager.js';
 import { Game } from '../engine/Game.js';
 import { GameConfig } from '../engine/GameConfig.js';
 import { webSocketClient } from './WebSocketClient.js';
-import { EL, getElementById} from '../ui/elements.js';
+import { EL } from '../ui/elements.js';
 
 
 /**
@@ -15,7 +15,6 @@ import { EL, getElementById} from '../ui/elements.js';
  */
 class AppStateManager {
     private currentState: GameState | null = null;
-    private currentViewMode: ViewMode | null = null;
     private isExiting: boolean = false;
     private currentGame: Game | null = null;
     private isStarting: boolean = false;
@@ -40,7 +39,6 @@ class AppStateManager {
             this.currentGame = new Game(config);
             await this.currentGame.connect();
             await this.currentGame?.initialize();
-            // await this.currentGame.connect();
             this.currentGame?.start();
             console.log('AppStateManager: Game started successfully');
         } catch (error) {
@@ -56,12 +54,10 @@ class AppStateManager {
     }
 
     async endGame(): Promise<void> {
-        if (!this.currentGame) {
+        if (!this.currentGame)
             return;
-        }
-    
+
         console.log('AppStateManager: Ending current game');
-    
         try {
             this.currentGame.stop();
             await this.currentGame.dispose();
@@ -70,7 +66,6 @@ class AppStateManager {
         } finally {
             this.currentGame = null;
         }
-    
         console.log('AppStateManager: Game ended successfully');
     }
 
@@ -79,9 +74,8 @@ class AppStateManager {
         if (this.isExiting) return;
 
         this.isExiting = true;
-
+        console.log('AppStateManager: Exiting to menu...');
         try {
-            console.log('AppStateManager: Exiting to menu...');
             uiManager.setElementVisibility('pause-dialog-3d', false);
             webSocketClient.sendQuitGame();
             await this.endGame();
@@ -95,7 +89,6 @@ class AppStateManager {
 
     resetToMenu(): void {
         this.currentState = null;
-        this.currentViewMode = null;
         this.isExiting = false;
         authManager.checkAuthState();
         historyManager.navigateTo(AppState.MAIN_MENU);;
@@ -103,7 +96,6 @@ class AppStateManager {
 
     setGameState(viewMode: ViewMode): void {
         this.currentState = GameState.PLAYING;
-        this.currentViewMode = viewMode;
         this.isExiting = false;
         console.log(`AppStateManager: Game started in ${ViewMode[viewMode]} mode`);
     }
@@ -112,17 +104,15 @@ class AppStateManager {
     // PAUSE/RESUME HANDLING
     // ========================================
     onServerConfirmedPause(): void {
-        this.handleServerStateChange(GameState.PAUSED, true);
+        this.currentState = GameState.PAUSED;
+        uiManager.setElementVisibility(EL.GAME.PAUSE_DIALOG_3D, true);
+        console.log('AppStateManager: Game paused and UI updated');
     }
 
     onServerConfirmedResume(): void {
-        this.handleServerStateChange(GameState.PLAYING, false);
-    }
-
-    private handleServerStateChange(newState: GameState, showPauseOverlay: boolean): void {
-        this.currentState = newState;
-        uiManager.setElementVisibility(EL.GAME.PAUSE_DIALOG_3D, showPauseOverlay);
-        console.log(`AppStateManager: Game ${newState === GameState.PAUSED ? 'paused' : 'resumed'} and UI updated`);
+        this.currentState = GameState.PLAYING;
+        uiManager.setElementVisibility(EL.GAME.PAUSE_DIALOG_3D, false);
+        console.log('AppStateManager: Game resumed and UI updated');
     }
 
     // ========================================
