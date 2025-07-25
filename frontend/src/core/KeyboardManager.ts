@@ -17,12 +17,8 @@ export class KeyboardManager {
 
     // Initializes the KeyboardManager by setting up event listeners. This ensures the keyboard manager is properly instantiated.
     static initialize(): void {
-        KeyboardManager.getInstance();
-    }
-
-    //Private constructor that sets up event listeners when instance is created.
-    private constructor() {
-        this.setupEventListeners();
+        const keybord = KeyboardManager.getInstance();
+        keybord.setupEventListeners();
     }
 
     // ========================================

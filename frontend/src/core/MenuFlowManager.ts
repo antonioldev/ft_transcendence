@@ -35,12 +35,12 @@ export class MenuFlowManager {
         menuFlowManager.setupEventListeners();
     }
 
-    static showGameModeSelection(): void {
-        const menuFlowManager = MenuFlowManager.getInstance();
-        historyManager.navigateTo(AppState.GAME_MODE);
-        menuFlowManager.updateViewModeDisplay();
-        menuFlowManager.updateButtonStates();
-    }
+    // static showGameModeSelection(): void {
+    //     const menuFlowManager = MenuFlowManager.getInstance();
+    //     historyManager.navigateTo(AppState.GAME_MODE);
+    //     menuFlowManager.updateViewModeDisplay();
+    //     menuFlowManager.updateButtonStates();
+    // }
 
     // ========================================
     // GAME STARTING
