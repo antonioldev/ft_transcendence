@@ -8,7 +8,7 @@ import { webSocketClient } from './WebSocketClient.js';
 import { appStateManager } from './AppStateManager.js';
 import { GameConfigFactory } from '../engine/GameConfig.js';
 import { clearForm } from './utils.js';
-import { EL, getElementById} from '../ui/elements.js';
+import { EL, requireElementById} from '../ui/elements.js';
 import { PlayerInfo } from '../shared/types.js';
 
 
@@ -120,12 +120,12 @@ export class MenuFlowManager {
     
     private setupEventListeners(): void {
         // View mode navigation controls
-        const viewModeBack = getElementById(EL.BUTTONS.VIEW_MODE_BACK);
-        const viewModeForward = getElementById(EL.BUTTONS.VIEW_MODE_FORWARD);
-        const backBtn = getElementById(EL.BUTTONS.DASHBOARD_BACK);
-        viewModeBack?.addEventListener('click', () => this.previousViewMode());
-        viewModeForward?.addEventListener('click', () => this.nextViewMode());
-        backBtn?.addEventListener('click', () => { historyManager.navigateTo(AppState.MAIN_MENU);});
+        const viewModeBack = requireElementById(EL.BUTTONS.VIEW_MODE_BACK);
+        const viewModeForward = requireElementById(EL.BUTTONS.VIEW_MODE_FORWARD);
+        const backBtn = requireElementById(EL.BUTTONS.DASHBOARD_BACK);
+        viewModeBack.addEventListener('click', () => this.previousViewMode());
+        viewModeForward.addEventListener('click', () => this.nextViewMode());
+        backBtn.addEventListener('click', () => { historyManager.navigateTo(AppState.MAIN_MENU);});
     
         // Game mode selection buttons
         this.setupGameModeButtons();
@@ -167,8 +167,8 @@ export class MenuFlowManager {
             availableOfflineOnly: false
         });
 
-        const backButton = getElementById(EL.BUTTONS.MODE_BACK);
-        backButton?.addEventListener('click', () => this.handleModeBackButton());
+        const backButton = requireElementById(EL.BUTTONS.MODE_BACK);
+        backButton.addEventListener('click', () => this.handleModeBackButton());
     }
     
     private handleModeBackButton(): void {
@@ -182,9 +182,9 @@ export class MenuFlowManager {
 
     private setupGameModeHandler(gameMode: GameMode, form: string, config: {
                 requiresAuth: boolean; requiresSetup: boolean; availableOfflineOnly: boolean; errorMessage?: string;}) {
-        const button = getElementById(gameMode);
+        const button = requireElementById(gameMode);
 
-        button?.addEventListener('click', async () => {
+        button.addEventListener('click', async () => {
             if (config.availableOfflineOnly && authManager.isUserAuthenticated()) {
                 alert(config.errorMessage || 'This mode is not available for logged-in users.');
                 return;
@@ -216,15 +216,15 @@ export class MenuFlowManager {
     // ========================================
 
     private setupPlayerSetupListeners(): void {
-        const setupBack = getElementById(EL.BUTTONS.SETUP_BACK);
-        const startGame = getElementById(EL.BUTTONS.START_GAME);
+        const setupBack = requireElementById(EL.BUTTONS.SETUP_BACK);
+        const startGame = requireElementById(EL.BUTTONS.START_GAME);
 
-        setupBack?.addEventListener('click', () => {
+        setupBack.addEventListener('click', () => {
             this.selectedGameMode = null;
             historyManager.navigateTo(AppState.GAME_MODE);
         });
 
-        startGame?.addEventListener('click', async () => {
+        startGame.addEventListener('click', async () => {
             if (this.selectedGameMode === null) return;
 
             if (!uiManager.validatePlayerSetup(this.selectedGameMode)) {
@@ -244,10 +244,7 @@ export class MenuFlowManager {
 
     private showDashboard(): void {
         console.log(EL.BUTTONS.DASHBOARD);
-        const dashboardBtn = getElementById(EL.BUTTONS.DASHBOARD);
-        if (!dashboardBtn) {
-            console.error("Dashboard button not found when trying to attach listener");
-        }
+        const dashboardBtn = requireElementById(EL.BUTTONS.DASHBOARD);
         console.log("Attaching dashboard click handler");
         dashboardBtn?.addEventListener('click', () => {
             console.log("Dashboard clicked");
@@ -302,10 +299,8 @@ export class MenuFlowManager {
 
     private updateViewModeDisplay(): void {
         const viewModes = this.getViewModes();
-        const viewModeDisplay = getElementById(EL.DISPLAY.VIEW_MODE_DISPLAY);
-        if (viewModeDisplay) {
-            viewModeDisplay.textContent = viewModes[this.currentViewModeIndex].name;
-        }
+        const viewModeDisplay = requireElementById(EL.DISPLAY.VIEW_MODE_DISPLAY);
+        viewModeDisplay.textContent = viewModes[this.currentViewModeIndex].name;
     }
 }
 

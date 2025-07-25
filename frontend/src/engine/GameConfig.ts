@@ -1,7 +1,7 @@
 import { ViewMode, GameMode } from '../shared/constants.js';
 import { PlayerInfo, InputConfig } from '../shared/types.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
-import { EL } from '../ui/elements.js';
+import { EL, requireElementById } from '../ui/elements.js';
 import { authManager } from '../core/AuthManager.js';
 
 // Complete configuration for starting a game

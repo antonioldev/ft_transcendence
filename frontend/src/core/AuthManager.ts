@@ -5,7 +5,7 @@ import { historyManager } from './HistoryManager.js';
 import { clearForm } from './utils.js';
 import { WebSocketClient } from './WebSocketClient.js';
 import { RegisterUser, LoginUser } from '../shared/types.js';
-import { EL, getElementById, requireElementById} from '../ui/elements.js';
+import { EL, requireElementById} from '../ui/elements.js';
 
 /**
  * Manages user authentication state, login/logout workflows, and user registration.
@@ -165,8 +165,8 @@ export class AuthManager {
 
     // Handles the login form submission process. Validates input fields, processes authentication, and updates UI state.
     private handleLoginSubmit(): void {
-        const username = getElementById<HTMLInputElement>(EL.AUTH.LOGIN_USERNAME)?.value.trim();
-        const password = getElementById<HTMLInputElement>(EL.AUTH.LOGIN_PASSWORD)?.value;
+        const username = requireElementById<HTMLInputElement>(EL.AUTH.LOGIN_USERNAME).value.trim();
+        const password = requireElementById<HTMLInputElement>(EL.AUTH.LOGIN_PASSWORD).value;
         const t = getCurrentTranslation();
         const wsClient = WebSocketClient.getInstance(); // or use a shared instance if you already have one
         
@@ -218,10 +218,10 @@ export class AuthManager {
     // Handles the registration form submission process.
     // Validates input fields, processes registration, and provides user feedback.
     private handleRegisterSubmit(): void {
-        const username = getElementById<HTMLInputElement>(EL.AUTH.REGISTER_USERNAME)?.value.trim();
-        const email = getElementById<HTMLInputElement>(EL.AUTH.REGISTER_EMAIL)?.value;
-        const password = getElementById<HTMLInputElement>(EL.AUTH.REGISTER_PASSWORD)?.value;
-        const confirmPassword = getElementById<HTMLInputElement>(EL.AUTH.REGISTER_CONFIRM_PASSWORD)?.value;
+        const username = requireElementById<HTMLInputElement>(EL.AUTH.REGISTER_USERNAME).value.trim();
+        const email = requireElementById<HTMLInputElement>(EL.AUTH.REGISTER_EMAIL).value;
+        const password = requireElementById<HTMLInputElement>(EL.AUTH.REGISTER_PASSWORD).value;
+        const confirmPassword = requireElementById<HTMLInputElement>(EL.AUTH.REGISTER_CONFIRM_PASSWORD).value;
         const t = getCurrentTranslation();
         const wsClient = WebSocketClient.getInstance();
 

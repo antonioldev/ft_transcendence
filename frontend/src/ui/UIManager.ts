@@ -1,6 +1,6 @@
 import { GameMode, ConnectionStatus } from '../shared/constants.js';
 import { UI_COLORS, UI_STYLES } from './styles.js';
-import { EL, getElementById} from './elements.js';
+import { EL, requireElementById} from './elements.js';
 
 class UIManager {
     private static instance: UIManager;
@@ -123,23 +123,21 @@ class UIManager {
     // AUTHENTICATION UI
     // ========================================
     showAuthButtons(): void {
-        const authButtons = getElementById(EL.DISPLAY.AUTH_BUTTONS);
-        const userInfo = getElementById(EL.DISPLAY.USER_INFO);
+        const authButtons = requireElementById(EL.DISPLAY.AUTH_BUTTONS);
+        const userInfo = requireElementById(EL.DISPLAY.USER_INFO);
         
-        if (authButtons) authButtons.style.display = 'flex';
-        if (userInfo) userInfo.style.display = 'none';
+        authButtons.style.display = 'flex';
+        userInfo.style.display = 'none';
     }
 
     showUserInfo(username: string): void {
-        const authButtons = getElementById(EL.DISPLAY.AUTH_BUTTONS);
-        const userInfo = getElementById(EL.DISPLAY.USER_INFO);
-        const userName = getElementById(EL.DISPLAY.USER_NAME);
+        const authButtons = requireElementById(EL.DISPLAY.AUTH_BUTTONS);
+        const userInfo = requireElementById(EL.DISPLAY.USER_INFO);
+        const userName = requireElementById(EL.DISPLAY.USER_NAME);
         
-        if (authButtons) authButtons.style.display = 'none';
-        if (userInfo && userName) {
-            userName.textContent = username;
-            userInfo.style.display = 'flex';
-        }
+        authButtons.style.display = 'none';
+        userName.textContent = username;
+        userInfo.style.display = 'flex';
     }
     
     // ========================================
@@ -163,21 +161,21 @@ class UIManager {
 
         switch (gameMode) {
             case GameMode.SINGLE_PLAYER:
-                player1Input = getElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER1_NAME);
+                player1Input = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER1_NAME);
                 break;
             case GameMode.TWO_PLAYER_LOCAL:
-                player1Input = getElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER1_NAME_LOCAL);
-                player2Input = getElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER2_NAME_LOCAL);
+                player1Input = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER1_NAME_LOCAL);
+                player2Input = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER2_NAME_LOCAL);
                 break;
             case GameMode.TWO_PLAYER_REMOTE:
-                player1Input = getElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER1_NAME_ONLINE);
+                player1Input = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER1_NAME_ONLINE);
                 break;
             case GameMode.TOURNAMENT_LOCAL:
             case GameMode.TOURNAMENT_REMOTE:
-                player1Input = getElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER1_NAME_TOURNAMENT);
-                player2Input = getElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER2_NAME_TOURNAMENT);
-                player3Input = getElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER3_NAME_TOURNAMENT);
-                player4Input = getElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER4_NAME_TOURNAMENT);
+                player1Input = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER1_NAME_TOURNAMENT);
+                player2Input = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER2_NAME_TOURNAMENT);
+                player3Input = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER3_NAME_TOURNAMENT);
+                player4Input = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER4_NAME_TOURNAMENT);
                 break;
             default:
                 return { player1: 'Player 1' };
@@ -240,9 +238,7 @@ class UIManager {
     // CONNECTION STATUS
     // ========================================
     updateConnectionStatus(status: ConnectionStatus): void {
-        const statusElement = getElementById(EL.DISPLAY.CONNECTION_STATUS);
-        if (!statusElement) return;
-        
+        const statusElement = requireElementById(EL.DISPLAY.CONNECTION_STATUS);
         statusElement.style.display = 'block';
 
         switch (status) {

@@ -6,7 +6,7 @@ import { MenuFlowManager } from './MenuFlowManager.js';
 import { KeyboardManager } from './KeyboardManager.js';
 import { HistoryManager } from './HistoryManager.js';
 import { ConnectionStatus, WebSocketEvent } from '../shared/constants.js';
-import { EL, getElementById } from '../ui/elements.js';
+import { EL, requireElementById } from '../ui/elements.js';
 import { DashboardManager } from './DashboardManager.js';
 
 
@@ -33,11 +33,11 @@ function loadPage(): void {
  * Sets up language navigation button listeners.
  */
 function setupLanguageListeners() {
-    const backBtn = getElementById(EL.BUTTONS.BACK);
-    const forwardBtn = getElementById(EL.BUTTONS.FORWARD);
+    const backBtn = requireElementById(EL.BUTTONS.BACK);
+    const forwardBtn = requireElementById(EL.BUTTONS.FORWARD);
 
-    backBtn?.addEventListener('click', previousLanguage);
-    forwardBtn?.addEventListener('click', nextLanguage);
+    backBtn.addEventListener('click', previousLanguage);
+    forwardBtn.addEventListener('click', nextLanguage);
 }
 
 // Initialize the application

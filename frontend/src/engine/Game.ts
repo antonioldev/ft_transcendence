@@ -12,6 +12,7 @@ import { appStateManager } from '../core/AppStateManager.js';
 import { GameMode, WebSocketEvent } from '../shared/constants.js';
 import { EL } from '../ui/elements.js';
 import { ViewMode } from '../shared/constants.js';
+import { requireElementById } from '../ui/elements.js';
 
 /**
  * Main Game class that handles everything for running one game instance.
@@ -551,19 +552,15 @@ export class Game {
 
 
     private updateLoadingProgress(progress: number): void{
-        const progressBar = document.getElementById(EL.GAME.PROGRESS_FILL);
-        if (progressBar)
-            progressBar.style.width = progress + '%';
-        const progressText = document.getElementById(EL.GAME.PROGRESS_TEXT);
-        if (progressText)
-            progressText.textContent = progress + '%';
+        const progressBar = requireElementById(EL.GAME.PROGRESS_FILL);
+        progressBar.style.width = progress + '%';
+        const progressText = requireElementById(EL.GAME.PROGRESS_TEXT);
+        progressText.textContent = progress + '%';
     }
 
     setLoadingScreenVisible(visible: boolean): void {
-        const loadingScreen = document.getElementById('loading-screen');
-        if (loadingScreen) {
-            loadingScreen.style.display = visible ? 'flex' : 'none';
-        }
+        const loadingScreen = requireElementById('loading-screen');
+        loadingScreen.style.display = visible ? 'flex' : 'none';
     }
 
 }
@@ -576,9 +573,8 @@ BABYLON.DefaultLoadingScreen.prototype.displayLoadingUI = function () {
 };
 
 BABYLON.DefaultLoadingScreen.prototype.hideLoadingUI = function () {
-    const loading = document.getElementById(EL.GAME.LOADING_SCREEN);
-    if (loading)
-        loading.style.display = 'none';
+    const loading = requireElementById(EL.GAME.LOADING_SCREEN);
+    loading.style.display = 'none';
     (this as any)._isLoading = false;
     
 };

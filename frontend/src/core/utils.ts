@@ -56,31 +56,32 @@ export function getCamera3DPlayer2Position() {
 }
 
 // Viewport utility functions
+const VIEWPORTS = {
+    FULLSCREEN: new BABYLON.Viewport(0, 0, 1, 1),
+    LEFT_HALF: new BABYLON.Viewport(0, 0, 0.5, 1),
+    RIGHT_HALF: new BABYLON.Viewport(0.5, 0, 0.5, 1),
+};
+
 export function get2DCameraViewport() {
-    // Returns the viewport configuration for the 2D camera
-    return new BABYLON.Viewport(0, 0, 1, 1);
+    return VIEWPORTS.FULLSCREEN;
 }
 
 export function get3DCamera1Viewport() {
-    // Returns the viewport configuration for the 3D camera of Player 1
-    return new BABYLON.Viewport(0, 0, 0.5, 1);
+    return VIEWPORTS.LEFT_HALF;
 }
 
 export function get3DCamera2Viewport() {
-    // Returns the viewport configuration for the 3D camera of Player 2
-    return new BABYLON.Viewport(0.5, 0, 0.5, 1);
+    return VIEWPORTS.RIGHT_HALF;
 }
 
 export function get3DSoloCameraViewport() {
-    // Returns the viewport configuration for a solo 3D camera
-    return new BABYLON.Viewport(0, 0, 1, 1);
+    return VIEWPORTS.FULLSCREEN;
 }
 
 export function clearForm(fieldIds: string[]): void {
     fieldIds.forEach(id => {
         const input = document.getElementById(id) as HTMLInputElement;
-        if (input) {
+        if (input)
             input.value = '';
-        }
     });
 }
