@@ -2,6 +2,7 @@ declare var BABYLON: typeof import('@babylonjs/core');
 
 import { ViewMode } from '../shared/constants.js';
 import { MapAssetConfig, TextureSet } from './sceneAssets.js';
+import { Logger } from '../core/LogManager.js';
 
 function setTextureScale(textureScale: any, texture: any) {
     if (textureScale) {
@@ -48,7 +49,7 @@ export function createMaterial(
             }
 
         } catch (error) {
-            console.warn(`Error creating textured material: ${error}, using color fallback`);
+            Logger.warn ('Error creating textured material, using color fallback', 'materialFactory');
             // Textures will be null if they fail, use color from config file
             material.diffuseColor = color;
         }
@@ -74,6 +75,6 @@ export function createEnvironment(scene: any, mode: ViewMode, skyboxPath?: strin
         scene.createDefaultSkybox(hdrTexture, true, 1000);
         
     } catch (error) {
-        console.warn(`Error creating HDRI environment: ${error}, using default environment`);
+        Logger.warn('Error creating HDRI environment, using default environment', 'MaterialFactory');
     }
 }

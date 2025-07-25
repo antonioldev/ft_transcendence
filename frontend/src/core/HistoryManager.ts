@@ -1,3 +1,4 @@
+import { Logger } from './LogManager.js';
 import { uiManager } from '../ui/UIManager.js';
 import { authManager } from './AuthManager.js';
 import { appStateManager } from './AppStateManager.js';
@@ -43,7 +44,7 @@ export class HistoryManager {
             }
 
             const state = event.state?.screen || AppState.MAIN_MENU;
-            console.log(`Browser BACK navigation to: ${state}`);
+            Logger.info(`Browser BACK navigation to: ${state}`, 'HistoryManager');
             this.navigateTo(state, false); // false = don't push to history
         });
 
@@ -58,7 +59,7 @@ export class HistoryManager {
         if (addToHistory)
             history.pushState({ screen: state }, '', window.location.href);
         this.currentState = state;
-        console.log(`Navigating to state: ${state}`);
+        Logger.info(`Navigating to state: ${state}`, 'HistoryManager');
         
         switch (state) {
             case AppState.MAIN_MENU:
@@ -83,7 +84,7 @@ export class HistoryManager {
                 this.showScreen(EL.SCREENS.STATS_DASHBOARD, { hideOverlayss: true });
                 break;
             default:
-                console.warn(`Unknown state: ${state}, redirecting to main menu`);
+                Logger.warn(`Unknown state: ${state}, redirecting to main menu`, 'HistoryManager');
                 this.navigateTo(AppState.MAIN_MENU);
                 break;
         }
@@ -96,7 +97,7 @@ export class HistoryManager {
         checkAuth?: boolean;
         refreshGameMode?: boolean;
     } = {}): void {
-        console.log("Showing screen with ID:", screenId);
+        Logger.info(`Showing screen with ID: ${screenId}`, 'HistoryManager');
 
         if (options.hideOverlayss) {
             uiManager.setElementVisibility(EL.SCREENS.LOGIN_MODAL, false);

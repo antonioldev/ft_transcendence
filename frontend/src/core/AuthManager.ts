@@ -1,3 +1,4 @@
+import { Logger } from './LogManager.js';
 import { AuthState, AppState, WebSocketEvent } from '../shared/constants.js';
 import { uiManager } from '../ui/UIManager.js';
 import { getCurrentTranslation } from '../translations/translations.js';
@@ -186,7 +187,7 @@ export class AuthManager {
             clearForm(this.loginFields);
             historyManager.navigateTo(AppState.MAIN_MENU);
             uiManager.showUserInfo(user.username);     
-            console.log(msg);
+            Logger.info(msg, 'AuthManager');
         });
 
         wsClient.registerCallback(WebSocketEvent.LOGIN_FAILURE, (msg: string) => {
@@ -203,12 +204,12 @@ export class AuthManager {
             }
         });
 
-        console.log('Login attempt:', { username });
+        Logger.info('Login attempt', 'AuthManager', { username });
         try {
             wsClient.loginUser(user);
-            console.log('Login attempt: ', { username});
+            Logger.info('Login attempt', 'AuthManager', { username });
         } catch (error) {
-            console.error('Error sending login request:', error);
+            Logger.error('Error sending login request', 'AuthManager', error);
             this.authState = AuthState.LOGGED_FAILED;
             alert('Loggin failed due to connection error.');  
         }
@@ -275,10 +276,10 @@ export class AuthManager {
         // Apptempt to register new user
         try {
             wsClient.registerNewUser(user);
-            console.log('Register attempt: ', { username, email});
+            Logger.info('Register attempt', 'AuthManager', { username, email });
             this.authState = AuthState.LOGGED_IN;
         } catch (error) {
-            console.error('Error sending registration request:', error);
+            Logger.error('Error sending registration request', 'AuthManager', error);
             this.authState = AuthState.LOGGED_FAILED;
             clearForm(this.registrationFields);
             alert('Registration failed due to connection error.');  
@@ -289,7 +290,7 @@ export class AuthManager {
     // Handles Google OAuth login process.
     private handleGoogleLogin(): void {
         // TODO: Implement Google OAuth
-        console.log('Google login clicked - to be implemented');
+        Logger.info('Google login clicked - to be implemented', 'AuthManager');
         alert('Google login will be implemented later');
         clearForm(this.loginFields);
         // After successful Google login:
@@ -334,7 +335,7 @@ export class AuthManager {
         this.currentUser = null;
         uiManager.showAuthButtons();
         historyManager.navigateTo(AppState.MAIN_MENU);;
-        console.log('Logged out - now in guest mode');
+        Logger.info('Logged out - now in guest mode', 'AuthManager');
     }
 
     // Checks the current authentication state and updates UI accordingly. Should be called after page loads or state changes to ensure UI consistency.

@@ -8,6 +8,7 @@ import { webSocketClient } from './WebSocketClient.js';
 import { EL } from '../ui/elements.js';
 import { GameConfigFactory } from '../engine/GameConfig.js';
 import { PlayerInfo } from '../shared/types.js';
+import { Logger } from './LogManager.js'
 
 
 /**
@@ -27,7 +28,7 @@ class AppStateManager {
     
     async startGame(config: GameConfig): Promise<void> {
         if (this.isStarting) {
-            console.warn('AppStateManager: Game start already in progress');
+            Logger.warn('Game start already in progress', 'AppStateManager');
             return;
         }
 
@@ -37,19 +38,18 @@ class AppStateManager {
         this.isStarting = true;
 
         try {
-            console.log('AppStateManager: Starting new game');
+            Logger.info('Starting new game', 'AppStateManager');
             this.currentGame = new Game(config);
             await this.currentGame.connect();
             await this.currentGame?.initialize();
             this.currentGame?.start();
-            console.log('AppStateManager: Game started successfully');
+            Logger.info('Game started successfully', 'AppStateManager');
         } catch (error) {
-            console.error('AppStateManager: Error starting game:', error);
             if (this.currentGame) {
                 await this.currentGame.dispose();
                 this.currentGame = null;
             }
-            throw error;
+            Logger.errorAndThrow('Error starting game', 'AppStateManager', error);
         } finally {
             this.isStarting = false;
         }
@@ -78,12 +78,11 @@ class AppStateManager {
 
     async startGameWithMode(viewMode: ViewMode, gameMode: GameMode): Promise<void> {
         try {
-            console.log(`Starting game: ${gameMode} in ${ViewMode[viewMode]} mode`);
+            Logger.info(`Starting game: ${gameMode} in ${ViewMode[viewMode]} mode`, 'AppStateManager');
             await this.initializeGameSession(viewMode, gameMode);         
-            console.log('Game started successfully');
-            
+            Logger.info('Game started successfully', 'AppStateManager');
         } catch (error) {
-            console.error('Error starting game:', error);
+            Logger.error('Error starting game', 'AppStateManager', error);
             this.handleGameStartError();
         }
     }
@@ -113,16 +112,16 @@ class AppStateManager {
         if (!this.currentGame)
             return;
 
-        console.log('AppStateManager: Ending current game');
+        Logger.info('Ending current game', 'AppStateManager');
         try {
             this.currentGame.stop();
             await this.currentGame.dispose();
         } catch (error) {
-            console.error('AppStateManager: Error ending game:', error);
+            Logger.error('Error ending game', 'AppStateManager', error);
         } finally {
             this.currentGame = null;
         }
-        console.log('AppStateManager: Game ended successfully');
+        Logger.info('Game ended successfully', 'AppStateManager');
     }
 
     async exitToMenu(): Promise<void> {
@@ -130,15 +129,15 @@ class AppStateManager {
         if (this.isExiting) return;
 
         this.isExiting = true;
-        console.log('AppStateManager: Exiting to menu...');
+        Logger.info('Exiting to menu...', 'AppStateManager');
         try {
             uiManager.setElementVisibility('pause-dialog-3d', false);
             webSocketClient.sendQuitGame();
             await this.endGame();
             this.resetToMenu();
-            console.log('AppStateManager: Successfully exited to main menu');
+            Logger.info('Successfully exited to main menu', 'AppStateManager');
         } catch (error) {
-            console.error('AppStateManager: Error during game exit:', error);
+            Logger.error('Error during game exit', 'AppStateManager', error);
             this.resetToMenu();
         }
     }
@@ -153,7 +152,7 @@ class AppStateManager {
     setGameState(viewMode: ViewMode): void {
         this.currentState = GameState.PLAYING;
         this.isExiting = false;
-        console.log(`AppStateManager: Game started in ${ViewMode[viewMode]} mode`);
+        Logger.info(`Game started in ${ViewMode[viewMode]} mode`, 'AppStateManager');
     }
 
     // ========================================
@@ -162,13 +161,13 @@ class AppStateManager {
     onServerConfirmedPause(): void {
         this.currentState = GameState.PAUSED;
         uiManager.setElementVisibility(EL.GAME.PAUSE_DIALOG_3D, true);
-        console.log('AppStateManager: Game paused and UI updated');
+        Logger.info('Game paused and UI updated', 'AppStateManager');
     }
 
     onServerConfirmedResume(): void {
         this.currentState = GameState.PLAYING;
         uiManager.setElementVisibility(EL.GAME.PAUSE_DIALOG_3D, false);
-        console.log('AppStateManager: Game resumed and UI updated');
+        Logger.info('Game resumed and UI updated', 'AppStateManager');
     }
 
     // ========================================

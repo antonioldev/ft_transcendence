@@ -1,3 +1,4 @@
+import { Logger } from './LogManager.js';
 import { appStateManager } from './AppStateManager.js';
 
 /**
@@ -28,7 +29,7 @@ export class KeyboardManager {
     // Sets up the main keyboard event listeners for the application.
     private setupEventListeners(): void {
         document.addEventListener('keydown', (event) => this.handleKeyDown(event));
-        console.log(' KeyboardManager: Event listeners set up'); // Debug log
+        Logger.debug('Event listeners set up', 'KeyboardManager');
     }
 
     // ========================================
@@ -48,7 +49,7 @@ export class KeyboardManager {
 
     // Handles escape key presses for game pause and resume functionality.
     private handleEscKey(): void {
-        console.log('🎮 ESC key pressed', { 
+        Logger.debug('ESC key pressed', 'KeyboardManager', { 
             isInGame: appStateManager.isInGame(), 
             isPaused: appStateManager.isPaused() 
         });
@@ -63,7 +64,7 @@ export class KeyboardManager {
     // Handles Y/N key presses for pause dialog confirmation.
     private handleYesNoKey(event: KeyboardEvent): void {
         if (appStateManager.isPaused()) {
-            console.log(`🎮 ${event.key} key pressed in pause state`);    
+            Logger.debug('${event.key} key pressed in pause state', 'KeyboardManager');    
             
             if (event.key === 'Y' || event.key === 'y')
                 appStateManager.exitToMenu();

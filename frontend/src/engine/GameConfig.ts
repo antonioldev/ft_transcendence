@@ -3,6 +3,7 @@ import { PlayerInfo, InputConfig } from '../shared/types.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
 import { EL, requireElementById } from '../ui/elements.js';
 import { authManager } from '../core/AuthManager.js';
+import { Logger } from '../core/LogManager.js'
 
 // Complete configuration for starting a game
 export interface GameConfig {
@@ -71,7 +72,7 @@ export class GameConfigFactory {
             }
 
             default: {
-                console.warn('Unexpected game mode:', gameMode);
+                Logger.warn('Unexpected game mode:', 'GameConfig');
                 return [{ id: 'Player 1', name: 'Player 1', isGuest: true }];
             }
         }

@@ -13,6 +13,7 @@ import { GameMode, WebSocketEvent } from '../shared/constants.js';
 import { EL } from '../ui/elements.js';
 import { ViewMode } from '../shared/constants.js';
 import { requireElementById } from '../ui/elements.js';
+import { Logger } from '../core/LogManager.js';
 
 /**
  * Main Game class that handles everything for running one game instance.
@@ -57,18 +58,13 @@ export class Game {
             
             if (gl) {
                 gl.getExtension('WEBGL_color_buffer_float');
-                gl.getExtension('EXT_color_buffer_half_float');}
-            // if (gl) {
-            //     let renderer = gl.getParameter(gl.RENDERER);
-            //     renderer = gl.getExtension('WEBGL_color_buffer_float');
-            //     renderer = gl.getExtension('EXT_color_buffer_half_float');
-            //     console.log('WebGL Renderer:', renderer); // TODO remove some warning
-            // }
+                gl.getExtension('EXT_color_buffer_half_float');
+            }
             this.canvas.focus();
         } else 
             throw new Error(`Canvas element not found or is not a canvas: ${config.canvasId}`);
         
-        console.log('Game created with config:', {
+        Logger.info('Game created with config', 'Game', {
             viewMode: config.viewMode,
             gameMode: config.gameMode,
             canvasId: config.canvasId,
@@ -89,34 +85,29 @@ export class Game {
         this.updateLoadingProgress(0);
         this.setLoadingScreenVisible(true);
         try {
-            console.log('Initializing game...');
+            Logger.info('Initializing game...', 'Game');
 
             this.engine = await this.initializeBabylonEngine();
-            if (!this.engine) throw new Error('Engine not created');
-            // this.engine.displayLoadingUI()
-            this.scene = await this.createScene()
-            if (!this.scene) throw new Error('Scene not created');
-            
+            if (!this.engine) Logger.errorAndThrow('Engine not created', 'Game');
+            this.scene = await this.createScene();
+            if (!this.scene) Logger.errorAndThrow('Scene not created', 'Game');
+
             // Build game objects
             this.gameObjects = await buildScene(this.scene, this.engine, this.config.viewMode, this.updateLoadingProgress.bind(this));
-            if (!this.gameObjects) throw new Error('Game objects not created');
-            // Build game scene in background
-            // await this.createGameScene();
-            this.createGUI(); // Create FPS GUI on engine
+            if (!this.gameObjects) Logger.errorAndThrow('Game objects not created', 'Game');
+            this.createGUI();
             this.startRenderLoop();
             this.setupResizeHandler();
 
-            // Create input handler for game scene
             this.inputHandler = new InputHandler(this.config.gameMode, this.config.controls, this.scene);
-            
             this.inputHandler.setGameObjects(this.gameObjects);
 
             this.connectComponents();
             this.isInitialized = true;
-            console.log('Game initialized successfully');
+            Logger.info('Game initialized successfully', 'Game');
 
         } catch (error) {
-            console.error('Error initializing game:', error);
+            Logger.error('Error initializing game', 'Game', error);
             await this.dispose();
             throw error;
         }
@@ -248,17 +239,17 @@ export class Game {
             webSocketClient.sendPlayerInput(input.side, input.direction);
         });
         webSocketClient.registerCallback(WebSocketEvent.GAME_STATE, (state: GameStateData) => { this.updateGameObjects(state); });
-        webSocketClient.registerCallback(WebSocketEvent.CONNECTION, () => { console.log('Connected...'); });
-        webSocketClient.registerCallback(WebSocketEvent.ERROR, (error: string) => { console.error('Network error:', error); });
+        webSocketClient.registerCallback(WebSocketEvent.CONNECTION, () => { Logger.info('Connected', 'Game'); });
+        webSocketClient.registerCallback(WebSocketEvent.ERROR, (error: string) => { Logger.error('Network error', 'Game', error); });
         webSocketClient.registerCallback(WebSocketEvent.GAME_PAUSED, () => { this.onServerPausedGame(); });
         webSocketClient.registerCallback(WebSocketEvent.GAME_RESUMED, () => { this.onServerResumedGame(); });
         webSocketClient.registerCallback(WebSocketEvent.GAME_ENDED, () => { this.onServerEndedGame(); });
     }
 
     async connect(): Promise<void> {
-        console.log('Connecting to server...');
-        webSocketClient.joinGame(this.config.gameMode, this.config.players)
-        console.log('Connected to server');
+        Logger.info('Connecting to server...', 'Game');
+        webSocketClient.joinGame(this.config.gameMode, this.config.players);
+        Logger.info('Connected to server', 'Game');
     }
 
     // ========================================
@@ -269,28 +260,28 @@ export class Game {
         if (!this.isInitialized || this.isRunning || this.isDisposed) return;
 
         try {
-            console.log('Starting game...');
+            Logger.info('Starting game...', 'Game');
 
             // Start game loop
             this.startGameLoop();
 
             this.isRunning = true;
-            console.log('Game started successfully');
+            Logger.info('Game started successfully', 'Game');
 
         } catch (error) {
-            console.error('Error starting game:', error);
+            Logger.error('Error starting game', 'Game', error);
         }
     }
 
     pause(): void {
         if (this.isDisposed || this.isPausedByServer) return;
-        console.log('Game: Requesting pause from server...');
+        Logger.info('Requesting pause from server...', 'Game');
         webSocketClient.sendPauseRequest();
     }
 
     resume(): void {
         if (this.isDisposed || !this.isPausedByServer) return;
-        console.log('Game: Requesting resume from server...');
+        Logger.info('Requesting resume from server...', 'Game');
         webSocketClient.sendResumeRequest();
     }
 
@@ -299,14 +290,14 @@ export class Game {
         this.isPausedByServer = false;
         this.stopRenderLoop();
         this.stopGameLoop();
-        console.log('Game stopped');
+        Logger.info('Game stopped', 'Game');
     }
 
     // Handle server confirming game is paused
     private onServerPausedGame(): void {
         if (this.isDisposed || !this.isRunning) return;
 
-        console.log('Game: Server confirmed game is paused');
+        Logger.info('Server confirmed game is paused', 'Game');
         
         this.isPausedByServer = true;
         this.isRunning = false;
@@ -315,14 +306,14 @@ export class Game {
         this.stopRenderLoop();
         this.stopGameLoop();
         
-        console.log('Game paused by server');
+        Logger.info('Game paused by server', 'Game');
     }
 
     // Handle server confirming game is resumed
     private onServerResumedGame(): void {
         if (this.isDisposed || this.isRunning || !this.isPausedByServer) return;
 
-        console.log('Game: Server confirmed game is resumed');
+        Logger.info('Server confirmed game is resumed', 'Game');
         
         this.isPausedByServer = false;
         this.isRunning = true;
@@ -331,14 +322,14 @@ export class Game {
         this.startRenderLoop();
         this.startGameLoop();
         
-        console.log('Game resumed by server');
+        Logger.info('Game resumed by server', 'Game');
     }
 
     // Handle server ending the game
     private onServerEndedGame(): void {
         if (this.isDisposed) return;
 
-        console.log('Game: Server ended the game');
+        Logger.info('Server ended the game', 'Game');
         
         // Stop everything
         this.isRunning = false;
@@ -348,7 +339,7 @@ export class Game {
 
         appStateManager.exitToMenu();
         
-        console.log('Game ended by server');
+        Logger.info('Game ended by server', 'Game');
     }
 
 
@@ -380,11 +371,11 @@ export class Game {
 
                 this.lastFrameTime = currentTime;
             } catch (error) {
-                console.error('Error in render loop:', error);
+                Logger.error('Error in render loop:', 'Game');
             }
         });
 
-        console.log('Render loop started');
+        Logger.info('Render loop started', 'Game');
     }
 
     private stopRenderLoop(): void {
@@ -393,7 +384,7 @@ export class Game {
         if (this.engine) {
             this.engine.stopRenderLoop();
         }
-        console.log('Render loop stopped');
+        Logger.info('Render loop stopped', 'Game');
     }
 
     // ========================================
@@ -404,18 +395,18 @@ export class Game {
         if (this.gameLoopObserver) return;
         this.gameLoopObserver = setInterval(() => {
             if (!this.isRunning || this.isDisposed) return;
-            try {
-                this.setLoadingScreenVisible(false);
-                // Update input
-                if (this.inputHandler)
-                    this.inputHandler.updateInput();
-                // Update 3D cameras if needed
-                const cameras = this.gameObjects?.cameras;
-                if (cameras && cameras.length > 2)
-                    this.update3DCameras();
-            } catch (error) {
-                console.error('Error in game loop:', error);
-            }
+        try {
+            this.setLoadingScreenVisible(false);
+            // Update input
+            if (this.inputHandler)
+                this.inputHandler.updateInput();
+            // Update 3D cameras if needed
+            const cameras = this.gameObjects?.cameras;
+            if (cameras && cameras.length > 2)
+                this.update3DCameras();
+        } catch (error) {
+            Logger.error('Error in game loop', 'Game', error);
+        }
         }, 16);
     }
     private stopGameLoop(): void {
@@ -452,7 +443,7 @@ export class Game {
                 this.score2Text.text = state.paddleRight.score.toString();
             }
         } catch (error) {
-            console.error('Error updating game objects:', error);
+            Logger.error('Error updating game objects', 'Game', error);
         }
     }
 
@@ -462,7 +453,7 @@ export class Game {
 
         try {
             const [camera1, camera2] = this.gameObjects.cameras;
-            
+
             if (camera1 && camera2 && this.gameObjects.players.left && this.gameObjects.players.right) {
                 const targetLeft = this.gameObjects.players.left.position.clone();
                 const targetRight = this.gameObjects.players.right.position.clone();
@@ -473,7 +464,7 @@ export class Game {
                 }
             }
         } catch (error) {
-            console.error('Error updating 3D cameras:', error);
+            Logger.error('Error updating 3D cameras', 'Game', error);
         }
     }
 
@@ -484,7 +475,7 @@ export class Game {
     async dispose(): Promise<void> {
         if (this.isDisposed) return;
 
-        console.log('Disposing game...');
+        Logger.info('Disposing game...', 'Game');
         this.isDisposed = true;
         this.isRunning = false;
         this.isPausedByServer = false;
@@ -543,10 +534,10 @@ export class Game {
             // Reset flags
             this.isInitialized = false;
 
-            console.log('Game disposed successfully');
+            Logger.info('Game disposed successfully', 'Game');
 
         } catch (error) {
-            console.error('Error disposing game:', error);
+            Logger.error('Error disposing game', 'Game', error);
         }
     }
 

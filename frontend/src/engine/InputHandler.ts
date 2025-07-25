@@ -1,9 +1,9 @@
 declare var BABYLON: typeof import('@babylonjs/core'); //declare var BABYLON: any;
 
-
 import { GameMode, Direction } from '../shared/constants.js';
 import { InputConfig, PlayerControls, GameObjects, InputData } from '../shared/types.js';
 import { getPlayerBoundaries } from '../shared/gameConfig.js';
+import { Logger } from '../core/LogManager.js';
 
 /**
  * Handles player input for the game, supporting both local and remote multiplayer modes.
@@ -39,7 +39,7 @@ export class InputHandler {
         try {
             this.deviceSourceManager = new BABYLON.DeviceSourceManager(scene.getEngine());
         } catch (error) {
-            console.error('Error setting up device manager:', error);
+            Logger.error('Error setting up device manager', 'InputHandler', error);
         }
     }
 
@@ -54,7 +54,7 @@ export class InputHandler {
         // This could be configured differently based on server assignment // TODO
         this.controlledSide = 0;
 
-        console.log(`InputHandler configured:`, {
+        Logger.info('InputHandler configured', 'InputHandler', {
             gameMode: this.gameMode,
             controlledSide: this.controlledSide,
             isLocalMultiplayer: this.isLocalMultiplayer
@@ -94,7 +94,7 @@ export class InputHandler {
                 this.processKeyboardInput(keyboardSource);
             }
         } catch (error) {
-            console.error('Error updating input:', error);
+            Logger.error('Error updating input', 'InputHandler', error);
         }
     }
 
@@ -176,9 +176,9 @@ export class InputHandler {
                 this.deviceSourceManager = null;
             }
 
-            console.log('InputHandler disposed successfully');
+            Logger.info('InputHandler disposed successfully', 'InputHandler');
         } catch (error) {
-            console.error('Error disposing InputHandler:', error);
+            Logger.error('Error disposing InputHandler', 'InputHandler', error);
         }
     }
 }

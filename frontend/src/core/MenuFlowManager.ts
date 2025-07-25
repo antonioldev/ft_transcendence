@@ -1,3 +1,4 @@
+import { Logger } from './LogManager.js';
 import { GameMode, ViewMode, ConnectionStatus, AppState } from '../shared/constants.js';
 import { uiManager } from '../ui/UIManager.js';
 import { authManager } from './AuthManager.js';
@@ -9,7 +10,6 @@ import { appStateManager } from './AppStateManager.js';
 import { clearForm } from './utils.js';
 import { EL, requireElementById} from '../ui/elements.js';
 import { GameConfigFactory } from '../engine/GameConfig.js';
-import { PlayerInfo } from '../shared/types.js';
 
 
 /**
@@ -191,38 +191,38 @@ export class MenuFlowManager {
             }
 
             const playerNames = GameConfigFactory.getPlayersFromUI(this.selectedGameMode);
-            console.log('Starting game with players:', playerNames);
-            console.log('View mode:', this.getViewModes()[this.currentViewModeIndex].name);
-            console.log('Game mode:', this.selectedGameMode);
+            Logger.info('Starting game with players', 'MenuFlowManager', playerNames);
+            Logger.info('View mode', 'MenuFlowManager', this.getViewModes()[this.currentViewModeIndex].name);
+            Logger.info('Game mode', 'MenuFlowManager', this.selectedGameMode);
 
             await appStateManager.startGameWithMode(this.selectedViewMode, this.selectedGameMode);
         });
     }
 
     private showDashboard(): void {
-        console.log(EL.BUTTONS.DASHBOARD);
+        Logger.debug('Dashboard button element', 'MenuFlowManager', EL.BUTTONS.DASHBOARD);
         const dashboardBtn = requireElementById(EL.BUTTONS.DASHBOARD);
-        console.log("Attaching dashboard click handler");
+        Logger.debug('Attaching dashboard click handler', 'MenuFlowManager');
         dashboardBtn?.addEventListener('click', () => {
-            console.log("Dashboard clicked");
+            Logger.debug('Dashboard clicked', 'MenuFlowManager');
             if (!authManager.isUserAuthenticated()) {
-                console.log("authManager is not auth so returning");
+                Logger.warn('authManager is not authenticated, returning', 'MenuFlowManager');
                 return;
             }
             const user = authManager.getCurrentUser();
             if (!user) {
-                console.log("user is null so returning");
+                Logger.warn('user is null, returning', 'MenuFlowManager');
                 return;
             }
             dashboardManager.clear();
             // Request new stats from backend
-            console.log("clearing the dashboard");
+            Logger.debug('clearing the dashboard', 'MenuFlowManager');
             webSocketClient.requestUserStats(user.username);
-            console.log("request user data was called");
+            Logger.debug('request user data was called', 'MenuFlowManager');
             webSocketClient.requestUserGameHistory(user.username);
-            console.log("request user game history was called");
+            Logger.debug('request user game history was called', 'MenuFlowManager');
             // Show dashboard panel
-            console.log("Navigating to dashboard...");
+            Logger.info('Navigating to dashboard...', 'MenuFlowManager');
             historyManager.navigateTo(AppState.STATS_DASHBOARD);
         });
     }
