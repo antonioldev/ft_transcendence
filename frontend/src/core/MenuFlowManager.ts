@@ -6,9 +6,9 @@ import { historyManager } from './HistoryManager.js';
 import { dashboardManager } from './DashboardManager.js';
 import { webSocketClient } from './WebSocketClient.js';
 import { appStateManager } from './AppStateManager.js';
-import { GameConfigFactory } from '../engine/GameConfig.js';
 import { clearForm } from './utils.js';
 import { EL, requireElementById} from '../ui/elements.js';
+import { GameConfigFactory } from '../engine/GameConfig.js';
 import { PlayerInfo } from '../shared/types.js';
 
 
@@ -33,49 +33,6 @@ export class MenuFlowManager {
     static initialize(): void {
         const menuFlowManager = MenuFlowManager.getInstance();
         menuFlowManager.setupEventListeners();
-    }
-
-    // static showGameModeSelection(): void {
-    //     const menuFlowManager = MenuFlowManager.getInstance();
-    //     historyManager.navigateTo(AppState.GAME_MODE);
-    //     menuFlowManager.updateViewModeDisplay();
-    //     menuFlowManager.updateButtonStates();
-    // }
-
-    // ========================================
-    // GAME STARTING
-    // ========================================
-
-    private async startGameWithMode(viewMode: ViewMode, gameMode: GameMode): Promise<void> {
-        try {
-            console.log(`Starting game: ${gameMode} in ${ViewMode[viewMode]} mode`);
-            await this.initializeGameSession(viewMode, gameMode);         
-            console.log('Game started successfully');
-            
-        } catch (error) {
-            console.error('Error starting game:', error);
-            this.handleGameStartError();
-        }
-    }
-
-    private async initializeGameSession(viewMode: ViewMode, gameMode: GameMode): Promise<void> {
-        uiManager.showAuthButtons();                                    // Hide user info during game
-        historyManager.navigateTo(AppState.GAME_3D, false);             // Navigate to appropriate game screen
-        appStateManager.setGameState(viewMode);                         // Update game state manager
-        // const players = GameConfigFactory.getPlayersFromUI(gameMode);   // Get players from UI
-        let players: PlayerInfo[];
-        if (authManager.isUserAuthenticated())
-            players = GameConfigFactory.getAuthenticatedPlayer(); // New method
-        else
-            players = GameConfigFactory.getPlayersFromUI(gameMode);
-        const config = GameConfigFactory.createConfig(viewMode, gameMode, players); // Create game configuration
-        await appStateManager.startGame(config);
-    }
-
-    private handleGameStartError(): void {
-        // Return to main menu on error
-        historyManager.navigateTo(AppState.MAIN_MENU);;
-        appStateManager.resetToMenu();    
     }
 
     // ========================================
@@ -206,7 +163,7 @@ export class MenuFlowManager {
                     EL.PLAYER_SETUP.PLAYER2_NAME_TOURNAMENT, EL.PLAYER_SETUP.PLAYER3_NAME_TOURNAMENT,
                     EL.PLAYER_SETUP.PLAYER4_NAME_TOURNAMENT]);
             } else
-                await this.startGameWithMode(this.selectedViewMode, this.selectedGameMode);
+                await appStateManager.startGameWithMode(this.selectedViewMode, this.selectedGameMode);
 
         });
     }
@@ -227,18 +184,18 @@ export class MenuFlowManager {
         startGame.addEventListener('click', async () => {
             if (this.selectedGameMode === null) return;
 
-            if (!uiManager.validatePlayerSetup(this.selectedGameMode)) {
+            if (!GameConfigFactory.validatePlayerSetup(this.selectedGameMode)) {
                 const t = getCurrentTranslation();
                 alert(t.pleaseFilllAllFields);
                 return;
             }
 
-            const playerNames = uiManager.getPlayerNames(this.selectedGameMode);
+            const playerNames = GameConfigFactory.getPlayersFromUI(this.selectedGameMode);
             console.log('Starting game with players:', playerNames);
             console.log('View mode:', this.getViewModes()[this.currentViewModeIndex].name);
             console.log('Game mode:', this.selectedGameMode);
 
-            await this.startGameWithMode(this.selectedViewMode, this.selectedGameMode);
+            await appStateManager.startGameWithMode(this.selectedViewMode, this.selectedGameMode);
         });
     }
 

@@ -1,11 +1,13 @@
 import { uiManager } from '../ui/UIManager.js';
-import { GameState, ViewMode, AppState } from '../shared/constants.js';
+import { GameState, ViewMode, AppState, GameMode } from '../shared/constants.js';
 import { authManager } from './AuthManager.js';
 import { historyManager } from './HistoryManager.js';
 import { Game } from '../engine/Game.js';
 import { GameConfig } from '../engine/GameConfig.js';
 import { webSocketClient } from './WebSocketClient.js';
 import { EL } from '../ui/elements.js';
+import { GameConfigFactory } from '../engine/GameConfig.js';
+import { PlayerInfo } from '../shared/types.js';
 
 
 /**
@@ -51,6 +53,60 @@ class AppStateManager {
         } finally {
             this.isStarting = false;
         }
+    }
+    // async startGame(viewMode: ViewMode, gameMode: GameMode): Promise<void> {
+    //     // Do everything in one method:
+    //     uiManager.showAuthButtons();
+    //     historyManager.navigateTo(AppState.GAME_3D, false);
+    //     this.setGameState(viewMode);
+        
+    //     // Get players and create config
+    //     let players: PlayerInfo[];
+    //     if (authManager.isUserAuthenticated())
+    //         players = GameConfigFactory.getAuthenticatedPlayer();
+    //     else
+    //         players = GameConfigFactory.getPlayersFromUI(gameMode);
+        
+    //     const config = GameConfigFactory.createConfig(viewMode, gameMode, players);
+        
+    //     // Start the actual game
+    //     this.currentGame = new Game(config);
+    //     await this.currentGame.connect();
+    //     await this.currentGame.initialize();
+    //     this.currentGame.start();
+    // }
+
+    async startGameWithMode(viewMode: ViewMode, gameMode: GameMode): Promise<void> {
+        try {
+            console.log(`Starting game: ${gameMode} in ${ViewMode[viewMode]} mode`);
+            await this.initializeGameSession(viewMode, gameMode);         
+            console.log('Game started successfully');
+            
+        } catch (error) {
+            console.error('Error starting game:', error);
+            this.handleGameStartError();
+        }
+    }
+
+    private async initializeGameSession(viewMode: ViewMode, gameMode: GameMode): Promise<void> {
+        uiManager.showAuthButtons();                                    // Hide user info during game
+        historyManager.navigateTo(AppState.GAME_3D, false);             // Navigate to appropriate game screen
+        this.setGameState(viewMode);                                    // Update game state manager
+        
+        let players: PlayerInfo[];
+        if (authManager.isUserAuthenticated())
+            players = GameConfigFactory.getAuthenticatedPlayer();
+        else
+            players = GameConfigFactory.getPlayersFromUI(gameMode);
+        
+        const config = GameConfigFactory.createConfig(viewMode, gameMode, players);
+        await this.startGame(config);
+    }
+
+    private handleGameStartError(): void {
+        // Return to main menu on error
+        historyManager.navigateTo(AppState.MAIN_MENU);
+        this.resetToMenu();    
     }
 
     async endGame(): Promise<void> {

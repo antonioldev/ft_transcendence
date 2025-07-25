@@ -4,7 +4,7 @@ export enum LogLevel {
     WARN = 2,
     ERROR = 3
 }
-
+// TODO replace all consolo log with 
 export class Logger {
     private static level: LogLevel = LogLevel.INFO; // Change this number: 0=DEBUG, 1=INFO, 2=WARN, 3=ERROR
 

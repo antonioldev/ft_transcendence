@@ -151,62 +151,6 @@ class UIManager {
     }
 
     // ========================================
-    // PLAYER INPUT & VALIDATION
-    // ========================================
-    getPlayerNames(gameMode: GameMode): { player1: string; player2?: string; player3?: string; player4?: string } {
-        let player1Input: HTMLInputElement | null;
-        let player2Input: HTMLInputElement | null = null;
-        let player3Input: HTMLInputElement | null = null;
-        let player4Input: HTMLInputElement | null = null;
-
-        switch (gameMode) {
-            case GameMode.SINGLE_PLAYER:
-                player1Input = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER1_NAME);
-                break;
-            case GameMode.TWO_PLAYER_LOCAL:
-                player1Input = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER1_NAME_LOCAL);
-                player2Input = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER2_NAME_LOCAL);
-                break;
-            case GameMode.TWO_PLAYER_REMOTE:
-                player1Input = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER1_NAME_ONLINE);
-                break;
-            case GameMode.TOURNAMENT_LOCAL:
-            case GameMode.TOURNAMENT_REMOTE:
-                player1Input = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER1_NAME_TOURNAMENT);
-                player2Input = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER2_NAME_TOURNAMENT);
-                player3Input = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER3_NAME_TOURNAMENT);
-                player4Input = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER4_NAME_TOURNAMENT);
-                break;
-            default:
-                return { player1: 'Player 1' };
-        }
-
-        const result: { player1: string; player2?: string; player3?: string; player4?: string } = {
-            player1: player1Input?.value.trim() || 'Player 1'
-        };
-
-        if (player2Input)
-            result.player2 = player2Input.value.trim() || 'Player 2';
-        if (player3Input)
-            result.player3 = player3Input.value.trim() || 'Player 3';
-        if (player4Input)
-            result.player4 = player4Input.value.trim() || 'Player 4';
-
-        return result;
-    }
-
-    validatePlayerSetup(gameMode: GameMode): boolean {
-        const names = this.getPlayerNames(gameMode);
-        
-        if (!names.player1.trim()) return false;
-        if (gameMode === GameMode.TWO_PLAYER_LOCAL && !names.player2?.trim()) return false;
-        if ((gameMode === GameMode.TOURNAMENT_LOCAL || gameMode === GameMode.TOURNAMENT_REMOTE))
-            if (!names.player2?.trim() || !names.player3?.trim() || !names.player4?.trim()) return false;
-        
-        return true;
-    }
-
-    // ========================================
     // BUTTON STATE MANAGEMENT
     // ========================================
     setButtonState(buttonIds: string[], state: 'enabled' | 'disabled', tooltip?: string): void {
