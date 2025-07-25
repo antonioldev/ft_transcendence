@@ -49,9 +49,8 @@ class GameManager {
      */
     findOrCreateGame(mode: GameMode, client: Client): string {
         //For single player, just create a game
-        if (mode === GameMode.SINGLE_PLAYER) {
+        if (mode === GameMode.SINGLE_PLAYER)
             return this.createGame(mode, client);
-        }
 
         // For two player, try to find waiting game or create new one
         for (const [gameId, game] of this.games) {

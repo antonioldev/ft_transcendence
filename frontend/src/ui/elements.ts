@@ -57,7 +57,7 @@ export const EL = {
   },
 
   // ========================================
-  // GAME MODE BUTTONS (reusing your existing GameMode enum values)
+  // GAME MODE BUTTONS
   // ========================================
   GAME_MODES: {
     SOLO: 'solo-mode',              // GameMode.SINGLE_PLAYER

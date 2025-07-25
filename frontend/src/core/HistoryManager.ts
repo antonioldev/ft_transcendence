@@ -80,8 +80,6 @@ export class HistoryManager {
                 this.showScreen(EL.SCREENS.GAME_3D, { hideOverlayss: true, hideUserInfo: true });
                 break;
             case AppState.STATS_DASHBOARD:
-                console.log(`Navigating to state: ${state}`);
-                console.log(EL.SCREENS.STATS_DASHBOARD);
                 this.showScreen(EL.SCREENS.STATS_DASHBOARD, { hideOverlayss: true });
                 break;
             default:
