@@ -7,7 +7,6 @@ import { historyManager } from './HistoryManager.js';
 import { dashboardManager } from './DashboardManager.js';
 import { webSocketClient } from './WebSocketClient.js';
 import { appStateManager } from './AppStateManager.js';
-import { clearForm } from './utils.js';
 import { EL, requireElementById} from '../ui/elements.js';
 import { GameConfigFactory } from '../engine/GameConfig.js';
 
@@ -36,45 +35,9 @@ export class MenuFlowManager {
     }
 
     // ========================================
-    // UI STATE MANAGEMENT
-    // ========================================
-    
-    updateButtonStates(): void {
-        const t = getCurrentTranslation();
-        const isLoggedIn = authManager.isUserAuthenticated();
-        const isOnline = webSocketClient.isConnected();
-        
-        if (isOnline) {
-            uiManager.setButtonState([EL.GAME_MODES.SOLO], 'enabled');
-
-        if (isLoggedIn) {
-            uiManager.setButtonState(
-                [EL.GAME_MODES.ONLINE, EL.GAME_MODES.TOURNAMENT_ONLINE],
-                'enabled'
-            );
-            uiManager.setButtonState(
-                [EL.GAME_MODES.LOCAL, EL.GAME_MODES.TOURNAMENT],
-                'disabled',
-                t.availableOnlyOffline
-            );
-        } else {
-            uiManager.setButtonState(
-                [EL.GAME_MODES.LOCAL, EL.GAME_MODES.TOURNAMENT],
-                'enabled'
-            );
-            uiManager.setButtonState(
-                [EL.GAME_MODES.ONLINE, EL.GAME_MODES.TOURNAMENT_ONLINE],
-                'disabled',
-                t.loginRequired
-            );
-        }
-}
-    }
-
-    // ========================================
     // EVENT LISTENERS SETUP
     // ========================================
-    
+
     private setupEventListeners(): void {
         // View mode navigation controls
         const viewModeBack = requireElementById(EL.BUTTONS.VIEW_MODE_BACK);
@@ -83,12 +46,11 @@ export class MenuFlowManager {
         viewModeBack.addEventListener('click', () => this.previousViewMode());
         viewModeForward.addEventListener('click', () => this.nextViewMode());
         backBtn.addEventListener('click', () => { historyManager.navigateTo(AppState.MAIN_MENU);});
-    
+
         // Game mode selection buttons
         this.setupGameModeButtons();
         this.setupPlayerSetupListeners();
         this.showDashboard();
-
     }
 
     private setupGameModeButtons(): void {
@@ -158,7 +120,7 @@ export class MenuFlowManager {
             if (config.requiresSetup && !authManager.isUserAuthenticated()) {
                 historyManager.navigateTo(AppState.PLAYER_SETUP);
                 uiManager.showSetupForm(form);
-                clearForm([ EL.PLAYER_SETUP.PLAYER1_NAME, EL.PLAYER_SETUP.PLAYER1_NAME_LOCAL,
+                uiManager.clearForm([ EL.PLAYER_SETUP.PLAYER1_NAME, EL.PLAYER_SETUP.PLAYER1_NAME_LOCAL,
                     EL.PLAYER_SETUP.PLAYER2_NAME_LOCAL, EL.PLAYER_SETUP.PLAYER1_NAME_TOURNAMENT,
                     EL.PLAYER_SETUP.PLAYER2_NAME_TOURNAMENT, EL.PLAYER_SETUP.PLAYER3_NAME_TOURNAMENT,
                     EL.PLAYER_SETUP.PLAYER4_NAME_TOURNAMENT]);
@@ -256,8 +218,9 @@ export class MenuFlowManager {
 
     private updateViewModeDisplay(): void {
         const viewModes = this.getViewModes();
-        const viewModeDisplay = requireElementById(EL.DISPLAY.VIEW_MODE_DISPLAY);
-        viewModeDisplay.textContent = viewModes[this.currentViewModeIndex].name;
+        uiManager.updateViewModeDisplay(viewModes[this.currentViewModeIndex].name);
+        // const viewModeDisplay = requireElementById(EL.DISPLAY.VIEW_MODE_DISPLAY);
+        // viewModeDisplay.textContent = viewModes[this.currentViewModeIndex].name;
     }
 }
 

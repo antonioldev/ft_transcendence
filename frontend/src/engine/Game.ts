@@ -14,6 +14,7 @@ import { EL } from '../ui/elements.js';
 import { ViewMode } from '../shared/constants.js';
 import { requireElementById } from '../ui/elements.js';
 import { Logger } from '../core/LogManager.js';
+import { uiManager } from '../ui/UIManager.js';
 
 /**
  * Main Game class that handles everything for running one game instance.
@@ -82,8 +83,8 @@ export class Game {
         // BABYLON.SceneLoader.ShowLoadingScreen = true;
         BABYLON.SceneLoader.ShowLoadingScreen = false;
         
-        this.updateLoadingProgress(0);
-        this.setLoadingScreenVisible(true);
+        uiManager.updateLoadingProgress(0);
+        uiManager.setLoadingScreenVisible(true);
         try {
             Logger.info('Initializing game...', 'Game');
 
@@ -93,7 +94,7 @@ export class Game {
             if (!this.scene) Logger.errorAndThrow('Scene not created', 'Game');
 
             // Build game objects
-            this.gameObjects = await buildScene(this.scene, this.engine, this.config.viewMode, this.updateLoadingProgress.bind(this));
+            this.gameObjects = await buildScene(this.scene, this.engine, this.config.viewMode, (progress: number) => uiManager.updateLoadingProgress(progress));
             if (!this.gameObjects) Logger.errorAndThrow('Game objects not created', 'Game');
             this.createGUI();
             this.startRenderLoop();
@@ -396,7 +397,7 @@ export class Game {
         this.gameLoopObserver = setInterval(() => {
             if (!this.isRunning || this.isDisposed) return;
         try {
-            this.setLoadingScreenVisible(false);
+            uiManager.setLoadingScreenVisible(false);
             // Update input
             if (this.inputHandler)
                 this.inputHandler.updateInput();
@@ -508,8 +509,8 @@ export class Game {
             this.score1Text = null;
             this.score2Text = null;
 
-            this.setLoadingScreenVisible(false);
-            this.updateLoadingProgress(0);
+            uiManager.setLoadingScreenVisible(false);
+            uiManager.updateLoadingProgress(0);
 
             // Clear game objects reference
             this.gameObjects = null;
@@ -539,19 +540,6 @@ export class Game {
         } catch (error) {
             Logger.error('Error disposing game', 'Game', error);
         }
-    }
-
-
-    private updateLoadingProgress(progress: number): void{
-        const progressBar = requireElementById(EL.GAME.PROGRESS_FILL);
-        progressBar.style.width = progress + '%';
-        const progressText = requireElementById(EL.GAME.PROGRESS_TEXT);
-        progressText.textContent = progress + '%';
-    }
-
-    setLoadingScreenVisible(visible: boolean): void {
-        const loadingScreen = requireElementById('loading-screen');
-        loadingScreen.style.display = visible ? 'flex' : 'none';
     }
 
 }

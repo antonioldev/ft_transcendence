@@ -1,6 +1,7 @@
-import { GameMode, ConnectionStatus } from '../shared/constants.js';
+import { ConnectionStatus } from '../shared/constants.js';
 import { UI_COLORS, UI_STYLES } from './styles.js';
 import { EL, requireElementById} from './elements.js';
+import { getCurrentTranslation } from '../translations/translations.js';
 
 class UIManager {
     private static instance: UIManager;
@@ -139,7 +140,22 @@ class UIManager {
         userName.textContent = username;
         userInfo.style.display = 'flex';
     }
-    
+
+    // ========================================
+    // FORM MANAGEMENT
+    // ========================================
+    clearForm(fieldIds: string[]): void {
+        fieldIds.forEach(id => {
+            const input = document.getElementById(id) as HTMLInputElement;
+            if (input)
+                input.value = '';
+        });
+    }
+
+    showFormValidationError(message: string): void {
+        alert(message); // TODO we can create UI instead of alert
+    }
+
     // ========================================
     // OVERLAY & MODAL MANAGEMENT
     // ========================================
@@ -150,9 +166,45 @@ class UIManager {
         }
     }
 
+    updateViewModeDisplay(displayText: string): void {
+        const viewModeDisplay = requireElementById(EL.DISPLAY.VIEW_MODE_DISPLAY);
+        viewModeDisplay.textContent = displayText;
+    }
+
     // ========================================
     // BUTTON STATE MANAGEMENT
     // ========================================
+
+    updateGameModeButtonStates(isLoggedIn: boolean, isOnline: boolean): void {
+        const t = getCurrentTranslation();
+        
+        if (isOnline) {
+            this.setButtonState([EL.GAME_MODES.SOLO], 'enabled');
+
+            if (isLoggedIn) {
+                this.setButtonState(
+                    [EL.GAME_MODES.ONLINE, EL.GAME_MODES.TOURNAMENT_ONLINE],
+                    'enabled'
+                );
+                this.setButtonState(
+                    [EL.GAME_MODES.LOCAL, EL.GAME_MODES.TOURNAMENT],
+                    'disabled',
+                    t.availableOnlyOffline
+                );
+            } else {
+                this.setButtonState(
+                    [EL.GAME_MODES.LOCAL, EL.GAME_MODES.TOURNAMENT],
+                    'enabled'
+                );
+                this.setButtonState(
+                    [EL.GAME_MODES.ONLINE, EL.GAME_MODES.TOURNAMENT_ONLINE],
+                    'disabled',
+                    t.loginRequired
+                );
+            }
+        }
+    }
+
     setButtonState(buttonIds: string[], state: 'enabled' | 'disabled', tooltip?: string): void {
         buttonIds.forEach(buttonId => {
             const button = document.getElementById(buttonId) as HTMLButtonElement;
@@ -175,7 +227,6 @@ class UIManager {
                 button.title = '';
             }
         });
-        
     }
 
     // ========================================
@@ -204,6 +255,21 @@ class UIManager {
                     EL.BUTTONS.REGISTER ], 'disabled');
                 break;
         }
+    }
+
+    // ========================================
+    // LOADING AND PROGRESS
+    // ========================================
+    updateLoadingProgress(progress: number): void {
+        const progressBar = requireElementById(EL.GAME.PROGRESS_FILL);
+        progressBar.style.width = progress + '%';
+        const progressText = requireElementById(EL.GAME.PROGRESS_TEXT);
+        progressText.textContent = progress + '%';
+    }
+
+    setLoadingScreenVisible(visible: boolean): void {
+        const loadingScreen = requireElementById(EL.GAME.LOADING_SCREEN);
+        loadingScreen.style.display = visible ? 'flex' : 'none';
     }
 }
 

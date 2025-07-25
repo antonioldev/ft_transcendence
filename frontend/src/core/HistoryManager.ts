@@ -2,7 +2,7 @@ import { Logger } from './LogManager.js';
 import { uiManager } from '../ui/UIManager.js';
 import { authManager } from './AuthManager.js';
 import { appStateManager } from './AppStateManager.js';
-import { menuFlowManager } from './MenuFlowManager.js';
+import { webSocketClient } from './WebSocketClient.js';
 import { AppState } from '../shared/constants.js';
 import { EL} from '../ui/elements.js';
 
@@ -117,8 +117,11 @@ export class HistoryManager {
         if (options.checkAuth)
             authManager.checkAuthState();
         
-        if (options.refreshGameMode)
-            menuFlowManager.updateButtonStates();
+        if (options.refreshGameMode) {
+            const isLoggedIn = authManager.isUserAuthenticated();
+            const isOnline = webSocketClient.isConnected();
+            uiManager.updateGameModeButtonStates(isLoggedIn, isOnline);
+        }
     }
 }
 

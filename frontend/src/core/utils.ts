@@ -78,10 +78,3 @@ export function get3DSoloCameraViewport() {
     return VIEWPORTS.FULLSCREEN;
 }
 
-export function clearForm(fieldIds: string[]): void {
-    fieldIds.forEach(id => {
-        const input = document.getElementById(id) as HTMLInputElement;
-        if (input)
-            input.value = '';
-    });
-}

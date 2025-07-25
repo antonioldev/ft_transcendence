@@ -3,7 +3,6 @@ import { AuthState, AppState, WebSocketEvent } from '../shared/constants.js';
 import { uiManager } from '../ui/UIManager.js';
 import { getCurrentTranslation } from '../translations/translations.js';
 import { historyManager } from './HistoryManager.js';
-import { clearForm } from './utils.js';
 import { WebSocketClient } from './WebSocketClient.js';
 import { RegisterUser, LoginUser } from '../shared/types.js';
 import { EL, requireElementById} from '../ui/elements.js';
@@ -174,7 +173,7 @@ export class AuthManager {
         // Basic validation
         if (!username || !password) {
             alert(t.pleaseFilllAllFields);
-            clearForm(this.loginFields);
+            uiManager.clearForm(this.loginFields);
             return;
         }
 
@@ -184,7 +183,7 @@ export class AuthManager {
             this.authState = AuthState.LOGGED_IN;
             this.currentUser = {username};
             // Clear form and navigate back to main menu
-            clearForm(this.loginFields);
+            uiManager.clearForm(this.loginFields);
             historyManager.navigateTo(AppState.MAIN_MENU);
             uiManager.showUserInfo(user.username);     
             Logger.info(msg, 'AuthManager');
@@ -194,13 +193,13 @@ export class AuthManager {
             this.authState = AuthState.LOGGED_FAILED;
             if (msg === "User doesn't exist") {
                 alert(t.dontHaveAccount);
-                clearForm(this.loginFields); 
+                uiManager.clearForm(this.loginFields); 
                 setTimeout(() => {
                     historyManager.navigateTo(AppState.REGISTER);
                 }, 500);
             } else {
                 alert(t.passwordsDoNotMatch);
-                clearForm(this.loginFields); 
+                uiManager.clearForm(this.loginFields); 
             }
         });
 
@@ -229,13 +228,13 @@ export class AuthManager {
         // Check if fiels are all full
         if (!username || !email || !password || !confirmPassword) {
             alert(t.pleaseFilllAllFields);
-            clearForm(this.registrationFields);
+            uiManager.clearForm(this.registrationFields);
             return;
         }
 
         if (password !== confirmPassword) {
             alert(t.passwordsDoNotMatch);
-            clearForm(this.registrationFields);
+            uiManager.clearForm(this.registrationFields);
             return;
         }
 
@@ -244,7 +243,7 @@ export class AuthManager {
         // register the callback in case of success or failure
         wsClient.registerCallback(WebSocketEvent.REGISTRATION_FAILURE, (msg: string) => {
             this.authState = AuthState.LOGGED_FAILED;
-            clearForm(this.registrationFields);
+            uiManager.clearForm(this.registrationFields);
             if (msg === "Username is already registered") {
                 alert(msg || 'Registration failed. Username already register. Please choose another one');
             } else {
@@ -257,7 +256,7 @@ export class AuthManager {
 
         wsClient.registerCallback(WebSocketEvent.ERROR, (msg: string) => {
             this.authState = AuthState.LOGGED_FAILED;
-            clearForm(this.registrationFields);
+            uiManager.clearForm(this.registrationFields);
             alert(msg || 'Registration failed. An error occured. Please try again');
             setTimeout(() => {
                 historyManager.navigateTo(AppState.LOGIN);
@@ -266,7 +265,7 @@ export class AuthManager {
 
         wsClient.registerCallback(WebSocketEvent.REGISTRATION_SUCCESS, (msg: string) => {
             this.authState = AuthState.LOGGED_IN;
-            clearForm(this.registrationFields);
+            uiManager.clearForm(this.registrationFields);
             alert(msg || 'Registration successful! You can now login.');
             setTimeout(() => {
                 historyManager.navigateTo(AppState.LOGIN);
@@ -281,7 +280,7 @@ export class AuthManager {
         } catch (error) {
             Logger.error('Error sending registration request', 'AuthManager', error);
             this.authState = AuthState.LOGGED_FAILED;
-            clearForm(this.registrationFields);
+            uiManager.clearForm(this.registrationFields);
             alert('Registration failed due to connection error.');  
         }
         
@@ -292,7 +291,7 @@ export class AuthManager {
         // TODO: Implement Google OAuth
         Logger.info('Google login clicked - to be implemented', 'AuthManager');
         alert('Google login will be implemented later');
-        clearForm(this.loginFields);
+        uiManager.clearForm(this.loginFields);
         // After successful Google login:
         // this.currentUser = { username: googleUser.name, email: googleUser.email };
         // this.authState = AuthState.LOGGED_IN;
