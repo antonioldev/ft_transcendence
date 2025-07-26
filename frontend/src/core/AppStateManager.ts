@@ -60,18 +60,16 @@ class AppStateManager {
         this.resetToMenu();
     }
 
-    async exitToMenu(): Promise<void> {
+    async requestExitToMenu(): Promise<void> {
         if (this.isExiting) return;
 
         this.isExiting = true;
         Logger.info('Exiting to menu...', 'AppStateManager');
         try {
-            uiManager.setElementVisibility('pause-dialog-3d', false);
             webSocketClient.sendQuitGame();
-            this.resetToMenu();
-            Logger.info('Successfully exited to main menu', 'AppStateManager');
+            Logger.info('Request to end the game', 'AppStateManager');
         } catch (error) {
-            Logger.error('Error during game exit', 'AppStateManager', error);
+            Logger.error('Error during request exit', 'AppStateManager', error);
             this.resetToMenu();
         }
     }
@@ -79,6 +77,7 @@ class AppStateManager {
     resetToMenu(): void {
         this.currentState = null;
         this.isExiting = false;
+        uiManager.setElementVisibility('pause-dialog-3d', false);
         authManager.checkAuthState();
         historyManager.navigateTo(AppState.MAIN_MENU);;
     }

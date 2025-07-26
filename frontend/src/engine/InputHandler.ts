@@ -26,34 +26,19 @@ export class InputHandler {
         private controls: InputConfig,
         scene: any
     ) {
-        this.setupDeviceManager(scene);
-        this.configureGameMode();
-    }
-
-    // ========================================
-    // INITIALIZATION
-    // ========================================
-
-    // Setup device source manager
-    private setupDeviceManager(scene: any): void {
         try {
             this.deviceSourceManager = new BABYLON.DeviceSourceManager(scene.getEngine());
         } catch (error) {
             Logger.error('Error setting up device manager', 'InputHandler', error);
         }
-    }
 
-    // Configure input based on game mode
-    private configureGameMode(): void {
+        // Configure input based on game mode
         this.isLocalMultiplayer = (
             this.gameMode === GameMode.TWO_PLAYER_LOCAL || 
             this.gameMode === GameMode.TOURNAMENT_LOCAL
         );
-
-        // For remote games, we typically control side 0 (left)
-        // This could be configured differently based on server assignment // TODO
         this.controlledSide = 0;
-
+        
         Logger.info('InputHandler configured', 'InputHandler', {
             gameMode: this.gameMode,
             controlledSide: this.controlledSide,
@@ -88,35 +73,18 @@ export class InputHandler {
     updateInput(): void {
         if (this.isDisposed || !this.deviceSourceManager || !this.gameObjects) return;
 
-        try {
+        try { // TODO check for unplagged keyboard
             const keyboardSource = this.deviceSourceManager.getDeviceSource(BABYLON.DeviceType.Keyboard);
             if (keyboardSource) {
-                this.processKeyboardInput(keyboardSource);
+                // Handle left player (side 0)
+                this.handlePlayerInput(keyboardSource, this.gameObjects.players.left, this.controls.playerLeft, 0);
+
+                // Handle right player (side 1)
+                this.handlePlayerInput(keyboardSource, this.gameObjects.players.right, this.controls.playerRight, 1);
             }
         } catch (error) {
             Logger.error('Error updating input', 'InputHandler', error);
         }
-    }
-
-    // Process keyboard input for both players
-    private processKeyboardInput(keyboardSource: any): void {
-        if (!this.gameObjects) return;
-
-        // Handle left player (side 0)
-        this.handlePlayerInput(
-            keyboardSource, 
-            this.gameObjects.players.left, 
-            this.controls.playerLeft, 
-            0
-        );
-        
-        // Handle right player (side 1)
-        this.handlePlayerInput(
-            keyboardSource, 
-            this.gameObjects.players.right, 
-            this.controls.playerRight, 
-            1
-        );
     }
 
     // Handle input for a specific player
@@ -127,30 +95,19 @@ export class InputHandler {
         side: number
     ): void {
         // Check if we should listen to this player
-        if (!this.shouldListenToPlayer(side)) return;
+        if (!(this.isLocalMultiplayer || this.controlledSide === side)) return;
 
         let direction = Direction.STOP;
 
         // Check input and validate boundaries
-        if (keyboardSource.getInput(controls.left) === 1) {
-            if (player.position.x > this.boundaries.left) {
+        if ((keyboardSource.getInput(controls.left) === 1) && (player.position.x > this.boundaries.left)) 
                 direction = Direction.LEFT;
-            }
-        } else if (keyboardSource.getInput(controls.right) === 1) {
-            if (player.position.x < this.boundaries.right) {
+        else if ((keyboardSource.getInput(controls.right) === 1) && (player.position.x < this.boundaries.right))
                 direction = Direction.RIGHT;
-            }
-        }
 
         // Send input
-        if (this.onInputCallback) {
+        if (this.onInputCallback)
             this.onInputCallback({ side, direction });
-        }
-    }
-
-    // Determine if we should listen to this player's input
-    private shouldListenToPlayer(side: number): boolean {
-        return this.isLocalMultiplayer || this.controlledSide === side;
     }
 
     // ========================================

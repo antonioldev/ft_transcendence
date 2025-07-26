@@ -38,7 +38,7 @@ export class HistoryManager {
                 Game.pause();
                 return;
             } else if (appStateManager.isPaused()) {
-                appStateManager.exitToMenu();
+                appStateManager.requestExitToMenu();
                 return;
             }
 

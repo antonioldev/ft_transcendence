@@ -7,7 +7,7 @@ export const UI_COLORS = {
     surface: '#333',
     text: 'white',
     textSecondary: '#ccc',
-    overlay: 'rgba(0, 0, 0, 0.9)'
+    overlay: 'rgba(0, 0, 0, 1)'
 };
 
 export const UI_STYLES = {
@@ -241,7 +241,7 @@ export const UI_STYLES = {
         left: '0',
         width: '100%',
         height: '100%',
-        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        backgroundColor: 'rgba(0, 0, 0, 1)',
         display: 'none',
         flexDirection: 'column' as const,
         justifyContent: 'center' as const,

@@ -370,15 +370,13 @@ export class Game {
         if (this.isDisposed) return;
 
         Logger.info('Server ended the game', 'Game');
-        
-        // Stop everything
-        this.isRunning = false;
-        this.isPausedByServer = false;
+
         this.stopRenderLoop();
         this.stopGameLoop();
 
-        appStateManager.exitToMenu();
-        
+        appStateManager.resetToMenu();
+        Game.disposeGame();
+
         Logger.info('Game ended by server', 'Game');
     }
 
@@ -421,9 +419,8 @@ export class Game {
     private stopRenderLoop(): void {
         if (!this.isRenderingActive) return;
         this.isRenderingActive = false;
-        if (this.engine) {
+        if (this.engine)
             this.engine.stopRenderLoop();
-        }
         Logger.info('Render loop stopped', 'Game');
     }
 
@@ -521,8 +518,8 @@ export class Game {
         this.isPausedByServer = false;
 
         // Clear static reference if this is the current instance
-        if (Game.currentInstance === this)
-            Game.currentInstance = null;
+        // if (Game.currentInstance === this)
+        //     Game.currentInstance = null;
 
         try {
             this.stopGameLoop();
@@ -532,8 +529,6 @@ export class Game {
                 clearInterval(this.countdownLoop);
                 this.countdownLoop = null;
             }
-
-            // await new Promise(resolve => setTimeout(resolve, 16));
 
             if (this.inputHandler) {
                 await this.inputHandler.dispose();
@@ -573,8 +568,10 @@ export class Game {
             this.canvas = null;
             this.isInitialized = false;
 
-            Logger.info('Game disposed successfully', 'Game');
+            if (Game.currentInstance === this)
+                Game.currentInstance = null;
 
+            Logger.info('Game disposed successfully', 'Game');
         } catch (error) {
             Logger.error('Error disposing game', 'Game', error);
         }

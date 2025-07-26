@@ -67,7 +67,7 @@ export class KeyboardManager {
             Logger.debug('${event.key} key pressed in pause state', 'KeyboardManager');    
             
             if (event.key === 'Y' || event.key === 'y')
-                appStateManager.exitToMenu();
+                appStateManager.requestExitToMenu();
             else if (event.key === 'N' || event.key === 'n') {
                 Game.resume();
             }
