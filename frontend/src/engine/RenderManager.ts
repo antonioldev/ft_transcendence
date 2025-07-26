@@ -1,0 +1,143 @@
+import { Logger } from '../core/LogManager.js';
+import { GUIManager } from './GuiManager.js';
+
+/**
+ * Manages the rendering and frame rate control
+ * 
+ * Responsibilities:
+ * - Render loop management (start/stop)
+ * - Frame rate limiting and timing
+ * - FPS calculation and reporting
+ * - Scene rendering coordination
+ * - Render performance monitoring
+ */
+export class RenderManager {
+    private engine: any = null;
+    private scene: any = null;
+    private guiManager: GUIManager | null = null;
+    private isRenderingActive: boolean = false;
+    private lastFrameTime: number = 0;
+    private fpsLimit: number = 60;
+    private isInitialized: boolean = false;
+
+    // Initialize the render manager with required dependencies
+    initialize(engine: any, scene: any, guiManager: GUIManager): void {
+        if (this.isInitialized) {
+            Logger.warn('RenderManager already initialized', 'RenderManager');
+            return;
+        }
+
+        this.engine = engine;
+        this.scene = scene;
+        this.guiManager = guiManager;
+        this.isInitialized = true;
+
+        Logger.info('RenderManager initialized', 'RenderManager');
+    }
+
+    // Start the render loop
+    startRendering(): void {
+        if (!this.isInitialized) {
+            Logger.error('Cannot start rendering: RenderManager not initialized', 'RenderManager');
+            return;
+        }
+
+        if (this.isRenderingActive) {
+            Logger.warn('Render loop already active', 'RenderManager');
+            return;
+        }
+
+        if (!this.engine || !this.scene) {
+            Logger.error('Cannot start rendering: engine or scene not available', 'RenderManager');
+            return;
+        }
+
+        this.isRenderingActive = true;
+        this.lastFrameTime = performance.now();
+
+        this.engine.runRenderLoop(() => {
+            if (!this.isRenderingActive) return;
+
+            const currentTime = performance.now();
+            const deltaTime = currentTime - this.lastFrameTime;
+            
+            // Frame rate limiting
+            if (deltaTime < (1000 / this.fpsLimit)) return;
+
+            try {
+                // Render the scene
+                if (this.scene && this.scene.activeCamera)
+                    this.scene.render();
+
+                // Update FPS display
+                this.updateFPSDisplay(deltaTime);
+
+                this.lastFrameTime = currentTime;
+            } catch (error) {
+                Logger.error('Error in render loop', 'RenderManager', error);
+            }
+        });
+
+        Logger.info('Render loop started', 'RenderManager');
+    }
+
+    // Stop the render loop
+    stopRendering(): void {
+        if (!this.isRenderingActive) return;
+
+        this.isRenderingActive = false;
+        
+        if (this.engine)
+            this.engine.stopRenderLoop();
+
+        Logger.info('Render loop stopped', 'RenderManager');
+    }
+
+    // Set the FPS limit for the render loop
+    setFpsLimit(fps: number): void {
+        if (fps <= 0 || fps > 300) {
+            Logger.warn(`Invalid FPS limit: ${fps}. Using default 60 FPS`, 'RenderManager');
+            this.fpsLimit = 60;
+            return;
+        }
+
+        this.fpsLimit = fps;
+        Logger.info(`FPS limit set to ${fps}`, 'RenderManager');
+    }
+
+    // Get the current FPS limit
+    getFpsLimit(): number {
+        return this.fpsLimit;
+    }
+
+    // Check if rendering is currently active
+    isRendering(): boolean {
+        return this.isRenderingActive;
+    }
+
+    // Update the FPS display through the GUI manager
+    private updateFPSDisplay(deltaTime: number): void {
+        if (this.guiManager && this.guiManager.isReady()) {
+            const fps = 1000 / deltaTime;
+            this.guiManager.updateFPS(fps);
+        }
+    }
+
+    // Clean up render manager resources
+    dispose(): void {
+        if (!this.isInitialized) return;
+
+        Logger.info('Disposing RenderManager...', 'RenderManager');
+
+        // Stop rendering if active
+        this.stopRendering();
+
+        // Clear references
+        this.engine = null;
+        this.scene = null;
+        this.guiManager = null;
+        this.isInitialized = false;
+
+        Logger.info('RenderManager disposed successfully', 'RenderManager');
+    }
+}

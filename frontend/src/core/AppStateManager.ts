@@ -8,6 +8,7 @@ import { EL } from '../ui/elements.js';
 import { GameConfigFactory } from '../engine/GameConfig.js';
 import { PlayerInfo } from '../shared/types.js';
 import { Logger } from './LogManager.js'
+import { memoryDetector } from './main.js';
 
 /**
  * AppStateManager is responsible for managing the application's game state and transitions
@@ -25,6 +26,7 @@ class AppStateManager {
     // ========================================
 
     async startGameWithMode(viewMode: ViewMode, gameMode: GameMode): Promise<void> {
+        memoryDetector.markGameStart(); //[ ]TODO 
         try {
             Logger.info(`Starting game: ${gameMode} in ${ViewMode[viewMode]} mode`, 'AppStateManager');
 
@@ -75,6 +77,7 @@ class AppStateManager {
     }
 
     resetToMenu(): void {
+        memoryDetector.markGameEnd();
         this.currentState = null;
         this.isExiting = false;
         uiManager.setElementVisibility('pause-dialog-3d', false);

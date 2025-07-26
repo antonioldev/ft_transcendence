@@ -4,17 +4,18 @@ declare var BABYLON: typeof import('@babylonjs/core') & {
 
 import { GameConfig } from './GameConfig.js';
 import { buildScene } from './sceneBuilder.js';
-import { InputHandler } from './InputHandler.js';
+import { InputHandler } from './InputManager.js';
 import { webSocketClient } from '../core/WebSocketClient.js';
 import { GameStateData, GameObjects } from '../shared/types.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
 import { appStateManager } from '../core/AppStateManager.js';
-import { GameMode, GameState, WebSocketEvent } from '../shared/constants.js';
+import { GameState, WebSocketEvent } from '../shared/constants.js';
 import { EL } from '../ui/elements.js';
-import { ViewMode } from '../shared/constants.js';
 import { requireElementById } from '../ui/elements.js';
 import { Logger } from '../core/LogManager.js';
 import { uiManager } from '../ui/UIManager.js';
+import { GUIManager } from './GuiManager.js';
+import { RenderManager } from './RenderManager.js';
 
 /**
  * Main Game class that handles everything for running one game instance.
@@ -36,39 +37,52 @@ export class Game {
     private canvas: HTMLCanvasElement | null = null;
     private gameObjects: GameObjects | null = null;
     private inputHandler: InputHandler | null = null;
-    private isRenderingActive: boolean = false;
+    private guiManager: GUIManager | null = null;
+    private renderManager: RenderManager | null = null;
     private resizeHandler: (() => void) | null = null;
-    private advancedTexture: any = null;
-    private fpsText: any = null;
     private isInitialized: boolean = false;
     private isRunning: boolean = false;
     private isDisposed: boolean = false;
     private isPausedByServer: boolean = false;
     private countdownLoop: number | null = null;
     private gameLoopObserver: any = null;
-    private score1Text: any = null;
-    private score2Text: any = null;
-    
-    private lastFrameTime: number = 0;
-    private fpsLimit: number = 60;
 
     constructor(private config: GameConfig) {
         if (Game.currentInstance)
             Game.currentInstance.dispose();
         Game.currentInstance = this;
 
-        const element = document.getElementById(config.canvasId);
-        if (element instanceof HTMLCanvasElement) {
-            this.canvas = element;
-            const gl = this.canvas.getContext('webgl') || this.canvas.getContext('webgl2');
+        try {
+            this.guiManager = new GUIManager();
+            this.renderManager = new RenderManager();
             
-            if (gl) {
-                gl.getExtension('WEBGL_color_buffer_float');
-                gl.getExtension('EXT_color_buffer_half_float');
+            const element = document.getElementById(config.canvasId);
+            if (element instanceof HTMLCanvasElement) {
+                this.canvas = element;
+                const gl = this.canvas.getContext('webgl') || this.canvas.getContext('webgl2');
+                
+                if (gl) {
+                    gl.getExtension('WEBGL_color_buffer_float');
+                    gl.getExtension('EXT_color_buffer_half_float');
+                }
+                this.canvas.focus();
             }
-            this.canvas.focus();
-        } else
-            Logger.errorAndThrow(`Canvas element not found or is not a canvas: ${config.canvasId}`);
+        } catch (error) {
+            Logger.errorAndThrow('Error creating game managers', 'Game', error);
+        }
+
+        // const element = document.getElementById(config.canvasId);
+        // if (element instanceof HTMLCanvasElement) {
+        //     this.canvas = element;
+        //     const gl = this.canvas.getContext('webgl') || this.canvas.getContext('webgl2');
+            
+        //     if (gl) {
+        //         gl.getExtension('WEBGL_color_buffer_float');
+        //         gl.getExtension('EXT_color_buffer_half_float');
+        //     }
+        //     this.canvas.focus();
+        // } else
+        //     Logger.errorAndThrow(`Canvas element not found or is not a canvas: ${config.canvasId}`);
 
         Logger.info('Game created with config', 'Game', {
             viewMode: config.viewMode,
@@ -105,8 +119,12 @@ export class Game {
             // Build game objects
             this.gameObjects = await buildScene(this.scene, this.engine, this.config.viewMode, (progress: number) => uiManager.updateLoadingProgress(progress));
             if (!this.gameObjects) Logger.errorAndThrow('Game objects not created', 'Game');
-            this.createGUI();
-            this.startRenderLoop();
+            this.guiManager?.createGUI(this.scene, this.config);
+
+            if (this.guiManager)
+                this.renderManager?.initialize(this.engine, this.scene, this.guiManager);
+            this.renderManager?.startRendering();
+
             this.setupResizeHandler();
 
             this.inputHandler = new InputHandler(this.config.gameMode, this.config.controls, this.scene);
@@ -142,93 +160,6 @@ export class Game {
         scene.createDefaultEnvironment({ createGround: false, createSkybox: false });
         scene.clearColor = new BABYLON.Color4(0, 0, 0, 1);
         return scene;
-    }
-
-    // Create GUI elements
-    private createGUI(): void {
-        // this.advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
-        this.advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI", true, this.scene);
-        this.advancedTexture.layer.layerMask = 0x20000000;
-
-        
-        if (this.config.viewMode === ViewMode.MODE_3D && this.config.gameMode === GameMode.TWO_PLAYER_LOCAL) {
-            const dividerLine = new BABYLON.GUI.Rectangle();
-            dividerLine.widthInPixels = 5;
-            dividerLine.height = "100%";
-            dividerLine.color = "black";
-            dividerLine.background = "black";
-            dividerLine.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
-            dividerLine.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
-            
-            this.advancedTexture.addControl(dividerLine);
-        }
-
-        // Create FPS display
-        this.fpsText = new BABYLON.GUI.TextBlock();
-        this.fpsText.text = "FPS: 0";
-        this.fpsText.color = "white";
-        this.fpsText.fontSize = 16;
-        this.fpsText.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
-        this.fpsText.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
-        this.fpsText.top = "1px";
-        this.fpsText.left = "-20px";
-        this.fpsText.width = "200px";
-        this.fpsText.height = "40px";
-        
-        this.advancedTexture.addControl(this.fpsText);
-
-        // Create score container
-        const scoreContainer = new BABYLON.GUI.StackPanel();
-        scoreContainer.isVertical = true;
-        scoreContainer.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
-        scoreContainer.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
-        scoreContainer.top = "-30px";
-        scoreContainer.height = "80px";
-
-        // Player names row
-        const playersRow = new BABYLON.GUI.StackPanel();
-        playersRow.isVertical = false;
-        playersRow.height = "30px";
-
-        const player1Label = new BABYLON.GUI.TextBlock();
-        player1Label.text = "Player 1";
-        player1Label.color = "white";
-        player1Label.fontSize = 18;
-        player1Label.width = "120px";
-
-        const player2Label = new BABYLON.GUI.TextBlock();
-        player2Label.text = "Player 2";
-        player2Label.color = "white";
-        player2Label.fontSize = 18;
-        player2Label.width = "120px";
-
-        playersRow.addControl(player1Label);
-        playersRow.addControl(player2Label);
-
-        // Scores row
-        const scoresRow = new BABYLON.GUI.StackPanel();
-        scoresRow.isVertical = false;
-        scoresRow.height = "40px";
-
-        this.score1Text = new BABYLON.GUI.TextBlock();
-        this.score1Text.text = "0";
-        this.score1Text.color = "white";
-        this.score1Text.fontSize = 24;
-        this.score1Text.width = "120px";
-
-        this.score2Text = new BABYLON.GUI.TextBlock();
-        this.score2Text.text = "0";
-        this.score2Text.color = "white";
-        this.score2Text.fontSize = 24;
-        this.score2Text.width = "120px";
-
-        scoresRow.addControl(this.score1Text);
-        scoresRow.addControl(this.score2Text);
-
-        scoreContainer.addControl(playersRow);
-        scoreContainer.addControl(scoresRow);
-
-        this.advancedTexture.addControl(scoreContainer);
     }
 
     // Setup window resize handler
@@ -307,7 +238,7 @@ export class Game {
         
         game.isRunning = false;
         game.isPausedByServer = false;
-        game.stopRenderLoop();
+        game.renderManager?.stopRendering();;
         game.stopGameLoop();
         Logger.info('Game stopped', 'Game');
     }
@@ -343,7 +274,7 @@ export class Game {
         this.isRunning = false;
         appStateManager.updateGamePauseStateTo(GameState.PAUSED);
         
-        this.stopRenderLoop();
+        this.renderManager?.stopRendering();
         this.stopGameLoop();
         
         Logger.info('Game paused by server', 'Game');
@@ -359,7 +290,7 @@ export class Game {
         this.isRunning = true;
         appStateManager.updateGamePauseStateTo(GameState.PLAYING);
 
-        this.startRenderLoop();
+        this.renderManager?.startRendering();
         this.startGameLoop();
         
         Logger.info('Game resumed by server', 'Game');
@@ -371,57 +302,13 @@ export class Game {
 
         Logger.info('Server ended the game', 'Game');
 
-        this.stopRenderLoop();
+        this.renderManager?.stopRendering();
         this.stopGameLoop();
 
         appStateManager.resetToMenu();
         Game.disposeGame();
 
         Logger.info('Game ended by server', 'Game');
-    }
-
-
-    // ========================================
-    // RENDER LOOP - These functions are in charge of the frame rendering
-    // ========================================
-
-    private startRenderLoop(): void {
-        if (this.isDisposed || this.isRenderingActive || !this.engine || !this.scene) return;
-
-        this.isRenderingActive = true;
-        this.lastFrameTime = performance.now();
-
-        this.engine.runRenderLoop(() => {
-            if (!this.isRenderingActive || this.isDisposed) return;
-
-            const currentTime = performance.now();
-            const deltaTime = currentTime - this.lastFrameTime;
-            if (deltaTime < (1000 / this.fpsLimit)) return;
-
-            try {
-                if (this.scene && this.scene.activeCamera)
-                    this.scene.render();
-
-                // Update FPS
-                if (this.fpsText && this.engine)
-                    this.fpsText.text = "FPS: " + Math.round(1000 / deltaTime);
-                    // this.fpsText.text = "FPS: " + this.engine.getFps().toFixed(0);
-
-                this.lastFrameTime = currentTime;
-            } catch (error) {
-                Logger.error('Error in render loop:', 'Game');
-            }
-        });
-
-        Logger.info('Render loop started', 'Game');
-    }
-
-    private stopRenderLoop(): void {
-        if (!this.isRenderingActive) return;
-        this.isRenderingActive = false;
-        if (this.engine)
-            this.engine.stopRenderLoop();
-        Logger.info('Render loop stopped', 'Game');
     }
 
     // ========================================
@@ -476,10 +363,9 @@ export class Game {
             }
 
             // Update Score
-            if (this.score1Text && this.score2Text) {
-                this.score1Text.text = state.paddleLeft.score.toString();
-                this.score2Text.text = state.paddleRight.score.toString();
-            }
+            if (this.guiManager && this.guiManager.isReady())
+                this.guiManager.updateScores(state.paddleLeft.score, state.paddleRight.score);
+
         } catch (error) {
             Logger.error('Error updating game objects', 'Game', error);
         }
@@ -517,13 +403,12 @@ export class Game {
         this.isRunning = false;
         this.isPausedByServer = false;
 
-        // Clear static reference if this is the current instance
-        // if (Game.currentInstance === this)
-        //     Game.currentInstance = null;
-
         try {
             this.stopGameLoop();
-            this.stopRenderLoop();
+            if (this.renderManager) {
+                this.renderManager.dispose();
+                this.renderManager = null;
+            }
 
             if (this.countdownLoop) {
                 clearInterval(this.countdownLoop);
@@ -540,13 +425,10 @@ export class Game {
                 this.resizeHandler = null;
             }
 
-            if (this.advancedTexture) {
-                this.advancedTexture.dispose();
-                this.advancedTexture = null;
+            if (this.guiManager) {
+                this.guiManager.dispose();
+                this.guiManager = null;
             }
-            this.fpsText = null;
-            this.score1Text = null;
-            this.score2Text = null;
 
             uiManager.setLoadingScreenVisible(false);
             uiManager.updateLoadingProgress(0);
@@ -591,4 +473,4 @@ BABYLON.DefaultLoadingScreen.prototype.hideLoadingUI = function () {
     loading.style.display = 'none';
     (this as any)._isLoading = false;
     
-};
+}; //456

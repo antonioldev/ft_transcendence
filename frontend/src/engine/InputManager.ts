@@ -55,11 +55,6 @@ export class InputHandler {
         this.gameObjects = gameObjects;
     }
 
-    // Set controlled side for remote games
-    setControlledSide(side: number): void {
-        this.controlledSide = side;
-    }
-
     // Set input callback
     onInput(callback: (input: InputData) => void): void {
         this.onInputCallback = callback;

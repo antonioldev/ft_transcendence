@@ -8,7 +8,13 @@ import { HistoryManager } from './HistoryManager.js';
 import { ConnectionStatus, WebSocketEvent } from '../shared/constants.js';
 import { EL, requireElementById } from '../ui/elements.js';
 import { DashboardManager } from './DashboardManager.js';
+import { MemoryLeakDetector } from './.memory.js'
 
+
+
+// Initialize the detector
+const memoryDetector = new MemoryLeakDetector();
+export { memoryDetector };
 
 function loadPage(): void {
     // Initialize classes
@@ -23,16 +29,17 @@ function loadPage(): void {
     updateLanguageDisplay();
     setupLanguageListeners();
 
+    // memoryDetector.startMonitoring();
 
-    setInterval(() => {
-        if ((performance as any).memory) {
-            const memory = (performance as any).memory;
-            console.log('Memory:', {
-                used: Math.round(memory.usedJSHeapSize / 1024 / 1024) + 'MB',
-                total: Math.round(memory.totalJSHeapSize / 1024 / 1024) + 'MB'
-            });
-        }
-    }, 5000);
+    // setInterval(() => {
+    //     if ((performance as any).memory) {
+    //         const memory = (performance as any).memory;
+    //         console.log('Memory:', {
+    //             used: Math.round(memory.usedJSHeapSize / 1024 / 1024) + 'MB',
+    //             total: Math.round(memory.totalJSHeapSize / 1024 / 1024) + 'MB'
+    //         });
+    //     }
+    // }, 5000);
 
     // Setup WebSocket monitoring
     webSocketClient.registerCallback(WebSocketEvent.STATUS_CHANGE, (status: ConnectionStatus) => {
