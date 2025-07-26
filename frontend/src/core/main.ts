@@ -10,8 +10,6 @@ import { EL, requireElementById } from '../ui/elements.js';
 import { DashboardManager } from './DashboardManager.js';
 import { MemoryLeakDetector } from './.memory.js'
 
-
-
 // Initialize the detector
 const memoryDetector = new MemoryLeakDetector();
 export { memoryDetector };

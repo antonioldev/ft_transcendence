@@ -71,19 +71,6 @@ export class Game {
             Logger.errorAndThrow('Error creating game managers', 'Game', error);
         }
 
-        // const element = document.getElementById(config.canvasId);
-        // if (element instanceof HTMLCanvasElement) {
-        //     this.canvas = element;
-        //     const gl = this.canvas.getContext('webgl') || this.canvas.getContext('webgl2');
-            
-        //     if (gl) {
-        //         gl.getExtension('WEBGL_color_buffer_float');
-        //         gl.getExtension('EXT_color_buffer_half_float');
-        //     }
-        //     this.canvas.focus();
-        // } else
-        //     Logger.errorAndThrow(`Canvas element not found or is not a canvas: ${config.canvasId}`);
-
         Logger.info('Game created with config', 'Game', {
             viewMode: config.viewMode,
             gameMode: config.gameMode,
@@ -304,9 +291,8 @@ export class Game {
 
         this.renderManager?.stopRendering();
         this.stopGameLoop();
-
-        appStateManager.resetToMenu();
         Game.disposeGame();
+        appStateManager.resetToMenu();
 
         Logger.info('Game ended by server', 'Game');
     }
@@ -460,17 +446,3 @@ export class Game {
     }
 
 }
-
-BABYLON.DefaultLoadingScreen.prototype.displayLoadingUI = function () {
-    if ((this as any)._isLoading)
-        return;
-
-    (this as any)._isLoading = true;
-};
-
-BABYLON.DefaultLoadingScreen.prototype.hideLoadingUI = function () {
-    const loading = requireElementById(EL.GAME.LOADING_SCREEN);
-    loading.style.display = 'none';
-    (this as any)._isLoading = false;
-    
-}; //456

@@ -26,7 +26,7 @@ class AppStateManager {
     // ========================================
 
     async startGameWithMode(viewMode: ViewMode, gameMode: GameMode): Promise<void> {
-        memoryDetector.markGameStart(); //[ ]TODO 
+        // memoryDetector.markGameStart(); //[ ]TODO 
         try {
             Logger.info(`Starting game: ${gameMode} in ${ViewMode[viewMode]} mode`, 'AppStateManager');
 
@@ -77,12 +77,13 @@ class AppStateManager {
     }
 
     resetToMenu(): void {
-        memoryDetector.markGameEnd();
+
         this.currentState = null;
         this.isExiting = false;
         uiManager.setElementVisibility('pause-dialog-3d', false);
         authManager.checkAuthState();
-        historyManager.navigateTo(AppState.MAIN_MENU);;
+        historyManager.navigateTo(AppState.MAIN_MENU);
+        // memoryDetector.markGameEnd(); // [ ]
     }
 
     setGameState(viewMode: ViewMode): void {
