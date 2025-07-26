@@ -7,7 +7,6 @@ export enum MessageType {
     PLAYER_INPUT,       // CLIENT -> SERVER: Player input data
     GAME_STATE,         // SERVER -> CLIENTS: Current game state update
     SIDE_ASSIGNMENT,    // SERVER -> CLIENTS: Assign player to a side (left/right)
-    // GAME_STARTED,       // SERVER -> CLIENT: Welcome to game (after JOIN_GAME)
     ERROR,              // SERVER -> CLIENTS: Error message
     QUIT_GAME,          // CLIENT -> SERVER: Send this message when CTRL + Y
     PAUSE_REQUEST,      // CLIENT -> SERVER: Client requests pause (ESC key)
@@ -16,6 +15,8 @@ export enum MessageType {
     RESUMED,            // SERVER -> CLIENTS: Server confirms resume to all clients
     GAME_ENDED,         // SERVER -> CLIENTS: Server notifies game ended (when someone quits with Y)
     WELCOME,             // SERVER -> CLIENT: Welcome message on connection
+    PLAYER_READY,       // CLIENT -> SERVER: Client loaded babylon and is waiting for server
+    ALL_READY,                  // SERVER -> CLIENT: All players are ready, game starts in 5 seconds
     REGISTER_USER,         // New User want to register --> going to create a new row in db
     LOGIN_USER,            // User want to connect to their account --> calling function for validate info
     SUCCESS_LOGIN,         // Successfully login a user 
@@ -42,6 +43,7 @@ export enum WebSocketEvent {
     GAME_RESUMED = 'gameResumed',
     GAME_ENDED = 'gameEnded',
     STATUS_CHANGE = 'statusChange',
+    ALL_READY = 'all_ready',
     LOGIN_SUCCESS = 'LOGIN_SUCCESS',
     LOGIN_FAILURE = 'LOGIN_FAILURE',
     REGISTRATION_SUCCESS = 'REGISTRATION_SUCCESS',

@@ -44,6 +44,7 @@ export class Game {
     private isRunning: boolean = false;
     private isDisposed: boolean = false;
     private isPausedByServer: boolean = false;
+    private countdownLoop: number | null = null;
     private gameLoopObserver: any = null;
     private score1Text: any = null;
     private score2Text: any = null;
@@ -113,6 +114,7 @@ export class Game {
 
             this.connectComponents();
             this.isInitialized = true;
+            webSocketClient.sendPlayerReady();
             Logger.info('Game initialized successfully', 'Game');
 
         } catch (error) {
@@ -253,6 +255,7 @@ export class Game {
         webSocketClient.registerCallback(WebSocketEvent.GAME_PAUSED, () => { this.onServerPausedGame(); });
         webSocketClient.registerCallback(WebSocketEvent.GAME_RESUMED, () => { this.onServerResumedGame(); });
         webSocketClient.registerCallback(WebSocketEvent.GAME_ENDED, () => { this.onServerEndedGame(); });
+        webSocketClient.registerCallback(WebSocketEvent.ALL_READY, (countdown: number) => { this.handleCountdown(countdown); });
     }
 
     async connect(): Promise<void> {
@@ -314,6 +317,20 @@ export class Game {
         if (!game) return;
         
         await game.dispose();
+    }
+
+
+    private handleCountdown(countdown: number): void {
+        if (countdown === undefined || countdown === null)
+            Logger.errorAndThrow('Server sent ALL_READY without countdown parameter', 'Game');
+
+        if (countdown > 0)
+            Logger.info(`Game starts in ${countdown}`, 'Game');
+        else {
+            Logger.info('GO! Starting game now!', 'Game');
+            uiManager.setLoadingScreenVisible(false);
+            this.start();
+        }
     }
 
     // Handle server confirming game is paused
@@ -504,16 +521,19 @@ export class Game {
         this.isPausedByServer = false;
 
         // Clear static reference if this is the current instance
-        if (Game.currentInstance === this) {
+        if (Game.currentInstance === this)
             Game.currentInstance = null;
-        }
 
         try {
-            // ... rest of dispose method stays the same
             this.stopGameLoop();
             this.stopRenderLoop();
 
-            await new Promise(resolve => setTimeout(resolve, 16));
+            if (this.countdownLoop) {
+                clearInterval(this.countdownLoop);
+                this.countdownLoop = null;
+            }
+
+            // await new Promise(resolve => setTimeout(resolve, 16));
 
             if (this.inputHandler) {
                 await this.inputHandler.dispose();

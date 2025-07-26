@@ -69,14 +69,17 @@ export class WebSocketManager {
                 case MessageType.JOIN_GAME:
                     await this.handleJoinGame(socket, client, data, setCurrentGameId);
                     break;
+                case MessageType.PLAYER_READY:
+                    await this.handlePlayerReady(client);
+                    break;
                 case MessageType.PLAYER_INPUT:
                     await this.handlePlayerInput(client, data);
                     break;
                 case MessageType.PAUSE_REQUEST:
-                    await this.handlePauseRequest(client); // TODO server need to check and confirm to clients
+                    await this.handlePauseRequest(client);
                     break;
                 case MessageType.RESUME_REQUEST:
-                    await this.handleResumeRequest(client); // TODO server need to check and confirm to clients
+                    await this.handleResumeRequest(client);
                     break;
                 case MessageType.LOGIN_USER:
                     console.log("HandleMessage WSM: calling Login_user");
@@ -136,12 +139,33 @@ export class WebSocketManager {
             if (game) {
                 // Start game if ready
                 if (game.full && !game.running) {
-                    game.start();
+                    console.log(`Client ${client.id} joined game ${gameId}. Game full: ${game.full}`);
+                    // game.start();
                 }
             }
         } catch (error) {
             console.error('❌ Error joining game:', error);
             await this.sendError(socket, 'Failed to join game');
+        }
+    }
+
+    /**
+     * Handles when a client signals they are ready (finished loading)
+     * @param client - The client that is ready
+     */
+    private async handlePlayerReady(client: Client): Promise<void> {
+        console.log(`Client ${client.id} is ready`);
+
+        const game = this.findClientGame(client);
+        if (!game) {
+            console.warn(`Client ${client.id} not in any game for ready signal`);
+            return;
+        }
+
+        game.setClientReady(client);
+        if (game.allClientsReady()) {
+            console.log(`All clients ready in game ${game.id}, sending ALL_READY`);
+            await game.sendAllReady();
         }
     }
 

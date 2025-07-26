@@ -140,10 +140,12 @@ export async function buildScene(
     let playerRight: any;
 
     onProgress?.(10);
-    
     const lights = createLight(scene, "light1", new BABYLON.Vector3(0, 10, 0));
+    onProgress?.(20);
     const ground = createGround(scene, "ground", GAME_CONFIG.fieldWidth, GAME_CONFIG.fieldHeight, mode);
+    onProgress?.(30);
     const walls = createWalls(scene, "walls", GAME_CONFIG.fieldWidth, GAME_CONFIG.fieldHeight, GAME_CONFIG.wallHeight, GAME_CONFIG.wallThickness, mode);
+    onProgress?.(40);
     const ball = createBall(scene, "ball", getBallStartPosition(), mode);
     onProgress?.(50);
     
@@ -151,16 +153,20 @@ export async function buildScene(
         cameras = [createCamera(scene, "camera1", getCamera2DPosition(), get2DCameraViewport(), mode)];
         playerLeft = createPlayer(scene, "player1", getPlayerLeftPosition(), getPlayerSize(), COLORS.player1_2D, mode);
         playerRight = createPlayer(scene, "player2", getPlayerRightPosition(), getPlayerSize(), COLORS.player2_2D, mode);
+        onProgress?.(80);
     } else {
         cameras = [
             createCamera(scene, "camera1", getCamera3DPlayer1Position(), get3DCamera1Viewport(), mode),
             createCamera(scene, "camera2", getCamera3DPlayer2Position(), get3DCamera2Viewport(), mode)
         ];
+        onProgress?.(60);
         playerLeft = createPlayer(scene, "player1", getPlayerLeftPosition(), getPlayerSize(), COLORS.player1_3D, mode);
         playerRight = createPlayer(scene, "player2", getPlayerRightPosition(), getPlayerSize(), COLORS.player2_3D, mode);
+        onProgress?.(70);
         createEnvironment(scene, mode, MAP_ASSETS.skybox);
     }
-
+    await scene.whenReadyAsync();
+    onProgress?.(90);
     // Create GUI camera for both modes
     const guiCamera = createCamera(scene, "guiCamera", BABYLON.Vector3.Zero(), new BABYLON.Viewport(0, 0, 1, 1), mode);
     guiCamera.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
@@ -171,8 +177,8 @@ export async function buildScene(
     guiCamera.layerMask = 0x20000000;
     cameras.push(guiCamera);
     scene.activeCameras = cameras;
-    
-    onProgress?.(90);
+    onProgress?.(100);
+    console.log('Scene building complete!');
     return {
         players: { left: playerLeft, right: playerRight },
         ball,

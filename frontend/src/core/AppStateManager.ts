@@ -41,15 +41,15 @@ class AppStateManager {
 
             const config = GameConfigFactory.createConfig(viewMode, gameMode, players);
 
-            // Create and start game - let Game class manage its own lifecycle
+            // Load the game and wait for server
             const game = new Game(config);
             await game.connect();
             await game.initialize();
-            game.start();
+            // game.start();
 
-            Logger.info('Game started successfully', 'AppStateManager');
+            Logger.info('Game initialize successfully', 'AppStateManager');
         } catch (error) {
-            Logger.error('Error starting game', 'AppStateManager', error);
+            Logger.error('Error initializing game', 'AppStateManager', error);
             this.handleGameStartError();
         }
     }

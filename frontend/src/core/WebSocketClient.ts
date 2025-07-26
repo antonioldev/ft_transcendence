@@ -103,6 +103,9 @@ export class WebSocketClient {
             case MessageType.GAME_ENDED:
                 this.triggerCallback(WebSocketEvent.GAME_ENDED);
                 break;
+            case MessageType.ALL_READY:
+                this.triggerCallback(WebSocketEvent.ALL_READY, message.countdown);
+                break;
             case MessageType.WELCOME:
                 Logger.info('Server says', 'WebSocketClient', message.message);
                 break;
@@ -151,6 +154,10 @@ export class WebSocketClient {
 
     joinGame(gameMode: GameMode, players: PlayerInfo[]): void {
         this.sendMessage(MessageType.JOIN_GAME, { gameMode, players });
+    }
+
+    sendPlayerReady(): void {
+        this.sendMessage(MessageType.PLAYER_READY);
     }
 
     sendPlayerInput(side: number, direction: Direction): void {

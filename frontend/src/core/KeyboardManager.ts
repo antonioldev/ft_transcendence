@@ -55,11 +55,10 @@ export class KeyboardManager {
             isPaused: appStateManager.isPaused() 
         });
         
-        if (appStateManager.isInGame()) {
+        if (appStateManager.isInGame())
             Game.pause();
-        } else if (appStateManager.isPaused()) {
+        else if (appStateManager.isPaused())
             Game.resume();
-        }
     }
 
     // Handles Y/N key presses for pause dialog confirmation.

@@ -50,6 +50,7 @@ export interface ServerMessage {
     side?: number; // Player side (optional)
     message?: string; // Additional message (optional)
     stats?: UserStats;
+    countdown?: number;
     gameHistory?: GameHistoryEntry[];
 }
 
