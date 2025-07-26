@@ -9,7 +9,7 @@ import { webSocketClient } from '../core/WebSocketClient.js';
 import { GameStateData, GameObjects } from '../shared/types.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
 import { appStateManager } from '../core/AppStateManager.js';
-import { GameMode, WebSocketEvent } from '../shared/constants.js';
+import { GameMode, GameState, WebSocketEvent } from '../shared/constants.js';
 import { EL } from '../ui/elements.js';
 import { ViewMode } from '../shared/constants.js';
 import { requireElementById } from '../ui/elements.js';
@@ -341,7 +341,7 @@ export class Game {
         
         this.isPausedByServer = true;
         this.isRunning = false;
-        appStateManager.onServerConfirmedPause();
+        appStateManager.updateGamePauseStateTo(GameState.PAUSED);
         
         this.stopRenderLoop();
         this.stopGameLoop();
@@ -357,7 +357,7 @@ export class Game {
         
         this.isPausedByServer = false;
         this.isRunning = true;
-        appStateManager.onServerConfirmedResume();
+        appStateManager.updateGamePauseStateTo(GameState.PLAYING);
 
         this.startRenderLoop();
         this.startGameLoop();

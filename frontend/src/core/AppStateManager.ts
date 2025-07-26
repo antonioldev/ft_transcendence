@@ -89,16 +89,11 @@ class AppStateManager {
         Logger.info(`Game started in ${ViewMode[viewMode]} mode`, 'AppStateManager');
     }
 
-    onServerConfirmedPause(): void {
-        this.currentState = GameState.PAUSED;
-        uiManager.setElementVisibility(EL.GAME.PAUSE_DIALOG_3D, true);
-        Logger.info('Game paused and UI updated', 'AppStateManager');
-    }
-
-    onServerConfirmedResume(): void {
-        this.currentState = GameState.PLAYING;
-        uiManager.setElementVisibility(EL.GAME.PAUSE_DIALOG_3D, false);
-        Logger.info('Game resumed and UI updated', 'AppStateManager');
+    updateGamePauseStateTo(state: GameState): void {
+        this.currentState = state;
+        const showDialog = state === GameState.PAUSED;
+        uiManager.setElementVisibility(EL.GAME.PAUSE_DIALOG_3D, showDialog);
+        Logger.info(`Game ${showDialog ? 'paused' : 'resumed'} and UI updated`, 'AppStateManager');
     }
 
     // ========================================
