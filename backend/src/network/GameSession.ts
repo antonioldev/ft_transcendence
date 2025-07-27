@@ -156,17 +156,16 @@ export class GameSession {
 	}
 
 	assign_sides(players: Player[]) {
-		// guarantees that the index of players[] aligns with each player.side
+		// guarantees that the index of players[] aligns with player.side
 		players[LEFT_PADDLE].side = LEFT_PADDLE;
 		players[RIGHT_PADDLE].side = RIGHT_PADDLE;
 
-		for (let i = 0; i < 2; i++) {
-			const client = players[i].client;
-			if (client !== null) { // if not AIBot
-				this.broadcast(client.websocket.send(JSON.stringify({
+		for (const player of this.players) {
+			if (player.client !== null) { // if not AIBot
+				this.broadcast(player.client.websocket.send(JSON.stringify({
 					type: MessageType.SIDE_ASSIGNMENT,
-					name: players[i].name,
-					side: players[i].side
+					name: player.name,
+					side: player.side
 				})))
 			}
 		}
@@ -186,6 +185,7 @@ export class GameSession {
 }
 
 class Match {
+	//id: string; // will need to use this so that clients know which game they are sending input to
 	players: Player[];
 	winner!: Player;
 	game!: Game;
@@ -213,7 +213,6 @@ export class Tournament extends GameSession {
 	private _create_matches(): Match[] {
 		let current_round = [];
 		while (this.remaining_players.length > 0) {
-
 			const player_left: (Player | undefined) = this.remaining_players.shift();
 			const player_right: (Player | undefined) = this.remaining_players.shift();
 
@@ -228,6 +227,7 @@ export class Tournament extends GameSession {
 		return current_round;
 	}
 
+	// runs all games in a round in parallel and awaits until all are finished
 	private async _run_all(current_round: Match[]) {
 		let winner_promises: Promise<Player>[] = [];
 
@@ -240,6 +240,7 @@ export class Tournament extends GameSession {
 		this.remaining_players = await Promise.all(winner_promises);
 	}
 
+	// runs each game in a round one by one and awaits each game before starting the next
 	private async _run_one_by_one(current_round: Match[]) {
 		for (const match of current_round) {
 			this.assign_sides(match.players);
