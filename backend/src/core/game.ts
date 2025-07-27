@@ -15,6 +15,7 @@ export class Game {
 	running: boolean = false;
 	paused: boolean = false;
 	players: Player[]
+	winner!: Player;
 	paddles!: (Paddle | AIBot)[];
 	ball!: Ball;
 	// Callback function to broadcast the game state
@@ -51,6 +52,10 @@ export class Game {
 	// Update the score for the specified side
 	private _update_score(side: number): void {
 		this.paddles[side].score += 1;
+		if (this.paddles[side].score == 1) { // need to add end score to config file
+			this.running = false;
+			this.winner = this.players[side];
+		}
 	}
 
 	// Update the game state, including player and ball positions
@@ -97,7 +102,7 @@ export class Game {
 	}
 
 	// Main game loop that updates the state and broadcasts changes
-	async run(): Promise<void> {
+	async run(): Promise<Player> {
 		while (this.running) {
 			const dt = await this.clock.tick(60);
 			if (this.paused) {
@@ -111,6 +116,7 @@ export class Game {
 				});
 			}
 		}
+		return (this.winner);
 	}
 
 	// Pause the game
