@@ -188,11 +188,17 @@ export class GameSession {
 class Match {
 	//id: string; // will need to use this so that clients know which game they are sending input to
 	players: Player[];
+	clients: Client[] = [];
 	winner!: Player;
 	game!: Game;
 
 	constructor (players: Player[]) {
 		this.players = players;
+		for (const player of this.players) {
+			if (player.client !== null && !this.clients.includes(player.client)) {
+				this.clients.push(player.client);
+			}
+		}
 	}
 }
 
@@ -233,8 +239,7 @@ export class Tournament extends GameSession {
 
 		for (const match of this.current_round) {
 			this.assign_sides(match.players);
-			
-			match.game = new Game(match.players, this.broadcast.bind(this));
+			match.game = new Game(match.players, (message) => this.broadcast(message, match.clients));
 			const winner: Promise<Player> = match.game.run();
 			winner_promises.push(winner);
 		}

@@ -23,7 +23,7 @@ export class Game {
 	constructor(players: Player[], broadcast_callback: (message: ServerMessage, clients?: Client[]) => void) {
 		// Initialize game properties
 		this.clock = new Clock();
-		this._broadcast = broadcast_callback.bind(this);
+		this._broadcast = broadcast_callback;
 		this.players = players;
 		this._init();
 	}
