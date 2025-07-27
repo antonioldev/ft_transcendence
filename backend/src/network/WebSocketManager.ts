@@ -111,24 +111,24 @@ export class WebSocketManager {
 
         try {
             const gameId = gameManager.findOrCreateGame(data.gameMode, client);
-            const game = gameManager.getGame(gameId);
+            const gameSession = gameManager.getGame(gameId);
             setCurrentGameId(gameId);
 
-            if (game) {
+            if (gameSession) {
                 // Start game if ready
                 
                 // ONLY FOR TESTING 
-                if (game.mode == GameMode.SINGLE_PLAYER) {
-                    game.add_player(new Player("001", "Eden", game.clients[0]));
-                    game.add_player(new Player("002", "CPU"));
+                if (gameSession.mode == GameMode.SINGLE_PLAYER) {
+                    gameSession.add_player(new Player("001", "Eden", gameSession.clients[0]));
+                    gameSession.add_player(new Player("002", "CPU"));
                 }
                 else {
-                    game.add_player(new Player("001", "Eden", game.clients[0]));
-                    game.add_player(new Player("002", "Antonio", game.clients[0]));
+                    gameSession.add_player(new Player("001", "Eden", gameSession.clients[0]));
+                    gameSession.add_player(new Player("002", "Antonio", gameSession.clients[0]));
                 }
 
-                if (game.full && !game.running) {
-                    await game.start();
+                if (gameSession.full && !gameSession.running) {
+                    await gameSession.start();
                 }
             }
         } catch (error) {
@@ -177,18 +177,18 @@ export class WebSocketManager {
      * @param client - The client that send the request.
      */
     private async handlePauseRequest(client: Client): Promise<void> {
-        const game = this.findClientGame(client);
-        if (!game) {
+        const gameSession = this.findClientGame(client);
+        if (!gameSession) {
             console.warn(`Client ${client.id} not in any game for pause request`);
             return;
         }
 
-        if (!game.canClientControlGame(client)){
+        if (!gameSession.canClientControlGame(client)){
             console.warn(`Client ${client.id} not authorized to pause game`);
             return;
         }
 
-        const success = await game.pauseGame(client);
+        const success = await gameSession.pauseGame(client);
         if (!success)
             console.warn(`Failed to pause game for client ${client.id}`);
     }
@@ -198,18 +198,18 @@ export class WebSocketManager {
      * @param client - The client that send the request.
      */
     private async handleResumeRequest(client: Client): Promise<void> {
-        const game = this.findClientGame(client);
-        if (!game) {
+        const gameSession = this.findClientGame(client);
+        if (!gameSession) {
             console.warn(`Client ${client.id} not in any game for resume request`);
             return;
         }
 
-        if (!game.canClientControlGame(client)){
+        if (!gameSession.canClientControlGame(client)){
             console.warn(`Client ${client.id} not authorized to resume game`);
             return;
         }
 
-        const success = await game.resumeGame(client);
+        const success = await gameSession.resumeGame(client);
         if (!success)
             console.warn(`Failed to resume game for client ${client.id}`);
     }
@@ -279,9 +279,9 @@ export class WebSocketManager {
      * @returns The game object or null if the client is not in a game.
      */
     private findClientGame(client: Client): any {
-        for (const [gameId, game] of (gameManager as any).games) {
-            if (game.clients.includes(client)) {
-                return game;
+        for (const [gameId, gameSession] of (gameManager as any).games) {
+            if (gameSession.clients.includes(client)) {
+                return gameSession;
             }
         }
         return null;
