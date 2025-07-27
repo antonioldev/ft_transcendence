@@ -10,8 +10,6 @@ import { GameStateData, GameObjects } from '../shared/types.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
 import { appStateManager } from '../core/AppStateManager.js';
 import { GameState, WebSocketEvent } from '../shared/constants.js';
-import { EL } from '../ui/elements.js';
-import { requireElementById } from '../ui/elements.js';
 import { Logger } from '../core/LogManager.js';
 import { uiManager } from '../ui/UIManager.js';
 import { GUIManager } from './GuiManager.js';
@@ -367,6 +365,11 @@ export class Game {
             if (camera1 && camera2 && this.gameObjects.players.left && this.gameObjects.players.right) {
                 const targetLeft = this.gameObjects.players.left.position.clone();
                 const targetRight = this.gameObjects.players.right.position.clone();
+
+                // Clamp the target positions to limit camera follow range
+                const cameraFollowLimit = GAME_CONFIG.cameraFollowLimit;
+                targetLeft.x = Math.max(-cameraFollowLimit, Math.min(cameraFollowLimit, targetLeft.x));
+                targetRight.x = Math.max(-cameraFollowLimit, Math.min(cameraFollowLimit, targetRight.x));
 
                 if (camera1.getTarget && camera2.getTarget) {
                     camera1.setTarget(BABYLON.Vector3.Lerp(camera1.getTarget(), targetLeft, GAME_CONFIG.followSpeed));

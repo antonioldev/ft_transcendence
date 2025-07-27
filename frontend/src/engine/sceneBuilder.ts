@@ -17,6 +17,7 @@ import {
     get3DCamera2Viewport
 } from '../core/utils.js';
 import { MAP_ASSETS } from './sceneAssets.js';
+import { createBushes } from './meshFactory.js';
 import { createMaterial, createEnvironment } from './materialFactory.js';
 
 export type LoadingProgressCallback = (progress: number) => void;
@@ -164,6 +165,9 @@ export async function buildScene(
         playerRight = createPlayer(scene, "player2", getPlayerRightPosition(), getPlayerSize(), COLORS.player2_3D, mode);
         onProgress?.(70);
         createEnvironment(scene, mode, MAP_ASSETS.skybox);
+        onProgress?.(75);
+        const bushes = await createBushes(scene, mode);
+        onProgress?.(80);
     }
     await scene.whenReadyAsync();
     onProgress?.(90);

@@ -1,7 +1,7 @@
 declare var BABYLON: typeof import('@babylonjs/core');
 
 import { ViewMode } from '../shared/constants.js';
-import { TextureSet } from './sceneAssets.js';
+import { TextureSet, MAP_ASSETS, MODEL_PLACEMENT_CONFIG } from './sceneAssets.js';
 import { Logger } from '../core/LogManager.js';
 
 function setTextureScale(textureScale: any, texture: any) {

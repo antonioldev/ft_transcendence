@@ -36,12 +36,13 @@ export class GUIManager {
             this.advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI", true, scene);
             this.advancedTexture.layer.layerMask = 0x20000000;
 
-            // Create view mode specific elements
-            this.createViewModeElements(config);
-            
             // Create common HUD elements
+            this.createContainerScore();
             this.createFPSDisplay();
             this.createScoreDisplay();
+
+            // Create view mode specific elements
+            this.createViewModeElements(config);
 
             this.isInitialized = true;
             Logger.info('GUI created successfully', 'GUIManager');
@@ -83,6 +84,19 @@ export class GUIManager {
         
         this.advancedTexture.addControl(this.fpsText);
         Logger.debug('FPS display created', 'GUIManager');
+    }
+
+    private createContainerScore(): void {
+        const hudPanel = new BABYLON.GUI.Rectangle("hudPanel");
+        hudPanel.width = "100%";
+        hudPanel.height = "20%";
+        hudPanel.cornerRadius = 0;
+        hudPanel.color = "white";
+        hudPanel.thickness = 0; // No border
+        hudPanel.background = "rgba(50, 50, 50, 0.6)"; // grey semi-transparent
+        hudPanel.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+        hudPanel.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
+        this.advancedTexture.addControl(hudPanel);
     }
 
     // Create score display with player names and scores

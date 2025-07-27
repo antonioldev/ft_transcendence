@@ -19,7 +19,25 @@ export const MAP_ASSETS = {
         normal: "assets/textures/map1/paddle/paddle_nor_gl_1k.jpg",
         roughness: "assets/textures/map1/paddle/paddle_rough_1k.jpg"
     },
-    skybox: "assets/test.hdr"
+    skybox: "assets/textures/map1/sky/sky.hdr",
+    
+    // Add models section without breaking existing structure
+    models: {
+        bush: {
+            path: "assets/model/map1/Bush/",
+            file: "Bush1.obj"
+        }
+    }
+};
+
+export const MODEL_PLACEMENT_CONFIG = {
+    bush: {
+        count: 8,
+        marginFromField: 3,
+        maxDistanceFromField: 5,
+        scaleRange: { min: 0.8, max: 1.2 },
+        randomRotation: true
+    }
 };
 
 export type TextureSet = {
