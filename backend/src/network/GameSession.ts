@@ -186,12 +186,14 @@ export class GameSession {
 }
 
 export class Tournament extends GameSession {
-	capacity: number;
 	active_players!: Player[]; // stores all players still in the tournameent
  
 	constructor(mode: GameMode, game_id: string, capacity: number) {
 		super(mode, game_id);
-		this.capacity = capacity;
+		this.player_capacity = capacity;
+		if (this.mode == GameMode.TOURNAMENT_REMOTE) {
+			this.client_capacity = this.player_capacity;
+		}
 	}
 
 	// just a simple setup for testing, later I will implement some sort of tree structure for matching players
@@ -205,11 +207,10 @@ export class Tournament extends GameSession {
 	}
 
 	assign_match_order(): void {
-		for (let i = 0; i < this.capacity; i++) {
+		for (let i = 0; i < this.player_capacity; i++) {
 			this.active_players.push({ ...this.players[i]})
 		}
-		// randomize start order;
-		// shuffle(this.active_players);
+		// TODO: randomize start order;
 	}
 
 	async start() {
@@ -222,8 +223,8 @@ export class Tournament extends GameSession {
 				const current_players: Player[] = this.match_players();
 				this.assign_sides(current_players);
 
-				// display "ready up" screen
-				// await players to "ready up"
+				// TODO: display "ready up" screen
+				// TODO: await players to "ready up"
 				
 				this.game = new Game(current_players, GameMode.TWO_PLAYER_LOCAL, this.broadcast.bind(this));
 				this.game.running = true;
@@ -231,9 +232,9 @@ export class Tournament extends GameSession {
 				// const winning_side: number = await this.game.run();
 				// const winner = current_players[winning_side];
 				
-				// // pushes only the winner to the back of active_players, ready to play once the preceeding matches are complete
+				// // TODO: pushes only the winner to the back of active_players, ready to play once the preceeding matches are complete
 				// this.active_players.push(winner);
-				// // broadcast winner and display temporary win screen
+				// // TODO: broadcast winner and display temporary win screen
 			}
 			// display final winner
 		}
