@@ -8,7 +8,6 @@ import { Player } from '../models/Client.js'
 
 // The Game class runs the core game logic for all game modes.
 export class Game {
-	mode: GameMode;
 	// Clock instance to manage game loop timing
 	clock: Clock;
 	queue: PlayerInput[] = [];
@@ -21,9 +20,8 @@ export class Game {
 	// Callback function to broadcast the game state
 	private _broadcast: (message: ServerMessage) => void;
 
-	constructor(players: Player[], mode: GameMode, broadcast_callback: (message: ServerMessage) => void) {
+	constructor(players: Player[], broadcast_callback: (message: ServerMessage) => void) {
 		// Initialize game properties
-		this.mode = mode;
 		this.clock = new Clock();
 		this._broadcast = broadcast_callback;
 		this.players = players;

@@ -84,7 +84,7 @@ export class GameSession {
 		if (!this.running) {
 			this.assign_sides(this.players);
 			this.running = true;
-			this.game = new Game(this.players, this.mode, this.broadcast.bind(this))
+			this.game = new Game(this.players, this.broadcast.bind(this))
 			const winner: Player = await this.game.run();
 			// TODO: display win screen with winner
 		}
@@ -189,24 +189,9 @@ class Match {
 	players: Player[];
 	winner!: Player;
 	game!: Game;
-	game_mode!: GameMode;
 
 	constructor (players: Player[]) {
 		this.players = players;
-		this.init_game_mode();
-	}
-
-	init_game_mode() {
-		if (this.players[0].client === null && this.players[1].client === null) { // CPU vs CPU
-			// need to handle this case
-			this.game_mode = GameMode.SINGLE_PLAYER; // not correct just for testing
-		}
-		else if (this.players[0].client === null || this.players[1].client === null) { // Player vs CPU
-			this.game_mode = GameMode.SINGLE_PLAYER;
-		}
-		else {
-			this.game_mode = GameMode.TWO_PLAYER_REMOTE // Player vs Player
-		}
 	}
 }
 
@@ -248,7 +233,7 @@ export class Tournament extends GameSession {
 
 		for (const match of current_round) {
 			this.assign_sides(match.players);
-			match.game = new Game(match.players, match.game_mode, this.broadcast.bind(this));
+			match.game = new Game(match.players, this.broadcast.bind(this));
 			const winner: Promise<Player> = match.game.run();
 			winner_promises.push(winner);
 		}
@@ -258,7 +243,7 @@ export class Tournament extends GameSession {
 	private async _run_one_by_one(current_round: Match[]) {
 		for (const match of current_round) {
 			this.assign_sides(match.players);
-			match.game = new Game(match.players, match.game_mode, this.broadcast.bind(this));
+			match.game = new Game(match.players, this.broadcast.bind(this));
 			const winner: Player = await match.game.run();
 			this.remaining_players.push(winner);
 		}
