@@ -114,11 +114,11 @@ export class WebSocketManager {
 
             if (game) {
                 // Start game if ready
+                
+                // just for testing
+                game.add_player(new Player("001", "Eden", game.clients[0]));
+                game.add_player(new Player("002", "CPU"));
                 if (game.full && !game.running) {
-                    // just for testing
-                    game.add_player(new Player("001", "Eden", game.clients[0]));
-                    game.add_player(new Player("002", "CPU"));
-                    
                     game.start();
                 }
             }

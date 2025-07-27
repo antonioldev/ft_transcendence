@@ -7,8 +7,9 @@ import { GameStateData, ServerMessage } from '../shared/types.js';
 export class GameSession {
 	mode: GameMode;
 	id: string;
-	capacity!: number;
-	clients: (Client)[] = [];
+	player_capacity: number;
+	client_capacity: number;
+	clients: Client[] = [];
 	players: Player[] = [];
 	game!: Game;
 	full: boolean = false;
@@ -19,6 +20,15 @@ export class GameSession {
     constructor(mode: GameMode, game_id: string) {
 		this.id = game_id
         this.mode = mode
+		if (this.mode == GameMode.SINGLE_PLAYER || this.mode == GameMode.TWO_PLAYER_LOCAL) {
+			this.client_capacity = 1
+			this.player_capacity = 2;
+		}
+		else { // this.mode == GameMode.TWO_PLAYER_REMOTE
+			this.client_capacity = 2;
+			this.player_capacity = 2;
+		}
+		// Tournament handled in separate class
 	}
 
 	broadcast(message: ServerMessage): void {
@@ -37,17 +47,8 @@ export class GameSession {
 	}
 
 	add_client(client: Client) {
-		if (!this.full) {
+		if (this.clients.length < this.client_capacity) {
 			this.clients.push(client);
-			if (this.mode === GameMode.TWO_PLAYER_REMOTE) {
-				if (this.clients.length === 2) this.full = true;
-			}
-			else if (this.mode === GameMode.TOURNAMENT_REMOTE) {
-				if (this.clients.length === this.capacity) this.full = true;
-			}
-			else {
-				this.full = true;
-			}
 		}
 	}
 
@@ -63,7 +64,14 @@ export class GameSession {
 	}
 	
 	add_player(player: Player) {
-		this.players.push(player);
+		if (this.players.length < this.player_capacity) {
+			this.players.push(player);
+
+			// check for this.full is here assuming that players are assigned after clients
+			if (this.clients.length === this.client_capacity && this.players.length === this.player_capacity) {
+				this.full = true;
+			}
+		}
 	}
 
 	remove_player(player: Player) {
@@ -79,8 +87,8 @@ export class GameSession {
 
 	async start() {
 		if (!this.running) {
-			this.running = true;
 			this.assign_sides();
+			this.running = true;
 			this.game = new Game(this.players, this.mode, this.broadcast.bind(this))
 			this.game.running = true;
 			await this.game.run();
@@ -162,6 +170,7 @@ export class GameSession {
 			if (client !== null) { // if not AIBot
 				this.broadcast(client.websocket.send(JSON.stringify({
 					type: MessageType.SIDE_ASSIGNMENT,
+					name: this.players[i].name,
 					side: this.players[i].side
 				})))
 			}

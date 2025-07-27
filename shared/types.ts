@@ -56,6 +56,7 @@ export interface ClientMessage {
 export interface ServerMessage {
     type: MessageType; // Type of message
     state?: GameStateData; // Current game state (optional)
+    name?: string; // Optional name to distinguish players on same client
     side?: number; // Player side (optional)
     message?: string; // Additional message (optional)
 }
