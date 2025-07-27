@@ -85,8 +85,8 @@ export class GameSession {
 			this.assign_sides(this.players);
 			this.running = true;
 			this.game = new Game(this.players, this.mode, this.broadcast.bind(this))
-			this.game.running = true;
-			await this.game.run();
+			const winner: Player = await this.game.run();
+			// TODO: display win screen with winner
 		}
 	}
 
@@ -185,58 +185,105 @@ export class GameSession {
 	}
 }
 
+class Match {
+	players: Player[];
+	winner!: Player;
+	game!: Game;
+	game_mode!: GameMode;
+
+	constructor (players: Player[]) {
+		this.players = players;
+		this.init_game_mode();
+	}
+
+	init_game_mode() {
+		if (this.players[0].client === null && this.players[1].client === null) { // CPU vs CPU
+			// need to handle this case
+			this.game_mode = GameMode.SINGLE_PLAYER; // not correct just for testing
+		}
+		else if (this.players[0].client === null || this.players[1].client === null) { // Player vs CPU
+			this.game_mode = GameMode.SINGLE_PLAYER;
+		}
+		else {
+			this.game_mode = GameMode.TWO_PLAYER_REMOTE // Player vs Player
+		}
+	}
+}
+
 export class Tournament extends GameSession {
-	active_players!: Player[]; // stores all players still in the tournameent
+	remaining_players!: Player[]; // stores all players still in the tournameent
  
 	constructor(mode: GameMode, game_id: string, capacity: number) {
 		super(mode, game_id);
 		this.player_capacity = capacity;
-		if (this.mode == GameMode.TOURNAMENT_REMOTE) {
-			this.client_capacity = this.player_capacity;
-		}
 	}
 
-	// just a simple setup for testing, later I will implement some sort of tree structure for matching players
-	match_players(): Player[] {
-		const player_left: (Player | undefined) = this.active_players.shift();
-		const player_right: (Player | undefined) = this.active_players.shift();
-		if (player_left === undefined || player_right === undefined) {
-			throw new Error("Not enough players"); // temporary patch: need to think of a better way to handle this
-		}
-		return [player_left, player_right];
-	}
-
-	assign_match_order(): void {
-		for (let i = 0; i < this.player_capacity; i++) {
-			this.active_players.push({ ...this.players[i]})
+	private _assign_match_order(): void {
+		for (const player of this.players) {
+			this.remaining_players.push({ ...player})
 		}
 		// TODO: randomize start order;
+	}
+
+	private _create_matches(): Match[] {
+		let current_round = [];
+		while (this.remaining_players.length > 0) {
+
+			const player_left: (Player | undefined) = this.remaining_players.shift();
+			const player_right: (Player | undefined) = this.remaining_players.shift();
+
+			// necessary check as .shift() can return 'undefined' if array is empty
+			if (player_left === undefined || player_right === undefined) {
+				throw new Error("Not enough players"); // need to think of a cleaner way to handle this
+			}
+
+			let match = new Match([player_left, player_right])
+			current_round.push(match);
+		}
+		return current_round;
+	}
+
+	private async _run_all(current_round: Match[]) {
+		let winner_promises: Promise<Player>[] = [];
+
+		for (const match of current_round) {
+			this.assign_sides(match.players);
+			match.game = new Game(match.players, match.game_mode, this.broadcast.bind(this));
+			const winner: Promise<Player> = match.game.run();
+			winner_promises.push(winner);
+		}
+		this.remaining_players = await Promise.all(winner_promises);
+	}
+
+	private async _run_one_by_one(current_round: Match[]) {
+		for (const match of current_round) {
+			this.assign_sides(match.players);
+			match.game = new Game(match.players, match.game_mode, this.broadcast.bind(this));
+			const winner: Player = await match.game.run();
+			this.remaining_players.push(winner);
+		}
+	}
+
+	// Run all games in parallel and await them all to finish before starting the next round
+	private async _start_round(current_round: Match[]) {
+		if (this.mode == GameMode.TOURNAMENT_LOCAL) {
+			this._run_one_by_one(current_round);
+		}
+		else { // this.mode == GameMode.TOURNAMENT_REMOTE
+			this._run_all(current_round);
+		}
 	}
 
 	async start() {
 		if (!this.running) {
 			this.running = true;
-			this.assign_match_order();
+			this._assign_match_order();
 
-			while (this.active_players.length > 1) {
-				// removes the first two players from active_players and assigns them a paddle to play
-				const current_players: Player[] = this.match_players();
-				this.assign_sides(current_players);
-
-				// TODO: display "ready up" screen
-				// TODO: await players to "ready up"
-				
-				this.game = new Game(current_players, GameMode.TWO_PLAYER_LOCAL, this.broadcast.bind(this));
-				this.game.running = true;
-
-				// const winning_side: number = await this.game.run();
-				// const winner = current_players[winning_side];
-				
-				// // TODO: pushes only the winner to the back of active_players, ready to play once the preceeding matches are complete
-				// this.active_players.push(winner);
-				// // TODO: broadcast winner and display temporary win screen
+			while (this.remaining_players.length > 1) {
+				let current_round = this._create_matches();
+				this._start_round(current_round);
 			}
-			// display final winner
+			// TODO: display final winner screen
 		}
 	}
 }

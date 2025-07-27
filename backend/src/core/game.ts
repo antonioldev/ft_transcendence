@@ -12,7 +12,7 @@ export class Game {
 	// Clock instance to manage game loop timing
 	clock: Clock;
 	queue: PlayerInput[] = [];
-	running: boolean = false;
+	running: boolean = true;
 	paused: boolean = false;
 	players: Player[]
 	winner!: Player;

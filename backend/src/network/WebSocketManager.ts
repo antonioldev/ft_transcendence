@@ -117,7 +117,7 @@ export class WebSocketManager {
             if (game) {
                 // Start game if ready
                 
-                // just for testing
+                // ONLY FOR TESTING 
                 if (game.mode == GameMode.SINGLE_PLAYER) {
                     game.add_player(new Player("001", "Eden", game.clients[0]));
                     game.add_player(new Player("002", "CPU"));
@@ -128,7 +128,7 @@ export class WebSocketManager {
                 }
 
                 if (game.full && !game.running) {
-                    game.start();
+                    await game.start();
                 }
             }
         } catch (error) {
