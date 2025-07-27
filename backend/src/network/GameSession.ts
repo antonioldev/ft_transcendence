@@ -7,8 +7,8 @@ import { GameStateData, ServerMessage } from '../shared/types.js';
 export class GameSession {
 	mode: GameMode;
 	id: string;
-	player_capacity: number;
-	client_capacity: number;
+	player_capacity: number = 2;
+	client_capacity: number = 1;
 	clients: Client[] = [];
 	players: Player[] = [];
 	game!: Game;
@@ -20,13 +20,8 @@ export class GameSession {
     constructor(mode: GameMode, game_id: string) {
 		this.id = game_id
         this.mode = mode
-		if (this.mode == GameMode.SINGLE_PLAYER || this.mode == GameMode.TWO_PLAYER_LOCAL) {
-			this.client_capacity = 1
-			this.player_capacity = 2;
-		}
-		else { // this.mode == GameMode.TWO_PLAYER_REMOTE
-			this.client_capacity = 2;
-			this.player_capacity = 2;
+		if (this.mode == GameMode.TWO_PLAYER_REMOTE) {
+			this.client_capacity = 2
 		}
 		// Tournament handled in separate class
 	}
