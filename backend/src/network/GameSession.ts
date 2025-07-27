@@ -63,9 +63,7 @@ export class GameSession {
 	}
 	
 	add_player(player: Player) {
-		if (!this.full) {
-			this.players.push(player);
-		}
+		this.players.push(player);
 	}
 
 	remove_player(player: Player) {
@@ -80,9 +78,9 @@ export class GameSession {
 	}
 
 	async start() {
-		this.assign_sides();
 		if (!this.running) {
 			this.running = true;
+			this.assign_sides();
 			this.game = new Game(this.players, this.mode, this.broadcast.bind(this))
 			this.game.running = true;
 			await this.game.run();
@@ -155,15 +153,18 @@ export class GameSession {
 	}
 
 	assign_sides() {
-		if (this.mode === GameMode.TWO_PLAYER_REMOTE) {
-			this.clients[0].websocket.send(JSON.stringify({
-				type: MessageType.SIDE_ASSIGNMENT,
-				side: LEFT_PADDLE
-			}));
-			this.clients[1].websocket.send(JSON.stringify({
-				type: MessageType.SIDE_ASSIGNMENT,
-				side: RIGHT_PADDLE
-			}));
+		// guarantees that the index of players[] aligns with each player.side
+		this.players[LEFT_PADDLE].side = LEFT_PADDLE;
+		this.players[RIGHT_PADDLE].side = RIGHT_PADDLE;
+
+		for (let i = 0; i < 2; i++) {
+			const client = this.players[i].client;
+			if (client !== null) { // if not AIBot
+				this.broadcast(client.websocket.send(JSON.stringify({
+					type: MessageType.SIDE_ASSIGNMENT,
+					side: this.players[i].side
+				})))
+			}
 		}
 	}
 

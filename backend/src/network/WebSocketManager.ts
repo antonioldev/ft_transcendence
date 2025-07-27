@@ -3,6 +3,7 @@ import { gameManager } from '../models/gameManager.js';
 import { Client, Player } from '../models/Client.js';
 import { MessageType, Direction, GameMode } from '../shared/constants.js';
 import { ClientMessage, ServerMessage } from '../shared/types.js';
+import { LEFT_PADDLE, RIGHT_PADDLE } from '../shared/gameConfig.js';
 
 /**
  * Manages WebSocket connections, client interactions, and game-related messaging.
@@ -114,10 +115,9 @@ export class WebSocketManager {
             if (game) {
                 // Start game if ready
                 if (game.full && !game.running) {
-                    
                     // just for testing
                     game.add_player(new Player("001", "Eden", game.clients[0]));
-                    game.add_player(new Player("002", "CPU", game.clients[0]));
+                    game.add_player(new Player("002", "CPU"));
                     
                     game.start();
                 }

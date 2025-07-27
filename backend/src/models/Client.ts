@@ -27,15 +27,13 @@ export class Client {
 export class Player {
     id: string;           // Unique identifier for this player
     name: string;         // Display name shown in game
-    client?: Client | null;    // Which client connection controls this player (undefined for AI)
-    side: number;         // Which paddle this player controls (LEFT_PADDLE/RIGHT_PADDLE)
-    paddle: Paddle | null = null;
+    client: Client | null;    // Which client connection controls this player (undefined for AI)
+    side: number = 0;         // Which paddle this player controls (LEFT_PADDLE/RIGHT_PADDLE)
 
     constructor(id: string, name: string, client: Client | null = null) {
         this.id = id;
         this.name = name;
         this.client = client;
-        this.side = 0; // will be manually assigned by GameSession later
     }
 }
 
