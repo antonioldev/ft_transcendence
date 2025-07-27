@@ -45,6 +45,7 @@ export interface PlayerInput {
 export interface ClientMessage {
     type: MessageType; // Type of message
     gameMode?: GameMode; // Game mode (optional)
+    match_index?: number;
     players?: PlayerInfo[];
     side?: number; // Player side (optional)
     direction?: Direction; // Movement direction (optional)

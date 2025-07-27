@@ -104,7 +104,6 @@ export class GameSession {
 			this.game.pause();
 			this.paused = true;
 			this.requestedBy = client;
-
 			this.broadcast({type: MessageType.PAUSED});
 			
 			console.log(`Game ${this.id} paused by client ${client.id}`);
@@ -156,7 +155,7 @@ export class GameSession {
 		this.requestedBy = null;
 	}
 
-	assign_sides(players: Player[]) {
+	assign_sides(players: Player[], match_index?: number) {
 		// guarantees that the index of players[] aligns with player.side
 		players[LEFT_PADDLE].side = LEFT_PADDLE;
 		players[RIGHT_PADDLE].side = RIGHT_PADDLE;
@@ -166,7 +165,8 @@ export class GameSession {
 				this.broadcast({
 					type: MessageType.SIDE_ASSIGNMENT,
 					name: player.name,
-					side: player.side
+					side: player.side,
+					...(match_index !== undefined && { match_index }) // optionally includes index
 				})
 			}
 		}
@@ -186,13 +186,14 @@ export class GameSession {
 }
 
 class Match {
-	//id: string; // will need to use this so that clients know which game they are sending input to
+	index: number;
 	players: Player[];
 	clients: Client[] = [];
 	winner!: Player;
 	game!: Game;
 
-	constructor (players: Player[]) {
+	constructor (players: Player[], index: number) {
+		this.index = index;
 		this.players = players;
 		for (const player of this.players) {
 			if (player.client !== null && !this.clients.includes(player.client)) {
@@ -204,7 +205,7 @@ class Match {
 
 export class Tournament extends GameSession {
 	remaining_players!: Player[]; // stores all players still in the tournameent
-	current_round: Match[] = [];
+	matches: Match[] = [];
  
 	constructor(mode: GameMode, game_id: string, capacity: number) {
 		super(mode, game_id);
@@ -219,7 +220,7 @@ export class Tournament extends GameSession {
 	}
 
 	private _create_matches() {
-		while (this.remaining_players.length > 0) {
+		for (let i = 0; this.remaining_players.length > 0; i++) {
 			const player_left: (Player | undefined) = this.remaining_players.shift();
 			const player_right: (Player | undefined) = this.remaining_players.shift();
 
@@ -227,9 +228,7 @@ export class Tournament extends GameSession {
 			if (player_left === undefined || player_right === undefined) {
 				throw new Error("Not enough players"); // need to think of a cleaner way to handle this
 			}
-
-			let match = new Match([player_left, player_right])
-			this.current_round.push(match);
+			this.matches[i] = new Match([player_left, player_right], i)
 		}
 	}
 
@@ -237,7 +236,7 @@ export class Tournament extends GameSession {
 	private async _run_all() {
 		let winner_promises: Promise<Player>[] = [];
 
-		for (const match of this.current_round) {
+		for (const match of this.matches) {
 			this.assign_sides(match.players);
 			match.game = new Game(match.players, (message) => this.broadcast(message, match.clients));
 			const winner: Promise<Player> = match.game.run();
@@ -248,7 +247,7 @@ export class Tournament extends GameSession {
 
 	// runs each game in a round one by one and awaits each game before starting the next
 	private async _run_one_by_one() {
-		for (const match of this.current_round) {
+		for (const match of this.matches) {
 			this.assign_sides(match.players);
 			match.game = new Game(match.players, this.broadcast.bind(this));
 			const winner: Player = await match.game.run();
@@ -256,7 +255,6 @@ export class Tournament extends GameSession {
 		}
 	}
 
-	// Run all games in parallel and await them all to finish before starting the next round
 	private async _start_round() {
 		if (this.mode == GameMode.TOURNAMENT_LOCAL) {
 			this._run_one_by_one();

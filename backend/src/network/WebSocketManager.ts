@@ -149,13 +149,13 @@ export class WebSocketManager {
         }
 
         // Find the game this client is in
-        const game = this.findClientGame(client);
-        if (!game) {
+        const gameSession = this.findClientGame(client);
+        if (!gameSession) {
             console.warn(`Client ${client.id} not in any game`);
             return;
         }
 
-        if (game.isPaused())
+        if (gameSession.isPaused())
             return;
 
         // Convert direction to movement
@@ -163,13 +163,25 @@ export class WebSocketManager {
         if (data.direction === Direction.LEFT) dx = -1;
         else if (data.direction === Direction.RIGHT) dx = 1;
 
-        // Add input to game queue
-        game.game.enqueue({
-            id: client.id,
-            type: MessageType.PLAYER_INPUT,
-            side: data.side,
-            dx: dx
-        });
+        // Add input to game queue, if tournament need to specify which match
+        if (gameSession.mode == GameMode.TOURNAMENT_LOCAL || gameSession.mode == GameMode.TOURNAMENT_REMOTE) {
+            if (data.match_index === undefined) return;
+
+            gameSession.matches[data.match_index].game.enqueue({
+                id: client.id,
+                type: MessageType.PLAYER_INPUT,
+                side: data.side,
+                dx: dx
+            })
+        }
+        else {
+            gameSession.game.enqueue({
+                id: client.id,
+                type: MessageType.PLAYER_INPUT,
+                side: data.side,
+                dx: dx
+            });
+        }
     }
 
     /**
