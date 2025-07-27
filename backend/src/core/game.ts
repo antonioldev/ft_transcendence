@@ -31,6 +31,7 @@ export class Game {
 	// Initialize the ball and players
 	private _init() {
 		this.ball = new Ball(this.paddles, this._update_score);
+		
 		if (this.players[LEFT_PADDLE].client === null) { // if CPU
 			this.paddles[LEFT_PADDLE] = new AIBot(LEFT_PADDLE, this.ball)
 		}
@@ -103,16 +104,13 @@ export class Game {
 	async run(): Promise<Player> {
 		while (this.running) {
 			const dt = await this.clock.tick(60);
-			if (this.paused) {
-				await this.clock.sleep(16);
-			}
-			else {
-				this._update_state(dt);
-				this._broadcast({
-					type: MessageType.GAME_STATE,
-					state: this.get_state()
-				});
-			}
+			if (this.paused) continue ;
+
+			this._update_state(dt);
+			this._broadcast({
+				type: MessageType.GAME_STATE,
+				state: this.get_state()
+			});
 		}
 		return (this.winner);
 	}
