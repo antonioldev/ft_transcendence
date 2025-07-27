@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { gameManager } from '../models/gameManager.js';
-import { Client } from '../models/Client.js';
+import { Client, Player } from '../models/Client.js';
 import { MessageType, Direction, GameMode } from '../shared/constants.js';
 import { ClientMessage, ServerMessage } from '../shared/types.js';
 
@@ -114,6 +114,11 @@ export class WebSocketManager {
             if (game) {
                 // Start game if ready
                 if (game.full && !game.running) {
+                    
+                    // just for testing
+                    game.add_player(new Player("001", "Eden", game.clients[0]));
+                    game.add_player(new Player("002", "CPU", game.clients[0]));
+                    
                     game.start();
                 }
             }

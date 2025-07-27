@@ -9,7 +9,8 @@ export class GameSession {
 	id: string;
 	capacity!: number;
 	clients: (Client)[] = [];
-	game: Game;
+	players: Player[] = [];
+	game!: Game;
 	full: boolean = false;
 	running: boolean = false;
 	private paused: boolean = false;
@@ -18,7 +19,6 @@ export class GameSession {
     constructor(mode: GameMode, game_id: string) {
 		this.id = game_id
         this.mode = mode
-        this.game = new Game(mode, this.broadcast.bind(this))
 	}
 
 	broadcast(message: ServerMessage): void {
@@ -61,11 +61,29 @@ export class GameSession {
 			this.stop();
 		}
 	}
+	
+	add_player(player: Player) {
+		if (!this.full) {
+			this.players.push(player);
+		}
+	}
+
+	remove_player(player: Player) {
+		const index = this.players.indexOf(player);
+		if (index !== -1) {
+			this.players.splice(index, 1);
+			this.full = false;
+		}
+		if (this.players.length === 0) {
+			this.stop();
+		}
+	}
 
 	async start() {
 		this.assign_sides();
 		if (!this.running) {
 			this.running = true;
+			this.game = new Game(this.players, this.mode, this.broadcast.bind(this))
 			this.game.running = true;
 			await this.game.run();
 		}

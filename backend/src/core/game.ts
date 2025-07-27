@@ -4,6 +4,7 @@ import { Clock } from './utils.js';
 import { LEFT_PADDLE, RIGHT_PADDLE } from '../shared/gameConfig.js';
 import { GameMode, MessageType} from '../shared/constants.js';
 import { PlayerInput, GameStateData, ServerMessage } from '../shared/types.js';
+import { Player } from '../models/Client.js'
 
 // The Game class runs the core game logic for all game modes.
 export class Game {
@@ -13,16 +14,18 @@ export class Game {
 	queue: PlayerInput[] = [];
 	running: boolean = false;
 	paused: boolean = false;
+	players: Player[]
 	paddles!: (Paddle | AIBot)[];
 	ball!: Ball;
 	// Callback function to broadcast the game state
 	private _broadcast: (message: ServerMessage) => void;
 
-	constructor(mode: GameMode, broadcast_callback: (message: ServerMessage) => void) {
+	constructor(players: Player[], mode: GameMode, broadcast_callback: (message: ServerMessage) => void) {
 		// Initialize game properties
 		this.mode = mode;
 		this.clock = new Clock();
 		this._broadcast = broadcast_callback;
+		this.players = players;
 		this._init();
 	}
 
