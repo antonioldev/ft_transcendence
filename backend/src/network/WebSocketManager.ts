@@ -116,8 +116,15 @@ export class WebSocketManager {
                 // Start game if ready
                 
                 // just for testing
-                game.add_player(new Player("001", "Eden", game.clients[0]));
-                game.add_player(new Player("002", "CPU"));
+                if (game.mode == GameMode.SINGLE_PLAYER) {
+                    game.add_player(new Player("001", "Eden", game.clients[0]));
+                    game.add_player(new Player("002", "CPU"));
+                }
+                else {
+                    game.add_player(new Player("001", "Eden", game.clients[0]));
+                    game.add_player(new Player("002", "Antonio", game.clients[0]));
+                }
+                
                 if (game.full && !game.running) {
                     game.start();
                 }

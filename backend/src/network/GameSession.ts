@@ -7,10 +7,10 @@ import { GameStateData, ServerMessage } from '../shared/types.js';
 export class GameSession {
 	mode: GameMode;
 	id: string;
-	player_capacity: number = 2;
-	client_capacity: number = 1;
 	clients: Client[] = [];
 	players: Player[] = [];
+	player_capacity: number = 2;
+	client_capacity: number = 1;
 	game!: Game;
 	full: boolean = false;
 	running: boolean = false;
