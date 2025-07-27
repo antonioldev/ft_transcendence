@@ -26,9 +26,10 @@ export class GameSession {
 		// Tournament handled in separate class
 	}
 
-	broadcast(message: ServerMessage): void {
+	broadcast(message: ServerMessage, clients?: Client[]): void {
+		const targets = clients ?? this.clients;
 		let deleted_clients: (Client)[] = [];
-		for (const client of this.clients) {
+		for (const client of targets) {
 			try {
 				client.websocket.send(JSON.stringify(message));
 			}
@@ -162,11 +163,11 @@ export class GameSession {
 
 		for (const player of this.players) {
 			if (player.client !== null) { // if not AIBot
-				this.broadcast(player.client.websocket.send(JSON.stringify({
+				this.broadcast({
 					type: MessageType.SIDE_ASSIGNMENT,
 					name: player.name,
 					side: player.side
-				})))
+				})
 			}
 		}
 	}
@@ -197,6 +198,7 @@ class Match {
 
 export class Tournament extends GameSession {
 	remaining_players!: Player[]; // stores all players still in the tournameent
+	current_round: Match[] = [];
  
 	constructor(mode: GameMode, game_id: string, capacity: number) {
 		super(mode, game_id);
@@ -210,8 +212,7 @@ export class Tournament extends GameSession {
 		// TODO: randomize start order;
 	}
 
-	private _create_matches(): Match[] {
-		let current_round = [];
+	private _create_matches() {
 		while (this.remaining_players.length > 0) {
 			const player_left: (Player | undefined) = this.remaining_players.shift();
 			const player_right: (Player | undefined) = this.remaining_players.shift();
@@ -222,17 +223,17 @@ export class Tournament extends GameSession {
 			}
 
 			let match = new Match([player_left, player_right])
-			current_round.push(match);
+			this.current_round.push(match);
 		}
-		return current_round;
 	}
 
 	// runs all games in a round in parallel and awaits until all are finished
-	private async _run_all(current_round: Match[]) {
+	private async _run_all() {
 		let winner_promises: Promise<Player>[] = [];
 
-		for (const match of current_round) {
+		for (const match of this.current_round) {
 			this.assign_sides(match.players);
+			
 			match.game = new Game(match.players, this.broadcast.bind(this));
 			const winner: Promise<Player> = match.game.run();
 			winner_promises.push(winner);
@@ -241,8 +242,8 @@ export class Tournament extends GameSession {
 	}
 
 	// runs each game in a round one by one and awaits each game before starting the next
-	private async _run_one_by_one(current_round: Match[]) {
-		for (const match of current_round) {
+	private async _run_one_by_one() {
+		for (const match of this.current_round) {
 			this.assign_sides(match.players);
 			match.game = new Game(match.players, this.broadcast.bind(this));
 			const winner: Player = await match.game.run();
@@ -251,12 +252,12 @@ export class Tournament extends GameSession {
 	}
 
 	// Run all games in parallel and await them all to finish before starting the next round
-	private async _start_round(current_round: Match[]) {
+	private async _start_round() {
 		if (this.mode == GameMode.TOURNAMENT_LOCAL) {
-			this._run_one_by_one(current_round);
+			this._run_one_by_one();
 		}
 		else { // this.mode == GameMode.TOURNAMENT_REMOTE
-			this._run_all(current_round);
+			this._run_all();
 		}
 	}
 
@@ -266,8 +267,8 @@ export class Tournament extends GameSession {
 			this._assign_match_order();
 
 			while (this.remaining_players.length > 1) {
-				let current_round = this._create_matches();
-				this._start_round(current_round);
+				this._create_matches();
+				this._start_round();
 			}
 			// TODO: display final winner screen
 		}
