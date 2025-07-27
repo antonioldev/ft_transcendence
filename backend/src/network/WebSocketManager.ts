@@ -5,6 +5,8 @@ import { MessageType, Direction, GameMode } from '../shared/constants.js';
 import { ClientMessage, ServerMessage } from '../shared/types.js';
 import { LEFT_PADDLE, RIGHT_PADDLE } from '../shared/gameConfig.js';
 
+// TODO: clients need to be reassigned when a new game starts
+
 /**
  * Manages WebSocket connections, client interactions, and game-related messaging.
  */
@@ -124,7 +126,7 @@ export class WebSocketManager {
                     game.add_player(new Player("001", "Eden", game.clients[0]));
                     game.add_player(new Player("002", "Antonio", game.clients[0]));
                 }
-                
+
                 if (game.full && !game.running) {
                     game.start();
                 }
