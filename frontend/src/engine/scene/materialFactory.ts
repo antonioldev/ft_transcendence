@@ -1,8 +1,8 @@
 declare var BABYLON: typeof import('@babylonjs/core');
 
-import { ViewMode } from '../shared/constants.js';
-import { TextureSet, MAP_ASSETS, MODEL_PLACEMENT_CONFIG } from './sceneAssets.js';
-import { Logger } from '../core/LogManager.js';
+import { ViewMode } from '../../shared/constants.js';
+import { TextureSet } from './sceneAssets.js';
+import { Logger } from '../../core/LogManager.js';
 
 function setTextureScale(textureScale: any, texture: any) {
     if (textureScale) {
@@ -56,25 +56,4 @@ export function createMaterial(
     }
     
     return material;
-}
-
-// Creates HDRI environment with fallback to default environment
-export function createEnvironment(scene: any, mode: ViewMode, skyboxPath?: string): void {
-    // Only create environment for 3D mode
-    if (mode !== ViewMode.MODE_3D) return;
-    
-    if (!skyboxPath) return;
-    try {
-        // const hdrPath = skyboxPath;// || "assets/test.hdr";
-        const hdrTexture = new BABYLON.HDRCubeTexture(skyboxPath, scene, 2048);
-        
-        // Set as environment texture (skybox + reflections)
-        scene.environmentTexture = hdrTexture;
-        
-        // Create visible skybox
-        scene.createDefaultSkybox(hdrTexture, true, 1000);
-        
-    } catch (error) {
-        Logger.warn('Error creating HDRI environment, using default environment', 'MaterialFactory');
-    }
 }

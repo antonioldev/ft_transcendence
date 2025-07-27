@@ -3,7 +3,7 @@ declare var BABYLON: typeof import('@babylonjs/core') & {
 }; //declare var BABYLON: any;
 
 import { GameConfig } from './GameConfig.js';
-import { buildScene } from './sceneBuilder.js';
+import { buildScene } from './scene/sceneBuilder.js';
 import { InputHandler } from './InputManager.js';
 import { webSocketClient } from '../core/WebSocketClient.js';
 import { GameStateData, GameObjects } from '../shared/types.js';
