@@ -16,7 +16,7 @@ export class Game {
 	paused: boolean = false;
 	players: Player[]
 	winner!: Player;
-	paddles!: (Paddle | AIBot)[];
+	paddles: (Paddle | AIBot)[] = [new Paddle(LEFT_PADDLE), new Paddle(RIGHT_PADDLE)];
 	ball!: Ball;
 	// Callback function to broadcast the game state
 	private _broadcast: (message: ServerMessage) => void;
@@ -32,12 +32,12 @@ export class Game {
 
 	// Initialize the ball and players
 	private _init() {
-		this.paddles = [new Paddle(LEFT_PADDLE), new Paddle(RIGHT_PADDLE)];
 		this.ball = new Ball(this.paddles, this._update_score);
-
-		// necessary to handle circular dependency of Ball and AIBot
-		if (this.mode === GameMode.SINGLE_PLAYER) {
-			this.paddles[RIGHT_PADDLE] = new AIBot(RIGHT_PADDLE, this.ball);
+		if (this.players[LEFT_PADDLE].client === null) { // if CPU
+			this.paddles[LEFT_PADDLE] = new AIBot(LEFT_PADDLE, this.ball)
+		}
+		if (this.players[RIGHT_PADDLE].client === null) {
+			this.paddles[RIGHT_PADDLE] = new AIBot(RIGHT_PADDLE, this.ball)
 		}
 	}
 
