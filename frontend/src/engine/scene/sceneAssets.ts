@@ -4,6 +4,7 @@ export type TextureSet = {
    diffuse: string;
    normal: string;
    roughness: string;
+   height?: string;
 };
 
 export type VegetationAsset = {
@@ -34,6 +35,7 @@ export type MapAssetConfig = {
         walls: TextureSet;
         ball: TextureSet;
         paddle: TextureSet;
+        terrain: TextureSet;
     };
     vegetation: {
         bush: VegetationAsset;
@@ -66,26 +68,14 @@ export const MAP_ASSETS: Record<string, MapAssetConfig> = {
                diffuse: "assets/textures/map1/paddle/paddle_diff_1k.jpg",
                normal: "assets/textures/map1/paddle/paddle_nor_gl_1k.jpg",
                roughness: "assets/textures/map1/paddle/paddle_rough_1k.jpg"
+           },
+           terrain: {
+               diffuse: "assets/textures/map1/terrain/terrain_diff_1k.jpg",
+               normal: "assets/textures/map1/terrain/terrain_nor_gl_1k.jpg",
+               roughness: "assets/textures/map1/terrain/terrain_rough_1k.jpg",
+               height: "assets/textures/map1/terrain/terrain_height2.png"
            }
        },
-        // vegetation: {
-        //     bush: {
-        //         path: "assets/model/map1/Bush/Bush1.obj",
-        //         count: { sides: 15, background: 12, behind: 12 },
-        //         positioning: { marginFromField: 2, depthLayers: 2, spreadMultiplier: 2.2 },
-        //         scale: { base: 1.2, variation: 0.5, min: 0.8, max: 1.8 },
-        //         yOffset: -1.2,
-        //         randomRotation: true
-        //     },
-        //     tree: {
-        //         path: "assets/model/map1/Tree/Tree.glb",
-        //         count: { sides: 12, background: 8, behind: 8 },
-        //         positioning: { marginFromField: 8, depthLayers: 2, spreadMultiplier: 2.2 },
-        //         scale: { base: 2.5, variation: 0.8, min: 2.0, max: 3.5 },
-        //         yOffset: -1.5,
-        //         randomRotation: true
-        //     }
-        // },
         vegetation: {
             bush: {
                 path: "assets/model/map1/Bush/Bush1.obj",
@@ -124,35 +114,35 @@ export const MAP_ASSETS: Record<string, MapAssetConfig> = {
         },
        environment: {
            skybox: "assets/textures/map1/sky/sky.hdr"
-       }
-   },
-   map2: {
-       textures: {
-           ground: { diffuse: "", normal: "", roughness: "" },
-           walls: { diffuse: "", normal: "", roughness: "" },
-           ball: { diffuse: "", normal: "", roughness: "" },
-           paddle: { diffuse: "", normal: "", roughness: "" }
-       },
-        vegetation: {
-            bush: {
-                path: "",
-                count: { sides: 12, background: 10, behind: 10 },
-                positioning: { marginFromField: 3, depthLayers: 3, spreadMultiplier: 1.4 },
-                scale: { base: 1.0, variation: 0.4, min: 0.7, max: 1.5 },
-                yOffset: -0.6,
-                randomRotation: true
-            },
-            tree: {
-                path: "",
-                count: { sides: 6, background: 4, behind: 5 },
-                positioning: { marginFromField: 10, depthLayers: 2, spreadMultiplier: 2.0 },
-                scale: { base: 3.0, variation: 1.0, min: 2.5, max: 4.0 },
-                yOffset: -2.0,
-                randomRotation: true
-            }
-        },
-       environment: {
-           skybox: ""
-       }
-   }
+       }}
+//    },
+//    map2: {
+//        textures: {
+//            ground: { diffuse: "", normal: "", roughness: "" },
+//            walls: { diffuse: "", normal: "", roughness: "" },
+//            ball: { diffuse: "", normal: "", roughness: "" },
+//            paddle: { diffuse: "", normal: "", roughness: "" }
+//        },
+//         vegetation: {
+//             bush: {
+//                 path: "",
+//                 count: { sides: 12, background: 10, behind: 10 },
+//                 positioning: { marginFromField: 3, depthLayers: 3, spreadMultiplier: 1.4 },
+//                 scale: { base: 1.0, variation: 0.4, min: 0.7, max: 1.5 },
+//                 yOffset: -0.6,
+//                 randomRotation: true
+//             },
+//             tree: {
+//                 path: "",
+//                 count: { sides: 6, background: 4, behind: 5 },
+//                 positioning: { marginFromField: 10, depthLayers: 2, spreadMultiplier: 2.0 },
+//                 scale: { base: 3.0, variation: 1.0, min: 2.5, max: 4.0 },
+//                 yOffset: -2.0,
+//                 randomRotation: true
+//             }
+//         },
+//        environment: {
+//            skybox: ""
+//        }
+//    }
 };

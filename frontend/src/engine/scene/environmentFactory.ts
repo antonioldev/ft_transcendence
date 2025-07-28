@@ -4,7 +4,8 @@ import { ViewMode } from '../../shared/constants.js';
 import { GAME_CONFIG } from '../../shared/gameConfig.js';
 import { Logger } from '../../core/LogManager.js';
 import { VegetationAsset } from './sceneAssets.js';
-// import { ModelAsset } from './sceneAssets.js';
+import { TextureSet } from './sceneAssets.js';
+import { createMaterial } from './materialFactory.js';
 
 // Creates HDRI environment with fallback to default environment
 export function createEnvironment(scene: any, mode: ViewMode, path?: string): void {
@@ -24,6 +25,43 @@ export function createEnvironment(scene: any, mode: ViewMode, path?: string): vo
     } catch (error) {
         Logger.warn('Error creating HDRI environment, using default environment', 'MaterialFactory');
     }
+}
+
+export function createTerrain(scene: any, name: string, mode: ViewMode, texture?: TextureSet): any {
+
+    if (mode !== ViewMode.MODE_3D) return null;
+
+    const terrainWidth = GAME_CONFIG.fieldWidth * 10;
+    const terrainHeight = GAME_CONFIG.fieldHeight * 10;
+
+    let terrain: any;
+
+    // Check if we have a heightmap
+    if (texture?.height) {
+        // Create terrain from heightmap
+        terrain = BABYLON.MeshBuilder.CreateGroundFromHeightMap(name, texture.height, {
+            width: terrainWidth,
+            height: terrainHeight,
+            subdivisions: 100,        // More subdivisions = smoother terrain
+            minHeight: 0,             // Lowest point of terrain
+            maxHeight: 10             // Highest point of terrain
+        }, scene);
+    } else {
+        // Create flat terrain (fallback)
+        terrain = BABYLON.MeshBuilder.CreateGround(name, { 
+            width: terrainWidth, 
+            height: terrainHeight 
+        }, scene);
+    }
+
+    terrain.position.y = -0.01;
+
+    const terrainTextureScale = { u: terrainWidth / 10, v: terrainHeight / 10 };
+    const material = new BABYLON.StandardMaterial(name + "Material", scene);
+    material.diffuseColor = new BABYLON.Color3(1, 1, 0); // Yellow
+    terrain.material = createMaterial(scene, name + "Material",  new BABYLON.Color3(1, 1, 0), mode, texture , terrainTextureScale);
+
+    return terrain;
 }
 
 export async function createVegetation(
@@ -75,10 +113,12 @@ function createMaterialVariations(baseMaterial: any, scene: any){
 
     const darkMaterial = baseMaterial?.clone("vegDark") || new BABYLON.StandardMaterial("vegetationDark", scene);
     darkMaterial.diffuseColor = new BABYLON.Color3(0.1, 0.3, 0.05);
+    darkMaterial.specularColor = BABYLON.Color3.Black();
     materials.push(darkMaterial);
     
     const lightMaterial = baseMaterial?.clone("vegLight") || new BABYLON.StandardMaterial("vegetationLight", scene);
-    lightMaterial.diffuseColor = new BABYLON.Color3(0.35, 0.6, 0.25);
+    lightMaterial.diffuseColor = new BABYLON.Color3(0.3, 0.45, 0.2);
+    lightMaterial.specularColor = BABYLON.Color3.Black();
     materials.push(lightMaterial);
 
     return materials;

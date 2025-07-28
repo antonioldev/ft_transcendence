@@ -15,6 +15,7 @@ export function createCamera(scene: any, name: string, position: any, viewport: 
         camera = new BABYLON.FreeCamera(name, position, scene);
         camera.setTarget(BABYLON.Vector3.Zero());
         camera.viewport = viewport;
+        return camera;
     }
     
     if (mode === ViewMode.MODE_2D) {
@@ -23,8 +24,24 @@ export function createCamera(scene: any, name: string, position: any, viewport: 
         camera.viewport = viewport; //
         camera.rotation.z = -(Math.PI / 2);
         camera.fov = 1.1;
+        return camera;
         // camera.setTarget(new BABYLON.Vector3(0, 5, 0)); // TODO move the camera down
     }
+    return camera;
+}
+
+export function createGuiCamera(scene: any, name: string, position: any, viewport: any) {
+    let camera;
+    camera = new BABYLON.FreeCamera(name, position, scene);
+    camera.setTarget(BABYLON.Vector3.Zero());
+    camera.viewport = viewport;
+    camera.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
+    camera.orthoTop = 1;
+    camera.orthoBottom = -1;
+    camera.orthoLeft = -1;
+    camera.orthoRight = 1;
+    camera.layerMask = 0x20000000;
+
     return camera;
 }
 
@@ -38,7 +55,7 @@ export function createLight(scene: any, name: string, position: any): any {
 }
 
 // Creates the ground for the game field
-export function createGround(scene: any, name: string, width: number, height: number, mode: ViewMode, texture?: TextureSet): any {
+export function createGameField(scene: any, name: string, width: number, height: number, mode: ViewMode, texture?: TextureSet): any {
 
     const ground = BABYLON.MeshBuilder.CreateGround(name, { width, height }, scene);
     const color = mode === ViewMode.MODE_2D ? COLORS.field2D : COLORS.field3D;
@@ -55,7 +72,7 @@ export function createWalls(scene: any, name: string, fieldWidth: number, fieldH
     
     // Single texture scaling for all walls
     const wallTextureScale = {u: fieldWidth / 2, v: wallThickness}; // TODO if texture
-        const material = createMaterial(scene, "wallMaterial", color, mode, texture, wallTextureScale);
+        const material = createMaterial(scene, name + "Material", color, mode, texture, wallTextureScale);
 
     // Top wall
     const topWall = BABYLON.MeshBuilder.CreateBox("topWall", {width: fieldWidth, height: wallHeight, depth: wallThickness}, scene);

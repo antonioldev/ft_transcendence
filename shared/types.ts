@@ -132,7 +132,7 @@ export interface GameObjects {
         right: any;
     };
     ball: any;
-    ground: any;
+    gameField: any;
     walls: any;
     cameras: any[];
     lights: any[];
