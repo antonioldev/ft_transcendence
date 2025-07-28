@@ -3,8 +3,6 @@ import { LEFT_PADDLE, RIGHT_PADDLE} from '../shared/gameConfig.js';
 import { Client, Player } from '../models/Client.js';
 import { MessageType, GameMode } from '../shared/constants.js';
 import { GameStateData, ServerMessage } from '../shared/types.js';
-import { P } from 'pino';
-import { round } from 'lodash';
 
 export class GameSession {
 	mode: GameMode;
@@ -25,7 +23,6 @@ export class GameSession {
 		if (this.mode == GameMode.TWO_PLAYER_REMOTE) {
 			this.client_capacity = 2
 		}
-		// Tournament handled in separate class
 	}
 
 	broadcast(message: ServerMessage, clients?: Client[]): void {
@@ -188,11 +185,12 @@ export class GameSession {
 }
 
 class Match {
-	public id: string = crypto.randomUUID();
-	public round: number;
-	public players: Player[] = [];
+	id: string = crypto.randomUUID();
+	round: number;
+	players: Player[] = [];
 	clients: Client[] = [];
 	game!: Game;
+
 	left!: Match;
 	right!: Match;
 	next: Match | null = null;
@@ -201,9 +199,7 @@ class Match {
 		this.round = round;
 	}
 
-	add_player(player: Player | undefined) {
-		if (player === undefined) return ;
-
+	add_player(player: Player) {
 		if (!this.players.includes(player)) {
 			this.players.push(player);
 		}

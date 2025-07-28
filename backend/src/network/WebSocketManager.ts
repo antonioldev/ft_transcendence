@@ -165,9 +165,9 @@ export class WebSocketManager {
 
         // Add input to game queue, if tournament need to specify which match
         if (gameSession.mode == GameMode.TOURNAMENT_LOCAL || gameSession.mode == GameMode.TOURNAMENT_REMOTE) {
-            if (data.match_index === undefined) return;
+            if (data.match_id === undefined) return;
 
-            gameSession.matches[data.match_index].game.enqueue({
+            gameSession.match_map[data.match_id].game.enqueue({
                 id: client.id,
                 type: MessageType.PLAYER_INPUT,
                 side: data.side,
