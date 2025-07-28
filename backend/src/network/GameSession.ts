@@ -3,6 +3,8 @@ import { LEFT_PADDLE, RIGHT_PADDLE} from '../shared/gameConfig.js';
 import { Client, Player } from '../models/Client.js';
 import { MessageType, GameMode } from '../shared/constants.js';
 import { GameStateData, ServerMessage } from '../shared/types.js';
+import { P } from 'pino';
+import { round } from 'lodash';
 
 export class GameSession {
 	mode: GameMode;
@@ -186,94 +188,144 @@ export class GameSession {
 }
 
 class Match {
-	index: number;
-	players: Player[];
+	public id: string = crypto.randomUUID();
+	public round: number;
+	public players: Player[] = [];
 	clients: Client[] = [];
-	winner!: Player;
 	game!: Game;
+	left!: Match;
+	right!: Match;
+	next: Match | null = null;
 
-	constructor (players: Player[], index: number) {
-		this.index = index;
-		this.players = players;
-		for (const player of this.players) {
-			if (player.client !== null && !this.clients.includes(player.client)) {
-				this.clients.push(player.client);
-			}
+	constructor (round: number) {
+		this.round = round;
+	}
+
+	add_player(player: Player | undefined) {
+		if (player === undefined) return ;
+
+		if (!this.players.includes(player)) {
+			this.players.push(player);
+		}
+		if (player.client !== null && !this.clients.includes(player.client)) {
+			this.clients.push(player.client);
 		}
 	}
 }
 
 export class Tournament extends GameSession {
-	remaining_players!: Player[]; // stores all players still in the tournameent
-	matches: Match[] = [];
- 
+	match_map: Map<string, Match> = new Map();	// Maps id to match, used for easy insertion from client input
+	rounds: Map<number, Match[]> = new Map();	// Maps rounds to match[], used for easy traversal to run games
+	num_rounds: number;
+
 	constructor(mode: GameMode, game_id: string, capacity: number) {
 		super(mode, game_id);
 		this.player_capacity = capacity;
-	}
-
-	private _assign_match_order(): void {
-		for (const player of this.players) {
-			this.remaining_players.push({ ...player})
-		}
-		// TODO: randomize start order;
-	}
-
-	private _create_matches() {
-		for (let i = 0; this.remaining_players.length > 0; i++) {
-			const player_left: (Player | undefined) = this.remaining_players.shift();
-			const player_right: (Player | undefined) = this.remaining_players.shift();
-
-			// necessary check as .shift() can return 'undefined' if array is empty
-			if (player_left === undefined || player_right === undefined) {
-				throw new Error("Not enough players"); // need to think of a cleaner way to handle this
-			}
-			this.matches[i] = new Match([player_left, player_right], i)
+		this.num_rounds = this.get_num_rounds(this.player_capacity);
+		for (let i = 1; i <= this.num_rounds; i++) {
+			this.rounds.set(i, []);
 		}
 	}
 
-	// runs all games in a round in parallel and awaits until all are finished
-	private async _run_all() {
+	// calculates the number of rounds from the number of players in the tournament
+	get_num_rounds(num_players: number) {
+		let round_count = 0;
+		while (num_players > 1) {
+			num_players /= 2;
+			round_count += 1;
+		}
+		return (round_count);
+	}
+
+	// assigns players to the matches in round_1
+	private _match_players(): void {
+		// TODO: randomize start order ??
+
+		const round_one = this.rounds.get(1);
+		if (round_one === undefined) return ; // maybe throw err
+
+		for (let i = 0, j = 0; j != this.player_capacity; i++, j+=2) {
+			round_one[i].add_player(this.players[j]);
+			round_one[i].add_player(this.players[j+1]);
+		}
+	}
+
+	// creates the tournament tree structure and assigns each match to the rounds map
+	private _create_match_tree(current_match: Match, round: number) {
+		this.match_map.set(current_match.id, current_match);
+		this.rounds.get(current_match.round)?.push(current_match);
+
+		if (round === 1) return ;
+
+		current_match.left = new Match(round);
+		current_match.right = new Match(round)
+		
+		current_match.left.next = current_match;
+		current_match.right.next = current_match;
+
+		this._create_match_tree(current_match.left, round - 1);
+		this._create_match_tree(current_match.right, round - 1);
+	}
+
+	// runs all matches in a given round in parallel
+	private async _run_all(matches: Match[]) {
 		let winner_promises: Promise<Player>[] = [];
 
-		for (const match of this.matches) {
+		// run each match in parallel and await [] of match promises
+		for (const match of matches) {
 			this.assign_sides(match.players);
 			match.game = new Game(match.players, (message) => this.broadcast(message, match.clients));
-			const winner: Promise<Player> = match.game.run();
-			winner_promises.push(winner);
+			let winner_promise: Promise<Player> = match.game.run();
+			winner_promises.push(winner_promise);
 		}
-		this.remaining_players = await Promise.all(winner_promises);
+		const winners = await Promise.all(winner_promises);
+
+		// promote winners once all promises are resolved
+		for (let i = 0; i < winners.length; i++) {
+			const match = matches[i];
+			const winner = winners[i];
+			match.next?.add_player(winner);
+		}
 	}
 
 	// runs each game in a round one by one and awaits each game before starting the next
-	private async _run_one_by_one() {
-		for (const match of this.matches) {
+	private async _run_one_by_one(matches: Match[]) {
+		for (const match of matches) {
 			this.assign_sides(match.players);
 			match.game = new Game(match.players, this.broadcast.bind(this));
-			const winner: Player = await match.game.run();
-			this.remaining_players.push(winner);
+			const winner = await match.game.run();
+			match.next?.add_player(winner);
 		}
 	}
 
-	private async _start_round() {
+	// runs each game in a round
+	private async _start_round(round: number) {
+		const matches = this.rounds.get(round);
+		if (matches === undefined) return ; // maybe throw err
+
 		if (this.mode == GameMode.TOURNAMENT_LOCAL) {
-			this._run_one_by_one();
+			await this._run_one_by_one(matches);
 		}
 		else { // this.mode == GameMode.TOURNAMENT_REMOTE
-			this._run_all();
+			await this._run_all(matches);
 		}
 	}
 
+	
 	async start() {
-		if (!this.running) {
-			this.running = true;
-			this._assign_match_order();
+		if (this.running) return ;
 
-			while (this.remaining_players.length > 1) {
-				this._create_matches();
-				this._start_round();
-			}
-			// TODO: display final winner screen
+		this.running = true;
+		let final = new Match(this.num_rounds)
+		this._create_match_tree(final, this.num_rounds);
+		this._match_players();
+		
+		let current_round = 1;
+		while (current_round <= this.num_rounds) {
+			await this._start_round(current_round);
+			current_round++;
 		}
+
+		// TODO: display final winner screen
 	}
 }
