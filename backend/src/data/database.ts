@@ -439,3 +439,38 @@ export function getGameDuration(id: number): number {
 		return -1;
 	}
 }
+
+// Find a user by their Google ID
+export function findUserByGoogleId(googleId: string): UserProfileData | null {
+    const statement = db.prepare('SELECT id, username, email, victories, defeats, games FROM users WHERE google_id = ?');
+    const user = statement.get(googleId) as any;
+    return user || null;
+}
+
+// Create a new user from Google profile data
+export function createGoogleUser(profile: { sub: string, name: string, email: string}): number {
+    try {
+        const statement = db.prepare(
+            'INSERT INTO users (username, email, google_id) VALUES (?, ?, ?)'
+        );
+        const result = statement.run(profile.name, profile.email, profile.sub);
+        return result.lastInsertRowid as number;
+    } catch (err) {
+        console.error('Error in createGoogleUser:', err);
+        const existingUser = findUserByGoogleId(profile.sub);
+        return existingUser ? existingUser.userId : -1;
+    }
+}
+
+export function linkGoogleIdToUser(email: string, googleId: string): boolean {
+    try {
+        const statement = db.prepare(
+            'UPDATE users SET google_id = ? WHERE email = ?'
+        );
+        const result = statement.run(googleId, email);
+        return result.changes > 0;
+    } catch (err) {
+        console.error('Error in linkGoogleIdToUser:', err);
+        return false;
+    }
+}
