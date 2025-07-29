@@ -51,7 +51,8 @@ export async function buildScene(
         onProgress?.(80);
     } else {
         cameras = [
-            createCamera(scene, "camera1", getCamera3DPlayer1Position(), get3DCamera1Viewport(), mode),
+            createCamera(scene, "camera1", getCamera2DPosition(), get3DCamera1Viewport(), mode),
+            // createCamera(scene, "camera1", getCamera3DPlayer1Position(), get3DCamera1Viewport(), mode),
             createCamera(scene, "camera2", getCamera3DPlayer2Position(), get3DCamera2Viewport(), mode)
         ];
         onProgress?.(50);

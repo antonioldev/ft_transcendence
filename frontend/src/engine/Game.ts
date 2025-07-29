@@ -239,12 +239,12 @@ export class Game {
     private handleCountdown(countdown: number): void {
         if (countdown === undefined || countdown === null)
             Logger.errorAndThrow('Server sent ALL_READY without countdown parameter', 'Game');
-
+        uiManager.setLoadingScreenVisible(false);
         if (countdown > 0)
             Logger.info(`Game starts in ${countdown}`, 'Game');
         else {
             Logger.info('GO! Starting game now!', 'Game');
-            uiManager.setLoadingScreenVisible(false);
+            // uiManager.setLoadingScreenVisible(false);
             this.start();
         }
     }
