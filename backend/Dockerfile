@@ -11,6 +11,7 @@ COPY package*.json package-lock.json ./
 # Install dependencies
 RUN npm install && apk add --no-cache neovim
 
+
 # Copy source code
 COPY src/ ./src/
 COPY tsconfig.json ./

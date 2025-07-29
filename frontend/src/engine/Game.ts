@@ -3,15 +3,17 @@ declare var BABYLON: typeof import('@babylonjs/core') & {
 }; //declare var BABYLON: any;
 
 import { GameConfig } from './GameConfig.js';
-import { buildScene } from './sceneBuilder.js';
-import { InputHandler } from './InputHandler.js';
+import { buildScene } from './scene/sceneBuilder.js';
+import { InputHandler } from './InputManager.js';
 import { webSocketClient } from '../core/WebSocketClient.js';
 import { GameStateData, GameObjects } from '../shared/types.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
 import { appStateManager } from '../core/AppStateManager.js';
-import { GameMode, WebSocketEvent } from '../shared/constants.js';
-import { EL } from '../ui/elements.js';
-import { ViewMode } from '../shared/constants.js';
+import { GameState, WebSocketEvent } from '../shared/constants.js';
+import { Logger } from '../core/LogManager.js';
+import { uiManager } from '../ui/UIManager.js';
+import { GUIManager } from './GuiManager.js';
+import { RenderManager } from './RenderManager.js';
 
 /**
  * Main Game class that handles everything for running one game instance.
@@ -27,52 +29,56 @@ import { ViewMode } from '../shared/constants.js';
  * - Complete game session lifecycle
  */
 export class Game {
+    private static currentInstance: Game | null = null;
     private engine: any = null;
     private scene: any = null;
     private canvas: HTMLCanvasElement | null = null;
     private gameObjects: GameObjects | null = null;
     private inputHandler: InputHandler | null = null;
-    private isRenderingActive: boolean = false;
+    private guiManager: GUIManager | null = null;
+    private renderManager: RenderManager | null = null;
     private resizeHandler: (() => void) | null = null;
-    private advancedTexture: any = null;
-    private fpsText: any = null;
     private isInitialized: boolean = false;
     private isRunning: boolean = false;
     private isDisposed: boolean = false;
     private isPausedByServer: boolean = false;
+    private countdownLoop: number | null = null;
     private gameLoopObserver: any = null;
-    private score1Text: any = null;
-    private score2Text: any = null;
-    
-    private lastFrameTime: number = 0;
-    private fpsLimit: number = 60;
 
     constructor(private config: GameConfig) {
-        const element = document.getElementById(config.canvasId);
-        
-        if (element instanceof HTMLCanvasElement) {
-            this.canvas = element;
-            const gl = this.canvas.getContext('webgl') || this.canvas.getContext('webgl2');
+        if (Game.currentInstance)
+            Game.currentInstance.dispose();
+        Game.currentInstance = this;
+
+        try {
+            this.guiManager = new GUIManager();
+            this.renderManager = new RenderManager();
             
-            if (gl) {
-                gl.getExtension('WEBGL_color_buffer_float');
-                gl.getExtension('EXT_color_buffer_half_float');}
-            // if (gl) {
-            //     let renderer = gl.getParameter(gl.RENDERER);
-            //     renderer = gl.getExtension('WEBGL_color_buffer_float');
-            //     renderer = gl.getExtension('EXT_color_buffer_half_float');
-            //     console.log('WebGL Renderer:', renderer); // TODO remove some warning
-            // }
-            
-        } else 
-            throw new Error(`Canvas element not found or is not a canvas: ${config.canvasId}`);
-        
-        console.log('Game created with config:', {
+            const element = document.getElementById(config.canvasId);
+            if (element instanceof HTMLCanvasElement) {
+                this.canvas = element;
+                const gl = this.canvas.getContext('webgl') || this.canvas.getContext('webgl2');
+                
+                if (gl) {
+                    gl.getExtension('WEBGL_color_buffer_float');
+                    gl.getExtension('EXT_color_buffer_half_float');
+                }
+                this.canvas.focus();
+            }
+        } catch (error) {
+            Logger.errorAndThrow('Error creating game managers', 'Game', error);
+        }
+
+        Logger.info('Game created with config', 'Game', {
             viewMode: config.viewMode,
             gameMode: config.gameMode,
             canvasId: config.canvasId,
             players: config.players
         });
+    }
+
+    static getCurrentInstance(): Game | null {
+        return Game.currentInstance;
     }
 
     // ========================================
@@ -85,37 +91,37 @@ export class Game {
         // BABYLON.SceneLoader.ShowLoadingScreen = true;
         BABYLON.SceneLoader.ShowLoadingScreen = false;
         
-        this.updateLoadingProgress(0);
-        this.setLoadingScreenVisible(true);
+        uiManager.updateLoadingProgress(0);
+        uiManager.setLoadingScreenVisible(true);
         try {
-            console.log('Initializing game...');
+            Logger.info('Initializing game...', 'Game');
 
             this.engine = await this.initializeBabylonEngine();
-            if (!this.engine) throw new Error('Engine not created');
-            // this.engine.displayLoadingUI()
-            this.scene = await this.createScene()
-            if (!this.scene) throw new Error('Scene not created');
-            
+            if (!this.engine) Logger.errorAndThrow('Engine not created', 'Game');
+            this.scene = await this.createScene();
+            if (!this.scene) Logger.errorAndThrow('Scene not created', 'Game');
+
             // Build game objects
-            this.gameObjects = await buildScene(this.scene, this.engine, this.config.viewMode, this.updateLoadingProgress.bind(this));
-            if (!this.gameObjects) throw new Error('Game objects not created');
-            // Build game scene in background
-            // await this.createGameScene();
-            this.createGUI(); // Create FPS GUI on engine
-            this.startRenderLoop();
+            this.gameObjects = await buildScene(this.scene, this.engine, this.config.viewMode, (progress: number) => uiManager.updateLoadingProgress(progress));
+            if (!this.gameObjects) Logger.errorAndThrow('Game objects not created', 'Game');
+            this.guiManager?.createGUI(this.scene, this.config);
+
+            if (this.guiManager)
+                this.renderManager?.initialize(this.engine, this.scene, this.guiManager);
+            this.renderManager?.startRendering();
+
             this.setupResizeHandler();
 
-            // Create input handler for game scene
             this.inputHandler = new InputHandler(this.config.gameMode, this.config.controls, this.scene);
-            
             this.inputHandler.setGameObjects(this.gameObjects);
 
             this.connectComponents();
             this.isInitialized = true;
-            console.log('Game initialized successfully');
+            webSocketClient.sendPlayerReady();
+            Logger.info('Game initialized successfully', 'Game');
 
         } catch (error) {
-            console.error('Error initializing game:', error);
+            Logger.error('Error initializing game', 'Game', error);
             await this.dispose();
             throw error;
         }
@@ -141,108 +147,6 @@ export class Game {
         return scene;
     }
 
-    // Create GUI elements
-    private createGUI(): void {
-        // this.advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
-        this.advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI", true, this.scene);
-        this.advancedTexture.layer.layerMask = 0x20000000;
-
-        if (this.config.viewMode === ViewMode.MODE_3D && this.config.gameMode === GameMode.TWO_PLAYER_LOCAL) {
-            const dividerLine = new BABYLON.GUI.Rectangle();
-            dividerLine.widthInPixels = 2;
-            dividerLine.height = "100%";
-            dividerLine.color = "black";
-            dividerLine.background = "black";
-            dividerLine.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
-            dividerLine.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
-            dividerLine.left = "0px";
-            dividerLine.top = "0px";
-            
-            this.advancedTexture.addControl(dividerLine);
-        }
-
-        // Create FPS display
-        this.fpsText = new BABYLON.GUI.TextBlock();
-        this.fpsText.text = "FPS: 0";
-        this.fpsText.color = "white";
-        this.fpsText.fontSize = 16;
-        this.fpsText.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
-        this.fpsText.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
-        this.fpsText.top = "1px";
-        this.fpsText.left = "-20px";
-        this.fpsText.width = "200px";
-        this.fpsText.height = "40px";
-        
-        this.advancedTexture.addControl(this.fpsText);
-
-        // Create score container
-        const scoreContainer = new BABYLON.GUI.StackPanel();
-        scoreContainer.isVertical = true;
-        scoreContainer.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
-        scoreContainer.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
-        scoreContainer.top = "-30px";
-        scoreContainer.height = "80px";
-
-        // Player names row
-        const playersRow = new BABYLON.GUI.StackPanel();
-        playersRow.isVertical = false;
-        playersRow.height = "30px";
-
-        const player1Label = new BABYLON.GUI.TextBlock();
-        player1Label.text = "Player 1";
-        player1Label.color = "white";
-        player1Label.fontSize = 18;
-        player1Label.width = "120px";
-
-        // const vsLabel = new BABYLON.GUI.TextBlock();
-        // vsLabel.text = "vs";
-        // vsLabel.color = "#ffff00";
-        // vsLabel.fontSize = 16;
-        // vsLabel.width = "40px";
-
-        const player2Label = new BABYLON.GUI.TextBlock();
-        player2Label.text = "Player 2";
-        player2Label.color = "white";
-        player2Label.fontSize = 18;
-        player2Label.width = "120px";
-
-        playersRow.addControl(player1Label);
-        // playersRow.addControl(vsLabel);
-        playersRow.addControl(player2Label);
-
-        // Scores row
-        const scoresRow = new BABYLON.GUI.StackPanel();
-        scoresRow.isVertical = false;
-        scoresRow.height = "40px";
-
-        this.score1Text = new BABYLON.GUI.TextBlock();
-        this.score1Text.text = "0";
-        this.score1Text.color = "white";
-        this.score1Text.fontSize = 24;
-        this.score1Text.width = "120px";
-
-        // const scoreSeparator = new BABYLON.GUI.TextBlock();
-        // scoreSeparator.text = "-";
-        // scoreSeparator.color = "white";
-        // scoreSeparator.fontSize = 20;
-        // scoreSeparator.width = "40px";
-
-        this.score2Text = new BABYLON.GUI.TextBlock();
-        this.score2Text.text = "0";
-        this.score2Text.color = "white";
-        this.score2Text.fontSize = 24;
-        this.score2Text.width = "120px";
-
-        scoresRow.addControl(this.score1Text);
-        // scoresRow.addControl(scoreSeparator);
-        scoresRow.addControl(this.score2Text);
-
-        scoreContainer.addControl(playersRow);
-        scoreContainer.addControl(scoresRow);
-
-        this.advancedTexture.addControl(scoreContainer);
-    }
-
     // Setup window resize handler
     private setupResizeHandler(): void {
         this.resizeHandler = () => {
@@ -262,18 +166,18 @@ export class Game {
             webSocketClient.sendPlayerInput(input.side, input.direction);
         });
         webSocketClient.registerCallback(WebSocketEvent.GAME_STATE, (state: GameStateData) => { this.updateGameObjects(state); });
-        webSocketClient.registerCallback(WebSocketEvent.CONNECTION, () => { console.log('Connected...'); });
-        webSocketClient.registerCallback(WebSocketEvent.ERROR, (error: string) => { console.error('Network error:', error); });
+        webSocketClient.registerCallback(WebSocketEvent.CONNECTION, () => { Logger.info('Connected', 'Game'); });
+        webSocketClient.registerCallback(WebSocketEvent.ERROR, (error: string) => { Logger.error('Network error', 'Game', error); });
         webSocketClient.registerCallback(WebSocketEvent.GAME_PAUSED, () => { this.onServerPausedGame(); });
         webSocketClient.registerCallback(WebSocketEvent.GAME_RESUMED, () => { this.onServerResumedGame(); });
         webSocketClient.registerCallback(WebSocketEvent.GAME_ENDED, () => { this.onServerEndedGame(); });
+        webSocketClient.registerCallback(WebSocketEvent.ALL_READY, (countdown: number) => { this.handleCountdown(countdown); });
     }
 
     async connect(): Promise<void> {
-        console.log('Connecting to server...');
-        // Make this return a Promise that resolves when connected
-        webSocketClient.joinGame(this.config.gameMode, this.config.players)
-        console.log('Connected to server');
+        Logger.info('Connecting to server...', 'Game');
+        webSocketClient.joinGame(this.config.gameMode, this.config.players);
+        Logger.info('Connected to server', 'Game');
     }
 
     // ========================================
@@ -284,131 +188,110 @@ export class Game {
         if (!this.isInitialized || this.isRunning || this.isDisposed) return;
 
         try {
-            console.log('Starting game...');
+            Logger.info('Starting game...', 'Game');
 
             // Start game loop
             this.startGameLoop();
 
             this.isRunning = true;
-            console.log('Game started successfully');
+            Logger.info('Game started successfully', 'Game');
 
         } catch (error) {
-            console.error('Error starting game:', error);
+            Logger.error('Error starting game', 'Game', error);
         }
     }
 
-    pause(): void {
-        if (this.isDisposed || this.isPausedByServer) return;
-        console.log('Game: Requesting pause from server...');
+    static pause(): void {
+        const game = Game.currentInstance;
+        if (!game || game.isDisposed || game.isPausedByServer) return;
+        
+        Logger.info('Requesting pause from server...', 'Game');
         webSocketClient.sendPauseRequest();
     }
 
-    resume(): void {
-        if (this.isDisposed || !this.isPausedByServer) return;
-        console.log('Game: Requesting resume from server...');
+    static resume(): void {
+        const game = Game.currentInstance;
+        if (!game || game.isDisposed || !game.isPausedByServer) return;
+        
+        Logger.info('Requesting resume from server...', 'Game');
         webSocketClient.sendResumeRequest();
     }
 
-    stop(): void {
-        this.isRunning = false;
-        this.isPausedByServer = false;
-        this.stopRenderLoop();
-        this.stopGameLoop();
-        console.log('Game stopped');
+    static stop(): void {
+        const game = Game.currentInstance;
+        if (!game) return;
+        
+        game.isRunning = false;
+        game.isPausedByServer = false;
+        game.renderManager?.stopRendering();;
+        game.stopGameLoop();
+        Logger.info('Game stopped', 'Game');
+    }
+
+    static async disposeGame(): Promise<void> {
+        const game = Game.currentInstance;
+        if (!game) return;
+        
+        await game.dispose();
+    }
+
+
+    private handleCountdown(countdown: number): void {
+        if (countdown === undefined || countdown === null)
+            Logger.errorAndThrow('Server sent ALL_READY without countdown parameter', 'Game');
+        uiManager.setLoadingScreenVisible(false);
+        if (countdown > 0)
+            this.guiManager?.showCountdown(countdown);
+        else {
+            this.guiManager?.hideCountdown();
+            this.start();
+        }
     }
 
     // Handle server confirming game is paused
     private onServerPausedGame(): void {
         if (this.isDisposed || !this.isRunning) return;
 
-        console.log('Game: Server confirmed game is paused');
+        Logger.info('Server confirmed game is paused', 'Game');
         
         this.isPausedByServer = true;
         this.isRunning = false;
-        appStateManager.onServerConfirmedPause();
+        appStateManager.updateGamePauseStateTo(GameState.PAUSED);
         
-        this.stopRenderLoop();
+        this.renderManager?.stopRendering();
         this.stopGameLoop();
         
-        console.log('Game paused by server');
+        Logger.info('Game paused by server', 'Game');
     }
 
     // Handle server confirming game is resumed
     private onServerResumedGame(): void {
         if (this.isDisposed || this.isRunning || !this.isPausedByServer) return;
 
-        console.log('Game: Server confirmed game is resumed');
+        Logger.info('Server confirmed game is resumed', 'Game');
         
         this.isPausedByServer = false;
         this.isRunning = true;
-        appStateManager.onServerConfirmedResume();
+        appStateManager.updateGamePauseStateTo(GameState.PLAYING);
 
-        this.startRenderLoop();
+        this.renderManager?.startRendering();
         this.startGameLoop();
         
-        console.log('Game resumed by server');
+        Logger.info('Game resumed by server', 'Game');
     }
 
     // Handle server ending the game
     private onServerEndedGame(): void {
         if (this.isDisposed) return;
 
-        console.log('Game: Server ended the game');
-        
-        // Stop everything
-        this.isRunning = false;
-        this.isPausedByServer = false;
-        this.stopRenderLoop();
+        Logger.info('Server ended the game', 'Game');
+
+        this.renderManager?.stopRendering();
         this.stopGameLoop();
+        Game.disposeGame();
+        appStateManager.resetToMenu();
 
-        appStateManager.exitToMenu();
-        
-        console.log('Game ended by server');
-    }
-
-
-    // ========================================
-    // RENDER LOOP - These functions are in charge of the frame rendering
-    // ========================================
-
-    private startRenderLoop(): void {
-        if (this.isDisposed || this.isRenderingActive || !this.engine || !this.scene) return;
-
-        this.isRenderingActive = true;
-        this.lastFrameTime = performance.now();
-
-        this.engine.runRenderLoop(() => {
-            if (!this.isRenderingActive || this.isDisposed) return;
-
-            const currentTime = performance.now();
-            const deltaTime = currentTime - this.lastFrameTime;
-            if (deltaTime < (1000 / this.fpsLimit)) return;
-
-            try {
-                if (this.scene && this.scene.activeCamera)
-                    this.scene.render();
-
-                // Update FPS
-                if (this.fpsText && this.engine)
-                    this.fpsText.text = "FPS: " + Math.round(1000 / deltaTime);
-                    // this.fpsText.text = "FPS: " + this.engine.getFps().toFixed(0);
-
-                this.lastFrameTime = currentTime;
-            } catch (error) {
-                console.error('Error in render loop:', error);
-            }
-        });
-
-        console.log('Render loop started');
-    }
-
-    private stopRenderLoop(): void {
-        if (!this.isRenderingActive) return;
-        this.isRenderingActive = false;
-        if (this.engine) {
-            this.engine.stopRenderLoop();
-        }
-        console.log('Render loop stopped');
+        Logger.info('Game ended by server', 'Game');
     }
 
     // ========================================
@@ -419,20 +302,21 @@ export class Game {
         if (this.gameLoopObserver) return;
         this.gameLoopObserver = setInterval(() => {
             if (!this.isRunning || this.isDisposed) return;
-            try {
-                this.setLoadingScreenVisible(false);
-                // Update input
-                if (this.inputHandler)
-                    this.inputHandler.updateInput();
-                // Update 3D cameras if needed
-                const cameras = this.gameObjects?.cameras;
-                if (cameras && cameras.length > 2)
-                    this.update3DCameras();
-            } catch (error) {
-                console.error('Error in game loop:', error);
-            }
+        try {
+            uiManager.setLoadingScreenVisible(false);
+            // Update input
+            if (this.inputHandler)
+                this.inputHandler.updateInput();
+            // Update 3D cameras if needed
+            const cameras = this.gameObjects?.cameras;
+            if (cameras && cameras.length > 2)
+                this.update3DCameras();
+        } catch (error) {
+            Logger.error('Error in game loop', 'Game', error);
+        }
         }, 16);
     }
+
     private stopGameLoop(): void {
         if (this.gameLoopObserver) {
             clearInterval(this.gameLoopObserver);
@@ -462,12 +346,11 @@ export class Game {
             }
 
             // Update Score
-            if (this.score1Text && this.score2Text) {
-                this.score1Text.text = state.paddleLeft.score.toString();
-                this.score2Text.text = state.paddleRight.score.toString();
-            }
+            if (this.guiManager && this.guiManager.isReady())
+                this.guiManager.updateScores(state.paddleLeft.score, state.paddleRight.score);
+
         } catch (error) {
-            console.error('Error updating game objects:', error);
+            Logger.error('Error updating game objects', 'Game', error);
         }
     }
 
@@ -477,10 +360,15 @@ export class Game {
 
         try {
             const [camera1, camera2] = this.gameObjects.cameras;
-            
+
             if (camera1 && camera2 && this.gameObjects.players.left && this.gameObjects.players.right) {
                 const targetLeft = this.gameObjects.players.left.position.clone();
                 const targetRight = this.gameObjects.players.right.position.clone();
+
+                // Clamp the target positions to limit camera follow range
+                const cameraFollowLimit = GAME_CONFIG.cameraFollowLimit;
+                targetLeft.x = Math.max(-cameraFollowLimit, Math.min(cameraFollowLimit, targetLeft.x));
+                targetRight.x = Math.max(-cameraFollowLimit, Math.min(cameraFollowLimit, targetRight.x));
 
                 if (camera1.getTarget && camera2.getTarget) {
                     camera1.setTarget(BABYLON.Vector3.Lerp(camera1.getTarget(), targetLeft, GAME_CONFIG.followSpeed));
@@ -488,57 +376,53 @@ export class Game {
                 }
             }
         } catch (error) {
-            console.error('Error updating 3D cameras:', error);
+            Logger.error('Error updating 3D cameras', 'Game', error);
         }
     }
 
     // ========================================
     // CLEANUP
     // ========================================
-
     async dispose(): Promise<void> {
         if (this.isDisposed) return;
 
-        console.log('Disposing game...');
+        Logger.info('Disposing game...', 'Game');
         this.isDisposed = true;
         this.isRunning = false;
         this.isPausedByServer = false;
 
         try {
-            // Stop loops first
             this.stopGameLoop();
-            this.stopRenderLoop();
+            if (this.renderManager) {
+                this.renderManager.dispose();
+                this.renderManager = null;
+            }
 
-            // Wait a frame to ensure loops stop
-            await new Promise(resolve => setTimeout(resolve, 16));
+            if (this.countdownLoop) {
+                clearInterval(this.countdownLoop);
+                this.countdownLoop = null;
+            }
 
             if (this.inputHandler) {
                 await this.inputHandler.dispose();
                 this.inputHandler = null;
             }
 
-            // Remove resize handler
             if (this.resizeHandler) {
                 window.removeEventListener("resize", this.resizeHandler);
                 this.resizeHandler = null;
             }
 
-            // Dispose GUI
-            if (this.advancedTexture) {
-                this.advancedTexture.dispose();
-                this.advancedTexture = null;
+            if (this.guiManager) {
+                this.guiManager.dispose();
+                this.guiManager = null;
             }
-            this.fpsText = null;
-            this.score1Text = null;
-            this.score2Text = null;
 
-            this.setLoadingScreenVisible(false);
-            this.updateLoadingProgress(0);
+            uiManager.setLoadingScreenVisible(false);
+            uiManager.updateLoadingProgress(0);
 
-            // Clear game objects reference
             this.gameObjects = null;
 
-            // Dispose scene
             if (this.scene) {
                 this.scene.onBeforeRenderObservable?.clear();
                 this.scene.onAfterRenderObservable?.clear();
@@ -546,55 +430,21 @@ export class Game {
                 this.scene = null;
             }
 
-            // Dispose engine
             if (this.engine) {
                 this.engine.dispose();
                 this.engine = null;
             }
 
-            // Clear canvas reference
             this.canvas = null;
-
-            // Reset flags
             this.isInitialized = false;
 
-            console.log('Game disposed successfully');
+            if (Game.currentInstance === this)
+                Game.currentInstance = null;
 
+            Logger.info('Game disposed successfully', 'Game');
         } catch (error) {
-            console.error('Error disposing game:', error);
-        }
-    }
-
-
-    private updateLoadingProgress(progress: number): void{
-        const progressBar = document.getElementById(EL.GAME.PROGRESS_FILL);
-        if (progressBar)
-            progressBar.style.width = progress + '%';
-        const progressText = document.getElementById(EL.GAME.PROGRESS_TEXT);
-        if (progressText)
-            progressText.textContent = progress + '%';
-    }
-
-    setLoadingScreenVisible(visible: boolean): void {
-        const loadingScreen = document.getElementById('loading-screen');
-        if (loadingScreen) {
-            loadingScreen.style.display = visible ? 'flex' : 'none';
+            Logger.error('Error disposing game', 'Game', error);
         }
     }
 
 }
-
-BABYLON.DefaultLoadingScreen.prototype.displayLoadingUI = function () {
-    if ((this as any)._isLoading)
-        return;
-
-    (this as any)._isLoading = true;
-};
-
-BABYLON.DefaultLoadingScreen.prototype.hideLoadingUI = function () {
-    const loading = document.getElementById(EL.GAME.LOADING_SCREEN);
-    if (loading)
-        loading.style.display = 'none';
-    (this as any)._isLoading = false;
-    
-};

@@ -1,8 +1,8 @@
+import { Logger } from './LogManager.js';
 import { AuthState, AppState, WebSocketEvent } from '../shared/constants.js';
 import { uiManager } from '../ui/UIManager.js';
 import { getCurrentTranslation } from '../translations/translations.js';
 import { historyManager } from './HistoryManager.js';
-import { clearForm } from './utils.js';
 import { WebSocketClient } from './WebSocketClient.js';
 import { RegisterUser, LoginUser } from '../shared/types.js';
 import { EL, getElementById, requireElementById} from '../ui/elements.js';
@@ -16,14 +16,14 @@ import { initializeGoogleSignIn, renderGoogleButton } from './GoogleSignIn.js';
 export class AuthManager {
     private static instance: AuthManager;
     private authState: AuthState = AuthState.GUEST;
-    // private currentUserLogin: {username: string; password: string; email?: string} | null = null;
     private currentUser: {username: string} | null = null;
+    private readonly loginFields = [EL.AUTH.LOGIN_USERNAME, EL.AUTH.LOGIN_PASSWORD];
+    private readonly registrationFields = [EL.AUTH.REGISTER_USERNAME, EL.AUTH.REGISTER_EMAIL, EL.AUTH.REGISTER_PASSWORD, EL.AUTH.REGISTER_CONFIRM_PASSWORD];
 
     // Gets the singleton instance of AuthManager.
     static getInstance(): AuthManager {
-        if (!AuthManager.instance) {
+        if (!AuthManager.instance)
             AuthManager.instance = new AuthManager();
-        }
         return AuthManager.instance;
     }
 
@@ -161,15 +161,15 @@ export class AuthManager {
 
     // Handles the login form submission process. Validates input fields, processes authentication, and updates UI state.
     private handleLoginSubmit(): void {
-        const username = getElementById<HTMLInputElement>(EL.AUTH.LOGIN_USERNAME)?.value.trim();
-        const password = getElementById<HTMLInputElement>(EL.AUTH.LOGIN_PASSWORD)?.value;
+        const username = requireElementById<HTMLInputElement>(EL.AUTH.LOGIN_USERNAME).value.trim();
+        const password = requireElementById<HTMLInputElement>(EL.AUTH.LOGIN_PASSWORD).value;
         const t = getCurrentTranslation();
         const wsClient = WebSocketClient.getInstance(); // or use a shared instance if you already have one
         
         // Basic validation
         if (!username || !password) {
             alert(t.pleaseFilllAllFields);
-            clearForm([EL.AUTH.LOGIN_USERNAME, EL.AUTH.LOGIN_PASSWORD]);
+            uiManager.clearForm(this.loginFields);
             return;
         }
 
@@ -179,32 +179,32 @@ export class AuthManager {
             this.authState = AuthState.LOGGED_IN;
             this.currentUser = {username};
             // Clear form and navigate back to main menu
-            clearForm([EL.AUTH.LOGIN_USERNAME, EL.AUTH.LOGIN_PASSWORD]);
+            uiManager.clearForm(this.loginFields);
             historyManager.navigateTo(AppState.MAIN_MENU);
             uiManager.showUserInfo(user.username);     
-            console.log(msg);
+            Logger.info(msg, 'AuthManager');
         });
 
         wsClient.registerCallback(WebSocketEvent.LOGIN_FAILURE, (msg: string) => {
             this.authState = AuthState.LOGGED_FAILED;
             if (msg === "User doesn't exist") {
                 alert(t.dontHaveAccount);
-                clearForm([EL.AUTH.LOGIN_USERNAME, EL.AUTH.LOGIN_PASSWORD]); 
+                uiManager.clearForm(this.loginFields); 
                 setTimeout(() => {
                     historyManager.navigateTo(AppState.REGISTER);
                 }, 500);
             } else {
                 alert(t.passwordsDoNotMatch);
-                clearForm([EL.AUTH.LOGIN_USERNAME, EL.AUTH.LOGIN_PASSWORD]); 
+                uiManager.clearForm(this.loginFields); 
             }
         });
 
-        console.log('Login attempt:', { username });
+        Logger.info('Login attempt', 'AuthManager', { username });
         try {
             wsClient.loginUser(user);
-            console.log('Login attempt: ', { username});
+            Logger.info('Login attempt', 'AuthManager', { username });
         } catch (error) {
-            console.error('Error sending login request:', error);
+            Logger.error('Error sending login request', 'AuthManager', error);
             this.authState = AuthState.LOGGED_FAILED;
             alert('Loggin failed due to connection error.');  
         }
@@ -214,25 +214,23 @@ export class AuthManager {
     // Handles the registration form submission process.
     // Validates input fields, processes registration, and provides user feedback.
     private handleRegisterSubmit(): void {
-        const username = getElementById<HTMLInputElement>(EL.AUTH.REGISTER_USERNAME)?.value.trim();
-        const email = getElementById<HTMLInputElement>(EL.AUTH.REGISTER_EMAIL)?.value;
-        const password = getElementById<HTMLInputElement>(EL.AUTH.REGISTER_PASSWORD)?.value;
-        const confirmPassword = getElementById<HTMLInputElement>(EL.AUTH.REGISTER_CONFIRM_PASSWORD)?.value;
+        const username = requireElementById<HTMLInputElement>(EL.AUTH.REGISTER_USERNAME).value.trim();
+        const email = requireElementById<HTMLInputElement>(EL.AUTH.REGISTER_EMAIL).value;
+        const password = requireElementById<HTMLInputElement>(EL.AUTH.REGISTER_PASSWORD).value;
+        const confirmPassword = requireElementById<HTMLInputElement>(EL.AUTH.REGISTER_CONFIRM_PASSWORD).value;
         const t = getCurrentTranslation();
         const wsClient = WebSocketClient.getInstance();
 
         // Check if fiels are all full
         if (!username || !email || !password || !confirmPassword) {
             alert(t.pleaseFilllAllFields);
-            clearForm([ EL.AUTH.REGISTER_USERNAME, EL.AUTH.REGISTER_EMAIL,
-                EL.AUTH.REGISTER_PASSWORD, EL.AUTH.REGISTER_CONFIRM_PASSWORD]);
+            uiManager.clearForm(this.registrationFields);
             return;
         }
 
         if (password !== confirmPassword) {
             alert(t.passwordsDoNotMatch);
-            clearForm([ EL.AUTH.REGISTER_USERNAME, EL.AUTH.REGISTER_EMAIL,
-                EL.AUTH.REGISTER_PASSWORD, EL.AUTH.REGISTER_CONFIRM_PASSWORD]);
+            uiManager.clearForm(this.registrationFields);
             return;
         }
 
@@ -241,8 +239,7 @@ export class AuthManager {
         // register the callback in case of success or failure
         wsClient.registerCallback(WebSocketEvent.REGISTRATION_FAILURE, (msg: string) => {
             this.authState = AuthState.LOGGED_FAILED;
-            clearForm([ EL.AUTH.REGISTER_USERNAME, EL.AUTH.REGISTER_EMAIL,
-            EL.AUTH.REGISTER_PASSWORD, EL.AUTH.REGISTER_CONFIRM_PASSWORD]);
+            uiManager.clearForm(this.registrationFields);
             if (msg === "Username is already registered") {
                 alert(msg || 'Registration failed. Username already register. Please choose another one');
             } else {
@@ -255,8 +252,7 @@ export class AuthManager {
 
         wsClient.registerCallback(WebSocketEvent.ERROR, (msg: string) => {
             this.authState = AuthState.LOGGED_FAILED;
-            clearForm([ EL.AUTH.REGISTER_USERNAME, EL.AUTH.REGISTER_EMAIL,
-            EL.AUTH.REGISTER_PASSWORD, EL.AUTH.REGISTER_CONFIRM_PASSWORD]);
+            uiManager.clearForm(this.registrationFields);
             alert(msg || 'Registration failed. An error occured. Please try again');
             setTimeout(() => {
                 historyManager.navigateTo(AppState.LOGIN);
@@ -265,8 +261,7 @@ export class AuthManager {
 
         wsClient.registerCallback(WebSocketEvent.REGISTRATION_SUCCESS, (msg: string) => {
             this.authState = AuthState.LOGGED_IN;
-            clearForm([ EL.AUTH.REGISTER_USERNAME, EL.AUTH.REGISTER_EMAIL,
-            EL.AUTH.REGISTER_PASSWORD, EL.AUTH.REGISTER_CONFIRM_PASSWORD]);
+            uiManager.clearForm(this.registrationFields);
             alert(msg || 'Registration successful! You can now login.');
             setTimeout(() => {
                 historyManager.navigateTo(AppState.LOGIN);
@@ -276,13 +271,12 @@ export class AuthManager {
         // Apptempt to register new user
         try {
             wsClient.registerNewUser(user);
-            console.log('Register attempt: ', { username, email});
+            Logger.info('Register attempt', 'AuthManager', { username, email });
             this.authState = AuthState.LOGGED_IN;
         } catch (error) {
-            console.error('Error sending registration request:', error);
+            Logger.error('Error sending registration request', 'AuthManager', error);
             this.authState = AuthState.LOGGED_FAILED;
-            clearForm([ EL.AUTH.REGISTER_USERNAME, EL.AUTH.REGISTER_EMAIL,
-            EL.AUTH.REGISTER_PASSWORD, EL.AUTH.REGISTER_CONFIRM_PASSWORD]);
+            uiManager.clearForm(this.registrationFields);
             alert('Registration failed due to connection error.');  
         }
         
@@ -388,16 +382,15 @@ export class AuthManager {
         this.currentUser = null;
         uiManager.showAuthButtons();
         historyManager.navigateTo(AppState.MAIN_MENU);;
-        console.log('Logged out - now in guest mode');
+        Logger.info('Logged out - now in guest mode', 'AuthManager');
     }
 
     // Checks the current authentication state and updates UI accordingly. Should be called after page loads or state changes to ensure UI consistency.
     checkAuthState(): void {
-        if (this.authState === AuthState.LOGGED_IN && this.currentUser) {
+        if (this.authState === AuthState.LOGGED_IN && this.currentUser)
             uiManager.showUserInfo(this.currentUser.username);
-        } else {
+        else
             uiManager.showAuthButtons();
-        }
     }
 }
 

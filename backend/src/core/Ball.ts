@@ -106,7 +106,7 @@ export class Ball {
     // Delays the ball's movement until the start delay has elapsed.
     private delayTimer(): void {
         const elapsed = (performance.now() - this.startTime);
-        this.speedModifier = elapsed >= GAME_CONFIG.startDelay ? 1 : 0;
+        this.speedModifier = elapsed >= GAME_CONFIG.ballDelay ? 1 : 0;
     }
 
     // Updates the ball's state, including movement, collisions, and scoring.

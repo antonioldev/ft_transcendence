@@ -1,9 +1,11 @@
+import { Logger } from './LogManager.js';
 import { uiManager } from '../ui/UIManager.js';
 import { authManager } from './AuthManager.js';
 import { appStateManager } from './AppStateManager.js';
-import { menuFlowManager } from './MenuFlowManager.js';
+import { webSocketClient } from './WebSocketClient.js';
 import { AppState } from '../shared/constants.js';
 import { EL} from '../ui/elements.js';
+import { Game } from '../engine/Game.js';
 
 /**
  * Singleton class responsible for managing application navigation state and browser history.
@@ -15,12 +17,11 @@ import { EL} from '../ui/elements.js';
  */
 export class HistoryManager {
     private static instance: HistoryManager;
-    private currentState: string = AppState.MAIN_MENU;
+    private currentState: AppState = AppState.MAIN_MENU;
 
     static getInstance(): HistoryManager {
-        if (!HistoryManager.instance) {
+        if (!HistoryManager.instance)
             HistoryManager.instance = new HistoryManager();
-        }
         return HistoryManager.instance;
     }
 
@@ -33,18 +34,16 @@ export class HistoryManager {
     private setupEventListeners(): void {
         // Listen for browser back/forward button clicks
         window.addEventListener('popstate', (event) => {
-
             if (appStateManager.isInGame()) {
-                const currentGame = appStateManager.getCurrentGame();
-                currentGame?.pause();
+                Game.pause();
                 return;
             } else if (appStateManager.isPaused()) {
-                appStateManager.exitToMenu();
+                appStateManager.requestExitToMenu();
                 return;
             }
 
             const state = event.state?.screen || AppState.MAIN_MENU;
-            console.log(`Browser BACK navigation to: ${state}`);
+            Logger.info(`Browser BACK navigation to: ${state}`, 'HistoryManager');
             this.navigateTo(state, false); // false = don't push to history
         });
 
@@ -55,11 +54,11 @@ export class HistoryManager {
     }
 
     // Handle the navigation to different app states and add it to browser history
-    navigateTo(state: string, addToHistory: boolean = true): void { // TODO check with teammate, false so doesn't save it
+    navigateTo(state: AppState, addToHistory: boolean = true): void { // TODO check with teammate, false so doesn't save it
         if (addToHistory)
             history.pushState({ screen: state }, '', window.location.href);
         this.currentState = state;
-        console.log(`Navigating to state: ${state}`);
+        Logger.info(`Navigating to state: ${state}`, 'HistoryManager');
         
         switch (state) {
             case AppState.MAIN_MENU:
@@ -81,12 +80,10 @@ export class HistoryManager {
                 this.showScreen(EL.SCREENS.GAME_3D, { hideOverlayss: true, hideUserInfo: true });
                 break;
             case AppState.STATS_DASHBOARD:
-                console.log(`Navigating to state: ${state}`);
-                console.log(EL.SCREENS.STATS_DASHBOARD);
                 this.showScreen(EL.SCREENS.STATS_DASHBOARD, { hideOverlayss: true });
                 break;
             default:
-                console.warn(`Unknown state: ${state}, redirecting to main menu`);
+                Logger.warn(`Unknown state: ${state}, redirecting to main menu`, 'HistoryManager');
                 this.navigateTo(AppState.MAIN_MENU);
                 break;
         }
@@ -99,7 +96,7 @@ export class HistoryManager {
         checkAuth?: boolean;
         refreshGameMode?: boolean;
     } = {}): void {
-        console.log("Showing screen with ID:", screenId);
+        Logger.info(`Showing screen with ID: ${screenId}`, 'HistoryManager');
 
         if (options.hideOverlayss) {
             uiManager.setElementVisibility(EL.SCREENS.LOGIN_MODAL, false);
@@ -119,8 +116,11 @@ export class HistoryManager {
         if (options.checkAuth)
             authManager.checkAuthState();
         
-        if (options.refreshGameMode)
-            menuFlowManager.updateButtonStates();
+        if (options.refreshGameMode) {
+            const isLoggedIn = authManager.isUserAuthenticated();
+            const isOnline = webSocketClient.isConnected();
+            uiManager.updateGameModeButtonStates(isLoggedIn, isOnline);
+        }
     }
 }
 

@@ -1,147 +1,113 @@
 import { uiManager } from '../ui/UIManager.js';
-import { GameState, ViewMode, AppState } from '../shared/constants.js';
+import { GameState, ViewMode, AppState, GameMode } from '../shared/constants.js';
 import { authManager } from './AuthManager.js';
 import { historyManager } from './HistoryManager.js';
 import { Game } from '../engine/Game.js';
-import { GameConfig } from '../engine/GameConfig.js';
 import { webSocketClient } from './WebSocketClient.js';
-import { EL, getElementById} from '../ui/elements.js';
-
+import { EL } from '../ui/elements.js';
+import { GameConfigFactory } from '../engine/GameConfig.js';
+import { PlayerInfo } from '../shared/types.js';
+import { Logger } from './LogManager.js'
+import { memoryDetector } from './main.js';
 
 /**
- * Manages the current game state, view mode, and transitions between game lifecycle phases.
- * This class does not directly implement game logic, but coordinates state and delegates
- * actions to other managers and controllers.
+ * AppStateManager is responsible for managing the application's game state and transitions
+ * between different phases of the game lifecycle (starting, pausing, resuming, exiting).
+ * It coordinates UI updates, navigation, and delegates actions to other managers such as
+ * authentication, history, and networking. This class does not implement game logic itself,
+ * but acts as the central controller for state changes and lifecycle events.
  */
 class AppStateManager {
     private currentState: GameState | null = null;
-    private currentViewMode: ViewMode | null = null;
     private isExiting: boolean = false;
-    private currentGame: Game | null = null;
-    private isStarting: boolean = false;
 
     // ========================================
-    // GAME LIFECYCLE
+    // APP LIFECYCLE
     // ========================================
-    
-    async startGame(config: GameConfig): Promise<void> {
-        if (this.isStarting) {
-            console.warn('AppStateManager: Game start already in progress');
-            return;
-        }
 
-        if (this.currentGame)
-            await this.endGame();
-
-        this.isStarting = true;
-
+    async startGameWithMode(viewMode: ViewMode, gameMode: GameMode): Promise<void> {
+        // memoryDetector.markGameStart(); //[ ]TODO 
         try {
-            console.log('AppStateManager: Starting new game');
-            this.currentGame = new Game(config);
-            await this.currentGame.connect();
-            await this.currentGame?.initialize();
-            // await this.currentGame.connect();
-            this.currentGame?.start();
-            console.log('AppStateManager: Game started successfully');
+            Logger.info(`Starting game: ${gameMode} in ${ViewMode[viewMode]} mode`, 'AppStateManager');
+
+            // Prepare UI for game
+            uiManager.showAuthButtons();
+            historyManager.navigateTo(AppState.GAME_3D, false);
+            this.setGameState(viewMode);
+
+            let players: PlayerInfo[];
+            if (authManager.isUserAuthenticated())
+                players = GameConfigFactory.getAuthenticatedPlayer();
+            else
+                players = GameConfigFactory.getPlayersFromUI(gameMode);
+
+            const config = GameConfigFactory.createConfig(viewMode, gameMode, players);
+
+            // Load the game and wait for server
+            const game = new Game(config);
+            await game.connect();
+            await game.initialize();
+            // game.start();
+
+            Logger.info('Game initialize successfully', 'AppStateManager');
         } catch (error) {
-            console.error('AppStateManager: Error starting game:', error);
-            if (this.currentGame) {
-                await this.currentGame.dispose();
-                this.currentGame = null;
-            }
-            throw error;
-        } finally {
-            this.isStarting = false;
+            Logger.error('Error initializing game', 'AppStateManager', error);
+            this.handleGameStartError();
         }
     }
 
-    async endGame(): Promise<void> {
-        if (!this.currentGame) {
-            return;
-        }
-    
-        console.log('AppStateManager: Ending current game');
-    
-        try {
-            this.currentGame.stop();
-            await this.currentGame.dispose();
-        } catch (error) {
-            console.error('AppStateManager: Error ending game:', error);
-        } finally {
-            this.currentGame = null;
-        }
-    
-        console.log('AppStateManager: Game ended successfully');
+    private handleGameStartError(): void {
+        // Return to main menu on error
+        historyManager.navigateTo(AppState.MAIN_MENU);
+        this.resetToMenu();
     }
 
-    async exitToMenu(): Promise<void> {
-        if (!this.isInGame() && !this.isPaused()) return;
+    async requestExitToMenu(): Promise<void> {
         if (this.isExiting) return;
 
         this.isExiting = true;
-
+        Logger.info('Exiting to menu...', 'AppStateManager');
         try {
-            console.log('AppStateManager: Exiting to menu...');
-            uiManager.setElementVisibility('pause-dialog-3d', false);
             webSocketClient.sendQuitGame();
-            await this.endGame();
-            this.resetToMenu();
-            console.log('AppStateManager: Successfully exited to main menu');
+            Logger.info('Request to end the game', 'AppStateManager');
         } catch (error) {
-            console.error('AppStateManager: Error during game exit:', error);
+            Logger.error('Error during request exit', 'AppStateManager', error);
             this.resetToMenu();
         }
     }
 
     resetToMenu(): void {
+
         this.currentState = null;
-        this.currentViewMode = null;
         this.isExiting = false;
+        uiManager.setElementVisibility('pause-dialog-3d', false);
         authManager.checkAuthState();
-        historyManager.navigateTo(AppState.MAIN_MENU);;
+        historyManager.navigateTo(AppState.MAIN_MENU);
+        // memoryDetector.markGameEnd(); // [ ]
     }
 
     setGameState(viewMode: ViewMode): void {
         this.currentState = GameState.PLAYING;
-        this.currentViewMode = viewMode;
         this.isExiting = false;
-        console.log(`AppStateManager: Game started in ${ViewMode[viewMode]} mode`);
+        Logger.info(`Game started in ${ViewMode[viewMode]} mode`, 'AppStateManager');
     }
 
-    // ========================================
-    // PAUSE/RESUME HANDLING
-    // ========================================
-    onServerConfirmedPause(): void {
-        this.handleServerStateChange(GameState.PAUSED, true);
-    }
-
-    onServerConfirmedResume(): void {
-        this.handleServerStateChange(GameState.PLAYING, false);
-    }
-
-    private handleServerStateChange(newState: GameState, showPauseOverlay: boolean): void {
-        this.currentState = newState;
-        uiManager.setElementVisibility(EL.GAME.PAUSE_DIALOG_3D, showPauseOverlay);
-        console.log(`AppStateManager: Game ${newState === GameState.PAUSED ? 'paused' : 'resumed'} and UI updated`);
+    updateGamePauseStateTo(state: GameState): void {
+        this.currentState = state;
+        const showDialog = state === GameState.PAUSED;
+        uiManager.setElementVisibility(EL.GAME.PAUSE_DIALOG_3D, showDialog);
+        Logger.info(`Game ${showDialog ? 'paused' : 'resumed'} and UI updated`, 'AppStateManager');
     }
 
     // ========================================
     // STATE CHECKS
     // ========================================
     isInGame(): boolean {
-        return this.currentGame !== null && 
-               this.currentState === GameState.PLAYING && 
-               !this.isExiting;
+        return this.currentState === GameState.PLAYING && !this.isExiting;
     }
     
     isPaused(): boolean {
-        return this.currentGame !== null && 
-               this.currentState === GameState.PAUSED && 
-               !this.isExiting;
-    }
-
-    getCurrentGame(): Game | null {
-        return this.currentGame;
+        return this.currentState === GameState.PAUSED && !this.isExiting;
     }
 }
 

@@ -1,3 +1,4 @@
+import { Logger } from './LogManager.js';
 import { ConnectionStatus, MessageType, GameMode, Direction, WebSocketEvent } from '../shared/constants.js'
 import { ClientMessage, ServerMessage, GameStateData, PlayerInfo, RegisterUser, LoginUser } from '../shared/types.js'
 
@@ -46,7 +47,7 @@ export class WebSocketClient {
             clearTimeout(timeout);
             this.connectionStatus = ConnectionStatus.CONNECTED;
             this.notifyStatus(ConnectionStatus.CONNECTED);
-            console.log('🔗 Connected to game server');
+            Logger.info('Connected to game server', 'WebSocketClient');
             this.triggerCallback(WebSocketEvent.CONNECTION);
         };
 
@@ -55,20 +56,20 @@ export class WebSocketClient {
                 const message: ServerMessage = JSON.parse(event.data);
                 this.handleMessage(message);
             } catch (error) {
-                console.error('❌ Error parsing server message:', error);
+                Logger.error('Error parsing server message', 'WebSocketClient', error);
             }
         };
 
         this.ws.onclose = () => {
             clearTimeout(timeout);
-            console.log('❌ Disconnected from game server');
+            Logger.warn('Disconnected from game server', 'WebSocketClient');
             this.connectionStatus = ConnectionStatus.FAILED;
             this.notifyStatus(ConnectionStatus.FAILED);
         };
 
         this.ws.onerror = (error) => {
             clearTimeout(timeout);
-            console.error('❌ WebSocket error');
+            Logger.error('WebSocket error', 'WebSocketClient');
             this.connectionStatus = ConnectionStatus.FAILED;
             this.notifyStatus(ConnectionStatus.FAILED);
             this.triggerCallback(WebSocketEvent.ERROR, 'Connection failed');
@@ -102,34 +103,37 @@ export class WebSocketClient {
             case MessageType.GAME_ENDED:
                 this.triggerCallback(WebSocketEvent.GAME_ENDED);
                 break;
+            case MessageType.ALL_READY:
+                this.triggerCallback(WebSocketEvent.ALL_READY, message.countdown);
+                break;
             case MessageType.WELCOME:
-                console.log('Server says:', message.message);
+                Logger.info('Server says', 'WebSocketClient', message.message);
                 break;
             case MessageType.ERROR:
                 this.triggerCallback(WebSocketEvent.ERROR, message.message);
                 break;
             case MessageType.SUCCESS_LOGIN:
-                console.error('✅ Login success:', message.message);
+                Logger.info('Login success', 'WebSocketClient', message.message);
                 this.triggerCallback(WebSocketEvent.LOGIN_SUCCESS, message.message || "✅ Login success");
                 break;
             case MessageType.SUCCESS_REGISTRATION:
-                console.error('✅ Registration success:', message.message);
+                Logger.info('Registration success', 'WebSocketClient', message.message);
                 this.triggerCallback(WebSocketEvent.REGISTRATION_SUCCESS, message.message || "✅ Registration success");
                 break;
             case MessageType.LOGIN_FAILURE:
-                console.error('🚫 Login failed:', message.message);
+                Logger.warn('Login failed', 'WebSocketClient', message.message);
                 this.triggerCallback(WebSocketEvent.LOGIN_FAILURE, message.message || "🚫 Login failed: ID/Password not matching");
                 break;
             case MessageType.USER_NOTEXIST:
-                console.error('🚫 Login failed:', message.message);
+                Logger.warn('Login failed', 'WebSocketClient', message.message);
                 this.triggerCallback(WebSocketEvent.LOGIN_FAILURE, message.message || "User doesn't exist");
                 break;
             case MessageType.USER_EXIST:
-                console.error('🚫 Registration failed:', message.message);
+                Logger.warn('Registration failed', 'WebSocketClient', message.message);
                 this.triggerCallback(WebSocketEvent.REGISTRATION_FAILURE, message.message || "🚫 Registration failed: user exist");
                 break;
             case MessageType.USERNAME_TAKEN:
-                console.error('🚫 Registration failed:', message.message);
+                Logger.warn('Registration failed', 'WebSocketClient', message.message);
                 this.triggerCallback(WebSocketEvent.REGISTRATION_FAILURE, message.message || "Username is already registered");
                 break;
             case MessageType.SEND_USER_STATS:
@@ -139,7 +143,7 @@ export class WebSocketClient {
                 this.triggerCallback(WebSocketEvent.GAME_HISTORY, message.gameHistory);
                 break;
             default:
-                console.warn(`Unhandled message type: ${message.type}`);
+                Logger.warn(`Unhandled message type: ${message.type}`, 'WebSocketClient');
                 break;
         }
     }
@@ -150,6 +154,10 @@ export class WebSocketClient {
 
     joinGame(gameMode: GameMode, players: PlayerInfo[]): void {
         this.sendMessage(MessageType.JOIN_GAME, { gameMode, players });
+    }
+
+    sendPlayerReady(): void {
+        this.sendMessage(MessageType.PLAYER_READY);
     }
 
     sendPlayerInput(side: number, direction: Direction): void {
@@ -170,7 +178,7 @@ export class WebSocketClient {
 
     private sendMessage(type: MessageType, data: any = {}): void {
         if (!this.isConnected()) {
-            console.error('WebSocket is not connected. Cannot send message.');
+            Logger.error('WebSocket is not connected. Cannot send message.', 'WebSocketClient');
             return;
         }
     
@@ -178,9 +186,9 @@ export class WebSocketClient {
     
         try {
             this.ws!.send(JSON.stringify(message));
-            console.log(`Message sent: ${type}`, message);
+            Logger.debug(`Message sent: ${type}`, 'WebSocketClient', message);
         } catch (error) {
-            console.error(`Error sending message of type ${type}:`, error);
+            Logger.error(`Error sending message of type ${type}`, 'WebSocketClient', error);
         }
     }
 
@@ -189,7 +197,7 @@ export class WebSocketClient {
     // ========================================
 
     registerNewUser(registrationInfo: RegisterUser): void {
-        console.log("In registration user");
+        Logger.debug('In registration user', 'WebSocketClient');
         if (this.isConnected()) {
             const message: ClientMessage = {
                 type: MessageType.REGISTER_USER,
@@ -200,7 +208,7 @@ export class WebSocketClient {
     }
 
     loginUser(loginInfo: LoginUser): void {
-        console.log("In login user");
+        Logger.debug('In login user', 'WebSocketClient');
         if (this.isConnected()) {
             const message: ClientMessage = {
                 type: MessageType.LOGIN_USER,
@@ -215,7 +223,7 @@ export class WebSocketClient {
     // ========================================
 
     requestUserStats(username: string): void {
-        console.log("IN requestUserStats");
+        Logger.debug('IN requestUserStats', 'WebSocketClient');
         if (this.isConnected()) {
             const message: ClientMessage = {
                 type: MessageType.REQUEST_USER_STATS,
@@ -226,7 +234,7 @@ export class WebSocketClient {
     }
 
     requestUserGameHistory(username: string): void {
-        console.log("IN requestUserGameHistory");
+        Logger.debug('IN requestUserGameHistory', 'WebSocketClient');
         if (this.isConnected()) {
             const message: ClientMessage = {
                 type: MessageType.REQUEST_GAME_HISTORY,
@@ -250,7 +258,7 @@ export class WebSocketClient {
             try {
                 callback(data);
             } catch (error) {
-                console.error(`Error triggering callback for event ${event}:`, error);
+                Logger.error(`Error triggering callback for event ${event}`, 'WebSocketClient', error);
             }
         }
     }

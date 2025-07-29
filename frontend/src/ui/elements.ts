@@ -1,9 +1,7 @@
-// frontend/src/config/constants/elements.ts
+import { Logger } from "../core/LogManager.js";
 
-/**
- * Centralized element ID constants to eliminate hard-coded strings throughout the application.
- * All DOM element IDs should be defined here and referenced via these constants.
- */
+// Centralized element ID constants to eliminate hard-coded strings throughout the application.
+// All DOM element IDs should be defined here and referenced via these constants.
 
 export const EL = {
   // ========================================
@@ -57,7 +55,7 @@ export const EL = {
   },
 
   // ========================================
-  // GAME MODE BUTTONS (reusing your existing GameMode enum values)
+  // GAME MODE BUTTONS
   // ========================================
   GAME_MODES: {
     SOLO: 'solo-mode',              // GameMode.SINGLE_PLAYER
@@ -201,6 +199,6 @@ export function requireElementById<T extends HTMLElement = HTMLElement>(
 ): T {
   const element = document.getElementById(elementId) as T | null;
   if (!element)
-    throw new Error(`Required element not found: ${elementId}`);
+    Logger.errorAndThrow(`Required element not found: ${elementId}`, 'UIManager');
   return element;
 }
