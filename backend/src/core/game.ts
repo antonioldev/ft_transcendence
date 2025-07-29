@@ -1,5 +1,5 @@
 import { Ball } from './Ball.js';
-import { Paddle, EasyBot, MediumBot, HardBot, ExactBot } from './Paddle.js';
+import { Paddle, AIBot } from './Paddle.js';
 import { Clock } from './utils.js';
 import { GAME_CONFIG, LEFT_PADDLE, RIGHT_PADDLE } from '../shared/gameConfig.js';
 import { GameMode, MessageType} from '../shared/constants.js';
@@ -15,7 +15,7 @@ export class Game {
 	paused: boolean = false;
 	players: Player[]
 	winner!: Player;
-	paddles: (Paddle | EasyBot | MediumBot | HardBot | ExactBot)[] = [new Paddle(LEFT_PADDLE), new Paddle(RIGHT_PADDLE)];
+	paddles: (Paddle | AIBot)[] = [new Paddle(LEFT_PADDLE), new Paddle(RIGHT_PADDLE)];
 	ball!: Ball;
 	// Callback function to broadcast the game state
 	private _broadcast: (message: ServerMessage, clients?: Client[]) => void;
@@ -33,17 +33,17 @@ export class Game {
 		this.ball = new Ball(this.paddles, this._update_score);
 		
 		if (!this.players[LEFT_PADDLE].client) { // if CPU
-			this.paddles[LEFT_PADDLE] = new MediumBot(LEFT_PADDLE, this.ball)
+			this.paddles[LEFT_PADDLE] = new AIBot(LEFT_PADDLE, this.ball)
 		}
 		if (!this.players[RIGHT_PADDLE].client) {
-			this.paddles[RIGHT_PADDLE] = new MediumBot(RIGHT_PADDLE, this.ball)
+			this.paddles[RIGHT_PADDLE] = new AIBot(RIGHT_PADDLE, this.ball)
 		}
 	}
 
 	// Abstract method to handle input, implemented by derived classes
 	private _handle_input(dt: number): void {
 		this._process_queue(dt);
-		if (this.paddles[RIGHT_PADDLE] instanceof MediumBot) {
+		if (this.paddles[RIGHT_PADDLE] instanceof AIBot) {
 			this.paddles[RIGHT_PADDLE].update(dt);
 		}
 	}
