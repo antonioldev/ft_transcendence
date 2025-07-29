@@ -5,6 +5,7 @@ import { MessageType, Direction, GameMode, UserManagement } from '../shared/cons
 import { ClientMessage, ServerMessage, GetUserProfile, UserProfileData } from '../shared/types.js';
 import * as db from "../data/validation.js";
 import { UserStats, GameHistoryEntry } from '../shared/types.js';
+import { Game } from '../core/game.js';
 
 /**
  * Manages WebSocket connections, client interactions, and game-related messaging.
@@ -136,17 +137,13 @@ export class WebSocketManager {
             const gameSession = gameManager.getGame(gameId);
             setCurrentGameId(gameId);
 
-            if (gameSession) {
-                // Start game if ready
-                
-                // ONLY FOR TESTING 
-                if (gameSession.mode == GameMode.SINGLE_PLAYER) {
-                    gameSession.add_player(new Player("001", "Eden", gameSession.clients[0]));
-                    gameSession.add_player(new Player("002", "CPU"));
+            // add players to gameSession
+            if (data.players && gameSession) {
+                for (const player of data.players) {
+                    gameSession.add_player(new Player(player.id, player.name, client));
                 }
-                else {
-                    gameSession.add_player(new Player("001", "Eden", gameSession.clients[0]));
-                    gameSession.add_player(new Player("002", "Antonio", gameSession.clients[0]));
+                if (gameSession.mode === GameMode.SINGLE_PLAYER) { // TEMP PATCH NEED TO HANDLE CPU DATA
+                    gameSession.add_player(new Player("001", "CPU"));
                 }
             }
         } catch (error) {
@@ -172,7 +169,7 @@ export class WebSocketManager {
         if (gameSession.allClientsReady()) {
             console.log(`All clients ready in game ${gameSession.id}, sending ALL_READY`);
             await gameSession.sendAllReady();
-            
+
             if (gameSession.full && !gameSession.running) {
                 await gameSession.start();
                 // broadcast to client and win screen displayed
