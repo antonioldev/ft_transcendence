@@ -160,7 +160,7 @@ export class GameSession {
 		players[RIGHT_PADDLE].side = RIGHT_PADDLE;
 
 		for (const player of this.players) {
-			if (player.client !== null) { // if not AIBot
+			if (player.client) { // if not AIBot
 				this.broadcast({
 					type: MessageType.SIDE_ASSIGNMENT,
 					name: player.name,

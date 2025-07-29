@@ -23,7 +23,7 @@ class Match {
 		if (!this.players.includes(player)) {
 			this.players.push(player);
 		}
-		if (player.client !== null && !this.clients.includes(player.client)) {
+		if (player.client && !this.clients.includes(player.client)) {
 			this.clients.push(player.client);
 		}
 	}
@@ -40,11 +40,6 @@ export class Tournament extends GameSession {
 		this.num_rounds = this._get_num_rounds(this.player_capacity);
 		this._create_rounds_map();
 		this._create_match_tree(new Match(this.num_rounds));
-	}
-
-	enqueue(input: PlayerInput, match_id?: string): void  {
-		if (!match_id) return ;
-		this.match_map.get(match_id)?.game.enqueue(input);
 	}
 
 	private _create_rounds_map() {
@@ -125,6 +120,12 @@ export class Tournament extends GameSession {
 		}
 	}
 	
+	enqueue(input: PlayerInput, match_id?: string): void  {
+		if (match_id) {
+			this.match_map.get(match_id)?.game.enqueue(input);
+		}
+	}
+
 	async start() {
 		if (this.running || this.players.length != this.player_capacity) return ;
 
