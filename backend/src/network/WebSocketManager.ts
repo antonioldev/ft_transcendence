@@ -200,16 +200,11 @@ export class WebSocketManager {
 
         if (gameSession.isPaused()) return;
 
-        // Convert direction to movement
-        let dx = 0;
-        if (data.direction === Direction.LEFT) dx = -1; // we should just send -1 or 1 so we don't need this conversion?
-        else if (data.direction === Direction.RIGHT) dx = 1;
-
         const input = {
             id: client.id,
             type: MessageType.PLAYER_INPUT,
             side: data.side,
-            dx: dx
+            dx: data.direction
         }
         gameSession.enqueue(input, data.match_id);
     }
