@@ -148,11 +148,6 @@ export class WebSocketManager {
                     gameSession.add_player(new Player("001", "Eden", gameSession.clients[0]));
                     gameSession.add_player(new Player("002", "Antonio", gameSession.clients[0]));
                 }
-
-                if (gameSession.full && !gameSession.running) {
-                    await gameSession.start();
-                    // broadcast to client and win screen displayed
-                }
             }
         } catch (error) {
             console.error('❌ Error joining game:', error);
@@ -167,16 +162,21 @@ export class WebSocketManager {
     private async handlePlayerReady(client: Client): Promise<void> {
         console.log(`Client ${client.id} is ready`);
 
-        const game = this.findClientGame(client);
-        if (!game) {
+        const gameSession = this.findClientGame(client);
+        if (!gameSession) {
             console.warn(`Client ${client.id} not in any game for ready signal`);
             return;
         }
 
-        game.setClientReady(client);
-        if (game.allClientsReady()) {
-            console.log(`All clients ready in game ${game.id}, sending ALL_READY`);
-            await game.sendAllReady();
+        gameSession.setClientReady(client);
+        if (gameSession.allClientsReady()) {
+            console.log(`All clients ready in game ${gameSession.id}, sending ALL_READY`);
+            await gameSession.sendAllReady();
+            
+            if (gameSession.full && !gameSession.running) {
+                await gameSession.start();
+                // broadcast to client and win screen displayed
+            }
         }
     }
 
