@@ -13,7 +13,7 @@ class Match {
 
 	left!: Match;
 	right!: Match;
-	next: Match | null = null;
+	next?: Match;
 
 	constructor (round: number) {
 		this.round = round;
@@ -74,7 +74,6 @@ export class Tournament extends GameSession {
 		this._create_match_tree(current_match.left);
 		this._create_match_tree(current_match.right);
 	}
-
 
 	// assigns players to the matches in round_1
 	private _match_players(): void {

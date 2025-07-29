@@ -32,10 +32,10 @@ export class Game {
 	private _init() {
 		this.ball = new Ball(this.paddles, this._update_score);
 		
-		if (this.players[LEFT_PADDLE].client === null) { // if CPU
+		if (!this.players[LEFT_PADDLE].client) { // if CPU
 			this.paddles[LEFT_PADDLE] = new AIBot(LEFT_PADDLE, this.ball)
 		}
-		if (this.players[RIGHT_PADDLE].client === null) {
+		if (!this.players[RIGHT_PADDLE].client) {
 			this.paddles[RIGHT_PADDLE] = new AIBot(RIGHT_PADDLE, this.ball)
 		}
 	}
