@@ -19,9 +19,15 @@ import { Logger } from '../core/LogManager.js';
  */
 export class GUIManager {
     private advancedTexture: any = null;
+
     private fpsText: any = null;
+    
     private score1Text: any = null;
     private score2Text: any = null;
+    
+    private countdownText: any = null;
+    private countdownContainer: any = null;
+    
     private isInitialized: boolean = false;
 
     // Initialize and create all GUI elements
@@ -43,6 +49,9 @@ export class GUIManager {
 
             // Create view mode specific elements
             this.createViewModeElements(config);
+
+            // Create countdown container
+            this.createCountdownDisplay();
 
             this.isInitialized = true;
             Logger.info('GUI created successfully', 'GUIManager');
@@ -171,6 +180,68 @@ export class GUIManager {
         return scoresRow;
     }
 
+    private createCountdownDisplay(): void {
+        this.countdownContainer = new BABYLON.GUI.Rectangle("countdownContainer");
+        this.countdownContainer.width = "300px";
+        this.countdownContainer.height = "150px";
+        this.countdownContainer.cornerRadius = 20;
+        this.countdownContainer.color = "white";
+        this.countdownContainer.thickness = 3;
+        this.countdownContainer.background = "rgba(0, 0, 0, 0.8)";
+        this.countdownContainer.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+        this.countdownContainer.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
+        this.countdownContainer.isVisible = false;
+
+        // Create countdown text
+        this.countdownText = new BABYLON.GUI.TextBlock();
+        this.countdownText.text = "3";
+        this.countdownText.color = "white";
+        this.countdownText.fontSize = 72;
+        this.countdownText.fontWeight = "bold";
+
+        this.countdownContainer.addControl(this.countdownText);
+        this.advancedTexture.addControl(this.countdownContainer);
+    }
+
+    showCountdown(count: number): void {
+        if (this.countdownText && this.countdownContainer) {
+            this.countdownText.text = count.toString();
+            this.countdownContainer.isVisible = true;
+
+            // Reset scales first
+            this.countdownText.scaleX = 1;
+            this.countdownText.scaleY = 1;
+
+            const animationScaleX = this.createAnimation("scaleX");
+            const animationScaleY = this.createAnimation("scaleY");
+
+            // Start animations
+            this.countdownText.animations = [animationScaleX, animationScaleY];
+            
+            if (this.advancedTexture && this.advancedTexture.getScene) {
+                const scene = this.advancedTexture.getScene();
+                scene.beginAnimation(this.countdownText, 0, 60, false);
+            }
+        }
+    }
+
+    private createAnimation(property: string): any {
+        const scale = BABYLON.Animation.CreateAnimation(
+            property, BABYLON.Animation.ANIMATIONTYPE_FLOAT, 60, new BABYLON.SineEase());
+        const keys = [
+            { frame: 0, value: 1},
+            { frame: 30, value: 2},
+            { frame: 60, value: 1}
+        ];
+        scale.setKeys(keys);
+        return scale;
+    }
+
+    hideCountdown(): void {
+        if (this.countdownContainer)
+            this.countdownContainer.isVisible = false;
+    }
+
     // Update the FPS display
     updateFPS(fps: number): void {
         if (this.fpsText) {
@@ -198,7 +269,9 @@ export class GUIManager {
                this.advancedTexture !== null && 
                this.fpsText !== null && 
                this.score1Text !== null && 
-               this.score2Text !== null;
+               this.score2Text !== null &&
+               this.countdownContainer !== null &&
+               this.countdownText !== null;
     }
 
     // Get the advanced texture
@@ -216,6 +289,9 @@ export class GUIManager {
             this.fpsText = null;
             this.score1Text = null;
             this.score2Text = null;
+
+            this.countdownText = null;
+            this.countdownContainer = null;
 
             // Dispose the main texture
             if (this.advancedTexture) {

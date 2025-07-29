@@ -37,23 +37,38 @@ export class RenderManager {
 
     // Start the render loop
     startRendering(): void {
-        if (!this.isInitialized) {
-            Logger.error('Cannot start rendering: RenderManager not initialized', 'RenderManager');
-            return;
-        }
-
-        if (this.isRenderingActive) {
-            Logger.warn('Render loop already active', 'RenderManager');
-            return;
-        }
-
-        if (!this.engine || !this.scene) {
-            Logger.error('Cannot start rendering: engine or scene not available', 'RenderManager');
-            return;
-        }
+        if (!this.isInitialized)
+            return (Logger.error('Cannot start rendering: RenderManager not initialized', 'RenderManager'));
+        if (this.isRenderingActive)
+            return (Logger.warn('Render loop already active', 'RenderManager'));
+        if (!this.engine || !this.scene)
+            return (Logger.error('Cannot start rendering: engine or scene not available', 'RenderManager'));
 
         this.isRenderingActive = true;
         this.lastFrameTime = performance.now();
+
+        // this.engine.runRenderLoop(() => {
+        //     if (!this.isRenderingActive) return;
+
+        //     const currentTime = performance.now();
+        //     const deltaTime = currentTime - this.lastFrameTime;
+            
+        //     // Frame rate limiting
+        //     if (deltaTime < (1000 / this.fpsLimit)) return;
+
+        //     try {
+        //         // Render the scene
+        //         if (this.scene && this.scene.activeCamera)
+        //             this.scene.render();
+
+        //         // Update FPS display
+        //         this.updateFPSDisplay(deltaTime);
+
+        //         this.lastFrameTime = currentTime;
+        //     } catch (error) {
+        //         Logger.error('Error in render loop', 'RenderManager', error);
+        //     }
+        // });
 
         this.engine.runRenderLoop(() => {
             if (!this.isRenderingActive) return;
@@ -61,21 +76,22 @@ export class RenderManager {
             const currentTime = performance.now();
             const deltaTime = currentTime - this.lastFrameTime;
             
-            // Frame rate limiting
-            if (deltaTime < (1000 / this.fpsLimit)) return;
-
-            try {
-                // Render the scene
+            // Render the scene
                 if (this.scene && this.scene.activeCamera)
                     this.scene.render();
+            // Frame rate limiting
+            // if (deltaTime < (1000 / this.fpsLimit)) return;
+
+            // try {
+                
 
                 // Update FPS display
                 this.updateFPSDisplay(deltaTime);
 
-                this.lastFrameTime = currentTime;
-            } catch (error) {
-                Logger.error('Error in render loop', 'RenderManager', error);
-            }
+            //     this.lastFrameTime = currentTime;
+            // } catch (error) {
+            //     Logger.error('Error in render loop', 'RenderManager', error);
+            // }
         });
 
         Logger.info('Render loop started', 'RenderManager');

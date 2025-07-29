@@ -241,10 +241,9 @@ export class Game {
             Logger.errorAndThrow('Server sent ALL_READY without countdown parameter', 'Game');
         uiManager.setLoadingScreenVisible(false);
         if (countdown > 0)
-            Logger.info(`Game starts in ${countdown}`, 'Game');
+            this.guiManager?.showCountdown(countdown);
         else {
-            Logger.info('GO! Starting game now!', 'Game');
-            // uiManager.setLoadingScreenVisible(false);
+            this.guiManager?.hideCountdown();
             this.start();
         }
     }
