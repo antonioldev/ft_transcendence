@@ -83,13 +83,11 @@ export class Ball {
         
         // Goal detection (top/bottom goals)
         if (this.rect.top <= GAME_CONFIG.goalBounds.rightGoal) {
-            const scorer = LEFT_PADDLE;  // Left player scores
-            this.updateScore(scorer);
+            this.updateScore(RIGHT_PADDLE);
             this.reset();
         }
         if (this.rect.bottom >= GAME_CONFIG.goalBounds.leftGoal) {
-            const scorer = RIGHT_PADDLE;  // Right player scores
-            this.updateScore(scorer);
+            this.updateScore(LEFT_PADDLE);
             this.reset();
         }
     }
