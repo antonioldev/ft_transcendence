@@ -7,17 +7,32 @@ export enum MessageType {
     PLAYER_INPUT,       // CLIENT -> SERVER: Player input data
     GAME_STATE,         // SERVER -> CLIENTS: Current game state update
     SIDE_ASSIGNMENT,    // SERVER -> CLIENTS: Assign player to a side (left/right)
-    // GAME_STARTED,       // SERVER -> CLIENT: Welcome to game (after JOIN_GAME)
     ERROR,              // SERVER -> CLIENTS: Error message
     QUIT_GAME,          // CLIENT -> SERVER: Send this message when CTRL + Y
-
     PAUSE_REQUEST,      // CLIENT -> SERVER: Client requests pause (ESC key)
     RESUME_REQUEST,     // CLIENT -> SERVER: Client requests resume (N key)  
     PAUSED,             // SERVER -> CLIENTS: Server confirms pause to all clients
     RESUMED,            // SERVER -> CLIENTS: Server confirms resume to all clients
     GAME_ENDED,         // SERVER -> CLIENTS: Server notifies game ended (when someone quits with Y)
-
     WELCOME,             // SERVER -> CLIENT: Welcome message on connection
+    PLAYER_READY,       // CLIENT -> SERVER: Client loaded babylon and is waiting for server
+    ALL_READY,                  // SERVER -> CLIENT: All players are ready, game starts in 5 seconds
+    REGISTER_USER,         // New User want to register --> going to create a new row in db
+    LOGIN_USER,            // User want to connect to their account --> calling function for validate info
+    SUCCESS_LOGIN,         // Successfully login a user 
+    SUCCESS_REGISTRATION,  // Succesfylly register new user
+    LOGIN_FAILURE,         // failure in login user -- id or pwd not matching
+    USERNAME_TAKEN,         // failure to register new user -- username already exist in database  
+    USER_EXIST,            // failure to register new user -- exist in db
+    USER_NOTEXIST,         // failure in login user -- do not exist in db 
+    SEND_USER_PROFILE,      // Type for front to backend comm
+    REQUEST_USER_STATS,
+    SEND_USER_STATS,
+    REQUEST_GAME_HISTORY,
+    SEND_GAME_HISTORY,
+    REQUEST_USER_PROFILE,    // Type for back to frontend comm
+    UPDATE_USER_PROFILE     // Request to update user information 
+
 }
 
 export enum WebSocketEvent {
@@ -28,6 +43,13 @@ export enum WebSocketEvent {
     GAME_RESUMED = 'gameResumed',
     GAME_ENDED = 'gameEnded',
     STATUS_CHANGE = 'statusChange',
+    ALL_READY = 'all_ready',
+    LOGIN_SUCCESS = 'LOGIN_SUCCESS',
+    LOGIN_FAILURE = 'LOGIN_FAILURE',
+    REGISTRATION_SUCCESS = 'REGISTRATION_SUCCESS',
+    REGISTRATION_FAILURE = 'REGISTRATION_FAILURE',
+    USER_STATS = 'USER_STATS',
+    GAME_HISTORY = 'GAME_HISTORY'
 }
 
 // Different game modes available
@@ -66,7 +88,8 @@ export enum CollisionDirection {
 
 export enum AuthState {
     GUEST = 0,
-    LOGGED_IN = 1
+    LOGGED_IN = 1,
+    LOGGED_FAILED = 2
 }
 
 export enum ConnectionStatus {
@@ -76,10 +99,17 @@ export enum ConnectionStatus {
 }
 
 export enum AppState {
-    MAIN_MENU = 'main-menu',
-    LOGIN = 'login',
-    REGISTER = 'register',
-    GAME_MODE = 'game-mode',
-    PLAYER_SETUP = 'player-setup',
-    GAME_3D = 'game-3d'
+    MAIN_MENU ,// = 'main-menu',
+    LOGIN ,//= 'login',
+    REGISTER ,//= 'register',
+    GAME_MODE ,//= 'game-mode',
+    PLAYER_SETUP ,//= 'player-setup',
+    GAME_3D ,//= 'game-3d',
+    STATS_DASHBOARD ,//= 'STATS_DASHBOARD'
+}
+
+export enum UserManagement {
+    SEND_USER_PROFILE,      // Type for front to backend comm
+    REQUEST_USER_PROFILE,    // Type for back to frontend comm
+    UPDATE_USER_PROFILE     // Request to update user information 
 }

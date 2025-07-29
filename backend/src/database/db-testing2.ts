@@ -1,5 +1,5 @@
 import * as dbFunctions from '../data/database.js';
-import { initialisazeDatabase } from './db-init.js';
+import { initialisazeDatabase } from '../data/db-init.js';
 
 const db = initialisazeDatabase('/app/database/transcendence.sqlite');
 dbFunctions.registerDatabaseFunctions(db);
@@ -56,8 +56,8 @@ async function testGameFlow() {
   console.log('Looser ID:', dbFunctions.getGameLooser(gameId));
   logDivider();
 
-  console.log('New info player1: ', dbFunctions.getUserbyEmail('alice@example.com'));
-  console.log('New info player2: ', dbFunctions.getUserbyEmail('bob@example.com'));
+  console.log('New info player1: ', dbFunctions.getUserEmail('alice@example.com'));
+  console.log('New info player2: ', dbFunctions.getUserEmail('bob@example.com'));
   logDivider();
 
   cleanTest(1, 'alice@example.com', 'bob@example.com');

@@ -1,7 +1,7 @@
 import Fastify from 'fastify';
 import { webSocketManager }  from './network/WebSocketManager.js';
 import config from './config/default.js';
-import { initialisazeDatabase } from './database/db-init.js';
+import { initialisazeDatabase } from './data/db-init.js';
 import { registerDatabaseFunctions } from './data/database.js';
 
 const fastify = Fastify({

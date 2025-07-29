@@ -1,9 +1,7 @@
-// frontend/src/config/constants/elements.ts
+import { Logger } from "../core/LogManager.js";
 
-/**
- * Centralized element ID constants to eliminate hard-coded strings throughout the application.
- * All DOM element IDs should be defined here and referenced via these constants.
- */
+// Centralized element ID constants to eliminate hard-coded strings throughout the application.
+// All DOM element IDs should be defined here and referenced via these constants.
 
 export const EL = {
   // ========================================
@@ -15,7 +13,8 @@ export const EL = {
     REGISTER_MODAL: 'register-modal',
     GAME_MODE_OVERLAY: 'game-mode-overlay',
     PLAYER_SETUP_OVERLAY: 'player-setup-overlay',
-    GAME_3D: 'game-3d'
+    GAME_3D: 'game-3d',
+    STATS_DASHBOARD: 'stats-dashboard'
   },
 
   // ========================================
@@ -35,6 +34,7 @@ export const EL = {
     SETUP_BACK: 'setup-back',
     LOGIN_BACK: 'login-back',
     REGISTER_BACK: 'register-back',
+    DASHBOARD_BACK: 'dashboard-back',
 
     // View mode navigation
     VIEW_MODE_BACK: 'view-mode-back',
@@ -48,11 +48,14 @@ export const EL = {
 
     // Modal switching
     SHOW_REGISTER: 'show-register',
-    SHOW_LOGIN: 'show-login'
+    SHOW_LOGIN: 'show-login',
+
+    // Dashboard view
+    DASHBOARD: 'dashboard-btn'
   },
 
   // ========================================
-  // GAME MODE BUTTONS (reusing your existing GameMode enum values)
+  // GAME MODE BUTTONS
   // ========================================
   GAME_MODES: {
     SOLO: 'solo-mode',              // GameMode.SINGLE_PLAYER
@@ -127,6 +130,13 @@ export const EL = {
     CONNECTION_STATUS: 'connection-status'
   },
 
+    // ========================================
+    // DASHBOARD ELEMENTS
+    // ========================================
+    DASHBOARD: {
+    USER_STATS_CHART: 'user-stats-chart',
+    GAME_HISTORY_TABLE: 'game-history-table'
+  },
   // ========================================
   // GAME ELEMENTS
   // ========================================
@@ -138,7 +148,12 @@ export const EL = {
     PAUSE_DIALOG_3D: 'pause-dialog-3d',
     PAUSE_TITLE_3D: 'pause-title-3d',
     PAUSE_TEXT_3D: 'pause-text-3d',
-    PAUSE_CONTROLS_3D: 'pause-controls-3d'
+    PAUSE_CONTROLS_3D: 'pause-controls-3d',
+
+    LOADING_SCREEN: 'loading-screen',
+    LOADING_TEXT: 'loading',
+    PROGRESS_FILL: 'progress-fill',
+    PROGRESS_TEXT: 'progress-text'
   },
 
   // ========================================
@@ -164,7 +179,8 @@ type ElementIdValues =
   | typeof EL.PLAYER_SETUP[keyof typeof EL.PLAYER_SETUP]
   | typeof EL.DISPLAY[keyof typeof EL.DISPLAY]
   | typeof EL.GAME[keyof typeof EL.GAME]
-  | typeof EL.CONTAINERS[keyof typeof EL.CONTAINERS];
+  | typeof EL.CONTAINERS[keyof typeof EL.CONTAINERS]
+  | typeof EL.DASHBOARD[keyof typeof EL.DASHBOARD];
 
 /**
  * Type-safe helper function to get element by ID
@@ -183,6 +199,6 @@ export function requireElementById<T extends HTMLElement = HTMLElement>(
 ): T {
   const element = document.getElementById(elementId) as T | null;
   if (!element)
-    throw new Error(`Required element not found: ${elementId}`);
+    Logger.errorAndThrow(`Required element not found: ${elementId}`, 'UIManager');
   return element;
 }

@@ -3,8 +3,8 @@
 
 import { Position, Size } from './types.js';
 
-const fieldWidth = 50; // Width of the game field
-const fieldHeight = 100; // Height of the game field
+const fieldWidth = 20; // Width of the game field
+const fieldHeight = 40; // Height of the game field
 
 export const GAME_CONFIG = {
     // Field dimensions
@@ -14,25 +14,26 @@ export const GAME_CONFIG = {
 
     // Walls
     wallHeight: 1, // Height of the walls
-    wallThickness: 1, // Thickness of the walls
+    wallThickness: 0.5, // Thickness of the walls
     
     // Player settings
-    playerWidth: 8, // Width of the paddle
+    playerWidth: 3, // Width of the paddle
     playerHeight: 0.5, // Height of the paddle
-    playerDepth: 1.0, // Depth of the paddle
+    playerDepth: 0.5, // Depth of the paddle
     playerOffsetFromEdge: 2, // Distance from the edge of the field
-    playerSpeed: 30, // Speed of the paddle
+    playerSpeed: 10, // Speed of the paddle
     
     // Camera settings (mainly for frontend)
-    camera2DHeight: 80, // Camera height in 2D mode
-    camera3DHeight: 10, // Camera height in 3D mode
-    camera3DDistance: 20, // Distance of the camera in 3D mode
-    followSpeed: 0.1, // Speed at which the camera follows the ball
+    camera2DHeight: 25, // Camera height in 2D mode
+    camera3DHeight: 3, // Camera height in 3D mode
+    camera3DDistance: 5, // Distance of the camera in 3D mode
+    followSpeed: 0.1, // Speed at which the camera follows the paddle
+    cameraFollowLimit: fieldWidth / 4, // Max limit for camera to follow player
     edgeBuffer: 13, // Buffer space at the edges of the field
 
     // Ball settings
-    ballRadius: 0.5, // Radius of the ball
-    ballInitialSpeed: 20, // Initial speed of the ball
+    ballRadius: 0.3, // Radius of the ball
+    ballInitialSpeed: 5, // Initial speed of the ball
     ballMaxAngle: Math.PI / 6, // Maximum angle of the ball trajectory
     
     // Wall collision boundaries (accounting for ball radius)
@@ -66,10 +67,12 @@ export const GAME_CONFIG = {
     },
     
     // Timing
-    startDelay: 1.0, // Delay before the game starts
+    startDelay: 5.0, // Delay before the game starts
+    ballDelay: 1.0, // Delay before the game starts
 
     // Score
     winning_score: 3,
+
 } as const;
 
 // Paddle/Player constants

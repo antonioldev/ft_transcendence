@@ -7,7 +7,7 @@ export const UI_COLORS = {
     surface: '#333',
     text: 'white',
     textSecondary: '#ccc',
-    overlay: 'rgba(0, 0, 0, 0.9)'
+    overlay: 'rgba(0, 0, 0, 1)'
 };
 
 export const UI_STYLES = {
@@ -235,13 +235,13 @@ export const UI_STYLES = {
     // ========================================
     // GAME DIALOGS & OVERLAYS
     // ========================================
-    pauseDialog: {
+    gameOverlay: {
         position: 'absolute' as const,
         top: '0',
         left: '0',
         width: '100%',
         height: '100%',
-        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        backgroundColor: 'rgba(0, 0, 0, 1)',
         display: 'none',
         flexDirection: 'column' as const,
         justifyContent: 'center' as const,
@@ -249,13 +249,34 @@ export const UI_STYLES = {
         color: UI_COLORS.text,
         textAlign: 'center' as const,
         userSelect: 'none' as const,
-        zIndex: '100'
+        zIndex: '1000'
     },
 
     // Pause dialog text sizes
     pauseLarge: { fontSize: '1.5rem', marginBottom: '1rem' },
     pauseMedium: { fontSize: '1.2rem', marginBottom: '0.5rem' },
     pauseSmall: { fontSize: '1rem' },
+
+    // Loading items
+    loadingContent: {
+        display: 'flex',
+        flexDirection: 'column' as const,
+        alignItems: 'center' as const,
+        gap: '20px'
+    },
+    progressBar: {
+        width: '300px',
+        height: '20px',
+        backgroundColor: '#333',
+        borderRadius: '10px',
+        overflow: 'hidden'
+    },
+    progressFill: {
+        height: '100%',
+        backgroundColor: UI_COLORS.primary,
+        minWidth: '0%',
+        maxWidth: '100%'
+    },
 
     // ========================================
     // FORM SPECIFIC

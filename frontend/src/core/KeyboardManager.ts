@@ -1,3 +1,5 @@
+import { Logger } from './LogManager.js';
+import { Game } from '../engine/Game.js';
 import { appStateManager } from './AppStateManager.js';
 
 /**
@@ -17,12 +19,8 @@ export class KeyboardManager {
 
     // Initializes the KeyboardManager by setting up event listeners. This ensures the keyboard manager is properly instantiated.
     static initialize(): void {
-        KeyboardManager.getInstance();
-    }
-
-    //Private constructor that sets up event listeners when instance is created.
-    private constructor() {
-        this.setupEventListeners();
+        const keybord = KeyboardManager.getInstance();
+        keybord.setupEventListeners();
     }
 
     // ========================================
@@ -32,7 +30,7 @@ export class KeyboardManager {
     // Sets up the main keyboard event listeners for the application.
     private setupEventListeners(): void {
         document.addEventListener('keydown', (event) => this.handleKeyDown(event));
-        console.log(' KeyboardManager: Event listeners set up'); // Debug log
+        Logger.debug('Event listeners set up', 'KeyboardManager');
     }
 
     // ========================================
@@ -52,28 +50,26 @@ export class KeyboardManager {
 
     // Handles escape key presses for game pause and resume functionality.
     private handleEscKey(): void {
-        console.log('🎮 ESC key pressed', { 
+        Logger.debug('ESC key pressed', 'KeyboardManager', { 
             isInGame: appStateManager.isInGame(), 
             isPaused: appStateManager.isPaused() 
         });
         
-        const currentGame = appStateManager.getCurrentGame();
         if (appStateManager.isInGame())
-            currentGame?.pause();
+            Game.pause();
         else if (appStateManager.isPaused())
-            currentGame?.resume();
+            Game.resume();
     }
 
     // Handles Y/N key presses for pause dialog confirmation.
     private handleYesNoKey(event: KeyboardEvent): void {
         if (appStateManager.isPaused()) {
-            console.log(`🎮 ${event.key} key pressed in pause state`);    
+            Logger.debug('${event.key} key pressed in pause state', 'KeyboardManager');    
             
             if (event.key === 'Y' || event.key === 'y')
-                appStateManager.exitToMenu();
+                appStateManager.requestExitToMenu();
             else if (event.key === 'N' || event.key === 'n') {
-                const currentGame = appStateManager.getCurrentGame();
-                currentGame?.resume();
+                Game.resume();
             }
         }
     }

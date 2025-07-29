@@ -24,6 +24,7 @@ FROM nginx:alpine
 
 # Copy built JS files
 COPY --from=builder /app/dist/ /usr/share/nginx/html/
+# COPY mime.types /etc/nginx/mime.types
 
 # Copy HTML and other static files
 COPY src/*.html /usr/share/nginx/html/

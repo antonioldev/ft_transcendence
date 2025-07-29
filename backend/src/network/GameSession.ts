@@ -1,5 +1,5 @@
 import { Game } from '../core/game.js';
-import { LEFT_PADDLE, RIGHT_PADDLE} from '../shared/gameConfig.js';
+import { GAME_CONFIG, LEFT_PADDLE, RIGHT_PADDLE} from '../shared/gameConfig.js';
 import { Client, Player } from '../models/Client.js';
 import { MessageType, GameMode } from '../shared/constants.js';
 import { PlayerInput, ServerMessage } from '../shared/types.js';
@@ -15,6 +15,7 @@ export class GameSession {
 	full: boolean = false;
 	running: boolean = false;
 	private paused: boolean = false;
+	private readyClients: Set<string> = new Set(); //New, keep track of clients that finish loading
 
     constructor(mode: GameMode, game_id: string) {
 		this.id = game_id
@@ -50,6 +51,7 @@ export class GameSession {
 		const index = this.clients.indexOf(client);
 		if (index !== -1) {
 			this.clients.splice(index, 1);
+			this.readyClients.delete(client.id); //Added
 			this.full = false;
 		}
 		if (this.clients.length === 0) {
@@ -79,13 +81,39 @@ export class GameSession {
 		}
 	}
 
+	setClientReady(client: Client): void { //New function, add client in the readyClient list
+		this.readyClients.add(client.id);
+		console.log(`Client ${client.id} marked as ready. Ready clients: ${this.readyClients.size}/${this.clients.length}`);
+	}
+
+	async sendAllReady(): Promise<void> { //New function, send to clients message to start + countdown
+		for (let countdown = GAME_CONFIG.startDelay; countdown >= 0; countdown--) {
+			const message: ServerMessage = {
+				type: MessageType.ALL_READY,
+				countdown: countdown
+			};
+			
+			console.log(`Sending countdown: ${countdown}`);
+			this.broadcast(message);
+			
+			// Wait 1 second before next countdown (except for the last one)
+			if (countdown > 0) {
+				await new Promise(resolve => setTimeout(resolve, 1000));
+			}
+		}
+		
+		console.log(`Starting game ${this.id} after countdown`);
+		await this.start();
+	}
+
 	async start() {
 		if (!this.running) {
 			this.assign_sides(this.players);
 			this.running = true;
 			this.game = new Game(this.players, this.broadcast.bind(this))
-			const winner: Player = await this.game.run();
-			// TODO: display win screen with winner
+			/*const winner: Player = */ await this.game.run();
+			// return (winner);
+			// TODO: display win screen with winner 
 		}
 	}
 
@@ -182,5 +210,9 @@ export class GameSession {
 	// wrapper needed as is polymorphised for Tournament
 	enqueue(input: PlayerInput): void  {
 		this.game.enqueue(input);
+	}
+
+	allClientsReady(): boolean {
+		return this.readyClients.size === this.clients.length && this.clients.length > 0;
 	}
 }

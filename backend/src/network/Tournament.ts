@@ -141,6 +141,7 @@ export class Tournament extends GameSession {
 			else /* TOURNAMENT_REMOTE */ {
 				await this._run_all(matches);
 			}
+
 		}
 
 		// TODO: display final winner screen

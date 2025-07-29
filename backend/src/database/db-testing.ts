@@ -1,5 +1,5 @@
 import * as dbFunction from '../data/database.js';
-import { initialisazeDatabase } from './db-init.js';
+import { initialisazeDatabase } from '../data/db-init.js';
 
 const db = initialisazeDatabase('/app/database/transcendence.sqlite');
 dbFunction.registerDatabaseFunctions(db);

@@ -50,6 +50,7 @@ class GameManager {
     findOrCreateGame(mode: GameMode, client: Client): string {
         //For single player, just create a game
         if (mode === GameMode.SINGLE_PLAYER || mode === GameMode.TWO_PLAYER_LOCAL|| mode === GameMode.TOURNAMENT_LOCAL) {
+            
             return this.createGame(mode, client);
         }
         else { // all remote games
@@ -57,8 +58,10 @@ class GameManager {
             for (const [gameId, game] of this.games) {
                 if (game.mode === mode && !game.full) {
                     game.add_client(client);
+
                     return gameId;
                 }
+
             }
         }
 

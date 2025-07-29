@@ -15,7 +15,7 @@ RUN npm install && apk add --no-cache neovim
 # Copy source code
 COPY src/ ./src/
 COPY tsconfig.json ./
-COPY src/database/init.sql /app/dist/database/init.sql
+COPY src/data/init.sql /app/dist/data/init.sql
 
 # Build the database
 RUN mkdir -p /app/database
