@@ -5,6 +5,7 @@ import { Position, Size } from './types.js';
 
 const fieldWidth = 20; // Width of the game field
 const fieldHeight = 40; // Height of the game field
+const ballRadius = 0.3;
 
 export const GAME_CONFIG = {
     // Field dimensions
@@ -13,7 +14,7 @@ export const GAME_CONFIG = {
     fieldBoundary: fieldWidth / 2, // Half of the field width
 
     // Walls
-    wallHeight: 1, // Height of the walls
+    wallHeight: 0.5, // Height of the walls
     wallThickness: 0.5, // Thickness of the walls
     
     // Player settings
@@ -32,14 +33,14 @@ export const GAME_CONFIG = {
     edgeBuffer: 13, // Buffer space at the edges of the field
 
     // Ball settings
-    ballRadius: 0.3, // Radius of the ball
+    ballRadius: ballRadius, // Radius of the ball
     ballInitialSpeed: 5, // Initial speed of the ball
     ballMaxAngle: Math.PI / 6, // Maximum angle of the ball trajectory
     
     // Wall collision boundaries (accounting for ball radius)
     wallBounds: {
-        minX: -(fieldWidth / 2) + 1,   // Left wall + wall thickness  
-        maxX: (fieldWidth / 2) - 1     // Right wall - wall thickness
+        minX: -(fieldWidth / 2) + ballRadius,   // Left wall + wall thickness  
+        maxX: (fieldWidth / 2) - ballRadius     // Right wall - wall thickness
     },
     
     // Goal boundaries (behind paddles)

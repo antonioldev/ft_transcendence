@@ -3,13 +3,13 @@ declare var BABYLON: typeof import('@babylonjs/core') & {
 }; //declare var BABYLON: any;
 
 import { GameConfig } from './GameConfig.js';
-import { buildScene } from './scene/sceneBuilder.js';
+import { buildScene2D, buildScene3D } from './scene/sceneBuilder.js';
 import { InputHandler } from './InputManager.js';
 import { webSocketClient } from '../core/WebSocketClient.js';
 import { GameStateData, GameObjects } from '../shared/types.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
 import { appStateManager } from '../core/AppStateManager.js';
-import { GameState, WebSocketEvent } from '../shared/constants.js';
+import { GameState, ViewMode, WebSocketEvent } from '../shared/constants.js';
 import { Logger } from '../core/LogManager.js';
 import { uiManager } from '../ui/UIManager.js';
 import { GUIManager } from './GuiManager.js';
@@ -102,7 +102,10 @@ export class Game {
             if (!this.scene) Logger.errorAndThrow('Scene not created', 'Game');
 
             // Build game objects
-            this.gameObjects = await buildScene(this.scene, this.engine, this.config.viewMode, (progress: number) => uiManager.updateLoadingProgress(progress));
+            if (this.config.viewMode === ViewMode.MODE_2D)
+                this.gameObjects = await buildScene2D(this.scene, this.engine, this.config.gameMode, this.config.viewMode, (progress: number) => uiManager.updateLoadingProgress(progress));
+            else
+                this.gameObjects = await buildScene3D(this.scene, this.engine, this.config.gameMode, this.config.viewMode, (progress: number) => uiManager.updateLoadingProgress(progress));
             if (!this.gameObjects) Logger.errorAndThrow('Game objects not created', 'Game');
             this.guiManager?.createGUI(this.scene, this.config);
 
@@ -240,9 +243,12 @@ export class Game {
         if (countdown === undefined || countdown === null)
             Logger.errorAndThrow('Server sent ALL_READY without countdown parameter', 'Game');
         uiManager.setLoadingScreenVisible(false);
+        if (countdown === 5)
+            this.renderManager?.startCameraAnimation(this.gameObjects?.cameras, this.config.gameMode, this.config.viewMode);
         if (countdown > 0)
             this.guiManager?.showCountdown(countdown);
         else {
+            this.renderManager?.stopCameraAnimation();
             this.guiManager?.hideCountdown();
             this.start();
         }
@@ -309,7 +315,7 @@ export class Game {
                 this.inputHandler.updateInput();
             // Update 3D cameras if needed
             const cameras = this.gameObjects?.cameras;
-            if (cameras && cameras.length > 2)
+            if (cameras && (this.config.viewMode === ViewMode.MODE_3D))
                 this.update3DCameras();
         } catch (error) {
             Logger.error('Error in game loop', 'Game', error);
@@ -356,29 +362,26 @@ export class Game {
 
     // Update 3D camera targets to follow players
     private update3DCameras(): void {
-        if (this.isDisposed || !this.gameObjects?.cameras || this.gameObjects.cameras.length < 2) return;
+        if (this.isDisposed || !this.gameObjects?.cameras) return;
 
         try {
             const [camera1, camera2] = this.gameObjects.cameras;
+            const cameraFollowLimit = GAME_CONFIG.cameraFollowLimit;
 
-            if (camera1 && camera2 && this.gameObjects.players.left && this.gameObjects.players.right) {
+            if (camera1 &&this.gameObjects.players.left) {
                 const targetLeft = this.gameObjects.players.left.position.clone();
-                const targetRight = this.gameObjects.players.right.position.clone();
-
-                // Clamp the target positions to limit camera follow range
-                const cameraFollowLimit = GAME_CONFIG.cameraFollowLimit;
                 targetLeft.x = Math.max(-cameraFollowLimit, Math.min(cameraFollowLimit, targetLeft.x));
+                camera1.setTarget(BABYLON.Vector3.Lerp(camera1.getTarget(), targetLeft, GAME_CONFIG.followSpeed));
+            }
+            if (camera2 && this.gameObjects.players.right) {
+                const targetRight = this.gameObjects.players.right.position.clone();
                 targetRight.x = Math.max(-cameraFollowLimit, Math.min(cameraFollowLimit, targetRight.x));
-
-                if (camera1.getTarget && camera2.getTarget) {
-                    camera1.setTarget(BABYLON.Vector3.Lerp(camera1.getTarget(), targetLeft, GAME_CONFIG.followSpeed));
-                    camera2.setTarget(BABYLON.Vector3.Lerp(camera2.getTarget(), targetRight, GAME_CONFIG.followSpeed));
-                }
+                camera2.setTarget(BABYLON.Vector3.Lerp(camera2.getTarget(), targetRight, GAME_CONFIG.followSpeed));
             }
         } catch (error) {
             Logger.error('Error updating 3D cameras', 'Game', error);
         }
-    }
+    } // if (camera1.getTarget && camera2.getTarget)
 
     // ========================================
     // CLEANUP

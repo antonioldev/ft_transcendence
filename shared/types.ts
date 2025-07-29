@@ -137,6 +137,7 @@ export interface GameObjects {
     gameField: any;
     walls: any;
     cameras: any[];
+    guiCamera: any;
     lights: any[];
 }
 

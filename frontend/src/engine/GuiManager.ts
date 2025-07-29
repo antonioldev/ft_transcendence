@@ -101,7 +101,7 @@ export class GUIManager {
         hudPanel.height = "20%";
         hudPanel.cornerRadius = 0;
         hudPanel.color = "white";
-        hudPanel.thickness = 0; // No border
+        hudPanel.thickness = 0;
         hudPanel.background = "rgba(50, 50, 50, 0.6)"; // grey semi-transparent
         hudPanel.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
         hudPanel.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
@@ -222,7 +222,7 @@ export class GUIManager {
                 const scene = this.advancedTexture.getScene();
                 scene.beginAnimation(this.countdownText, 0, 60, false);
             }
-        }
+        }// TODO leaking
     }
 
     private createAnimation(property: string): any {

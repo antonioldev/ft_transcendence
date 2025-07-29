@@ -81,17 +81,16 @@ export class GameConfigFactory {
     static validatePlayerSetup(gameMode: GameMode): boolean {
         try {
             const players = this.getPlayersFromUI(gameMode);
-            
+
             // Check that we have the right number of players with valid names
             if (!players[0]?.name.trim()) return false;
-            
+
             if (gameMode === GameMode.TWO_PLAYER_LOCAL && !players[1]?.name.trim()) return false;
-            
+
             if (gameMode === GameMode.TOURNAMENT_LOCAL) {
                 if (players.length < 4) return false;
                 return players.every(player => player.name.trim());
             }
-            
             return true;
         } catch {
             return false;
@@ -101,7 +100,7 @@ export class GameConfigFactory {
     static getAuthenticatedPlayer(): PlayerInfo[] {
         const currentUser = authManager.getCurrentUser();
         if (!currentUser) throw new Error('No authenticated user');
-        
+
         return [{
             id: currentUser.username,
             name: currentUser.username,

@@ -4,7 +4,7 @@ import { GAME_CONFIG } from '../../shared/gameConfig.js';
 import { Size} from '../../shared/types.js';
 import { ViewMode } from '../../shared/constants.js';
 import { COLORS } from '../../core/utils.js';
-import { MAP_ASSETS, TextureSet } from './sceneAssets.js';
+import { TextureSet } from './sceneAssets.js';
 import { createMaterial } from './materialFactory.js';
 
 // Creates a camera for the given scene
@@ -19,13 +19,12 @@ export function createCamera(scene: any, name: string, position: any, viewport: 
     }
     
     if (mode === ViewMode.MODE_2D) {
-        camera = new BABYLON.FreeCamera(name, position, scene); // position is new BABYLON.Vector3(0, 25, 0);
+        camera = new BABYLON.FreeCamera(name, position, scene);
         camera.setTarget(new BABYLON.Vector3(3, 0, 0));
-        camera.viewport = viewport; //
+        camera.viewport = viewport; 
         camera.rotation.z = -(Math.PI / 2);
         camera.fov = 1.1;
         return camera;
-        // camera.setTarget(new BABYLON.Vector3(0, 5, 0)); // TODO move the camera down
     }
     return camera;
 }
@@ -61,8 +60,8 @@ export function createGameField(scene: any, name: string, width: number, height:
     const color = mode === ViewMode.MODE_2D ? COLORS.field2D : COLORS.field3D;
     
     const groundTextureScale = { u: width / 10, v: height / 10 };
-    if (texture)
-        ground.material = createMaterial(scene, name + "Material", color, mode, texture, groundTextureScale);
+    ground.material = createMaterial(scene, name + "Material", color, mode, texture, groundTextureScale);
+
     return ground;
 }
 
@@ -71,8 +70,8 @@ export function createWalls(scene: any, name: string, fieldWidth: number, fieldH
     const color = mode === ViewMode.MODE_2D ? COLORS.walls2D : COLORS.walls3D;
     
     // Single texture scaling for all walls
-    const wallTextureScale = {u: fieldWidth / 2, v: wallThickness}; // TODO if texture
-        const material = createMaterial(scene, name + "Material", color, mode, texture, wallTextureScale);
+    const wallTextureScale = {u: fieldWidth , v: wallThickness}; // TODO if texture
+    const material = createMaterial(scene, name + "Material", color, mode, texture, wallTextureScale);
 
     // Top wall
     const topWall = BABYLON.MeshBuilder.CreateBox("topWall", {width: fieldWidth, height: wallHeight, depth: wallThickness}, scene);
@@ -116,8 +115,7 @@ export function createPlayer(scene: any, name: string, position: any, size: Size
     
     // Creation of material
     const playerScale = {u: size.x, v: size.z};
-    if (texture)
-        player.material = createMaterial(scene, name + "Material", color, mode, texture, playerScale);
+    player.material = createMaterial(scene, name + "Material", color, mode, texture, playerScale);
      
     return player;
 }
@@ -129,8 +127,7 @@ export function createBall(scene: any, name: string, position: any, mode: ViewMo
     ball.position = position;
 
     const color = mode === ViewMode.MODE_2D ? COLORS.ball2D : COLORS.ball3D;
-    if (texture)
-        ball.material = createMaterial(scene, name + "Material", color, mode, texture);
+    ball.material = createMaterial(scene, name + "Material", color, mode, texture);
     
     return ball;
 }

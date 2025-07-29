@@ -3,7 +3,7 @@ declare var BABYLON: typeof import('@babylonjs/core'); //declare var BABYLON: an
 import { createCamera, createGuiCamera, createLight, createGameField, createWalls, createPlayer, createBall} from './gameObjectsFactory.js';
 import { GAME_CONFIG } from '../../shared/gameConfig.js';
 import { GameObjects } from '../../shared/types.js';
-import { ViewMode } from '../../shared/constants.js';
+import { GameMode, ViewMode } from '../../shared/constants.js';
 import {
     COLORS,
     getPlayerSize,
@@ -11,9 +11,7 @@ import {
     getPlayerRightPosition,
     getBallStartPosition,
     getCamera2DPosition,
-    getCamera3DPlayer1Position,
-    getCamera3DPlayer2Position,
-    get2DCameraViewport,
+    getSoloCameraViewport,
     get3DCamera1Viewport,
     get3DCamera2Viewport
 } from '../../core/utils.js';
@@ -22,9 +20,116 @@ import { createEnvironment, createTerrain, createVegetation } from './environmen
 
 export type LoadingProgressCallback = (progress: number) => void;
 
-export async function buildScene(
+// export async function buildScene(
+//     scene: any, 
+//     engine: any, 
+//     mode: ViewMode, 
+//     onProgress?: LoadingProgressCallback
+// ): Promise<GameObjects> {
+//     let cameras: any;
+//     let playerLeft: any;
+//     let playerRight: any;
+
+//     let map_asset = MAP_ASSETS.map1;
+
+//     onProgress?.(5);
+//     const lights = createLight(scene, "light1", new BABYLON.Vector3(0, 10, 0));
+//     onProgress?.(15);
+//     const gameField = createGameField(scene, "ground", GAME_CONFIG.fieldWidth, GAME_CONFIG.fieldHeight, mode, map_asset.textures.ground);
+//     onProgress?.(25);
+//     const walls = createWalls(scene, "walls", GAME_CONFIG.fieldWidth, GAME_CONFIG.fieldHeight, GAME_CONFIG.wallHeight, GAME_CONFIG.wallThickness, mode, map_asset.textures.walls);
+//     onProgress?.(30);
+//     const ball = createBall(scene, "ball", getBallStartPosition(), mode, map_asset.textures.ball);
+//     onProgress?.(40);
+    
+//     if (mode === ViewMode.MODE_2D) {
+//         cameras = [createCamera(scene, "camera1", getCamera2DPosition(), get2DCameraViewport(), mode)];
+//         playerLeft = createPlayer(scene, "player1", getPlayerLeftPosition(), getPlayerSize(), COLORS.player1_2D, mode, map_asset.textures.paddle);
+//         playerRight = createPlayer(scene, "player2", getPlayerRightPosition(), getPlayerSize(), COLORS.player2_2D, mode, map_asset.textures.paddle);
+//         onProgress?.(80);
+//     } else {
+//         cameras = [
+//             createCamera(scene, "camera1", getCamera2DPosition(), get3DCamera1Viewport(), mode),
+//             // createCamera(scene, "camera1", getCamera3DPlayer1Position(), get3DCamera1Viewport(), mode),
+//             createCamera(scene, "camera2", getCamera3DPlayer2Position(), get3DCamera2Viewport(), mode)
+//         ];
+//         onProgress?.(50);
+// //here  
+//         const terrain = createTerrain(scene, "terrain", mode, map_asset.textures.terrain)
+//         onProgress?.(60);
+//         playerLeft = createPlayer(scene, "player1", getPlayerLeftPosition(), getPlayerSize(), COLORS.player1_3D, mode, map_asset.textures.paddle);
+//         playerRight = createPlayer(scene, "player2", getPlayerRightPosition(), getPlayerSize(), COLORS.player2_3D, mode, map_asset.textures.paddle);
+//         onProgress?.(70);
+//         createEnvironment(scene, mode, map_asset.environment.skybox);
+//         onProgress?.(80);
+//         const trees = await createVegetation(scene, mode, map_asset.vegetation.tree);
+//         const bushes = await createVegetation(scene, mode, map_asset.vegetation.bush);
+//         onProgress?.(90);
+//     }
+//     await scene.whenReadyAsync();
+//     onProgress?.(95);
+//     const guiCamera = createGuiCamera(scene, "guiCamera", BABYLON.Vector3.Zero(), new BABYLON.Viewport(0, 0, 1, 1));
+//     cameras.push(guiCamera);
+//     scene.activeCameras = cameras;
+//     onProgress?.(100);
+//     console.log('Scene building complete!');
+//     return {
+//         players: { left: playerLeft, right: playerRight },
+//         ball,
+//         gameField,
+//         walls,
+//         cameras,
+//         lights
+//     };
+// }
+
+export async function buildScene2D(
+    scene: any,
+    engine: any,
+    gameMode: GameMode,
+    mode: ViewMode,
+    onProgress?: LoadingProgressCallback
+): Promise<GameObjects> {
+    let cameras: any;
+    let playerLeft: any;
+    let playerRight: any;
+
+    onProgress?.(5);
+    const lights = createLight(scene, "light1", new BABYLON.Vector3(0, 10, 0));
+    onProgress?.(15);
+    const gameField = createGameField(scene, "ground", GAME_CONFIG.fieldWidth, GAME_CONFIG.fieldHeight, mode, undefined);
+    onProgress?.(25);
+    const walls = createWalls(scene, "walls", GAME_CONFIG.fieldWidth, GAME_CONFIG.fieldHeight, GAME_CONFIG.wallHeight, GAME_CONFIG.wallThickness, mode, undefined);
+    onProgress?.(30);
+    const ball = createBall(scene, "ball", getBallStartPosition(), mode, undefined);
+    onProgress?.(40);
+    
+    cameras = [createCamera(scene, "camera1", getCamera2DPosition(), getSoloCameraViewport(), mode)];
+    playerLeft = createPlayer(scene, "player1", getPlayerLeftPosition(), getPlayerSize(), COLORS.player1_2D, mode, undefined);
+    playerRight = createPlayer(scene, "player2", getPlayerRightPosition(), getPlayerSize(), COLORS.player2_2D, mode, undefined);
+    onProgress?.(80);
+    await scene.whenReadyAsync();
+    onProgress?.(95);
+    const guiCamera = createGuiCamera(scene, "guiCamera", BABYLON.Vector3.Zero(), new BABYLON.Viewport(0, 0, 1, 1));
+    const allCameras = [...cameras, guiCamera];
+    scene.activeCameras = allCameras;
+    onProgress?.(100);
+    console.log('Scene building complete!');
+    return {
+        players: { left: playerLeft, right: playerRight },
+        ball,
+        gameField,
+        walls,
+        cameras,
+        guiCamera,
+        lights
+    };
+}
+
+export async function buildScene3D(
     scene: any, 
-    engine: any, 
+    engine: any,
+    gameMode: GameMode,
     mode: ViewMode, 
     onProgress?: LoadingProgressCallback
 ): Promise<GameObjects> {
@@ -44,35 +149,35 @@ export async function buildScene(
     const ball = createBall(scene, "ball", getBallStartPosition(), mode, map_asset.textures.ball);
     onProgress?.(40);
     
-    if (mode === ViewMode.MODE_2D) {
-        cameras = [createCamera(scene, "camera1", getCamera2DPosition(), get2DCameraViewport(), mode)];
-        playerLeft = createPlayer(scene, "player1", getPlayerLeftPosition(), getPlayerSize(), COLORS.player1_2D, mode, map_asset.textures.paddle);
-        playerRight = createPlayer(scene, "player2", getPlayerRightPosition(), getPlayerSize(), COLORS.player2_2D, mode, map_asset.textures.paddle);
-        onProgress?.(80);
-    } else {
+    if (gameMode === GameMode.TWO_PLAYER_LOCAL || gameMode === GameMode.TOURNAMENT_LOCAL) {
         cameras = [
             createCamera(scene, "camera1", getCamera2DPosition(), get3DCamera1Viewport(), mode),
-            // createCamera(scene, "camera1", getCamera3DPlayer1Position(), get3DCamera1Viewport(), mode),
-            createCamera(scene, "camera2", getCamera3DPlayer2Position(), get3DCamera2Viewport(), mode)
+            createCamera(scene, "camera2", getCamera2DPosition(), get3DCamera2Viewport(), mode)
         ];
-        onProgress?.(50);
-//here  
-        const terrain = createTerrain(scene, "terrain", mode, map_asset.textures.terrain)
-        onProgress?.(60);
-        playerLeft = createPlayer(scene, "player1", getPlayerLeftPosition(), getPlayerSize(), COLORS.player1_3D, mode, map_asset.textures.paddle);
-        playerRight = createPlayer(scene, "player2", getPlayerRightPosition(), getPlayerSize(), COLORS.player2_3D, mode, map_asset.textures.paddle);
-        onProgress?.(70);
-        createEnvironment(scene, mode, map_asset.environment.skybox);
-        onProgress?.(80);
-        const trees = await createVegetation(scene, mode, map_asset.vegetation.tree);
-        const bushes = await createVegetation(scene, mode, map_asset.vegetation.bush);
-        onProgress?.(90);
+    } else {
+        // Single camera for other modes
+        cameras = [
+            createCamera(scene, "camera1", getCamera2DPosition(), getSoloCameraViewport(), mode)
+        ];
     }
+    onProgress?.(50);
+//here  
+    const terrain = createTerrain(scene, "terrain", mode, map_asset.textures.terrain)
+    onProgress?.(60);
+    playerLeft = createPlayer(scene, "player1", getPlayerLeftPosition(), getPlayerSize(), COLORS.player1_3D, mode, map_asset.textures.paddle);
+    playerRight = createPlayer(scene, "player2", getPlayerRightPosition(), getPlayerSize(), COLORS.player2_3D, mode, map_asset.textures.paddle);
+    onProgress?.(70);
+    createEnvironment(scene, mode, map_asset.environment.skybox);
+    onProgress?.(80);
+    const trees = await createVegetation(scene, mode, map_asset.vegetation.tree);
+    const bushes = await createVegetation(scene, mode, map_asset.vegetation.bush);
+    onProgress?.(90);
+
     await scene.whenReadyAsync();
     onProgress?.(95);
     const guiCamera = createGuiCamera(scene, "guiCamera", BABYLON.Vector3.Zero(), new BABYLON.Viewport(0, 0, 1, 1));
-    cameras.push(guiCamera);
-    scene.activeCameras = cameras;
+    const allCameras = [...cameras, guiCamera];
+    scene.activeCameras = allCameras;
     onProgress?.(100);
     console.log('Scene building complete!');
     return {
@@ -81,8 +186,8 @@ export async function buildScene(
         gameField,
         walls,
         cameras,
+        guiCamera,
         lights
     };
 }
-
 
