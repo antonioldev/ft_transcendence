@@ -71,7 +71,7 @@ export const GAME_CONFIG = {
     ballDelay: 1.0, // Delay before the game starts
 
     // Score
-    winning_score: 3,
+    winning_score: 50,
 
 } as const;
 

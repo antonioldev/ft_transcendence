@@ -12,10 +12,11 @@ export class Ball {
     speedModifier = 0; // Speed modifier based on game state (e.g., delay).
     paddles: (Paddle)[]; // Array of players (paddles) in the game.
     startTime: number; // Timestamp when the ball was initialized or reset.
-    updateScore: (scoringPlayer: number) => void; // Callback to update the score.
+    updateScore: (side: number, score: number) => void; // Callback to update the score.
+    score_counter = 0; 
 
     // Initializes the ball with players and a score update callback.
-    constructor(paddles: any[], updateScoreCallback: (side: number) => void) {
+    constructor(paddles: any[], updateScoreCallback: (side: number, score: number) => void) {
         const ballPos = getBallStartPosition();
         this.rect = new Rect(ballPos.x, ballPos.z, GAME_CONFIG.ballRadius * 2, GAME_CONFIG.ballRadius * 2);
         this.oldRect = this.rect.instance();
@@ -45,6 +46,8 @@ export class Ball {
     private collision(direction: CollisionDirection): void {
         for (const paddle of this.paddles) {
             if (!this.rect.colliderect(paddle.rect)) continue;
+            this.speed *= GAME_CONFIG.ballSpeedIncrease;
+            this.score_counter += 1;
 
             if (direction === CollisionDirection.HORIZONTAL) {
                 if (this.rect.right >= paddle.rect.left && this.oldRect.right <= paddle.oldRect.left) {
@@ -83,11 +86,11 @@ export class Ball {
         
         // Goal detection (top/bottom goals)
         if (this.rect.top <= GAME_CONFIG.goalBounds.rightGoal) {
-            this.updateScore(RIGHT_PADDLE);
+            this.updateScore(RIGHT_PADDLE, this.score_counter);
             this.reset();
         }
         if (this.rect.bottom >= GAME_CONFIG.goalBounds.leftGoal) {
-            this.updateScore(LEFT_PADDLE);
+            this.updateScore(LEFT_PADDLE, this.score_counter);
             this.reset();
         }
     }
@@ -99,6 +102,8 @@ export class Ball {
         this.rect.y = ballPos.z;
         this.direction = this.randomDirection();
         this.startTime = performance.now();
+        this.speed = GAME_CONFIG.ballInitialSpeed;
+        this.score_counter = 0;
     }
 
     // Delays the ball's movement until the start delay has elapsed.

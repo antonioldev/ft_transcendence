@@ -46,12 +46,15 @@ export class Game {
 		if (this.paddles[RIGHT_PADDLE] instanceof AIBot) {
 			this.paddles[RIGHT_PADDLE].update(dt);
 		}
+		if (this.paddles[LEFT_PADDLE] instanceof AIBot) {
+			this.paddles[LEFT_PADDLE].update(dt);
+		}
 	}
 
 	// Update the score for the specified side
-	private _update_score(side: number): void {
-		this.paddles[side].score += 1;
-		if (this.paddles[side].score === GAME_CONFIG.winning_score) { // need to add end score to config file
+	private _update_score(side: number, score: number): void {
+		this.paddles[side].score += score;
+		if (this.paddles[side].score >= GAME_CONFIG.winning_score) {
 			this.running = false;
 			this.winner = this.players[side];
 		}
