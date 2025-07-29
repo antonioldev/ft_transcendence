@@ -1,3 +1,5 @@
+import { Paddle } from '../core/Paddle.js'
+
 /**
  * Represents a physical device/browser connection to the server
  * One client can control multiple players (e.g., local multiplayer)
@@ -25,14 +27,13 @@ export class Client {
 export class Player {
     id: string;           // Unique identifier for this player
     name: string;         // Display name shown in game
-    client?: Client | null;    // Which client connection controls this player (undefined for AI)
-    side: number;         // Which paddle this player controls (LEFT_PADDLE/RIGHT_PADDLE)
+    client: Client | null;    // Which client connection controls this player (undefined for AI)
+    side: number = 0;         // Which paddle this player controls (LEFT_PADDLE/RIGHT_PADDLE)
 
     constructor(id: string, name: string, client: Client | null = null) {
         this.id = id;
         this.name = name;
         this.client = client;
-        this.side = 0; // will be manually assigned by GameSession later
     }
 }
 

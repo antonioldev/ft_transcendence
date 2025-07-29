@@ -1,10 +1,11 @@
 import { FastifyInstance } from 'fastify';
 import { gameManager } from '../models/gameManager.js';
-import { Client } from '../models/Client.js';
+import { Client, Player } from '../models/Client.js';
 import { MessageType, Direction, GameMode, UserManagement } from '../shared/constants.js';
 import { ClientMessage, ServerMessage, GetUserProfile, UserProfileData } from '../shared/types.js';
 import * as db from "../data/validation.js";
 import { UserStats, GameHistoryEntry } from '../shared/types.js';
+import { Game } from '../core/game.js';
 
 /**
  * Manages WebSocket connections, client interactions, and game-related messaging.
@@ -126,21 +127,23 @@ export class WebSocketManager {
         data: ClientMessage,
         setCurrentGameId: (gameId: string) => void
     ): Promise<void> {
-        if (data.gameMode === undefined || data.gameMode === null) {
+        if (!data.gameMode) {
             await this.sendError(socket, 'Game mode required');
             return;
         }
 
         try {
             const gameId = gameManager.findOrCreateGame(data.gameMode, client);
-            const game = gameManager.getGame(gameId);
+            const gameSession = gameManager.getGame(gameId);
             setCurrentGameId(gameId);
 
-            if (game) {
-                // Start game if ready
-                if (game.full && !game.running) {
-                    console.log(`Client ${client.id} joined game ${gameId}. Game full: ${game.full}`);
-                    // game.start();
+            // add players to gameSession
+            if (data.players && gameSession) {
+                for (const player of data.players) {
+                    gameSession.add_player(new Player(player.id, player.name, client));
+                }
+                if (gameSession.mode === GameMode.SINGLE_PLAYER) { // TEMP PATCH NEED TO HANDLE CPU DATA
+                    gameSession.add_player(new Player("001", "CPU"));
                 }
             }
         } catch (error) {
@@ -156,16 +159,21 @@ export class WebSocketManager {
     private async handlePlayerReady(client: Client): Promise<void> {
         console.log(`Client ${client.id} is ready`);
 
-        const game = this.findClientGame(client);
-        if (!game) {
+        const gameSession = this.findClientGame(client);
+        if (!gameSession) {
             console.warn(`Client ${client.id} not in any game for ready signal`);
             return;
         }
 
-        game.setClientReady(client);
-        if (game.allClientsReady()) {
-            console.log(`All clients ready in game ${game.id}, sending ALL_READY`);
-            await game.sendAllReady();
+        gameSession.setClientReady(client);
+        if (gameSession.allClientsReady()) {
+            console.log(`All clients ready in game ${gameSession.id}, sending ALL_READY`);
+            await gameSession.sendAllReady();
+
+            if (gameSession.full && !gameSession.running) {
+                await gameSession.start();
+                // broadcast to client and win screen displayed
+            }
         }
     }
 
@@ -181,27 +189,21 @@ export class WebSocketManager {
         }
 
         // Find the game this client is in
-        const game = this.findClientGame(client);
-        if (!game) {
+        const gameSession = this.findClientGame(client);
+        if (!gameSession) {
             console.warn(`Client ${client.id} not in any game`);
             return;
         }
 
-        if (game.isPaused())
-            return;
+        if (gameSession.isPaused()) return;
 
-        // Convert direction to movement
-        let dx = 0;
-        if (data.direction === Direction.LEFT) dx = -1;
-        else if (data.direction === Direction.RIGHT) dx = 1;
-
-        // Add input to game queue
-        game.game.enqueue({
+        const input = {
             id: client.id,
             type: MessageType.PLAYER_INPUT,
             side: data.side,
-            dx: dx
-        });
+            dx: data.direction
+        }
+        gameSession.enqueue(input, data.match_id);
     }
 
    /**
@@ -209,18 +211,18 @@ export class WebSocketManager {
      * @param client - The client that send the request.
      */
     private async handlePauseRequest(client: Client): Promise<void> {
-        const game = this.findClientGame(client);
-        if (!game) {
+        const gameSession = this.findClientGame(client);
+        if (!gameSession) {
             console.warn(`Client ${client.id} not in any game for pause request`);
             return;
         }
 
-        if (!game.canClientControlGame(client)){
+        if (!gameSession.canClientControlGame(client)){
             console.warn(`Client ${client.id} not authorized to pause game`);
             return;
         }
 
-        const success = await game.pauseGame(client);
+        const success = await gameSession.pauseGame(client);
         if (!success)
             console.warn(`Failed to pause game for client ${client.id}`);
     }
@@ -230,18 +232,18 @@ export class WebSocketManager {
      * @param client - The client that send the request.
      */
     private async handleResumeRequest(client: Client): Promise<void> {
-        const game = this.findClientGame(client);
-        if (!game) {
+        const gameSession = this.findClientGame(client);
+        if (!gameSession) {
             console.warn(`Client ${client.id} not in any game for resume request`);
             return;
         }
 
-        if (!game.canClientControlGame(client)){
+        if (!gameSession.canClientControlGame(client)){
             console.warn(`Client ${client.id} not authorized to resume game`);
             return;
         }
 
-        const success = await game.resumeGame(client);
+        const success = await gameSession.resumeGame(client);
         if (!success)
             console.warn(`Failed to resume game for client ${client.id}`);
     }
@@ -539,9 +541,9 @@ export class WebSocketManager {
      * @returns The game object or null if the client is not in a game.
      */
     private findClientGame(client: Client): any {
-        for (const [gameId, game] of (gameManager as any).games) {
-            if (game.clients.includes(client)) {
-                return game;
+        for (const [gameId, gameSession] of (gameManager as any).games) {
+            if (gameSession.clients.includes(client)) {
+                return gameSession;
             }
         }
         return null;

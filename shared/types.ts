@@ -35,6 +35,7 @@ export interface PlayerInput {
 export interface ClientMessage {
     type: MessageType; // Type of message
     gameMode?: GameMode; // Game mode (optional)
+    match_id?: number;  // for tournament only
     players?: PlayerInfo[];
     registerUser?: RegisterUser; // Used for create a new registration (not Google auth)
     loginUser?: LoginUser; // Use to confirm the ID of the user (not Google auth)
@@ -47,6 +48,7 @@ export interface ClientMessage {
 export interface ServerMessage {
     type: MessageType; // Type of message
     state?: GameStateData; // Current game state (optional)
+    name?: string; // Optional name to distinguish players on same client
     side?: number; // Player side (optional)
     message?: string; // Additional message (optional)
     stats?: UserStats;

@@ -63,9 +63,9 @@ export enum GameMode {
 
 // Directions for player movement
 export enum Direction {
-    LEFT = 0,              // Move left
+    LEFT = -1,              // Move left
     RIGHT = 1,             // Move right
-    STOP = 2               // Stop movement
+    STOP = 0               // Stop movement
 }
 
 // States the game can be in
