@@ -34,6 +34,7 @@ export class Paddle {
 	}
 }
 
+
 export class ExactBot extends Paddle {
 	private _view_timer = 0;
 	private _target_x   = getBallStartPosition().x;
@@ -98,24 +99,7 @@ export class ExactBot extends Paddle {
 }
 
 
-export class MediumBot extends ExactBot {
-	protected _predict_intercept_x(): number {
-		const raw = super._predict_intercept_x();
-		const noise = (Math.random() - 0.5) * 12;
-		return raw + noise;
-	}
-}
-
-export class HardBot extends ExactBot {
-	protected _predict_intercept_x(): number {
-		const raw = super._predict_intercept_x();
-		const noise = (Math.random() - 0.5) * 6;
-		return raw + noise;
-	}
-}
-
-
-export class YoYoBot extends Paddle {
+export class EasyBot extends Paddle {
 	private _dir = 1;
 	private _b = getPlayerBoundaries();
 
@@ -132,5 +116,23 @@ export class YoYoBot extends Paddle {
 		if (this.rect.centerx <= this._b.left)  this._dir =  1;
 		if (this.rect.centerx >= this._b.right) this._dir = -1;
 		this.move(dt, this._dir);
+	}
+}
+
+
+export class MediumBot extends ExactBot {
+	protected _predict_intercept_x(): number {
+		const raw = super._predict_intercept_x();
+		const noise = (Math.random() - 0.5) * 12;
+		return raw + noise;
+	}
+}
+
+
+export class HardBot extends ExactBot {
+	protected _predict_intercept_x(): number {
+		const raw = super._predict_intercept_x();
+		const noise = (Math.random() - 0.5) * 6;
+		return raw + noise;
 	}
 }
