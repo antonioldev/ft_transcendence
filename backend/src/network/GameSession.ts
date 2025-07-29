@@ -15,7 +15,6 @@ export class GameSession {
 	full: boolean = false;
 	running: boolean = false;
 	private paused: boolean = false;
-	private requestedBy: Client | null = null; // do we need this?
 
     constructor(mode: GameMode, game_id: string) {
 		this.id = game_id
@@ -102,7 +101,6 @@ export class GameSession {
 		try {
 			this.game.pause();
 			this.paused = true;
-			this.requestedBy = client;
 			this.broadcast({type: MessageType.PAUSED});
 			
 			console.log(`Game ${this.id} paused by client ${client.id}`);
@@ -125,7 +123,6 @@ export class GameSession {
 		try {
 			this.game.resume();
 			this.paused = false;
-			this.requestedBy = null;
 
 			this.broadcast({type: MessageType.RESUMED});
 			
@@ -151,7 +148,6 @@ export class GameSession {
 		this.running = false;
 		this.game.running = false;
 		this.paused = false;
-		this.requestedBy = null;
 	}
 
 	assign_sides(players: Player[], match_index?: number) {
