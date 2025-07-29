@@ -9,9 +9,6 @@ import { createMaterial } from './materialFactory.js';
 
 // Creates HDRI environment with fallback to default environment
 export function createEnvironment(scene: any, mode: ViewMode, path?: string): void {
-    // Only create environment for 3D mode
-    if (mode !== ViewMode.MODE_3D) return;
-    
     if (!path) return;
     try {
         const hdrTexture = new BABYLON.HDRCubeTexture(path, scene, 1024);
@@ -28,17 +25,12 @@ export function createEnvironment(scene: any, mode: ViewMode, path?: string): vo
 }
 
 export function createTerrain(scene: any, name: string, mode: ViewMode, texture?: TextureSet): any {
-
-    if (mode !== ViewMode.MODE_3D) return null;
-
     const terrainWidth = GAME_CONFIG.fieldWidth * 10;
     const terrainHeight = GAME_CONFIG.fieldHeight * 10;
 
     let terrain: any;
-
     // Check if we have a heightmap
     if (texture?.height) {
-        // Create terrain from heightmap
         terrain = BABYLON.MeshBuilder.CreateGroundFromHeightMap(name, texture.height, {
             width: terrainWidth,
             height: terrainHeight,
@@ -47,7 +39,6 @@ export function createTerrain(scene: any, name: string, mode: ViewMode, texture?
             maxHeight: 10             // Highest point of terrain
         }, scene);
     } else {
-        // Create flat terrain (fallback)
         terrain = BABYLON.MeshBuilder.CreateGround(name, { 
             width: terrainWidth, 
             height: terrainHeight 
@@ -58,7 +49,7 @@ export function createTerrain(scene: any, name: string, mode: ViewMode, texture?
 
     const terrainTextureScale = { u: terrainWidth / 10, v: terrainHeight / 10 };
     const material = new BABYLON.StandardMaterial(name + "Material", scene);
-    material.diffuseColor = new BABYLON.Color3(1, 1, 0); // Yellow
+    material.diffuseColor = new BABYLON.Color3(1, 1, 0);
     terrain.material = createMaterial(scene, name + "Material",  new BABYLON.Color3(1, 1, 0), mode, texture , terrainTextureScale);
 
     return terrain;
@@ -69,11 +60,8 @@ export async function createVegetation(
     mode: ViewMode,
     vegetationAsset: VegetationAsset
 ): Promise<any[]> {
-    if (mode != ViewMode.MODE_3D) return [];
     if (!vegetationAsset?.path) return [];
-
     const objects: any[] = []
-
     try {
         Logger.info("Loading vegetation from:", vegetationAsset.path);
         const mesh = await BABYLON.SceneLoader.ImportMeshAsync("", "", vegetationAsset.path, scene);

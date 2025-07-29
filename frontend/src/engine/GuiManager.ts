@@ -222,7 +222,7 @@ export class GUIManager {
                 const scene = this.advancedTexture.getScene();
                 scene.beginAnimation(this.countdownText, 0, 60, false);
             }
-        }// TODO leaking
+        }
     }
 
     private createAnimation(property: string): any {
@@ -240,6 +240,7 @@ export class GUIManager {
     hideCountdown(): void {
         if (this.countdownContainer)
             this.countdownContainer.isVisible = false;
+        this.countdownText.animations = [];
     }
 
     // Update the FPS display

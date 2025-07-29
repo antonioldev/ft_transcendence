@@ -349,6 +349,17 @@ export class Game {
             if (this.gameObjects.ball) {
                 this.gameObjects.ball.position.x = state.ball.x;
                 this.gameObjects.ball.position.z = state.ball.z;
+                this.gameObjects.ball.rotation.x += 0.1;
+                this.gameObjects.ball.rotation.y += 0.05;
+                // const rot = 3;
+                // const deltaX = state.ball.x - this.gameObjects.ball.position.x;
+                // const deltaZ = state.ball.z - this.gameObjects.ball.position.z;
+
+                // this.gameObjects.ball.rotation.x += deltaZ * rot;
+                // this.gameObjects.ball.rotation.z -= deltaX * rot;
+
+                // this.gameObjects.ball.position.x = state.ball.x;
+                // this.gameObjects.ball.position.z = state.ball.z;
             }
 
             // Update Score

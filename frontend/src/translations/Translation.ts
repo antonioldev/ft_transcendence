@@ -29,7 +29,7 @@ export interface Translation {
     alertPlayer2: string;
     register: string;
     login: string;
-    loginWithGoogle: string;
+    // loginWithGoogle: string;
     username: string;
     email: string;
     password: string;

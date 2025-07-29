@@ -56,42 +56,42 @@ export class RenderManager {
         this.isRenderingActive = true;
         this.lastFrameTime = performance.now();
 
-        // this.engine.runRenderLoop(() => { // Try render without frame rate
-        //     if (!this.isRenderingActive) return;
-
-        //     const currentTime = performance.now();
-        //     const deltaTime = currentTime - this.lastFrameTime;
-            
-        //     // Frame rate limiting
-        //     if (deltaTime < (1000 / this.fpsLimit)) return;
-
-        //     try {
-        //         // Render the scene
-        //         if (this.scene && this.scene.activeCamera)
-        //             this.scene.render();
-
-        //         // Update FPS display
-        //         this.updateFPSDisplay(deltaTime);
-
-        //         this.lastFrameTime = currentTime;
-        //     } catch (error) {
-        //         Logger.error('Error in render loop', 'RenderManager', error);
-        //     }
-        // });
-
-        this.engine.runRenderLoop(() => {
+        this.engine.runRenderLoop(() => { // Try render without frame rate
             if (!this.isRenderingActive) return;
 
             const currentTime = performance.now();
             const deltaTime = currentTime - this.lastFrameTime;
             
-            // Render the scene
+            // Frame rate limiting
+            if (deltaTime < (1000 / this.fpsLimit)) return;
+
+            try {
+                // Render the scene
                 if (this.scene && this.scene.activeCamera)
                     this.scene.render();
+
                 // Update FPS display
                 this.updateFPSDisplay(deltaTime);
+
                 this.lastFrameTime = currentTime;
+            } catch (error) {
+                Logger.error('Error in render loop', 'RenderManager', error);
+            }
         });
+
+        // this.engine.runRenderLoop(() => {
+        //     if (!this.isRenderingActive) return;
+
+        //     const currentTime = performance.now();
+        //     const deltaTime = currentTime - this.lastFrameTime;
+            
+        //     // Render the scene
+        //         if (this.scene && this.scene.activeCamera)
+        //             this.scene.render();
+        //         // Update FPS display
+        //         this.updateFPSDisplay(deltaTime);
+        //         this.lastFrameTime = currentTime;
+        // });
 
         Logger.info('Render loop started', 'RenderManager');
     }
@@ -149,7 +149,7 @@ export class RenderManager {
             const positionAnimation = this.createCameraMoveAnimation(camera.name);
             const targetAnimation = this.createCameraTargetAnimation(camera.name);
             camera.animations = [positionAnimation, targetAnimation];
-            const animationGroup = this.scene.beginAnimation(camera, 0, 300, false);
+            const animationGroup = this.scene.beginAnimation(camera, 0, 180, false);
             this.camerasAnimation.push(animationGroup);
 
         });

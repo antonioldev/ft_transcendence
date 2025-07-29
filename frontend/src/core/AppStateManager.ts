@@ -8,7 +8,7 @@ import { EL } from '../ui/elements.js';
 import { GameConfigFactory } from '../engine/GameConfig.js';
 import { PlayerInfo } from '../shared/types.js';
 import { Logger } from './LogManager.js'
-import { memoryDetector } from './main.js';
+// import { memoryDetector } from './main.js';
 
 /**
  * AppStateManager is responsible for managing the application's game state and transitions

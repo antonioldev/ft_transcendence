@@ -156,9 +156,7 @@ export async function buildScene3D(
         ];
     } else {
         // Single camera for other modes
-        cameras = [
-            createCamera(scene, "camera1", getCamera2DPosition(), getSoloCameraViewport(), mode)
-        ];
+        cameras = [createCamera(scene, "camera1", getCamera2DPosition(), getSoloCameraViewport(), mode)];
     }
     onProgress?.(50);
 //here  
