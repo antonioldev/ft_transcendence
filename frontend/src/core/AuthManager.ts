@@ -164,7 +164,6 @@ export class AuthManager {
         const username = requireElementById<HTMLInputElement>(EL.AUTH.LOGIN_USERNAME).value.trim();
         const password = requireElementById<HTMLInputElement>(EL.AUTH.LOGIN_PASSWORD).value;
         const t = getCurrentTranslation();
-        const wsClient = WebSocketClient.getInstance(); // or use a shared instance if you already have one
         
         // Basic validation
         if (!username || !password) {
@@ -173,7 +172,14 @@ export class AuthManager {
             return;
         }
 
+        // Traditional login: Connect to WebSocket without token
+        const wsClient = WebSocketClient.getInstance();
+        
+        // Connect for traditional authentication
+        wsClient.connectTraditional();
+
         const user: LoginUser = { username, password };
+        
         // Register the callback function
         wsClient.registerCallback(WebSocketEvent.LOGIN_SUCCESS, (msg: string) => {
             this.authState = AuthState.LOGGED_IN;
@@ -183,6 +189,7 @@ export class AuthManager {
             historyManager.navigateTo(AppState.MAIN_MENU);
             uiManager.showUserInfo(user.username);     
             Logger.info(msg, 'AuthManager');
+            console.log("Traditional login successful:", msg);
         });
 
         wsClient.registerCallback(WebSocketEvent.LOGIN_FAILURE, (msg: string) => {
@@ -312,20 +319,26 @@ export class AuthManager {
                 }
 
                 // Parses the response to get the session token from your application
-                const { sessionToken } = await backendResponse.json();
-                console.log("Backend responded with session token:", sessionToken);
+                const data = await backendResponse.json();
+                console.log("Backend responded with session token:", data.sessionToken);
 
-                // TODO: Store the sessionToken
+                // Store the session token
+                sessionStorage.setItem('sessionToken', data.sessionToken);
                 
                 // Decodes the session token and updates the current user and authentication state
-                const decodedToken = JSON.parse(atob(sessionToken.split('.')[1]));
+                const decodedToken = JSON.parse(atob(data.sessionToken.split('.')[1]));
                 this.currentUser = { username: decodedToken.user.name };
                 this.authState = AuthState.LOGGED_IN;
                 
+                // Google login: Connect to WebSocket with token
+                const wsClient = WebSocketClient.getInstance();
+                wsClient.connectWithToken(data.sessionToken);
+                
                 // Updates the UI to show user information and navigates to the main menu
                 uiManager.showUserInfo(this.currentUser.username);
-                // uiManager.hideOverlays('login-modal');
                 historyManager.navigateTo(AppState.MAIN_MENU);
+                
+                console.log("Ready for game with Google account:", this.currentUser.username);
 
             } catch (error) {
                 console.error("Backend communication failed:", error);

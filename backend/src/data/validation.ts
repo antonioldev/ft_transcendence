@@ -1,6 +1,7 @@
 // Program to sanitize info before sending to SQL and ensure SQL injection avoidance
 import * as dbFunction from '../data/database.js';
 import { UserProfileData, UserStats, GameHistoryEntry } from '../shared/types.js';
+import { IdTokenClient } from 'google-auth-library/build/src/auth/idtokenclient';
 
 export function verifyLogin(username: string, password: string): number {
     if (!dbFunction.userExist(undefined,username,undefined))
@@ -80,4 +81,20 @@ export function getGameHistoryForUser(username: string): GameHistoryEntry[] | un
       duration: 350
     }
   ];
+}
+
+export function findOrCreateGoogleUser(profile: { sub: string, name: string, email: string }): UserProfileData | null {
+    let user = dbFunction.findUserByGoogleId(profile.sub);
+    if (user) {
+        return user;
+    }
+
+    const userExistsByEmail = dbFunction.userExist(undefined, undefined, profile.email);
+    if (userExistsByEmail) {
+        dbFunction.linkGoogleIdToUser(profile.email, profile.sub);
+    } else {
+        dbFunction.createGoogleUser(profile);
+    }
+    
+    return dbFunction.findUserByGoogleId(profile.sub);
 }

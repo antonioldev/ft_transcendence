@@ -19,19 +19,50 @@ export class WebSocketManager {
      */
     async setupRoutes(fastify: FastifyInstance): Promise<void> {
         fastify.get('/', { websocket: true } as any, (socket, req) => {
-            this.handleConnection(socket);
+            const token = (req.query as { token?: string }).token;
+            if (token) {
+                try {
+                    // Google authentication: verify JWT token
+                    const decoded = fastify.jwt.verify(token) as any;
+                    console.log(`Google user: ${decoded.user.username}`);
+                    this.handleConnection(socket, decoded.user);
+                } catch (err) {
+                    console.log('Invalid Google token');
+                    socket.close(1008, 'Invalid token');
+                    return;
+                }
+            } else {
+                // Traditional authentication: accept connection without token
+                console.log('Traditional connection (will authenticate via messages)');
+                this.handleConnection(socket);
+            }
         });
     }
 
     /**
      * Handles a new WebSocket connection, initializing the client and setting up event listeners.
      * @param socket - The WebSocket connection object.
+     * @param authenticatedUser - Optional user data for Google authentication.
      */
-    private handleConnection(socket: any): void {
+    private handleConnection(socket: any, authenticatedUser?: { username: string; email: string }): void {
         const clientId = this.generateClientId();
-        const client = new Client(clientId, 'anonymous', '', socket);
+        
+        // Initialize client based on authentication method
+        let client: Client;
+        if (authenticatedUser) {
+            // Google authenticated user
+            console.log(`Google authenticated user connected: ${authenticatedUser.username}`);
+            client = new Client(clientId, authenticatedUser.username, authenticatedUser.email, socket);
+            client.loggedIn = true; // Mark as already authenticated
+        } else {
+            // Traditional authentication will authenticate via messages
+            console.log('Traditional connection');
+            client = new Client(clientId, 'anonymous', '', socket);
+        }
+        
         this.clients.set(clientId, client);
         let currentGameId: string | null = null;
+        
         socket.on('message', async (message: string) => {
             await this.handleMessage(socket, client, message, (gameId) => {
                 currentGameId = gameId;

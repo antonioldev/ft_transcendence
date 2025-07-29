@@ -1,6 +1,6 @@
 import { updateLanguageDisplay, previousLanguage, nextLanguage } from '../translations/translations.js';
 import { uiManager } from '../ui/UIManager.js';
-import { webSocketClient } from './WebSocketClient.js';
+import { WebSocketClient } from './WebSocketClient.js';
 import { AuthManager } from './AuthManager.js';
 import { MenuFlowManager } from './MenuFlowManager.js';
 import { KeyboardManager } from './KeyboardManager.js';
@@ -40,6 +40,8 @@ function loadPage(): void {
     // }, 5000);
 
     // Setup WebSocket monitoring
+    // Setup WebSocket monitoring (will only connect after authentication)
+    const webSocketClient = WebSocketClient.getInstance();
     webSocketClient.registerCallback(WebSocketEvent.STATUS_CHANGE, (status: ConnectionStatus) => {
         uiManager.updateConnectionStatus(status);
     });
