@@ -5,7 +5,8 @@ import { getCurrentTranslation } from '../translations/translations.js';
 import { historyManager } from './HistoryManager.js';
 import { WebSocketClient } from './WebSocketClient.js';
 import { RegisterUser, LoginUser } from '../shared/types.js';
-import { EL, requireElementById} from '../ui/elements.js';
+import { EL, getElementById, requireElementById} from '../ui/elements.js';
+import { initializeGoogleSignIn, renderGoogleButton } from './GoogleSignIn.js';
 
 /**
  * Manages user authentication state, login/logout workflows, and user registration.
@@ -62,9 +63,8 @@ export class AuthManager {
         // Form submission handlers
         const loginSubmit = requireElementById(EL.BUTTONS.LOGIN_SUBMIT);
         const registerSubmit = requireElementById(EL.BUTTONS.REGISTER_SUBMIT);
-        const googleLoginBtn = requireElementById(EL.BUTTONS.GOOGLE_LOGIN);
 
-        this.setupFormSubmissionHandlers(loginSubmit, registerSubmit, googleLoginBtn);
+        this.setupFormSubmissionHandlers(loginSubmit, registerSubmit);
     }
 
     /**
@@ -82,10 +82,12 @@ export class AuthManager {
     ): void {
         loginBtn?.addEventListener('click', () => {
             historyManager.navigateTo(AppState.LOGIN);
+            this.prepareGoogleLogin();
         });
 
         registerBtn?.addEventListener('click', () => {
             historyManager.navigateTo(AppState.REGISTER);
+            this.prepareGoogleLogin();
         });
 
         logoutBtn?.addEventListener('click', () => {
@@ -137,12 +139,10 @@ export class AuthManager {
      * Sets up event handlers for form submissions and third-party login.
      * @param loginSubmit - Login form submit button.
      * @param registerSubmit - Register form submit button.
-     * @param googleLoginBtn - Google login button.
      */
     private setupFormSubmissionHandlers(
         loginSubmit: HTMLElement | null,
-        registerSubmit: HTMLElement | null,
-        googleLoginBtn: HTMLElement | null
+        registerSubmit: HTMLElement | null
     ): void {
         loginSubmit?.addEventListener('click', (e) => {
             e.preventDefault();
@@ -152,10 +152,6 @@ export class AuthManager {
         registerSubmit?.addEventListener('click', (e) => {
             e.preventDefault();
             this.handleRegisterSubmit();
-        });
-
-        googleLoginBtn?.addEventListener('click', () => {
-            this.handleGoogleLogin();
         });
     }
 
@@ -286,17 +282,69 @@ export class AuthManager {
         
     }
 
-    // Handles Google OAuth login process.
-    private handleGoogleLogin(): void {
-        // TODO: Implement Google OAuth
-        Logger.info('Google login clicked - to be implemented', 'AuthManager');
-        alert('Google login will be implemented later');
-        uiManager.clearForm(this.loginFields);
-        // After successful Google login:
-        // this.currentUser = { username: googleUser.name, email: googleUser.email };
-        // this.authState = AuthState.LOGGED_IN;
-        // uiManager.showUserInfo(this.currentUser.username);
-        // uiManager.hideOverlays('login-modal');
+    public setupGoogleLoginButton(): void {
+        this.prepareGoogleLogin();
+    }
+
+    // Prepares and initializes Google Sign-In for the application
+    private prepareGoogleLogin(): void {
+        const googleClientId = window.GOOGLE_CLIENT_ID;
+
+        if (!googleClientId) {
+            console.error("Google Client ID not found in global window.");
+            return;
+        }
+
+        // Defines the asynchronous function to handle successful Google authentication responses
+        const handleAuthSuccess = async (googleResponse: google.accounts.id.CredentialResponse) => {
+            console.log("Google token received, sending to backend...");
+            try {
+                // Sends the Google credential token to the backend for verification
+                const backendResponse = await fetch('http://localhost:3000/api/auth/google', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token: googleResponse.credential })
+                });
+
+                if (!backendResponse.ok) {
+                    const errorData = await backendResponse.json();
+                    throw new Error('Backend authentication failed.');
+                }
+
+                // Parses the response to get the session token from your application
+                const { sessionToken } = await backendResponse.json();
+                console.log("Backend responded with session token:", sessionToken);
+
+                // TODO: Store the sessionToken
+                
+                // Decodes the session token and updates the current user and authentication state
+                const decodedToken = JSON.parse(atob(sessionToken.split('.')[1]));
+                this.currentUser = { username: decodedToken.user.name };
+                this.authState = AuthState.LOGGED_IN;
+                
+                // Updates the UI to show user information and navigates to the main menu
+                uiManager.showUserInfo(this.currentUser.username);
+                // uiManager.hideOverlays('login-modal');
+                historyManager.navigateTo(AppState.MAIN_MENU);
+
+            } catch (error) {
+                console.error("Backend communication failed:", error);
+                alert("Could not complete login.");
+            }
+        };
+
+        // Initializes the Google service and then renders the sign-in button
+        initializeGoogleSignIn(googleClientId, handleAuthSuccess)
+            .then(() => {
+                renderGoogleButton('google-login-btn-container');
+                console.log("Attempted to render Google button in 'google-login-btn-container'.");
+
+                renderGoogleButton('google-register-btn-container');
+                console.log("Attempted to render Google button in 'google-register-btn-container'.");
+            })
+            .catch(error => {
+                console.error("Failed to initialize or render Google button due to an error:", error);
+            });
     }
 
     // ========================================

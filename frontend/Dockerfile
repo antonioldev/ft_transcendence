@@ -12,6 +12,12 @@ COPY package*.json package-lock.json ./
 # Install dependencies
 RUN npm install
 
+# Pass GOOGLE_CLIENT_ID as a build argument
+ARG GOOGLE_CLIENT_ID
+
+# Inject GOOGLE_CLIENT_ID into the frontend code
+RUN mkdir -p /app/dist && echo "window.GOOGLE_CLIENT_ID = '${GOOGLE_CLIENT_ID}';" > /app/dist/env-config.js
+
 # Copy TypeScript source
 COPY src/ ./src/
 COPY tsconfig.json ./
