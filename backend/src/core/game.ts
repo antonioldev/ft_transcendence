@@ -99,6 +99,7 @@ export class Game {
 			ball: {
 				x: this.ball.rect.centerx,
 				z: this.ball.rect.centery,
+				score_counter: this.ball.score_counter,
 			},
 		}
 	}

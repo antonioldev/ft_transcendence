@@ -20,7 +20,7 @@ export interface Size {
 export interface GameStateData {
     paddleLeft: { x: number; score: number }; // Left paddle position and score
     paddleRight: { x: number; score: number }; // Right paddle position and score
-    ball: { x: number; z: number }; // Ball position
+    ball: { x: number; z: number, score_counter: number }; // Ball position
 }
 
 // Represents input from a player

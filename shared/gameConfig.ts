@@ -53,7 +53,7 @@ export const GAME_CONFIG = {
     scoreToWin: 5,          // Points needed to win
     
     // Physics
-    ballSpeedIncrease: 1.05, // Speed multiplier after paddle hit
+    ballSpeedIncrease: 1.08, // Speed multiplier after paddle hit
     maxBallSpeed: 20,       // Maximum ball speed
 
     // Input mappings
