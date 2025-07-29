@@ -104,7 +104,7 @@ export class WebSocketManager {
         data: ClientMessage,
         setCurrentGameId: (gameId: string) => void
     ): Promise<void> {
-        if (data.gameMode === undefined || data.gameMode === null) {
+        if (!data.gameMode) {
             await this.sendError(socket, 'Game mode required');
             return;
         }
@@ -155,8 +155,7 @@ export class WebSocketManager {
             return;
         }
 
-        if (gameSession.isPaused())
-            return;
+        if (gameSession.isPaused()) return;
 
         // Convert direction to movement
         let dx = 0;
