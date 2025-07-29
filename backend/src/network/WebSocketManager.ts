@@ -160,28 +160,16 @@ export class WebSocketManager {
 
         // Convert direction to movement
         let dx = 0;
-        if (data.direction === Direction.LEFT) dx = -1;
+        if (data.direction === Direction.LEFT) dx = -1; // we should just send -1 or 1 so we don't need this conversion?
         else if (data.direction === Direction.RIGHT) dx = 1;
 
-        // Add input to game queue, if tournament need to specify which match
-        if (gameSession.mode == GameMode.TOURNAMENT_LOCAL || gameSession.mode == GameMode.TOURNAMENT_REMOTE) {
-            if (data.match_id === undefined) return;
-
-            gameSession.match_map[data.match_id].game.enqueue({
-                id: client.id,
-                type: MessageType.PLAYER_INPUT,
-                side: data.side,
-                dx: dx
-            })
+        const input = {
+            id: client.id,
+            type: MessageType.PLAYER_INPUT,
+            side: data.side,
+            dx: dx
         }
-        else {
-            gameSession.game.enqueue({
-                id: client.id,
-                type: MessageType.PLAYER_INPUT,
-                side: data.side,
-                dx: dx
-            });
-        }
+        gameSession.enqueue(input, data.match_id);
     }
 
     /**

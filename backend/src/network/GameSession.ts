@@ -2,7 +2,7 @@ import { Game } from '../core/game.js';
 import { LEFT_PADDLE, RIGHT_PADDLE} from '../shared/gameConfig.js';
 import { Client, Player } from '../models/Client.js';
 import { MessageType, GameMode } from '../shared/constants.js';
-import { GameStateData, ServerMessage } from '../shared/types.js';
+import { PlayerInput, ServerMessage } from '../shared/types.js';
 
 export class GameSession {
 	mode: GameMode;
@@ -182,6 +182,11 @@ export class GameSession {
 	isPaused(): boolean {
 		return this.paused;
 	}
+
+	// wrapper needed as is polymorphised for Tournament
+	enqueue(input: PlayerInput): void  {
+		this.game.enqueue(input);
+	}
 }
 
 class Match {
@@ -223,6 +228,11 @@ export class Tournament extends GameSession {
 		}
 	}
 
+	enqueue(input: PlayerInput, match_id?: string): void  {
+		if (!match_id) return ;
+		this.match_map.get(match_id)?.game.enqueue(input);
+	}
+
 	// calculates the number of rounds from the number of players in the tournament
 	get_num_rounds(num_players: number) {
 		let round_count = 0;
@@ -238,7 +248,7 @@ export class Tournament extends GameSession {
 		// TODO: randomize start order ??
 
 		const round_one = this.rounds.get(1);
-		if (round_one === undefined) return ; // maybe throw err
+		if (!round_one) return ; // maybe throw err
 
 		for (let i = 0, j = 0; j != this.player_capacity; i++, j+=2) {
 			round_one[i].add_player(this.players[j]);
