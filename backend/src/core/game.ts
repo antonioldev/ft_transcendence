@@ -1,7 +1,7 @@
 import { Ball } from './Ball.js';
 import { Paddle, AIBot } from './Paddle.js';
 import { Clock } from './utils.js';
-import { LEFT_PADDLE, RIGHT_PADDLE } from '../shared/gameConfig.js';
+import { GAME_CONFIG, LEFT_PADDLE, RIGHT_PADDLE } from '../shared/gameConfig.js';
 import { GameMode, MessageType} from '../shared/constants.js';
 import { PlayerInput, GameStateData, ServerMessage } from '../shared/types.js';
 import { Client, Player } from '../models/Client.js'
@@ -51,7 +51,7 @@ export class Game {
 	// Update the score for the specified side
 	private _update_score(side: number): void {
 		this.paddles[side].score += 1;
-		if (this.paddles[side].score == 1) { // need to add end score to config file
+		if (this.paddles[side].score === GAME_CONFIG.winning_score) { // need to add end score to config file
 			this.running = false;
 			this.winner = this.players[side];
 		}

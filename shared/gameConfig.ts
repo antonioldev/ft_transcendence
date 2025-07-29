@@ -67,6 +67,9 @@ export const GAME_CONFIG = {
     
     // Timing
     startDelay: 1.0, // Delay before the game starts
+
+    // Score
+    winning_score: 3,
 } as const;
 
 // Paddle/Player constants

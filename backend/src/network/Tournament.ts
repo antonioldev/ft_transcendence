@@ -1,8 +1,8 @@
 import { GameSession } from './GameSession.js'
 import { Game } from '../core/game.js';
 import { Client, Player } from '../models/Client.js';
-import { MessageType, GameMode } from '../shared/constants.js';
-import { PlayerInput, ServerMessage } from '../shared/types.js';
+import { GameMode } from '../shared/constants.js';
+import { PlayerInput } from '../shared/types.js';
 
 class Match {
 	id: string = crypto.randomUUID();
@@ -90,7 +90,7 @@ export class Tournament extends GameSession {
 
 		for (let i = 0, j = 0; j != this.player_capacity; i++, j+=2) {
 			round_one[i].add_player(this.players[j]);
-			round_one[i].add_player(this.players[j+1]);
+			round_one[i].add_player(this.players[j + 1]);
 		}
 	}
 
