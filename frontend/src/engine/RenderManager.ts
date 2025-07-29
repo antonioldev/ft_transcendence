@@ -47,7 +47,7 @@ export class RenderManager {
         this.isRenderingActive = true;
         this.lastFrameTime = performance.now();
 
-        // this.engine.runRenderLoop(() => {
+        // this.engine.runRenderLoop(() => { // Try render without frame rate
         //     if (!this.isRenderingActive) return;
 
         //     const currentTime = performance.now();
@@ -79,19 +79,9 @@ export class RenderManager {
             // Render the scene
                 if (this.scene && this.scene.activeCamera)
                     this.scene.render();
-            // Frame rate limiting
-            // if (deltaTime < (1000 / this.fpsLimit)) return;
-
-            // try {
-                
-
                 // Update FPS display
                 this.updateFPSDisplay(deltaTime);
-
-            //     this.lastFrameTime = currentTime;
-            // } catch (error) {
-            //     Logger.error('Error in render loop', 'RenderManager', error);
-            // }
+                this.lastFrameTime = currentTime;
         });
 
         Logger.info('Render loop started', 'RenderManager');
