@@ -37,18 +37,31 @@ export class WebSocketClient {
         this.connect(token);
     }
 
+    // Public method to connect as guest
+    public connectAsGuest(): void {
+        this.connect(undefined, 'guest');
+    }
+
     // Establishes a WebSocket connection to the specified URL.
-    private connect(token?: string): void {
+    private connect(token?: string, userType?: string): void {
         this.connectionStatus = ConnectionStatus.CONNECTING;
         this.notifyStatus(ConnectionStatus.CONNECTING);
 
-        // Build URL with optional token
+        // Build URL with optional token and user type
         let wsUrl = 'ws://localhost:3000'; // TODO make it a variable
+        const params = new URLSearchParams();
         if (token) {
-            wsUrl += `?token=${token}`;
+            params.append('token', token);
             console.log('🔗 Connecting with Google token...');
+        } else if (userType === 'guest') {
+            params.append('guest', 'true');
+            console.log('🔗 Connecting as guest...');
         } else {
             console.log('🔗 Connecting for traditional login...');
+        }
+
+        if (params.toString()) {
+            wsUrl += `?${params.toString()}`;
         }
 
         this.ws = new WebSocket(wsUrl);

@@ -30,6 +30,13 @@ await fastify.register(fastifyCors, {
     credentials: true,
 });
 
+// Set Cross-Origin-Opener-Policy header for HTML responses
+fastify.addHook('onSend', async (request, reply, payload) => {
+    if (reply.getHeader('Content-Type')?.toString().includes('text/html')) {
+        reply.header('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+    }
+});
+
 // Register the authentication routes
 await fastify.register(authRoutes);
 

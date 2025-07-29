@@ -20,6 +20,8 @@ export class WebSocketManager {
     async setupRoutes(fastify: FastifyInstance): Promise<void> {
         fastify.get('/', { websocket: true } as any, (socket, req) => {
             const token = (req.query as { token?: string }).token;
+            const isGuest = (req.query as { guest?: string }).guest === 'true';
+            
             if (token) {
                 try {
                     // Google authentication: verify JWT token
@@ -31,6 +33,10 @@ export class WebSocketManager {
                     socket.close(1008, 'Invalid token');
                     return;
                 }
+            } else if (isGuest) {
+                // Guest user: no authentication required
+                console.log('Guest user connected');
+                this.handleConnection(socket, undefined, true);
             } else {
                 // Traditional authentication: accept connection without token
                 console.log('Traditional connection (will authenticate via messages)');
@@ -43,8 +49,9 @@ export class WebSocketManager {
      * Handles a new WebSocket connection, initializing the client and setting up event listeners.
      * @param socket - The WebSocket connection object.
      * @param authenticatedUser - Optional user data for Google authentication.
+     * @param isGuest - Whether this is a guest connection.
      */
-    private handleConnection(socket: any, authenticatedUser?: { username: string; email: string }): void {
+    private handleConnection(socket: any, authenticatedUser?: { username: string; email: string }, isGuest?: boolean): void {
         const clientId = this.generateClientId();
         
         // Initialize client based on authentication method
@@ -54,6 +61,13 @@ export class WebSocketManager {
             console.log(`Google authenticated user connected: ${authenticatedUser.username}`);
             client = new Client(clientId, authenticatedUser.username, authenticatedUser.email, socket);
             client.loggedIn = true; // Mark as already authenticated
+        } else if (isGuest) {
+            // Guest user
+            const guestName = `Guest_${Math.random().toString(36).substr(2, 8)}`;
+            console.log(`Guest user connected: ${guestName}`);
+            client = new Client(clientId, guestName, '', socket);
+            client.loggedIn = true; // Guests are "logged in" without credentials
+            client.isGuest = true; // Mark as guest
         } else {
             // Traditional authentication will authenticate via messages
             console.log('Traditional connection');
