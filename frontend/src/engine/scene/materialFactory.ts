@@ -1,7 +1,7 @@
 declare var BABYLON: typeof import('@babylonjs/core');
 
 import { ViewMode } from '../../shared/constants.js';
-import { TextureSet } from './sceneAssets.js';
+import { TextureSet, TEXTURE_SCALING, MAP_OBJECT_TYPE } from './sceneAssets.js';
 import { Logger } from '../../core/LogManager.js';
 
 function setTextureScale(textureScale: any, texture: any) {
@@ -9,6 +9,20 @@ function setTextureScale(textureScale: any, texture: any) {
         texture.uScale = textureScale.u;
         texture.vScale = textureScale.v;
     }
+}
+
+export function getStandardTextureScale(
+    width: number, 
+    height: number, 
+    objectType: MAP_OBJECT_TYPE
+): { u: number, v: number } {
+    const divisor = TEXTURE_SCALING.standardDivisor;
+    const multiplier = TEXTURE_SCALING.multipliers[objectType];
+    
+    return {
+        u: (width / divisor) * multiplier,
+        v: (height / divisor) * multiplier
+    };
 }
 
 export function createMaterial(

@@ -101,7 +101,7 @@ export async function buildScene2D(
     onProgress?.(25);
     const walls = createWalls(scene, "walls", GAME_CONFIG.fieldWidth, GAME_CONFIG.fieldHeight, GAME_CONFIG.wallHeight, GAME_CONFIG.wallThickness, mode, undefined);
     onProgress?.(30);
-    const ball = createBall(scene, "ball", getBallStartPosition(), mode, undefined);
+    const ball = createBall(scene, "ball", getBallStartPosition(), COLORS.ball2D, mode, undefined);
     onProgress?.(40);
     
     cameras = [createCamera(scene, "camera1", getCamera2DPosition(), getSoloCameraViewport(), mode)];
@@ -146,7 +146,7 @@ export async function buildScene3D(
     onProgress?.(25);
     const walls = createWalls(scene, "walls", GAME_CONFIG.fieldWidth, GAME_CONFIG.fieldHeight, GAME_CONFIG.wallHeight, GAME_CONFIG.wallThickness, mode, map_asset.textures.walls);
     onProgress?.(30);
-    const ball = createBall(scene, "ball", getBallStartPosition(), mode, map_asset.textures.ball);
+    const ball = createBall(scene, "ball", getBallStartPosition(), COLORS.ball3D, mode, map_asset.textures.ball);
     onProgress?.(40);
     
     if (gameMode === GameMode.TWO_PLAYER_LOCAL || gameMode === GameMode.TOURNAMENT_LOCAL) {

@@ -4,8 +4,8 @@ import { GAME_CONFIG } from '../../shared/gameConfig.js';
 import { Size} from '../../shared/types.js';
 import { ViewMode } from '../../shared/constants.js';
 import { COLORS } from '../../core/utils.js';
-import { TextureSet } from './sceneAssets.js';
-import { createMaterial } from './materialFactory.js';
+import { TextureSet, MAP_OBJECT_TYPE } from './sceneAssets.js';
+import { createMaterial, getStandardTextureScale } from './materialFactory.js';
 
 // Creates a camera for the given scene
 export function createCamera(scene: any, name: string, position: any, viewport: any, mode: ViewMode): any {
@@ -59,7 +59,7 @@ export function createGameField(scene: any, name: string, width: number, height:
     const ground = BABYLON.MeshBuilder.CreateGround(name, { width, height }, scene);
     const color = mode === ViewMode.MODE_2D ? COLORS.field2D : COLORS.field3D;
     
-    const groundTextureScale = { u: width / 10, v: height / 10 };
+    const groundTextureScale = getStandardTextureScale(width, height, MAP_OBJECT_TYPE.GROUND);
     ground.material = createMaterial(scene, name + "Material", color, mode, texture, groundTextureScale);
 
     return ground;
@@ -70,7 +70,7 @@ export function createWalls(scene: any, name: string, fieldWidth: number, fieldH
     const color = mode === ViewMode.MODE_2D ? COLORS.walls2D : COLORS.walls3D;
     
     // Single texture scaling for all walls
-    const wallTextureScale = {u: fieldWidth , v: wallThickness}; // TODO if texture
+    const wallTextureScale = getStandardTextureScale(fieldWidth, wallThickness, MAP_OBJECT_TYPE.WALLS);
     const material = createMaterial(scene, name + "Material", color, mode, texture, wallTextureScale);
 
     // Top wall
@@ -114,20 +114,21 @@ export function createPlayer(scene: any, name: string, position: any, size: Size
     // const player = BABYLON.MeshBuilder.CreateBox(name, {width: size.x, height: size.y, depth: size.z}, scene);
     
     // Creation of material
-    const playerScale = {u: size.x, v: size.z};
+    const playerScale = getStandardTextureScale(size.x, size.z, MAP_OBJECT_TYPE.PLAYER);
     player.material = createMaterial(scene, name + "Material", color, mode, texture, playerScale);
      
     return player;
 }
 
 // Creates a ball object in the scene
-export function createBall(scene: any, name: string, position: any, mode: ViewMode, texture?: TextureSet): any {
+export function createBall(scene: any, name: string, position: any, color: any, mode: ViewMode, texture?: TextureSet): any {
 
-    const ball = BABYLON.MeshBuilder.CreateSphere(name, {diameter: GAME_CONFIG.ballRadius * 2}, scene);
+    const diameter = GAME_CONFIG.ballRadius * 2;
+    const ball = BABYLON.MeshBuilder.CreateSphere(name, {diameter}, scene);
     ball.position = position;
 
-    const color = mode === ViewMode.MODE_2D ? COLORS.ball2D : COLORS.ball3D;
+    const playerScale = getStandardTextureScale(diameter, diameter, MAP_OBJECT_TYPE.PLAYER);
     ball.material = createMaterial(scene, name + "Material", color, mode, texture);
-    
+
     return ball;
 }

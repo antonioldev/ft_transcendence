@@ -4,8 +4,8 @@ import { ViewMode } from '../../shared/constants.js';
 import { GAME_CONFIG } from '../../shared/gameConfig.js';
 import { Logger } from '../../core/LogManager.js';
 import { VegetationAsset } from './sceneAssets.js';
-import { TextureSet } from './sceneAssets.js';
-import { createMaterial } from './materialFactory.js';
+import { TextureSet, MAP_OBJECT_TYPE } from './sceneAssets.js';
+import { createMaterial, getStandardTextureScale } from './materialFactory.js';
 
 // Creates HDRI environment with fallback to default environment
 export function createEnvironment(scene: any, mode: ViewMode, path?: string): void {
@@ -47,7 +47,8 @@ export function createTerrain(scene: any, name: string, mode: ViewMode, texture?
 
     terrain.position.y = -0.01;
 
-    const terrainTextureScale = { u: terrainWidth / 10, v: terrainHeight / 10 };
+    const terrainTextureScale = getStandardTextureScale(terrainWidth, terrainHeight, MAP_OBJECT_TYPE.GROUND);
+    // const terrainTextureScale = { u: terrainWidth / 10, v: terrainHeight / 10 };
     const material = new BABYLON.StandardMaterial(name + "Material", scene);
     material.diffuseColor = new BABYLON.Color3(1, 1, 0);
     terrain.material = createMaterial(scene, name + "Material",  new BABYLON.Color3(1, 1, 0), mode, texture , terrainTextureScale);
