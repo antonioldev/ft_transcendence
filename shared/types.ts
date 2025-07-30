@@ -53,6 +53,8 @@ export interface ServerMessage {
     message?: string; // Additional message (optional)
     stats?: UserStats;
     countdown?: number;
+    player1?: string;
+    player2?: string;
     gameHistory?: GameHistoryEntry[];
 }
 

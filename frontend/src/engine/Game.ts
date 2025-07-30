@@ -174,7 +174,10 @@ export class Game {
         webSocketClient.registerCallback(WebSocketEvent.GAME_PAUSED, () => { this.onServerPausedGame(); });
         webSocketClient.registerCallback(WebSocketEvent.GAME_RESUMED, () => { this.onServerResumedGame(); });
         webSocketClient.registerCallback(WebSocketEvent.GAME_ENDED, () => { this.onServerEndedGame(); });
-        webSocketClient.registerCallback(WebSocketEvent.ALL_READY, (countdown: number) => { this.handleCountdown(countdown); });
+        // webSocketClient.registerCallback(WebSocketEvent.ALL_READY, (countdown: number) => {this.handleCountdown(countdown); });
+        webSocketClient.registerCallback(WebSocketEvent.ALL_READY, (message: any) => {
+            this.handleCountdown(message.countdown, message.player1, message.player2); 
+        });
     }
 
     async connect(): Promise<void> {
@@ -239,9 +242,12 @@ export class Game {
     }
 
 
-    private handleCountdown(countdown: number): void {
+    private handleCountdown(countdown: number, player1: string, player2: string): void {
         if (countdown === undefined || countdown === null)
             Logger.errorAndThrow('Server sent ALL_READY without countdown parameter', 'Game');
+        if (player1 && player2 && this.guiManager)
+        this.guiManager.updatePlayerNames(player1, player2);
+
         uiManager.setLoadingScreenVisible(false);
         if (countdown === 5)
             this.renderManager?.startCameraAnimation(this.gameObjects?.cameras, this.config.gameMode, this.config.viewMode);
