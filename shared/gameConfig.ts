@@ -45,8 +45,8 @@ export const GAME_CONFIG = {
     
     // Goal boundaries (behind paddles)
     goalBounds: {
-        rightGoal: -(fieldHeight / 2) + 2,    // Behind top player
-        leftGoal: (fieldHeight / 2) - 2      // Behind bottom player  
+        rightGoal: -(fieldHeight / 2),    // Behind top player
+        leftGoal: (fieldHeight / 2)      // Behind bottom player  
     },
 
     // Game mechanics

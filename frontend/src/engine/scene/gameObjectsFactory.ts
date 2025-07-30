@@ -2,31 +2,43 @@ declare var BABYLON: typeof import('@babylonjs/core'); //declare var BABYLON: an
 
 import { GAME_CONFIG } from '../../shared/gameConfig.js';
 import { Size} from '../../shared/types.js';
-import { ViewMode } from '../../shared/constants.js';
-import { COLORS } from '../../core/utils.js';
+import { ViewMode, GameMode } from '../../shared/constants.js';
 import { TextureSet, MAP_OBJECT_TYPE } from './sceneAssets.js';
 import { createMaterial, getStandardTextureScale } from './materialFactory.js';
+import { COLORS, getSoloCameraViewport, get3DCamera1Viewport, get3DCamera2Viewport, getCamera2DPosition } from '../../core/utils.js';
 
 // Creates a camera for the given scene
-export function createCamera(scene: any, name: string, position: any, viewport: any, mode: ViewMode): any {
-
-    let camera;
-    if (mode === ViewMode.MODE_3D) {
-        camera = new BABYLON.FreeCamera(name, position, scene);
-        camera.setTarget(BABYLON.Vector3.Zero());
-        camera.viewport = viewport;
-        return camera;
-    }
+export function createCameras(scene: any, name: string, viewMode: ViewMode, gameMode: GameMode): any {
+    let cameras = [];
     
-    if (mode === ViewMode.MODE_2D) {
-        camera = new BABYLON.FreeCamera(name, position, scene);
+    const position = getCamera2DPosition();
+    if (viewMode === ViewMode.MODE_2D) {
+        const camera = new BABYLON.FreeCamera(name  + "1", position, scene);
         camera.setTarget(new BABYLON.Vector3(3, 0, 0));
-        camera.viewport = viewport; 
+        camera.viewport = getSoloCameraViewport();
         camera.rotation.z = -(Math.PI / 2);
         camera.fov = 1.1;
-        return camera;
+        cameras.push(camera);
+    } else {
+        if (gameMode === GameMode.TWO_PLAYER_LOCAL || gameMode === GameMode.TOURNAMENT_LOCAL) {
+            const camera1 = new BABYLON.FreeCamera(name + "1", position, scene);
+            camera1.setTarget(BABYLON.Vector3.Zero());
+            camera1.viewport = get3DCamera1Viewport();
+            
+            const camera2 = new BABYLON.FreeCamera(name + "2", position, scene);
+            camera2.setTarget(BABYLON.Vector3.Zero());
+            camera2.viewport = get3DCamera2Viewport();
+            
+            cameras.push(camera1, camera2);
+        } else {
+            const camera = new BABYLON.FreeCamera(name  + "1", position, scene);
+            camera.setTarget(BABYLON.Vector3.Zero());
+            camera.viewport = getSoloCameraViewport();
+            cameras.push(camera);
+        }
     }
-    return camera;
+
+    return cameras;
 }
 
 export function createGuiCamera(scene: any, name: string, position: any, viewport: any) {
