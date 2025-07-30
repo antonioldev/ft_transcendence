@@ -91,8 +91,8 @@ export async function buildScene3D(
     createEnvironment(scene, viewMode, map_asset.environment.skybox);
     onProgress?.(80);
     
-    // const trees = await createVegetation(scene, viewMode, map_asset.vegetation.tree);
-    // const bushes = await createVegetation(scene, viewMode, map_asset.vegetation.bush);
+    const trees = await createVegetation(scene, viewMode, map_asset.vegetation.tree);
+    const bushes = await createVegetation(scene, viewMode, map_asset.vegetation.bush);
     
     onProgress?.(90);
 

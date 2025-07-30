@@ -27,7 +27,6 @@ export const italian: Translation = {
     alertPlayer2: 'Inserisci un nome per il Giocatore 2',
     register: 'Registrati',
     login: 'Accedi',
-    // loginWithGoogle: 'Accedi con Google',
     username: 'Nome utente:',
     email: 'Email:',
     password: 'Password:',
