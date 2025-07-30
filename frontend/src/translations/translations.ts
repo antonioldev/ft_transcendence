@@ -57,8 +57,8 @@ export function updateLanguageDisplay(): void {
     const loginSubmit = requireElementById(EL.BUTTONS.LOGIN_SUBMIT);
     loginSubmit.textContent = t.login;
 
-    const googleLoginBtn = requireElementById(EL.BUTTONS.GOOGLE_LOGIN);
-    googleLoginBtn.textContent = t.loginWithGoogle;
+    // const googleLoginBtn = requireElementById(EL.BUTTONS.GOOGLE_LOGIN);
+    // googleLoginBtn.textContent = t.loginWithGoogle;
 
     const loginBack = requireElementById(EL.BUTTONS.LOGIN_BACK);
     loginBack.textContent = t.back;

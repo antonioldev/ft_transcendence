@@ -26,6 +26,7 @@ export const EL = {
     LOGIN: 'login-btn',
     REGISTER: 'register-btn',
     LOGOUT: 'logout-btn',
+    GUEST: 'guest-btn',
 
     // Navigation buttons
     BACK: 'back',

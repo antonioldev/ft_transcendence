@@ -92,15 +92,15 @@ ipython_config.py
 __pypackages__/
 
 # Environments
-env
-.env
-.venv
-env/
-venv/
-.venv/
-ENV/
-env.bak/
-venv.bak/
+# env
+# .env
+# .venv
+# env/
+# venv/
+# .venv/
+# ENV/
+# env.bak/
+# venv.bak/
 
 # Spyder project settings
 .spyderproject

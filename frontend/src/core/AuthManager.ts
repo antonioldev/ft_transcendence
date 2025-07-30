@@ -44,9 +44,12 @@ export class AuthManager {
         const loginBtn = requireElementById(EL.BUTTONS.LOGIN);
         const logoutBtn = requireElementById(EL.BUTTONS.LOGOUT);
         const playBtn = requireElementById(EL.BUTTONS.PLAY);
+        
+        // Guest button (if available)
+        const guestBtn = getElementById(EL.BUTTONS.GUEST);
 
         // Setup primary navigation handlers
-        this.setupMainMenuHandlers(loginBtn, registerBtn, logoutBtn, playBtn);
+        this.setupMainMenuHandlers(loginBtn, registerBtn, logoutBtn, playBtn, guestBtn);
 
         // Small windows for log in and register
         const showRegister = requireElementById(EL.BUTTONS.SHOW_REGISTER);
@@ -73,12 +76,14 @@ export class AuthManager {
      * @param registerBtn - Register button element.
      * @param logoutBtn - Logout button element.
      * @param playBtn - Play button element.
+     * @param guestBtn - Guest button element.
      */
     private setupMainMenuHandlers(
         loginBtn: HTMLElement | null,
         registerBtn: HTMLElement | null,
         logoutBtn: HTMLElement | null,
-        playBtn: HTMLElement | null
+        playBtn: HTMLElement | null,
+        guestBtn: HTMLElement | null
     ): void {
         loginBtn?.addEventListener('click', () => {
             historyManager.navigateTo(AppState.LOGIN);
@@ -96,6 +101,10 @@ export class AuthManager {
 
         playBtn?.addEventListener('click', () => {
             historyManager.navigateTo(AppState.GAME_MODE);
+        });
+
+        guestBtn?.addEventListener('click', () => {
+            this.loginAsGuest();
         });
     }
 
@@ -164,7 +173,6 @@ export class AuthManager {
         const username = requireElementById<HTMLInputElement>(EL.AUTH.LOGIN_USERNAME).value.trim();
         const password = requireElementById<HTMLInputElement>(EL.AUTH.LOGIN_PASSWORD).value;
         const t = getCurrentTranslation();
-        const wsClient = WebSocketClient.getInstance(); // or use a shared instance if you already have one
         
         // Basic validation
         if (!username || !password) {
@@ -173,7 +181,14 @@ export class AuthManager {
             return;
         }
 
+        // Traditional login: Connect to WebSocket without token
+        const wsClient = WebSocketClient.getInstance();
+        
+        // Connect for traditional authentication
+        wsClient.connectTraditional();
+
         const user: LoginUser = { username, password };
+        
         // Register the callback function
         wsClient.registerCallback(WebSocketEvent.LOGIN_SUCCESS, (msg: string) => {
             this.authState = AuthState.LOGGED_IN;
@@ -183,6 +198,7 @@ export class AuthManager {
             historyManager.navigateTo(AppState.MAIN_MENU);
             uiManager.showUserInfo(user.username);     
             Logger.info(msg, 'AuthManager');
+            console.log("Traditional login successful:", msg);
         });
 
         wsClient.registerCallback(WebSocketEvent.LOGIN_FAILURE, (msg: string) => {
@@ -312,20 +328,26 @@ export class AuthManager {
                 }
 
                 // Parses the response to get the session token from your application
-                const { sessionToken } = await backendResponse.json();
-                console.log("Backend responded with session token:", sessionToken);
+                const data = await backendResponse.json();
+                console.log("Backend responded with session token:", data.sessionToken);
 
-                // TODO: Store the sessionToken
+                // Store the session token
+                sessionStorage.setItem('sessionToken', data.sessionToken);
                 
                 // Decodes the session token and updates the current user and authentication state
-                const decodedToken = JSON.parse(atob(sessionToken.split('.')[1]));
+                const decodedToken = JSON.parse(atob(data.sessionToken.split('.')[1]));
                 this.currentUser = { username: decodedToken.user.name };
                 this.authState = AuthState.LOGGED_IN;
                 
+                // Google login: Connect to WebSocket with token
+                const wsClient = WebSocketClient.getInstance();
+                wsClient.connectWithToken(data.sessionToken);
+                
                 // Updates the UI to show user information and navigates to the main menu
                 uiManager.showUserInfo(this.currentUser.username);
-                // uiManager.hideOverlays('login-modal');
                 historyManager.navigateTo(AppState.MAIN_MENU);
+                
+                console.log("Ready for game with Google account:", this.currentUser.username);
 
             } catch (error) {
                 console.error("Backend communication failed:", error);
@@ -375,6 +397,25 @@ export class AuthManager {
     // ========================================
     // STATE MANAGEMENT
     // ========================================
+
+    // Handles guest login without authentication
+    public loginAsGuest(): void {
+        console.log("Logging in as guest...");
+        
+        // GUEST LOGIN: Connect to WebSocket as guest
+        const wsClient = WebSocketClient.getInstance();
+        wsClient.connectAsGuest();
+        
+        // Update auth state
+        this.authState = AuthState.LOGGED_IN;
+        this.currentUser = { username: 'Guest' };
+        
+        // Navigate to main menu and update UI
+        historyManager.navigateTo(AppState.MAIN_MENU);
+        uiManager.showUserInfo('Guest');
+        
+        console.log("Guest login successful");
+    }
 
     // Logs out the current user and returns to guest state. Clears user data and updates UI accordingly.
     logout(): void {
