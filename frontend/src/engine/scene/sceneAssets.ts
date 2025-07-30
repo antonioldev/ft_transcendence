@@ -1,7 +1,5 @@
 import { GAME_CONFIG } from "../../shared/gameConfig.js";
 
-
-
 export type VegetationAsset = {
     path: string;
     count: {

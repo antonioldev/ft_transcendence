@@ -34,9 +34,9 @@ export async function buildScene2D(
     onProgress?.(5);
     const lights = createLight(scene, "light1", new BABYLON.Vector3(0, 10, 0));
     onProgress?.(15);
-    const gameField = createGameField(scene, "ground", GAME_CONFIG.fieldWidth, GAME_CONFIG.fieldHeight, viewMode, undefined);
+    const gameField = createGameField(scene, "ground", viewMode, undefined);
     onProgress?.(25);
-    const walls = createWalls(scene, "walls", GAME_CONFIG.fieldWidth, GAME_CONFIG.fieldHeight, GAME_CONFIG.wallHeight, GAME_CONFIG.wallThickness, viewMode, undefined);
+    const walls = createWalls(scene, "walls", viewMode, undefined);
     onProgress?.(30);
     const ball = createBall(scene, "ball", getBallStartPosition(), COLORS.ball2D, viewMode, undefined);
     onProgress?.(40);
@@ -47,7 +47,7 @@ export async function buildScene2D(
     onProgress?.(80);
     await scene.whenReadyAsync();
     onProgress?.(95);
-    const guiCamera = createGuiCamera(scene, "guiCamera", BABYLON.Vector3.Zero(), new BABYLON.Viewport(0, 0, 1, 1));
+    const guiCamera = createGuiCamera(scene, "guiCamera");
     const allCameras = [...cameras, guiCamera];
     scene.activeCameras = allCameras;
     onProgress?.(100);
@@ -79,9 +79,9 @@ export async function buildScene3D(
     onProgress?.(5);
     const lights = createLight(scene, "light1", new BABYLON.Vector3(0, 10, 0));
     onProgress?.(15);
-    const gameField = createGameField(scene, "ground", GAME_CONFIG.fieldWidth, GAME_CONFIG.fieldHeight, viewMode, map_asset.textures.ground);
+    const gameField = createGameField(scene, "ground", viewMode, map_asset.textures.ground);
     onProgress?.(25);
-    const walls = createWalls(scene, "walls", GAME_CONFIG.fieldWidth, GAME_CONFIG.fieldHeight, GAME_CONFIG.wallHeight, GAME_CONFIG.wallThickness, viewMode, map_asset.textures.walls);
+    const walls = createWalls(scene, "walls", viewMode, map_asset.textures.walls);
     onProgress?.(30);
     const ball = createBall(scene, "ball", getBallStartPosition(), COLORS.ball3D, viewMode, map_asset.textures.ball);
     onProgress?.(40);
@@ -96,13 +96,15 @@ export async function buildScene3D(
     onProgress?.(70);
     createEnvironment(scene, viewMode, map_asset.environment.skybox);
     onProgress?.(80);
-    const trees = await createVegetation(scene, viewMode, map_asset.vegetation.tree);
-    const bushes = await createVegetation(scene, viewMode, map_asset.vegetation.bush);
+    
+    // const trees = await createVegetation(scene, viewMode, map_asset.vegetation.tree);
+    // const bushes = await createVegetation(scene, viewMode, map_asset.vegetation.bush);
+    
     onProgress?.(90);
 
     await scene.whenReadyAsync();
     onProgress?.(95);
-    const guiCamera = createGuiCamera(scene, "guiCamera", BABYLON.Vector3.Zero(), new BABYLON.Viewport(0, 0, 1, 1));
+    const guiCamera = createGuiCamera(scene, "guiCamera");
     const allCameras = [...cameras, guiCamera];
     scene.activeCameras = allCameras;
     onProgress?.(100);
