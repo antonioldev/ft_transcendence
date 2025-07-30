@@ -103,9 +103,9 @@ export class Game {
 
             // Build game objects
             if (this.config.viewMode === ViewMode.MODE_2D)
-                this.gameObjects = await buildScene2D(this.scene, this.engine, this.config.gameMode, this.config.viewMode, (progress: number) => uiManager.updateLoadingProgress(progress));
+                this.gameObjects = await buildScene2D(this.scene, this.config.gameMode, this.config.viewMode, (progress: number) => uiManager.updateLoadingProgress(progress));
             else
-                this.gameObjects = await buildScene3D(this.scene, this.engine, this.config.gameMode, this.config.viewMode, (progress: number) => uiManager.updateLoadingProgress(progress));
+                this.gameObjects = await buildScene3D(this.scene, this.config.gameMode, this.config.viewMode, (progress: number) => uiManager.updateLoadingProgress(progress));
             if (!this.gameObjects) Logger.errorAndThrow('Game objects not created', 'Game');
             this.guiManager?.createGUI(this.scene, this.config);
 

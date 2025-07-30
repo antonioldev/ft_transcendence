@@ -9,11 +9,7 @@ import {
     getPlayerSize,
     getPlayerLeftPosition,
     getPlayerRightPosition,
-    getBallStartPosition,
-    getCamera2DPosition,
-    getSoloCameraViewport,
-    get3DCamera1Viewport,
-    get3DCamera2Viewport
+    getBallStartPosition
 } from '../../core/utils.js';
 import { MAP_ASSETS } from './sceneAssets.js';
 import { createEnvironment, createTerrain, createVegetation } from './environmentFactory.js';
@@ -22,7 +18,6 @@ export type LoadingProgressCallback = (progress: number) => void;
 
 export async function buildScene2D(
     scene: any,
-    engine: any,
     gameMode: GameMode,
     viewMode: ViewMode,
     onProgress?: LoadingProgressCallback
@@ -64,8 +59,7 @@ export async function buildScene2D(
 }
 
 export async function buildScene3D(
-    scene: any, 
-    engine: any,
+    scene: any,
     gameMode: GameMode,
     viewMode: ViewMode, 
     onProgress?: LoadingProgressCallback
