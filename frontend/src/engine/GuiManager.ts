@@ -24,6 +24,9 @@ export class GUIManager {
     
     private score1Text: any = null;
     private score2Text: any = null;
+
+    private player1Label: any = null;
+    private player2Label: any = null;
     
     private countdownText: any = null;
     private countdownContainer: any = null;
@@ -138,20 +141,20 @@ export class GUIManager {
         playersRow.isVertical = false;
         playersRow.height = "30px";
 
-        const player1Label = new BABYLON.GUI.TextBlock();
-        player1Label.text = "Player 1";
-        player1Label.color = "white";
-        player1Label.fontSize = 18;
-        player1Label.width = "120px";
+        this.player1Label = new BABYLON.GUI.TextBlock();
+        this.player1Label.text = "Player 1";
+        this.player1Label.color = "white";
+        this.player1Label.fontSize = 18;
+        this.player1Label.width = "120px";
 
-        const player2Label = new BABYLON.GUI.TextBlock();
-        player2Label.text = "Player 2";
-        player2Label.color = "white";
-        player2Label.fontSize = 18;
-        player2Label.width = "120px";
+        this.player2Label = new BABYLON.GUI.TextBlock();
+        this.player2Label.text = "Player 2";
+        this.player2Label.color = "white";
+        this.player2Label.fontSize = 18;
+        this.player2Label.width = "120px";
 
-        playersRow.addControl(player1Label);
-        playersRow.addControl(player2Label);
+        playersRow.addControl(this.player1Label);
+        playersRow.addControl(this.player2Label);
 
         return playersRow;
     }
@@ -260,7 +263,8 @@ export class GUIManager {
 
     // Update player names
     updatePlayerNames(player1Name: string, player2Name: string): void {
-        // This could be implemented if player names become dynamic
+        this.player1Label.text = player1Name;
+        this.player2Label.text = player2Name;
         Logger.debug(`Player names updated: ${player1Name} vs ${player2Name}`, 'GUIManager');
     }
 
@@ -293,6 +297,9 @@ export class GUIManager {
 
             this.countdownText = null;
             this.countdownContainer = null;
+
+            this.player1Label = null;
+            this.player2Label = null;
 
             // Dispose the main texture
             if (this.advancedTexture) {
