@@ -48,7 +48,7 @@ export class GUIManager {
             // Create common HUD elements
             this.createContainerScore();
             this.createFPSDisplay();
-            this.createScoreDisplay();
+            this.createScoreDisplay(config);
 
             // Create view mode specific elements
             this.createViewModeElements(config);
@@ -67,7 +67,8 @@ export class GUIManager {
 
     // Create view mode specific GUI elements (like split screen divider)
     private createViewModeElements(config: GameConfig): void {
-        if (config.viewMode === ViewMode.MODE_3D && config.gameMode === GameMode.TWO_PLAYER_LOCAL) {
+        if (config.viewMode === ViewMode.MODE_3D && 
+            (config.gameMode === GameMode.TWO_PLAYER_LOCAL || config.gameMode === GameMode.TOURNAMENT_LOCAL)) {
             const dividerLine = new BABYLON.GUI.Rectangle();
             dividerLine.widthInPixels = 5;
             dividerLine.height = "100%";
@@ -112,7 +113,7 @@ export class GUIManager {
     }
 
     // Create score display with player names and scores
-    private createScoreDisplay(): void {
+    private createScoreDisplay(config: GameConfig): void {
         // Create score container
         const scoreContainer = new BABYLON.GUI.StackPanel();
         scoreContainer.isVertical = true;
@@ -122,7 +123,7 @@ export class GUIManager {
         scoreContainer.height = "80px";
 
         // Player names row
-        const playersRow = this.createPlayersRow();
+        const playersRow = this.createTopRow(config);
         
         // Scores row
         const scoresRow = this.createScoresRow();
@@ -136,10 +137,23 @@ export class GUIManager {
     }
 
     // Create the player names row
-    private createPlayersRow(): any {
-        const playersRow = new BABYLON.GUI.StackPanel();
-        playersRow.isVertical = false;
-        playersRow.height = "30px";
+    private createTopRow(config: GameConfig): any {
+        const topRow = new BABYLON.GUI.StackPanel();
+        topRow.isVertical = false;
+        topRow.height = "30px";
+
+        // P1 Controls (left side)
+        const p1Controls = new BABYLON.GUI.TextBlock();
+        p1Controls.text = this.getControlsText(config.viewMode, 1);
+        p1Controls.color = "rgba(255,255,255,0.7)";
+        p1Controls.fontSize = 12;
+        p1Controls.width = "120px";
+        p1Controls.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+
+        // Player Names (center)
+        const playersContainer = new BABYLON.GUI.StackPanel();
+        playersContainer.isVertical = false;
+        playersContainer.width = "240px";
 
         this.player1Label = new BABYLON.GUI.TextBlock();
         this.player1Label.text = "Player 1";
@@ -153,10 +167,28 @@ export class GUIManager {
         this.player2Label.fontSize = 18;
         this.player2Label.width = "120px";
 
-        playersRow.addControl(this.player1Label);
-        playersRow.addControl(this.player2Label);
+        playersContainer.addControl(this.player1Label);
+        playersContainer.addControl(this.player2Label);
 
-        return playersRow;
+        // Add to top row
+        topRow.addControl(p1Controls);
+        topRow.addControl(playersContainer);
+
+        // P2 Controls (always show, but transparent for single player)
+        const p2Controls = new BABYLON.GUI.TextBlock();
+        p2Controls.text = this.getControlsText(config.viewMode, 2);
+        p2Controls.color = "transparent";
+        p2Controls.fontSize = 16;                      // Same size as P1
+        p2Controls.width = "120px";
+        p2Controls.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
+
+        // Set color based on game mode
+        if (config.gameMode === GameMode.TWO_PLAYER_LOCAL || config.gameMode === GameMode.TOURNAMENT_LOCAL)
+            p2Controls.color = "white";            
+
+        topRow.addControl(p2Controls);
+
+        return topRow;
     }
 
     // Create the scores row
@@ -283,6 +315,14 @@ export class GUIManager {
     getAdvancedTexture(): any {
         return this.advancedTexture;
     }
+
+    //instructions for movement
+    private getControlsText(viewMode: ViewMode, player: 1 | 2): string {
+    if (viewMode === ViewMode.MODE_2D)
+        return player === 1 ? "W/S Move" : "↑/↓ Move";
+    else
+        return player === 1 ? "A/D Move" : "←/→ Move";
+}
 
     // Clean up all GUI resources
     dispose(): void {
