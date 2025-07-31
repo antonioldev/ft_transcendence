@@ -28,6 +28,8 @@ export class GUIManager {
 
     private player1Label: any = null;
     private player2Label: any = null;
+
+    private rally: any = null;
     
     private countdownText: any = null;
     private countdownContainer: any = null;
@@ -109,8 +111,8 @@ export class GUIManager {
         label.color = "white";
         label.top = top;
         label.fontSize = size;
-        label.width = "120px";
-        if (fontWeight)
+        label.width = "100%";
+        if (fontWeight !== null && fontWeight !== undefined)
             label.fontWeight = fontWeight;
         return label;
     }
@@ -183,6 +185,8 @@ export class GUIManager {
 
         // Box 6: Empty
         const box6 = this.createHUDBox();
+        this.rally = this.createTextBlock("Rally: \n0", 36, "0px");
+        box6.addControl(this.rally);
         hudGrid.addControl(box6, 0, 5);
 
         Logger.debug('HUD created with six boxes using Grid', 'GUIManager');
@@ -258,6 +262,11 @@ export class GUIManager {
         }
     }
 
+    updateRally(rally: number): void {
+        if (this.rally)
+            this.rally.text = `Rally: \n${Math.round(rally)}`;
+    }
+
     // Update player scores
     updateScores(leftScore: number, rightScore: number): void {
         if (this.score1Text && this.score2Text) {
@@ -316,6 +325,8 @@ export class GUIManager {
 
             this.player1Label = null;
             this.player2Label = null;
+
+            this.rally = null;
 
             // Dispose the main texture
             if (this.advancedTexture) {
