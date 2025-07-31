@@ -98,7 +98,7 @@ export class Game {
 			ball: {
 				x: this.ball.rect.centerx,
 				z: this.ball.rect.centerz,
-				score_counter: this.ball.score_counter,
+				current_rally: this.ball.current_rally,
 			},
 		}
 	}

@@ -17,11 +17,11 @@ export const GAME_CONFIG = {
     wallThickness: 0.5, // Thickness of the walls
     
     // Player settings
-    playerWidth: 3, // Width of the paddle
-    playerHeight: 0.5, // Height of the paddle
-    playerDepth: 0.5, // Depth of the paddle
-    playerOffsetFromEdge: 2, // Distance from the edge of the field
-    playerSpeed: 10, // Speed of the paddle
+    paddleWidth: 3, // Width of the paddle
+    paddleHeight: 0.5, // Height of the paddle
+    paddleDepth: 0.5, // Depth of the paddle
+    paddleOffsetFromEdge: 2, // Distance from the edge of the field
+    paddleSpeed: 10, // Speed of the paddle
     
     // Camera settings (mainly for frontend)
     camera2DHeight: 25, // Camera height in 2D mode
@@ -84,9 +84,9 @@ export const BALL = 2; // Identifier for the ball
 // Get the size of the paddle
 export function getPlayerSize(): Size {
     return {
-        x: GAME_CONFIG.playerWidth,
-        y: GAME_CONFIG.playerHeight,
-        z: GAME_CONFIG.playerDepth
+        x: GAME_CONFIG.paddleWidth,
+        y: GAME_CONFIG.paddleHeight,
+        z: GAME_CONFIG.paddleDepth
     };
 }
 
@@ -95,7 +95,7 @@ export function getPlayerLeftPosition(): Position {
     return {
         x: 0,
         y: 1,
-        z: -(GAME_CONFIG.fieldHeight/2 - GAME_CONFIG.playerOffsetFromEdge)
+        z: -(GAME_CONFIG.fieldHeight/2 - GAME_CONFIG.paddleOffsetFromEdge)
     };
 }
 
@@ -104,13 +104,13 @@ export function getPlayerRightPosition(): Position {
     return {
         x: 0,
         y: 1,
-        z: GAME_CONFIG.fieldHeight/2 - GAME_CONFIG.playerOffsetFromEdge
+        z: GAME_CONFIG.fieldHeight/2 - GAME_CONFIG.paddleOffsetFromEdge
     };
 }
 
 const PLAYER_BOUNDARIES = {
-    left: -(GAME_CONFIG.fieldWidth / 2 - GAME_CONFIG.wallThickness - GAME_CONFIG.playerWidth / 2 - 0.2),
-    right: GAME_CONFIG.fieldWidth / 2 - GAME_CONFIG.wallThickness - GAME_CONFIG.playerWidth / 2 - 0.2
+    left: -(GAME_CONFIG.fieldWidth / 2 - GAME_CONFIG.wallThickness - GAME_CONFIG.paddleWidth / 2 - 0.2),
+    right: GAME_CONFIG.fieldWidth / 2 - GAME_CONFIG.wallThickness - GAME_CONFIG.paddleWidth / 2 - 0.2
 };
 
 // Get the boundaries within which the paddle can move

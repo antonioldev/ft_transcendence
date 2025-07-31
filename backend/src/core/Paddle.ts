@@ -9,7 +9,7 @@ export class Paddle {
 	score: number = 0; // The score of the player or AI controlling the paddle.
 	rect: Rect; // The current position and dimensions of the paddle.
 	oldRect: Rect; // Cached position and dimensions of the paddle from the previous frame.
-	speed: number = GAME_CONFIG.playerSpeed; // Speed of the player paddle.
+	speed: number = GAME_CONFIG.paddleSpeed; // Speed of the player paddle.
 
 	constructor(side: number) {
 		this.side = side;
@@ -18,8 +18,8 @@ export class Paddle {
 		this.rect = new Rect(
 			position.x,
 			position.z,
-			GAME_CONFIG.playerWidth,
-			GAME_CONFIG.playerDepth
+			GAME_CONFIG.paddleWidth,
+			GAME_CONFIG.paddleDepth
 		);
 		this.oldRect = this.rect.instance();
 	}
@@ -44,7 +44,7 @@ export class AIBot extends Paddle {
 	constructor(
 		side: number,
 		public ball: Ball,
-		public speed: number = GAME_CONFIG.playerSpeed,
+		public speed: number = GAME_CONFIG.paddleSpeed,
 		public direction: number = 0
 	) {
 		super(side);
@@ -63,8 +63,8 @@ export class AIBot extends Paddle {
 
 		if (vz == 0) {return GAME_CONFIG.fieldWidth / 2;}
 
-		z_ai  = this.side ? GAME_CONFIG.fieldHeight - GAME_CONFIG.playerHeight - r : GAME_CONFIG.playerHeight + r;
-		z_opp = this.side ? (GAME_CONFIG.playerHeight + r) : GAME_CONFIG.fieldHeight - (GAME_CONFIG.playerHeight + r);
+		z_ai  = this.side ? GAME_CONFIG.fieldHeight - GAME_CONFIG.paddleHeight - r : GAME_CONFIG.paddleHeight + r;
+		z_opp = this.side ? (GAME_CONFIG.paddleHeight + r) : GAME_CONFIG.fieldHeight - (GAME_CONFIG.paddleHeight + r);
 		
         if (vz > 0) {                                  	// ball moving towards bot
             t = Math.abs((z_ai - z0 - shift_z) / vz);  

@@ -13,7 +13,7 @@ export class Ball {
     paddles: (Paddle)[]; // Array of players (paddles) in the game.
     startTime: number; // Timestamp when the ball was initialized or reset.
     updateScore: (side: number, score: number) => void; // Callback to update the score.
-    score_counter = 0; 
+    current_rally = 0; 
 
     // Initializes the ball with players and a score update callback.
     constructor(paddles: any[], updateScoreCallback: (side: number, score: number) => void) {
@@ -46,7 +46,7 @@ export class Ball {
     calculate_spin(paddle: Paddle) {
         // calculate how far along the paddle the ball hits
         const paddle_intercept = paddle.rect.centerx - this.rect.centerx;
-        const normalized_intercept = paddle_intercept / (GAME_CONFIG.playerWidth / 2)
+        const normalized_intercept = paddle_intercept / (GAME_CONFIG.paddleWidth / 2)
         
         // calculate the angle of defelction relative to the paddle intersection
         const angle_sign = (paddle_intercept >  0) ? 1 : -1;
@@ -65,7 +65,7 @@ export class Ball {
             if (!this.rect.colliderect(paddle.rect)) continue;
             
             this.speed *= GAME_CONFIG.ballSpeedIncrease;
-            this.score_counter += 1;
+            this.current_rally += 1;
 
             if (direction === CollisionDirection.HORIZONTAL) { // Collision with sides of paddle
                 if (this.rect.right >= paddle.rect.left && this.oldRect.right <= paddle.oldRect.left) {
@@ -105,11 +105,11 @@ export class Ball {
         
         // Goal detection (top/bottom goals)
         if (this.rect.top <= GAME_CONFIG.goalBounds.rightGoal) {
-            this.updateScore(RIGHT_PADDLE, this.score_counter);
+            this.updateScore(RIGHT_PADDLE, this.current_rally);
             this.reset();
         }
         if (this.rect.bottom >= GAME_CONFIG.goalBounds.leftGoal) {
-            this.updateScore(LEFT_PADDLE, this.score_counter);
+            this.updateScore(LEFT_PADDLE, this.current_rally);
             this.reset();
         }
     }
@@ -122,7 +122,7 @@ export class Ball {
         this.direction = this.randomDirection();
         this.startTime = performance.now();
         this.speed = GAME_CONFIG.ballInitialSpeed;
-        this.score_counter = 0;
+        this.current_rally = 0;
     }
 
     // Delays the ball's movement until the start delay has elapsed.

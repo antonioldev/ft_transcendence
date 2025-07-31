@@ -21,17 +21,17 @@ export const COLORS = {
 
 export function getPlayerSize() {
     // Returns the size of a player as a Vector3 object
-    return new BABYLON.Vector3(GAME_CONFIG.playerWidth, GAME_CONFIG.playerHeight, GAME_CONFIG.playerDepth);
+    return new BABYLON.Vector3(GAME_CONFIG.paddleWidth, GAME_CONFIG.paddleHeight, GAME_CONFIG.paddleDepth);
 }
 
 export function getPlayerLeftPosition() {
     // Returns the starting position of the left player
-    return new BABYLON.Vector3(0, 1, -(GAME_CONFIG.fieldHeight/2 - GAME_CONFIG.playerOffsetFromEdge));
+    return new BABYLON.Vector3(0, 1, -(GAME_CONFIG.fieldHeight/2 - GAME_CONFIG.paddleOffsetFromEdge));
 }
 
 export function getPlayerRightPosition() {
     // Returns the starting position of the right player
-    return new BABYLON.Vector3(0, 1, GAME_CONFIG.fieldHeight/2 - GAME_CONFIG.playerOffsetFromEdge);
+    return new BABYLON.Vector3(0, 1, GAME_CONFIG.fieldHeight/2 - GAME_CONFIG.paddleOffsetFromEdge);
 }
 
 export function getBallStartPosition() {
