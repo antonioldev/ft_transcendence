@@ -142,7 +142,7 @@ export class WebSocketManager {
                 for (const player of data.players) {
                     gameSession.add_player(new Player(player.id, player.name, client));
                 }
-                if (gameSession.mode === GameMode.SINGLE_PLAYER) { // TEMP PATCH NEED TO HANDLE CPU DATA
+                if (gameSession.mode === GameMode.SINGLE_PLAYER) { // TEMP PATCH NEED TO HANDLE CPU DATA PROPERLY
                     gameSession.add_player(new Player("001", "CPU"));
                 }
             }
@@ -171,8 +171,7 @@ export class WebSocketManager {
             await gameSession.sendAllReady();
 
             if (gameSession.full && !gameSession.running) {
-                await gameSession.start();
-                // broadcast to client and win screen displayed
+                gameSession.start();
             }
         }
     }

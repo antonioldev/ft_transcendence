@@ -53,7 +53,7 @@ export class Game {
 	// Update the score for the specified side
 	private _update_score(side: number, score: number): void {
 		this.paddles[side].score += score;
-		if (this.paddles[side].score >= GAME_CONFIG.winning_score) {
+		if (this.paddles[side].score >= GAME_CONFIG.scoreToWin) {
 			this.running = false;
 			this.winner = this.players[side];
 		}
@@ -136,5 +136,12 @@ export class Game {
 	// Returns if the game is currently paused
 	isPaused(): boolean {
 		return this.paused;
+	}
+
+	// Stop the execution of the game
+	stop(): void {
+		if (this.running) {
+			this.running = false;
+		}
 	}
 }

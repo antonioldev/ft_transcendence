@@ -107,14 +107,14 @@ export class GameSession {
 	}
 
 	async start() {
-		if (!this.running) {
-			this.assign_sides(this.players);
-			this.running = true;
-			this.game = new Game(this.players, this.broadcast.bind(this))
-			/*const winner: Player = */ await this.game.run();
-			// return (winner);
-			// TODO: display win screen with winner 
-		}
+		if (this.running) return;
+
+		this.assign_sides(this.players);
+		this.running = true;
+		this.game = new Game(this.players, this.broadcast.bind(this))
+		
+		const winner: Player = await this.game.run();
+		this.endGame(winner);
 	}
 
 	pauseGame(client: Client): boolean {
@@ -162,19 +162,22 @@ export class GameSession {
 		}
 	}
 
-	endGame(client: Client): void {
+	endGame(winner: Player): void {
 		try {
-			console.log(`Game ${this.id} ended by client ${client.id}`);
+			this.broadcast({
+				type: MessageType.GAME_ENDED,
+				winner: winner.name,
+				side: winner.side
+			});
 			this.stop();
-			this.broadcast({type: MessageType.GAME_ENDED});
 		} catch (error) {
 			console.error(`Error ending game ${this.id}:`, error);
 		}
 	}
 
 	stop() {
+		this.game.stop();
 		this.running = false;
-		this.game.running = false;
 		this.paused = false;
 	}
 

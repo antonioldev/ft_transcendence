@@ -54,6 +54,7 @@ export interface ServerMessage {
     stats?: UserStats;
     countdown?: number;
     gameHistory?: GameHistoryEntry[];
+    winner?: string; // sent on end Game to display who won
 }
 
 // Player information for game sessions

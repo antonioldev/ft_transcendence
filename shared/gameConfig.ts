@@ -53,7 +53,7 @@ export const GAME_CONFIG = {
 
     // Game mechanics
     serveRandomAngle: 0.3,  // Random Z velocity range on serve
-    scoreToWin: 5,          // Points needed to win
+    scoreToWin: 50,          // Points needed to win
     
     // Input mappings
     input2D: {
@@ -68,9 +68,6 @@ export const GAME_CONFIG = {
     // Timing
     startDelay: 5.0, // Delay before the game starts
     ballDelay: 1.0, // Delay before the ball starts between rounds
-
-    // Score
-    winning_score: 50,
 
 } as const;
 
