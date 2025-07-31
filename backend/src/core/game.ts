@@ -1,5 +1,5 @@
 import { Ball } from './Ball.js';
-import { Paddle, AIBot } from './Paddle.js';
+import { Paddle, EasyBot, MediumBot, HardBot, ExactBot } from './Paddle.js';
 import { Clock } from './utils.js';
 import { GAME_CONFIG, LEFT_PADDLE, RIGHT_PADDLE } from '../shared/gameConfig.js';
 import { GameMode, MessageType} from '../shared/constants.js';
@@ -15,7 +15,7 @@ export class Game {
 	paused: boolean = false;
 	players: Player[]
 	winner!: Player;
-	paddles: (Paddle | AIBot)[] = [new Paddle(LEFT_PADDLE), new Paddle(RIGHT_PADDLE)];
+	paddles: (Paddle | EasyBot | MediumBot | HardBot | ExactBot)[] = [new Paddle(LEFT_PADDLE), new Paddle(RIGHT_PADDLE)];
 	ball!: Ball;
 	// Callback function to broadcast the game state
 	private _broadcast: (message: ServerMessage, clients?: Client[]) => void;
@@ -45,7 +45,7 @@ export class Game {
 		if (this.paddles[RIGHT_PADDLE] instanceof ExactBot) {
 			this.paddles[RIGHT_PADDLE].update(dt);
 		}
-		if (this.paddles[LEFT_PADDLE] instanceof AIBot) {
+		if (this.paddles[LEFT_PADDLE] instanceof ExactBot) {
 			this.paddles[LEFT_PADDLE].update(dt);
 		}
 	}
