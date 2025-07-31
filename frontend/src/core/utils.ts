@@ -26,12 +26,12 @@ export function getPlayerSize() {
 
 export function getPlayerLeftPosition() {
     // Returns the starting position of the left player
-    return new BABYLON.Vector3(0, 0.5, -(GAME_CONFIG.fieldHeight/2 - GAME_CONFIG.playerOffsetFromEdge));
+    return new BABYLON.Vector3(0, 0.5, -(GAME_CONFIG.fieldHeight/2 - GAME_CONFIG.paddleOffsetFromEdge));
 }
 
 export function getPlayerRightPosition() {
     // Returns the starting position of the right player
-    return new BABYLON.Vector3(0, 0.5, GAME_CONFIG.fieldHeight/2 - GAME_CONFIG.playerOffsetFromEdge);
+    return new BABYLON.Vector3(0, 0.5, GAME_CONFIG.fieldHeight/2 - GAME_CONFIG.paddleOffsetFromEdge);
 }
 
 export function getBallStartPosition() {
