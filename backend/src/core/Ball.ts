@@ -13,7 +13,7 @@ export class Ball {
     paddles: (Paddle)[]; // Array of players (paddles) in the game.
     startTime: number; // Timestamp when the ball was initialized or reset.
     updateScore: (side: number, score: number) => void; // Callback to update the score.
-    current_rally = 0; 
+    current_rally = 1; 
 
     // Initializes the ball with players and a score update callback.
     constructor(paddles: any[], updateScoreCallback: (side: number, score: number) => void) {
@@ -125,7 +125,7 @@ export class Ball {
         this.direction = this.randomDirection();
         this.startTime = performance.now();
         this.speed = GAME_CONFIG.ballInitialSpeed;
-        this.current_rally = 0;
+        this.current_rally = 1;
     }
 
     // Delays the ball's movement until the start delay has elapsed.
