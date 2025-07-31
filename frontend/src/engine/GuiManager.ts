@@ -94,14 +94,12 @@ export class GUIManager {
             textBlock.shadowOffsetX = 3;
             textBlock.shadowOffsetY = 3;
             textBlock.shadowBlur = 8;
-            // textBlock.shadowColor = "rgba(253, 251, 251, 0.8)";
+            textBlock.shadowColor = "rgba(255, 107, 107, 0.5)";
             
             // Make text bold and add outline
             textBlock.fontWeight = "bold";
             textBlock.outlineWidth = 2;
-            textBlock.outlineColor = "black";
-            
-            textBlock.shadowColor = "rgba(255, 107, 107, 0.5)";
+            textBlock.outlineColor = "black";  
         }
     }
 
