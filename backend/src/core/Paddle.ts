@@ -3,39 +3,40 @@ import { Ball } from './Ball.js'
 import { GAME_CONFIG, getBallStartPosition, getPlayerLeftPosition, 
          getPlayerRightPosition, LEFT_PADDLE, RIGHT_PADDLE, getPlayerBoundaries } from '../shared/gameConfig.js';
 
-
+// Abstract class representing a paddle in the game.
 export class Paddle {
-	side: number;
-	score: number = 0;
-	rect: Rect;
-	oldRect: Rect;
-	speed: number = GAME_CONFIG.playerSpeed;
+	side: number; // Indicates which side (left or right) the paddle belongs to.
+	score: number = 0; // The score of the player or AI controlling the paddle.
+	rect: Rect; // The current position and dimensions of the paddle.
+	oldRect: Rect; // Cached position and dimensions of the paddle from the previous frame.
+	speed: number = GAME_CONFIG.paddleSpeed; // Speed of the player paddle.
 
 	constructor(side: number) {
 		this.side = side;
-
+		// Initialize the paddle's position based on its side.
 		const position = side === LEFT_PADDLE ? getPlayerLeftPosition() : getPlayerRightPosition();
 		this.rect = new Rect(
 			position.x,
 			position.z,
-			GAME_CONFIG.playerWidth,
-			GAME_CONFIG.playerDepth
+			GAME_CONFIG.paddleWidth,
+			GAME_CONFIG.paddleDepth
 		);
 		this.oldRect = this.rect.instance();
 	}
 
+	// Moves the paddle horizontally based on the time delta and direction.
 	move(dt: number, dx: number): void {
 		const deltaSeconds = dt / 1000; // Convert milliseconds to seconds.
 		this.rect.x += dx * this.speed * deltaSeconds;
 	}
 
+	// Caches the current position of the paddle for future reference.
 	cacheRect() {
 		this.oldRect.copy(this.rect);
 	}
 }
 
-
-export class ExactBot extends Paddle {
+export class AIBot extends Paddle {
 	private _view_timer = 0;
 	private _target_x   = getBallStartPosition().x;
 	private _boundaries = getPlayerBoundaries();
@@ -43,7 +44,7 @@ export class ExactBot extends Paddle {
 	constructor(
 		side: number,
 		public ball: Ball,
-		public speed: number = GAME_CONFIG.playerSpeed,
+		public speed: number = GAME_CONFIG.paddleSpeed,
 		public direction: number = 0
 	) {
 		super(side);
@@ -54,7 +55,7 @@ export class ExactBot extends Paddle {
 		const shift_z     = GAME_CONFIG.fieldHeight / 2;
 		const shift_x     = GAME_CONFIG.fieldWidth / 2;
         let x0: number    = this.ball.rect.centerx;
-        let z0: number    = this.ball.rect.centery - r;          		
+        let z0: number    = this.ball.rect.centerz - r;          		
         let vx: number    = this.ball.direction[0] * this.ball.speed;
         let vz: number    = this.ball.direction[1] * this.ball.speed;
         let W_adj: number = GAME_CONFIG.fieldWidth - 2 * r;
@@ -62,8 +63,8 @@ export class ExactBot extends Paddle {
 
 		if (vz == 0) {return GAME_CONFIG.fieldWidth / 2;}
 
-		z_ai  = this.side ? GAME_CONFIG.fieldHeight - GAME_CONFIG.playerHeight - r : GAME_CONFIG.playerHeight + r;
-		z_opp = this.side ? (GAME_CONFIG.playerHeight + r) : GAME_CONFIG.fieldHeight - (GAME_CONFIG.playerHeight + r);
+		z_ai  = this.side ? GAME_CONFIG.fieldHeight - GAME_CONFIG.paddleHeight - r : GAME_CONFIG.paddleHeight + r;
+		z_opp = this.side ? (GAME_CONFIG.paddleHeight + r) : GAME_CONFIG.fieldHeight - (GAME_CONFIG.paddleHeight + r);
 		
         if (vz > 0) {                                  	// ball moving towards bot
             t = Math.abs((z_ai - z0 - shift_z) / vz);  
@@ -95,44 +96,5 @@ export class ExactBot extends Paddle {
 			this.move(dt, dx);
 		else if (dx === 1 && this.rect.centerx < this._boundaries.right)
 			this.move(dt, dx);
-	}
-}
-
-
-export class EasyBot extends Paddle {
-	private _dir = 1;
-	private _b = getPlayerBoundaries();
-
-	constructor(
-		side: number,
-		public ball: Ball,
-		public speed: number = GAME_CONFIG.playerSpeed,
-		public direction: number = 0
-	) {
-		super(side);
-	}
-
-	update(dt: number): void {
-		if (this.rect.centerx <= this._b.left)  this._dir =  1;
-		if (this.rect.centerx >= this._b.right) this._dir = -1;
-		this.move(dt, this._dir);
-	}
-}
-
-
-export class MediumBot extends ExactBot {
-	protected _predict_intercept_x(): number {
-		const raw = super._predict_intercept_x();
-		const noise = (Math.random() - 0.5) * 12;
-		return raw + noise;
-	}
-}
-
-
-export class HardBot extends ExactBot {
-	protected _predict_intercept_x(): number {
-		const raw = super._predict_intercept_x();
-		const noise = (Math.random() - 0.5) * 6;
-		return raw + noise;
 	}
 }
