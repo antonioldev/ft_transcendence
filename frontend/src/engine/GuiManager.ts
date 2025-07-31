@@ -195,7 +195,10 @@ export class GUIManager {
         this.countdownContainer.cornerRadius = 20;
         this.countdownContainer.color = "white";
         this.countdownContainer.thickness = 3;
-        this.countdownContainer.background = "rgba(0, 0, 0, 0.8)";
+        if (config.viewMode === ViewMode.MODE_2D)
+            this.countdownContainer.background = "rgba(0, 0, 0, 1)";
+        else
+            this.countdownContainer.background = "rgba(0, 0, 0, 0.8)";
         this.countdownContainer.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
         this.countdownContainer.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
         this.countdownContainer.isVisible = false;
@@ -292,9 +295,9 @@ export class GUIManager {
         const move = t.controls;
         
         if (viewMode === ViewMode.MODE_2D)
-            return player === 1 ? move + "\nP1: W/S" : move + "\nP2: ↑/↓";
+            return player === 1 ? move + "\nP1: W / S" : move + "\nP2: ↑ / ↓";
         else
-            return player === 1 ? move + "\nP1: A/D" : move + "\nP2: ←/→";
+            return player === 1 ? move + "\nP1: A / D" : move + "\nP2: ← / →";
     }
 
     // Clean up all GUI resources
