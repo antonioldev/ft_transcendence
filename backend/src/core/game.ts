@@ -33,17 +33,17 @@ export class Game {
 		this.ball = new Ball(this.paddles, this._update_score);
 		
 		if (!this.players[LEFT_PADDLE].client) { // if CPU
-			this.paddles[LEFT_PADDLE] = new MediumBot(LEFT_PADDLE, this.ball)
+			this.paddles[LEFT_PADDLE] = new ExactBot(LEFT_PADDLE, this.ball)
 		}
 		if (!this.players[RIGHT_PADDLE].client) {
-			this.paddles[RIGHT_PADDLE] = new MediumBot(RIGHT_PADDLE, this.ball)
+			this.paddles[RIGHT_PADDLE] = new ExactBot(RIGHT_PADDLE, this.ball)
 		}
 	}
 
 	// Abstract method to handle input, implemented by derived classes
 	private _handle_input(dt: number): void {
 		this._process_queue(dt);
-		if (this.paddles[RIGHT_PADDLE] instanceof MediumBot) {
+		if (this.paddles[RIGHT_PADDLE] instanceof ExactBot) {
 			this.paddles[RIGHT_PADDLE].update(dt);
 		}
 	}
