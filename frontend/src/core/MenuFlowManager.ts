@@ -151,12 +151,6 @@ export class MenuFlowManager {
                 alert(t.pleaseFilllAllFields);
                 return;
             }
-
-            const playerNames = GameConfigFactory.getPlayersFromUI(this.selectedGameMode);
-            Logger.info('Starting game with players', 'MenuFlowManager', playerNames);
-            Logger.info('View mode', 'MenuFlowManager', this.getViewModes()[this.currentViewModeIndex].name);
-            Logger.info('Game mode', 'MenuFlowManager', this.selectedGameMode);
-
             await appStateManager.startGameWithMode(this.selectedViewMode, this.selectedGameMode);
         });
     }

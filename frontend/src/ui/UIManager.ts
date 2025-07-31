@@ -3,6 +3,7 @@ import { UI_COLORS, UI_STYLES } from './styles.js';
 import { EL, requireElementById} from './elements.js';
 import { getCurrentTranslation } from '../translations/translations.js';
 
+
 class UIManager {
     private static instance: UIManager;
 

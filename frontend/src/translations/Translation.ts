@@ -29,7 +29,6 @@ export interface Translation {
     alertPlayer2: string;
     register: string;
     login: string;
-    loginWithGoogle: string;
     username: string;
     email: string;
     password: string;
@@ -53,6 +52,7 @@ export interface Translation {
     tournamentOnline: string;
     play: string;
     loading: string;
+    controls: string;
 }
 
 export type TranslationKey = keyof Translation;

@@ -104,7 +104,7 @@ export class WebSocketClient {
                 this.triggerCallback(WebSocketEvent.GAME_ENDED);
                 break;
             case MessageType.ALL_READY:
-                this.triggerCallback(WebSocketEvent.ALL_READY, message.countdown);
+                this.triggerCallback(WebSocketEvent.ALL_READY, message);
                 break;
             case MessageType.WELCOME:
                 Logger.info('Server says', 'WebSocketClient', message.message);

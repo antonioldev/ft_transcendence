@@ -26,17 +26,17 @@ export function getPlayerSize() {
 
 export function getPlayerLeftPosition() {
     // Returns the starting position of the left player
-    return new BABYLON.Vector3(0, 1, -(GAME_CONFIG.fieldHeight/2 - GAME_CONFIG.paddleOffsetFromEdge));
+    return new BABYLON.Vector3(0, 0.5, -(GAME_CONFIG.fieldHeight/2 - GAME_CONFIG.playerOffsetFromEdge));
 }
 
 export function getPlayerRightPosition() {
     // Returns the starting position of the right player
-    return new BABYLON.Vector3(0, 1, GAME_CONFIG.fieldHeight/2 - GAME_CONFIG.paddleOffsetFromEdge);
+    return new BABYLON.Vector3(0, 0.5, GAME_CONFIG.fieldHeight/2 - GAME_CONFIG.playerOffsetFromEdge);
 }
 
 export function getBallStartPosition() {
     // Returns the starting position of the ball
-    return new BABYLON.Vector3(0, 1, 0);
+    return new BABYLON.Vector3(0, 0.3, 0);
 }
 
 // Camera position utility functions
@@ -62,7 +62,7 @@ const VIEWPORTS = {
     RIGHT_HALF: new BABYLON.Viewport(0.5, 0, 0.5, 1),
 };
 
-export function get2DCameraViewport() {
+export function getSoloCameraViewport() {
     return VIEWPORTS.FULLSCREEN;
 }
 
@@ -72,9 +72,5 @@ export function get3DCamera1Viewport() {
 
 export function get3DCamera2Viewport() {
     return VIEWPORTS.RIGHT_HALF;
-}
-
-export function get3DSoloCameraViewport() {
-    return VIEWPORTS.FULLSCREEN;
 }
 

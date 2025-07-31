@@ -1,12 +1,5 @@
 import { GAME_CONFIG } from "../../shared/gameConfig.js";
 
-export type TextureSet = {
-   diffuse: string;
-   normal: string;
-   roughness: string;
-   height?: string;
-};
-
 export type VegetationAsset = {
     path: string;
     count: {
@@ -27,23 +20,6 @@ export type VegetationAsset = {
     };
     yOffset: number;
     randomRotation: boolean;
-};
-
-export type MapAssetConfig = {
-    textures: {
-        ground: TextureSet;
-        walls: TextureSet;
-        ball: TextureSet;
-        paddle: TextureSet;
-        terrain: TextureSet;
-    };
-    vegetation: {
-        bush: VegetationAsset;
-        tree: VegetationAsset;
-    };
-    environment: {
-        skybox: string;
-    };
 };
 
 export const MAP_ASSETS: Record<string, MapAssetConfig> = {
@@ -79,7 +55,7 @@ export const MAP_ASSETS: Record<string, MapAssetConfig> = {
         vegetation: {
             bush: {
                 path: "assets/model/map1/Bush/Bush1.obj",
-                count: { sides: 15, background: 12, behind: 12 },
+                count: { sides: 45, background: 12, behind: 15 }, // TODO try to push
                 positioning: { 
                     marginFromField: GAME_CONFIG.fieldWidth * 0.05,
                     depthLayers: 2, 
@@ -145,4 +121,48 @@ export const MAP_ASSETS: Record<string, MapAssetConfig> = {
 //            skybox: ""
 //        }
 //    }
+};
+
+export type TextureSet = {
+   diffuse: string;
+   normal: string;
+   roughness: string;
+   height?: string;
+};
+
+export type MapAssetConfig = {
+    textures: {
+        ground: TextureSet;
+        walls: TextureSet;
+        ball: TextureSet;
+        paddle: TextureSet;
+        terrain: TextureSet;
+    };
+    vegetation: {
+        bush: VegetationAsset;
+        tree: VegetationAsset;
+    };
+    environment: {
+        skybox: string;
+    };
+};
+
+export enum  MAP_OBJECT_TYPE {
+    GROUND,
+    WALLS,
+    TERRAIN,
+    PLAYER,
+    BALL
+}
+
+export const TEXTURE_SCALING = {
+    standardDivisor: 10,
+
+    multipliers: {
+        [MAP_OBJECT_TYPE.GROUND]: 1.0,
+        [MAP_OBJECT_TYPE.WALLS]: 1.0,
+        [MAP_OBJECT_TYPE.TERRAIN]: 1.0,
+        [MAP_OBJECT_TYPE.PLAYER]: 5.0,
+        [MAP_OBJECT_TYPE.BALL]: 8.0
+    }
 };

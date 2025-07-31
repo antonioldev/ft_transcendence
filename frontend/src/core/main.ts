@@ -11,8 +11,8 @@ import { DashboardManager } from './DashboardManager.js';
 import { MemoryLeakDetector } from './.memory.js'
 
 // Initialize the detector
-const memoryDetector = new MemoryLeakDetector();
-export { memoryDetector };
+// const memoryDetector = new MemoryLeakDetector();
+// export { memoryDetector };
 
 function loadPage(): void {
     // Initialize classes

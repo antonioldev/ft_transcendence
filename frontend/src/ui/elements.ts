@@ -44,7 +44,7 @@ export const EL = {
     LOGIN_SUBMIT: 'login-submit',
     REGISTER_SUBMIT: 'register-submit',
     START_GAME: 'start-game',
-    GOOGLE_LOGIN: 'google-login-btn',
+    // GOOGLE_LOGIN: 'google-login-btn',
 
     // Modal switching
     SHOW_REGISTER: 'show-register',

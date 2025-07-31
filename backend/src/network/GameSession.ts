@@ -87,10 +87,14 @@ export class GameSession {
 	}
 
 	async sendAllReady(): Promise<void> { //New function, send to clients message to start + countdown
+		const player1Name = this.players[LEFT_PADDLE]?.name || "Player 1";
+    	const player2Name = this.players[RIGHT_PADDLE]?.name || "Player 2";
 		for (let countdown = GAME_CONFIG.startDelay; countdown >= 0; countdown--) {
 			const message: ServerMessage = {
 				type: MessageType.ALL_READY,
-				countdown: countdown
+				countdown: countdown,
+				player1: player1Name,
+            	player2: player2Name
 			};
 			
 			console.log(`Sending countdown: ${countdown}`);

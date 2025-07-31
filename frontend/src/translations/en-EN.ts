@@ -27,7 +27,6 @@ export const english: Translation = {
     alertPlayer2: 'Please enter a name for Player 2',
     register: 'Register',
     login: 'Login',
-    loginWithGoogle: 'Login with Google',
     username: 'Username:',
     email: 'Email:',
     password: 'Password:',
@@ -50,5 +49,6 @@ export const english: Translation = {
     logout: 'Logout',
     tournamentOnline: 'Tournament Online',
     play: 'PLAY',
-    loading: 'Loading...'
+    loading: 'Loading...',
+    controls: 'Controls'
 };
