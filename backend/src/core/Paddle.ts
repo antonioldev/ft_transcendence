@@ -55,7 +55,7 @@ export class AIBot extends Paddle {
 		const shift_z     = GAME_CONFIG.fieldHeight / 2;
 		const shift_x     = GAME_CONFIG.fieldWidth / 2;
         let x0: number    = this.ball.rect.centerx;
-        let z0: number    = this.ball.rect.centery - r;          		
+        let z0: number    = this.ball.rect.centerz - r;          		
         let vx: number    = this.ball.direction[0] * this.ball.speed;
         let vz: number    = this.ball.direction[1] * this.ball.speed;
         let W_adj: number = GAME_CONFIG.fieldWidth - 2 * r;

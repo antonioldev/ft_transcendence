@@ -40,7 +40,6 @@ export class Game {
 		}
 	}
 
-	// Abstract method to handle input, implemented by derived classes
 	private _handle_input(dt: number): void {
 		this._process_queue(dt);
 		if (this.paddles[RIGHT_PADDLE] instanceof AIBot) {
@@ -98,7 +97,7 @@ export class Game {
 			},
 			ball: {
 				x: this.ball.rect.centerx,
-				z: this.ball.rect.centery,
+				z: this.ball.rect.centerz,
 				score_counter: this.ball.score_counter,
 			},
 		}
