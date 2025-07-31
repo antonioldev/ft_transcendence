@@ -27,7 +27,6 @@ export const french: Translation = {
     alertPlayer2: 'Veuillez entrer un nom pour le Joueur 2',
     register: 'S\'inscrire',
     login: 'Connexion',
-    loginWithGoogle: 'Connexion avec Google',
     username: "Nom d'utilisateur :",
     email: 'Email :',
     password: 'Mot de passe :',
@@ -50,5 +49,6 @@ export const french: Translation = {
     logout: 'Déconnexion',
     tournamentOnline: 'Tournoi en ligne',
     play: 'JOUER',
-    loading: 'xxx...'
+    loading: 'xxx...',
+    controls: 'Contrôles'
 };

@@ -57,9 +57,6 @@ export function updateLanguageDisplay(): void {
     const loginSubmit = requireElementById(EL.BUTTONS.LOGIN_SUBMIT);
     loginSubmit.textContent = t.login;
 
-    const googleLoginBtn = requireElementById(EL.BUTTONS.GOOGLE_LOGIN);
-    googleLoginBtn.textContent = t.loginWithGoogle;
-
     const loginBack = requireElementById(EL.BUTTONS.LOGIN_BACK);
     loginBack.textContent = t.back;
 
@@ -104,7 +101,6 @@ export function updateLanguageDisplay(): void {
     const showLogin = requireElementById(EL.BUTTONS.SHOW_LOGIN);
     showLogin.textContent = t.login;
 
-    // Update "Already have an account?" text
     const registerFooter = document.querySelector('#register-modal .modal-footer .info-text');
     if (registerFooter) registerFooter.textContent = t.alreadyHaveAccount;
 
@@ -113,7 +109,7 @@ export function updateLanguageDisplay(): void {
     modeTitle.textContent = t.selectGameMode;
 
     const viewModeDisplay = requireElementById(EL.DISPLAY.VIEW_MODE_DISPLAY);
-    viewModeDisplay.textContent = t.classicMode; // or t.immersiveMode depending on state
+    viewModeDisplay.textContent = t.classicMode;
 
     const soloBtn = requireElementById(EL.GAME_MODES.SOLO);
     soloBtn.textContent = t.soloMode;

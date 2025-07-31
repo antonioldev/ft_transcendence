@@ -53,6 +53,8 @@ export interface ServerMessage {
     message?: string; // Additional message (optional)
     stats?: UserStats;
     countdown?: number;
+    player1?: string;
+    player2?: string;
     gameHistory?: GameHistoryEntry[];
     winner?: string; // sent on end Game to display who won
 }
@@ -138,6 +140,7 @@ export interface GameObjects {
     gameField: any;
     walls: any;
     cameras: any[];
+    guiCamera: any;
     lights: any[];
 }
 
