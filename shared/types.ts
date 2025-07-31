@@ -20,7 +20,7 @@ export interface Size {
 export interface GameStateData {
     paddleLeft: { x: number; score: number }; // Left paddle position and score
     paddleRight: { x: number; score: number }; // Right paddle position and score
-    ball: { x: number; z: number }; // Ball position
+    ball: { x: number; z: number, current_rally: number }; // Ball position
 }
 
 // Represents input from a player
@@ -56,6 +56,7 @@ export interface ServerMessage {
     player1?: string;
     player2?: string;
     gameHistory?: GameHistoryEntry[];
+    winner?: string; // sent on end Game to display who won
 }
 
 // Player information for game sessions

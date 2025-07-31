@@ -18,11 +18,11 @@ export const GAME_CONFIG = {
     wallThickness: 0.5, // Thickness of the walls
     
     // Player settings
-    playerWidth: 3, // Width of the paddle
-    playerHeight: 0.5, // Height of the paddle
-    playerDepth: 0.5, // Depth of the paddle
-    playerOffsetFromEdge: 2, // Distance from the edge of the field
-    playerSpeed: 10, // Speed of the paddle
+    paddleWidth: 3, // Width of the paddle
+    paddleHeight: 0.5, // Height of the paddle
+    paddleDepth: 0.5, // Depth of the paddle
+    paddleOffsetFromEdge: 2, // Distance from the edge of the field
+    paddleSpeed: 10, // Speed of the paddle
     
     // Camera settings (mainly for frontend)
     camera2DHeight: 25, // Camera height in 2D mode
@@ -33,9 +33,12 @@ export const GAME_CONFIG = {
     edgeBuffer: 13, // Buffer space at the edges of the field
 
     // Ball settings
-    ballRadius: ballRadius, // Radius of the ball
-    ballInitialSpeed: 5, // Initial speed of the ball
-    ballMaxAngle: Math.PI / 6, // Maximum angle of the ball trajectory
+    ballRadius: 0.3, // Radius of the ball
+    ballInitialSpeed: 6, // Initial speed of the ball
+    ballMaxAngle: Math.PI / 4, // Maximum angle of the ball trajectory
+    ballMinAngle: Math.PI / 12, // Minimum angle of the ball trajectory
+    ballSpeedIncrease: 1.08, // Speed multiplier after paddle hit
+    maxBallSpeed: 12,       // Maximum ball speed
     
     // Wall collision boundaries (accounting for ball radius)
     wallBounds: {
@@ -51,12 +54,8 @@ export const GAME_CONFIG = {
 
     // Game mechanics
     serveRandomAngle: 0.3,  // Random Z velocity range on serve
-    scoreToWin: 5,          // Points needed to win
+    scoreToWin: 50,          // Points needed to win
     
-    // Physics
-    ballSpeedIncrease: 1.05, // Speed multiplier after paddle hit
-    maxBallSpeed: 20,       // Maximum ball speed
-
     // Input mappings
     input2D: {
         playerLeft: { left: 87, right: 83 },    // W/S keys for left paddle
@@ -69,10 +68,7 @@ export const GAME_CONFIG = {
     
     // Timing
     startDelay: 5.0, // Delay before the game starts
-    ballDelay: 1.0, // Delay before the game starts
-
-    // Score
-    winning_score: 3,
+    ballDelay: 1.0, // Delay before the ball starts between rounds
 
 } as const;
 
@@ -86,9 +82,9 @@ export const BALL = 2; // Identifier for the ball
 // Get the size of the paddle
 export function getPlayerSize(): Size {
     return {
-        x: GAME_CONFIG.playerWidth,
-        y: GAME_CONFIG.playerHeight,
-        z: GAME_CONFIG.playerDepth
+        x: GAME_CONFIG.paddleWidth,
+        y: GAME_CONFIG.paddleHeight,
+        z: GAME_CONFIG.paddleDepth
     };
 }
 
@@ -97,7 +93,7 @@ export function getPlayerLeftPosition(): Position {
     return {
         x: 0,
         y: 1,
-        z: -(GAME_CONFIG.fieldHeight/2 - GAME_CONFIG.playerOffsetFromEdge)
+        z: -(GAME_CONFIG.fieldHeight/2 - GAME_CONFIG.paddleOffsetFromEdge)
     };
 }
 
@@ -106,13 +102,13 @@ export function getPlayerRightPosition(): Position {
     return {
         x: 0,
         y: 1,
-        z: GAME_CONFIG.fieldHeight/2 - GAME_CONFIG.playerOffsetFromEdge
+        z: GAME_CONFIG.fieldHeight/2 - GAME_CONFIG.paddleOffsetFromEdge
     };
 }
 
 const PLAYER_BOUNDARIES = {
-    left: -(GAME_CONFIG.fieldWidth / 2 - GAME_CONFIG.wallThickness - GAME_CONFIG.playerWidth / 2 - 0.2),
-    right: GAME_CONFIG.fieldWidth / 2 - GAME_CONFIG.wallThickness - GAME_CONFIG.playerWidth / 2 - 0.2
+    left: -(GAME_CONFIG.fieldWidth / 2 - GAME_CONFIG.wallThickness - GAME_CONFIG.paddleWidth / 2 - 0.2),
+    right: GAME_CONFIG.fieldWidth / 2 - GAME_CONFIG.wallThickness - GAME_CONFIG.paddleWidth / 2 - 0.2
 };
 
 // Get the boundaries within which the paddle can move
