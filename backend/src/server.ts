@@ -1,14 +1,8 @@
 import Fastify from 'fastify';
-import fastifyJwt from '@fastify/jwt';
-import fastifyCors from '@fastify/cors';
-import * as dotenv from 'dotenv';
 import { webSocketManager }  from './network/WebSocketManager.js';
 import config from './config/default.js';
 import { initialisazeDatabase } from './data/db-init.js';
 import { registerDatabaseFunctions } from './data/database.js';
-import { authRoutes } from './auth/auth_google.js';
-
-dotenv.config();
 
 const fastify = Fastify({
     logger: config.debug === 'yes' ? true : false
@@ -17,21 +11,6 @@ const fastify = Fastify({
 // init the database
 const db = initialisazeDatabase('./database/transcendence.sqlite');
 registerDatabaseFunctions(db);
-
-// Register JWT plugin
-await fastify.register(fastifyJwt, {
-    secret: process.env.JWT_SECRET!
-});
-
-// Enable CORS for the frontend application
-await fastify.register(fastifyCors, {
-    origin: "http://localhost:8080",
-    methods: ['GET', 'POST'],
-    credentials: true,
-});
-
-// Register the authentication routes
-await fastify.register(authRoutes);
 
 // Register the WebSocket plugin with specific options
 await fastify.register(import('@fastify/websocket'), {
@@ -49,6 +28,7 @@ await fastify.register(import('@fastify/websocket'), {
 
 // add the connection to the database
 
+
 // Setup WebSocket routes using the webSocketManager
 await webSocketManager.setupRoutes(fastify);
 
@@ -60,10 +40,8 @@ const start = async (): Promise<void> => {
     try {
         await fastify.listen({ 
             port: config.server.port,
-            host: config.server.host
+            host: config.server.host 
         });
-
-        
         console.log(`Pong server ready`);
     } catch (err) {
         fastify.log.error(err);

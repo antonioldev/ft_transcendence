@@ -11,11 +11,7 @@
   "dependencies": {
     "@fastify/websocket": "^11.1.0",
     "better-sqlite3": "^12.2.0",
-    "fastify": "^5.4.0",
-    "@fastify/jwt": "^9.1.0",
-    "@fastify/cors": "^11.0.1",
-    "google-auth-library": "^10.2.0",
-    "dotenv": "^17.2.1"
+    "fastify": "^5.4.0"
   },
   "devDependencies": {
     "@types/better-sqlite3": "7.6.13",

@@ -20,38 +20,20 @@ export class WebSocketClient {
         return WebSocketClient.instance;
     }
 
-    // Don't connect immediately - wait for explicit call
-    private constructor() {}
+    private constructor() {
+        this.connect();
+    }
 
     // ========================================
     // CONNECTION MANAGEMENT
     // ========================================
 
-    // Public method to connect (for traditional login)
-    public connectTraditional(): void {
-        this.connect();
-    }
-
-    // Public method to connect with Google token
-    public connectWithToken(token: string): void {
-        this.connect(token);
-    }
-
     // Establishes a WebSocket connection to the specified URL.
-    private connect(token?: string): void {
+    private connect(): void {
         this.connectionStatus = ConnectionStatus.CONNECTING;
         this.notifyStatus(ConnectionStatus.CONNECTING);
 
-        // Build URL with optional token
-        let wsUrl = 'ws://localhost:3000'; // TODO make it a variable
-        if (token) {
-            wsUrl += `?token=${token}`;
-            console.log('🔗 Connecting with Google token...');
-        } else {
-            console.log('🔗 Connecting for traditional login...');
-        }
-
-        this.ws = new WebSocket(wsUrl);
+        this.ws = new WebSocket('ws://localhost:3000'); // TODO make it a variable
 
         const timeout = setTimeout(() => {
             if (this.connectionStatus === ConnectionStatus.CONNECTING) {
