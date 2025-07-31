@@ -28,9 +28,10 @@ export class Ball {
 
     // Generates a random initial direction for the ball.
     private randomDirection(): [number, number] {
-        const x = Math.random() < 0.5 ? 1 : -1;
-        const y = (Math.random() * 0.1 + 0.7) * (Math.random() < 0.5 ? -1 : 1);
-        return [x, y];
+        const x = (Math.random() * 0.1 + 0.7) * (Math.random() < 0.5 ? -1 : 1);
+        const z = Math.random() < 0.5 ? 1 : -1;
+        const magnitude = Math.sqrt(x * x + z * z);
+        return [x / magnitude, z / magnitude];
     }
 
     // Moves the ball based on its direction, speed, and elapsed time.
@@ -38,18 +39,35 @@ export class Ball {
         const deltaSeconds = dt / 1000;
         this.rect.x += this.direction[0] * this.speed * deltaSeconds * this.speedModifier;
         this.collision(CollisionDirection.HORIZONTAL);
-        this.rect.y += this.direction[1] * this.speed * deltaSeconds * this.speedModifier;
-        this.collision(CollisionDirection.VERTICAL);
+        this.rect.z += this.direction[1] * this.speed * deltaSeconds * this.speedModifier;
+        this.collision(CollisionDirection.FRONT);
+    }
+
+    calculate_spin(paddle: Paddle) {
+        // calculate how far along the paddle the ball hits
+        const paddle_intercept = paddle.rect.centerx - this.rect.centerx;
+        const normalized_intercept = paddle_intercept / (GAME_CONFIG.playerWidth / 2)
+        
+        // calculate the angle of defelction relative to the paddle intersection
+        const angle_sign = (paddle_intercept >  0) ? 1 : -1;
+        const angle_magnitude = Math.max(Math.abs(normalized_intercept * GAME_CONFIG.ballMaxAngle), GAME_CONFIG.ballMinAngle);
+        const deflection_angle = angle_magnitude * angle_sign;
+
+        // apply the angle to the ball's direction vector
+        const z = (paddle.side === LEFT_PADDLE) ? Math.cos(deflection_angle) : -(Math.cos(deflection_angle));
+        const x = -(Math.sin(deflection_angle));
+        this.direction = [x, z];
     }
 
     // Handles collisions with paddles and adjusts the ball's direction accordingly.
     private collision(direction: CollisionDirection): void {
         for (const paddle of this.paddles) {
             if (!this.rect.colliderect(paddle.rect)) continue;
+            
             this.speed *= GAME_CONFIG.ballSpeedIncrease;
             this.score_counter += 1;
 
-            if (direction === CollisionDirection.HORIZONTAL) {
+            if (direction === CollisionDirection.HORIZONTAL) { // Collision with sides of paddle
                 if (this.rect.right >= paddle.rect.left && this.oldRect.right <= paddle.oldRect.left) {
                     this.rect.right = paddle.rect.left;
                     this.direction[0] *= -1;
@@ -58,15 +76,16 @@ export class Ball {
                     this.rect.left = paddle.rect.right;
                     this.direction[0] *= -1;
                 }
-            } 
-            else {
+            }
+            else { // Collision with front of paddle
                 if (this.rect.bottom >= paddle.rect.top && this.oldRect.bottom <= paddle.oldRect.top) {
                     this.rect.bottom = paddle.rect.top;
-                    this.direction[1] *= -1;
-                } 	
+                    this.calculate_spin(paddle);
+
+                }
                 else if (this.rect.top <= paddle.rect.bottom && this.oldRect.top >= paddle.oldRect.bottom) {
                     this.rect.top = paddle.rect.bottom;
-                    this.direction[1] *= -1;
+                    this.calculate_spin(paddle);
                 }
             }
         }
@@ -99,7 +118,7 @@ export class Ball {
     reset(): void {
         const ballPos = getBallStartPosition();
         this.rect.x = ballPos.x;
-        this.rect.y = ballPos.z;
+        this.rect.z = ballPos.z;
         this.direction = this.randomDirection();
         this.startTime = performance.now();
         this.speed = GAME_CONFIG.ballInitialSpeed;

@@ -83,7 +83,7 @@ export enum ViewMode {
 // Directions of collision
 export enum CollisionDirection {
     HORIZONTAL = 0,        // Horizontal collision
-    VERTICAL = 1           // Vertical collision
+    FRONT = 1           // Front collision
 }
 
 export enum AuthState {

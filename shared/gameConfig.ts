@@ -33,8 +33,11 @@ export const GAME_CONFIG = {
 
     // Ball settings
     ballRadius: 0.3, // Radius of the ball
-    ballInitialSpeed: 5, // Initial speed of the ball
-    ballMaxAngle: Math.PI / 6, // Maximum angle of the ball trajectory
+    ballInitialSpeed: 6, // Initial speed of the ball
+    ballMaxAngle: Math.PI / 4, // Maximum angle of the ball trajectory
+    ballMinAngle: Math.PI / 12, // Minimum angle of the ball trajectory
+    ballSpeedIncrease: 1.08, // Speed multiplier after paddle hit
+    maxBallSpeed: 12,       // Maximum ball speed
     
     // Wall collision boundaries (accounting for ball radius)
     wallBounds: {
@@ -52,10 +55,6 @@ export const GAME_CONFIG = {
     serveRandomAngle: 0.3,  // Random Z velocity range on serve
     scoreToWin: 5,          // Points needed to win
     
-    // Physics
-    ballSpeedIncrease: 1.08, // Speed multiplier after paddle hit
-    maxBallSpeed: 20,       // Maximum ball speed
-
     // Input mappings
     input2D: {
         playerLeft: { left: 87, right: 83 },    // W/S keys for left paddle
@@ -68,7 +67,7 @@ export const GAME_CONFIG = {
     
     // Timing
     startDelay: 5.0, // Delay before the game starts
-    ballDelay: 1.0, // Delay before the game starts
+    ballDelay: 1.0, // Delay before the ball starts between rounds
 
     // Score
     winning_score: 50,
