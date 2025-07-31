@@ -6,6 +6,7 @@ import { GameConfig } from './GameConfig.js';
 import { GameMode } from '../shared/constants.js';
 import { ViewMode } from '../shared/constants.js';
 import { Logger } from '../core/LogManager.js';
+import { getCurrentTranslation } from '../translations/translations.js';
 
 /**
  * Manages all GUI elements for the game including HUD, scores, FPS display
@@ -45,16 +46,14 @@ export class GUIManager {
             this.advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI", true, scene);
             this.advancedTexture.layer.layerMask = 0x20000000;
 
-            // Create common HUD elements
-            this.createContainerScore();
-            this.createFPSDisplay();
-            this.createScoreDisplay(config);
+            // Create HUD elements
+            this.createHUD(config);
 
             // Create view mode specific elements
             this.createViewModeElements(config);
 
             // Create countdown container
-            this.createCountdownDisplay();
+            this.createCountdownDisplay(config);
 
             this.isInitialized = true;
             Logger.info('GUI created successfully', 'GUIManager');
@@ -82,140 +81,116 @@ export class GUIManager {
         }
     }
 
-    // Create FPS display counter
-    private createFPSDisplay(): void {
-        this.fpsText = new BABYLON.GUI.TextBlock();
-        this.fpsText.text = "FPS: 0";
-        this.fpsText.color = "white";
-        this.fpsText.fontSize = 16;
-        this.fpsText.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
-        this.fpsText.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
-        this.fpsText.top = "1px";
-        this.fpsText.left = "-20px";
-        this.fpsText.width = "200px";
-        this.fpsText.height = "40px";
-        
-        this.advancedTexture.addControl(this.fpsText);
-        Logger.debug('FPS display created', 'GUIManager');
+    private createHUDBox(): any {
+        const box = new BABYLON.GUI.Rectangle();
+        box.thickness = 0;
+        box.background = "rgba(0, 0, 0, 0.83)";
+        return box;
     }
 
-    private createContainerScore(): void {
-        const hudPanel = new BABYLON.GUI.Rectangle("hudPanel");
-        hudPanel.width = "100%";
-        hudPanel.height = "20%";
-        hudPanel.cornerRadius = 0;
-        hudPanel.color = "white";
-        hudPanel.thickness = 0;
-        hudPanel.background = "rgba(50, 50, 50, 0.6)"; // grey semi-transparent
-        hudPanel.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
-        hudPanel.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
-        this.advancedTexture.addControl(hudPanel);
+    private applyRichTextEffects(textBlock: any, config: GameConfig): void {
+        if (config.viewMode === ViewMode.MODE_3D) {
+            // Add shadow effect
+            textBlock.shadowOffsetX = 3;
+            textBlock.shadowOffsetY = 3;
+            textBlock.shadowBlur = 8;
+            // textBlock.shadowColor = "rgba(253, 251, 251, 0.8)";
+            
+            // Make text bold and add outline
+            textBlock.fontWeight = "bold";
+            textBlock.outlineWidth = 2;
+            textBlock.outlineColor = "black";
+            
+            textBlock.shadowColor = "rgba(255, 107, 107, 0.5)";
+        }
     }
 
-    // Create score display with player names and scores
-    private createScoreDisplay(config: GameConfig): void {
-        // Create score container
-        const scoreContainer = new BABYLON.GUI.StackPanel();
-        scoreContainer.isVertical = true;
-        scoreContainer.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
-        scoreContainer.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
-        scoreContainer.top = "-30px";
-        scoreContainer.height = "80px";
-
-        // Player names row
-        const playersRow = this.createTopRow(config);
-        
-        // Scores row
-        const scoresRow = this.createScoresRow();
-
-        // Add rows to container
-        scoreContainer.addControl(playersRow);
-        scoreContainer.addControl(scoresRow);
-
-        this.advancedTexture.addControl(scoreContainer);
-        Logger.debug('Score display created', 'GUIManager');
+    private createTextBlock(name: string, size: number, top: string, fontWeight?: string) {
+        const label = new BABYLON.GUI.TextBlock();
+        label.text = name;
+        label.color = "white";
+        label.top = top;
+        label.fontSize = size;
+        label.width = "120px";
+        if (fontWeight)
+            label.fontWeight = fontWeight;
+        return label;
     }
 
-    // Create the player names row
-    private createTopRow(config: GameConfig): any {
-        const topRow = new BABYLON.GUI.StackPanel();
-        topRow.isVertical = false;
-        topRow.height = "30px";
-
-        // P1 Controls (left side)
-        const p1Controls = new BABYLON.GUI.TextBlock();
-        p1Controls.text = this.getControlsText(config.viewMode, 1);
-        p1Controls.color = "rgba(255,255,255,0.7)";
-        p1Controls.fontSize = 12;
-        p1Controls.width = "120px";
-        p1Controls.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
-
-        // Player Names (center)
-        const playersContainer = new BABYLON.GUI.StackPanel();
-        playersContainer.isVertical = false;
-        playersContainer.width = "240px";
-
-        this.player1Label = new BABYLON.GUI.TextBlock();
-        this.player1Label.text = "Player 1";
-        this.player1Label.color = "white";
-        this.player1Label.fontSize = 18;
-        this.player1Label.width = "120px";
-
-        this.player2Label = new BABYLON.GUI.TextBlock();
-        this.player2Label.text = "Player 2";
-        this.player2Label.color = "white";
-        this.player2Label.fontSize = 18;
-        this.player2Label.width = "120px";
-
-        playersContainer.addControl(this.player1Label);
-        playersContainer.addControl(this.player2Label);
-
-        // Add to top row
-        topRow.addControl(p1Controls);
-        topRow.addControl(playersContainer);
-
-        // P2 Controls (always show, but transparent for single player)
-        const p2Controls = new BABYLON.GUI.TextBlock();
-        p2Controls.text = this.getControlsText(config.viewMode, 2);
-        p2Controls.color = "transparent";
-        p2Controls.fontSize = 16;                      // Same size as P1
-        p2Controls.width = "120px";
-        p2Controls.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
-
-        // Set color based on game mode
-        if (config.gameMode === GameMode.TWO_PLAYER_LOCAL || config.gameMode === GameMode.TOURNAMENT_LOCAL)
-            p2Controls.color = "white";            
-
-        topRow.addControl(p2Controls);
-
-        return topRow;
+    private createPlayerControls(config: GameConfig, player: number): any {
+        const pControls = new BABYLON.GUI.TextBlock();
+        pControls.text = this.getControlsText(config.viewMode, player);
+        pControls.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+        pControls.lineSpacing = "10px";
+        if (player === 2 && (config.gameMode === GameMode.SINGLE_PLAYER ||
+            config.gameMode === GameMode.TOURNAMENT_REMOTE || config.gameMode === GameMode.TWO_PLAYER_REMOTE))
+            pControls.color = "rgba(0, 0, 0, 0)";
+        else
+            pControls.color = "rgba(255,255,255,0.7)";
+        pControls.fontSize = 30;
+        return pControls;
     }
 
-    // Create the scores row
-    private createScoresRow(): any {
-        const scoresRow = new BABYLON.GUI.StackPanel();
-        scoresRow.isVertical = false;
-        scoresRow.height = "40px";
+    private createHUD(config: GameConfig): void {
+        const hudGrid = new BABYLON.GUI.Grid();
+        hudGrid.width = "100%";
+        hudGrid.height = "20%";
+        hudGrid.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+        hudGrid.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
 
-        this.score1Text = new BABYLON.GUI.TextBlock();
-        this.score1Text.text = "0";
-        this.score1Text.color = "white";
-        this.score1Text.fontSize = 24;
-        this.score1Text.width = "120px";
+        hudGrid.addColumnDefinition(0.10); // FPS
+        hudGrid.addColumnDefinition(0.15); // P1 instructions
+        hudGrid.addColumnDefinition(0.25); // P1 score
+        hudGrid.addColumnDefinition(0.25); // P2 score
+        hudGrid.addColumnDefinition(0.15); // P2 instructions
+        hudGrid.addColumnDefinition(0.10); // Empty
 
-        this.score2Text = new BABYLON.GUI.TextBlock();
-        this.score2Text.text = "0";
-        this.score2Text.color = "white";
-        this.score2Text.fontSize = 24;
-        this.score2Text.width = "120px";
+        this.advancedTexture.addControl(hudGrid);
 
-        scoresRow.addControl(this.score1Text);
-        scoresRow.addControl(this.score2Text);
+        // Box 1: FPS
+        const box1 = this.createHUDBox();
+        this.fpsText = this.createTextBlock("FPS: 0", 18, "0px");
+        box1.addControl(this.fpsText);
+        hudGrid.addControl(box1, 0, 0);
 
-        return scoresRow;
+        // Box 2: Instructions P1
+        const box2 = this.createHUDBox();
+        box2.addControl(this.createPlayerControls(config, 1));
+        hudGrid.addControl(box2, 0, 1);
+
+        // Box 3: P1 score + label
+        const box3 = this.createHUDBox();
+        this.player1Label = this.createTextBlock("Player 1", 48, "-20px");
+        this.applyRichTextEffects(this.player1Label, config);
+        box3.addControl(this.player1Label);
+        this.score1Text = this.createTextBlock("0", 48, "30px");
+        this.applyRichTextEffects(this.score1Text, config);
+        box3.addControl(this.score1Text);
+        hudGrid.addControl(box3, 0, 2);
+
+        // Box 4: P2 score + label  
+        const box4 = this.createHUDBox();
+        this.player2Label = this.createTextBlock("Player 2", 48, "-20px");
+        this.applyRichTextEffects(this.player2Label, config);
+        box4.addControl(this.player2Label);
+        this.score2Text = this.createTextBlock("0", 48, "30px");
+        this.applyRichTextEffects(this.score2Text, config);
+        box4.addControl(this.score2Text);
+        hudGrid.addControl(box4, 0, 3);
+
+        // Box 5: Instructions P2
+        const box5 = this.createHUDBox();
+        box5.addControl(this.createPlayerControls(config, 2));
+        hudGrid.addControl(box5, 0, 4);
+
+        // Box 6: Empty
+        const box6 = this.createHUDBox();
+        hudGrid.addControl(box6, 0, 5);
+
+        Logger.debug('HUD created with six boxes using Grid', 'GUIManager');
     }
 
-    private createCountdownDisplay(): void {
+    private createCountdownDisplay(config: GameConfig): void {
         this.countdownContainer = new BABYLON.GUI.Rectangle("countdownContainer");
         this.countdownContainer.width = "300px";
         this.countdownContainer.height = "150px";
@@ -228,11 +203,8 @@ export class GUIManager {
         this.countdownContainer.isVisible = false;
 
         // Create countdown text
-        this.countdownText = new BABYLON.GUI.TextBlock();
-        this.countdownText.text = "3";
-        this.countdownText.color = "white";
-        this.countdownText.fontSize = 72;
-        this.countdownText.fontWeight = "bold";
+        this.countdownText = this.createTextBlock("5", 72, "0px", "bold")
+        this.applyRichTextEffects(this.countdownText, config);
 
         this.countdownContainer.addControl(this.countdownText);
         this.advancedTexture.addControl(this.countdownContainer);
@@ -317,12 +289,15 @@ export class GUIManager {
     }
 
     //instructions for movement
-    private getControlsText(viewMode: ViewMode, player: 1 | 2): string {
-    if (viewMode === ViewMode.MODE_2D)
-        return player === 1 ? "W/S Move" : "↑/↓ Move";
-    else
-        return player === 1 ? "A/D Move" : "←/→ Move";
-}
+    private getControlsText(viewMode: ViewMode, player: number): string {
+        const t = getCurrentTranslation();
+        const move = t.controls;
+        
+        if (viewMode === ViewMode.MODE_2D)
+            return player === 1 ? move + "\nP1: W/S" : move + "\nP2: ↑/↓";
+        else
+            return player === 1 ? move + "\nP1: A/D" : move + "\nP2: ←/→";
+    }
 
     // Clean up all GUI resources
     dispose(): void {

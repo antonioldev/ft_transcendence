@@ -49,5 +49,6 @@ export const portuguese: Translation = {
     logout: 'Sair',
     tournamentOnline: 'Torneio Online',
     play: 'JOGAR',
-    loading: 'xxx...'
+    loading: 'xxx...',
+    controls: 'Controles'
 };

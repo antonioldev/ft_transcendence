@@ -49,5 +49,6 @@ export const french: Translation = {
     logout: 'Déconnexion',
     tournamentOnline: 'Tournoi en ligne',
     play: 'JOUER',
-    loading: 'xxx...'
+    loading: 'xxx...',
+    controls: 'Contrôles'
 };
