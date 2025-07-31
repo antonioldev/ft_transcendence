@@ -44,12 +44,9 @@ export class AuthManager {
         const loginBtn = requireElementById(EL.BUTTONS.LOGIN);
         const logoutBtn = requireElementById(EL.BUTTONS.LOGOUT);
         const playBtn = requireElementById(EL.BUTTONS.PLAY);
-        
-        // Guest button (if available)
-        const guestBtn = getElementById(EL.BUTTONS.GUEST);
 
         // Setup primary navigation handlers
-        this.setupMainMenuHandlers(loginBtn, registerBtn, logoutBtn, playBtn, guestBtn);
+        this.setupMainMenuHandlers(loginBtn, registerBtn, logoutBtn, playBtn);
 
         // Small windows for log in and register
         const showRegister = requireElementById(EL.BUTTONS.SHOW_REGISTER);
@@ -76,14 +73,12 @@ export class AuthManager {
      * @param registerBtn - Register button element.
      * @param logoutBtn - Logout button element.
      * @param playBtn - Play button element.
-     * @param guestBtn - Guest button element.
      */
     private setupMainMenuHandlers(
         loginBtn: HTMLElement | null,
         registerBtn: HTMLElement | null,
         logoutBtn: HTMLElement | null,
-        playBtn: HTMLElement | null,
-        guestBtn: HTMLElement | null
+        playBtn: HTMLElement | null
     ): void {
         loginBtn?.addEventListener('click', () => {
             historyManager.navigateTo(AppState.LOGIN);
@@ -101,10 +96,6 @@ export class AuthManager {
 
         playBtn?.addEventListener('click', () => {
             historyManager.navigateTo(AppState.GAME_MODE);
-        });
-
-        guestBtn?.addEventListener('click', () => {
-            this.loginAsGuest();
         });
     }
 
@@ -397,25 +388,6 @@ export class AuthManager {
     // ========================================
     // STATE MANAGEMENT
     // ========================================
-
-    // Handles guest login without authentication
-    public loginAsGuest(): void {
-        console.log("Logging in as guest...");
-        
-        // GUEST LOGIN: Connect to WebSocket as guest
-        const wsClient = WebSocketClient.getInstance();
-        wsClient.connectAsGuest();
-        
-        // Update auth state
-        this.authState = AuthState.LOGGED_IN;
-        this.currentUser = { username: 'Guest' };
-        
-        // Navigate to main menu and update UI
-        historyManager.navigateTo(AppState.MAIN_MENU);
-        uiManager.showUserInfo('Guest');
-        
-        console.log("Guest login successful");
-    }
 
     // Logs out the current user and returns to guest state. Clears user data and updates UI accordingly.
     logout(): void {
