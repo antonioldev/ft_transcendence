@@ -33,16 +33,16 @@ export class Game {
 		this.ball = new Ball(this.paddles, this._update_score);
 		
 		if (!this.players[LEFT_PADDLE].client) { // if CPU
-			this.paddles[LEFT_PADDLE] = new AIBot(LEFT_PADDLE, this.ball)
+			this.paddles[LEFT_PADDLE] = new ExactBot(LEFT_PADDLE, this.ball)
 		}
 		if (!this.players[RIGHT_PADDLE].client) {
-			this.paddles[RIGHT_PADDLE] = new AIBot(RIGHT_PADDLE, this.ball)
+			this.paddles[RIGHT_PADDLE] = new ExactBot(RIGHT_PADDLE, this.ball)
 		}
 	}
 
 	private _handle_input(dt: number): void {
 		this._process_queue(dt);
-		if (this.paddles[RIGHT_PADDLE] instanceof AIBot) {
+		if (this.paddles[RIGHT_PADDLE] instanceof ExactBot) {
 			this.paddles[RIGHT_PADDLE].update(dt);
 		}
 		if (this.paddles[LEFT_PADDLE] instanceof AIBot) {
