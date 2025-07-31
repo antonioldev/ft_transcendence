@@ -25,15 +25,17 @@ export class Paddle {
 	}
 
 	move(dt: number, dx: number): void {
-		const deltaSeconds = dt / 1000; // Convert milliseconds to seconds.
-		this.rect.x += dx * this.speed * deltaSeconds;
+		const deltaSeconds = dt / 1000; 		// convert milliseconds to seconds
+		const _deltaMove = this.speed * deltaSeconds * dx;
+		if (this.rect.x + _deltaMove > getPlayerBoundaries().left &&
+			this.rect.x + _deltaMove < getPlayerBoundaries().right)
+			this.rect.x += _deltaMove;
 	}
 
 	cacheRect() {
 		this.oldRect.copy(this.rect);
 	}
 }
-
 
 export class ExactBot extends Paddle {
 	private _view_timer = 0;
@@ -48,56 +50,61 @@ export class ExactBot extends Paddle {
 	) {
 		super(side);
 	}
-	
+
+	private _center_x(): number {
+		return (this._boundaries.left + this._boundaries.right) / 2;
+	}
+
+	private _ballMovingTowards(): boolean {
+		return this.side ? this.ball.direction[1] > 0 : this.ball.direction[1] < 0;
+	}
+
 	protected _predict_intercept_x(): number {
-		let r: number     = GAME_CONFIG.ballRadius;
-		const shift_z     = GAME_CONFIG.fieldHeight / 2;
-		const shift_x     = GAME_CONFIG.fieldWidth / 2;
-        let x0: number    = this.ball.rect.centerx;
-        let z0: number    = this.ball.rect.centerz - r;          		
-        let vx: number    = this.ball.direction[0] * this.ball.speed;
-        let vz: number    = this.ball.direction[1] * this.ball.speed;
-        let W_adj: number = GAME_CONFIG.fieldWidth - 2 * r;
-		let z_ai: number, z_opp: number, t: number;
+		const r   = GAME_CONFIG.ballRadius;
 
-		if (vz == 0) {return GAME_CONFIG.fieldWidth / 2;}
+		// current ball state
+		const x0  = this.ball.rect.centerx;
+		const z0  = this.ball.rect.centerz;
+		const vx  = this.ball.direction[0] * this.ball.speed;
+		const vz  = this.ball.direction[1] * this.ball.speed;
 
-		z_ai  = this.side ? GAME_CONFIG.fieldHeight - GAME_CONFIG.paddleHeight - r : GAME_CONFIG.paddleHeight + r;
-		z_opp = this.side ? (GAME_CONFIG.paddleHeight + r) : GAME_CONFIG.fieldHeight - (GAME_CONFIG.paddleHeight + r);
-		
-        if (vz > 0) {                                  	// ball moving towards bot
-            t = Math.abs((z_ai - z0 - shift_z) / vz);  
-		}         
-        else {
-            let dz_to_opp = Math.abs(z_opp - z0 - shift_z);         
-            let dz_back   = Math.abs(z_ai - z_opp);       
-            t = (dz_to_opp + dz_back) / Math.abs(vz);
-		}
-        
+		// where ball centre meets paddle front
+		const zFront = this.side                    // side 1 = bottom paddle
+			? this.rect.top    - r                  // paddle faces up-screen
+			: this.rect.bottom + r;                 // paddle faces down-screen
+
+		// time until impact
+		const t = (zFront - z0) / vz;
+		if (t < 0 || !isFinite(t)) return this._center_x();  // centre pad if ball moving away
+
+		// side-wall reflections
+		const minX = GAME_CONFIG.wallBounds.minX + r;
+		const maxX = GAME_CONFIG.wallBounds.maxX - r;
+		const W    = maxX - minX;
+
 		// calculate next z intercept
-		const total_x   = x0 + W_adj/2 + vx * t;
-		const wrapped_x = ((total_x % (2 * W_adj)) + 2 * W_adj) % (2 * W_adj);
-		const target_x  = wrapped_x < W_adj ? wrapped_x : 2 * W_adj - wrapped_x;
-		return target_x - W_adj/2 + r;
+		const travel   = x0 - minX + vx * t;
+		const wrapped  = ((travel % (2 * W)) + 2 * W) % (2 * W);
+		const target_x = wrapped < W ? wrapped : 2 * W - wrapped;
+		return target_x + minX;
 	}
 
 	update(dt: number): void {
-		// 1 second refresh limit
+		// refresh once per second
 		this._view_timer += dt;
 		if (this._view_timer >= 1000.0) {
-			this._target_x = this._predict_intercept_x();
+			this._target_x = this._ballMovingTowards()
+				? this._predict_intercept_x()
+				: this._center_x();
 			this._view_timer = 0.0;
 		}
-		if (Math.abs(this.rect.centerx - this._target_x) < 2) {return;}  // dead zone, prevents pad shaking
+
+		if (Math.abs(this.rect.centerx - this._target_x) < 0.2) return;  // tighter dead-zone
 
 		const dx = this.rect.centerx < this._target_x ? 1 : -1;
-		if (dx === -1 && this.rect.centerx > this._boundaries.left)
-			this.move(dt, dx);
-		else if (dx === 1 && this.rect.centerx < this._boundaries.right)
-			this.move(dt, dx);
+		this.move(dt, dx);
 	}
 }
-
 
 export class EasyBot extends Paddle {
 	private _dir = 1;
@@ -123,7 +130,7 @@ export class EasyBot extends Paddle {
 export class MediumBot extends ExactBot {
 	protected _predict_intercept_x(): number {
 		const raw = super._predict_intercept_x();
-		const noise = (Math.random() - 0.5) * 12;
+		const noise = (Math.random() - 0.5) * GAME_CONFIG.paddleWidth * 2;
 		return raw + noise;
 	}
 }
@@ -132,7 +139,7 @@ export class MediumBot extends ExactBot {
 export class HardBot extends ExactBot {
 	protected _predict_intercept_x(): number {
 		const raw = super._predict_intercept_x();
-		const noise = (Math.random() - 0.5) * 6;
+		const noise = (Math.random() - 0.5) * GAME_CONFIG.paddleWidth * 1.5;
 		return raw + noise;
 	}
 }
