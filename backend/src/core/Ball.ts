@@ -28,7 +28,7 @@ export class Ball {
 
     // Generates a random initial direction for the ball.
     private randomDirection(): [number, number] {
-        const x = (Math.random() * 0.1 + 0.7) * (Math.random() < 0.5 ? -1 : 1);
+        const x = (Math.random() * 2 - 1) * GAME_CONFIG.ballMaxAngle;
         const z = Math.random() < 0.5 ? 1 : -1;
         const magnitude = Math.sqrt(x * x + z * z);
         return [x / magnitude, z / magnitude];
