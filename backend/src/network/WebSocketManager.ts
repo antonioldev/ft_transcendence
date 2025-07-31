@@ -6,6 +6,7 @@ import { ClientMessage, ServerMessage, GetUserProfile, UserProfileData } from '.
 import * as db from "../data/validation.js";
 import { UserStats, GameHistoryEntry } from '../shared/types.js';
 import { Game } from '../core/game.js';
+import { GameSession } from './GameSession.js';
 
 /**
  * Manages WebSocket connections, client interactions, and game-related messaging.
@@ -143,7 +144,7 @@ export class WebSocketManager {
                     gameSession.add_player(new Player(player.id, player.name, client));
                 }
                 if (gameSession.mode === GameMode.SINGLE_PLAYER) { // TEMP PATCH NEED TO HANDLE CPU DATA PROPERLY
-                    gameSession.add_player(new Player("001", "CPU"));
+                    gameSession.add_player(new Player("default", "CPU"));
                 }
             }
         } catch (error) {
@@ -171,9 +172,16 @@ export class WebSocketManager {
             await gameSession.sendAllReady();
 
             if (gameSession.full && !gameSession.running) {
-                gameSession.start();
+                this.runGame(gameSession);
             }
         }
+    }
+
+    private async runGame(gameSession: GameSession) {
+        gameSession.add_CPU();
+        await gameSession.start();
+        
+        gameManager.removeGame(gameSession.id);
     }
 
     /**

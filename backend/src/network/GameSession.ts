@@ -42,10 +42,13 @@ export class GameSession {
 	}
 
 	add_client(client: Client) {
-		if (this.clients.length < this.client_capacity) {
-			this.clients.push(client);
+		if (this.clients.length >= this.client_capacity) return ;
+
+		this.clients.push(client);
+		if (this.clients.length === this.client_capacity) {
+			this.full = true;
 		}
-	}
+}
 
 	remove_client(client: Client) {
 		const index = this.clients.indexOf(client);
@@ -62,13 +65,14 @@ export class GameSession {
 	add_player(player: Player) {
 		if (this.players.length < this.player_capacity) {
 			this.players.push(player);
-
-			// check for this.full is here assuming that players are assigned after clients
-			if (this.clients.length === this.client_capacity && this.players.length === this.player_capacity) {
-				this.full = true;
-			}
 		}
 	}
+
+	add_CPU() {
+		while (this.players.length < this.player_capacity) {
+			this.players.push(new Player("default", "CPU"));
+		}
+    }
 
 	remove_player(player: Player) {
 		const index = this.players.indexOf(player);
