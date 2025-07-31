@@ -145,7 +145,8 @@ export const UI_STYLES = {
     title: {
         fontSize: '1.8rem',
         color: UI_COLORS.primary,
-        marginBottom: '1.5rem',
+        paddingTop: '2rem',
+        paddingBottom: '2rem',
         fontWeight: 'bold',
         textAlign: 'center' as const,
         userSelect: 'none' as const

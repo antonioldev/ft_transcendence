@@ -174,7 +174,6 @@ export class Game {
         webSocketClient.registerCallback(WebSocketEvent.GAME_PAUSED, () => { this.onServerPausedGame(); });
         webSocketClient.registerCallback(WebSocketEvent.GAME_RESUMED, () => { this.onServerResumedGame(); });
         webSocketClient.registerCallback(WebSocketEvent.GAME_ENDED, () => { this.onServerEndedGame(); });
-        // webSocketClient.registerCallback(WebSocketEvent.ALL_READY, (countdown: number) => {this.handleCountdown(countdown); });
         webSocketClient.registerCallback(WebSocketEvent.ALL_READY, (message: any) => {
             this.handleCountdown(message.countdown, message.player1, message.player2); 
         });
@@ -366,6 +365,9 @@ export class Game {
                 // this.gameObjects.ball.position.x = state.ball.x;
                 // this.gameObjects.ball.position.z = state.ball.z;
             }
+
+            if (this.guiManager)
+                this.guiManager.updateRally(state.ball.current_rally);
 
             // Update Score
             if (this.guiManager && this.guiManager.isReady())
