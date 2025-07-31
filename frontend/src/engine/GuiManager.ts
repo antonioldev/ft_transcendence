@@ -271,22 +271,20 @@ export class GUIManager {
     }
 
     updateRally(rally: number): void {
-        if (this.rally && (this.previousRally < rally)) {
-                this.rally.text = `Rally: \n${Math.round(rally)}`;
-            
-                const maxRally = 10;
-                const intensity = Math.min(rally / maxRally, 1);                
-                const r = 255;
-                const g = Math.round(255 * (1 - intensity));
-                const b = Math.round(255 * (1 - intensity));               
-                this.rally.color = `rgb(${r}, ${g}, ${b})`;
+        if (this.rally && (this.previousRally < rally) || rally === 1) {
+            this.rally.text = `Rally: \n${Math.round(rally)}`;
 
-                if (this.previousRally < rally) {
-                    const scene = this.advancedTexture.getScene();
-                    scene.beginAnimation(this.rally, 0, 60, false);   
-                }
-                this.previousRally = rally;
-            }
+            const maxRally = 10;
+            const intensity = Math.min(rally / maxRally, 1);
+            const r = 255;
+            const g = Math.round(255 * (1 - intensity));
+            const b = Math.round(255 * (1 - intensity));
+            this.rally.color = `rgb(${r}, ${g}, ${b})`;
+
+            const scene = this.advancedTexture.getScene();
+            scene.beginAnimation(this.rally, 0, 60, false);   
+        }
+        this.previousRally = rally;
     }
 
     // Update player scores
