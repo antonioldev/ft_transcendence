@@ -46,6 +46,7 @@ export async function buildScene2D(
     const allCameras = [...cameras, guiCamera];
     scene.activeCameras = allCameras;
     onProgress?.(100);
+    
     console.log('Scene building complete!');
     return {
         players: { left: playerLeft, right: playerRight },

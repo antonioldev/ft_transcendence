@@ -272,6 +272,12 @@ class UIManager {
         const loadingScreen = requireElementById(EL.GAME.LOADING_SCREEN);
         loadingScreen.style.display = visible ? 'flex' : 'none';
     }
+
+    updateLoadingText(): void {
+        const t = getCurrentTranslation();
+        const loadingText = requireElementById(EL.GAME.LOADING_TEXT);
+        loadingText.textContent = t.waiting;
+    }
 }
 
 export const uiManager = UIManager.getInstance();

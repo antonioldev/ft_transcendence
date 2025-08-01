@@ -50,5 +50,6 @@ export const english: Translation = {
     tournamentOnline: 'Tournament Online',
     play: 'PLAY',
     loading: 'Loading...',
+    waiting: 'Looking for opponents...',
     controls: 'Controls'
 };

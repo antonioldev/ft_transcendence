@@ -56,8 +56,8 @@ export class Game {
 	private _update_score(side: number, score: number): void {
 		this.paddles[side].score += score;
 		if (this.paddles[side].score >= GAME_CONFIG.scoreToWin) {
-			this.running = false;
 			this.winner = this.players[side];
+			this.running = false;
 		}
 	}
 
@@ -152,7 +152,7 @@ export class Game {
 		// broadcast and return the winner
 		this._broadcast({
 			type: MessageType.GAME_ENDED,
-			winner: this.winner.name,
+			winner: "test", //TODO test
 			...(this.winner !== undefined && { winner: this.winner.name }) // optionally send winner if exists
 		});
 		return (this.winner);

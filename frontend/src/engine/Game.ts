@@ -4,7 +4,7 @@ declare var BABYLON: typeof import('@babylonjs/core') & {
 
 import { GameConfig } from './GameConfig.js';
 import { buildScene2D, buildScene3D } from './scene/sceneBuilder.js';
-import { InputHandler } from './InputManager.js';
+// import { InputHandler } from './InputManager.js';
 import { webSocketClient } from '../core/WebSocketClient.js';
 import { GameStateData, GameObjects } from '../shared/types.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
@@ -14,6 +14,9 @@ import { Logger } from '../core/LogManager.js';
 import { uiManager } from '../ui/UIManager.js';
 import { GUIManager } from './GuiManager.js';
 import { RenderManager } from './RenderManager.js';
+import { GameMode, Direction } from '../shared/constants.js';
+import { InputConfig, PlayerControls, InputData } from '../shared/types.js';
+import { getPlayerBoundaries } from '../shared/gameConfig.js';
 
 /**
  * Main Game class that handles everything for running one game instance.
@@ -34,7 +37,6 @@ export class Game {
     private scene: any = null;
     private canvas: HTMLCanvasElement | null = null;
     private gameObjects: GameObjects | null = null;
-    private inputHandler: InputHandler | null = null;
     private guiManager: GUIManager | null = null;
     private renderManager: RenderManager | null = null;
     private resizeHandler: (() => void) | null = null;
@@ -44,6 +46,11 @@ export class Game {
     private isPausedByServer: boolean = false;
     private countdownLoop: number | null = null;
     private gameLoopObserver: any = null;
+    private deviceSourceManager: any = null;
+    private boundaries = getPlayerBoundaries();
+    private isLocalMultiplayer: boolean = false;
+    private controlledSides: number[] = []; // Changed to array for local multiplayer
+    private onInputCallback: ((input: InputData) => void) | null = null;
 
     constructor(private config: GameConfig) {
         if (Game.currentInstance)
@@ -115,12 +122,12 @@ export class Game {
 
             this.setupResizeHandler();
 
-            this.inputHandler = new InputHandler(this.config, this.scene);
-            this.inputHandler.setGameObjects(this.gameObjects);
+            this.initializeInput();
 
             this.connectComponents();
             this.isInitialized = true;
             webSocketClient.sendPlayerReady();
+            uiManager.updateLoadingText();
             Logger.info('Game initialized successfully', 'Game');
 
         } catch (error) {
@@ -162,12 +169,6 @@ export class Game {
 
     // Connect all components together
     private connectComponents(): void {
-        if (!this.inputHandler)
-            throw new Error('Components not initialized');
-
-        this.inputHandler.onInput((input) => {
-            webSocketClient.sendPlayerInput(input.side, input.direction);
-        });
         webSocketClient.registerCallback(WebSocketEvent.GAME_STATE, (state: GameStateData) => { this.updateGameObjects(state); });
         webSocketClient.registerCallback(WebSocketEvent.CONNECTION, () => { Logger.info('Connected', 'Game'); });
         webSocketClient.registerCallback(WebSocketEvent.ERROR, (error: string) => { Logger.error('Network error', 'Game', error); });
@@ -175,16 +176,10 @@ export class Game {
         webSocketClient.registerCallback(WebSocketEvent.GAME_RESUMED, () => { this.onServerResumedGame(); });
         webSocketClient.registerCallback(WebSocketEvent.GAME_ENDED, () => { this.onServerEndedGame(); });
         webSocketClient.registerCallback(WebSocketEvent.ALL_READY, (message: any) => {
-            if (this.guiManager)
-                this.guiManager.updatePlayerNames(message.left, message.right);
-            if (this.inputHandler)
-                this.inputHandler.setControlledSide(message.name , message.side);
-            // this.handleCountdown(message.countdown, message.player1, message.player2); 
+            this.handlePlayerAssignment(message.left, message.right);
         });
         webSocketClient.registerCallback(WebSocketEvent.COUNTDOWN, (message: any) => {
             this.handleCountdown(message.countdown); 
-            // if (this.inputHandler)
-            // this.inputHandler.setControlledSide(message.name , message.side);
         })
     }
 
@@ -298,10 +293,14 @@ export class Game {
     }
 
     // Handle server ending the game
-    private onServerEndedGame(): void {
+    private async onServerEndedGame(): Promise<void> {
         if (this.isDisposed) return;
 
-        Logger.info('Server ended the game', 'Game');
+        if (!this.renderManager?.isRendering())
+            this.renderManager?.startRendering();
+
+        uiManager.setElementVisibility('pause-dialog-3d', false);
+        await this.guiManager?.showWinner("Antonio");
 
         this.renderManager?.stopRendering();
         this.stopGameLoop();
@@ -322,8 +321,7 @@ export class Game {
         try {
             uiManager.setLoadingScreenVisible(false);
             // Update input
-            if (this.inputHandler)
-                this.inputHandler.updateInput();
+            this.updateInput();
             // Update 3D cameras if needed
             const cameras = this.gameObjects?.cameras;
             if (cameras && (this.config.viewMode === ViewMode.MODE_3D))
@@ -431,10 +429,11 @@ export class Game {
                 this.countdownLoop = null;
             }
 
-            if (this.inputHandler) {
-                await this.inputHandler.dispose();
-                this.inputHandler = null;
+            if (this.deviceSourceManager) {
+                this.deviceSourceManager.dispose();
+                this.deviceSourceManager = null;
             }
+            this.controlledSides = [];
 
             if (this.resizeHandler) {
                 window.removeEventListener("resize", this.resizeHandler);
@@ -475,4 +474,79 @@ export class Game {
         }
     }
 
+
+    // ========================================
+    // INPUT HANDLING
+    // ========================================
+
+    private initializeInput(): void {
+        try {
+            this.deviceSourceManager = new BABYLON.DeviceSourceManager(this.scene.getEngine());
+            
+            // Configure input based on game mode
+            this.isLocalMultiplayer = (
+                this.config.gameMode === GameMode.TWO_PLAYER_LOCAL || 
+                this.config.gameMode === GameMode.TOURNAMENT_LOCAL
+            );
+            
+            Logger.info('Input initialized', 'Game', {
+                gameMode: this.config.gameMode,
+                isLocalMultiplayer: this.isLocalMultiplayer
+            });
+        } catch (error) {
+            Logger.error('Error setting up input', 'Game', error);
+        }
+    }
+
+    private assignPlayerSide(name: string, side: number): void {
+        const isOurPlayer = this.config.players.some(player => player.name === name);
+        if (isOurPlayer && !this.controlledSides.includes(side)) {
+            this.controlledSides.push(side);
+            Logger.info('Added controlled side', 'Game', `Side: ${side} for ${name}`);
+        }
+    }
+
+    private handlePlayerAssignment(leftPlayerName: string, rightPlayerName: string): void {
+        // Update GUI with player names
+        if (this.guiManager)
+            this.guiManager.updatePlayerNames(leftPlayerName, rightPlayerName);
+
+        // Assign sides based on player names
+        this.assignPlayerSide(leftPlayerName, 0);
+        this.assignPlayerSide(rightPlayerName, 1);
+    }
+
+    // Update input state - call this in render loop
+    private updateInput(): void {
+        if (this.isDisposed || !this.deviceSourceManager || !this.gameObjects) return;
+
+        try {
+            const keyboardSource = this.deviceSourceManager.getDeviceSource(BABYLON.DeviceType.Keyboard);
+            if (keyboardSource) {
+                // Handle left player (side 0)
+                this.handlePlayerInput(keyboardSource, this.gameObjects.players.left, this.config.controls.playerLeft, 0);
+                // Handle right player (side 1)  
+                this.handlePlayerInput(keyboardSource, this.gameObjects.players.right, this.config.controls.playerRight, 1);
+            }
+        } catch (error) {
+            Logger.error('Error updating input', 'Game', error);
+        }
+    }
+
+    private handlePlayerInput(keyboardSource: any, player: any, controls: PlayerControls, side: number): void {
+        // Check if we should listen to this player
+        if (!(this.isLocalMultiplayer || this.controlledSides.includes(side))) return;
+
+        let direction = Direction.STOP;
+
+        // Check input and validate boundaries
+        if ((keyboardSource.getInput(controls.left) === 1) && (player.position.x > this.boundaries.left)) 
+            direction = Direction.LEFT;
+        else if ((keyboardSource.getInput(controls.right) === 1) && (player.position.x < this.boundaries.right))
+            direction = Direction.RIGHT;
+
+        // Send input directly
+        if (direction !== Direction.STOP)
+            webSocketClient.sendPlayerInput(side, direction);
+    }
 }

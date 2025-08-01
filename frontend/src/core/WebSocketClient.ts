@@ -101,6 +101,7 @@ export class WebSocketClient {
                 this.triggerCallback(WebSocketEvent.GAME_RESUMED);
                 break;
             case MessageType.GAME_ENDED:
+                Logger.warn('END', 'WebSocketClient', message.message);
                 this.triggerCallback(WebSocketEvent.GAME_ENDED);
                 break;
             case MessageType.ALL_READY:
@@ -110,7 +111,6 @@ export class WebSocketClient {
                 Logger.info('Server says', 'WebSocketClient', message.message);
                 break;
             case MessageType.COUNTDOWN:
-                Logger.warn('COUNTDOWN', 'WebSocketClient', message.message);
                 this.triggerCallback(WebSocketEvent.COUNTDOWN, message);
                 break;
             case MessageType.ERROR:

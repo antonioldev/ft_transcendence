@@ -37,6 +37,9 @@ export class GUIManager {
     
     private isInitialized: boolean = false;
 
+    private endGameOverlay: any = null;
+    private endGameWinnerText: any = null;
+
     // Initialize and create all GUI elements
     createGUI(scene: any, config: GameConfig): void {
         if (this.isInitialized) {
@@ -57,6 +60,9 @@ export class GUIManager {
 
             // Create countdown container
             this.createCountdownDisplay(config);
+
+            // ADD THIS: Create end game overlay
+            this.createEndGameOverlay(config);
 
             this.isInitialized = true;
             Logger.info('GUI created successfully', 'GUIManager');
@@ -190,7 +196,7 @@ export class GUIManager {
         this.rally.scaleX = 1;
         this.rally.scaleY = 1;
 
-            // Create animations
+        // Create animations
         const animationScaleX = this.createAnimation("scaleX", 1, 1.3);
         const animationScaleY = this.createAnimation("scaleY", 1, 1.3);
         this.rally.animations = [animationScaleX, animationScaleY];
@@ -328,6 +334,55 @@ export class GUIManager {
         else
             return player === 1 ? move + "\nP1: A / D" : move + "\nP2: ← / →";
     }
+
+    private createEndGameOverlay(config: GameConfig): void {
+        // Create overlay
+        this.endGameOverlay = new BABYLON.GUI.Rectangle("endGameOverlay");
+        this.endGameOverlay.width = "100%";
+        this.endGameOverlay.height = "100%";
+        this.endGameOverlay.background = "black";
+        this.endGameOverlay.alpha = 1;
+        this.endGameOverlay.zIndex = 1000; // Bring to front
+        this.endGameOverlay.isVisible = false; // Hidden by default
+
+        // Create winner text
+        this.endGameWinnerText = this.createTextBlock("", 72, "0px", "bold");
+        this.applyRichTextEffects(this.endGameWinnerText, config);
+        this.endGameWinnerText.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+        this.endGameWinnerText.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
+        this.endGameWinnerText.color = "#FFD700"; // Gold color
+
+        // Add text to overlay
+        this.endGameOverlay.addControl(this.endGameWinnerText);
+        
+        // Add overlay to main texture
+        this.advancedTexture.addControl(this.endGameOverlay);
+        
+        Logger.info('End game overlay created', 'GUIManager');
+    }
+
+    async showWinner(winner: string): Promise<void> {
+        if (!this.endGameOverlay || !this.endGameWinnerText) {
+            Logger.warn('End game overlay not initialized', 'GUIManager');
+            return;
+        }
+
+        // Set winner text
+        this.endGameWinnerText.text = `🏆 ${winner} WINS! 🏆`;
+        
+        // Show the overlay
+        this.endGameOverlay.isVisible = true;
+        
+        Logger.info(`Showing winner: ${winner}`, 'GUIManager');
+
+        // Wait 5 seconds
+        await new Promise(resolve => setTimeout(resolve, 5000));
+
+        this.endGameOverlay.isVisible = false;
+        
+        Logger.info('End game overlay hidden', 'GUIManager');
+    }
+
 
     // Clean up all GUI resources
     dispose(): void {
