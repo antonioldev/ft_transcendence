@@ -148,11 +148,12 @@ export class Game {
 				state: this.get_state()
 			});
 		}
+
 		// broadcast and return the winner
 		this._broadcast({
 			type: MessageType.GAME_ENDED,
 			winner: this.winner.name,
-			side: this.winner.side // might not need ?
+			...(this.winner !== undefined && { winner: this.winner.name }) // optionally send winner if exists
 		});
 		return (this.winner);
 	}
