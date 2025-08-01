@@ -115,7 +115,7 @@ export class Game {
 
             this.setupResizeHandler();
 
-            this.inputHandler = new InputHandler(this.config.gameMode, this.config.controls, this.scene);
+            this.inputHandler = new InputHandler(this.config, this.scene);
             this.inputHandler.setGameObjects(this.gameObjects);
 
             this.connectComponents();
@@ -177,6 +177,10 @@ export class Game {
         webSocketClient.registerCallback(WebSocketEvent.ALL_READY, (message: any) => {
             this.handleCountdown(message.countdown, message.player1, message.player2); 
         });
+        webSocketClient.registerCallback(WebSocketEvent.SIDE_ASSIGNMENT, (message: any) => {
+            if (this.inputHandler)
+            this.inputHandler.setControlledSide(message.name , message.side);
+        })
     }
 
     async connect(): Promise<void> {

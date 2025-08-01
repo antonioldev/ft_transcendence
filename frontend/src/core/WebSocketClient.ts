@@ -109,6 +109,9 @@ export class WebSocketClient {
             case MessageType.WELCOME:
                 Logger.info('Server says', 'WebSocketClient', message.message);
                 break;
+            case MessageType.SIDE_ASSIGNMENT:
+                this.triggerCallback(WebSocketEvent.SIDE_ASSIGNMENT, message);
+                break;
             case MessageType.ERROR:
                 this.triggerCallback(WebSocketEvent.ERROR, message.message);
                 break;

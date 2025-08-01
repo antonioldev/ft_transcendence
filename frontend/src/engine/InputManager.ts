@@ -4,6 +4,7 @@ import { GameMode, Direction } from '../shared/constants.js';
 import { InputConfig, PlayerControls, GameObjects, InputData } from '../shared/types.js';
 import { getPlayerBoundaries } from '../shared/gameConfig.js';
 import { Logger } from '../core/LogManager.js';
+import { GameConfig } from './GameConfig.js';
 
 /**
  * Handles player input for the game, supporting both local and remote multiplayer modes.
@@ -16,16 +17,17 @@ export class InputHandler {
     private deviceSourceManager: any = null;
     private boundaries = getPlayerBoundaries();
     private gameObjects: GameObjects | null = null;
+    private config: GameConfig | null = null;
     private isLocalMultiplayer: boolean = false;
     private controlledSide: number = 0;
     private isDisposed: boolean = false;
     private onInputCallback: ((input: InputData) => void) | null = null;
 
     constructor(
-        private gameMode: GameMode,
-        private controls: InputConfig,
+        private gameConfig: GameConfig,
         scene: any
     ) {
+        this.config = gameConfig;
         try {
             this.deviceSourceManager = new BABYLON.DeviceSourceManager(scene.getEngine());
         } catch (error) {
@@ -34,16 +36,9 @@ export class InputHandler {
 
         // Configure input based on game mode
         this.isLocalMultiplayer = (
-            this.gameMode === GameMode.TWO_PLAYER_LOCAL || 
-            this.gameMode === GameMode.TOURNAMENT_LOCAL
+            this.config.gameMode === GameMode.TWO_PLAYER_LOCAL || 
+            this.config.gameMode === GameMode.TOURNAMENT_LOCAL
         );
-        this.controlledSide = 0;
-        
-        Logger.info('InputHandler configured', 'InputHandler', {
-            gameMode: this.gameMode,
-            controlledSide: this.controlledSide,
-            isLocalMultiplayer: this.isLocalMultiplayer
-        });
     }
 
     // ========================================
@@ -60,6 +55,15 @@ export class InputHandler {
         this.onInputCallback = callback;
     }
 
+    setControlledSide(name: string, side: number): void {
+        const isPlayer = this.config?.players.some(player => player.name === name);
+
+        if (isPlayer) {
+            this.controlledSide = side;
+            Logger.info('Updated controlled side', 'InputHandler', `Side: ${side}`);
+        }
+    }
+
     // ========================================
     // INPUT PROCESSING
     // ========================================
@@ -72,10 +76,12 @@ export class InputHandler {
             const keyboardSource = this.deviceSourceManager.getDeviceSource(BABYLON.DeviceType.Keyboard);
             if (keyboardSource) {
                 // Handle left player (side 0)
-                this.handlePlayerInput(keyboardSource, this.gameObjects.players.left, this.controls.playerLeft, 0);
+                if (this.config)
+                    this.handlePlayerInput(keyboardSource, this.gameObjects.players.left, this.config.controls.playerLeft, 0);
 
                 // Handle right player (side 1)
-                this.handlePlayerInput(keyboardSource, this.gameObjects.players.right, this.controls.playerRight, 1);
+                if (this.config)
+                    this.handlePlayerInput(keyboardSource, this.gameObjects.players.right, this.config.controls.playerRight, 1);
             }
         } catch (error) {
             Logger.error('Error updating input', 'InputHandler', error);
@@ -121,6 +127,7 @@ export class InputHandler {
 
             // Clear references
             this.gameObjects = null;
+            this.config = null;
 
             // Dispose device manager
             if (this.deviceSourceManager) {
