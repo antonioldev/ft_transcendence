@@ -255,7 +255,6 @@ export class WebSocketManager {
             console.warn(`Client ${client.id} not in any game to quit`);
             return;
         }
-
         
         // gameManager.removeClientFromGames(client); // think this is unnecessary 
         gameSession.stop();
