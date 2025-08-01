@@ -37,6 +37,9 @@ export class Tournament extends GameSession {
 	constructor(mode: GameMode, game_id: string, capacity: number) {
 		super(mode, game_id);
 		this.player_capacity = capacity;
+		if (this.mode === GameMode.TOURNAMENT_REMOTE) {
+			this.client_capacity = capacity;
+		}
 		this.num_rounds = this._get_num_rounds(this.player_capacity);
 		this._create_rounds_map();
 		this._create_match_tree(new Match(this.num_rounds));
@@ -143,7 +146,6 @@ export class Tournament extends GameSession {
 			}
 
 		}
-
 		// TODO: display final winner screen
 	}
 }

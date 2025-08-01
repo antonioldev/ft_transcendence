@@ -166,13 +166,13 @@ export class WebSocketManager {
         }
 
         gameSession.setClientReady(client);
-        if (gameSession.allClientsReady()) {
+        if (gameSession.allClientsReady() && gameSession.full && !gameSession.running) {
             console.log(`All clients ready in game ${gameSession.id}, sending ALL_READY`);
+
+		    gameSession.assign_sides(gameSession.players);
             await gameSession.sendAllReady();
 
-            if (gameSession.full && !gameSession.running) {
-                this.runGame(gameSession);
-            }
+            this.runGame(gameSession);
         }
     }
 

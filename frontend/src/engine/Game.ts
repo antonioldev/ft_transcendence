@@ -241,7 +241,6 @@ export class Game {
         await game.dispose();
     }
 
-
     private handleCountdown(countdown: number, player1: string, player2: string): void {
         if (countdown === undefined || countdown === null)
             Logger.errorAndThrow('Server sent ALL_READY without countdown parameter', 'Game');

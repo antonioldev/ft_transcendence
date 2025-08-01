@@ -54,7 +54,7 @@ export class GameSession {
 		const index = this.clients.indexOf(client);
 		if (index !== -1) {
 			this.clients.splice(index, 1);
-			this.readyClients.delete(client.id); //Added
+			this.readyClients.delete(client.id); // Added
 			this.full = false;
 		}
 		if (this.clients.length === 0) {
@@ -72,6 +72,7 @@ export class GameSession {
 		while (this.players.length < this.player_capacity) {
 			this.players.push(new Player("default", "CPU"));
 		}
+		this.client_capacity === this.clients.length;
     }
 
 	remove_player(player: Player) {
@@ -117,7 +118,6 @@ export class GameSession {
 	async start() {
 		if (this.running) return;
 
-		this.assign_sides(this.players);
 		this.running = true;
 		this.game = new Game(this.players, this.broadcast.bind(this))
 		
@@ -176,7 +176,7 @@ export class GameSession {
 		this.paused = false;
 	}
 
-	assign_sides(players: Player[], match_index?: number) {
+	assign_sides(players: Player[], match_id?: number) {
 		// guarantees that the index of players[] aligns with player.side
 		players[LEFT_PADDLE].side = LEFT_PADDLE;
 		players[RIGHT_PADDLE].side = RIGHT_PADDLE;
@@ -188,8 +188,8 @@ export class GameSession {
 				type: MessageType.SIDE_ASSIGNMENT,
 				name: player.name,
 				side: player.side,
-				...(match_index !== undefined && { match_index }) // optionally includes index
-			})
+				...(match_id !== undefined && { match_id: match_id }) // optionally includes index for tournament
+			}, [player.client])
 		}
 	}
 
