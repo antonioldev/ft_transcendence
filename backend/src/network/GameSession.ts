@@ -119,6 +119,7 @@ export class GameSession {
 		if (this.running) return;
 
 		this.running = true;
+		this.assign_sides(this.players);
 		this.game = new Game(this.players, this.broadcast.bind(this))
 		
 		await this.game.run();
@@ -189,7 +190,7 @@ export class GameSession {
 				name: player.name,
 				side: player.side,
 				...(match_id !== undefined && { match_id: match_id }) // optionally includes index for tournament
-			}, [player.client])
+			})
 		}
 	}
 
