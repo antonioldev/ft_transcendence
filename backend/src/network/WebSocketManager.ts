@@ -5,7 +5,6 @@ import { MessageType, Direction, GameMode, UserManagement } from '../shared/cons
 import { ClientMessage, ServerMessage, GetUserProfile, UserProfileData } from '../shared/types.js';
 import * as db from "../data/validation.js";
 import { UserStats, GameHistoryEntry } from '../shared/types.js';
-import { Game } from '../core/game.js';
 import { GameSession } from './GameSession.js';
 
 /**
@@ -178,9 +177,8 @@ export class WebSocketManager {
     }
 
     private async runGame(gameSession: GameSession) {
-        gameSession.add_CPU();
+        gameSession.add_CPU(); // add any CPU's if necessary
         await gameSession.start();
-        
         gameManager.removeGame(gameSession.id);
     }
 

@@ -115,6 +115,12 @@ export class Game {
 				state: this.get_state()
 			});
 		}
+
+		this._broadcast({
+			type: MessageType.GAME_ENDED,
+			winner: this.winner.name,
+			side: this.winner.side // might not need ?
+		});
 		return (this.winner);
 	}
 

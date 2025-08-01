@@ -121,8 +121,8 @@ export class GameSession {
 		this.running = true;
 		this.game = new Game(this.players, this.broadcast.bind(this))
 		
-		const winner: Player = await this.game.run();
-		this.endGame(winner);
+		await this.game.run();
+		this.stop();
 	}
 
 	pauseGame(client: Client): boolean {
@@ -170,19 +170,6 @@ export class GameSession {
 		}
 	}
 
-	endGame(winner: Player): void {
-		try {
-			this.broadcast({
-				type: MessageType.GAME_ENDED,
-				winner: winner.name,
-				side: winner.side
-			});
-			this.stop();
-		} catch (error) {
-			console.error(`Error ending game ${this.id}:`, error);
-		}
-	}
-
 	stop() {
 		this.game.stop();
 		this.running = false;
@@ -195,14 +182,14 @@ export class GameSession {
 		players[RIGHT_PADDLE].side = RIGHT_PADDLE;
 
 		for (const player of this.players) {
-			if (player.client) { // if not AIBot
-				this.broadcast({
-					type: MessageType.SIDE_ASSIGNMENT,
-					name: player.name,
-					side: player.side,
-					...(match_index !== undefined && { match_index }) // optionally includes index
-				})
-			}
+			if (!player.client)  continue; // if not AIBot
+
+			this.broadcast({
+				type: MessageType.SIDE_ASSIGNMENT,
+				name: player.name,
+				side: player.side,
+				...(match_index !== undefined && { match_index }) // optionally includes index
+			})
 		}
 	}
 
