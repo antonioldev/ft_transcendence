@@ -103,8 +103,15 @@ export class Game {
 		}
 	}
 
-	// Main game loop that updates the state and broadcasts changes
+	// Main game loop 
 	async run(): Promise<Player> {
+		// if both are CPU then choose a random winner
+		if (this.paddles[LEFT_PADDLE] instanceof ExactBot && this.paddles[RIGHT_PADDLE] instanceof ExactBot) {
+			const index = (Math.random() > 0.5) ? 0 : 1;
+			this.winner = this.players[index];
+			this.running = false;
+		}
+		// run game loop, updating and broadcasting state to clients until winner
 		while (this.running) {
 			const dt = await this.clock.tick(60);
 			if (this.paused) continue ;
@@ -115,7 +122,7 @@ export class Game {
 				state: this.get_state()
 			});
 		}
-
+		// broadcast and return the winner
 		this._broadcast({
 			type: MessageType.GAME_ENDED,
 			winner: this.winner.name,
