@@ -250,19 +250,19 @@ export class WebSocketManager {
     }
 
     private async handleQuitGame(client: Client): Promise<void> {
-        const game = this.findClientGame(client);
-        if (!game) {
+        const gameSession = this.findClientGame(client);
+        if (!gameSession) {
             console.warn(`Client ${client.id} not in any game to quit`);
             return;
         }
 
-        await game.broadcast({ type: MessageType.GAME_ENDED });
-        console.log(`Game ${game.id} ended by client ${client.id}`);
         
-        // Then do the cleanup (your original working code)
-        gameManager.removeClientFromGames(client);
-
+        // gameManager.removeClientFromGames(client); // think this is unnecessary 
+        gameSession.stop();
+        gameManager.removeGame(gameSession.id);
+        console.log(`Game ${gameSession.id} ended by client ${client.id}`);
     }
+
     /**
      * Handles the disconnection of a client, removing them from games and cleaning up resources.
      * @param client - The client that disconnected.
