@@ -28,6 +28,9 @@ export class GUIManager {
 
     private player1Label: any = null;
     private player2Label: any = null;
+
+    private rally: any = null;
+    private previousRally: number = 0;
     
     private countdownText: any = null;
     private countdownContainer: any = null;
@@ -109,8 +112,8 @@ export class GUIManager {
         label.color = "white";
         label.top = top;
         label.fontSize = size;
-        label.width = "120px";
-        if (fontWeight)
+        label.width = "100%";
+        if (fontWeight !== null && fontWeight !== undefined)
             label.fontWeight = fontWeight;
         return label;
     }
@@ -183,6 +186,15 @@ export class GUIManager {
 
         // Box 6: Empty
         const box6 = this.createHUDBox();
+        this.rally = this.createTextBlock("Rally: \n0", 36, "0px");
+        this.rally.scaleX = 1;
+        this.rally.scaleY = 1;
+
+            // Create animations
+        const animationScaleX = this.createAnimation("scaleX", 1, 1.3);
+        const animationScaleY = this.createAnimation("scaleY", 1, 1.3);
+        this.rally.animations = [animationScaleX, animationScaleY];
+        box6.addControl(this.rally);
         hudGrid.addControl(box6, 0, 5);
 
         Logger.debug('HUD created with six boxes using Grid', 'GUIManager');
@@ -220,8 +232,8 @@ export class GUIManager {
             this.countdownText.scaleX = 1;
             this.countdownText.scaleY = 1;
 
-            const animationScaleX = this.createAnimation("scaleX");
-            const animationScaleY = this.createAnimation("scaleY");
+            const animationScaleX = this.createAnimation("scaleX", 1, 2);
+            const animationScaleY = this.createAnimation("scaleY", 1, 2);
 
             // Start animations
             this.countdownText.animations = [animationScaleX, animationScaleY];
@@ -233,13 +245,13 @@ export class GUIManager {
         }
     }
 
-    private createAnimation(property: string): any {
+    private createAnimation(property: string, start: number, end: number): any {
         const scale = BABYLON.Animation.CreateAnimation(
             property, BABYLON.Animation.ANIMATIONTYPE_FLOAT, 60, new BABYLON.SineEase());
         const keys = [
-            { frame: 0, value: 1},
-            { frame: 30, value: 2},
-            { frame: 60, value: 1}
+            { frame: 0, value: start},
+            { frame: 30, value: end},
+            { frame: 60, value: start}
         ];
         scale.setKeys(keys);
         return scale;
@@ -256,6 +268,23 @@ export class GUIManager {
         if (this.fpsText) {
             this.fpsText.text = `FPS: ${Math.round(fps)}`;
         }
+    }
+
+    updateRally(rally: number): void {
+        if (this.rally && (this.previousRally < rally) || rally === 1) {
+            this.rally.text = `Rally: \n${Math.round(rally)}`;
+
+            const maxRally = 10;
+            const intensity = Math.min(rally / maxRally, 1);
+            const r = 255;
+            const g = Math.round(255 * (1 - intensity));
+            const b = Math.round(255 * (1 - intensity));
+            this.rally.color = `rgb(${r}, ${g}, ${b})`;
+
+            const scene = this.advancedTexture.getScene();
+            scene.beginAnimation(this.rally, 0, 60, false);   
+        }
+        this.previousRally = rally;
     }
 
     // Update player scores
@@ -316,6 +345,8 @@ export class GUIManager {
 
             this.player1Label = null;
             this.player2Label = null;
+
+            this.rally = null;
 
             // Dispose the main texture
             if (this.advancedTexture) {

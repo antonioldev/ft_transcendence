@@ -109,6 +109,10 @@ export class WebSocketClient {
             case MessageType.WELCOME:
                 Logger.info('Server says', 'WebSocketClient', message.message);
                 break;
+            case MessageType.COUNTDOWN:
+                Logger.warn('COUNTDOWN', 'WebSocketClient', message.message);
+                this.triggerCallback(WebSocketEvent.COUNTDOWN, message);
+                break;
             case MessageType.ERROR:
                 this.triggerCallback(WebSocketEvent.ERROR, message.message);
                 break;

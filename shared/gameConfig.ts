@@ -54,7 +54,7 @@ export const GAME_CONFIG = {
 
     // Game mechanics
     serveRandomAngle: 0.3,  // Random Z velocity range on serve
-    scoreToWin: 50,          // Points needed to win
+    scoreToWin: 2,          // Points needed to win
     
     // Input mappings
     input2D: {

@@ -107,11 +107,11 @@ export class Ball {
         }
         
         // Goal detection (top/bottom goals)
-        if (this.rect.top <= GAME_CONFIG.goalBounds.rightGoal) {
+        if (this.rect.centerz <= GAME_CONFIG.goalBounds.rightGoal) {
             this.updateScore(RIGHT_PADDLE, this.current_rally);
             this.reset();
         }
-        if (this.rect.bottom >= GAME_CONFIG.goalBounds.leftGoal) {
+        if (this.rect.centerz >= GAME_CONFIG.goalBounds.leftGoal) {
             this.updateScore(LEFT_PADDLE, this.current_rally);
             this.reset();
         }
