@@ -168,8 +168,6 @@ export class WebSocketManager {
         gameSession.setClientReady(client);
         if (gameSession.allClientsReady() && gameSession.full && !gameSession.running) {
             console.log(`All clients ready in game ${gameSession.id}, sending ALL_READY`);
-
-            await gameSession.sendAllReady();
             this.runGame(gameSession);
         }
     }

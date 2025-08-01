@@ -48,15 +48,14 @@ export interface ClientMessage {
 export interface ServerMessage {
     type: MessageType; // Type of message
     state?: GameStateData; // Current game state (optional)
-    name?: string; // Optional name to distinguish players on same client
     side?: number; // Player side (optional)
     message?: string; // Additional message (optional)
     stats?: UserStats;
     countdown?: number;
-    player1?: string;
-    player2?: string;
     gameHistory?: GameHistoryEntry[];
     winner?: string; // sent on end Game to display who won
+    left?: string, // name of player on the left
+    right?: string, // name of player on the right
 }
 
 // Player information for game sessions

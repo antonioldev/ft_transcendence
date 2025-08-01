@@ -17,11 +17,13 @@ export class Game {
 	winner!: Player;
 	paddles: (Paddle | EasyBot | MediumBot | HardBot | ExactBot)[] = [new Paddle(LEFT_PADDLE), new Paddle(RIGHT_PADDLE)];
 	ball!: Ball;
+	match_id?: number; // for tournament matches only
 	// Callback function to broadcast the game state
 	private _broadcast: (message: ServerMessage, clients?: Client[]) => void;
 
-	constructor(players: Player[], broadcast_callback: (message: ServerMessage, clients?: Client[]) => void) {
+	constructor(players: Player[], broadcast_callback: (message: ServerMessage, clients?: Client[]) => void, match_id?: number) {
 		// Initialize game properties
+		this.match_id = match_id;
 		this.clock = new Clock();
 		this._broadcast = broadcast_callback;
 		this.players = players;
@@ -103,15 +105,36 @@ export class Game {
 		}
 	}
 
+	async sendAllReady(): Promise<void> { // New function, send to clients message to start + countdown
+		// broadcast the side assignment to all clients
+		this._broadcast({
+			type: MessageType.ALL_READY,
+			left: this.players[LEFT_PADDLE]?.name,
+			right: this.players[RIGHT_PADDLE]?.name,
+			...(this.match_id !== undefined && { match_id: this.match_id }) // optionally includes match_id for tournament
+		});
+		
+		// broadcast the countdown timer every second
+		for (let countdown = GAME_CONFIG.startDelay; countdown >= 0; countdown--) {
+			console.log(`Sending countdown: ${countdown}`);
+			this._broadcast({
+				type: MessageType.COUNTDOWN,
+				countdown: countdown,
+			});
+			this.clock.sleep(1000)
+		}
+	}
+
 	// Main game loop 
 	async run(): Promise<Player> {
+		await this.sendAllReady();
 		// if both are CPU then choose a random winner
 		if (this.paddles[LEFT_PADDLE] instanceof ExactBot && this.paddles[RIGHT_PADDLE] instanceof ExactBot) {
 			const index = (Math.random() > 0.5) ? 0 : 1;
 			this.winner = this.players[index];
 			this.running = false;
 		}
-		// run game loop, updating and broadcasting state to clients until winner
+		// run game loop, updating and broadcasting state to clients until win
 		while (this.running) {
 			const dt = await this.clock.tick(60);
 			if (this.paused) continue ;

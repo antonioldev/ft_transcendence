@@ -91,35 +91,10 @@ export class GameSession {
 		console.log(`Client ${client.id} marked as ready. Ready clients: ${this.readyClients.size}/${this.clients.length}`);
 	}
 
-	async sendAllReady(): Promise<void> { //New function, send to clients message to start + countdown
-		const player1Name = this.players[LEFT_PADDLE]?.name || "Player 1";
-    	const player2Name = this.players[RIGHT_PADDLE]?.name || "Player 2";
-		for (let countdown = GAME_CONFIG.startDelay; countdown >= 0; countdown--) {
-			const message: ServerMessage = {
-				type: MessageType.ALL_READY,
-				countdown: countdown,
-				player1: player1Name,
-            	player2: player2Name
-			};
-			
-			console.log(`Sending countdown: ${countdown}`);
-			this.broadcast(message);
-			
-			// Wait 1 second before next countdown (except for the last one)
-			if (countdown > 0) {
-				await new Promise(resolve => setTimeout(resolve, 1000));
-			}
-		}
-		
-		console.log(`Starting game ${this.id} after countdown`);
-		await this.start();
-	}
-
 	async start() {
 		if (this.running) return;
 
 		this.running = true;
-		this.assign_sides(this.players);
 		this.game = new Game(this.players, this.broadcast.bind(this))
 		
 		await this.game.run();
@@ -175,23 +150,6 @@ export class GameSession {
 		this.game.stop();
 		this.running = false;
 		this.paused = false;
-	}
-
-	assign_sides(players: Player[], match_id?: number) {
-		// guarantees that the index of players[] aligns with player.side
-		players[LEFT_PADDLE].side = LEFT_PADDLE;
-		players[RIGHT_PADDLE].side = RIGHT_PADDLE;
-
-		for (const player of this.players) {
-			if (!player.client)  continue; // if not AIBot
-
-			this.broadcast({
-				type: MessageType.SIDE_ASSIGNMENT,
-				name: player.name,
-				side: player.side,
-				...(match_id !== undefined && { match_id: match_id }) // optionally includes index for tournament
-			})
-		}
 	}
 
 	canClientControlGame(client: Client) {

@@ -31,8 +31,8 @@ export enum MessageType {
     REQUEST_GAME_HISTORY,
     SEND_GAME_HISTORY,
     REQUEST_USER_PROFILE,    // Type for back to frontend comm
-    UPDATE_USER_PROFILE     // Request to update user information 
-
+    UPDATE_USER_PROFILE,     // Request to update user information 
+    COUNTDOWN,               // Used to send ountdown timer before game starts
 }
 
 export enum WebSocketEvent {
