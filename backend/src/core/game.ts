@@ -121,8 +121,11 @@ export class Game {
 				type: MessageType.COUNTDOWN,
 				countdown: countdown,
 			});
-			this.clock.sleep(1000)
+			if (countdown > 0) {
+				await new Promise(resolve => setTimeout(resolve, 1000));
+			}
 		}
+
 	}
 
 	// Main game loop 

@@ -175,11 +175,16 @@ export class Game {
         webSocketClient.registerCallback(WebSocketEvent.GAME_RESUMED, () => { this.onServerResumedGame(); });
         webSocketClient.registerCallback(WebSocketEvent.GAME_ENDED, () => { this.onServerEndedGame(); });
         webSocketClient.registerCallback(WebSocketEvent.ALL_READY, (message: any) => {
-            this.handleCountdown(message.countdown, message.player1, message.player2); 
-        });
-        webSocketClient.registerCallback(WebSocketEvent.SIDE_ASSIGNMENT, (message: any) => {
+            if (this.guiManager)
+                this.guiManager.updatePlayerNames(message.left, message.right);
             if (this.inputHandler)
-            this.inputHandler.setControlledSide(message.name , message.side);
+                this.inputHandler.setControlledSide(message.name , message.side);
+            // this.handleCountdown(message.countdown, message.player1, message.player2); 
+        });
+        webSocketClient.registerCallback(WebSocketEvent.COUNTDOWN, (message: any) => {
+            this.handleCountdown(message.countdown); 
+            // if (this.inputHandler)
+            // this.inputHandler.setControlledSide(message.name , message.side);
         })
     }
 
@@ -244,11 +249,9 @@ export class Game {
         await game.dispose();
     }
 
-    private handleCountdown(countdown: number, player1: string, player2: string): void {
+    private handleCountdown(countdown: number): void {
         if (countdown === undefined || countdown === null)
             Logger.errorAndThrow('Server sent ALL_READY without countdown parameter', 'Game');
-        if (player1 && player2 && this.guiManager)
-        this.guiManager.updatePlayerNames(player1, player2);
 
         uiManager.setLoadingScreenVisible(false);
         if (countdown === 5)
