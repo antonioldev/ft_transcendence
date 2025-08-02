@@ -111,7 +111,7 @@ export class Game {
 			type: MessageType.ALL_READY,
 			left: this.players[LEFT_PADDLE]?.name,
 			right: this.players[RIGHT_PADDLE]?.name,
-			...(this.match_id !== undefined && { match_id: this.match_id }) // optionally includes match_id for tournament
+			...(this.match_id && { match_id: this.match_id }) // optionally includes match_id for tournament
 		});
 		
 		// broadcast the countdown timer every second
@@ -152,7 +152,7 @@ export class Game {
 		// broadcast and return the winner
 		this._broadcast({
 			type: MessageType.GAME_ENDED,
-			...(this.winner !== undefined && { winner: this.winner.name }) // optionally send winner if exists
+			...(this.winner && { winner: this.winner.name }) // optionally send winner if exists
 		});
 		return (this.winner);
 	}
