@@ -2,7 +2,6 @@ import { Logger } from '../utils/LogManager.js';
 import { AuthState, AppState, WebSocketEvent } from '../shared/constants.js';
 import { uiManager } from '../ui/UIManager.js';
 import { getCurrentTranslation } from '../translations/translations.js';
-// import { appStateManager } from './appStateManager.js';
 import { WebSocketClient } from './WebSocketClient.js';
 import { RegisterUser, LoginUser } from '../shared/types.js';
 import { EL, requireElementById} from '../ui/elements.js';

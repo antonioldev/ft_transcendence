@@ -52,20 +52,12 @@ export class GUIManager {
             this.advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI", true, scene);
             this.advancedTexture.layer.layerMask = 0x20000000;
 
-            // Create HUD elements
             this.createHUD(config);
-
-            // Create view mode specific elements
             this.createViewModeElements(config);
-
-            // Create countdown container
             this.createCountdownDisplay(config);
-
-            // ADD THIS: Create end game overlay
             this.createEndGameOverlay(config);
 
             this.isInitialized = true;
-            Logger.info('GUI created successfully', 'GUIManager');
 
         } catch (error) {
             Logger.error('Error creating GUI', 'GUIManager', error);
@@ -73,7 +65,7 @@ export class GUIManager {
         }
     }
 
-    // Create view mode specific GUI elements (like split screen divider)
+    // Create split screen divider if is in split screen mode
     private createViewModeElements(config: GameConfig): void {
         if (config.viewMode === ViewMode.MODE_3D && 
             (config.gameMode === GameMode.TWO_PLAYER_LOCAL || config.gameMode === GameMode.TOURNAMENT_LOCAL)) {
@@ -169,9 +161,9 @@ export class GUIManager {
         const box3 = this.createHUDBox();
         this.player1Label = this.createTextBlock("Player 1", 48, "-20px");
         this.applyRichTextEffects(this.player1Label, config);
-        box3.addControl(this.player1Label);
         this.score1Text = this.createTextBlock("0", 48, "30px");
         this.applyRichTextEffects(this.score1Text, config);
+        box3.addControl(this.player1Label);
         box3.addControl(this.score1Text);
         hudGrid.addControl(box3, 0, 2);
 
@@ -179,9 +171,9 @@ export class GUIManager {
         const box4 = this.createHUDBox();
         this.player2Label = this.createTextBlock("Player 2", 48, "-20px");
         this.applyRichTextEffects(this.player2Label, config);
-        box4.addControl(this.player2Label);
         this.score2Text = this.createTextBlock("0", 48, "30px");
         this.applyRichTextEffects(this.score2Text, config);
+        box4.addControl(this.player2Label);
         box4.addControl(this.score2Text);
         hudGrid.addControl(box4, 0, 3);
 
@@ -190,20 +182,16 @@ export class GUIManager {
         box5.addControl(this.createPlayerControls(config, 2));
         hudGrid.addControl(box5, 0, 4);
 
-        // Box 6: Empty
+        // Box 6: Rally
         const box6 = this.createHUDBox();
         this.rally = this.createTextBlock("Rally: \n0", 36, "0px");
         this.rally.scaleX = 1;
         this.rally.scaleY = 1;
-
-        // Create animations
         const animationScaleX = this.createAnimation("scaleX", 1, 1.3);
         const animationScaleY = this.createAnimation("scaleY", 1, 1.3);
         this.rally.animations = [animationScaleX, animationScaleY];
         box6.addControl(this.rally);
         hudGrid.addControl(box6, 0, 5);
-
-        Logger.debug('HUD created with six boxes using Grid', 'GUIManager');
     }
 
     private createCountdownDisplay(config: GameConfig): void {
@@ -288,7 +276,7 @@ export class GUIManager {
             this.rally.color = `rgb(${r}, ${g}, ${b})`;
 
             const scene = this.advancedTexture.getScene();
-            scene.beginAnimation(this.rally, 0, 60, false);   
+            scene.beginAnimation(this.rally, 0, 60, false);
         }
         this.previousRally = rally;
     }
@@ -354,11 +342,8 @@ export class GUIManager {
 
         // Add text to overlay
         this.endGameOverlay.addControl(this.endGameWinnerText);
-        
         // Add overlay to main texture
         this.advancedTexture.addControl(this.endGameOverlay);
-        
-        Logger.info('End game overlay created', 'GUIManager');
     }
 
     async showWinner(winner: string): Promise<void> {
@@ -366,21 +351,10 @@ export class GUIManager {
             Logger.warn('End game overlay not initialized', 'GUIManager');
             return;
         }
-
-        // Set winner text
         this.endGameWinnerText.text = `🏆 ${winner} WINS! 🏆`;
-        
-        // Show the overlay
         this.endGameOverlay.isVisible = true;
-        
-        Logger.info(`Showing winner: ${winner}`, 'GUIManager');
-
-        // Wait 5 seconds
         await new Promise(resolve => setTimeout(resolve, 5000));
-
         this.endGameOverlay.isVisible = false;
-        
-        Logger.info('End game overlay hidden', 'GUIManager');
     }
 
 
@@ -389,8 +363,6 @@ export class GUIManager {
         if (!this.isInitialized) return;
 
         try {
-            Logger.info('Disposing GUI...', 'GUIManager');
-
             this.fpsText = null;
             this.score1Text = null;
             this.score2Text = null;
@@ -403,15 +375,14 @@ export class GUIManager {
 
             this.rally = null;
 
-            // Dispose the main texture
-            if (this.advancedTexture) {
+            this.endGameWinnerText = null;
+            this.endGameOverlay = null;
+
+            if (this.advancedTexture)
                 this.advancedTexture.dispose();
-                this.advancedTexture = null;
-            }
+            this.advancedTexture = null;
 
             this.isInitialized = false;
-            Logger.info('GUI disposed successfully', 'GUIManager');
-
         } catch (error) {
             Logger.error('Error disposing GUI', 'GUIManager', error);
         }

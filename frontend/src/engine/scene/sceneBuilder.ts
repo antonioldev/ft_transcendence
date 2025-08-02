@@ -10,7 +10,7 @@ import {
     getPlayerLeftPosition,
     getPlayerRightPosition,
     getBallStartPosition
-} from '../../core/utils.js';
+} from '../utils.js';
 import { MAP_ASSETS } from './sceneAssets.js';
 import { createEnvironment, createTerrain, createVegetation } from './environmentFactory.js';
 

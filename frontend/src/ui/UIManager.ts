@@ -269,6 +269,9 @@ class UIManager {
     }
 
     setLoadingScreenVisible(visible: boolean): void {
+        const t = getCurrentTranslation();
+        const loadingText = requireElementById(EL.GAME.LOADING_TEXT);
+        loadingText.textContent = t.loading;
         const loadingScreen = requireElementById(EL.GAME.LOADING_SCREEN);
         loadingScreen.style.display = visible ? 'flex' : 'none';
     }

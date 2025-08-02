@@ -1,9 +1,8 @@
 import { Logger } from '../utils/LogManager.js';
-import { GameMode, ViewMode, ConnectionStatus, AppState } from '../shared/constants.js';
+import { GameMode, ViewMode, AppState } from '../shared/constants.js';
 import { uiManager } from '../ui/UIManager.js';
 import { authManager } from './AuthManager.js';
 import { getCurrentTranslation } from '../translations/translations.js';
-// import { appStateManager } from './appStateManager.js';
 import { dashboardManager } from './DashboardManager.js';
 import { webSocketClient } from './WebSocketClient.js';
 import { appStateManager } from './AppStateManager.js';

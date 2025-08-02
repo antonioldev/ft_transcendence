@@ -53,11 +53,6 @@ export class GameConfigFactory {
                 ];
             }
 
-            // case GameMode.TWO_PLAYER_REMOTE: {
-            //     const name = getInputValue(EL.PLAYER_SETUP.PLAYER1_NAME_ONLINE, 'Player 1');
-            //     return [{ id: name, name: name }];
-            // } case GameMode.TOURNAMENT_REMOTE: 
-
             case GameMode.TOURNAMENT_LOCAL: {
                 const name1 = getInputValue(EL.PLAYER_SETUP.PLAYER1_NAME_TOURNAMENT);
                 const name2 = getInputValue(EL.PLAYER_SETUP.PLAYER2_NAME_TOURNAMENT);
