@@ -19,9 +19,6 @@ export class Ball {
     constructor(paddles: any[], updateScoreCallback: (side: number, score: number) => void) {
         const ballPos = getBallStartPosition();
         this.rect = new Rect(ballPos.x, ballPos.z, GAME_CONFIG.ballRadius * 2, GAME_CONFIG.ballRadius * 2);
-       
-        console.log("CONSTRUCTED ball z = " + this.rect.centerz);
-        
         this.oldRect = this.rect.instance();
         this.paddles = paddles;
         this.updateScore = updateScoreCallback;
@@ -141,12 +138,7 @@ export class Ball {
     update(dt: number): void {
         this.oldRect.copy(this.rect);
         this.delayTimer();
-        console.log("INITIAL ball z = " + this.rect.centerz);
-
         this.move(dt);
-
-        console.log("UPDATED ball z = " + this.rect.centerz);
-
         this.wallCollision();
     }
 }
