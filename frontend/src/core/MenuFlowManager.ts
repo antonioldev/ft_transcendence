@@ -1,4 +1,4 @@
-import { Logger } from './LogManager.js';
+import { Logger } from '../utils/LogManager.js';
 import { GameMode, ViewMode, ConnectionStatus, AppState } from '../shared/constants.js';
 import { uiManager } from '../ui/UIManager.js';
 import { authManager } from './AuthManager.js';

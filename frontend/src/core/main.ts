@@ -9,7 +9,7 @@ import { appStateManager } from './AppStateManager.js';
 import { AppState, ConnectionStatus, WebSocketEvent } from '../shared/constants.js';
 import { EL, requireElementById } from '../ui/elements.js';
 import { DashboardManager } from './DashboardManager.js';
-import { MemoryLeakDetector } from './.memory.js'
+import { MemoryLeakDetector } from '../utils/.memory.js'
 
 // Initialize the detector
 // const memoryDetector = new MemoryLeakDetector();

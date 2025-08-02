@@ -1,4 +1,4 @@
-import { Logger } from './LogManager.js';
+import { Logger } from '../utils/LogManager.js';
 import { ConnectionStatus, MessageType, GameMode, Direction, WebSocketEvent } from '../shared/constants.js'
 import { ClientMessage, ServerMessage, GameStateData, PlayerInfo, RegisterUser, LoginUser } from '../shared/types.js'
 

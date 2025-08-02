@@ -1,4 +1,4 @@
-import { Logger } from './LogManager.js';
+import { Logger } from '../utils/LogManager.js';
 import { Game } from '../engine/Game.js';
 import { appStateManager } from './AppStateManager.js';
 

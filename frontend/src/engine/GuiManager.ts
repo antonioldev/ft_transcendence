@@ -5,7 +5,7 @@ declare var BABYLON: typeof import('@babylonjs/core') & {
 import { GameConfig } from './GameConfig.js';
 import { GameMode } from '../shared/constants.js';
 import { ViewMode } from '../shared/constants.js';
-import { Logger } from '../core/LogManager.js';
+import { Logger } from '../utils/LogManager.js';
 import { getCurrentTranslation } from '../translations/translations.js';
 
 /**

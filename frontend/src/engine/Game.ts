@@ -4,19 +4,18 @@ declare var BABYLON: typeof import('@babylonjs/core') & {
 
 import { GameConfig } from './GameConfig.js';
 import { buildScene2D, buildScene3D } from './scene/sceneBuilder.js';
-// import { InputHandler } from './InputManager.js';
 import { webSocketClient } from '../core/WebSocketClient.js';
 import { GameStateData, GameObjects } from '../shared/types.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
-import { appStateManager } from '../core/AppStateManager.js';
-import { GameState, ViewMode, WebSocketEvent } from '../shared/constants.js';
-import { Logger } from '../core/LogManager.js';
+import { GameState, ViewMode, WebSocketEvent, AppState } from '../shared/constants.js';
+import { Logger } from '../utils/LogManager.js';
 import { uiManager } from '../ui/UIManager.js';
 import { GUIManager } from './GuiManager.js';
 import { RenderManager } from './RenderManager.js';
 import { GameMode, Direction } from '../shared/constants.js';
 import { InputConfig, PlayerControls, InputData } from '../shared/types.js';
 import { getPlayerBoundaries } from '../shared/gameConfig.js';
+import { appStateManager } from '../core/AppStateManager.js';
 
 /**
  * Main Game class that handles everything for running one game instance.

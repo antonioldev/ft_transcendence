@@ -1,6 +1,6 @@
 declare var BABYLON: typeof import('@babylonjs/core');
 
-import { Logger } from '../core/LogManager.js';
+import { Logger } from '../utils/LogManager.js';
 import { GUIManager } from './GuiManager.js';
 import { GameMode, ViewMode } from '../shared/constants.js';
 import {

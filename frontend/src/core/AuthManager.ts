@@ -1,4 +1,4 @@
-import { Logger } from './LogManager.js';
+import { Logger } from '../utils/LogManager.js';
 import { AuthState, AppState, WebSocketEvent } from '../shared/constants.js';
 import { uiManager } from '../ui/UIManager.js';
 import { getCurrentTranslation } from '../translations/translations.js';

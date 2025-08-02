@@ -7,7 +7,7 @@ import { webSocketClient } from './WebSocketClient.js';
 import { EL } from '../ui/elements.js';
 import { GameConfigFactory } from '../engine/GameConfig.js';
 import { PlayerInfo } from '../shared/types.js';
-import { Logger } from './LogManager.js'
+import { Logger } from '../utils/LogManager.js'
 // import { memoryDetector } from './main.js';
 
 /**
