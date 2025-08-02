@@ -134,6 +134,7 @@ export class Game {
 			this.winner = this.players[index];
 			this.running = false;
 		}
+
 		// run game loop, updating and broadcasting state to clients until win
 		while (this.running) {
 			const dt = await this.clock.tick(60);
