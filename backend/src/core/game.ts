@@ -109,7 +109,7 @@ export class Game {
 		}
 	}
 
-	async sendAllReady(): Promise<void> { // New function, send to clients message to start + countdown
+	async send_sides_and_countdown(): Promise<void> { // New function, send to clients message to start + countdown
 		// broadcast the side assignment to all clients
 		this._broadcast({
 			type: MessageType.ALL_READY,
@@ -135,7 +135,7 @@ export class Game {
 
 	// Main game loop 
 	async run(): Promise<Player> {
-		await this.sendAllReady();
+		await this.send_sides_and_countdown();
 		// if both are CPU then choose a random winner
 		if (this.paddles[LEFT_PADDLE] instanceof ExactBot && this.paddles[RIGHT_PADDLE] instanceof ExactBot) {
 			const index = (Math.random() > 0.5) ? 0 : 1;
