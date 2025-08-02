@@ -320,7 +320,7 @@ export class Game {
         webSocketClient.registerCallback(WebSocketEvent.ERROR, (error: string) => { Logger.error('Network error', 'Game', error); });
         webSocketClient.registerCallback(WebSocketEvent.GAME_PAUSED, () => { this.onServerPausedGame(); });
         webSocketClient.registerCallback(WebSocketEvent.GAME_RESUMED, () => { this.onServerResumedGame(); });
-        webSocketClient.registerCallback(WebSocketEvent.GAME_ENDED, () => { this.onServerEndedGame(); });
+        webSocketClient.registerCallback(WebSocketEvent.GAME_ENDED, (message: any) => { this.onServerEndedGame(message.winner); });
         webSocketClient.registerCallback(WebSocketEvent.ALL_READY, (message: any) => {
             this.handlePlayerAssignment(message.left, message.right);
         });
@@ -405,14 +405,19 @@ export class Game {
     }
 
     // Handle server ending the game
-    private async onServerEndedGame(): Promise<void> {
+    private async onServerEndedGame(winner: string): Promise<void> {
         if (this.isDisposed) return;
 
         if (!this.renderManager?.isRendering())
             this.renderManager?.startRendering();
 
+        let gameWinner = "CPU";
+        if (winner !== undefined) // TODO what shall we send
+            gameWinner = winner;
         uiManager.setElementVisibility('pause-dialog-3d', false);
-        await this.guiManager?.showWinner("Antonio");
+        // if (this.config.gameMode === GameMode.SINGLE_PLAYER
+        //     || this.config.gameMode === GameMode.TOURNAMENT_REMOTE || this.config.gameMode === GameMode.TWO_PLAYER_REMOTE)
+            await this.guiManager?.showWinner(gameWinner);
 
         this.renderManager?.stopRendering();
         this.stopGameLoop();

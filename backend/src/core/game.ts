@@ -32,7 +32,7 @@ export class Game {
 
 	// Initialize the ball and players
 	private _init() {
-		this.ball = new Ball(this.paddles, this._update_score);
+		this.ball = new Ball(this.paddles, this._update_score.bind(this));
 		
 		if (!this.players[LEFT_PADDLE].client) { // if CPU
 			this.paddles[LEFT_PADDLE] = new MediumBot(LEFT_PADDLE, this.ball)
@@ -43,6 +43,8 @@ export class Game {
 	}
 
 	private _handle_input(dt: number): void {
+		if (!this.running) return ;
+
 		this._process_queue(dt);
 		if (this.paddles[RIGHT_PADDLE] instanceof MediumBot) {
 			this.paddles[RIGHT_PADDLE].update(dt);
@@ -54,10 +56,12 @@ export class Game {
 
 	// Update the score for the specified side
 	private _update_score(side: number, score: number): void {
+		if (!this.running) return ;
+
 		this.paddles[side].score += score;
 		if (this.paddles[side].score >= GAME_CONFIG.scoreToWin) {
-			this.winner = this.players[side];
 			this.running = false;
+			this.winner = this.players[side];
 		}
 	}
 
@@ -105,13 +109,13 @@ export class Game {
 		}
 	}
 
-	async sendAllReady(): Promise<void> { // New function, send to clients message to start + countdown
+	async send_sides_and_countdown(): Promise<void> { // New function, send to clients message to start + countdown
 		// broadcast the side assignment to all clients
 		this._broadcast({
 			type: MessageType.ALL_READY,
 			left: this.players[LEFT_PADDLE]?.name,
 			right: this.players[RIGHT_PADDLE]?.name,
-			...(this.match_id !== undefined && { match_id: this.match_id }) // optionally includes match_id for tournament
+			...(this.match_id && { match_id: this.match_id }) // optionally includes match_id for tournament
 		});
 		
 		// broadcast the countdown timer every second
@@ -122,21 +126,23 @@ export class Game {
 				countdown: countdown,
 			});
 			if (countdown > 0) {
-				await new Promise(resolve => setTimeout(resolve, 1000));
+				await this.clock.sleep(1000);
 			}
 		}
-
+		// reset clock dt to 60fps after countdown
+		this.clock.tick(60);
 	}
 
 	// Main game loop 
 	async run(): Promise<Player> {
-		await this.sendAllReady();
+		await this.send_sides_and_countdown();
 		// if both are CPU then choose a random winner
 		if (this.paddles[LEFT_PADDLE] instanceof ExactBot && this.paddles[RIGHT_PADDLE] instanceof ExactBot) {
 			const index = (Math.random() > 0.5) ? 0 : 1;
 			this.winner = this.players[index];
 			this.running = false;
 		}
+
 		// run game loop, updating and broadcasting state to clients until win
 		while (this.running) {
 			const dt = await this.clock.tick(60);
@@ -152,8 +158,7 @@ export class Game {
 		// broadcast and return the winner
 		this._broadcast({
 			type: MessageType.GAME_ENDED,
-			winner: "test", //TODO test
-			...(this.winner !== undefined && { winner: this.winner.name }) // optionally send winner if exists
+			...(this.winner && { winner: this.winner.name }) // optionally send winner if exists
 		});
 		return (this.winner);
 	}
