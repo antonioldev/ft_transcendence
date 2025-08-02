@@ -32,7 +32,7 @@ export class Game {
 
 	// Initialize the ball and players
 	private _init() {
-		this.ball = new Ball(this.paddles, this._update_score);
+		this.ball = new Ball(this.paddles, this._update_score.bind(this));
 		
 		if (!this.players[LEFT_PADDLE].client) { // if CPU
 			this.paddles[LEFT_PADDLE] = new MediumBot(LEFT_PADDLE, this.ball)
@@ -43,6 +43,8 @@ export class Game {
 	}
 
 	private _handle_input(dt: number): void {
+		if (!this.running) return ;
+
 		this._process_queue(dt);
 		if (this.paddles[RIGHT_PADDLE] instanceof MediumBot) {
 			this.paddles[RIGHT_PADDLE].update(dt);
@@ -54,6 +56,8 @@ export class Game {
 
 	// Update the score for the specified side
 	private _update_score(side: number, score: number): void {
+		if (!this.running) return ;
+
 		this.paddles[side].score += score;
 		if (this.paddles[side].score >= GAME_CONFIG.scoreToWin) {
 			this.running = false;
