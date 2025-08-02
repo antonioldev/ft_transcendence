@@ -624,10 +624,8 @@ export class Game {
 
     private assignPlayerSide(name: string, side: number): void {
         const isOurPlayer = this.config.players.some(player => player.name === name);
-        if (isOurPlayer && !this.controlledSides.includes(side)) {
+        if (isOurPlayer && !this.controlledSides.includes(side))
             this.controlledSides.push(side);
-            Logger.info('Added controlled side', 'Game', `Side: ${side} for ${name}`);
-        }
     }
 
     private handlePlayerAssignment(leftPlayerName: string, rightPlayerName: string): void {
@@ -638,6 +636,12 @@ export class Game {
         // Assign sides based on player names
         this.assignPlayerSide(leftPlayerName, 0);
         this.assignPlayerSide(rightPlayerName, 1);
+        
+        if (this.guiManager) {
+            const leftPlayerControlled = this.controlledSides.includes(0);
+            const rightPlayerControlled = this.controlledSides.includes(1);
+            this.guiManager.updateControlVisibility(leftPlayerControlled, rightPlayerControlled);
+        }
     }
 
     // Update input state - call this in render loop

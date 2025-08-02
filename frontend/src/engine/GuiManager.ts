@@ -3,11 +3,11 @@ declare var BABYLON: typeof import('@babylonjs/core') & {
 }; //declare var BABYLON: any;
 
 import { GameConfig } from './GameConfig.js';
+import { Game } from './Game.js';
 import { GameMode } from '../shared/constants.js';
 import { ViewMode } from '../shared/constants.js';
 import { Logger } from '../utils/LogManager.js';
 import { getCurrentTranslation } from '../translations/translations.js';
-import { GAME_CONFIG } from '../shared/gameConfig.js';
 
 /**
  * Manages all GUI elements for the game including HUD, scores, FPS display
@@ -81,7 +81,8 @@ export class GUIManager {
 
     private createHUDBox(): any {
         const box = new BABYLON.GUI.Rectangle();
-        box.thickness = 0;
+        box.thickness = 2; // Add outline thickness for debugging
+        box.color = "red"; // Outline color for debugging
         box.background = "rgba(0, 0, 0, 0.83)";
         return box;
     }
@@ -118,13 +119,36 @@ export class GUIManager {
         pControls.text = this.getControlsText(config.viewMode, player);
         pControls.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
         pControls.lineSpacing = "10px";
-        if (player === 2 && (config.gameMode === GameMode.SINGLE_PLAYER ||
-            config.gameMode === GameMode.TOURNAMENT_REMOTE || config.gameMode === GameMode.TWO_PLAYER_REMOTE))
-            pControls.color = "rgba(0, 0, 0, 0)";
-        else
-            pControls.color = "rgba(255,255,255,0.7)";
+
+        // const game = Game.getCurrentInstance();
+        // const controlled = game?.['controlledSides'] || [];
+        // const isControlled = controlled.includes(player - 1);
+        // pControls.color = isControlled ? "rgba(255,255,255,0.7)" : "rgba(0, 0, 0, 0)";
+        // if (player === 2 && (config.gameMode === GameMode.SINGLE_PLAYER ||
+        //     config.gameMode === GameMode.TOURNAMENT_REMOTE || config.gameMode === GameMode.TWO_PLAYER_REMOTE))
+        //     pControls.color = "rgba(0, 0, 0, 0)";
+        // else
+        // pControls.color = "rgba(255,255,255,0.7)";
+        pControls.color = "rgba(0, 0, 0, 0)";
         pControls.fontSize = 30;
         return pControls;
+    }
+
+    updateControlVisibility(player1: boolean, player2: boolean): void {
+        if (!this.hudGrid) return;
+
+        const player1ControlBox = this.hudGrid.getChildrenAt(0, 1)[0];
+        const player2ControlBox = this.hudGrid.getChildrenAt(0, 4)[0];
+
+        if (player1ControlBox && player1ControlBox.children.length > 0) {
+            const player1Controls = player1ControlBox.children[0];
+            player1Controls.color = player1 ? "rgba(255,255,255,0.7)" : "rgba(0, 0, 0, 0)";
+        }
+
+        if (player2ControlBox && player2ControlBox.children.length > 0) {
+            const player2Controls = player2ControlBox.children[0];
+            player2Controls.color = player2 ? "rgba(255,255,255,0.7)" : "rgba(0, 0, 0, 0)";
+        }
     }
 
     private createHUD(config: GameConfig): void {
@@ -181,7 +205,9 @@ export class GUIManager {
 
         // Box 6: Rally
         const box6 = this.createHUDBox();
-        this.rally = this.createTextBlock("Rally: \n0", 36, "0px");
+        this.rally = this.createTextBlock("Rally:\n0", 36, "0px");
+        this.rally.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+        this.rally.textVerticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
         this.rally.scaleX = 1;
         this.rally.scaleY = 1;
         const animationScaleX = this.createAnimation("scaleX", 1, 1.3);
@@ -263,7 +289,7 @@ export class GUIManager {
 
     updateRally(rally: number): void {
         if (this.rally && (this.previousRally < rally) || rally === 1) {
-            this.rally.text = `Rally: \n${Math.round(rally)}`;
+            this.rally.text = `Rally:\n${Math.round(rally)}`;
 
             const maxRally = 10;
             const intensity = Math.min(rally / maxRally, 1);
