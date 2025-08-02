@@ -121,11 +121,8 @@ export class Game {
 				type: MessageType.COUNTDOWN,
 				countdown: countdown,
 			});
-			if (countdown > 0) {
-				await new Promise(resolve => setTimeout(resolve, 1000));
-			}
+			this.clock.sleep(1000)
 		}
-
 	}
 
 	// Main game loop 
@@ -153,7 +150,6 @@ export class Game {
 		// broadcast and return the winner
 		this._broadcast({
 			type: MessageType.GAME_ENDED,
-			winner: this.winner.name,
 			...(this.winner !== undefined && { winner: this.winner.name }) // optionally send winner if exists
 		});
 		return (this.winner);
