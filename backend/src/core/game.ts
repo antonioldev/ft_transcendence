@@ -129,6 +129,8 @@ export class Game {
 				await this.clock.sleep(1000);
 			}
 		}
+		// reset clock dt to 60fps after countdown
+		this.clock.tick(60);
 	}
 
 	// Main game loop 
