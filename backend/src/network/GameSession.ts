@@ -147,7 +147,7 @@ export class GameSession {
 	}
 
 	stop() {
-        this.broadcast({ type: MessageType.GAME_ENDED });
+        // this.broadcast({ type: MessageType.GAME_ENDED });
 		this.game.stop();
 		this.running = false;
 		this.paused = false;

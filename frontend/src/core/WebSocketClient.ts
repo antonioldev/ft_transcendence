@@ -1,4 +1,4 @@
-import { Logger } from './LogManager.js';
+import { Logger } from '../utils/LogManager.js';
 import { ConnectionStatus, MessageType, GameMode, Direction, WebSocketEvent } from '../shared/constants.js'
 import { ClientMessage, ServerMessage, GameStateData, PlayerInfo, RegisterUser, LoginUser } from '../shared/types.js'
 
@@ -101,7 +101,7 @@ export class WebSocketClient {
                 this.triggerCallback(WebSocketEvent.GAME_RESUMED);
                 break;
             case MessageType.GAME_ENDED:
-                this.triggerCallback(WebSocketEvent.GAME_ENDED);
+                this.triggerCallback(WebSocketEvent.GAME_ENDED, message);
                 break;
             case MessageType.ALL_READY:
                 this.triggerCallback(WebSocketEvent.ALL_READY, message);
@@ -110,7 +110,6 @@ export class WebSocketClient {
                 Logger.info('Server says', 'WebSocketClient', message.message);
                 break;
             case MessageType.COUNTDOWN:
-                Logger.warn('COUNTDOWN', 'WebSocketClient', message.message);
                 this.triggerCallback(WebSocketEvent.COUNTDOWN, message);
                 break;
             case MessageType.ERROR:

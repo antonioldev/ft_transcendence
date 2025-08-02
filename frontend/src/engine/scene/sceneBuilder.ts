@@ -10,7 +10,7 @@ import {
     getPlayerLeftPosition,
     getPlayerRightPosition,
     getBallStartPosition
-} from '../../core/utils.js';
+} from '../utils.js';
 import { MAP_ASSETS } from './sceneAssets.js';
 import { createEnvironment, createTerrain, createVegetation } from './environmentFactory.js';
 
@@ -46,6 +46,7 @@ export async function buildScene2D(
     const allCameras = [...cameras, guiCamera];
     scene.activeCameras = allCameras;
     onProgress?.(100);
+    
     console.log('Scene building complete!');
     return {
         players: { left: playerLeft, right: playerRight },

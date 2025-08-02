@@ -55,7 +55,7 @@ export const MAP_ASSETS: Record<string, MapAssetConfig> = {
         vegetation: {
             bush: {
                 path: "assets/model/map1/Bush/Bush1.obj",
-                count: { sides: 45, background: 12, behind: 15 }, // TODO try to push
+                count: { sides: 45, background: 12, behind: 15 },
                 positioning: { 
                     marginFromField: GAME_CONFIG.fieldWidth * 0.05,
                     depthLayers: 2, 

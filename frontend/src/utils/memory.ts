@@ -23,53 +23,65 @@ export class MemoryLeakDetector {
     private baseline: number = 0;
     private measurements: number[] = [];
     private maxMeasurements = 20;
+    private lastUsedMemory: number | null = null;
     
     startMonitoring(): void {
-    if (!(performance as any).memory) {
-        console.warn('Memory monitoring not available in this browser');
-        return;
+        if (!(performance as any).memory) {
+            console.warn('Memory monitoring not available in this browser');
+            return;
+        }
+        
+        // Set baseline AFTER app is fully loaded (longer delay)
+        setTimeout(() => {
+            this.baseline = (performance as any).memory.usedJSHeapSize;
+            console.log(`🔍 Memory baseline set: ${this.formatBytes(this.baseline)} (after app initialization)`);
+        }, 5000); // Increased from 2000 to 5000
+        
+        setInterval(() => {
+            this.checkMemory();
+        }, 3000);
     }
-    
-    // Set baseline AFTER app is fully loaded (longer delay)
-    setTimeout(() => {
-        this.baseline = (performance as any).memory.usedJSHeapSize;
-        console.log(`🔍 Memory baseline set: ${this.formatBytes(this.baseline)} (after app initialization)`);
-    }, 5000); // Increased from 2000 to 5000
-    
-    setInterval(() => {
-        this.checkMemory();
-    }, 3000);
-}
     
     private checkMemory(): void {
         const memory = (performance as any).memory;
         const current = memory.usedJSHeapSize;
         const growth = current - this.baseline;
         
+        // Calculate delta from last measurement
+        const delta = this.lastUsedMemory !== null ? current - this.lastUsedMemory : 0;
+        this.lastUsedMemory = current;
+
         this.measurements.push(current);
         if (this.measurements.length > this.maxMeasurements) {
             this.measurements.shift();
         }
-        
+
         const trend = this.calculateTrend();
-        
+
         console.warn('🧠 Memory:', {
             used: this.formatBytes(current),
             growth: this.formatBytes(growth, true),
+            sinceLast: this.formatBytes(delta, true),  // NEW LINE
             trend: trend > 100000 ? '📈 GROWING' : trend < -100000 ? '📉 SHRINKING' : '➡️ STABLE',
             trendBytes: this.formatBytes(trend, true)
         });
-        
-        // Alert on significant growth
-        if (growth > 50 * 1024 * 1024) { // 50MB over baseline
+
+        // Alert on significant growth from baseline
+        if (growth > 50 * 1024 * 1024) {
             console.error('🚨 MEMORY LEAK DETECTED: +' + this.formatBytes(growth));
         }
-        
+
         // Alert on continuous growth trend
-        if (trend > 500000) { // 500KB per measurement
+        if (trend > 500000) {
             console.error('🚨 CONTINUOUS MEMORY GROWTH: ' + this.formatBytes(trend) + ' per measurement');
         }
+
+        // Alert on large jump between two readings
+        if (Math.abs(delta) > 10 * 1024 * 1024) {
+            console.warn('🔄 MEMORY JUMP since last check: ' + this.formatBytes(delta, true));
+        }
     }
+
     
     private calculateTrend(): number {
         if (this.measurements.length < 5) return 0;
@@ -99,11 +111,11 @@ export class MemoryLeakDetector {
         console.log('🎮 Game started - Memory: ' + this.formatBytes(current));
     }
     setBaselineAfterFirstGame(): void {
-    if ((performance as any).memory) {
-        this.baseline = (performance as any).memory.usedJSHeapSize;
-        console.log(`🔍 NEW BASELINE after first game: ${this.formatBytes(this.baseline)}`);
+        if ((performance as any).memory) {
+            this.baseline = (performance as any).memory.usedJSHeapSize;
+            console.log(`🔍 NEW BASELINE after first game: ${this.formatBytes(this.baseline)}`);
+        }
     }
-}
     // Call this when ending a game
     markGameEnd(): void {
     // Force garbage collection if possible

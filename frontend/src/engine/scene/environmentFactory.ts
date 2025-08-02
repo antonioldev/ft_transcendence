@@ -2,7 +2,7 @@ declare var BABYLON: typeof import('@babylonjs/core');
 
 import { ViewMode } from '../../shared/constants.js';
 import { GAME_CONFIG } from '../../shared/gameConfig.js';
-import { Logger } from '../../core/LogManager.js';
+import { Logger } from '../../utils/LogManager.js';
 import { VegetationAsset } from './sceneAssets.js';
 import { TextureSet, MAP_OBJECT_TYPE } from './sceneAssets.js';
 import { createMaterial, getStandardTextureScale } from './materialFactory.js';

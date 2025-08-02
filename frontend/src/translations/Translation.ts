@@ -52,6 +52,7 @@ export interface Translation {
     tournamentOnline: string;
     play: string;
     loading: string;
+    waiting: string;
     controls: string;
 }
 

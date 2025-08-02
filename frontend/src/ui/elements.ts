@@ -1,4 +1,4 @@
-import { Logger } from "../core/LogManager.js";
+import { Logger } from "../utils/LogManager.js";
 
 // Centralized element ID constants to eliminate hard-coded strings throughout the application.
 // All DOM element IDs should be defined here and referenced via these constants.
