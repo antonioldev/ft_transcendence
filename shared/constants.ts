@@ -38,6 +38,7 @@ export enum MessageType {
 export enum WebSocketEvent {
     GAME_STATE = 'gameState',
     CONNECTION = 'connection',
+    COUNTDOWN = 'countdown',
     ERROR = 'error',
     GAME_PAUSED = 'gamePaused',
     GAME_RESUMED = 'gameResumed',

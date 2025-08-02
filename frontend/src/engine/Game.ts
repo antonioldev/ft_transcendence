@@ -115,7 +115,7 @@ export class Game {
 
             this.setupResizeHandler();
 
-            this.inputHandler = new InputHandler(this.config.gameMode, this.config.controls, this.scene);
+            this.inputHandler = new InputHandler(this.config, this.scene);
             this.inputHandler.setGameObjects(this.gameObjects);
 
             this.connectComponents();
@@ -174,10 +174,18 @@ export class Game {
         webSocketClient.registerCallback(WebSocketEvent.GAME_PAUSED, () => { this.onServerPausedGame(); });
         webSocketClient.registerCallback(WebSocketEvent.GAME_RESUMED, () => { this.onServerResumedGame(); });
         webSocketClient.registerCallback(WebSocketEvent.GAME_ENDED, () => { this.onServerEndedGame(); });
-        // webSocketClient.registerCallback(WebSocketEvent.ALL_READY, (countdown: number) => {this.handleCountdown(countdown); });
         webSocketClient.registerCallback(WebSocketEvent.ALL_READY, (message: any) => {
-            this.handleCountdown(message.countdown, message.player1, message.player2); 
+            if (this.guiManager)
+                this.guiManager.updatePlayerNames(message.left, message.right);
+            if (this.inputHandler)
+                this.inputHandler.setControlledSide(message.name , message.side);
+            // this.handleCountdown(message.countdown, message.player1, message.player2); 
         });
+        webSocketClient.registerCallback(WebSocketEvent.COUNTDOWN, (message: any) => {
+            this.handleCountdown(message.countdown); 
+            // if (this.inputHandler)
+            // this.inputHandler.setControlledSide(message.name , message.side);
+        })
     }
 
     async connect(): Promise<void> {
@@ -241,11 +249,9 @@ export class Game {
         await game.dispose();
     }
 
-    private handleCountdown(countdown: number, player1: string, player2: string): void {
+    private handleCountdown(countdown: number): void {
         if (countdown === undefined || countdown === null)
             Logger.errorAndThrow('Server sent ALL_READY without countdown parameter', 'Game');
-        if (player1 && player2 && this.guiManager)
-        this.guiManager.updatePlayerNames(player1, player2);
 
         uiManager.setLoadingScreenVisible(false);
         if (countdown === 5)
@@ -366,6 +372,9 @@ export class Game {
                 // this.gameObjects.ball.position.x = state.ball.x;
                 // this.gameObjects.ball.position.z = state.ball.z;
             }
+
+            if (this.guiManager)
+                this.guiManager.updateRally(state.ball.current_rally);
 
             // Update Score
             if (this.guiManager && this.guiManager.isReady())
