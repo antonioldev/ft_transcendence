@@ -24,8 +24,6 @@ import { EL } from '../ui/elements.js';
 /**
  * Main Game class that handles everything for running one game instance.
  * 
- * Merged from: Game + BabylonScene + GameRenderer + GUIManager
- * 
  * Responsibilities:
  * - Babylon.js engine/scene creation and management
  * - Render loop control
@@ -35,9 +33,6 @@ import { EL } from '../ui/elements.js';
  * - Complete game session lifecycle
  */
 export class Game {
-    // ========================================
-    // 1. Static Methods & Properties
-    // ========================================
     private static currentInstance: Game | null = null;
 
     static getCurrentInstance(): Game | null {
@@ -90,9 +85,6 @@ export class Game {
         await game.dispose();
     }
 
-    // ========================================
-    // 2. Constructor & Properties
-    // ========================================
     private engine: any = null;
     private scene: any = null;
     private canvas: HTMLCanvasElement | null = null;
@@ -362,7 +354,14 @@ export class Game {
 
         uiManager.setLoadingScreenVisible(false);
         if (countdown === 5)
-            this.renderManager?.startCameraAnimation(this.gameObjects?.cameras, this.config.gameMode, this.config.viewMode);
+            this.renderManager?.startCameraAnimation(
+                this.gameObjects?.cameras, 
+                this.config.gameMode, 
+                this.config.viewMode,
+                this.controlledSides,
+                this.isLocalMultiplayer
+            );
+            // this.renderManager?.startCameraAnimation(this.gameObjects?.cameras, this.config.gameMode, this.config.viewMode);
         if (countdown > 0)
             this.guiManager?.showCountdown(countdown);
         else {
@@ -624,19 +623,43 @@ export class Game {
 
     private assignPlayerSide(name: string, side: number): void {
         const isOurPlayer = this.config.players.some(player => player.name === name);
-        if (isOurPlayer && !this.controlledSides.includes(side))
+        if (isOurPlayer && !this.controlledSides.includes(side)) {
+            console.error(name + " ->" + side);
             this.controlledSides.push(side);
+        }
+    }
+
+    private setActiveCameras(): void {
+        if (!this.gameObjects?.cameras || this.config.viewMode === ViewMode.MODE_2D)
+            return;
+
+        const cameras = this.gameObjects.cameras;
+        const guiCamera = this.gameObjects.guiCamera;
+
+        if (this.isLocalMultiplayer)
+            this.scene.activeCameras = [cameras[0], cameras[1], guiCamera];
+        else {
+            let activeGameCamera;
+            if (this.controlledSides.includes(0))
+                activeGameCamera = cameras[0];
+            else if (this.controlledSides.includes(1))
+                activeGameCamera = cameras[1];
+            else
+                activeGameCamera = cameras[0];
+
+            if (activeGameCamera && guiCamera)
+                this.scene.activeCameras = [activeGameCamera, guiCamera];
+        }
+
     }
 
     private handlePlayerAssignment(leftPlayerName: string, rightPlayerName: string): void {
-        // Update GUI with player names
         if (this.guiManager)
             this.guiManager.updatePlayerNames(leftPlayerName, rightPlayerName);
 
-        // Assign sides based on player names
         this.assignPlayerSide(leftPlayerName, 0);
         this.assignPlayerSide(rightPlayerName, 1);
-        
+        this.setActiveCameras();
         if (this.guiManager) {
             const leftPlayerControlled = this.controlledSides.includes(0);
             const rightPlayerControlled = this.controlledSides.includes(1);

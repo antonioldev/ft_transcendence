@@ -119,16 +119,6 @@ export class GUIManager {
         pControls.text = this.getControlsText(config.viewMode, player);
         pControls.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
         pControls.lineSpacing = "10px";
-
-        // const game = Game.getCurrentInstance();
-        // const controlled = game?.['controlledSides'] || [];
-        // const isControlled = controlled.includes(player - 1);
-        // pControls.color = isControlled ? "rgba(255,255,255,0.7)" : "rgba(0, 0, 0, 0)";
-        // if (player === 2 && (config.gameMode === GameMode.SINGLE_PLAYER ||
-        //     config.gameMode === GameMode.TOURNAMENT_REMOTE || config.gameMode === GameMode.TWO_PLAYER_REMOTE))
-        //     pControls.color = "rgba(0, 0, 0, 0)";
-        // else
-        // pControls.color = "rgba(255,255,255,0.7)";
         pControls.color = "rgba(0, 0, 0, 0)";
         pControls.fontSize = 30;
         return pControls;
@@ -163,7 +153,7 @@ export class GUIManager {
         this.hudGrid.addColumnDefinition(0.25); // P1 score
         this.hudGrid.addColumnDefinition(0.25); // P2 score
         this.hudGrid.addColumnDefinition(0.15); // P2 instructions
-        this.hudGrid.addColumnDefinition(0.10); // Empty
+        this.hudGrid.addColumnDefinition(0.10); // Rally
 
         this.advancedTexture.addControl(this.hudGrid);
 
@@ -205,7 +195,7 @@ export class GUIManager {
 
         // Box 6: Rally
         const box6 = this.createHUDBox();
-        this.rally = this.createTextBlock("Rally:\n0", 36, "0px");
+        this.rally = this.createTextBlock("Rally: 0", 36, "0px");
         this.rally.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
         this.rally.textVerticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
         this.rally.scaleX = 1;
@@ -289,7 +279,7 @@ export class GUIManager {
 
     updateRally(rally: number): void {
         if (this.rally && (this.previousRally < rally) || rally === 1) {
-            this.rally.text = `Rally:\n${Math.round(rally)}`;
+            this.rally.text = `Rally: ${Math.round(rally)}`;
 
             const maxRally = 10;
             const intensity = Math.min(rally / maxRally, 1);
@@ -375,13 +365,8 @@ export class GUIManager {
     }
 
     private createCameraBasedFireworks(scene: any): void {
-        console.log("Creating camera-based fireworks");
-        
-        // Get active camera(s)
         const cameras = this.getActiveCameras(scene);
-        
         cameras.forEach((camera, cameraIndex) => {
-            console.log(`Creating fireworks for camera ${cameraIndex}:`, camera.position);
             this.createFireworksForCamera(scene, camera, cameraIndex);
         });
     }

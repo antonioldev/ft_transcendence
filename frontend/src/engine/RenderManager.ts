@@ -130,7 +130,8 @@ export class RenderManager {
         }
     }
 
-    startCameraAnimation(cameras: any, gameMode: GameMode, viewMode: ViewMode) {
+    // startCameraAnimation(cameras: any, gameMode: GameMode, viewMode: ViewMode) {
+    startCameraAnimation(cameras: any, gameMode: GameMode, viewMode: ViewMode, controlledSides: number[] = [], isLocalMultiplayer: boolean = false) {
         if (!this.scene || !cameras || viewMode === ViewMode.MODE_2D)
             return;
 
@@ -138,12 +139,13 @@ export class RenderManager {
         gameCameras.forEach((camera: any, index: number) => {
             if (!camera) return;
 
-            const positionAnimation = this.createCameraMoveAnimation(camera.name);
-            const targetAnimation = this.createCameraTargetAnimation(camera.name);
-            camera.animations = [positionAnimation, targetAnimation];
-            const animationGroup = this.scene.beginAnimation(camera, 0, 180, false);
-            this.camerasAnimation.push(animationGroup);
-
+            if (isLocalMultiplayer || controlledSides.includes(index) || controlledSides.length === 0) {
+                const positionAnimation = this.createCameraMoveAnimation(camera.name);
+                const targetAnimation = this.createCameraTargetAnimation(camera.name);
+                camera.animations = [positionAnimation, targetAnimation];
+                const animationGroup = this.scene.beginAnimation(camera, 0, 180, false);
+                this.camerasAnimation.push(animationGroup);
+            }
         });
     }
 
@@ -177,7 +179,7 @@ export class RenderManager {
 
     private createCameraTargetAnimation(cameraName: string): any {
         const startTarget = BABYLON.Vector3.Zero();
-        const endTarget = BABYLON.Vector3.Zero(); // Keep looking at center
+        const endTarget = BABYLON.Vector3.Zero();
 
         const targetAnimation = BABYLON.Animation.CreateAnimation(
             "target", BABYLON.Animation.ANIMATIONTYPE_VECTOR3, 60, new BABYLON.QuadraticEase());
