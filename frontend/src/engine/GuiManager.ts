@@ -28,6 +28,7 @@ export class GUIManager {
     private score2Text: any = null;
     private player1Label: any = null;
     private player2Label: any = null;
+    private rallyText: any | null;
     private rally: any = null;
     private previousRally: number = 0;
     private countdownText: any = null;
@@ -170,9 +171,13 @@ export class GUIManager {
 
         // Box 3: P1 score + label
         const box3 = this.createHUDBox();
-        this.player1Label = this.createTextBlock("Player 1", 48, "-20px");
+        this.player1Label = this.createTextBlock("Player 2", 48, "0px");
+        this.player1Label.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+        this.player1Label.textVerticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
         this.applyRichTextEffects(this.player1Label, config);
-        this.score1Text = this.createTextBlock("0", 48, "30px");
+        this.score1Text = this.createTextBlock("0", 56, "-15px");
+        this.score1Text.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+        this.score1Text.textVerticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
         this.applyRichTextEffects(this.score1Text, config);
         box3.addControl(this.player1Label);
         box3.addControl(this.score1Text);
@@ -180,9 +185,14 @@ export class GUIManager {
 
         // Box 4: P2 score + label  
         const box4 = this.createHUDBox();
-        this.player2Label = this.createTextBlock("Player 2", 48, "-20px");
+        this.player2Label = this.createTextBlock("Player 2", 48, "0px");
+        this.player2Label.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+        this.player2Label.textVerticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
         this.applyRichTextEffects(this.player2Label, config);
-        this.score2Text = this.createTextBlock("0", 48, "30px");
+
+        this.score2Text = this.createTextBlock("0", 56, "-15px");
+        this.score2Text.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+        this.score2Text.textVerticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
         this.applyRichTextEffects(this.score2Text, config);
         box4.addControl(this.player2Label);
         box4.addControl(this.score2Text);
@@ -195,14 +205,19 @@ export class GUIManager {
 
         // Box 6: Rally
         const box6 = this.createHUDBox();
-        this.rally = this.createTextBlock("Rally: 0", 36, "0px");
+        this.rallyText = this.createTextBlock("Rally", 48, "0px");
+        this.rallyText.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+        this.rallyText.textVerticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
+        this.rally = this.createTextBlock("0", 56, "-15px");
         this.rally.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
-        this.rally.textVerticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
+        this.rally.textVerticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
+        this.rally.transformCenterY = 1;
         this.rally.scaleX = 1;
         this.rally.scaleY = 1;
         const animationScaleX = this.createAnimation("scaleX", 1, 1.3);
         const animationScaleY = this.createAnimation("scaleY", 1, 1.3);
         this.rally.animations = [animationScaleX, animationScaleY];
+        box6.addControl(this.rallyText);
         box6.addControl(this.rally);
         this.hudGrid.addControl(box6, 0, 5);
     }
@@ -223,9 +238,8 @@ export class GUIManager {
         this.countdownContainer.isVisible = false;
 
         // Create countdown text
-        this.countdownText = this.createTextBlock("5", 72, "0px", "bold")
+        this.countdownText = this.createTextBlock("5", 72, "0px", "bold");
         this.applyRichTextEffects(this.countdownText, config);
-
         this.countdownContainer.addControl(this.countdownText);
         this.advancedTexture.addControl(this.countdownContainer);
     }
@@ -279,7 +293,7 @@ export class GUIManager {
 
     updateRally(rally: number): void {
         if (this.rally && (this.previousRally < rally) || rally === 1) {
-            this.rally.text = `Rally: ${Math.round(rally)}`;
+            this.rally.text = `${Math.round(rally)}`;
 
             const maxRally = 10;
             const intensity = Math.min(rally / maxRally, 1);
@@ -474,6 +488,7 @@ export class GUIManager {
             this.countdownContainer = null;
             this.player1Label = null;
             this.player2Label = null;
+            this.rallyText = null;
             this.rally = null;
             this.endGameWinnerText = null;
             this.endGameOverlay = null;
