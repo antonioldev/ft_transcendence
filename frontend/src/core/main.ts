@@ -4,8 +4,9 @@ import { webSocketClient } from './WebSocketClient.js';
 import { AuthManager } from './AuthManager.js';
 import { MenuFlowManager } from './MenuFlowManager.js';
 import { KeyboardManager } from './KeyboardManager.js';
-import { HistoryManager } from './HistoryManager.js';
-import { ConnectionStatus, WebSocketEvent } from '../shared/constants.js';
+// import { HistoryManager } from './HistoryManager.js';
+import { appStateManager } from './AppStateManager.js';
+import { AppState, ConnectionStatus, WebSocketEvent } from '../shared/constants.js';
 import { EL, requireElementById } from '../ui/elements.js';
 import { DashboardManager } from './DashboardManager.js';
 import { MemoryLeakDetector } from './.memory.js'
@@ -17,10 +18,11 @@ import { MemoryLeakDetector } from './.memory.js'
 function loadPage(): void {
     // Initialize classes
     uiManager.initializeStyles();
+    appStateManager.initialize();
     AuthManager.initialize();
     MenuFlowManager.initialize();
     KeyboardManager.initialize();
-    HistoryManager.initialize();
+    // HistoryManager.initialize();
     DashboardManager.initialize();
 
     // Setup language system
@@ -57,4 +59,5 @@ function setupLanguageListeners() {
 }
 
 // Initialize the application
-document.addEventListener('DOMContentLoaded', loadPage);
+// document.addEventListener('DOMContentLoaded', loadPage);
+window.addEventListener('load', loadPage);

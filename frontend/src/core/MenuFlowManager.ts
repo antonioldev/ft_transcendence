@@ -3,7 +3,7 @@ import { GameMode, ViewMode, ConnectionStatus, AppState } from '../shared/consta
 import { uiManager } from '../ui/UIManager.js';
 import { authManager } from './AuthManager.js';
 import { getCurrentTranslation } from '../translations/translations.js';
-import { historyManager } from './HistoryManager.js';
+// import { appStateManager } from './appStateManager.js';
 import { dashboardManager } from './DashboardManager.js';
 import { webSocketClient } from './WebSocketClient.js';
 import { appStateManager } from './AppStateManager.js';
@@ -45,7 +45,7 @@ export class MenuFlowManager {
         const backBtn = requireElementById(EL.BUTTONS.DASHBOARD_BACK);
         viewModeBack.addEventListener('click', () => this.previousViewMode());
         viewModeForward.addEventListener('click', () => this.nextViewMode());
-        backBtn.addEventListener('click', () => { historyManager.navigateTo(AppState.MAIN_MENU);});
+        backBtn.addEventListener('click', () => { appStateManager.navigateTo(AppState.MAIN_MENU);});
 
         // Game mode selection buttons
         this.setupGameModeButtons();
@@ -92,7 +92,7 @@ export class MenuFlowManager {
     
     private handleModeBackButton(): void {
         this.selectedGameMode = null;
-        historyManager.navigateTo(AppState.MAIN_MENU);;
+        appStateManager.navigateTo(AppState.MAIN_MENU);;
     }
 
     // ========================================
@@ -118,7 +118,7 @@ export class MenuFlowManager {
             this.selectedGameMode = gameMode;
 
             if (config.requiresSetup && !authManager.isUserAuthenticated()) {
-                historyManager.navigateTo(AppState.PLAYER_SETUP);
+                appStateManager.navigateTo(AppState.PLAYER_SETUP);
                 uiManager.showSetupForm(form);
                 uiManager.clearForm([ EL.PLAYER_SETUP.PLAYER1_NAME, EL.PLAYER_SETUP.PLAYER1_NAME_LOCAL,
                     EL.PLAYER_SETUP.PLAYER2_NAME_LOCAL, EL.PLAYER_SETUP.PLAYER1_NAME_TOURNAMENT,
@@ -140,7 +140,7 @@ export class MenuFlowManager {
 
         setupBack.addEventListener('click', () => {
             this.selectedGameMode = null;
-            historyManager.navigateTo(AppState.GAME_MODE);
+            appStateManager.navigateTo(AppState.GAME_MODE);
         });
 
         startGame.addEventListener('click', async () => {
@@ -179,7 +179,7 @@ export class MenuFlowManager {
             Logger.debug('request user game history was called', 'MenuFlowManager');
             // Show dashboard panel
             Logger.info('Navigating to dashboard...', 'MenuFlowManager');
-            historyManager.navigateTo(AppState.STATS_DASHBOARD);
+            appStateManager.navigateTo(AppState.STATS_DASHBOARD);
         });
     }
 

@@ -2,11 +2,12 @@ import { Logger } from './LogManager.js';
 import { AuthState, AppState, WebSocketEvent } from '../shared/constants.js';
 import { uiManager } from '../ui/UIManager.js';
 import { getCurrentTranslation } from '../translations/translations.js';
-import { historyManager } from './HistoryManager.js';
+// import { appStateManager } from './appStateManager.js';
 import { WebSocketClient } from './WebSocketClient.js';
 import { RegisterUser, LoginUser } from '../shared/types.js';
-import { EL, getElementById, requireElementById} from '../ui/elements.js';
+import { EL, requireElementById} from '../ui/elements.js';
 import { initializeGoogleSignIn, renderGoogleButton } from './GoogleSignIn.js';
+import { appStateManager } from './AppStateManager.js';
 
 /**
  * Manages user authentication state, login/logout workflows, and user registration.
@@ -81,12 +82,12 @@ export class AuthManager {
         playBtn: HTMLElement | null
     ): void {
         loginBtn?.addEventListener('click', () => {
-            historyManager.navigateTo(AppState.LOGIN);
+            appStateManager.navigateTo(AppState.LOGIN);
             this.prepareGoogleLogin();
         });
 
         registerBtn?.addEventListener('click', () => {
-            historyManager.navigateTo(AppState.REGISTER);
+            appStateManager.navigateTo(AppState.REGISTER);
             this.prepareGoogleLogin();
         });
 
@@ -95,7 +96,7 @@ export class AuthManager {
         });
 
         playBtn?.addEventListener('click', () => {
-            historyManager.navigateTo(AppState.GAME_MODE);
+            appStateManager.navigateTo(AppState.GAME_MODE);
         });
     }
 
@@ -109,11 +110,11 @@ export class AuthManager {
         showLogin: HTMLElement | null
     ): void {
         showRegister?.addEventListener('click', () => {
-            historyManager.navigateTo(AppState.REGISTER);
+            appStateManager.navigateTo(AppState.REGISTER);
         });
 
         showLogin?.addEventListener('click', () => {
-            historyManager.navigateTo(AppState.LOGIN);
+            appStateManager.navigateTo(AppState.LOGIN);
         });
     }
 
@@ -127,11 +128,11 @@ export class AuthManager {
         registerBack: HTMLElement | null
     ): void {
         loginBack?.addEventListener('click', () => {
-            historyManager.navigateTo(AppState.MAIN_MENU);
+            appStateManager.navigateTo(AppState.MAIN_MENU);
         });
 
         registerBack?.addEventListener('click', () => {
-            historyManager.navigateTo(AppState.MAIN_MENU);
+            appStateManager.navigateTo(AppState.MAIN_MENU);
         });
     }
 
@@ -180,7 +181,7 @@ export class AuthManager {
             this.currentUser = {username};
             // Clear form and navigate back to main menu
             uiManager.clearForm(this.loginFields);
-            historyManager.navigateTo(AppState.MAIN_MENU);
+            appStateManager.navigateTo(AppState.MAIN_MENU);
             uiManager.showUserInfo(user.username);     
             Logger.info(msg, 'AuthManager');
         });
@@ -191,7 +192,7 @@ export class AuthManager {
                 alert(t.dontHaveAccount);
                 uiManager.clearForm(this.loginFields); 
                 setTimeout(() => {
-                    historyManager.navigateTo(AppState.REGISTER);
+                    appStateManager.navigateTo(AppState.REGISTER);
                 }, 500);
             } else {
                 alert(t.passwordsDoNotMatch);
@@ -245,7 +246,7 @@ export class AuthManager {
             } else {
                 alert(msg || 'Registration failed. User already exist. Please login');
                 setTimeout(() => {
-                    historyManager.navigateTo(AppState.LOGIN);
+                    appStateManager.navigateTo(AppState.LOGIN);
                 }, 500);
             }
         });
@@ -255,7 +256,7 @@ export class AuthManager {
             uiManager.clearForm(this.registrationFields);
             alert(msg || 'Registration failed. An error occured. Please try again');
             setTimeout(() => {
-                historyManager.navigateTo(AppState.LOGIN);
+                appStateManager.navigateTo(AppState.LOGIN);
             }, 500);
         });
 
@@ -264,7 +265,7 @@ export class AuthManager {
             uiManager.clearForm(this.registrationFields);
             alert(msg || 'Registration successful! You can now login.');
             setTimeout(() => {
-                historyManager.navigateTo(AppState.LOGIN);
+                appStateManager.navigateTo(AppState.LOGIN);
             }, 500);
         });
 
@@ -325,7 +326,7 @@ export class AuthManager {
                 // Updates the UI to show user information and navigates to the main menu
                 uiManager.showUserInfo(this.currentUser.username);
                 // uiManager.hideOverlays('login-modal');
-                historyManager.navigateTo(AppState.MAIN_MENU);
+                appStateManager.navigateTo(AppState.MAIN_MENU);
 
             } catch (error) {
                 console.error("Backend communication failed:", error);
@@ -381,7 +382,7 @@ export class AuthManager {
         this.authState = AuthState.GUEST;
         this.currentUser = null;
         uiManager.showAuthButtons();
-        historyManager.navigateTo(AppState.MAIN_MENU);;
+        appStateManager.navigateTo(AppState.MAIN_MENU);;
         Logger.info('Logged out - now in guest mode', 'AuthManager');
     }
 
