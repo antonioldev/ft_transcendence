@@ -82,14 +82,12 @@ export class GUIManager {
 
     private createHUDBox(): any {
         const box = new BABYLON.GUI.Rectangle();
-        box.thickness = 2; // Add outline thickness for debugging
-        box.color = "red"; // Outline color for debugging
         box.background = "rgba(0, 0, 0, 0.83)";
         return box;
     }
 
     private applyRichTextEffects(textBlock: any, config: GameConfig): void {
-        if (config.viewMode === ViewMode.MODE_3D) {
+        if (true){//config.viewMode === ViewMode.MODE_3D) {
             // Add shadow effect
             textBlock.shadowOffsetX = 3;
             textBlock.shadowOffsetY = 3;
@@ -103,15 +101,14 @@ export class GUIManager {
         }
     }
 
-    private createTextBlock(name: string, size: number, top: string, fontWeight?: string) {
+    private createTextBlock(name: string, size: number, top?: string) {
         const label = new BABYLON.GUI.TextBlock();
         label.text = name;
         label.color = "white";
-        label.top = top;
+        if (top !== null && top !== undefined)
+            label.top = top;
         label.fontSize = size;
         label.width = "100%";
-        if (fontWeight !== null && fontWeight !== undefined)
-            label.fontWeight = fontWeight;
         return label;
     }
 
@@ -224,9 +221,9 @@ export class GUIManager {
 
     private createCountdownDisplay(config: GameConfig): void {
         this.countdownContainer = new BABYLON.GUI.Rectangle("countdownContainer");
-        this.countdownContainer.width = "300px";
-        this.countdownContainer.height = "150px";
-        this.countdownContainer.cornerRadius = 20;
+        this.countdownContainer.width = "200px";
+        this.countdownContainer.height = "200px";
+        this.countdownContainer.cornerRadius = 60;
         this.countdownContainer.color = "white";
         this.countdownContainer.thickness = 3;
         if (config.viewMode === ViewMode.MODE_2D)
@@ -238,7 +235,11 @@ export class GUIManager {
         this.countdownContainer.isVisible = false;
 
         // Create countdown text
-        this.countdownText = this.createTextBlock("5", 72, "0px", "bold");
+        this.countdownText = this.createTextBlock("5", 72, "20px");
+        this.countdownText.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+        this.countdownText.textVerticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
+        this.countdownText.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+        this.countdownText.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
         this.applyRichTextEffects(this.countdownText, config);
         this.countdownContainer.addControl(this.countdownText);
         this.advancedTexture.addControl(this.countdownContainer);
