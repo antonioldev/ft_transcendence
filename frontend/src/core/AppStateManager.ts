@@ -5,7 +5,6 @@ import { Game } from '../engine/Game.js';
 import { webSocketClient } from './WebSocketClient.js';
 import { EL } from '../ui/elements.js';
 import { Logger } from '../utils/LogManager.js'
-// import { memoryDetector } from './main.js';
 
 /**
  * Central controller for application state and navigation.
@@ -13,16 +12,21 @@ import { Logger } from '../utils/LogManager.js'
  * and delegates actions to authentication, history, and networking managers.
  * Does not implement game logic; focuses on lifecycle and state management.
  */
-class AppStateManager {
+export class AppStateManager {
     currentAppState: AppState = AppState.MAIN_MENU;
-
-    // ========================================
-    // APP LIFECYCLE
-    // ========================================
-
-    initialize(): void {
-        this.setupEventListeners();
-        this.navigateTo(AppState.MAIN_MENU);
+    private static instance: AppStateManager;
+    
+    static getInstance(): AppStateManager {
+        if (!AppStateManager.instance) {
+            AppStateManager.instance = new AppStateManager();
+        }
+        return AppStateManager.instance;
+    }
+    
+    static initialize(): void {
+        const appStateManager = AppStateManager.getInstance();
+        appStateManager.setupEventListeners();
+        appStateManager.navigateTo(AppState.MAIN_MENU);
     }
 
     private setupEventListeners(): void {
@@ -122,4 +126,4 @@ class AppStateManager {
     }
 }
 
-export const appStateManager = new AppStateManager();
+export const appStateManager = AppStateManager.getInstance();
