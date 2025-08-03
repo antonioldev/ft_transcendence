@@ -31,7 +31,7 @@ export class AudioManager {
 
             this.gameMusic = await BABYLON.CreateSoundAsync(
                 "gameMusic",
-                "/assets/audio/music3.wav",
+                "/assets/audio/bg/retro2.mp3",
                 {
                     loop: true,
                     autoplay: false,
@@ -53,7 +53,7 @@ export class AudioManager {
 
             this.countdownSound = await BABYLON.CreateSoundAsync(
                 "countdown",
-                "/assets/audio/countdown2.wav",
+                "/assets/audio/countdown.mp3",
                 {
                     loop: false,
                     autoplay: false,
