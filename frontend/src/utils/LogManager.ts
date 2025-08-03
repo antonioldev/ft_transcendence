@@ -42,7 +42,6 @@ export class Logger {
 
     private static log(level: LogLevel, message: string, context?: string, data?: any): void {
         const timestamp = new Date().toISOString().substr(11, 8);
-        const levelStr = LogLevel[level];
         const prefix = context ? `${timestamp} ${context}:` : `${timestamp}`;
         const fullMessage = `${prefix} ${message}`;
 

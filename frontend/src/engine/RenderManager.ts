@@ -2,7 +2,7 @@ declare var BABYLON: typeof import('@babylonjs/core');
 
 import { Logger } from '../utils/LogManager.js';
 import { GUIManager } from './GuiManager.js';
-import { GameMode, ViewMode } from '../shared/constants.js';
+import { ViewMode } from '../shared/constants.js';
 import {
     getCamera2DPosition,
     getCamera3DPlayer1Position,
@@ -130,7 +130,7 @@ export class RenderManager {
         }
     }
 
-    startCameraAnimation(cameras: any, gameMode: GameMode, viewMode: ViewMode) {
+    startCameraAnimation(cameras: any, viewMode: ViewMode, controlledSides: number[] = [], isLocalMultiplayer: boolean = false) {
         if (!this.scene || !cameras || viewMode === ViewMode.MODE_2D)
             return;
 
@@ -138,12 +138,13 @@ export class RenderManager {
         gameCameras.forEach((camera: any, index: number) => {
             if (!camera) return;
 
-            const positionAnimation = this.createCameraMoveAnimation(camera.name);
-            const targetAnimation = this.createCameraTargetAnimation(camera.name);
-            camera.animations = [positionAnimation, targetAnimation];
-            const animationGroup = this.scene.beginAnimation(camera, 0, 180, false);
-            this.camerasAnimation.push(animationGroup);
-
+            if (isLocalMultiplayer || controlledSides.includes(index) || controlledSides.length === 0) {
+                const positionAnimation = this.createCameraMoveAnimation(camera.name);
+                const targetAnimation = this.createCameraTargetAnimation();
+                camera.animations = [positionAnimation, targetAnimation];
+                const animationGroup = this.scene.beginAnimation(camera, 0, 180, false);
+                this.camerasAnimation.push(animationGroup);
+            }
         });
     }
 
@@ -175,9 +176,9 @@ export class RenderManager {
         return positionAnimation;
     }
 
-    private createCameraTargetAnimation(cameraName: string): any {
+    private createCameraTargetAnimation(): any {
         const startTarget = BABYLON.Vector3.Zero();
-        const endTarget = BABYLON.Vector3.Zero(); // Keep looking at center
+        const endTarget = BABYLON.Vector3.Zero();
 
         const targetAnimation = BABYLON.Animation.CreateAnimation(
             "target", BABYLON.Animation.ANIMATIONTYPE_VECTOR3, 60, new BABYLON.QuadraticEase());

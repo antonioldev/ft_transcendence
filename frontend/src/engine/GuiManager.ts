@@ -7,7 +7,6 @@ import { GameMode } from '../shared/constants.js';
 import { ViewMode } from '../shared/constants.js';
 import { Logger } from '../utils/LogManager.js';
 import { getCurrentTranslation } from '../translations/translations.js';
-import { GAME_CONFIG } from '../shared/gameConfig.js';
 
 /**
  * Manages all GUI elements for the game including HUD, scores, FPS display
@@ -28,8 +27,9 @@ export class GUIManager {
     private score2Text: any = null;
     private player1Label: any = null;
     private player2Label: any = null;
+    private rallyText: any | null;
     private rally: any = null;
-    private previousRally: number = 0;
+    private previousRally: number = 1;
     private countdownText: any = null;
     private countdownContainer: any = null;
     private isInitialized: boolean = false;
@@ -52,7 +52,7 @@ export class GUIManager {
             this.createHUD(config);
             this.createViewModeElements(config);
             this.createCountdownDisplay(config);
-            this.createEndGameOverlay(config);
+            this.createEndGameOverlay();
 
             this.isInitialized = true;
 
@@ -81,13 +81,13 @@ export class GUIManager {
 
     private createHUDBox(): any {
         const box = new BABYLON.GUI.Rectangle();
-        box.thickness = 0;
         box.background = "rgba(0, 0, 0, 0.83)";
+        box.thickness = 0;
         return box;
     }
 
-    private applyRichTextEffects(textBlock: any, config: GameConfig): void {
-        if (config.viewMode === ViewMode.MODE_3D) {
+    private applyRichTextEffects(textBlock: any): void {
+        if (true){//config.viewMode === ViewMode.MODE_3D) {
             // Add shadow effect
             textBlock.shadowOffsetX = 3;
             textBlock.shadowOffsetY = 3;
@@ -101,15 +101,14 @@ export class GUIManager {
         }
     }
 
-    private createTextBlock(name: string, size: number, top: string, fontWeight?: string) {
+    private createTextBlock(name: string, size: number, top?: string) {
         const label = new BABYLON.GUI.TextBlock();
         label.text = name;
         label.color = "white";
-        label.top = top;
+        if (top !== null && top !== undefined)
+            label.top = top;
         label.fontSize = size;
         label.width = "100%";
-        if (fontWeight !== null && fontWeight !== undefined)
-            label.fontWeight = fontWeight;
         return label;
     }
 
@@ -118,13 +117,26 @@ export class GUIManager {
         pControls.text = this.getControlsText(config.viewMode, player);
         pControls.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
         pControls.lineSpacing = "10px";
-        if (player === 2 && (config.gameMode === GameMode.SINGLE_PLAYER ||
-            config.gameMode === GameMode.TOURNAMENT_REMOTE || config.gameMode === GameMode.TWO_PLAYER_REMOTE))
-            pControls.color = "rgba(0, 0, 0, 0)";
-        else
-            pControls.color = "rgba(255,255,255,0.7)";
+        pControls.color = "rgba(0, 0, 0, 0)";
         pControls.fontSize = 30;
         return pControls;
+    }
+
+    updateControlVisibility(player1: boolean, player2: boolean): void {
+        if (!this.hudGrid) return;
+
+        const player1ControlBox = this.hudGrid.getChildrenAt(0, 1)[0];
+        const player2ControlBox = this.hudGrid.getChildrenAt(0, 4)[0];
+
+        if (player1ControlBox && player1ControlBox.children.length > 0) {
+            const player1Controls = player1ControlBox.children[0];
+            player1Controls.color = player1 ? "rgba(255,255,255,0.7)" : "rgba(0, 0, 0, 0)";
+        }
+
+        if (player2ControlBox && player2ControlBox.children.length > 0) {
+            const player2Controls = player2ControlBox.children[0];
+            player2Controls.color = player2 ? "rgba(255,255,255,0.7)" : "rgba(0, 0, 0, 0)";
+        }
     }
 
     private createHUD(config: GameConfig): void {
@@ -139,7 +151,7 @@ export class GUIManager {
         this.hudGrid.addColumnDefinition(0.25); // P1 score
         this.hudGrid.addColumnDefinition(0.25); // P2 score
         this.hudGrid.addColumnDefinition(0.15); // P2 instructions
-        this.hudGrid.addColumnDefinition(0.10); // Empty
+        this.hudGrid.addColumnDefinition(0.10); // Rally
 
         this.advancedTexture.addControl(this.hudGrid);
 
@@ -156,20 +168,29 @@ export class GUIManager {
 
         // Box 3: P1 score + label
         const box3 = this.createHUDBox();
-        this.player1Label = this.createTextBlock("Player 1", 48, "-20px");
-        this.applyRichTextEffects(this.player1Label, config);
-        this.score1Text = this.createTextBlock("0", 48, "30px");
-        this.applyRichTextEffects(this.score1Text, config);
+        this.player1Label = this.createTextBlock("Player 2", 48, "0px");
+        this.player1Label.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+        this.player1Label.textVerticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
+        this.applyRichTextEffects(this.player1Label);
+        this.score1Text = this.createTextBlock("0", 56, "-15px");
+        this.score1Text.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+        this.score1Text.textVerticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
+        this.applyRichTextEffects(this.score1Text);
         box3.addControl(this.player1Label);
         box3.addControl(this.score1Text);
         this.hudGrid.addControl(box3, 0, 2);
 
         // Box 4: P2 score + label  
         const box4 = this.createHUDBox();
-        this.player2Label = this.createTextBlock("Player 2", 48, "-20px");
-        this.applyRichTextEffects(this.player2Label, config);
-        this.score2Text = this.createTextBlock("0", 48, "30px");
-        this.applyRichTextEffects(this.score2Text, config);
+        this.player2Label = this.createTextBlock("Player 2", 48, "0px");
+        this.player2Label.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+        this.player2Label.textVerticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
+        this.applyRichTextEffects(this.player2Label);
+
+        this.score2Text = this.createTextBlock("0", 56, "-15px");
+        this.score2Text.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+        this.score2Text.textVerticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
+        this.applyRichTextEffects(this.score2Text);
         box4.addControl(this.player2Label);
         box4.addControl(this.score2Text);
         this.hudGrid.addControl(box4, 0, 3);
@@ -181,21 +202,28 @@ export class GUIManager {
 
         // Box 6: Rally
         const box6 = this.createHUDBox();
-        this.rally = this.createTextBlock("Rally: \n0", 36, "0px");
+        this.rallyText = this.createTextBlock("Rally", 48, "0px");
+        this.rallyText.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+        this.rallyText.textVerticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
+        this.rally = this.createTextBlock("0", 56, "-15px");
+        this.rally.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+        this.rally.textVerticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
+        this.rally.transformCenterY = 1;
         this.rally.scaleX = 1;
         this.rally.scaleY = 1;
         const animationScaleX = this.createAnimation("scaleX", 1, 1.3);
         const animationScaleY = this.createAnimation("scaleY", 1, 1.3);
         this.rally.animations = [animationScaleX, animationScaleY];
+        box6.addControl(this.rallyText);
         box6.addControl(this.rally);
         this.hudGrid.addControl(box6, 0, 5);
     }
 
     private createCountdownDisplay(config: GameConfig): void {
         this.countdownContainer = new BABYLON.GUI.Rectangle("countdownContainer");
-        this.countdownContainer.width = "300px";
-        this.countdownContainer.height = "150px";
-        this.countdownContainer.cornerRadius = 20;
+        this.countdownContainer.width = "200px";
+        this.countdownContainer.height = "200px";
+        this.countdownContainer.cornerRadius = 60;
         this.countdownContainer.color = "white";
         this.countdownContainer.thickness = 3;
         if (config.viewMode === ViewMode.MODE_2D)
@@ -207,9 +235,12 @@ export class GUIManager {
         this.countdownContainer.isVisible = false;
 
         // Create countdown text
-        this.countdownText = this.createTextBlock("5", 72, "0px", "bold")
-        this.applyRichTextEffects(this.countdownText, config);
-
+        this.countdownText = this.createTextBlock("5", 72, "20px");
+        this.countdownText.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+        this.countdownText.textVerticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
+        this.countdownText.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+        this.countdownText.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
+        this.applyRichTextEffects(this.countdownText);
         this.countdownContainer.addControl(this.countdownText);
         this.advancedTexture.addControl(this.countdownContainer);
     }
@@ -263,7 +294,7 @@ export class GUIManager {
 
     updateRally(rally: number): void {
         if (this.rally && (this.previousRally < rally) || rally === 1) {
-            this.rally.text = `Rally: \n${Math.round(rally)}`;
+            this.rally.text = `${Math.round(rally)}`;
 
             const maxRally = 10;
             const intensity = Math.min(rally / maxRally, 1);
@@ -320,7 +351,7 @@ export class GUIManager {
             return player === 1 ? move + "\nP1: A / D" : move + "\nP2: ← / →";
     }
 
-    private createEndGameOverlay(config: GameConfig): void {
+    private createEndGameOverlay(): void {
         this.endGameOverlay = new BABYLON.GUI.Grid(); // Use Grid like HUD
         this.endGameOverlay.width = "100%";
         this.endGameOverlay.height = "20%";
@@ -341,7 +372,7 @@ export class GUIManager {
         this.endGameWinnerText.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
         this.endGameWinnerText.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
 
-        this.applyRichTextEffects(this.endGameWinnerText, config);
+        this.applyRichTextEffects(this.endGameWinnerText);
 
         // Add text to grid at position (0, 0)
         this.endGameOverlay.addControl(this.endGameWinnerText, 0, 0);
@@ -349,14 +380,9 @@ export class GUIManager {
     }
 
     private createCameraBasedFireworks(scene: any): void {
-        console.log("Creating camera-based fireworks");
-        
-        // Get active camera(s)
         const cameras = this.getActiveCameras(scene);
-        
-        cameras.forEach((camera, cameraIndex) => {
-            console.log(`Creating fireworks for camera ${cameraIndex}:`, camera.position);
-            this.createFireworksForCamera(scene, camera, cameraIndex);
+        cameras.forEach((camera) => {
+            this.createFireworksForCamera(scene, camera);
         });
     }
 
@@ -370,7 +396,7 @@ export class GUIManager {
         return [];
     }
 
-    private createFireworksForCamera(scene: any, camera: any, cameraIndex: number): void {
+    private createFireworksForCamera(scene: any, camera: any): void {
         const numberOfFireworks = 8;
         
         for (let i = 0; i < numberOfFireworks; i++) {
@@ -388,12 +414,14 @@ export class GUIManager {
             }, i * (150 + Math.random() * 200)); // Faster timing
         }
     }
+
     private createExplosion(scene: any, pos: any): void {
         const explosion = new BABYLON.ParticleSystem(`gameEnd_explosion_${Date.now()}`, 1500, scene);
         try {
-            explosion.particleTexture = new BABYLON.Texture("https://assets.babylonjs.com/textures/flare.png", scene);
+            // explosion.particleTexture = new BABYLON.Texture("assets/textures/particle/gradient_line.png", scene);
+            explosion.particleTexture = new BABYLON.Texture("assets/textures/particle/flare_transparent.png", scene);
         } catch (error) {
-            console.log("Using default particles for game end explosion");
+            explosion.particleTexture = new BABYLON.Texture("assets/textures/particle/flare.png", scene);
         }
         explosion.emitter = pos;
 
@@ -463,6 +491,7 @@ export class GUIManager {
             this.countdownContainer = null;
             this.player1Label = null;
             this.player2Label = null;
+            this.rallyText = null;
             this.rally = null;
             this.endGameWinnerText = null;
             this.endGameOverlay = null;

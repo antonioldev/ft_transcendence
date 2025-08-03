@@ -13,18 +13,17 @@ import { uiManager } from '../ui/UIManager.js';
 import { GUIManager } from './GuiManager.js';
 import { RenderManager } from './RenderManager.js';
 import { GameMode, Direction } from '../shared/constants.js';
-import { PlayerControls, InputData } from '../shared/types.js';
+import { PlayerControls} from '../shared/types.js';
 import { getPlayerBoundaries } from '../shared/gameConfig.js';
 import { appStateManager } from '../core/AppStateManager.js';
 import { authManager } from '../core/AuthManager.js';
 import { PlayerInfo } from '../shared/types.js';
 import { GameConfigFactory } from './GameConfig.js';
 import { EL } from '../ui/elements.js';
+import { AudioManager } from './AudioManager.js';
 
 /**
  * Main Game class that handles everything for running one game instance.
- * 
- * Merged from: Game + BabylonScene + GameRenderer + GUIManager
  * 
  * Responsibilities:
  * - Babylon.js engine/scene creation and management
@@ -35,10 +34,30 @@ import { EL } from '../ui/elements.js';
  * - Complete game session lifecycle
  */
 export class Game {
-    // ========================================
-    // 1. Static Methods & Properties
-    // ========================================
     private static currentInstance: Game | null = null;
+
+        private engine: any = null;
+    private scene: any = null;
+    private canvas: HTMLCanvasElement | null = null;
+    private gameObjects: GameObjects | null = null;
+    private guiManager: GUIManager | null = null;
+    private renderManager: RenderManager | null = null;
+    private audioManager: AudioManager | null =null;
+    private resizeHandler: (() => void) | null = null;
+    private isInitialized: boolean = false;
+    private isRunning: boolean = false;
+    private isDisposed: boolean = false;
+    private isPausedByServer: boolean = false;
+    private countdownLoop: number | null = null;
+    private gameLoopObserver: any = null;
+    private deviceSourceManager: any = null;
+    private boundaries = getPlayerBoundaries();
+    private isLocalMultiplayer: boolean = false;
+    private controlledSides: number[] = [];
+    private currentState: GameState | null = null;
+    private isExiting: boolean = false;
+    private playerLeftScore: number = 0;
+    private playerRightScore: number = 0;
 
     static getCurrentInstance(): Game | null {
         return Game.currentInstance;
@@ -89,29 +108,6 @@ export class Game {
         if (!game) return;
         await game.dispose();
     }
-
-    // ========================================
-    // 2. Constructor & Properties
-    // ========================================
-    private engine: any = null;
-    private scene: any = null;
-    private canvas: HTMLCanvasElement | null = null;
-    private gameObjects: GameObjects | null = null;
-    private guiManager: GUIManager | null = null;
-    private renderManager: RenderManager | null = null;
-    private resizeHandler: (() => void) | null = null;
-    private isInitialized: boolean = false;
-    private isRunning: boolean = false;
-    private isDisposed: boolean = false;
-    private isPausedByServer: boolean = false;
-    private countdownLoop: number | null = null;
-    private gameLoopObserver: any = null;
-    private deviceSourceManager: any = null;
-    private boundaries = getPlayerBoundaries();
-    private isLocalMultiplayer: boolean = false;
-    private controlledSides: number[] = [];
-    private currentState: GameState | null = null;
-    private isExiting: boolean = false;
 
     constructor(private config: GameConfig) {
         if (Game.currentInstance)
@@ -237,9 +233,13 @@ export class Game {
 
             this.engine = await this.initializeBabylonEngine();
             if (!this.engine) Logger.errorAndThrow('Engine not created', 'Game');
+
             this.scene = await this.createScene();
             if (!this.scene) Logger.errorAndThrow('Scene not created', 'Game');
 
+            // In Game.ts initialize method:
+            this.audioManager = new AudioManager(this.scene);
+            await this.audioManager.initialize();
             // Build game objects
             if (this.config.viewMode === ViewMode.MODE_2D)
                 this.gameObjects = await buildScene2D(this.scene, this.config.gameMode, this.config.viewMode, (progress: number) => uiManager.updateLoadingProgress(progress));
@@ -361,11 +361,21 @@ export class Game {
             Logger.errorAndThrow('Server sent ALL_READY without countdown parameter', 'Game');
 
         uiManager.setLoadingScreenVisible(false);
-        if (countdown === 5)
-            this.renderManager?.startCameraAnimation(this.gameObjects?.cameras, this.config.gameMode, this.config.viewMode);
-        if (countdown > 0)
+        if (countdown === 5) {
+            this.renderManager?.startCameraAnimation(
+                this.gameObjects?.cameras, 
+                this.config.viewMode,
+                this.controlledSides,
+                this.isLocalMultiplayer
+            );
+        }
+        if (countdown > 0) {
+            this.audioManager?.playCountdown();
             this.guiManager?.showCountdown(countdown);
+        }
         else {
+            this.audioManager?.stopCountdown();
+            this.audioManager?.startGameMusic();
             this.renderManager?.stopCameraAnimation();
             this.guiManager?.hideCountdown();
             this.start();
@@ -378,10 +388,11 @@ export class Game {
 
         Logger.info('Server confirmed game is paused', 'Game');
         
+        this.audioManager?.pauseGameMusic();
         this.isPausedByServer = true;
         this.isRunning = false;
         this.updateGamePauseState(true);
-        
+        this.audioManager?.pauseGameMusic();
         this.renderManager?.stopRendering();
         this.stopGameLoop();
         
@@ -393,11 +404,10 @@ export class Game {
         if (this.isDisposed || this.isRunning || !this.isPausedByServer) return;
 
         Logger.info('Server confirmed game is resumed', 'Game');
-        
         this.isPausedByServer = false;
         this.isRunning = true;
         this.updateGamePauseState(false);
-
+        this.audioManager?.resumeGameMusic();
         this.renderManager?.startRendering();
         this.startGameLoop();
         
@@ -419,6 +429,7 @@ export class Game {
         //     || this.config.gameMode === GameMode.TOURNAMENT_REMOTE || this.config.gameMode === GameMode.TWO_PLAYER_REMOTE)
             await this.guiManager?.showWinner(gameWinner);
 
+        this.audioManager?.stopGameMusic();
         this.renderManager?.stopRendering();
         this.stopGameLoop();
         Game.disposeGame();
@@ -477,23 +488,23 @@ export class Game {
                 this.gameObjects.ball.position.z = state.ball.z;
                 this.gameObjects.ball.rotation.x += 0.1;
                 this.gameObjects.ball.rotation.y += 0.05;
-                // const rot = 3;
-                // const deltaX = state.ball.x - this.gameObjects.ball.position.x;
-                // const deltaZ = state.ball.z - this.gameObjects.ball.position.z;
-
-                // this.gameObjects.ball.rotation.x += deltaZ * rot;
-                // this.gameObjects.ball.rotation.z -= deltaX * rot;
-
-                // this.gameObjects.ball.position.x = state.ball.x;
-                // this.gameObjects.ball.position.z = state.ball.z;
             }
 
-            if (this.guiManager)
-                this.guiManager.updateRally(state.ball.current_rally);
+            this.guiManager?.updateRally(state.ball.current_rally);
+            this.audioManager?.updateMusicSpeed(state.ball.current_rally);
 
             // Update Score
-            if (this.guiManager && this.guiManager.isReady())
+            if (this.guiManager && this.guiManager.isReady()){
+                if (this.playerLeftScore < state.paddleLeft.score) {
+                    this.playerLeftScore = state.paddleLeft.score
+                    this.audioManager?.playScore();
+                }
+                if (this.playerRightScore < state.paddleRight.score) {
+                    this.playerRightScore = state.paddleRight.score
+                    this.audioManager?.playScore();
+                }
                 this.guiManager.updateScores(state.paddleLeft.score, state.paddleRight.score);
+            }
 
         } catch (error) {
             Logger.error('Error updating game objects', 'Game', error);
@@ -538,20 +549,18 @@ export class Game {
 
         try {
             this.stopGameLoop();
-            if (this.renderManager) {
-                this.renderManager.dispose();
-                this.renderManager = null;
-            }
+
+            this.renderManager?.dispose();
+            this.renderManager = null;
 
             if (this.countdownLoop) {
                 clearInterval(this.countdownLoop);
                 this.countdownLoop = null;
             }
 
-            if (this.deviceSourceManager) {
-                this.deviceSourceManager.dispose();
-                this.deviceSourceManager = null;
-            }
+            this.deviceSourceManager?.dispose();
+            this.deviceSourceManager = null;
+
             this.controlledSides = [];
 
             if (this.resizeHandler) {
@@ -559,15 +568,15 @@ export class Game {
                 this.resizeHandler = null;
             }
 
-            if (this.guiManager) {
-                this.guiManager.dispose();
-                this.guiManager = null;
-            }
+            this.guiManager?.dispose();
+            this.guiManager = null;
 
             uiManager.setLoadingScreenVisible(false);
             uiManager.updateLoadingProgress(0);
 
             this.gameObjects = null;
+            this.audioManager?.dispose();
+            this.audioManager = null;
 
             if (this.scene) {
                 this.scene.onBeforeRenderObservable?.clear();
@@ -576,10 +585,8 @@ export class Game {
                 this.scene = null;
             }
 
-            if (this.engine) {
-                this.engine.dispose();
-                this.engine = null;
-            }
+            this.engine?.dispose();
+            this.engine = null;
 
             if (this.canvas) {
                 const context = this.canvas.getContext('2d');
@@ -624,20 +631,46 @@ export class Game {
 
     private assignPlayerSide(name: string, side: number): void {
         const isOurPlayer = this.config.players.some(player => player.name === name);
-        if (isOurPlayer && !this.controlledSides.includes(side)) {
+        if (isOurPlayer && !this.controlledSides.includes(side))
             this.controlledSides.push(side);
-            Logger.info('Added controlled side', 'Game', `Side: ${side} for ${name}`);
+    }
+
+    private setActiveCameras(): void {
+        if (!this.gameObjects?.cameras || this.config.viewMode === ViewMode.MODE_2D)
+            return;
+
+        const cameras = this.gameObjects.cameras;
+        const guiCamera = this.gameObjects.guiCamera;
+
+        if (this.isLocalMultiplayer)
+            this.scene.activeCameras = [cameras[0], cameras[1], guiCamera];
+        else {
+            let activeGameCamera;
+            if (this.controlledSides.includes(0))
+                activeGameCamera = cameras[0];
+            else if (this.controlledSides.includes(1))
+                activeGameCamera = cameras[1];
+            else
+                activeGameCamera = cameras[0];
+
+            if (activeGameCamera && guiCamera)
+                this.scene.activeCameras = [activeGameCamera, guiCamera];
         }
+
     }
 
     private handlePlayerAssignment(leftPlayerName: string, rightPlayerName: string): void {
-        // Update GUI with player names
         if (this.guiManager)
             this.guiManager.updatePlayerNames(leftPlayerName, rightPlayerName);
 
-        // Assign sides based on player names
         this.assignPlayerSide(leftPlayerName, 0);
         this.assignPlayerSide(rightPlayerName, 1);
+        this.setActiveCameras();
+        if (this.guiManager) {
+            const leftPlayerControlled = this.controlledSides.includes(0);
+            const rightPlayerControlled = this.controlledSides.includes(1);
+            this.guiManager.updateControlVisibility(leftPlayerControlled, rightPlayerControlled);
+        }
     }
 
     // Update input state - call this in render loop

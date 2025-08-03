@@ -308,7 +308,7 @@ export class AuthManager {
 
                 if (!backendResponse.ok) {
                     const errorData = await backendResponse.json();
-                    throw new Error('Backend authentication failed.');
+                    throw new Error(`Backend authentication failed: ${errorData.message || errorData.error || 'Unknown error'}`);
                 }
 
                 // Parses the response to get the session token from your application
