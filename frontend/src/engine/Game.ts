@@ -360,7 +360,6 @@ export class Game {
 
         uiManager.setLoadingScreenVisible(false);
         if (countdown === 5) {
-            this.audioManager?.startGameMusic();
             this.renderManager?.startCameraAnimation(
                 this.gameObjects?.cameras, 
                 this.config.gameMode, 
@@ -369,9 +368,13 @@ export class Game {
                 this.isLocalMultiplayer
             );
         }
-        if (countdown > 0)
+        if (countdown > 0) {
+            this.audioManager?.playCountdown();
             this.guiManager?.showCountdown(countdown);
+        }
         else {
+            this.audioManager?.stopCountdown();
+            this.audioManager?.startGameMusic();
             this.renderManager?.stopCameraAnimation();
             this.guiManager?.hideCountdown();
             this.start();

@@ -12,10 +12,9 @@ export class AudioManager {
     private currentRally: number = 1;
 
     // Sound effects
-    private paddleHitSound: any = null;
-    private ballBounceSound: any = null;
-    private scoreSound: any = null;
     private gameStartSound: any = null;
+    private countdownSound: any = null
+    private paddleHitSound: any = null;
 
     constructor(scene: any) {
         this.scene = scene;
@@ -51,6 +50,30 @@ export class AudioManager {
                     autoplay: false,
                     volume: 0.4,
                     spatialSound: false
+                }
+            );
+
+            // this.countdownSound = new BABYLON.Sound(
+            //     "countdown",
+            //     "/assets/audio/countdown2.wav",
+            //     this.scene,
+            //     null,
+            //     {
+            //         loop: false,
+            //         autoplay: false,
+            //         volume: 1.0,
+            //         spatialSound: false
+            //     }
+            // );
+
+            this.countdownSound = await BABYLON.CreateSoundAsync(
+                "countdown",
+                "/assets/audio/countdown2.wav",
+                {
+                    loop: true,
+                    autoplay: false,
+                    volume: 0.4,
+                    playbackRate: this.basePlaybackRate
                 }
             );
 
@@ -106,25 +129,27 @@ export class AudioManager {
     }
 
     // Sound effects methods
+    playGameStart(): void {
+        if (this.gameStartSound && this.gameStartSound.isReady)
+            this.gameStartSound.play();
+    }
+
     playPaddleHit(): void {
         if (this.paddleHitSound && this.paddleHitSound.isReady)
             this.paddleHitSound.play();
     }
 
-    playBallBounce(): void {
-        if (this.ballBounceSound && this.ballBounceSound.isReady)
-            this.ballBounceSound.play();
+    playCountdown(): void {
+        this.stopCountdown();
+        this.countdownSound?.play();
     }
 
-    playScore(): void {
-        if (this.scoreSound && this.scoreSound.isReady)
-            this.scoreSound.play();
+    stopCountdown(): void {
+        this.countdownSound?.stop();
     }
 
-    playGameStart(): void {
-        if (this.gameStartSound && this.gameStartSound.isReady)
-            this.gameStartSound.play();
-    }
+
+
 
     dispose(): void {
         Logger.info('Disposing audio manager...', 'BabylonAudioManager');
@@ -136,11 +161,8 @@ export class AudioManager {
             this.paddleHitSound?.dispose();
             this.paddleHitSound = null;
 
-            this.ballBounceSound?.dispose();
-            this.ballBounceSound = null;
-
-            this.scoreSound?.dispose();
-            this.scoreSound = null;
+            this.countdownSound?.dispose();
+            this.countdownSound = null;
 
             this.gameStartSound?.dispose();
             this.gameStartSound = null;
