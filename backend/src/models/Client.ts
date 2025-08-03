@@ -7,15 +7,17 @@ import { Paddle } from '../core/Paddle.js'
  */
 export class Client {
     id: string;
-    username: string;     // Username for future authentication (not used yet)
-    password: string;     // Password for future authentication (not used yet)
+    username: string;       // Username for future authentication (not used yet)
+    password: string;       // Password for future authentication (not used yet)
     websocket: any;
+    loggedIn: boolean;      // Whether this client is authenticated
 
     constructor(id: string, username: string, password: string, websocket: any) {
         this.id = id;
-        this.username = username;     // Keep for future use
-        this.password = password;     // Keep for future use
+        this.username = username;       // Keep for future use
+        this.password = password;       // Keep for future use
         this.websocket = websocket;
+        this.loggedIn = false;          // Default to not logged in
     }
 }
 

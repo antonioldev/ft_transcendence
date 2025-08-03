@@ -81,3 +81,19 @@ export function getGameHistoryForUser(username: string): GameHistoryEntry[] | un
     }
   ];
 }
+
+export function findOrCreateGoogleUser(profile: { sub: string, name: string, email: string }): UserProfileData | null {
+    let user = dbFunction.findUserByGoogleId(profile.sub);
+    if (user) {
+        return user;
+    }
+
+    const userExistsByEmail = dbFunction.userExist(undefined, undefined, profile.email);
+    if (userExistsByEmail) {
+        dbFunction.linkGoogleIdToUser(profile.email, profile.sub);
+    } else {
+        dbFunction.createGoogleUser(profile);
+    }
+    
+    return dbFunction.findUserByGoogleId(profile.sub);
+}
