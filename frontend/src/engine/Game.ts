@@ -36,6 +36,29 @@ import { AudioManager } from './AudioManager.js';
 export class Game {
     private static currentInstance: Game | null = null;
 
+        private engine: any = null;
+    private scene: any = null;
+    private canvas: HTMLCanvasElement | null = null;
+    private gameObjects: GameObjects | null = null;
+    private guiManager: GUIManager | null = null;
+    private renderManager: RenderManager | null = null;
+    private audioManager: AudioManager | null =null;
+    private resizeHandler: (() => void) | null = null;
+    private isInitialized: boolean = false;
+    private isRunning: boolean = false;
+    private isDisposed: boolean = false;
+    private isPausedByServer: boolean = false;
+    private countdownLoop: number | null = null;
+    private gameLoopObserver: any = null;
+    private deviceSourceManager: any = null;
+    private boundaries = getPlayerBoundaries();
+    private isLocalMultiplayer: boolean = false;
+    private controlledSides: number[] = [];
+    private currentState: GameState | null = null;
+    private isExiting: boolean = false;
+    private playerLeftScore: number = 0;
+    private playerRightScore: number = 0;
+
     static getCurrentInstance(): Game | null {
         return Game.currentInstance;
     }
@@ -85,27 +108,6 @@ export class Game {
         if (!game) return;
         await game.dispose();
     }
-
-    private engine: any = null;
-    private scene: any = null;
-    private canvas: HTMLCanvasElement | null = null;
-    private gameObjects: GameObjects | null = null;
-    private guiManager: GUIManager | null = null;
-    private renderManager: RenderManager | null = null;
-    private audioManager: AudioManager | null =null;
-    private resizeHandler: (() => void) | null = null;
-    private isInitialized: boolean = false;
-    private isRunning: boolean = false;
-    private isDisposed: boolean = false;
-    private isPausedByServer: boolean = false;
-    private countdownLoop: number | null = null;
-    private gameLoopObserver: any = null;
-    private deviceSourceManager: any = null;
-    private boundaries = getPlayerBoundaries();
-    private isLocalMultiplayer: boolean = false;
-    private controlledSides: number[] = [];
-    private currentState: GameState | null = null;
-    private isExiting: boolean = false;
 
     constructor(private config: GameConfig) {
         if (Game.currentInstance)
@@ -488,13 +490,22 @@ export class Game {
                 this.gameObjects.ball.rotation.x += 0.1;
                 this.gameObjects.ball.rotation.y += 0.05;
             }
-            this.guiManager?.updateRally(state.ball.current_rally);
 
+            this.guiManager?.updateRally(state.ball.current_rally);
             this.audioManager?.updateMusicSpeed(state.ball.current_rally);
 
             // Update Score
-            if (this.guiManager && this.guiManager.isReady())
+            if (this.guiManager && this.guiManager.isReady()){
+                if (this.playerLeftScore < state.paddleLeft.score) {
+                    this.playerLeftScore = state.paddleLeft.score
+                    this.audioManager?.playScore();
+                }
+                if (this.playerRightScore < state.paddleRight.score) {
+                    this.playerRightScore = state.paddleRight.score
+                    this.audioManager?.playScore();
+                }
                 this.guiManager.updateScores(state.paddleLeft.score, state.paddleRight.score);
+            }
 
         } catch (error) {
             Logger.error('Error updating game objects', 'Game', error);

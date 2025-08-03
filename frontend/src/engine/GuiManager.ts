@@ -29,7 +29,7 @@ export class GUIManager {
     private player2Label: any = null;
     private rallyText: any | null;
     private rally: any = null;
-    private previousRally: number = 0;
+    private previousRally: number = 1;
     private countdownText: any = null;
     private countdownContainer: any = null;
     private isInitialized: boolean = false;

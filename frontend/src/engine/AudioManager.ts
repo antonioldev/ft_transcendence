@@ -9,33 +9,31 @@ export class AudioManager {
     private basePlaybackRate: number = 1.0;
     private maxPlaybackRate: number = 1.8;
     private maxRally: number = 50;
-    private currentRally: number = 0;
+    private currentRally: number = 1;
 
     // Sound effects
     private gameStartSound: any = null;
     private countdownSound: any = null
     private paddleHitSound: any = null;
+    private scoreSound: any = null;
 
     constructor(scene: any) {
         this.scene = scene;
     }
 
     async initialize(): Promise<void> {
-        if (!this.scene) {
-            Logger.error('Scene required for Babylon audio initialization', 'BabylonAudioManager');
-        }
-
         try {
-            // Main game music
-            await BABYLON.CreateAudioEngineAsync({ volume: 0.6 });
+            if (!this.scene)
+                Logger.error('Scene required', 'BabylonAudioManager');
 
+            await BABYLON.CreateAudioEngineAsync({ volume: 0.6 });
             this.gameMusic = await BABYLON.CreateSoundAsync(
                 "gameMusic",
                 "/assets/audio/bg/retro2.mp3",
                 {
                     loop: true,
                     autoplay: false,
-                    volume: 0.6,
+                    volume: 0.5,
                     playbackRate: this.basePlaybackRate
                 }
             );
@@ -46,7 +44,7 @@ export class AudioManager {
                 {
                     loop: false,
                     autoplay: false,
-                    volume: 0.4,
+                    volume: 0.6,
                     playbackRate: this.basePlaybackRate
                 }
             );
@@ -57,14 +55,22 @@ export class AudioManager {
                 {
                     loop: false,
                     autoplay: false,
-                    volume: 0.4,
+                    volume: 0.6,
                     playbackRate: this.basePlaybackRate
                 }
             );
 
-            Logger.info('Game music loaded successfully', 'BabylonAudioManager');
+            this.scoreSound = await BABYLON.CreateSoundAsync(
+                "score",
+                "/assets/audio/score.mp3",
+                {
+                    loop: false,
+                    autoplay: false,
+                    volume: 0.7,
+                    playbackRate: this.basePlaybackRate
+                }
+            );
             this.isInitialized = true;
-
         } catch (error) {
             Logger.error('Error initializing Babylon audio', 'BabylonAudioManager', error);
         }
@@ -104,6 +110,7 @@ export class AudioManager {
         if (!this.gameMusic || !this.isInitialized) return;
 
         if (rallyCount === this.currentRally) return;
+        this.playPaddleHit();
         this.currentRally = rallyCount;
 
         const speedCurve = Math.min(rallyCount / this.maxRally, 1.0);
@@ -120,8 +127,11 @@ export class AudioManager {
     }
 
     playPaddleHit(): void {
-        if (this.paddleHitSound && this.paddleHitSound.isReady)
-            this.paddleHitSound.play();
+        this.paddleHitSound?.play();
+    }
+
+    playScore(): void {
+        this.scoreSound?.play();
     }
 
     playCountdown(): void {
@@ -132,9 +142,6 @@ export class AudioManager {
     stopCountdown(): void {
         this.countdownSound?.stop();
     }
-
-
-
 
     dispose(): void {
         Logger.info('Disposing audio manager...', 'BabylonAudioManager');
@@ -148,6 +155,9 @@ export class AudioManager {
 
             this.countdownSound?.dispose();
             this.countdownSound = null;
+
+            this.scoreSound?.dispose();
+            this.scoreSound = null;
 
             this.gameStartSound?.dispose();
             this.gameStartSound = null;
