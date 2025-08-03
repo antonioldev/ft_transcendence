@@ -52,7 +52,7 @@ export class GUIManager {
             this.createHUD(config);
             this.createViewModeElements(config);
             this.createCountdownDisplay(config);
-            this.createEndGameOverlay(config);
+            this.createEndGameOverlay();
 
             this.isInitialized = true;
 
@@ -86,7 +86,7 @@ export class GUIManager {
         return box;
     }
 
-    private applyRichTextEffects(textBlock: any, config: GameConfig): void {
+    private applyRichTextEffects(textBlock: any): void {
         if (true){//config.viewMode === ViewMode.MODE_3D) {
             // Add shadow effect
             textBlock.shadowOffsetX = 3;
@@ -171,11 +171,11 @@ export class GUIManager {
         this.player1Label = this.createTextBlock("Player 2", 48, "0px");
         this.player1Label.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
         this.player1Label.textVerticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
-        this.applyRichTextEffects(this.player1Label, config);
+        this.applyRichTextEffects(this.player1Label);
         this.score1Text = this.createTextBlock("0", 56, "-15px");
         this.score1Text.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
         this.score1Text.textVerticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
-        this.applyRichTextEffects(this.score1Text, config);
+        this.applyRichTextEffects(this.score1Text);
         box3.addControl(this.player1Label);
         box3.addControl(this.score1Text);
         this.hudGrid.addControl(box3, 0, 2);
@@ -185,12 +185,12 @@ export class GUIManager {
         this.player2Label = this.createTextBlock("Player 2", 48, "0px");
         this.player2Label.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
         this.player2Label.textVerticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
-        this.applyRichTextEffects(this.player2Label, config);
+        this.applyRichTextEffects(this.player2Label);
 
         this.score2Text = this.createTextBlock("0", 56, "-15px");
         this.score2Text.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
         this.score2Text.textVerticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
-        this.applyRichTextEffects(this.score2Text, config);
+        this.applyRichTextEffects(this.score2Text);
         box4.addControl(this.player2Label);
         box4.addControl(this.score2Text);
         this.hudGrid.addControl(box4, 0, 3);
@@ -240,7 +240,7 @@ export class GUIManager {
         this.countdownText.textVerticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
         this.countdownText.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
         this.countdownText.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
-        this.applyRichTextEffects(this.countdownText, config);
+        this.applyRichTextEffects(this.countdownText);
         this.countdownContainer.addControl(this.countdownText);
         this.advancedTexture.addControl(this.countdownContainer);
     }
@@ -351,7 +351,7 @@ export class GUIManager {
             return player === 1 ? move + "\nP1: A / D" : move + "\nP2: ← / →";
     }
 
-    private createEndGameOverlay(config: GameConfig): void {
+    private createEndGameOverlay(): void {
         this.endGameOverlay = new BABYLON.GUI.Grid(); // Use Grid like HUD
         this.endGameOverlay.width = "100%";
         this.endGameOverlay.height = "20%";
@@ -372,7 +372,7 @@ export class GUIManager {
         this.endGameWinnerText.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
         this.endGameWinnerText.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
 
-        this.applyRichTextEffects(this.endGameWinnerText, config);
+        this.applyRichTextEffects(this.endGameWinnerText);
 
         // Add text to grid at position (0, 0)
         this.endGameOverlay.addControl(this.endGameWinnerText, 0, 0);
@@ -381,8 +381,8 @@ export class GUIManager {
 
     private createCameraBasedFireworks(scene: any): void {
         const cameras = this.getActiveCameras(scene);
-        cameras.forEach((camera, cameraIndex) => {
-            this.createFireworksForCamera(scene, camera, cameraIndex);
+        cameras.forEach((camera) => {
+            this.createFireworksForCamera(scene, camera);
         });
     }
 
@@ -396,7 +396,7 @@ export class GUIManager {
         return [];
     }
 
-    private createFireworksForCamera(scene: any, camera: any, cameraIndex: number): void {
+    private createFireworksForCamera(scene: any, camera: any): void {
         const numberOfFireworks = 8;
         
         for (let i = 0; i < numberOfFireworks; i++) {
@@ -414,6 +414,7 @@ export class GUIManager {
             }, i * (150 + Math.random() * 200)); // Faster timing
         }
     }
+
     private createExplosion(scene: any, pos: any): void {
         const explosion = new BABYLON.ParticleSystem(`gameEnd_explosion_${Date.now()}`, 1500, scene);
         try {

@@ -1,6 +1,6 @@
 import { Logger } from '../utils/LogManager.js';
 import { ConnectionStatus, MessageType, GameMode, Direction, WebSocketEvent } from '../shared/constants.js'
-import { ClientMessage, ServerMessage, GameStateData, PlayerInfo, RegisterUser, LoginUser } from '../shared/types.js'
+import { ClientMessage, ServerMessage, PlayerInfo, RegisterUser, LoginUser } from '../shared/types.js'
 
 /**
  * WebSocketClient is responsible for managing the WebSocket connection
@@ -69,7 +69,7 @@ export class WebSocketClient {
 
         this.ws.onerror = (error) => {
             clearTimeout(timeout);
-            Logger.error('WebSocket error', 'WebSocketClient');
+            Logger.error('WebSocket error', 'WebSocketClient', error);
             this.connectionStatus = ConnectionStatus.FAILED;
             this.notifyStatus(ConnectionStatus.FAILED);
             this.triggerCallback(WebSocketEvent.ERROR, 'Connection failed');

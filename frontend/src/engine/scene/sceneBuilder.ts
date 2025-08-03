@@ -74,16 +74,16 @@ export async function buildScene3D(
     
     cameras = createCameras(scene, "camera", viewMode, gameMode);
     onProgress?.(50);
-    const terrain = createTerrain(scene, "terrain", viewMode, map_asset.textures.terrain)
+    createTerrain(scene, "terrain", viewMode, map_asset.textures.terrain)
     onProgress?.(60);
     playerLeft = createPlayer(scene, "player1", getPlayerLeftPosition(), getPlayerSize(), COLORS.player1_3D, viewMode, map_asset.textures.paddle);
     playerRight = createPlayer(scene, "player2", getPlayerRightPosition(), getPlayerSize(), COLORS.player2_3D, viewMode, map_asset.textures.paddle);
     onProgress?.(70);
-    createEnvironment(scene, viewMode, map_asset.environment.skybox);
+    createEnvironment(scene, map_asset.environment.skybox);
     onProgress?.(80);
     
-    const trees = await createVegetation(scene, viewMode, map_asset.vegetation.tree);
-    const bushes = await createVegetation(scene, viewMode, map_asset.vegetation.bush);
+    await createVegetation(scene, map_asset.vegetation.tree);
+    await createVegetation(scene, map_asset.vegetation.bush);
     onProgress?.(90);
     await scene.whenReadyAsync();
     onProgress?.(95);

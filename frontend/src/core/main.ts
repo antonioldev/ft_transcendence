@@ -7,10 +7,10 @@ import { AppStateManager } from './AppStateManager.js';
 import { ConnectionStatus, WebSocketEvent } from '../shared/constants.js';
 import { EL, requireElementById } from '../ui/elements.js';
 import { DashboardManager } from './DashboardManager.js';
-import { MemoryLeakDetector } from '../utils/memory.js'
+// import { MemoryLeakDetector } from '../utils/memory.js'
 
 // Initialize the detector
-const memoryDetector = new MemoryLeakDetector();
+// const memoryDetector = new MemoryLeakDetector();
 
 function loadPage(): void {
     // Initialize classes

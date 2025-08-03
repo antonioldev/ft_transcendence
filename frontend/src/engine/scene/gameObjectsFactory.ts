@@ -151,8 +151,8 @@ export function createBall(scene: any, name: string, position: any, color: any, 
     const ball = BABYLON.MeshBuilder.CreateSphere(name, {diameter}, scene);
     ball.position = position;
 
-    const playerScale = getStandardTextureScale(diameter, diameter, MAP_OBJECT_TYPE.PLAYER);
-    ball.material = createMaterial(scene, name + "Material", color, mode, texture);
+    const ballScale = getStandardTextureScale(diameter, diameter, MAP_OBJECT_TYPE.BALL);
+    ball.material = createMaterial(scene, name + "Material", color, mode, texture, ballScale);
 
     return ball;
 }

@@ -13,7 +13,7 @@ import { uiManager } from '../ui/UIManager.js';
 import { GUIManager } from './GuiManager.js';
 import { RenderManager } from './RenderManager.js';
 import { GameMode, Direction } from '../shared/constants.js';
-import { PlayerControls, InputData } from '../shared/types.js';
+import { PlayerControls} from '../shared/types.js';
 import { getPlayerBoundaries } from '../shared/gameConfig.js';
 import { appStateManager } from '../core/AppStateManager.js';
 import { authManager } from '../core/AuthManager.js';
@@ -364,7 +364,6 @@ export class Game {
         if (countdown === 5) {
             this.renderManager?.startCameraAnimation(
                 this.gameObjects?.cameras, 
-                this.config.gameMode, 
                 this.config.viewMode,
                 this.controlledSides,
                 this.isLocalMultiplayer
