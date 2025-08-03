@@ -3,7 +3,6 @@ declare var BABYLON: typeof import('@babylonjs/core') & {
 }; //declare var BABYLON: any;
 
 import { GameConfig } from './GameConfig.js';
-import { Game } from './Game.js';
 import { GameMode } from '../shared/constants.js';
 import { ViewMode } from '../shared/constants.js';
 import { Logger } from '../utils/LogManager.js';
@@ -83,6 +82,7 @@ export class GUIManager {
     private createHUDBox(): any {
         const box = new BABYLON.GUI.Rectangle();
         box.background = "rgba(0, 0, 0, 0.83)";
+        box.thickness = 0;
         return box;
     }
 
@@ -417,9 +417,10 @@ export class GUIManager {
     private createExplosion(scene: any, pos: any): void {
         const explosion = new BABYLON.ParticleSystem(`gameEnd_explosion_${Date.now()}`, 1500, scene);
         try {
-            explosion.particleTexture = new BABYLON.Texture("https://assets.babylonjs.com/textures/flare.png", scene);
+            // explosion.particleTexture = new BABYLON.Texture("assets/textures/particle/gradient_line.png", scene);
+            explosion.particleTexture = new BABYLON.Texture("assets/textures/particle/flare_transparent.png", scene);
         } catch (error) {
-            console.log("Using default particles for game end explosion");
+            explosion.particleTexture = new BABYLON.Texture("assets/textures/particle/flare.png", scene);
         }
         explosion.emitter = pos;
 
