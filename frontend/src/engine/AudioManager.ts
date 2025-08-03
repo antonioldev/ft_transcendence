@@ -6,10 +6,10 @@ export class AudioManager {
     private scene: any = null;
     private gameMusic: any = null;
     private isInitialized: boolean = false;
-    private basePlaybackRate: number = 0.5;
-    private maxPlaybackRate: number = 2.0;
+    private basePlaybackRate: number = 1.0;
+    private maxPlaybackRate: number = 1.8;
     private maxRally: number = 50;
-    private currentRally: number = 1;
+    private currentRally: number = 0;
 
     // Sound effects
     private gameStartSound: any = null;
@@ -40,37 +40,22 @@ export class AudioManager {
                 }
             );
 
-            this.paddleHitSound = new BABYLON.Sound(
+            this.paddleHitSound = await BABYLON.CreateSoundAsync(
                 "paddleHit",
                 "/assets/audio/hit.mp3",
-                this.scene,
-                null,
                 {
                     loop: false,
                     autoplay: false,
                     volume: 0.4,
-                    spatialSound: false
+                    playbackRate: this.basePlaybackRate
                 }
             );
-
-            // this.countdownSound = new BABYLON.Sound(
-            //     "countdown",
-            //     "/assets/audio/countdown2.wav",
-            //     this.scene,
-            //     null,
-            //     {
-            //         loop: false,
-            //         autoplay: false,
-            //         volume: 1.0,
-            //         spatialSound: false
-            //     }
-            // );
 
             this.countdownSound = await BABYLON.CreateSoundAsync(
                 "countdown",
                 "/assets/audio/countdown2.wav",
                 {
-                    loop: true,
+                    loop: false,
                     autoplay: false,
                     volume: 0.4,
                     playbackRate: this.basePlaybackRate
@@ -140,7 +125,7 @@ export class AudioManager {
     }
 
     playCountdown(): void {
-        this.stopCountdown();
+        this.countdownSound?.stop();
         this.countdownSound?.play();
     }
 
