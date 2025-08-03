@@ -319,7 +319,7 @@ export class AuthManager {
                 
                 // Decodes the session token and updates the current user and authentication state
                 const decodedToken = JSON.parse(atob(sessionToken.split('.')[1]));
-                this.currentUser = { username: decodedToken.user.name };
+                this.currentUser = { username: decodedToken.user.username };
                 this.authState = AuthState.LOGGED_IN;
                 
                 // Updates the UI to show user information and navigates to the main menu
