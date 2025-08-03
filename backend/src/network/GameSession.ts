@@ -11,7 +11,7 @@ export class GameSession {
 	players: Player[] = [];
 	player_capacity: number = 2;
 	client_capacity: number = 1;
-	game!: Game;
+	game?: Game;
 	full: boolean = false;
 	running: boolean = false;
 	private paused: boolean = false;
@@ -106,7 +106,7 @@ export class GameSession {
 			console.log(`Game ${this.id} is already paused`);
 			return false;
 		}
-		if (!this.running) {
+		if (!this.running || !this.game) {
 			console.log(`Game ${this.id} is not running, cannot pause`);
 			return false;
 		}
@@ -128,7 +128,7 @@ export class GameSession {
 			console.log(`Game ${this.id} is not paused`);
 			return false;
 		}
-		if (!this.running) {
+		if (!this.running || !this.game) {
 			console.log(`Game ${this.id} is not running, cannot resume`);
 			return false;
 		}
@@ -148,7 +148,9 @@ export class GameSession {
 
 	stop() {
         // this.broadcast({ type: MessageType.GAME_ENDED });
-		this.game.stop();
+		if (this.game) {
+			this.game.stop();
+		}
 		this.running = false;
 		this.paused = false;
 	}
@@ -167,7 +169,9 @@ export class GameSession {
 
 	// wrapper needed as is polymorphised for Tournament
 	enqueue(input: PlayerInput): void  {
-		this.game.enqueue(input);
+		if (this.game) {
+			this.game.enqueue(input);
+		}
 	}
 
 	allClientsReady(): boolean {
