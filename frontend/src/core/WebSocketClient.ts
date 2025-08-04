@@ -155,8 +155,8 @@ export class WebSocketClient {
     // GAME COMMUNICATION
     // ========================================
 
-    joinGame(gameMode: GameMode, players: PlayerInfo[]): void {
-        this.sendMessage(MessageType.JOIN_GAME, { gameMode, players });
+    joinGame(gameMode: GameMode, players: PlayerInfo[], aiDifficulty: number): void {
+        this.sendMessage(MessageType.JOIN_GAME, { gameMode, players, aiDifficulty });
     }
 
     sendPlayerReady(): void {

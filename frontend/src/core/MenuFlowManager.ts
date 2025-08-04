@@ -1,5 +1,5 @@
 import { Logger } from '../utils/LogManager.js';
-import { GameMode, ViewMode, AppState } from '../shared/constants.js';
+import { GameMode, ViewMode, AppState, AiDifficulty } from '../shared/constants.js';
 import { uiManager } from '../ui/UIManager.js';
 import { authManager } from './AuthManager.js';
 import { getCurrentTranslation } from '../translations/translations.js';
@@ -21,6 +21,7 @@ export class MenuFlowManager {
     private selectedViewMode: ViewMode = ViewMode.MODE_2D;
     private selectedGameMode: GameMode | null = null;
     private currentViewModeIndex = 0;
+    private currentAiDifficultyIndex: AiDifficulty = AiDifficulty.EASY;
 
     static getInstance(): MenuFlowManager {
         if (!MenuFlowManager.instance)
@@ -42,9 +43,16 @@ export class MenuFlowManager {
         const viewModeBack = requireElementById(EL.BUTTONS.VIEW_MODE_BACK);
         const viewModeForward = requireElementById(EL.BUTTONS.VIEW_MODE_FORWARD);
         const backBtn = requireElementById(EL.BUTTONS.DASHBOARD_BACK);
+        const soloDifficultyBack = requireElementById(EL.BUTTONS.SOLO_DIFFICULTY_BACK);
+        const soloDifficultyForward = requireElementById(EL.BUTTONS.SOLO_DIFFICULTY_FORWARD);
+
         viewModeBack.addEventListener('click', () => this.previousViewMode());
         viewModeForward.addEventListener('click', () => this.nextViewMode());
         backBtn.addEventListener('click', () => { appStateManager.navigateTo(AppState.MAIN_MENU);});
+        soloDifficultyBack.addEventListener('click', () => this.previousAIDifficulty());
+        soloDifficultyForward.addEventListener('click', () => this.nextAIDifficulty());
+
+        uiManager.updateAIDifficultyDisplay(this.currentAiDifficultyIndex);
 
         // Game mode selection buttons
         this.setupGameModeButtons();
@@ -124,7 +132,7 @@ export class MenuFlowManager {
                     EL.PLAYER_SETUP.PLAYER2_NAME_TOURNAMENT, EL.PLAYER_SETUP.PLAYER3_NAME_TOURNAMENT,
                     EL.PLAYER_SETUP.PLAYER4_NAME_TOURNAMENT]);
             } else
-                await appStateManager.startGameWithMode(this.selectedViewMode, this.selectedGameMode);
+                await appStateManager.startGameWithMode(this.selectedViewMode, this.selectedGameMode, this.currentAiDifficultyIndex);
 
         });
     }
@@ -150,7 +158,7 @@ export class MenuFlowManager {
                 alert(t.pleaseFilllAllFields);
                 return;
             }
-            await appStateManager.startGameWithMode(this.selectedViewMode, this.selectedGameMode);
+            await appStateManager.startGameWithMode(this.selectedViewMode, this.selectedGameMode, this.currentAiDifficultyIndex);
         });
     }
 
@@ -182,11 +190,24 @@ export class MenuFlowManager {
         });
     }
 
+    // ========================================
+    // AI DIFFICULTY MANAGEMENT
+    // ========================================
+
+    private previousAIDifficulty(): void {
+        this.currentAiDifficultyIndex = (this.currentAiDifficultyIndex - 1 + 3) % 3;
+        uiManager.updateAIDifficultyDisplay(this.currentAiDifficultyIndex);
+    }
+
+    private nextAIDifficulty(): void {
+        this.currentAiDifficultyIndex = (this.currentAiDifficultyIndex + 1) % 3;
+        uiManager.updateAIDifficultyDisplay(this.currentAiDifficultyIndex);
+    }
 
     // ========================================
     // VIEW MODE MANAGEMENT
     // ========================================
-    
+
     private getViewModes() {
         const t = getCurrentTranslation();
         return [
@@ -197,23 +218,16 @@ export class MenuFlowManager {
 
     private previousViewMode(): void {
         const viewModes = this.getViewModes();
-        this.currentViewModeIndex = (this.currentViewModeIndex - 1 + viewModes.length) % viewModes.length;
+        this.currentViewModeIndex = (this.currentViewModeIndex - 1 + 2) % viewModes.length;
         this.selectedViewMode = viewModes[this.currentViewModeIndex].mode;
-        this.updateViewModeDisplay();
+        uiManager.updateViewModeDisplay(viewModes[this.currentViewModeIndex].name);
     }
 
     private nextViewMode(): void {
         const viewModes = this.getViewModes();
         this.currentViewModeIndex = (this.currentViewModeIndex + 1) % viewModes.length;
         this.selectedViewMode = viewModes[this.currentViewModeIndex].mode;
-        this.updateViewModeDisplay();
-    }
-
-    private updateViewModeDisplay(): void {
-        const viewModes = this.getViewModes();
         uiManager.updateViewModeDisplay(viewModes[this.currentViewModeIndex].name);
-        // const viewModeDisplay = requireElementById(EL.DISPLAY.VIEW_MODE_DISPLAY);
-        // viewModeDisplay.textContent = viewModes[this.currentViewModeIndex].name;
     }
 }
 

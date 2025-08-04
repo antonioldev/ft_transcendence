@@ -109,6 +109,12 @@ export enum AppState {
     STATS_DASHBOARD ,//= 'STATS_DASHBOARD'
 }
 
+export enum AiDifficulty {
+    EASY,
+    MEDIUM,
+    HARD
+}
+
 export enum UserManagement {
     SEND_USER_PROFILE,      // Type for front to backend comm
     REQUEST_USER_PROFILE,    // Type for back to frontend comm

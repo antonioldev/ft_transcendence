@@ -5,7 +5,7 @@ export const french: Translation = {
     classicMode: 'Mode Classique',
     immersiveMode: 'Mode Immersif',
     selectGameMode: 'Sélectionner le Mode de Jeu',
-    soloMode: 'Solo (vs IA)',
+    soloMode: 'vs AI',
     localMode: 'Local 2 Joueurs',
     onlineMode: 'En ligne 2 Joueurs',
     tournamentMode: 'Tournoi',
@@ -51,5 +51,8 @@ export const french: Translation = {
     play: 'JOUER',
     loading: 'Chargement...',
     waiting: 'Recherche d’adversaires...',
-    controls: 'Contrôles'
+    controls: 'Contrôles',
+    easy: ' (Facile)',
+    medium: ' (Moyen)',
+    hard: ' (Difficile)'
 };

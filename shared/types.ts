@@ -42,6 +42,7 @@ export interface ClientMessage {
     side?: number; // Player side (optional)
     direction?: Direction; // Movement direction (optional)
     username?: string;
+    aiDifficulty?: number
 }
 
 // Represents a message sent from the server to the client
