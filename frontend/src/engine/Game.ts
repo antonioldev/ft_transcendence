@@ -190,7 +190,7 @@ export class Game {
     // INITIALIZATION
     // ========================================
 
-    static async createAndStart(viewMode: ViewMode, gameMode: GameMode): Promise<Game> {
+    static async createAndStart(viewMode: ViewMode, gameMode: GameMode, aiDifficulty: number): Promise<Game> {
         try {
             Logger.info(`Starting game: ${gameMode} in ${ViewMode[viewMode]} mode`, 'Game');
 
@@ -202,12 +202,11 @@ export class Game {
                 players = GameConfigFactory.getPlayersFromUI(gameMode);
 
             const config = GameConfigFactory.createConfig(viewMode, gameMode, players);
-
             // Create game instance
             const game = new Game(config);
             
             // Initialize and connect
-            await game.connect();
+            await game.connect(aiDifficulty);
             await game.initialize();
 
             Logger.info('Game created and initialized successfully', 'Game');
@@ -329,9 +328,9 @@ export class Game {
         })
     }
 
-    async connect(): Promise<void> {
+    async connect(aiDifficulty: number): Promise<void> {
         Logger.info('Connecting to server...', 'Game');
-        webSocketClient.joinGame(this.config.gameMode, this.config.players);
+        webSocketClient.joinGame(this.config.gameMode, this.config.players, aiDifficulty);
         Logger.info('Connected to server', 'Game');
     }
 

@@ -54,6 +54,9 @@ export interface Translation {
     loading: string;
     waiting: string;
     controls: string;
+    easy: string;
+    medium: string;
+    hard: string;
 }
 
 export type TranslationKey = keyof Translation;

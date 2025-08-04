@@ -5,7 +5,7 @@ export const english: Translation = {
     classicMode: 'Classic Mode',
     immersiveMode: 'Immersive Mode',
     selectGameMode: 'Select Game Mode',
-    soloMode: 'Solo (vs AI)',
+    soloMode: 'vs AI',
     localMode: 'Local 2 Players',
     onlineMode: 'Online 2 Players',
     tournamentMode: 'Tournament',
@@ -51,5 +51,8 @@ export const english: Translation = {
     play: 'PLAY',
     loading: 'Loading...',
     waiting: 'Looking for opponents...',
-    controls: 'Controls'
+    controls: 'Controls',
+    easy: ' (Easy)',
+    medium: ' (Medium)',
+    hard: ' (Hard)'
 };

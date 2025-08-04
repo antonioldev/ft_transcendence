@@ -161,7 +161,8 @@ export class WebSocketManager {
             await this.sendError(socket, 'Game mode required');
             return;
         }
-
+        if (data.aiDifficulty !== null) // We can use this to set the ai difficulty. on start the game aiDifficulty is going to be always there
+            console.log("DIFFUCLTY: " + data.aiDifficulty);
         try {
             const gameId = gameManager.findOrCreateGame(data.gameMode, client);
             const gameSession = gameManager.getGame(gameId);
