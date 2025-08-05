@@ -2,14 +2,15 @@ import { english } from './en-EN.js';
 import { italian } from './it-IT.js';
 import { french } from './fr-FR.js';
 import { portuguese } from './pt-PT.js';
+import { russian } from './ru-RU.js';
 import type { Translation } from './Translation.js';
 import { EL, requireElementById } from '../ui/elements.js';
 import { TranslationKey } from './Translation.js';
 
 export let currentLang = 0;
-export const langs: string[] = ['English', 'Italiano', 'Français', 'Brasileiro'];
+export const langs: string[] = ['🇬🇧 English 🇬🇧', '🇮🇹 Italiano 🇮🇹', '🇫🇷 Français 🇫🇷', '🇧🇷 Brasileiro 🇧🇷', '🇷🇺 Русский 🇷🇺'];
 
-const allTranslations = [english, italian, french, portuguese];
+const allTranslations = [english, italian, french, portuguese, russian];
 
 // Retrieves the current translation object based on the selected language.
 export function getCurrentTranslation(): Translation {
