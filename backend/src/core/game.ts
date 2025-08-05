@@ -6,6 +6,19 @@ import { GameMode, MessageType} from '../shared/constants.js';
 import { PlayerInput, GameStateData, ServerMessage } from '../shared/types.js';
 import { Client, Player } from '../models/Client.js'
 
+type BotDifficulty = 'easy' | 'medium' | 'hard' | 'exact';
+type Bot       	   = new (side: number, ball: Ball) => Paddle;
+
+const BOT_MAP: Record<BotDifficulty, Bot> = {
+	easy   : EasyBot,
+	medium : MediumBot,
+	hard   : HardBot,
+	exact  : ExactBot,
+};
+
+const CPU_DIFFICULTY: BotDifficulty = 'medium';
+
+
 // The Game class runs the core game logic for all game modes.
 export class Game {
 	// Clock instance to manage game loop timing
@@ -33,24 +46,33 @@ export class Game {
 	// Initialize the ball and players
 	private _init() {
 		this.ball = new Ball(this.paddles, this._update_score.bind(this));
-		
-		if (!this.players[LEFT_PADDLE].client) { // if CPU
-			this.paddles[LEFT_PADDLE] = new MediumBot(LEFT_PADDLE, this.ball)
+
+		if (!this.players[LEFT_PADDLE].client) {
+			const Bot = BOT_MAP[CPU_DIFFICULTY];
+			this.paddles[LEFT_PADDLE] = new Bot(LEFT_PADDLE, this.ball);
 		}
+
 		if (!this.players[RIGHT_PADDLE].client) {
-			this.paddles[RIGHT_PADDLE] = new MediumBot(RIGHT_PADDLE, this.ball)
+			const Bot = BOT_MAP[CPU_DIFFICULTY];
+			this.paddles[RIGHT_PADDLE] = new Bot(RIGHT_PADDLE, this.ball);
 		}
+	}
+
+
+	private isBot(paddle: Paddle): paddle is Paddle & { update: (dt: number) => void } {
+		return typeof (paddle as any).update === 'function';
 	}
 
 	private _handle_input(dt: number): void {
 		if (!this.running) return ;
 
 		this._process_queue(dt);
-		if (this.paddles[RIGHT_PADDLE] instanceof MediumBot) {
-			this.paddles[RIGHT_PADDLE].update(dt);
-		}
-		if (this.paddles[LEFT_PADDLE] instanceof MediumBot) {
-			this.paddles[LEFT_PADDLE].update(dt);
+
+		// call .update() only on bot paddles
+		for (const paddle of this.paddles) {
+			if (this.isBot(paddle)) {
+				paddle.update(dt);
+			}
 		}
 	}
 
