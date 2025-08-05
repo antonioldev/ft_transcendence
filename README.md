@@ -18,7 +18,7 @@ https://www.npmjs.com/package/@fastify/websocket
   - Online 2 Players 		----> TO IMPLENET
   - Tournaments				----> TO IMPLENET
 - **Real-time Multiplayer**: WebSocket-based networking for responsive gameplay
-- **Multi-language Support**: English, Italian, French, Portuguese
+- **Multi-language Support**: English, Italian, French, Portuguese, Russian
 - **Responsive Design**: Optimized for different screen sizes ----> TO IMPLENET
 
 ## How to Play

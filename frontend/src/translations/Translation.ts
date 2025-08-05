@@ -57,6 +57,7 @@ export interface Translation {
     easy: string;
     medium: string;
     hard: string;
+    impossible: string;
 }
 
 export type TranslationKey = keyof Translation;

@@ -70,7 +70,7 @@ export class GameSession {
 
 	add_CPU() {
 		while (this.players.length < this.player_capacity) {
-			this.players.push(new Player("default", "CPU"));
+			this.players.push(new Player(`CPU_${this.players[RIGHT_PADDLE].id}`, "CPU"));
 		}
 		this.client_capacity === this.clients.length;
     }

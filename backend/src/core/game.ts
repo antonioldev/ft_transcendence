@@ -6,17 +6,13 @@ import { GameMode, MessageType} from '../shared/constants.js';
 import { PlayerInput, GameStateData, ServerMessage } from '../shared/types.js';
 import { Client, Player } from '../models/Client.js'
 
-type BotDifficulty = 'easy' | 'medium' | 'hard' | 'exact';
-type Bot       	   = new (side: number, ball: Ball) => Paddle;
-
-const BOT_MAP: Record<BotDifficulty, Bot> = {
-	easy   : EasyBot,
-	medium : MediumBot,
-	hard   : HardBot,
-	exact  : ExactBot,
-};
-
-const CPU_DIFFICULTY: BotDifficulty = 'medium';
+type Bot = new (side: number, ball: Ball) => Paddle;
+const BOT_MAP = {
+	0: EasyBot,
+	1: MediumBot,
+	2: HardBot,
+	3: ExactBot,
+} satisfies Record<number, Bot>;
 
 
 // The Game class runs the core game logic for all game modes.
@@ -47,14 +43,13 @@ export class Game {
 	private _init() {
 		this.ball = new Ball(this.paddles, this._update_score.bind(this));
 
-		if (!this.players[LEFT_PADDLE].client) {
-			const Bot = BOT_MAP[CPU_DIFFICULTY];
-			this.paddles[LEFT_PADDLE] = new Bot(LEFT_PADDLE, this.ball);
-		}
-
-		if (!this.players[RIGHT_PADDLE].client) {
-			const Bot = BOT_MAP[CPU_DIFFICULTY];
-			this.paddles[RIGHT_PADDLE] = new Bot(RIGHT_PADDLE, this.ball);
+		for (const side of [LEFT_PADDLE, RIGHT_PADDLE]) {
+			const player = this.players[side];
+			if (!player.client && player.id.startsWith("CPU_")) {
+				const diff = parseInt(player.id.split("_")[1]);
+				const Bot = BOT_MAP[diff as keyof typeof BOT_MAP];
+				this.paddles[side] = new Bot(side, this.ball);
+			}
 		}
 	}
 
@@ -194,21 +189,11 @@ export class Game {
 	}
 
 	// Resume the game
-	resume(): void {
-		if (this.paused) {
-			this.paused = false;
-		}
-	}
+	resume(): void { this.paused = false; }
 
 	// Returns if the game is currently paused
-	isPaused(): boolean {
-		return this.paused;
-	}
+	isPaused(): boolean { return this.paused; }
 
 	// Stop the execution of the game
-	stop(): void {
-		if (this.running) {
-			this.running = false;
-		}
-	}
+	stop(): void { this.running = false; }
 }

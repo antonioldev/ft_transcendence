@@ -54,5 +54,6 @@ export const english: Translation = {
     controls: 'Controls',
     easy: ' (Easy)',
     medium: ' (Medium)',
-    hard: ' (Hard)'
+    hard: ' (Hard)',
+    impossible: ' (Impossible)'
 };

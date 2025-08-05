@@ -54,5 +54,6 @@ export const french: Translation = {
     controls: 'Contrôles',
     easy: ' (Facile)',
     medium: ' (Moyen)',
-    hard: ' (Difficile)'
+    hard: ' (Difficile)',
+    impossible: ' (Impossible)'
 };

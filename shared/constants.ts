@@ -112,7 +112,8 @@ export enum AppState {
 export enum AiDifficulty {
     EASY,
     MEDIUM,
-    HARD
+    HARD,
+    IMPOSSIBLE
 }
 
 export enum UserManagement {
