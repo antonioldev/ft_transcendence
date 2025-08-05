@@ -195,7 +195,7 @@ export class MenuFlowManager {
     // ========================================
 
     private previousAIDifficulty(): void {
-        this.currentAiDifficultyIndex = (this.currentAiDifficultyIndex - 1 + 3) % 4;
+        this.currentAiDifficultyIndex = (this.currentAiDifficultyIndex - 1 + 4) % 4;
         uiManager.updateAIDifficultyDisplay(this.currentAiDifficultyIndex);
     }
 
