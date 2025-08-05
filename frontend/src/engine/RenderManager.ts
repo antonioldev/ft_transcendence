@@ -1,13 +1,13 @@
 declare var BABYLON: typeof import('@babylonjs/core');
 
-import { Logger } from '../core/LogManager.js';
+import { Logger } from '../utils/LogManager.js';
 import { GUIManager } from './GuiManager.js';
-import { GameMode, ViewMode } from '../shared/constants.js';
+import { ViewMode } from '../shared/constants.js';
 import {
     getCamera2DPosition,
     getCamera3DPlayer1Position,
     getCamera3DPlayer2Position,
-} from '../core/utils.js';
+} from './utils.js';
 
 /**
  * Manages the rendering and frame rate control
@@ -40,8 +40,6 @@ export class RenderManager {
         this.scene = scene;
         this.guiManager = guiManager;
         this.isInitialized = true;
-
-        Logger.info('RenderManager initialized', 'RenderManager');
     }
 
     // Start the render loop
@@ -56,7 +54,7 @@ export class RenderManager {
         this.isRenderingActive = true;
         this.lastFrameTime = performance.now();
 
-        this.engine.runRenderLoop(() => { // Try render without frame rate
+        this.engine.runRenderLoop(() => {
             if (!this.isRenderingActive) return;
 
             const currentTime = performance.now();
@@ -92,8 +90,6 @@ export class RenderManager {
         //         this.updateFPSDisplay(deltaTime);
         //         this.lastFrameTime = currentTime;
         // });
-
-        Logger.info('Render loop started', 'RenderManager');
     }
 
     // Stop the render loop
@@ -101,11 +97,9 @@ export class RenderManager {
         if (!this.isRenderingActive) return;
 
         this.isRenderingActive = false;
-        
         if (this.engine)
             this.engine.stopRenderLoop();
 
-        Logger.info('Render loop stopped', 'RenderManager');
     }
 
     // Set the FPS limit for the render loop
@@ -115,9 +109,7 @@ export class RenderManager {
             this.fpsLimit = 60;
             return;
         }
-
         this.fpsLimit = fps;
-        Logger.info(`FPS limit set to ${fps}`, 'RenderManager');
     }
 
     // Get the current FPS limit
@@ -138,7 +130,7 @@ export class RenderManager {
         }
     }
 
-    startCameraAnimation(cameras: any, gameMode: GameMode, viewMode: ViewMode) {
+    startCameraAnimation(cameras: any, viewMode: ViewMode, controlledSides: number[] = [], isLocalMultiplayer: boolean = false) {
         if (!this.scene || !cameras || viewMode === ViewMode.MODE_2D)
             return;
 
@@ -146,12 +138,13 @@ export class RenderManager {
         gameCameras.forEach((camera: any, index: number) => {
             if (!camera) return;
 
-            const positionAnimation = this.createCameraMoveAnimation(camera.name);
-            const targetAnimation = this.createCameraTargetAnimation(camera.name);
-            camera.animations = [positionAnimation, targetAnimation];
-            const animationGroup = this.scene.beginAnimation(camera, 0, 180, false);
-            this.camerasAnimation.push(animationGroup);
-
+            if (isLocalMultiplayer || controlledSides.includes(index) || controlledSides.length === 0) {
+                const positionAnimation = this.createCameraMoveAnimation(camera.name);
+                const targetAnimation = this.createCameraTargetAnimation();
+                camera.animations = [positionAnimation, targetAnimation];
+                const animationGroup = this.scene.beginAnimation(camera, 0, 180, false);
+                this.camerasAnimation.push(animationGroup);
+            }
         });
     }
 
@@ -183,9 +176,9 @@ export class RenderManager {
         return positionAnimation;
     }
 
-    private createCameraTargetAnimation(cameraName: string): any {
+    private createCameraTargetAnimation(): any {
         const startTarget = BABYLON.Vector3.Zero();
-        const endTarget = BABYLON.Vector3.Zero(); // Keep looking at center
+        const endTarget = BABYLON.Vector3.Zero();
 
         const targetAnimation = BABYLON.Animation.CreateAnimation(
             "target", BABYLON.Animation.ANIMATIONTYPE_VECTOR3, 60, new BABYLON.QuadraticEase());

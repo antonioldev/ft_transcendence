@@ -107,6 +107,43 @@ export const UI_STYLES = {
         boxSizing: 'border-box' as const
     },
 
+    soloModeContainer: {
+        display: 'flex',
+        alignItems: 'center' as const,
+        gap: '0',
+        width: '100%',
+        maxWidth: '350px',
+        height: '50px',
+        fontWeight: 'bold',
+        backgroundColor: UI_COLORS.surface,
+        border: `2px solid ${UI_COLORS.primary}`,
+        borderRadius: '5px',
+        boxSizing: 'border-box' as const
+    },
+
+    difficultyButton: {
+        width: '40px',
+        height: 'auto',
+        fontSize: '1.5rem',
+        color: '#888',
+        backgroundColor: 'transparent',
+        border: 'none',
+        cursor: 'pointer',
+        borderRadius: '0'
+    },
+
+    soloButtonInContainer: {
+        border: '0',
+        borderWidth: '0',
+        borderStyle: 'none',
+        borderColor: 'transparent',
+        backgroundColor: 'transparent',
+        flex: '1',
+        height: 'auto',
+        boxShadow: 'none',
+        outline: 'none'
+    },
+
     playButton: {
         fontSize: '3rem',
         fontWeight: 'bold',

@@ -5,7 +5,7 @@ declare var BABYLON: typeof import('@babylonjs/core') & {
 import { GameConfig } from './GameConfig.js';
 import { GameMode } from '../shared/constants.js';
 import { ViewMode } from '../shared/constants.js';
-import { Logger } from '../core/LogManager.js';
+import { Logger } from '../utils/LogManager.js';
 import { getCurrentTranslation } from '../translations/translations.js';
 
 /**
@@ -21,21 +21,21 @@ import { getCurrentTranslation } from '../translations/translations.js';
 export class GUIManager {
     private advancedTexture: any = null;
 
+    private hudGrid: any = null;
     private fpsText: any = null;
-    
     private score1Text: any = null;
     private score2Text: any = null;
-
     private player1Label: any = null;
     private player2Label: any = null;
-
+    private rallyText: any | null;
     private rally: any = null;
-    private previousRally: number = 0;
-    
+    private previousRally: number = 1;
     private countdownText: any = null;
     private countdownContainer: any = null;
-    
     private isInitialized: boolean = false;
+    private endGameOverlay: any = null;
+    private endGameWinnerText: any = null;
+    private fireworkColorIndex: number = 0;
 
     // Initialize and create all GUI elements
     createGUI(scene: any, config: GameConfig): void {
@@ -49,17 +49,12 @@ export class GUIManager {
             this.advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI", true, scene);
             this.advancedTexture.layer.layerMask = 0x20000000;
 
-            // Create HUD elements
             this.createHUD(config);
-
-            // Create view mode specific elements
             this.createViewModeElements(config);
-
-            // Create countdown container
             this.createCountdownDisplay(config);
+            this.createEndGameOverlay();
 
             this.isInitialized = true;
-            Logger.info('GUI created successfully', 'GUIManager');
 
         } catch (error) {
             Logger.error('Error creating GUI', 'GUIManager', error);
@@ -67,7 +62,7 @@ export class GUIManager {
         }
     }
 
-    // Create view mode specific GUI elements (like split screen divider)
+    // Create split screen divider if is in split screen mode
     private createViewModeElements(config: GameConfig): void {
         if (config.viewMode === ViewMode.MODE_3D && 
             (config.gameMode === GameMode.TWO_PLAYER_LOCAL || config.gameMode === GameMode.TOURNAMENT_LOCAL)) {
@@ -86,13 +81,13 @@ export class GUIManager {
 
     private createHUDBox(): any {
         const box = new BABYLON.GUI.Rectangle();
-        box.thickness = 0;
         box.background = "rgba(0, 0, 0, 0.83)";
+        box.thickness = 0;
         return box;
     }
 
-    private applyRichTextEffects(textBlock: any, config: GameConfig): void {
-        if (config.viewMode === ViewMode.MODE_3D) {
+    private applyRichTextEffects(textBlock: any): void {
+        if (true){//config.viewMode === ViewMode.MODE_3D) {
             // Add shadow effect
             textBlock.shadowOffsetX = 3;
             textBlock.shadowOffsetY = 3;
@@ -106,15 +101,14 @@ export class GUIManager {
         }
     }
 
-    private createTextBlock(name: string, size: number, top: string, fontWeight?: string) {
+    private createTextBlock(name: string, size: number, top?: string) {
         const label = new BABYLON.GUI.TextBlock();
         label.text = name;
         label.color = "white";
-        label.top = top;
+        if (top !== null && top !== undefined)
+            label.top = top;
         label.fontSize = size;
         label.width = "100%";
-        if (fontWeight !== null && fontWeight !== undefined)
-            label.fontWeight = fontWeight;
         return label;
     }
 
@@ -123,88 +117,113 @@ export class GUIManager {
         pControls.text = this.getControlsText(config.viewMode, player);
         pControls.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
         pControls.lineSpacing = "10px";
-        if (player === 2 && (config.gameMode === GameMode.SINGLE_PLAYER ||
-            config.gameMode === GameMode.TOURNAMENT_REMOTE || config.gameMode === GameMode.TWO_PLAYER_REMOTE))
-            pControls.color = "rgba(0, 0, 0, 0)";
-        else
-            pControls.color = "rgba(255,255,255,0.7)";
+        pControls.color = "rgba(0, 0, 0, 0)";
         pControls.fontSize = 30;
         return pControls;
     }
 
+    updateControlVisibility(player1: boolean, player2: boolean): void {
+        if (!this.hudGrid) return;
+
+        const player1ControlBox = this.hudGrid.getChildrenAt(0, 1)[0];
+        const player2ControlBox = this.hudGrid.getChildrenAt(0, 4)[0];
+
+        if (player1ControlBox && player1ControlBox.children.length > 0) {
+            const player1Controls = player1ControlBox.children[0];
+            player1Controls.color = player1 ? "rgba(255,255,255,0.7)" : "rgba(0, 0, 0, 0)";
+        }
+
+        if (player2ControlBox && player2ControlBox.children.length > 0) {
+            const player2Controls = player2ControlBox.children[0];
+            player2Controls.color = player2 ? "rgba(255,255,255,0.7)" : "rgba(0, 0, 0, 0)";
+        }
+    }
+
     private createHUD(config: GameConfig): void {
-        const hudGrid = new BABYLON.GUI.Grid();
-        hudGrid.width = "100%";
-        hudGrid.height = "20%";
-        hudGrid.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
-        hudGrid.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
+        this.hudGrid = new BABYLON.GUI.Grid();
+        this.hudGrid.width = "100%";
+        this.hudGrid.height = "20%";
+        this.hudGrid.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+        this.hudGrid.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
 
-        hudGrid.addColumnDefinition(0.10); // FPS
-        hudGrid.addColumnDefinition(0.15); // P1 instructions
-        hudGrid.addColumnDefinition(0.25); // P1 score
-        hudGrid.addColumnDefinition(0.25); // P2 score
-        hudGrid.addColumnDefinition(0.15); // P2 instructions
-        hudGrid.addColumnDefinition(0.10); // Empty
+        this.hudGrid.addColumnDefinition(0.10); // FPS
+        this.hudGrid.addColumnDefinition(0.15); // P1 instructions
+        this.hudGrid.addColumnDefinition(0.25); // P1 score
+        this.hudGrid.addColumnDefinition(0.25); // P2 score
+        this.hudGrid.addColumnDefinition(0.15); // P2 instructions
+        this.hudGrid.addColumnDefinition(0.10); // Rally
 
-        this.advancedTexture.addControl(hudGrid);
+        this.advancedTexture.addControl(this.hudGrid);
 
         // Box 1: FPS
         const box1 = this.createHUDBox();
         this.fpsText = this.createTextBlock("FPS: 0", 18, "0px");
         box1.addControl(this.fpsText);
-        hudGrid.addControl(box1, 0, 0);
+        this.hudGrid.addControl(box1, 0, 0);
 
         // Box 2: Instructions P1
         const box2 = this.createHUDBox();
         box2.addControl(this.createPlayerControls(config, 1));
-        hudGrid.addControl(box2, 0, 1);
+        this.hudGrid.addControl(box2, 0, 1);
 
         // Box 3: P1 score + label
         const box3 = this.createHUDBox();
-        this.player1Label = this.createTextBlock("Player 1", 48, "-20px");
-        this.applyRichTextEffects(this.player1Label, config);
+        this.player1Label = this.createTextBlock("Player 2", 48, "0px");
+        this.player1Label.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+        this.player1Label.textVerticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
+        this.applyRichTextEffects(this.player1Label);
+        this.score1Text = this.createTextBlock("0", 56, "-15px");
+        this.score1Text.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+        this.score1Text.textVerticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
+        this.applyRichTextEffects(this.score1Text);
         box3.addControl(this.player1Label);
-        this.score1Text = this.createTextBlock("0", 48, "30px");
-        this.applyRichTextEffects(this.score1Text, config);
         box3.addControl(this.score1Text);
-        hudGrid.addControl(box3, 0, 2);
+        this.hudGrid.addControl(box3, 0, 2);
 
         // Box 4: P2 score + label  
         const box4 = this.createHUDBox();
-        this.player2Label = this.createTextBlock("Player 2", 48, "-20px");
-        this.applyRichTextEffects(this.player2Label, config);
+        this.player2Label = this.createTextBlock("Player 2", 48, "0px");
+        this.player2Label.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+        this.player2Label.textVerticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
+        this.applyRichTextEffects(this.player2Label);
+
+        this.score2Text = this.createTextBlock("0", 56, "-15px");
+        this.score2Text.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+        this.score2Text.textVerticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
+        this.applyRichTextEffects(this.score2Text);
         box4.addControl(this.player2Label);
-        this.score2Text = this.createTextBlock("0", 48, "30px");
-        this.applyRichTextEffects(this.score2Text, config);
         box4.addControl(this.score2Text);
-        hudGrid.addControl(box4, 0, 3);
+        this.hudGrid.addControl(box4, 0, 3);
 
         // Box 5: Instructions P2
         const box5 = this.createHUDBox();
         box5.addControl(this.createPlayerControls(config, 2));
-        hudGrid.addControl(box5, 0, 4);
+        this.hudGrid.addControl(box5, 0, 4);
 
-        // Box 6: Empty
+        // Box 6: Rally
         const box6 = this.createHUDBox();
-        this.rally = this.createTextBlock("Rally: \n0", 36, "0px");
+        this.rallyText = this.createTextBlock("Rally", 48, "0px");
+        this.rallyText.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+        this.rallyText.textVerticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
+        this.rally = this.createTextBlock("0", 56, "-15px");
+        this.rally.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+        this.rally.textVerticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
+        this.rally.transformCenterY = 1;
         this.rally.scaleX = 1;
         this.rally.scaleY = 1;
-
-            // Create animations
         const animationScaleX = this.createAnimation("scaleX", 1, 1.3);
         const animationScaleY = this.createAnimation("scaleY", 1, 1.3);
         this.rally.animations = [animationScaleX, animationScaleY];
+        box6.addControl(this.rallyText);
         box6.addControl(this.rally);
-        hudGrid.addControl(box6, 0, 5);
-
-        Logger.debug('HUD created with six boxes using Grid', 'GUIManager');
+        this.hudGrid.addControl(box6, 0, 5);
     }
 
     private createCountdownDisplay(config: GameConfig): void {
         this.countdownContainer = new BABYLON.GUI.Rectangle("countdownContainer");
-        this.countdownContainer.width = "300px";
-        this.countdownContainer.height = "150px";
-        this.countdownContainer.cornerRadius = 20;
+        this.countdownContainer.width = "200px";
+        this.countdownContainer.height = "200px";
+        this.countdownContainer.cornerRadius = 60;
         this.countdownContainer.color = "white";
         this.countdownContainer.thickness = 3;
         if (config.viewMode === ViewMode.MODE_2D)
@@ -216,9 +235,12 @@ export class GUIManager {
         this.countdownContainer.isVisible = false;
 
         // Create countdown text
-        this.countdownText = this.createTextBlock("5", 72, "0px", "bold")
-        this.applyRichTextEffects(this.countdownText, config);
-
+        this.countdownText = this.createTextBlock("5", 72, "20px");
+        this.countdownText.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+        this.countdownText.textVerticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
+        this.countdownText.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+        this.countdownText.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
+        this.applyRichTextEffects(this.countdownText);
         this.countdownContainer.addControl(this.countdownText);
         this.advancedTexture.addControl(this.countdownContainer);
     }
@@ -272,7 +294,7 @@ export class GUIManager {
 
     updateRally(rally: number): void {
         if (this.rally && (this.previousRally < rally) || rally === 1) {
-            this.rally.text = `Rally: \n${Math.round(rally)}`;
+            this.rally.text = `${Math.round(rally)}`;
 
             const maxRally = 10;
             const intensity = Math.min(rally / maxRally, 1);
@@ -282,7 +304,7 @@ export class GUIManager {
             this.rally.color = `rgb(${r}, ${g}, ${b})`;
 
             const scene = this.advancedTexture.getScene();
-            scene.beginAnimation(this.rally, 0, 60, false);   
+            scene.beginAnimation(this.rally, 0, 60, false);
         }
         this.previousRally = rally;
     }
@@ -329,34 +351,157 @@ export class GUIManager {
             return player === 1 ? move + "\nP1: A / D" : move + "\nP2: ← / →";
     }
 
+    private createEndGameOverlay(): void {
+        this.endGameOverlay = new BABYLON.GUI.Grid(); // Use Grid like HUD
+        this.endGameOverlay.width = "100%";
+        this.endGameOverlay.height = "20%";
+        this.endGameOverlay.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+        this.endGameOverlay.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
+        this.endGameOverlay.background = "rgba(0, 0, 0, 0.9)";
+        this.endGameOverlay.isVisible = false;
+
+        // Add one column for the winner text
+        this.endGameOverlay.addColumnDefinition(1.0);
+
+        // Create winner text
+        this.endGameWinnerText = new BABYLON.GUI.TextBlock();
+        this.endGameWinnerText.text = "";
+        this.endGameWinnerText.color = "#FFD700";
+        this.endGameWinnerText.fontSize = 72;
+        this.endGameWinnerText.fontWeight = "bold";
+        this.endGameWinnerText.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+        this.endGameWinnerText.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
+
+        this.applyRichTextEffects(this.endGameWinnerText);
+
+        // Add text to grid at position (0, 0)
+        this.endGameOverlay.addControl(this.endGameWinnerText, 0, 0);
+        this.advancedTexture.addControl(this.endGameOverlay);
+    }
+
+    private createCameraBasedFireworks(scene: any): void {
+        const cameras = this.getActiveCameras(scene);
+        cameras.forEach((camera) => {
+            this.createFireworksForCamera(scene, camera);
+        });
+    }
+
+    private getActiveCameras(scene: any): any[] {
+        // Return array of active cameras
+        if (scene.activeCameras && scene.activeCameras.length > 0) {
+            return scene.activeCameras; // Split screen mode
+        } else if (scene.activeCamera) {
+            return [scene.activeCamera]; // Single camera mode
+        }
+        return [];
+    }
+
+    private createFireworksForCamera(scene: any, camera: any): void {
+        const numberOfFireworks = 8;
+        
+        for (let i = 0; i < numberOfFireworks; i++) {
+            const distance = 6 + Math.random() * 4;
+            const spread = 4;
+
+            const forward = camera.getForwardRay ? camera.getForwardRay().direction : new BABYLON.Vector3(0, 0, 1);
+            const x = camera.position.x + forward.x * distance + (Math.random() - 0.5) * spread;
+            const y = camera.position.y + forward.y * distance + Math.random() * 3;
+            const z = camera.position.z + forward.z * distance + (Math.random() - 0.5) * spread;
+            const pos = new BABYLON.Vector3(x, y, z);
+            
+            setTimeout(() => {
+                this.createExplosion(scene, pos);
+            }, i * (150 + Math.random() * 200)); // Faster timing
+        }
+    }
+
+    private createExplosion(scene: any, pos: any): void {
+        const explosion = new BABYLON.ParticleSystem(`gameEnd_explosion_${Date.now()}`, 1500, scene);
+        try {
+            // explosion.particleTexture = new BABYLON.Texture("assets/textures/particle/gradient_line.png", scene);
+            explosion.particleTexture = new BABYLON.Texture("assets/textures/particle/flare_transparent.png", scene);
+        } catch (error) {
+            explosion.particleTexture = new BABYLON.Texture("assets/textures/particle/flare.png", scene);
+        }
+        explosion.emitter = pos;
+
+        const colorOptions = [
+            [new BABYLON.Color4(1, 0.8, 0.2, 1), new BABYLON.Color4(1, 0.8, 0.2, 1)], // Gold
+            [new BABYLON.Color4(0.2, 1, 0.3, 1), new BABYLON.Color4(0.2, 1, 0.3, 1)], // Green
+            [new BABYLON.Color4(0.3, 0.5, 1, 1), new BABYLON.Color4(0.3, 0.5, 1, 1)], // Blue
+            [new BABYLON.Color4(1, 0.3, 0.8, 1), new BABYLON.Color4(1, 0.3, 0.8, 1)], // Pink
+            [new BABYLON.Color4(0.8, 0.2, 1, 1), new BABYLON.Color4(0.8, 0.2, 1, 1)], // Purple
+        ];
+        const selectedColor = colorOptions[this.fireworkColorIndex % colorOptions.length];
+        this.fireworkColorIndex++;
+
+        explosion.color1 = selectedColor[0];
+        explosion.color2 = selectedColor[1];
+        explosion.colorDead = new BABYLON.Color4(0, 0, 0, 0);
+
+        explosion.minSize = 0.1;
+        explosion.maxSize = 0.8;
+        explosion.minLifeTime = 1.5;
+        explosion.maxLifeTime = 3.0;
+        explosion.emitRate = 600;
+        explosion.createSphereEmitter(2);
+        explosion.minEmitPower = 6;
+        explosion.maxEmitPower = 12;
+        explosion.gravity = new BABYLON.Vector3(0, -9.81, 0);
+        explosion.blendMode = BABYLON.ParticleSystem.BLENDMODE_ONEONE;
+        
+        explosion.start();
+        
+        // Auto cleanup
+        setTimeout(() => {
+            explosion.stop();
+            setTimeout(() => {
+                explosion.dispose();
+            }, 3000);
+        }, 2000);
+    }
+
+    async showWinner(winner: string): Promise<void> {
+        if (!this.endGameOverlay || !this.endGameWinnerText)
+            return;
+
+        if (this.hudGrid)
+            this.hudGrid.isVisible = false;
+        this.endGameWinnerText.text = `🏆 ${winner} WINS! 🏆`;
+        this.endGameOverlay.isVisible = true;
+        const scene = this.advancedTexture.getScene();
+        if (scene)
+            this.createCameraBasedFireworks(scene);
+        await new Promise(resolve => setTimeout(resolve, 5000));
+
+        this.hudGrid.isVisible = true;
+        this.endGameOverlay.isVisible = false;
+    }
+
+
     // Clean up all GUI resources
     dispose(): void {
         if (!this.isInitialized) return;
 
         try {
-            Logger.info('Disposing GUI...', 'GUIManager');
-
             this.fpsText = null;
             this.score1Text = null;
             this.score2Text = null;
-
             this.countdownText = null;
             this.countdownContainer = null;
-
             this.player1Label = null;
             this.player2Label = null;
-
+            this.rallyText = null;
             this.rally = null;
+            this.endGameWinnerText = null;
+            this.endGameOverlay = null;
+            this.hudGrid = null;
 
-            // Dispose the main texture
-            if (this.advancedTexture) {
+            if (this.advancedTexture)
                 this.advancedTexture.dispose();
-                this.advancedTexture = null;
-            }
+            this.advancedTexture = null;
 
             this.isInitialized = false;
-            Logger.info('GUI disposed successfully', 'GUIManager');
-
         } catch (error) {
             Logger.error('Error disposing GUI', 'GUIManager', error);
         }

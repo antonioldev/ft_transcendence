@@ -1,4 +1,4 @@
-import { Logger } from "../core/LogManager.js";
+import { Logger } from "../utils/LogManager.js";
 
 // Centralized element ID constants to eliminate hard-coded strings throughout the application.
 // All DOM element IDs should be defined here and referenced via these constants.
@@ -35,6 +35,8 @@ export const EL = {
     LOGIN_BACK: 'login-back',
     REGISTER_BACK: 'register-back',
     DASHBOARD_BACK: 'dashboard-back',
+    SOLO_DIFFICULTY_BACK: 'solo-difficulty-back',
+    SOLO_DIFFICULTY_FORWARD: 'solo-difficulty-forward',
 
     // View mode navigation
     VIEW_MODE_BACK: 'view-mode-back',

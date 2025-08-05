@@ -1,5 +1,3 @@
-import { UI_STYLES } from '../ui/styles';
-
 // Declares global types for the Google library.
 declare global {
     interface Window {

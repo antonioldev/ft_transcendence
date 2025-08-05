@@ -1,6 +1,6 @@
-import { Logger } from './LogManager.js';
+import { Logger } from '../utils/LogManager.js';
 import { ConnectionStatus, MessageType, GameMode, Direction, WebSocketEvent } from '../shared/constants.js'
-import { ClientMessage, ServerMessage, GameStateData, PlayerInfo, RegisterUser, LoginUser } from '../shared/types.js'
+import { ClientMessage, ServerMessage, PlayerInfo, RegisterUser, LoginUser } from '../shared/types.js'
 
 /**
  * WebSocketClient is responsible for managing the WebSocket connection
@@ -69,7 +69,7 @@ export class WebSocketClient {
 
         this.ws.onerror = (error) => {
             clearTimeout(timeout);
-            Logger.error('WebSocket error', 'WebSocketClient');
+            Logger.error('WebSocket error', 'WebSocketClient', error);
             this.connectionStatus = ConnectionStatus.FAILED;
             this.notifyStatus(ConnectionStatus.FAILED);
             this.triggerCallback(WebSocketEvent.ERROR, 'Connection failed');
@@ -101,13 +101,16 @@ export class WebSocketClient {
                 this.triggerCallback(WebSocketEvent.GAME_RESUMED);
                 break;
             case MessageType.GAME_ENDED:
-                this.triggerCallback(WebSocketEvent.GAME_ENDED);
+                this.triggerCallback(WebSocketEvent.GAME_ENDED, message);
                 break;
             case MessageType.ALL_READY:
                 this.triggerCallback(WebSocketEvent.ALL_READY, message);
                 break;
             case MessageType.WELCOME:
                 Logger.info('Server says', 'WebSocketClient', message.message);
+                break;
+            case MessageType.COUNTDOWN:
+                this.triggerCallback(WebSocketEvent.COUNTDOWN, message);
                 break;
             case MessageType.ERROR:
                 this.triggerCallback(WebSocketEvent.ERROR, message.message);
@@ -152,8 +155,8 @@ export class WebSocketClient {
     // GAME COMMUNICATION
     // ========================================
 
-    joinGame(gameMode: GameMode, players: PlayerInfo[]): void {
-        this.sendMessage(MessageType.JOIN_GAME, { gameMode, players });
+    joinGame(gameMode: GameMode, players: PlayerInfo[], aiDifficulty: number): void {
+        this.sendMessage(MessageType.JOIN_GAME, { gameMode, players, aiDifficulty });
     }
 
     sendPlayerReady(): void {

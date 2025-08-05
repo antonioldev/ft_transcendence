@@ -52,7 +52,11 @@ export interface Translation {
     tournamentOnline: string;
     play: string;
     loading: string;
+    waiting: string;
     controls: string;
+    easy: string;
+    medium: string;
+    hard: string;
 }
 
 export type TranslationKey = keyof Translation;

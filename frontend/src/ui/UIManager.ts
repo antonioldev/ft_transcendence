@@ -55,6 +55,9 @@ class UIManager {
         this.applyStylesToAll('.play-button', UI_STYLES.playButton);
         this.applyStylesToAll('.secondary', UI_STYLES.secondary);
         this.applyStylesToAll('.nav-button', UI_STYLES.navButton);
+        this.applyStylesToAll('.solo-mode-container', UI_STYLES.soloModeContainer);
+        this.applyStylesToAll('.difficulty-button', UI_STYLES.difficultyButton);
+        this.applyStylesToAll('.solo-button-in-container', UI_STYLES.soloButtonInContainer);
 
         // Typography
         this.applyStylesToAll('.title', UI_STYLES.title);
@@ -172,6 +175,13 @@ class UIManager {
         viewModeDisplay.textContent = displayText;
     }
 
+    updateAIDifficultyDisplay(currentDifficultyIndex: number): void {
+        const soloButton = requireElementById(EL.GAME_MODES.SOLO);
+        const t = getCurrentTranslation();
+        const difficulties = [t.easy, t.medium, t.hard];
+        soloButton.textContent = `vs AI${difficulties[currentDifficultyIndex]}`;
+    }
+
     // ========================================
     // BUTTON STATE MANAGEMENT
     // ========================================
@@ -269,8 +279,17 @@ class UIManager {
     }
 
     setLoadingScreenVisible(visible: boolean): void {
+        const t = getCurrentTranslation();
+        const loadingText = requireElementById(EL.GAME.LOADING_TEXT);
+        loadingText.textContent = t.loading;
         const loadingScreen = requireElementById(EL.GAME.LOADING_SCREEN);
         loadingScreen.style.display = visible ? 'flex' : 'none';
+    }
+
+    updateLoadingText(): void {
+        const t = getCurrentTranslation();
+        const loadingText = requireElementById(EL.GAME.LOADING_TEXT);
+        loadingText.textContent = t.waiting;
     }
 }
 

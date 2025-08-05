@@ -5,7 +5,7 @@ import { MessageType, Direction, GameMode, UserManagement } from '../shared/cons
 import { ClientMessage, ServerMessage, GetUserProfile, UserProfileData } from '../shared/types.js';
 import * as db from "../data/validation.js";
 import { UserStats, GameHistoryEntry } from '../shared/types.js';
-import { Game } from '../core/game.js';
+import { GameSession } from './GameSession.js';
 
 /**
  * Manages WebSocket connections, client interactions, and game-related messaging.
@@ -19,7 +19,23 @@ export class WebSocketManager {
      */
     async setupRoutes(fastify: FastifyInstance): Promise<void> {
         fastify.get('/', { websocket: true } as any, (socket, req) => {
-            this.handleConnection(socket);
+            const token = (req.query as { token?: string }).token;
+            if (token) {
+                try {
+                    // Google authentication: verify JWT token
+                    const decoded = fastify.jwt.verify(token) as any;
+                    console.log(`Google user: ${decoded.user.username}`);
+                    this.handleConnection(socket, decoded.user);
+                } catch (err) {
+                    console.log('Invalid Google token');
+                    socket.close(1008, 'Invalid token');
+                    return;
+                }
+            } else {
+                // Traditional authentication: accept connection without token
+                console.log('Traditional connection (will authenticate via messages)');
+                this.handleConnection(socket);
+            }
         });
     }
 
@@ -27,11 +43,25 @@ export class WebSocketManager {
      * Handles a new WebSocket connection, initializing the client and setting up event listeners.
      * @param socket - The WebSocket connection object.
      */
-    private handleConnection(socket: any): void {
+    private handleConnection(socket: any, authenticatedUser?: { username: string; email: string }): void {
         const clientId = this.generateClientId();
-        const client = new Client(clientId, 'anonymous', '', socket);
+
+        let client: Client;
+
+        if (authenticatedUser) {
+            // Google authenticated user
+            console.log(`Google authenticated user connected: ${authenticatedUser.username}`);
+            client = new Client(clientId, authenticatedUser.username, authenticatedUser.email, socket);
+            client.loggedIn = true; // Mark as already authenticated
+        } else {
+            // Traditional authentication will authenticate via messages
+            console.log('Traditional connection');
+            client = new Client(clientId, 'anonymous', '', socket);
+        }
+
         this.clients.set(clientId, client);
         let currentGameId: string | null = null;
+
         socket.on('message', async (message: string) => {
             await this.handleMessage(socket, client, message, (gameId) => {
                 currentGameId = gameId;
@@ -131,7 +161,8 @@ export class WebSocketManager {
             await this.sendError(socket, 'Game mode required');
             return;
         }
-
+        if (data.aiDifficulty !== null) // We can use this to set the ai difficulty. on start the game aiDifficulty is going to be always there
+            console.log("DIFFUCLTY: " + data.aiDifficulty);
         try {
             const gameId = gameManager.findOrCreateGame(data.gameMode, client);
             const gameSession = gameManager.getGame(gameId);
@@ -143,7 +174,7 @@ export class WebSocketManager {
                     gameSession.add_player(new Player(player.id, player.name, client));
                 }
                 if (gameSession.mode === GameMode.SINGLE_PLAYER) { // TEMP PATCH NEED TO HANDLE CPU DATA PROPERLY
-                    gameSession.add_player(new Player("001", "CPU"));
+                    gameSession.add_player(new Player("default", "CPU"));
                 }
             }
         } catch (error) {
@@ -166,14 +197,16 @@ export class WebSocketManager {
         }
 
         gameSession.setClientReady(client);
-        if (gameSession.allClientsReady()) {
+        if (gameSession.allClientsReady() && gameSession.full && !gameSession.running) {
             console.log(`All clients ready in game ${gameSession.id}, sending ALL_READY`);
-            await gameSession.sendAllReady();
-
-            if (gameSession.full && !gameSession.running) {
-                gameSession.start();
-            }
+            this.runGame(gameSession);
         }
+    }
+
+    private async runGame(gameSession: GameSession) {
+        gameSession.add_CPU(); // add any CPU's if necessary
+        await gameSession.start();
+        gameManager.removeGame(gameSession.id);
     }
 
     /**
@@ -248,19 +281,18 @@ export class WebSocketManager {
     }
 
     private async handleQuitGame(client: Client): Promise<void> {
-        const game = this.findClientGame(client);
-        if (!game) {
+        const gameSession = this.findClientGame(client);
+        if (!gameSession) {
             console.warn(`Client ${client.id} not in any game to quit`);
             return;
         }
-
-        await game.broadcast({ type: MessageType.GAME_ENDED });
-        console.log(`Game ${game.id} ended by client ${client.id}`);
         
-        // Then do the cleanup (your original working code)
-        gameManager.removeClientFromGames(client);
-
+        // gameManager.removeClientFromGames(client); // think this is unnecessary 
+        gameSession.stop();
+        gameManager.removeGame(gameSession.id);
+        console.log(`Game ${gameSession.id} ended by client ${client.id}`);
     }
+
     /**
      * Handles the disconnection of a client, removing them from games and cleaning up resources.
      * @param client - The client that disconnected.

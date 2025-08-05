@@ -31,13 +31,14 @@ export enum MessageType {
     REQUEST_GAME_HISTORY,
     SEND_GAME_HISTORY,
     REQUEST_USER_PROFILE,    // Type for back to frontend comm
-    UPDATE_USER_PROFILE     // Request to update user information 
-
+    UPDATE_USER_PROFILE,     // Request to update user information 
+    COUNTDOWN,               // Used to send ountdown timer before game starts
 }
 
 export enum WebSocketEvent {
     GAME_STATE = 'gameState',
     CONNECTION = 'connection',
+    COUNTDOWN = 'countdown',
     ERROR = 'error',
     GAME_PAUSED = 'gamePaused',
     GAME_RESUMED = 'gameResumed',
@@ -106,6 +107,12 @@ export enum AppState {
     PLAYER_SETUP ,//= 'player-setup',
     GAME_3D ,//= 'game-3d',
     STATS_DASHBOARD ,//= 'STATS_DASHBOARD'
+}
+
+export enum AiDifficulty {
+    EASY,
+    MEDIUM,
+    HARD
 }
 
 export enum UserManagement {

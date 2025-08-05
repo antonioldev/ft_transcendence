@@ -30,11 +30,13 @@ export class Game {
 	winner!: Player;
 	paddles: (Paddle | EasyBot | MediumBot | HardBot | ExactBot)[] = [new Paddle(LEFT_PADDLE), new Paddle(RIGHT_PADDLE)];
 	ball!: Ball;
+	match_id?: number; // for tournament matches only
 	// Callback function to broadcast the game state
 	private _broadcast: (message: ServerMessage, clients?: Client[]) => void;
 
-	constructor(players: Player[], broadcast_callback: (message: ServerMessage, clients?: Client[]) => void) {
+	constructor(players: Player[], broadcast_callback: (message: ServerMessage, clients?: Client[]) => void, match_id?: number) {
 		// Initialize game properties
+		this.match_id = match_id;
 		this.clock = new Clock();
 		this._broadcast = broadcast_callback;
 		this.players = players;
@@ -43,7 +45,7 @@ export class Game {
 
 	// Initialize the ball and players
 	private _init() {
-		this.ball = new Ball(this.paddles, this._update_score);
+		this.ball = new Ball(this.paddles, this._update_score.bind(this));
 
 		if (!this.players[LEFT_PADDLE].client) {
 			const Bot = BOT_MAP[CPU_DIFFICULTY];
@@ -62,6 +64,8 @@ export class Game {
 	}
 
 	private _handle_input(dt: number): void {
+		if (!this.running) return ;
+
 		this._process_queue(dt);
 
 		// call .update() only on bot paddles
@@ -74,6 +78,8 @@ export class Game {
 
 	// Update the score for the specified side
 	private _update_score(side: number, score: number): void {
+		if (!this.running) return ;
+
 		this.paddles[side].score += score;
 		if (this.paddles[side].score >= GAME_CONFIG.scoreToWin) {
 			this.running = false;
@@ -125,8 +131,41 @@ export class Game {
 		}
 	}
 
-	// Main game loop that updates the state and broadcasts changes
+	async send_sides_and_countdown(): Promise<void> { // New function, send to clients message to start + countdown
+		// broadcast the side assignment to all clients
+		this._broadcast({
+			type: MessageType.ALL_READY,
+			left: this.players[LEFT_PADDLE]?.name,
+			right: this.players[RIGHT_PADDLE]?.name,
+			...(this.match_id && { match_id: this.match_id }) // optionally includes match_id for tournament
+		});
+		
+		// broadcast the countdown timer every second
+		for (let countdown = GAME_CONFIG.startDelay; countdown >= 0; countdown--) {
+			console.log(`Sending countdown: ${countdown}`);
+			this._broadcast({
+				type: MessageType.COUNTDOWN,
+				countdown: countdown,
+			});
+			if (countdown > 0) {
+				await this.clock.sleep(1000);
+			}
+		}
+		// reset clock dt to 60fps after countdown
+		this.clock.tick(60);
+	}
+
+	// Main game loop 
 	async run(): Promise<Player> {
+		await this.send_sides_and_countdown();
+		// if both are CPU then choose a random winner
+		if (this.paddles[LEFT_PADDLE] instanceof ExactBot && this.paddles[RIGHT_PADDLE] instanceof ExactBot) {
+			const index = (Math.random() > 0.5) ? 0 : 1;
+			this.winner = this.players[index];
+			this.running = false;
+		}
+
+		// run game loop, updating and broadcasting state to clients until win
 		while (this.running) {
 			const dt = await this.clock.tick(60);
 			if (this.paused) continue ;
@@ -137,6 +176,12 @@ export class Game {
 				state: this.get_state()
 			});
 		}
+
+		// broadcast and return the winner
+		this._broadcast({
+			type: MessageType.GAME_ENDED,
+			...(this.winner && { winner: this.winner.name }) // optionally send winner if exists
+		});
 		return (this.winner);
 	}
 

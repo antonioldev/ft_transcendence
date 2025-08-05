@@ -112,7 +112,7 @@ export function updateLanguageDisplay(): void {
     viewModeDisplay.textContent = t.classicMode;
 
     const soloBtn = requireElementById(EL.GAME_MODES.SOLO);
-    soloBtn.textContent = t.soloMode;
+    soloBtn.textContent = t.soloMode + t.easy;
 
     const localBtn = requireElementById(EL.GAME_MODES.LOCAL);
     localBtn.textContent = t.localMode;

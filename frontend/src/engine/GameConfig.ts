@@ -3,7 +3,7 @@ import { PlayerInfo, InputConfig } from '../shared/types.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
 import { EL } from '../ui/elements.js';
 import { authManager } from '../core/AuthManager.js';
-import { Logger } from '../core/LogManager.js'
+import { Logger } from '../utils/LogManager.js'
 
 // Complete configuration for starting a game
 export interface GameConfig {
@@ -52,11 +52,6 @@ export class GameConfigFactory {
                     { id: name2, name: name2, isGuest: true }
                 ];
             }
-
-            // case GameMode.TWO_PLAYER_REMOTE: {
-            //     const name = getInputValue(EL.PLAYER_SETUP.PLAYER1_NAME_ONLINE, 'Player 1');
-            //     return [{ id: name, name: name }];
-            // } case GameMode.TOURNAMENT_REMOTE: 
 
             case GameMode.TOURNAMENT_LOCAL: {
                 const name1 = getInputValue(EL.PLAYER_SETUP.PLAYER1_NAME_TOURNAMENT);

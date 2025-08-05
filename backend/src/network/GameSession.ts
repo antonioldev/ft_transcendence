@@ -11,7 +11,7 @@ export class GameSession {
 	players: Player[] = [];
 	player_capacity: number = 2;
 	client_capacity: number = 1;
-	game!: Game;
+	game?: Game;
 	full: boolean = false;
 	running: boolean = false;
 	private paused: boolean = false;
@@ -42,16 +42,19 @@ export class GameSession {
 	}
 
 	add_client(client: Client) {
-		if (this.clients.length < this.client_capacity) {
-			this.clients.push(client);
+		if (this.clients.length >= this.client_capacity) return ;
+
+		this.clients.push(client);
+		if (this.clients.length === this.client_capacity) {
+			this.full = true;
 		}
-	}
+}
 
 	remove_client(client: Client) {
 		const index = this.clients.indexOf(client);
 		if (index !== -1) {
 			this.clients.splice(index, 1);
-			this.readyClients.delete(client.id); //Added
+			this.readyClients.delete(client.id); // Added
 			this.full = false;
 		}
 		if (this.clients.length === 0) {
@@ -62,13 +65,15 @@ export class GameSession {
 	add_player(player: Player) {
 		if (this.players.length < this.player_capacity) {
 			this.players.push(player);
-
-			// check for this.full is here assuming that players are assigned after clients
-			if (this.clients.length === this.client_capacity && this.players.length === this.player_capacity) {
-				this.full = true;
-			}
 		}
 	}
+
+	add_CPU() {
+		while (this.players.length < this.player_capacity) {
+			this.players.push(new Player("default", "CPU"));
+		}
+		this.client_capacity === this.clients.length;
+    }
 
 	remove_player(player: Player) {
 		const index = this.players.indexOf(player);
@@ -86,39 +91,14 @@ export class GameSession {
 		console.log(`Client ${client.id} marked as ready. Ready clients: ${this.readyClients.size}/${this.clients.length}`);
 	}
 
-	async sendAllReady(): Promise<void> { //New function, send to clients message to start + countdown
-		const player1Name = this.players[LEFT_PADDLE]?.name || "Player 1";
-    	const player2Name = this.players[RIGHT_PADDLE]?.name || "Player 2";
-		for (let countdown = GAME_CONFIG.startDelay; countdown >= 0; countdown--) {
-			const message: ServerMessage = {
-				type: MessageType.ALL_READY,
-				countdown: countdown,
-				player1: player1Name,
-            	player2: player2Name
-			};
-			
-			console.log(`Sending countdown: ${countdown}`);
-			this.broadcast(message);
-			
-			// Wait 1 second before next countdown (except for the last one)
-			if (countdown > 0) {
-				await new Promise(resolve => setTimeout(resolve, 1000));
-			}
-		}
-		
-		console.log(`Starting game ${this.id} after countdown`);
-		await this.start();
-	}
-
 	async start() {
 		if (this.running) return;
 
-		this.assign_sides(this.players);
 		this.running = true;
 		this.game = new Game(this.players, this.broadcast.bind(this))
 		
-		const winner: Player = await this.game.run();
-		this.endGame(winner);
+		await this.game.run();
+		this.stop();
 	}
 
 	pauseGame(client: Client): boolean {
@@ -126,7 +106,7 @@ export class GameSession {
 			console.log(`Game ${this.id} is already paused`);
 			return false;
 		}
-		if (!this.running) {
+		if (!this.running || !this.game) {
 			console.log(`Game ${this.id} is not running, cannot pause`);
 			return false;
 		}
@@ -148,7 +128,7 @@ export class GameSession {
 			console.log(`Game ${this.id} is not paused`);
 			return false;
 		}
-		if (!this.running) {
+		if (!this.running || !this.game) {
 			console.log(`Game ${this.id} is not running, cannot resume`);
 			return false;
 		}
@@ -166,40 +146,13 @@ export class GameSession {
 		}
 	}
 
-	endGame(winner: Player): void {
-		try {
-			this.broadcast({
-				type: MessageType.GAME_ENDED,
-				winner: winner.name,
-				side: winner.side
-			});
-			this.stop();
-		} catch (error) {
-			console.error(`Error ending game ${this.id}:`, error);
-		}
-	}
-
 	stop() {
-		this.game.stop();
+        // this.broadcast({ type: MessageType.GAME_ENDED });
+		if (this.game) {
+			this.game.stop();
+		}
 		this.running = false;
 		this.paused = false;
-	}
-
-	assign_sides(players: Player[], match_index?: number) {
-		// guarantees that the index of players[] aligns with player.side
-		players[LEFT_PADDLE].side = LEFT_PADDLE;
-		players[RIGHT_PADDLE].side = RIGHT_PADDLE;
-
-		for (const player of this.players) {
-			if (player.client) { // if not AIBot
-				this.broadcast({
-					type: MessageType.SIDE_ASSIGNMENT,
-					name: player.name,
-					side: player.side,
-					...(match_index !== undefined && { match_index }) // optionally includes index
-				})
-			}
-		}
 	}
 
 	canClientControlGame(client: Client) {
@@ -216,7 +169,9 @@ export class GameSession {
 
 	// wrapper needed as is polymorphised for Tournament
 	enqueue(input: PlayerInput): void  {
-		this.game.enqueue(input);
+		if (this.game) {
+			this.game.enqueue(input);
+		}
 	}
 
 	allClientsReady(): boolean {

@@ -53,7 +53,6 @@ export const GAME_CONFIG = {
     },
 
     // Game mechanics
-    serveRandomAngle: 0.3,  // Random Z velocity range on serve
     scoreToWin: 50,          // Points needed to win
     
     // Input mappings
@@ -119,15 +118,4 @@ export function getPlayerBoundaries() {
 // Get the initial position of the ball
 export function getBallStartPosition(): Position {
     return { x: 0, y: 1, z: 0 };
-}
-
-// Get the initial velocity of the ball based on the serve direction
-export function getInitialBallVelocity(serveDirection: number) {
-    const baseSpeed = GAME_CONFIG.ballInitialSpeed;
-    const randomX = (Math.random() - 0.5) * GAME_CONFIG.serveRandomAngle;
-    const randomZ = serveDirection * baseSpeed;
-    return {
-        x: randomX,
-        z: randomZ
-    };
 }

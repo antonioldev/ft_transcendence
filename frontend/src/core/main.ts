@@ -3,41 +3,28 @@ import { uiManager } from '../ui/UIManager.js';
 import { webSocketClient } from './WebSocketClient.js';
 import { AuthManager } from './AuthManager.js';
 import { MenuFlowManager } from './MenuFlowManager.js';
-import { KeyboardManager } from './KeyboardManager.js';
-import { HistoryManager } from './HistoryManager.js';
+import { AppStateManager } from './AppStateManager.js';
 import { ConnectionStatus, WebSocketEvent } from '../shared/constants.js';
 import { EL, requireElementById } from '../ui/elements.js';
 import { DashboardManager } from './DashboardManager.js';
-import { MemoryLeakDetector } from './.memory.js'
+// import { MemoryLeakDetector } from '../utils/memory.js'
 
 // Initialize the detector
 // const memoryDetector = new MemoryLeakDetector();
-// export { memoryDetector };
 
 function loadPage(): void {
     // Initialize classes
     uiManager.initializeStyles();
+    AppStateManager.initialize();
     AuthManager.initialize();
     MenuFlowManager.initialize();
-    KeyboardManager.initialize();
-    HistoryManager.initialize();
     DashboardManager.initialize();
 
     // Setup language system
     updateLanguageDisplay();
     setupLanguageListeners();
 
-    // memoryDetector.startMonitoring();
-
-    // setInterval(() => {
-    //     if ((performance as any).memory) {
-    //         const memory = (performance as any).memory;
-    //         console.log('Memory:', {
-    //             used: Math.round(memory.usedJSHeapSize / 1024 / 1024) + 'MB',
-    //             total: Math.round(memory.totalJSHeapSize / 1024 / 1024) + 'MB'
-    //         });
-    //     }
-    // }, 5000);
+    // memoryDetector.startMonitoring(); // Logs memory usage (only google)
 
     // Setup WebSocket monitoring
     webSocketClient.registerCallback(WebSocketEvent.STATUS_CHANGE, (status: ConnectionStatus) => {
@@ -57,4 +44,4 @@ function setupLanguageListeners() {
 }
 
 // Initialize the application
-document.addEventListener('DOMContentLoaded', loadPage);
+window.addEventListener('load', loadPage);

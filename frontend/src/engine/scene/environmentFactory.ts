@@ -2,13 +2,13 @@ declare var BABYLON: typeof import('@babylonjs/core');
 
 import { ViewMode } from '../../shared/constants.js';
 import { GAME_CONFIG } from '../../shared/gameConfig.js';
-import { Logger } from '../../core/LogManager.js';
+import { Logger } from '../../utils/LogManager.js';
 import { VegetationAsset } from './sceneAssets.js';
 import { TextureSet, MAP_OBJECT_TYPE } from './sceneAssets.js';
 import { createMaterial, getStandardTextureScale } from './materialFactory.js';
 
 // Creates HDRI environment with fallback to default environment
-export function createEnvironment(scene: any, mode: ViewMode, path?: string): void {
+export function createEnvironment(scene: any, path?: string): void {
     if (!path) return;
     try {
         const hdrTexture = new BABYLON.HDRCubeTexture(path, scene, 1024);
@@ -58,7 +58,6 @@ export function createTerrain(scene: any, name: string, mode: ViewMode, texture?
 
 export async function createVegetation(
     scene: any,
-    mode: ViewMode,
     vegetationAsset: VegetationAsset
 ): Promise<any[]> {
     if (!vegetationAsset?.path) return [];

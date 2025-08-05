@@ -37,6 +37,9 @@ export class Tournament extends GameSession {
 	constructor(mode: GameMode, game_id: string, capacity: number) {
 		super(mode, game_id);
 		this.player_capacity = capacity;
+		if (this.mode === GameMode.TOURNAMENT_REMOTE) {
+			this.client_capacity = capacity;
+		}
 		this.num_rounds = this._get_num_rounds(this.player_capacity);
 		this._create_rounds_map();
 		this._create_match_tree(new Match(this.num_rounds));
@@ -94,7 +97,6 @@ export class Tournament extends GameSession {
 
 		// run each match in parallel and await [] of match promises
 		for (const match of matches) {
-			this.assign_sides(match.players);
 			match.game = new Game(match.players, (message) => this.broadcast(message, match.clients));
 			let winner_promise: Promise<Player> = match.game.run();
 			winner_promises.push(winner_promise);
@@ -112,7 +114,6 @@ export class Tournament extends GameSession {
 	// runs each game in a round one by one and awaits each game before starting the next
 	private async _run_one_by_one(matches: Match[]) {
 		for (const match of matches) {
-			this.assign_sides(match.players);
 			match.game = new Game(match.players, this.broadcast.bind(this));
 			const winner = await match.game.run();
 			match.next?.add_player(winner);
@@ -143,7 +144,6 @@ export class Tournament extends GameSession {
 			}
 
 		}
-
 		// TODO: display final winner screen
 	}
 }

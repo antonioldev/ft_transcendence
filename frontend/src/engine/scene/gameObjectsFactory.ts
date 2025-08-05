@@ -5,7 +5,7 @@ import { Size} from '../../shared/types.js';
 import { ViewMode, GameMode } from '../../shared/constants.js';
 import { TextureSet, MAP_OBJECT_TYPE } from './sceneAssets.js';
 import { createMaterial, getStandardTextureScale } from './materialFactory.js';
-import { COLORS, getSoloCameraViewport, get3DCamera1Viewport, get3DCamera2Viewport, getCamera2DPosition } from '../../core/utils.js';
+import { COLORS, getSoloCameraViewport, get3DCamera1Viewport, get3DCamera2Viewport, getCamera2DPosition } from '../utils.js';
 
 // Creates a camera for the given scene
 export function createCameras(scene: any, name: string, viewMode: ViewMode, gameMode: GameMode): any {
@@ -20,21 +20,26 @@ export function createCameras(scene: any, name: string, viewMode: ViewMode, game
         camera.fov = 1.1;
         cameras.push(camera);
     } else {
-        if (gameMode === GameMode.TWO_PLAYER_LOCAL || gameMode === GameMode.TOURNAMENT_LOCAL) {
-            const camera1 = new BABYLON.FreeCamera(name + "1", position, scene);
-            camera1.setTarget(BABYLON.Vector3.Zero());
-            camera1.viewport = get3DCamera1Viewport();
-            
-            const camera2 = new BABYLON.FreeCamera(name + "2", position, scene);
-            camera2.setTarget(BABYLON.Vector3.Zero());
-            camera2.viewport = get3DCamera2Viewport();
-            
-            cameras.push(camera1, camera2);
-        } else {
+        if (gameMode === GameMode.SINGLE_PLAYER) {
             const camera = new BABYLON.FreeCamera(name  + "1", position, scene);
             camera.setTarget(BABYLON.Vector3.Zero());
             camera.viewport = getSoloCameraViewport();
             cameras.push(camera);
+        } else {
+            const camera1 = new BABYLON.FreeCamera(name + "1", position, scene);
+            camera1.setTarget(BABYLON.Vector3.Zero());
+
+            const camera2 = new BABYLON.FreeCamera(name + "2", position, scene);
+            camera2.setTarget(BABYLON.Vector3.Zero());
+
+            if (gameMode === GameMode.TOURNAMENT_LOCAL || gameMode === GameMode.TWO_PLAYER_LOCAL) {
+                camera1.viewport = get3DCamera1Viewport();
+                camera2.viewport = get3DCamera2Viewport();
+            } else {
+                camera1.viewport = getSoloCameraViewport()
+                camera2.viewport = getSoloCameraViewport()
+            }
+            cameras.push(camera1, camera2);
         }
     }
 
@@ -146,8 +151,8 @@ export function createBall(scene: any, name: string, position: any, color: any, 
     const ball = BABYLON.MeshBuilder.CreateSphere(name, {diameter}, scene);
     ball.position = position;
 
-    const playerScale = getStandardTextureScale(diameter, diameter, MAP_OBJECT_TYPE.PLAYER);
-    ball.material = createMaterial(scene, name + "Material", color, mode, texture);
+    const ballScale = getStandardTextureScale(diameter, diameter, MAP_OBJECT_TYPE.BALL);
+    ball.material = createMaterial(scene, name + "Material", color, mode, texture, ballScale);
 
     return ball;
 }
