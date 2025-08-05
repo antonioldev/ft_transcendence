@@ -106,23 +106,11 @@ export class ExactBot extends Paddle {
 	}
 }
 
-export class EasyBot extends Paddle {
-	private _dir = 1;
-	private _b = getPlayerBoundaries();
-
-	constructor(
-		side: number,
-		public ball: Ball,
-		public speed: number = GAME_CONFIG.paddleSpeed,
-		public direction: number = 0
-	) {
-		super(side);
-	}
-
-	update(dt: number): void {
-		if (this.rect.centerx <= this._b.left)  this._dir =  1;
-		if (this.rect.centerx >= this._b.right) this._dir = -1;
-		this.move(dt, this._dir);
+export class EasyBot extends ExactBot {
+	protected _predict_intercept_x(): number {
+		const raw = super._predict_intercept_x();
+		const noise = (Math.random() - 0.5) * GAME_CONFIG.paddleWidth * 3;
+		return raw + noise;
 	}
 }
 

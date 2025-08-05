@@ -178,7 +178,7 @@ class UIManager {
     updateAIDifficultyDisplay(currentDifficultyIndex: number): void {
         const soloButton = requireElementById(EL.GAME_MODES.SOLO);
         const t = getCurrentTranslation();
-        const difficulties = [t.easy, t.medium, t.hard];
+        const difficulties = [t.easy, t.medium, t.hard, t.impossible];
         soloButton.textContent = `vs AI${difficulties[currentDifficultyIndex]}`;
     }
 
