@@ -173,8 +173,8 @@ export class WebSocketManager {
                 for (const player of data.players) {
                     gameSession.add_player(new Player(player.id, player.name, client));
                 }
-                if (gameSession.mode === GameMode.SINGLE_PLAYER) { // TEMP PATCH NEED TO HANDLE CPU DATA PROPERLY
-                    gameSession.add_player(new Player(String(data.aiDifficulty), "CPU"));
+                if (gameSession.mode === GameMode.SINGLE_PLAYER) {
+                    gameSession.add_player(new Player(`CPU_${data.aiDifficulty}`, "CPU"));
                 }
             }
         } catch (error) {
