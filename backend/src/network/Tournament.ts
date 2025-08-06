@@ -127,15 +127,13 @@ export class Tournament extends GameSession {
 		}
 	}
 
-	// If someone quits a remote tournament, the opposing player wins
-	override handlePlayerQuit(client: Client, match_id?: string): void {
+	// If someone quits a remote tournament, the opposing player wins the current match
+	override handlePlayerQuit(quitter_id: string, match_id?: string): void {
 		if (match_id && this.game && this.mode == GameMode.TOURNAMENT_REMOTE) {
 			const match: Match | undefined = this.match_map.get(match_id);
 			if (!match) return ;
 
-			const winner = (match.players[LEFT_PADDLE].client === client) ? match.players[RIGHT_PADDLE] : match.players[LEFT_PADDLE];
-			match.game.set_winner(winner);
-			match.game.stop();
+			match.game.handlePlayerQuit(quitter_id);
 		}
 	}
 

@@ -179,13 +179,9 @@ export class GameSession {
 	}
 
 	// If someone quits a remote game, the opposing player wins
-	handlePlayerQuit(client: Client): void {
+	handlePlayerQuit(quitter_id: string): void {
 		if (this.game && this.mode == GameMode.TWO_PLAYER_REMOTE) {
-			if (!this.players[LEFT_PADDLE].client || !this.players[RIGHT_PADDLE].client) return ;
-
-			const winner = (this.players[LEFT_PADDLE].client.id === client.id) ? this.players[RIGHT_PADDLE] : this.players[LEFT_PADDLE];
-			this.game.set_winner(winner);
-			this.game.stop();
+			this.game.handlePlayerQuit(quitter_id);
 		}
 	}
 }
