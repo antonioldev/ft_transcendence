@@ -135,7 +135,7 @@ export class Game {
 			...(this.match_id && { match_id: this.match_id }) // optionally includes match_id for tournament
 		});
 		
-		// broadcast the countdown timer every second
+		// broadcast the countdown timer on every second
 		for (let countdown = GAME_CONFIG.startDelay; countdown >= 0; countdown--) {
 			console.log(`Sending countdown: ${countdown}`);
 			this._broadcast({
@@ -196,4 +196,7 @@ export class Game {
 
 	// Stop the execution of the game
 	stop(): void { this.running = false; }
+
+	// sets the winner of the game
+	set_winner(player: Player) { this.winner = player; }
 }

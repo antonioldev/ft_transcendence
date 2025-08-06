@@ -93,7 +93,7 @@ export class GameSession {
 
 	async start() {
 		if (this.running) return;
-
+		
 		this.running = true;
 		this.game = new Game(this.players, this.broadcast.bind(this))
 		
@@ -176,5 +176,15 @@ export class GameSession {
 
 	allClientsReady(): boolean {
 		return this.readyClients.size === this.clients.length && this.clients.length > 0;
+	}
+
+	// If someone quits a remote game, the opposing player wins
+	handlePlayerQuit(client: Client): void {
+		if (this.game && this.mode == GameMode.TWO_PLAYER_REMOTE) {
+			if (!this.players[LEFT_PADDLE].client || !this.players[RIGHT_PADDLE].client) return ;
+
+			const winner = (this.players[LEFT_PADDLE].client.id === client.id) ? this.players[RIGHT_PADDLE] : this.players[LEFT_PADDLE];
+			this.game.set_winner(winner);
+		}
 	}
 }

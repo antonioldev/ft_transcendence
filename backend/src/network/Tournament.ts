@@ -3,6 +3,7 @@ import { Game } from '../core/game.js';
 import { Client, Player } from '../models/Client.js';
 import { GameMode } from '../shared/constants.js';
 import { PlayerInput } from '../shared/types.js';
+import { LEFT_PADDLE, RIGHT_PADDLE } from '../shared/gameConfig.js';
 
 class Match {
 	id: string = crypto.randomUUID();
@@ -126,6 +127,17 @@ export class Tournament extends GameSession {
 		}
 	}
 
+	// If someone quits a remote tournament, the opposing player wins
+	override handlePlayerQuit(client: Client, match_id?: string): void {
+		if (match_id && this.game && this.mode == GameMode.TOURNAMENT_REMOTE) {
+			const match: Match | undefined = this.match_map.get(match_id);
+			if (!match) return ;
+
+			const winner = (match.players[LEFT_PADDLE].client === client) ? match.players[RIGHT_PADDLE] : match.players[LEFT_PADDLE];
+			this.game.set_winner(winner);
+		}
+	}
+
 	async start() {
 		if (this.running || this.players.length != this.player_capacity) return ;
 
@@ -142,7 +154,6 @@ export class Tournament extends GameSession {
 			else /* TOURNAMENT_REMOTE */ {
 				await this._run_all(matches);
 			}
-
 		}
 		// TODO: display final winner screen
 	}
