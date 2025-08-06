@@ -171,12 +171,7 @@ export class Game {
 				state: this.get_state()
 			});
 		}
-
-		// broadcast and return the winner
-		this._broadcast({
-			type: MessageType.GAME_ENDED,
-			...(this.winner && { winner: this.winner.name }) // optionally send winner if exists
-		});
+		this.stop();
 		return (this.winner);
 	}
 
@@ -194,8 +189,18 @@ export class Game {
 	// Returns if the game is currently paused
 	isPaused(): boolean { return this.paused; }
 
-	// Stop the execution of the game
-	stop(): void { this.running = false; }
+	// Stop the execution of the game & broadcast the winner
+	stop(): void { 
+		this.running = false;
+
+		// TODO: save score to db
+		
+
+		this._broadcast({
+			type: MessageType.GAME_ENDED,
+			...(this.winner && { winner: this.winner.name }) // optionally send winner if exists
+		});
+	}
 	
 	// If someone quits a remote game, the opposing player wins
 	setOtherPlayerWinner(quitter_id: string) {

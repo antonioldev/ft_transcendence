@@ -15,7 +15,7 @@ export class GameSession {
 	full: boolean = false;
 	running: boolean = false;
 	private paused: boolean = false;
-	private readyClients: Set<string> = new Set(); //New, keep track of clients that finish loading
+	private readyClients: Set<string> = new Set(); // New, keep track of clients that finish loading
 
     constructor(mode: GameMode, game_id: string) {
 		this.id = game_id
@@ -147,7 +147,6 @@ export class GameSession {
 	}
 
 	stop() {
-        // this.broadcast({ type: MessageType.GAME_ENDED });
 		if (this.game) {
 			this.game.stop();
 		}
