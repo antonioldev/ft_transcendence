@@ -119,7 +119,7 @@ export function findOrCreateGoogleUser(profile: { sub: string, name: string, ema
     return dbFunction.findUserByGoogleId(profile.sub);
 }
 
-export function registerNewGame(gameId: string, playerUsername: string) : boolean {
+export function registerNewGame(gameId: string, playerUsername: string, tournament: number) : boolean {
 	console.log(`DB create game instance: creating a new game: {player1 ${playerUsername}}`);
 	if (playerUsername === undefined) {
 		console.error("Validation.ts -- registerNewGame: playerUsername is undefined");
@@ -131,9 +131,10 @@ export function registerNewGame(gameId: string, playerUsername: string) : boolea
 		console.error("Validation.ts -- registerNewGame: Player doesn't exist in db");
 		return false;
 	}
-	const dbGameId = dbFunction.createNewGame(gameId, player_id);
-	if (dbGameId != -1)
+	const dbGameId = dbFunction.createNewGame(gameId, player_id, tournament);
+	if (dbGameId != -1) {
 		return true;
+	}
 	return false;
 }
 
@@ -165,21 +166,51 @@ export function saveGameResult(gameId: string, player1_name: string, player2_nam
 
 	const player1_id = dbFunction.retrieveUserID(player1_name);
 	const player2_id = dbFunction.retrieveUserID(player2_name);
+    if (player1_id === -1 || player2_id === -1) {
+		console.error('❌ validation -- saveGameResult: player1 or player2 do not exist in DB');
+		return false;
+    }
 	if (!dbFunction.gameExist(gameId)) {
 		console.error('❌ validation -- saveGameResult: game do not exist in db');
 		return false;
 	}
-
+    let isGameTournament = dbFunction.isGameTournament(gameId);
 	const winner_id = player1_score > player2_score ? player1_id : player2_id;
 	const looser_id = winner_id === player1_id ? player2_id : player1_id;
 
 	const gameUpdate = dbFunction.updateGameInfo(gameId, player1_score, player2_score, winner_id, looser_id, endTime);
 	if (gameUpdate) {
 		console.log('✅ Game result saved:', { gameId });
+		updatePlayers(winner_id, looser_id, isGameTournament);
 		dbFunction.displayGameInfo(gameId);
+        dbFunction.displayPlayerInfo(player1_id);
+        dbFunction.displayPlayerInfo(player2_id);
 		return true;
 	} else {
 		console.log('❌ Error saving game result:');
 		return false;
 	}
+}
+
+export function updatePlayers(winner_id: number, looser_id: number, tournament: number) {
+	dbFunction.updateUserGame(winner_id, 1);
+    dbFunction.updateUserVictory(winner_id, 1);
+    dbFunction.updateUserGame(looser_id, 1);
+    dbFunction.updateUserDefeat(looser_id, 1);
+    if (tournament)
+        dbFunction.updateUserTournament(looser_id, 1);
+}
+
+export function updateTournamentWinner(player1_name: string): boolean {
+	const player1_id = dbFunction.retrieveUserID(player1_name);
+    if (player1_id === -1) {
+		console.error('❌ validation -- updatePlayerTournamentWinner: player1 do not exist in DB');
+		return false;
+    }
+    if (dbFunction.updateUserTournamentWin(player1_id, 1))
+        return true;
+    else {
+        console.error('❌ validation -- updatePlayerTournamentWinner: fail to update the nb of tournament win');
+        return false;
+    }
 }

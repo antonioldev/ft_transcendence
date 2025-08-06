@@ -20,8 +20,10 @@ class GameManager {
         const gameId = `game_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         const gameSession = new GameSession(mode, gameId);
         // Create a new game in DB with 1st player as client only if the game is remote
-        if (mode === GameMode.TWO_PLAYER_REMOTE || mode === GameMode.TOURNAMENT_REMOTE)
-            registerNewGame(gameId, client.username); // ADD check for error ??
+        if (mode === GameMode.TWO_PLAYER_REMOTE)
+            registerNewGame(gameId, client.username, 0);
+        else if (mode === GameMode.TOURNAMENT_REMOTE)
+            registerNewGame(gameId, client.username, 1);
 
         gameSession.add_client(client);
         this.games.set(gameId, gameSession);

@@ -11,7 +11,9 @@ CREATE TABLE IF NOT EXISTS users (
 	google_id TEXT UNIQUE,
 	victories INTEGER DEFAULT 0,
 	defeats INTEGER DEFAULT 0,
-	games INTEGER DEFAULT 0
+	games INTEGER DEFAULT 0,
+	tournament INTEGER DEFAULT 0,
+	tournament_win INTEGER DEFAULT 0
 );
 
 -- Empty table for game info
@@ -25,6 +27,7 @@ CREATE TABLE IF NOT EXISTS games (
 	player2_score INTEGER DEFAULT 0,
 	played_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 	duration_seconds INTEGER,
+	tournament INTEGER DEFAULT 0,
     FOREIGN KEY (player1_id) REFERENCES users(id),
     FOREIGN KEY (player2_id) REFERENCES users(id),
     FOREIGN KEY (winner_id) REFERENCES users(id),

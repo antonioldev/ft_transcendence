@@ -75,6 +75,7 @@ export function updateUserVictory(id: number, victory: number): boolean {
 		}
 		let newVictoryNb = currentVictory + victory;
 		const user = db.prepare('UPDATE users SET victories = ? WHERE id = ?');
+		console.log(`database.ts -- updateUserVictory: Nb of defeat after update ${currentVictory} + ${victory} = ${newVictoryNb}`);
 		user.run(newVictoryNb, id);
 		return true;
 	} catch (err) {
@@ -91,8 +92,44 @@ export function updateUserDefeat(id: number, Defeat: number): boolean {
 			return false;
 		}
 		let newDefeatNb = currentDefeat + Defeat;
+		console.log(`database.ts -- updateUserDefeat: Nb of defeat after update ${currentDefeat} + ${Defeat} = ${newDefeatNb}`);
 		const user = db.prepare('UPDATE users SET defeats = ? WHERE id = ?');
 		user.run(newDefeatNb, id);
+		return true;
+	} catch (err) {
+		console.error('Error in updating userDefeats: ', err);
+		return false;
+	}
+}
+
+export function updateUserTournament(id: number, tournament: number): boolean {
+	try {
+		const currentTournament = getUserNbTournament(id);
+		if (currentTournament === -1) {
+			console.error('User not found');
+			return false;
+		}
+		let newTournamentNb = currentTournament + tournament;
+		console.log(`database.ts -- updateUserTournament: Nb of tournament after update ${currentTournament} + ${tournament} = ${newTournamentNb}`);
+		const user = db.prepare('UPDATE users SET tournament = ? WHERE id = ?');
+		user.run(newTournamentNb, id);
+		return true;
+	} catch (err) {
+		console.error('Error in updating userDefeats: ', err);
+		return false;
+	}
+}
+
+export function updateUserTournamentWin(id: number, tournament_win: number): boolean {
+	try {
+		const currentTournamentWin = getUserNbTournamentWin(id);
+		if (currentTournamentWin === -1) {
+			console.error('User not found');
+			return false;
+		}
+		let newNbTournamentWin = currentTournamentWin + tournament_win;
+		const user = db.prepare('UPDATE users SET tournament_win = ? WHERE id = ?');
+		user.run(newNbTournamentWin, id);
 		return true;
 	} catch (err) {
 		console.error('Error in updating userDefeats: ', err);
@@ -108,6 +145,7 @@ export function updateUserGame(id: number, Game: number): boolean {
 			return false;
 		}
 		let newGameNb = currentGame + Game;
+		console.log(`database.ts -- updateUserGame: Nb of game after update ${currentGame} + ${Game} = ${newGameNb}`);
 		const user = db.prepare('UPDATE users SET games = ? WHERE id = ?');
 		user.run(newGameNb, id);
 		return true;
@@ -214,6 +252,36 @@ export function getUserNbVictory(id: number): number {
 	}
 }
 
+export function getUserNbTournament(id: number) {
+	try {
+		const user = db.prepare('SELECT tournament FROM users WHERE id = ?');
+		const userTournament = user.get(id) as {tournament: number};
+		if (!userTournament) {
+			console.error('User not found');
+			return -1;
+		}
+		return userTournament.tournament;
+	} catch (err) {
+		console.error('Error in get User defeat nb:', err);
+		return -1;
+	}
+}
+
+export function getUserNbTournamentWin(id: number) {
+	try {
+		const user = db.prepare('SELECT tournament_in FROM users WHERE id = ?');
+		const userTournamentWin = user.get(id) as {tournament_win: number};
+		if (!userTournamentWin) {
+			console.error('User not found');
+			return -1;
+		}
+		return userTournamentWin.tournament_win;
+	} catch (err) {
+		console.error('Error in get User defeat nb:', err);
+		return -1;
+	}
+}
+
 export function getUserNbDefeat(id: number) {
 	try {
 		const user = db.prepare('SELECT defeats FROM users WHERE id = ?');
@@ -267,10 +335,10 @@ export function getUserProfile(username: string): UserProfileData | null {
 **/
 
 //CREATE a new game to save, must be done before the game begin
-export function createNewGame(gameId: string, player1_id: number): number {
+export function createNewGame(gameId: string, player1_id: number, tournament: number): number {
 	try {
-		const game = db.prepare('INSERT INTO games (game_id, player1_id) VALUES (?,?)');
-		const newGame = game.run(gameId, player1_id);
+		const game = db.prepare('INSERT INTO games (game_id, player1_id, tournament) VALUES (?,?, ?)');
+		const newGame = game.run(gameId, player1_id, tournament);
 		return newGame.lastInsertRowid as number;
 	} catch (error) {
 		console.error("Error in createGame:", error);
@@ -361,10 +429,6 @@ export function updateGameInfo(id: string, player1_score: number, player2_score:
 		const gameDuration = Math.floor((endTime - startTime.getTime()) / 1000);
 		const gameInfo = db.prepare('UPDATE games SET player1_score = ?, player2_score = ?, winner_id = ?, looser_id = ?, duration_seconds = ? WHERE game_id = ?');
 		gameInfo.run(player1_score, player2_score, winner, looser, gameDuration, id);
-		updateUserVictory(winner, 1);
-		updateUserDefeat(looser, 1);
-		updateUserGame(winner, 1);
-		updateUserGame(looser, 1);
 		return true;
 	} catch (err) {
 		console.error('Error in update game: ', err);
@@ -376,6 +440,17 @@ export function updatePlayer2(id: string, player_2: number): boolean {
 	try {
 		const gamePlayer2 = db.prepare('UPDATE games SET player2_id = ? WHERE game_id = ?');
 		gamePlayer2.run(player_2, id);
+		return true;
+	} catch (err) {
+		console.error('Error in update game: ', err);
+		return false;
+	}
+}
+
+export function updateTournament(id: string): boolean {
+	try {
+		const gameTournament = db.prepare('UPDATE games SET tournament = 1 WHERE game_id = ?');
+		gameTournament.run(id);
 		return true;
 	} catch (err) {
 		console.error('Error in update game: ', err);
@@ -485,6 +560,17 @@ export function getGameDuration(id: string): number {
 	}
 }
 
+export function isGameTournament(id: string): number {
+	try {
+		const game = db.prepare('SELECT tournament FROM games WHERE game_id = ?');
+		const ret = game.get(id) as {tournament: number};
+		return ret.tournament;
+	} catch (err) {
+		console.error('Error in check if game is a tournament: ', err);
+		return -1;
+	}	
+}
+
 export function findUserByGoogleId(googleId: string): UserProfileData | null {
     const statement = db.prepare('SELECT id, username, email, victories, defeats, games FROM users WHERE google_id = ?');
     const user = statement.get(googleId) as any;
@@ -525,6 +611,15 @@ export function displayGameInfo(gameId: string) {
 	try {
 		const gameInfo = db.prepare('SELECT * FROM games WHERE game_id = ?');
 		console.log(gameInfo.get(gameId));
+	} catch (err) {
+		console.error('Error in printing game info', err);
+	}
+}
+
+export function displayPlayerInfo(playerId: number) {
+	try {
+		const gameInfo = db.prepare('SELECT * FROM users WHERE id = ?');
+		console.log(gameInfo.get(playerId));
 	} catch (err) {
 		console.error('Error in printing game info', err);
 	}
