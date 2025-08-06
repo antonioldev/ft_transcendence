@@ -148,7 +148,7 @@ export class GameSession {
 
 	stop() {
 		if (this.game) {
-			this.game.stop();
+			this.game.stop(this.id);
 		}
 		this.running = false;
 		this.paused = false;

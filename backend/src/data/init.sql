@@ -16,9 +16,9 @@ CREATE TABLE IF NOT EXISTS users (
 
 -- Empty table for game info
 CREATE TABLE IF NOT EXISTS games (
-	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	game_id TEXT UNIQUE PRIMARY KEY,
 	player1_id INTEGER NOT NULL,
-	player2_id INTEGER NOT NULL,
+	player2_id INTEGER,
 	winner_id INTEGER,
 	looser_id INTEGER,
 	player1_score INTEGER DEFAULT 0,

@@ -5,6 +5,7 @@ import { GAME_CONFIG, LEFT_PADDLE, RIGHT_PADDLE } from '../shared/gameConfig.js'
 import { GameMode, MessageType} from '../shared/constants.js';
 import { PlayerInput, GameStateData, ServerMessage } from '../shared/types.js';
 import { Client, Player } from '../models/Client.js'
+import { saveGameResult } from '../data/validation.js';
 
 type Bot = new (side: number, ball: Ball) => Paddle;
 const BOT_MAP = {
@@ -190,12 +191,18 @@ export class Game {
 	isPaused(): boolean { return this.paused; }
 
 	// Stop the execution of the game & broadcast the winner
-	stop(): void { 
+	stop(gameId?: string): void { 
 		this.running = false;
 
 		// TODO: save score to db
-		if (this.players[LEFT_PADDLE].client?.id != this.players[RIGHT_PADDLE].client?.id) {
-			
+		if (gameId && this.players[LEFT_PADDLE].client?.id != this.players[RIGHT_PADDLE].client?.id) {
+			const player1_score = this.paddles[LEFT_PADDLE].score;
+			const player2_score = this.paddles[RIGHT_PADDLE].score;
+			const player1_username = this.players[LEFT_PADDLE].name;
+			const player2_username = this.players[RIGHT_PADDLE].name;
+			const endTime = Date.now();
+			console.log(`TO VERIFY ==> player1_name: ${player1_username}, player2_name: ${player2_username} // client1_name: ${this.players[LEFT_PADDLE].client?.username}, client2_name: ${this.players[RIGHT_PADDLE].client?.username}`)
+			saveGameResult(gameId, player1_username, player2_username, player1_score, player2_score, endTime) // add check for error
 		}
 
 		this._broadcast({
@@ -208,6 +215,6 @@ export class Game {
 	setOtherPlayerWinner(quitter_id: string) {
 		if (!this.players[LEFT_PADDLE].client || !this.players[RIGHT_PADDLE].client) return ;
 		
-		this.winner = (this.players[LEFT_PADDLE].client.id === quitter_id) ? this.players[RIGHT_PADDLE] : this.players[LEFT_PADDLE];
+		this.winner = (this.players[LEFT_PADDLE].client?.id === quitter_id) ? this.players[RIGHT_PADDLE] : this.players[LEFT_PADDLE];
 	}
 }
