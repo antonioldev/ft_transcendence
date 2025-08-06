@@ -194,7 +194,9 @@ export class Game {
 		this.running = false;
 
 		// TODO: save score to db
-		
+		if (this.players[LEFT_PADDLE].client?.id != this.players[RIGHT_PADDLE].client?.id) {
+			
+		}
 
 		this._broadcast({
 			type: MessageType.GAME_ENDED,
