@@ -134,7 +134,8 @@ export class Tournament extends GameSession {
 			if (!match) return ;
 
 			const winner = (match.players[LEFT_PADDLE].client === client) ? match.players[RIGHT_PADDLE] : match.players[LEFT_PADDLE];
-			this.game.set_winner(winner);
+			match.game.set_winner(winner);
+			match.game.stop();
 		}
 	}
 

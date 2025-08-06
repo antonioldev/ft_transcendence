@@ -93,7 +93,7 @@ export class GameSession {
 
 	async start() {
 		if (this.running) return;
-		
+
 		this.running = true;
 		this.game = new Game(this.players, this.broadcast.bind(this))
 		
@@ -185,6 +185,7 @@ export class GameSession {
 
 			const winner = (this.players[LEFT_PADDLE].client.id === client.id) ? this.players[RIGHT_PADDLE] : this.players[LEFT_PADDLE];
 			this.game.set_winner(winner);
+			this.game.stop();
 		}
 	}
 }

@@ -289,7 +289,6 @@ export class WebSocketManager {
         
         // gameManager.removeClientFromGames(client); // think this is unnecessary 
         gameSession.handlePlayerQuit(client);
-        gameSession.stop();
         gameManager.removeGame(gameSession.id);
         console.log(`Game ${gameSession.id} ended by client ${client.id}`);
     }
