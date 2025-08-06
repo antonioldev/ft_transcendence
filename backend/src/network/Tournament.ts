@@ -127,7 +127,7 @@ export class Tournament extends GameSession {
 		}
 	}
 
-	// If someone quits a remote tournament, the opposing player wins the current match
+	// If someone quits a remote tournament, the opposing player wins their current match
 	override handlePlayerQuit(quitter_id: string, match_id?: string): void {
 		if (match_id && this.game && this.mode == GameMode.TOURNAMENT_REMOTE) {
 			const match: Match | undefined = this.match_map.get(match_id);

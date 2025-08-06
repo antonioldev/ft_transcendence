@@ -178,10 +178,10 @@ export class GameSession {
 		return this.readyClients.size === this.clients.length && this.clients.length > 0;
 	}
 
-	// If someone quits a remote game, the opposing player wins
 	handlePlayerQuit(quitter_id: string): void {
 		if (this.game && this.mode == GameMode.TWO_PLAYER_REMOTE) {
 			this.game.handlePlayerQuit(quitter_id);
 		}
+		this.stop();
 	}
 }

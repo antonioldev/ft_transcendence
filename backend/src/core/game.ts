@@ -196,12 +196,12 @@ export class Game {
 
 	// Stop the execution of the game
 	stop(): void { this.running = false; }
-
+	
+	// If someone quits a remote game, the opposing player wins
 	handlePlayerQuit(quitter_id: string) {
 		if (!this.players[LEFT_PADDLE].client || !this.players[RIGHT_PADDLE].client) return ;
 
-		const winner = (this.players[LEFT_PADDLE].client.id === quitter_id) ? this.players[RIGHT_PADDLE] : this.players[LEFT_PADDLE];
-		this.winner = winner;
+		this.winner = (this.players[LEFT_PADDLE].client.id === quitter_id) ? this.players[RIGHT_PADDLE] : this.players[LEFT_PADDLE];
 		this.stop();
 	}
 }
