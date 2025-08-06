@@ -180,7 +180,7 @@ export class GameSession {
 
 	handlePlayerQuit(quitter_id: string): void {
 		if (this.game && this.mode == GameMode.TWO_PLAYER_REMOTE) {
-			this.game.handlePlayerQuit(quitter_id);
+			this.game.setOtherPlayerWinner(quitter_id);
 		}
 		this.stop();
 	}

@@ -133,7 +133,8 @@ export class Tournament extends GameSession {
 			const match: Match | undefined = this.match_map.get(match_id);
 			if (!match) return ;
 
-			match.game.handlePlayerQuit(quitter_id);
+			match.game.setOtherPlayerWinner(quitter_id);
+			match.game.stop();
 		}
 	}
 
