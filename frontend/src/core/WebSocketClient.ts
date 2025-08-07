@@ -55,6 +55,7 @@ export class WebSocketClient {
             try {
                 const message: ServerMessage = JSON.parse(event.data);
                 this.handleMessage(message);
+                console.log('[WS-IN]', event.data);
             } catch (error) {
                 Logger.error('Error parsing server message', 'WebSocketClient', error);
             }
@@ -233,6 +234,7 @@ export class WebSocketClient {
                 username: username
             };
             this.ws!.send(JSON.stringify(message));
+            console.log('[WS-OUT]', message);
         }
     }
 

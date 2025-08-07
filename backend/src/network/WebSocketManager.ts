@@ -117,6 +117,7 @@ export class WebSocketManager {
                     await this.handleLoginUser(socket, data);
                     break;
                 case MessageType.REGISTER_USER:
+                    console.log('[WS-IN]', data);
                     console.log("HandleMessage WSM: calling Register_user");
                     await this.handleRegisterNewUser(socket, data);
                     break;
@@ -461,6 +462,7 @@ export class WebSocketManager {
 
     private async handleUserStats(socket: any, username: string) {
         const stats = db.getUserStats(username); // from DB
+        console.log('[WS-OUT] SEND_USER_STATS', stats);
         if (!stats)
             this.sendError(socket, 'user not recognised');
         else

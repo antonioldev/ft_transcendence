@@ -65,10 +65,11 @@ export function requestUserInformation(username: string): UserProfileData | unde
 }
 
 export function getUserStats(username: string): UserStats | undefined {
-  const row = dbFunction.getAggregatedStats(username);
-  if (!row) return undefined;
-  const { victories, defeats, games } = row;
-  return { victories, defeats, games, winRatio: games ? victories / games : 0 };
+    console.log('[VALID] stats for', username);
+    const row = dbFunction.getAggregatedStats(username);
+    if (!row) return undefined;
+    const { victories, defeats, games } = row;
+    return { victories, defeats, games, winRatio: games ? victories / games : 0 };
 }
 
 export function getGameHistoryForUser(username: string): GameHistoryEntry[] | undefined {

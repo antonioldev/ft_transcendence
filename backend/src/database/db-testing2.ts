@@ -47,6 +47,7 @@ async function testGameFlow() {
   // Update game info
   console.log('▶ Updating game result...');
   success = dbFunctions.updateGameInfo(gameId, 10, 7, player1_id, player2_id, Date.now());
+  console.log('[MATCH] game finished', player1_id, player2_id);
   console.log('✅ Game update success:', success);
   await wait(500);
 

@@ -266,18 +266,18 @@ export function getUserProfile(username: string): UserProfileData | null {
 
 
 
-// database.ts (near the bottom, after other GAME helpers)
+// aggregation functions
 export function getAggregatedStats(username: string) {
-  const row = db.prepare(`
-     SELECT victories, defeats, games
-     FROM   users
-     WHERE  username = ?
-  `).get(username) as { victories: number, defeats: number, games: number } | undefined;
-  return row ?? null;
+	const row = db.prepare(`
+		SELECT victories, defeats, games
+		FROM   users
+		WHERE  username = ?
+		`).get(username) as { victories: number, defeats: number, games: number } | undefined;
+	console.log('[DB] stats row', row);
+	return row ?? null;
 }
 
-export function getRecentGames(username: string, limit = 20) {
-  // get the user's id once
+export function getRecentGames(username: string, limit = 100) {
   const idStmt = db.prepare('SELECT id FROM users WHERE username = ?');
   const idRow  = idStmt.get(username) as { id: number } | undefined;
   if (!idRow) return [];
@@ -381,6 +381,7 @@ export function deleteGame(id: number): boolean {
 
 //UPDATE game info
 export function updateGameInfo(id: number, player1_score: number, player2_score: number, winner: number, looser: number, endTime: number): boolean {
+	console.log('[DB] updating users', winner, looser);
 	try {
 		let startTime = getGameStartTime(id);
 		if (!startTime) {

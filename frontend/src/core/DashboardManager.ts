@@ -32,6 +32,7 @@ export class DashboardManager {
     }
 
     private renderUserStats(stats: UserStats): void {
+        console.log('[DASH] stats payload', stats);
         const container = getElementById(EL.DASHBOARD.USER_STATS_CHART);
         if (!container) return;
         container.innerHTML = '';
