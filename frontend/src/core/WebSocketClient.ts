@@ -48,8 +48,8 @@ export class WebSocketClient {
             this.connectionStatus = ConnectionStatus.CONNECTED;
             this.notifyStatus(ConnectionStatus.CONNECTED);
             Logger.info('Connected to game server', 'WebSocketClient');
-            this.triggerCallback(WebSocketEvent.CONNECTION);
-        };
+            this.triggerCallback(WebSocketEvent.CONNECTION);	
+	    };
 
         this.ws.onmessage = (event) => {
             try {

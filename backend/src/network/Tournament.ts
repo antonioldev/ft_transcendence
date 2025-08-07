@@ -156,5 +156,6 @@ export class Tournament extends GameSession {
 			}
 		}
 		// TODO: display final winner screen
+		// call db {updateTournamentWinner(player1_name: string)} to update final winner nb of tournament victory
 	}
 }

@@ -1,6 +1,7 @@
 import { GameSession } from '../network/GameSession.js';
 import { Client } from './Client.js';
 import { GameMode } from '../shared/constants.js';
+import { registerNewGame, addPlayer2 } from '../data/validation.js';
 
 /**
  * Manages game sessions and player interactions within the game.
@@ -18,6 +19,11 @@ class GameManager {
     createGame(mode: GameMode, client: Client): string {
         const gameId = `game_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         const gameSession = new GameSession(mode, gameId);
+        // Create a new game in DB with 1st player as client only if the game is remote
+        if (mode === GameMode.TWO_PLAYER_REMOTE)
+            registerNewGame(gameId, client.username, 0);
+        else if (mode === GameMode.TOURNAMENT_REMOTE)
+            registerNewGame(gameId, client.username, 1);
 
         gameSession.add_client(client);
         this.games.set(gameId, gameSession);
@@ -58,6 +64,7 @@ class GameManager {
             for (const [gameId, game] of this.games) {
                 if (game.mode === mode && !game.full) {
                     game.add_client(client);
+                    addPlayer2(gameId, client.username); //add security
 
                     return gameId;
                 }

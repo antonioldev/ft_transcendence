@@ -1,4 +1,4 @@
-import { MessageType, GameMode, Direction, GameState} from './constants.js';
+import { MessageType, GameMode, Direction, GameState, AuthState} from './constants.js';
 
 // ============================== SHARED TYPES  ==============================
 
@@ -48,6 +48,7 @@ export interface ClientMessage {
 // Represents a message sent from the server to the client
 export interface ServerMessage {
     type: MessageType; // Type of message
+    AuthState?: AuthState;
     state?: GameStateData; // Current game state (optional)
     side?: number; // Player side (optional)
     message?: string; // Additional message (optional)

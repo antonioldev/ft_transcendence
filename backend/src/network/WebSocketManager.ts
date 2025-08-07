@@ -47,7 +47,6 @@ export class WebSocketManager {
         const clientId = this.generateClientId();
 
         let client: Client;
-
         if (authenticatedUser) {
             // Google authenticated user
             console.log(`Google authenticated user connected: ${authenticatedUser.username}`);
@@ -56,7 +55,7 @@ export class WebSocketManager {
         } else {
             // Traditional authentication will authenticate via messages
             console.log('Traditional connection');
-            client = new Client(clientId, 'anonymous', '', socket);
+            client = new Client(clientId, 'temp', '', socket); // will be updated if server approve a classic login request from client
         }
 
         this.clients.set(clientId, client);
@@ -114,7 +113,7 @@ export class WebSocketManager {
                     break;
                 case MessageType.LOGIN_USER:
                     console.log("HandleMessage WSM: calling Login_user");
-                    await this.handleLoginUser(socket, data);
+                    await this.handleLoginUser(socket, client, data);
                     break;
                 case MessageType.REGISTER_USER:
                     console.log("HandleMessage WSM: calling Register_user");
@@ -205,6 +204,7 @@ export class WebSocketManager {
 
     private async runGame(gameSession: GameSession) {
         gameSession.add_CPU(); // add any CPU's if necessary
+        db.updateStartTime(gameSession.id);
         await gameSession.start();
         gameManager.removeGame(gameSession.id);
     }
@@ -305,7 +305,7 @@ export class WebSocketManager {
      * Handles the disconnection of a client, removing them from games and cleaning up resources.
      * @param data - The user information that are used to confirm login
      */
-    private async handleLoginUser(socket: any, data: ClientMessage): Promise<void> {
+    private async handleLoginUser(socket: any, client: Client, data: ClientMessage): Promise<void> {
         console.log("handleLoginUser WSM called()");
         const loginInfo = data.loginUser;
         if (!loginInfo || !loginInfo.username || !loginInfo.password) {
@@ -318,6 +318,8 @@ export class WebSocketManager {
                 case 0:
                     console.log("handleLoginUser WSM: sending success");
                     await this.sendSuccessLogin(socket, "User ID confirmed");
+                    client.username = loginInfo.username;
+                    client.loggedIn = true;
                     return;
                 case 1:
                     console.log("handleLoginUser WSM: sending error 1 no user in db");
