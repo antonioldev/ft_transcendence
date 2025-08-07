@@ -298,6 +298,9 @@ export class WebSocketManager {
      * @param client - The client that disconnected.
      */
     private handleDisconnection(client: Client): void {
+        const gameSession = this.findClientGame(client);
+        gameSession.stop();
+        
         gameManager.removeClientFromGames(client);
         this.clients.delete(client.id);
     }  
