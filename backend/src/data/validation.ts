@@ -64,43 +64,16 @@ export function requestUserInformation(username: string): UserProfileData | unde
     return userInfo;    
 }
 
-export function getUserStats(username: string): UserStats | undefined { // TODO create a real function to return the stats of a user
-  if (!username) return undefined;
-
-  return {
-    victories: 12,
-    defeats: 8,
-    games: 20,
-    winRatio: 0.6
-  };
+export function getUserStats(username: string): UserStats | undefined {
+    console.log('[VALID] stats for', username);
+    const row = dbFunction.getAggregatedStats(username);
+    if (!row) return undefined;
+    const { victories, defeats, games } = row;
+    return { victories, defeats, games, winRatio: games ? victories / games : 0 };
 }
 
-export function getGameHistoryForUser(username: string): GameHistoryEntry[] | undefined { //TODO create a real function to return the game history of a user
-  if (!username) return undefined;
-
-  return [
-    {
-      playedAt: '2025-07-15 10:32',
-      opponent: 'rival_one',
-      score: '10 - 7',
-      result: 'Win',
-      duration: 300
-    },
-    {
-      playedAt: '2025-07-14 18:45',
-      opponent: 'challengerX',
-      score: '6 - 10',
-      result: 'Loss',
-      duration: 280
-    },
-    {
-      playedAt: '2025-07-13 13:10',
-      opponent: 'alpha',
-      score: '12 - 11',
-      result: 'Win',
-      duration: 350
-    }
-  ];
+export function getGameHistoryForUser(username: string): GameHistoryEntry[] | undefined {
+  return dbFunction.getRecentGames(username);
 }
 
 export function findOrCreateGoogleUser(profile: { sub: string, name: string, email: string }): UserProfileData | null {

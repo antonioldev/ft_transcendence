@@ -330,6 +330,57 @@ export function getUserProfile(username: string): UserProfileData | null {
   };
 }
 
+
+
+
+
+// aggregation functions
+export function getAggregatedStats(username: string) {
+	const row = db.prepare(`
+		SELECT victories, defeats, games
+		FROM   users
+		WHERE  username = ?
+		`).get(username) as { victories: number, defeats: number, games: number } | undefined;
+	console.log('[DB] stats row', row);
+	return row ?? null;
+}
+
+export function getRecentGames(username: string, limit = 100) {
+  const idStmt = db.prepare('SELECT id FROM users WHERE username = ?');
+  const idRow  = idStmt.get(username) as { id: number } | undefined;
+  if (!idRow) return [];
+
+  const stmt = db.prepare(`
+    SELECT g.played_at            AS playedAt,
+           opp.username           AS opponent,
+           g.player1_score || ' - ' || g.player2_score AS score,
+           CASE WHEN g.winner_id = ? THEN 'Win' ELSE 'Loss' END AS result,
+           g.duration_seconds     AS duration
+    FROM   games g
+    JOIN   users me   ON me.id = ?
+    JOIN   users opp  ON opp.id = CASE
+                                   WHEN g.player1_id = me.id THEN g.player2_id
+                                   ELSE g.player1_id END
+    WHERE  g.player1_id = me.id OR g.player2_id = me.id
+    ORDER  BY g.played_at DESC
+    LIMIT  ?
+  `);
+  return stmt.all(idRow.id, idRow.id, limit) as any[];
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /**
  * GAMES table functions  
 **/
@@ -419,7 +470,8 @@ export function deleteGame(id: number): boolean {
 }
 
 //UPDATE game info
-export function updateGameInfo(id: string, player1_score: number, player2_score: number, winner: number, looser: number, endTime: number): boolean {
+export function updateGameInfo(id: number, player1_score: number, player2_score: number, winner: number, looser: number, endTime: number): boolean {
+	console.log('[DB] updating users', winner, looser);
 	try {
 		let startTime = getGameStartTime(id);
 		if (!startTime) {
