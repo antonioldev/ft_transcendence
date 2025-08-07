@@ -1,4 +1,5 @@
 import { GameSession } from '../network/GameSession.js';
+import { Tournament } from '../network/Tournament.js';
 import { Client } from './Client.js';
 import { GameMode } from '../shared/constants.js';
 
@@ -17,7 +18,14 @@ class GameManager {
      */
     createGame(mode: GameMode, client: Client): string {
         const gameId = `game_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        const gameSession = new GameSession(mode, gameId);
+        
+        let gameSession: GameSession;
+        if (mode === GameMode.TOURNAMENT_LOCAL || mode === GameMode.TOURNAMENT_REMOTE) {
+            gameSession = new Tournament(mode, gameId, 4); 
+        }
+        else {
+            gameSession = new GameSession(mode, gameId);
+        }
 
         gameSession.add_client(client);
         this.games.set(gameId, gameSession);
