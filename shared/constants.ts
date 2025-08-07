@@ -14,6 +14,7 @@ export enum MessageType {
     PAUSED,             // SERVER -> CLIENTS: Server confirms pause to all clients
     RESUMED,            // SERVER -> CLIENTS: Server confirms resume to all clients
     GAME_ENDED,         // SERVER -> CLIENTS: Server notifies game ended (when someone quits with Y)
+    SESSION_ENDED,         // SERVER -> CLIENTS: Server notifies gameSession or Tournament ended
     WELCOME,             // SERVER -> CLIENT: Welcome message on connection
     PLAYER_READY,       // CLIENT -> SERVER: Client loaded babylon and is waiting for server
     ALL_READY,                  // SERVER -> CLIENT: All players are ready, game starts in 5 seconds

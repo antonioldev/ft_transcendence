@@ -7,6 +7,8 @@ import * as db from "../data/validation.js";
 import { UserStats, GameHistoryEntry } from '../shared/types.js';
 import { GameSession } from './GameSession.js';
 
+// TODO: set timer for online player search, if not found then start with CPU
+
 /**
  * Manages WebSocket connections, client interactions, and game-related messaging.
  */

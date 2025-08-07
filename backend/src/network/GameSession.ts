@@ -152,6 +152,9 @@ export class GameSession {
 		}
 		this.running = false;
 		this.paused = false;
+		this.broadcast({
+			type: MessageType.SESSION_ENDED,
+		});
 	}
 
 	canClientControlGame(client: Client) {
