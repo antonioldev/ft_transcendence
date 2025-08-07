@@ -34,7 +34,7 @@ COPY --from=builder /app/dist/ /usr/share/nginx/html/
 
 # Copy HTML and other static files
 COPY src/*.html /usr/share/nginx/html/
-COPY src/favicon.ico /usr/share/nginx/html/
+COPY src/42_favicon.ico /usr/share/nginx/html/
 COPY src/assets/ /usr/share/nginx/html/assets/
 
 EXPOSE 80
