@@ -66,7 +66,7 @@ export const GAME_CONFIG = {
     },
     
     // Timing
-    startDelay: 5.0, // Delay before the game starts
+    startDelay: 3.0, // Delay before the game starts
     ballDelay: 1.0, // Delay before the ball starts between rounds
 
 } as const;

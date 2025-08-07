@@ -122,11 +122,19 @@ export class WebSocketManager {
                     break;
                 case MessageType.REQUEST_USER_STATS:
                     console.log("HandleMessage WSM: calling get User stats");
-                    await this.handleUserStats(socket, message);
+                    if (!data.username) {
+                        this.sendError(socket, 'username missing');
+                        return;
+                    }
+                    await this.handleUserStats(socket, data.username);
                     break;
                 case MessageType.REQUEST_GAME_HISTORY:
                     console.log("HandleMessage WSM: calling get User game history");
-                    await this.handleUserGameHistory(socket, message);
+                    if (!data.username) {
+                        this.sendError(socket, 'username missing');
+                        return;
+                    }
+                    await this.handleUserGameHistory(socket, data.username);
                     break;
                 // case MessageType.REQUEST_USER_PROFILE:
                 //     console.log("HandleMessage WSM: Requesting user profile");
@@ -451,8 +459,8 @@ export class WebSocketManager {
     } 
 
 
-    private async handleUserStats(socket: any, message: string) {
-        const stats = db.getUserStats(message); // from DB
+    private async handleUserStats(socket: any, username: string) {
+        const stats = db.getUserStats(username); // from DB
         if (!stats)
             this.sendError(socket, 'user not recognised');
         else
@@ -460,8 +468,8 @@ export class WebSocketManager {
     }
 
 
-    private async handleUserGameHistory(socket: any, message: string) {
-        const history = db.getGameHistoryForUser(message); // from DB
+    private async handleUserGameHistory(socket: any, username: string) {
+        const history = db.getGameHistoryForUser(username); // from DB
         if (!history)
             this.sendError(socket, 'user not recognised');
         else
