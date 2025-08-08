@@ -16,8 +16,8 @@ export class GameSession {
 	game?: Game;
 	full: boolean = false;
 	running: boolean = false;
-	private paused: boolean = false;
-	private readyClients: Set<string> = new Set(); // New, keep track of clients that finish loading
+	paused: boolean = false;
+	readyClients: Set<string> = new Set(); // New, keep track of clients that finish loading
 	ai_difficulty?: number; // hardcoded to be set to Impossible, we should make an enum
 
     constructor(mode: GameMode, game_id: string) {
