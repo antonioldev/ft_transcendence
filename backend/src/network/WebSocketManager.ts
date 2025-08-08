@@ -7,6 +7,8 @@ import * as db from "../data/validation.js";
 import { UserStats, GameHistoryEntry } from '../shared/types.js';
 import { GameSession } from './GameSession.js';
 
+// TODO: set timer for online player search, if not found then start with CPU
+
 /**
  * Manages WebSocket connections, client interactions, and game-related messaging.
  */
@@ -132,7 +134,7 @@ export class WebSocketManager {
                 //     await this.handleUserProfileRequest(socket, data);
                 //     break;
                 case MessageType.QUIT_GAME:  // TODO I added because it was creating issue, need to check
-                    await this.handleQuitGame(client);
+                    await this.handleQuitGame(client, data);
                     break;
                 default:
                     await this.sendError(socket, 'Unknown message type');
@@ -279,7 +281,11 @@ export class WebSocketManager {
         }
     }
 
-    private async handleQuitGame(client: Client): Promise<void> {
+   /**
+     * Handles the disconnection of a client, removing them from games and cleaning up resources.
+     * @param data - The user information that are used to confirm login
+     */
+    private async handleQuitGame(client: Client, data: ClientMessage): Promise<void> {
         const gameSession = this.findClientGame(client);
         if (!gameSession) {
             console.warn(`Client ${client.id} not in any game to quit`);
