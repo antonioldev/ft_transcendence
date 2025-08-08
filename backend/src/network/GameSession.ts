@@ -135,7 +135,6 @@ export class GameSession {
 		try {
 			this.game.resume();
 			this.paused = false;
-
 			this.broadcast({type: MessageType.RESUMED});
 			
 			console.log(`Game ${this.id} resumed by client ${client.id}`);
@@ -152,6 +151,7 @@ export class GameSession {
 		}
 		this.running = false;
 		this.paused = false;
+		this.broadcast({ type: MessageType.SESSION_ENDED });
 	}
 
 	canClientControlGame(client: Client) {
