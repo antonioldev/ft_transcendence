@@ -103,6 +103,9 @@ export class WebSocketClient {
             case MessageType.GAME_ENDED:
                 this.triggerCallback(WebSocketEvent.GAME_ENDED, message);
                 break;
+            case MessageType.SESSION_ENDED:
+                this.triggerCallback(WebSocketEvent.SESSION_ENDED, message);
+                break;
             case MessageType.ALL_READY:
                 this.triggerCallback(WebSocketEvent.ALL_READY, message);
                 break;
@@ -163,8 +166,8 @@ export class WebSocketClient {
         this.sendMessage(MessageType.PLAYER_READY);
     }
 
-    sendPlayerInput(side: number, direction: Direction): void {
-        this.sendMessage(MessageType.PLAYER_INPUT, { side, direction });
+    sendPlayerInput(side: number, direction: Direction, match_id: string): void {
+        this.sendMessage(MessageType.PLAYER_INPUT, { side, direction, match_id });
     }
     
     sendPauseRequest(): void {
@@ -175,8 +178,8 @@ export class WebSocketClient {
         this.sendMessage(MessageType.RESUME_REQUEST);
     }
 
-    sendQuitGame(): void {
-        this.sendMessage(MessageType.QUIT_GAME);
+    sendQuitGame(match_id: string): void {
+        this.sendMessage(MessageType.QUIT_GAME, {match_id});
     }
 
     private sendMessage(type: MessageType, data: any = {}): void {

@@ -44,6 +44,7 @@ export enum WebSocketEvent {
     GAME_PAUSED = 'gamePaused',
     GAME_RESUMED = 'gameResumed',
     GAME_ENDED = 'gameEnded',
+    SESSION_ENDED = 'sessionEnded',
     STATUS_CHANGE = 'statusChange',
     ALL_READY = 'all_ready',
     LOGIN_SUCCESS = 'LOGIN_SUCCESS',

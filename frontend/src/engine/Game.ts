@@ -36,7 +36,7 @@ import { AudioManager } from './AudioManager.js';
 export class Game {
     private static currentInstance: Game | null = null;
 
-        private engine: any = null;
+    private engine: any = null;
     private scene: any = null;
     private canvas: HTMLCanvasElement | null = null;
     private gameObjects: GameObjects | null = null;
@@ -58,6 +58,7 @@ export class Game {
     private isExiting: boolean = false;
     private playerLeftScore: number = 0;
     private playerRightScore: number = 0;
+    private match_id: string;
 
     static getCurrentInstance(): Game | null {
         return Game.currentInstance;
@@ -113,7 +114,7 @@ export class Game {
         if (Game.currentInstance)
             Game.currentInstance.dispose();
         Game.currentInstance = this;
-
+        this.match_id = "";
         try {
             this.guiManager = new GUIManager();
             this.renderManager = new RenderManager();
@@ -160,7 +161,7 @@ export class Game {
         Logger.info('Exiting to menu...', 'Game');
         
         try {
-            webSocketClient.sendQuitGame();
+            webSocketClient.sendQuitGame(this.match_id);
             Logger.info('Request to end the game sent', 'Game');
         } catch (error) {
             Logger.error('Error during request exit', 'Game', error);
@@ -320,12 +321,9 @@ export class Game {
         webSocketClient.registerCallback(WebSocketEvent.GAME_PAUSED, () => { this.onServerPausedGame(); });
         webSocketClient.registerCallback(WebSocketEvent.GAME_RESUMED, () => { this.onServerResumedGame(); });
         webSocketClient.registerCallback(WebSocketEvent.GAME_ENDED, (message: any) => { this.onServerEndedGame(message.winner); });
-        webSocketClient.registerCallback(WebSocketEvent.ALL_READY, (message: any) => {
-            this.handlePlayerAssignment(message.left, message.right);
-        });
-        webSocketClient.registerCallback(WebSocketEvent.COUNTDOWN, (message: any) => {
-            this.handleCountdown(message.countdown); 
-        })
+        webSocketClient.registerCallback(WebSocketEvent.SESSION_ENDED, (message: any) => { this.onServerEndedSession(message.winner); });
+        webSocketClient.registerCallback(WebSocketEvent.ALL_READY, (message: any) => { this.handlePlayerAssignment(message.left, message.right, message.match_id); });
+        webSocketClient.registerCallback(WebSocketEvent.COUNTDOWN, (message: any) => { this.handleCountdown(message.countdown);  })
     }
 
     async connect(aiDifficulty: number): Promise<void> {
@@ -437,6 +435,29 @@ export class Game {
         Logger.info('Game ended by server', 'Game');
     }
 
+    private async onServerEndedSession(winner: string): Promise<void> {
+        // if (this.isDisposed) return;
+
+        // if (!this.renderManager?.isRendering())
+        //     this.renderManager?.startRendering();
+
+        // let gameWinner = "CPU";
+        // if (winner !== undefined) // TODO what shall we send
+        //     gameWinner = winner;
+        // uiManager.setElementVisibility('pause-dialog-3d', false);
+        // // if (this.config.gameMode === GameMode.SINGLE_PLAYER
+        // //     || this.config.gameMode === GameMode.TOURNAMENT_REMOTE || this.config.gameMode === GameMode.TWO_PLAYER_REMOTE)
+        //     await this.guiManager?.showWinner(gameWinner);
+
+        // this.audioManager?.stopGameMusic();
+        // this.renderManager?.stopRendering();
+        // this.stopGameLoop();
+        // Game.disposeGame();
+        // this.resetToMenu();
+
+        Logger.info('Session ended by server', 'Game');
+    }
+
     // ========================================
     // GAME LOOP - These are in charge of the logic check
     // ========================================
@@ -545,6 +566,7 @@ export class Game {
         this.isPausedByServer = false;
         this.currentState = null;
         this.isExiting = false;
+        this.match_id = "";
 
         try {
             this.stopGameLoop();
@@ -658,10 +680,11 @@ export class Game {
 
     }
 
-    private handlePlayerAssignment(leftPlayerName: string, rightPlayerName: string): void {
+    private handlePlayerAssignment(leftPlayerName: string, rightPlayerName: string, match_id: string): void {
         if (this.guiManager)
             this.guiManager.updatePlayerNames(leftPlayerName, rightPlayerName);
-
+        if (match_id)
+            this.match_id = match_id;
         this.assignPlayerSide(leftPlayerName, 0);
         this.assignPlayerSide(rightPlayerName, 1);
         this.setActiveCameras();
@@ -703,6 +726,6 @@ export class Game {
 
         // Send input directly
         if (direction !== Direction.STOP)
-            webSocketClient.sendPlayerInput(side, direction);
+            webSocketClient.sendPlayerInput(side, direction, this.match_id);
     }
 }
