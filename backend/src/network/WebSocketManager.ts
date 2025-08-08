@@ -135,7 +135,7 @@ export class WebSocketManager {
                 //     await this.handleUserProfileRequest(socket, data);
                 //     break;
                 case MessageType.QUIT_GAME:  // TODO I added because it was creating issue, need to check
-                    await this.handleQuitGame(client);
+                    await this.handleQuitGame(client, data);
                     break;
                 default:
                     await this.sendError(socket, 'Unknown message type');
@@ -282,15 +282,19 @@ export class WebSocketManager {
             console.warn(`Failed to resume game for client ${client.id}`);
     }
 
-    private async handleQuitGame(client: Client): Promise<void> {
+   /**
+     * Handles the disconnection of a client, removing them from games and cleaning up resources.
+     * @param data - The user information that are used to confirm login
+     */
+    private async handleQuitGame(client: Client, data: ClientMessage): Promise<void> {
         const gameSession = this.findClientGame(client);
         if (!gameSession) {
             console.warn(`Client ${client.id} not in any game to quit`);
             return;
         }
         
-        // gameManager.removeClientFromGames(client); // think this is unnecessary 
-        gameSession.handlePlayerQuit(client.id);
+        // gameManager.removeClientFromGames(client); // think this is unnecessary
+        gameSession.handlePlayerQuit(client.id, data.match_id);
         gameManager.removeGame(gameSession.id);
         console.log(`Game ${gameSession.id} ended by client ${client.id}`);
     }
