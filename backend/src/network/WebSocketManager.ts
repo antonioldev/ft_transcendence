@@ -5,6 +5,7 @@ import { MessageType, Direction, GameMode, UserManagement } from '../shared/cons
 import { ClientMessage, ServerMessage, GetUserProfile, UserProfileData } from '../shared/types.js';
 import * as db from "../data/validation.js";
 import { UserStats, GameHistoryEntry } from '../shared/types.js';
+import { GameSession } from './GameSession.js';
 
 /**
  * Manages WebSocket connections, client interactions, and game-related messaging.
@@ -176,6 +177,9 @@ export class WebSocketManager {
                     gameSession?.add_player(new Player(player.id, player.name, client));
                 }
             }
+            if (gameSession?.full && !gameSession.running) {
+                gameManager.runGame(gameSession);
+            }
         } catch (error) {
             console.error('❌ Error joining game:', error);
             await this.sendError(socket, 'Failed to join game');
@@ -194,12 +198,7 @@ export class WebSocketManager {
             console.warn(`Client ${client.id} not in any game for ready signal`);
             return;
         }
-
         gameSession.setClientReady(client);
-        if (gameSession.allClientsReady() && gameSession.full && !gameSession.running) {
-            console.log(`All clients ready in game ${gameSession.id}, sending ALL_READY`);
-            await gameManager.runGame(gameSession);
-        }
     }
 
     /**

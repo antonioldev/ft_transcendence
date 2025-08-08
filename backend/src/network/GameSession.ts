@@ -93,6 +93,12 @@ export abstract class AbstractGameSession {
 		}
 	}
 
+	async waitingForPlayersReady() {
+		while (!this.allClientsReady()) {
+			return new Promise(resolve => setTimeout(resolve, 1000));
+		}
+	}
+
 	abstract start(): Promise<void>; 
 	abstract stop(match_id?: string): void;
 	abstract pause(match_id?: string): boolean;
@@ -109,7 +115,6 @@ export class GameSession extends AbstractGameSession{
 	game!: Game;
 	readyClients: Set<string> = new Set(); // New, keep track of clients that finish loading
 
-
 	constructor (mode: GameMode, game_id: string) {
 		super(mode, game_id)
 	}
@@ -119,8 +124,9 @@ export class GameSession extends AbstractGameSession{
 		this.running = true;
 		
         this.add_CPUs(); // add any CPU's if necessary
-		this.game = new Game(this.players, this.broadcast.bind(this))
+		await this.waitingForPlayersReady();
 		
+		this.game = new Game(this.players, this.broadcast.bind(this))
 		await this.game.run();
 		this.stop();
 	}
@@ -172,7 +178,8 @@ export class GameSession extends AbstractGameSession{
 	}
 
 	allClientsReady(): boolean {
-		return this.readyClients.size === this.clients.length && this.clients.length > 0;
+		console.log(`All clients ready in game ${this.id}, sending ALL_READY`);
+		return (this.readyClients.size === this.clients.length && this.clients.length > 0);
 	}
 
 	handlePlayerQuit(quitter_id: string): void {

@@ -93,6 +93,7 @@ class GameManager {
 
     async runGame(gameSession: GameSession | TournamentLocal | TournamentRemote): Promise<void> {
         if (gameSession.running) return ;
+
         db.updateStartTime(gameSession.id);
         await gameSession.start();
         gameManager.removeGame(gameSession.id);
