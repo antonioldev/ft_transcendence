@@ -208,11 +208,20 @@ export class TournamentLocal extends AbstractTournament {
 
 	// runs each game in a round one by one and awaits each game before starting the next
 	async run(matches: Match[]): Promise<void> {
+		let finalWinner: Player | undefined;
 		for (const match of matches) {
 			match.game = new Game(match.players, this.broadcast.bind(this), match.id);
 			await this.waitingForPlayersReady(match.id);
 			const winner = await match.game.run();
+			finalWinner = winner;
 			match.next?.add_player(winner);
+		}
+	
+		if (this.current_round === this.num_rounds) {
+			this.broadcast({ 
+				type: MessageType.SESSION_ENDED,
+				...(finalWinner && { winner: finalWinner.name })
+			});
 		}
 	}
 
@@ -246,6 +255,7 @@ export class TournamentRemote extends AbstractTournament {
 			const winner = winners[i];
 			match.next?.add_player(winner);
 		}
+
 	}
 
 	// Tthe opposing player wins their current match and the tournament continues
