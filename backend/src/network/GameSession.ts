@@ -6,18 +6,16 @@ import { PlayerInput, ServerMessage } from '../shared/types.js';
 import { MediumBot } from '../core/Paddle.js';
 import { diff } from 'util';
 
-export class GameSession {
+export abstract class AbstractGameSession {
 	mode: GameMode;
 	id: string;
 	clients: Client[] = [];
 	players: Player[] = [];
 	player_capacity: number = 2;
 	client_capacity: number = 1;
-	game?: Game;
 	full: boolean = false;
 	running: boolean = false;
 	paused: boolean = false;
-	readyClients: Set<string> = new Set(); // New, keep track of clients that finish loading
 	ai_difficulty?: number; // hardcoded to be set to Impossible, we should make an enum
 
     constructor(mode: GameMode, game_id: string) {
@@ -62,7 +60,7 @@ export class GameSession {
 		const index = this.clients.indexOf(client);
 		if (index !== -1) {
 			this.clients.splice(index, 1);
-			this.readyClients.delete(client.id); // Added
+			// this.readyClients.delete(client.id); // WILL CHANGE AFTER
 			this.full = false;
 		}
 		if (this.clients.length === 0) {
@@ -99,9 +97,60 @@ export class GameSession {
 		}
 	}
 
-	setClientReady(client: Client): void { //New function, add client in the readyClient list
+	abstract start(): void;
+	abstract stop(): void;
+	abstract pause(client: Client): boolean;
+	abstract resume(client: Client): boolean;
+	abstract enqueue(input: PlayerInput): void;
+	abstract setClientReady(client: Client): void;
+	abstract allClientsReady(): boolean;
+	abstract handlePlayerQuit(quitter_id: string): void;
+
+
+	canClientControlGame(client: Client) {
+		if (!this.clients.includes(client))
+			return false;
+
+		// TODO need to add more check
+		return true;
+	}
+
+	isPaused(): boolean {
+		return this.paused;
+	}
+
+
+}
+
+export class GameSession extends AbstractGameSession{
+	game!: Game;
+	readyClients: Set<string> = new Set(); // New, keep track of clients that finish loading
+
+
+	constructor (mode: GameMode, game_id: string) {
+		super(mode, game_id)
+	}
+
+	handlePlayerQuit(quitter_id: string): void {
+		if (this.game && this.mode == GameMode.TWO_PLAYER_REMOTE) {
+			this.game.setOtherPlayerWinner(quitter_id);
+		}
+		this.stop();
+	}
+
+	setClientReady(client: Client): void { // New function, add client in the readyClient list
 		this.readyClients.add(client.id);
 		console.log(`Client ${client.id} marked as ready. Ready clients: ${this.readyClients.size}/${this.clients.length}`);
+	}
+
+	allClientsReady(): boolean {
+		return this.readyClients.size === this.clients.length && this.clients.length > 0;
+	}
+
+	enqueue(input: PlayerInput): void  {
+		if (this.game) {
+			this.game.enqueue(input);
+		}
 	}
 
 	async start() {
@@ -115,7 +164,17 @@ export class GameSession {
 		this.stop();
 	}
 
-	pauseGame(client: Client): boolean {
+	stop() {
+		if (this.game && this.game.running) {
+			this.game.stop(this.id);
+		}
+		this.running = false;
+		this.paused = false;
+		this.broadcast({ type: MessageType.SESSION_ENDED });
+	}
+
+	
+	pause(client: Client): boolean {
 		if (this.paused) {
 			console.log(`Game ${this.id} is already paused`);
 			return false;
@@ -137,7 +196,7 @@ export class GameSession {
 		}
 	}
 
-	resumeGame(client: Client): boolean {
+	resume(client: Client): boolean {
 		if (!this.paused) {
 			console.log(`Game ${this.id} is not paused`);
 			return false;
@@ -159,42 +218,4 @@ export class GameSession {
 		}
 	}
 
-	stop() {
-		if (this.game && this.game.running) {
-			this.game.stop(this.id);
-		}
-		this.running = false;
-		this.paused = false;
-		this.broadcast({ type: MessageType.SESSION_ENDED });
-	}
-
-	canClientControlGame(client: Client) {
-		if (!this.clients.includes(client))
-			return false;
-
-		// TODO need to add more check
-		return true;
-	}
-
-	isPaused(): boolean {
-		return this.paused;
-	}
-
-	// wrapper needed as is polymorphised for Tournament
-	enqueue(input: PlayerInput): void  {
-		if (this.game) {
-			this.game.enqueue(input);
-		}
-	}
-
-	allClientsReady(): boolean {
-		return this.readyClients.size === this.clients.length && this.clients.length > 0;
-	}
-
-	handlePlayerQuit(quitter_id: string): void {
-		if (this.game && this.mode == GameMode.TWO_PLAYER_REMOTE) {
-			this.game.setOtherPlayerWinner(quitter_id);
-		}
-		this.stop();
-	}
 }

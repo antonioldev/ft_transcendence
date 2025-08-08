@@ -1,4 +1,4 @@
-import { GameSession } from './GameSession.js'
+import { AbstractGameSession } from './GameSession.js'
 import { Game } from '../core/game.js';
 import { Client, Player } from '../models/Client.js';
 import { GameMode } from '../shared/constants.js';
@@ -30,7 +30,7 @@ class Match {
 	}
 }
 
-export class Tournament extends GameSession {
+export class Tournament extends AbstractGameSession {
 	match_map: Map<string, Match> = new Map();	// Maps id to match, used for easy insertion from client input
 	rounds: Map<number, Match[]> = new Map();	// Maps rounds to match[], used for easy traversal to run games
 	num_rounds: number;
