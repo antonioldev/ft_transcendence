@@ -5,7 +5,6 @@ import { MessageType, Direction, GameMode, UserManagement } from '../shared/cons
 import { ClientMessage, ServerMessage, GetUserProfile, UserProfileData } from '../shared/types.js';
 import * as db from "../data/validation.js";
 import { UserStats, GameHistoryEntry } from '../shared/types.js';
-import { GameSession } from './GameSession.js';
 
 /**
  * Manages WebSocket connections, client interactions, and game-related messaging.
@@ -221,8 +220,6 @@ export class WebSocketManager {
             return;
         }
 
-        if (gameSession.isPaused()) return;
-
         const input = {
             id: client.id,
             type: MessageType.PLAYER_INPUT,
@@ -248,9 +245,14 @@ export class WebSocketManager {
             return;
         }
 
-        const success = await gameSession.pauseGame(client);
-        if (!success)
+        const success = await gameSession.pause(client);
+        
+        if (success) {
+            console.log(`Game ${gameSession.id} paused by client ${client.id}`);
+        }
+        else {
             console.warn(`Failed to pause game for client ${client.id}`);
+        }
     }
 
     /**
@@ -269,9 +271,13 @@ export class WebSocketManager {
             return;
         }
 
-        const success = await gameSession.resumeGame(client);
-        if (!success)
+        const success = await gameSession.resume(client);
+        if (success) {
+            console.log(`Game ${gameSession.id} resumed by client ${client.id}`);
+        }
+        else {
             console.warn(`Failed to resume game for client ${client.id}`);
+        }
     }
 
     private async handleQuitGame(client: Client): Promise<void> {
@@ -293,8 +299,8 @@ export class WebSocketManager {
      */
     private handleDisconnection(client: Client): void {
         const gameSession = this.findClientGame(client);
+        if (!gameSession) return ;
         gameSession.stop(); // TODO: temp as wont work for Tournament 
-
         gameManager.removeClientFromGames(client);
         this.clients.delete(client.id);
     }  

@@ -1,10 +1,7 @@
 import { Game } from '../core/game.js';
-import { GAME_CONFIG, LEFT_PADDLE, RIGHT_PADDLE} from '../shared/gameConfig.js';
 import { Client, Player } from '../models/Client.js';
 import { MessageType, GameMode } from '../shared/constants.js';
 import { PlayerInput, ServerMessage } from '../shared/types.js';
-import { MediumBot } from '../core/Paddle.js';
-import { diff } from 'util';
 
 export abstract class AbstractGameSession {
 	mode: GameMode;
@@ -15,8 +12,7 @@ export abstract class AbstractGameSession {
 	client_capacity: number = 1;
 	full: boolean = false;
 	running: boolean = false;
-	paused: boolean = false;
-	ai_difficulty?: number; // hardcoded to be set to Impossible, we should make an enum
+	ai_difficulty?: number; // temp hardcoded to be set to Impossible 
 
     constructor(mode: GameMode, game_id: string) {
 		this.id = game_id
@@ -83,7 +79,7 @@ export abstract class AbstractGameSession {
 			this.mode = GameMode.SINGLE_PLAYER
 		}
 
-		this.client_capacity === this.clients.length;
+		this.client_capacity = this.clients.length;
     }
 
 	remove_player(player: Player) {
@@ -97,29 +93,16 @@ export abstract class AbstractGameSession {
 		}
 	}
 
-	abstract start(): void;
-	abstract stop(): void;
-	abstract pause(client: Client): boolean;
-	abstract resume(client: Client): boolean;
+	abstract start(): Promise<void>; 
+	abstract stop(match_id?: string): void;
+	abstract pause(match_id?: string): boolean;
+	abstract resume(match_id?: string): boolean;
+
 	abstract enqueue(input: PlayerInput): void;
-	abstract setClientReady(client: Client): void;
-	abstract allClientsReady(): boolean;
-	abstract handlePlayerQuit(quitter_id: string): void;
-
-
-	canClientControlGame(client: Client) {
-		if (!this.clients.includes(client))
-			return false;
-
-		// TODO need to add more check
-		return true;
-	}
-
-	isPaused(): boolean {
-		return this.paused;
-	}
-
-
+	abstract setClientReady(client: Client, match_id?: string): void;
+	abstract allClientsReady(match_id?: string): boolean;
+	abstract handlePlayerQuit(quitter_id: string, match_id?: string): void;
+	abstract canClientControlGame(client: Client, match_id?: string): boolean;
 }
 
 export class GameSession extends AbstractGameSession{
@@ -131,11 +114,56 @@ export class GameSession extends AbstractGameSession{
 		super(mode, game_id)
 	}
 
-	handlePlayerQuit(quitter_id: string): void {
-		if (this.game && this.mode == GameMode.TWO_PLAYER_REMOTE) {
-			this.game.setOtherPlayerWinner(quitter_id);
-		}
+	async start(): Promise<void> {
+		if (this.running) return;
+		this.running = true;
+		
+        this.add_CPUs(); // add any CPU's if necessary
+		this.game = new Game(this.players, this.broadcast.bind(this))
+		
+		await this.game.run();
 		this.stop();
+	}
+
+	stop() {
+		if (!this.game || !this.game.running) return false;
+
+		this.game.stop(this.id);
+		this.running = false;
+		this.broadcast({ type: MessageType.SESSION_ENDED });
+	}
+
+	
+	pause(): boolean {
+		if (!this.running || !this.game) {
+			console.log(`Game ${this.id} is not running, cannot pause`);
+			return false;
+		}
+		if (this.game.paused) {
+			console.log(`Game ${this.id} is already paused`);
+			return false;
+		}
+
+		this.game.pause();
+		return true;
+	}
+
+	resume(): boolean {
+		if (!this.running || !this.game) {
+			console.log(`Game ${this.id} is not running, cannot resume`);
+			return false;
+		}
+		if (!this.game.paused) {
+			console.log(`Game ${this.id} is not paused`);
+			return false;
+		}
+
+		this.game.resume();
+		return true;
+	}
+
+	enqueue(input: PlayerInput): void  {
+		this.game?.enqueue(input);
 	}
 
 	setClientReady(client: Client): void { // New function, add client in the readyClient list
@@ -147,75 +175,19 @@ export class GameSession extends AbstractGameSession{
 		return this.readyClients.size === this.clients.length && this.clients.length > 0;
 	}
 
-	enqueue(input: PlayerInput): void  {
-		if (this.game) {
-			this.game.enqueue(input);
+	handlePlayerQuit(quitter_id: string): void {
+		if (this.game && this.mode == GameMode.TWO_PLAYER_REMOTE) {
+			this.game.setOtherPlayerWinner(quitter_id);
 		}
-	}
-
-	async start() {
-		if (this.running) return;
-        this.add_CPUs(); // add any CPU's if necessary
-
-		this.running = true;
-		this.game = new Game(this.players, this.broadcast.bind(this))
-		
-		await this.game.run();
 		this.stop();
 	}
 
-	stop() {
-		if (this.game && this.game.running) {
-			this.game.stop(this.id);
-		}
-		this.running = false;
-		this.paused = false;
-		this.broadcast({ type: MessageType.SESSION_ENDED });
-	}
+	canClientControlGame(client: Client) {
+		if (!this.clients.includes(client))
+			return false;
 
-	
-	pause(client: Client): boolean {
-		if (this.paused) {
-			console.log(`Game ${this.id} is already paused`);
-			return false;
-		}
-		if (!this.running || !this.game) {
-			console.log(`Game ${this.id} is not running, cannot pause`);
-			return false;
-		}
-		try {
-			this.game.pause();
-			this.paused = true;
-			this.broadcast({type: MessageType.PAUSED});
-			
-			console.log(`Game ${this.id} paused by client ${client.id}`);
-			return true;
-		} catch (error) {
-			console.error(`Error pausing game ${this.id}:`, error);
-			return false;
-		}
-	}
-
-	resume(client: Client): boolean {
-		if (!this.paused) {
-			console.log(`Game ${this.id} is not paused`);
-			return false;
-		}
-		if (!this.running || !this.game) {
-			console.log(`Game ${this.id} is not running, cannot resume`);
-			return false;
-		}
-		try {
-			this.game.resume();
-			this.paused = false;
-			this.broadcast({type: MessageType.RESUMED});
-			
-			console.log(`Game ${this.id} resumed by client ${client.id}`);
-			return true;
-		} catch (error) {
-			console.error(`Error pausing game ${this.id}:`, error);
-			return false;
-		}
+		// TODO need to add more check
+		return true;
 	}
 
 }

@@ -103,8 +103,9 @@ export class Game {
 
 	// Add a new input to the queue
 	enqueue(input: PlayerInput): void {
-		if (!this.paused)
+		if (!this.paused) {
 			this.queue.push(input);
+		}
 	}
 
 	// Retrieve the current game state as a data object
@@ -180,18 +181,21 @@ export class Game {
 		if(!this.paused) {
 			this.paused = true;
 			this.queue = []
+			this._broadcast( {type: MessageType.PAUSED} );
 		}
 	}
 
 	// Resume the game
-	resume(): void { this.paused = false; }
+	resume(): void { 
+		this.paused = false; 
+		this._broadcast({type: MessageType.RESUMED});
+	}
 
 	// Returns if the game is currently paused
 	isPaused(): boolean { return this.paused; }
 
 	// Stop the execution of the game & broadcast the winner
 	stop(gameId?: string): void { 
-		if (!this.running) return ;
 		this.running = false;
 
 		// TODO: save score to db
@@ -209,6 +213,7 @@ export class Game {
 			type: MessageType.GAME_ENDED,
 			...(this.winner && { winner: this.winner.name }) // optionally send winner if exists
 		});
+		console.log("game ended: broadcasting game end");
 	}
 	
 	// If someone quits a remote game, the opposing player wins

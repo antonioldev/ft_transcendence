@@ -1,5 +1,5 @@
 import { GameSession } from '../network/GameSession.js';
-import { Tournament } from '../network/Tournament.js';
+import { TournamentLocal, TournamentRemote } from '../network/Tournament.js';
 import { Client } from './Client.js';
 import { GameMode } from '../shared/constants.js';
 import { registerNewGame, addPlayer2 } from '../data/validation.js';
@@ -10,7 +10,7 @@ import { GAME_CONFIG } from '../shared/gameConfig.js';
  * Manages game sessions and player interactions within the game.
  */
 class GameManager {
-    private games: Map<string, GameSession> = new Map();
+    private games: Map<string, GameSession | TournamentLocal | TournamentRemote> = new Map();
     private waitingPlayers: Client[] = [];
 
     /**
@@ -28,9 +28,12 @@ class GameManager {
             registerNewGame(gameId, client.username, 1);
 
         // Create new gamesession and add the client
-        let gameSession: GameSession
-        if (mode === GameMode.TOURNAMENT_LOCAL || mode === GameMode.TOURNAMENT_REMOTE) {
-            gameSession = new Tournament(mode, gameId, 4); // TEMP HARDCODED TO 4 PLAYERS
+        let gameSession: GameSession | TournamentLocal | TournamentRemote;
+        if (mode === GameMode.TOURNAMENT_LOCAL) {
+            gameSession = new TournamentLocal(mode, gameId, 4); // TEMP HARDCODED TO 4 PLAYERS
+        }
+        else if (mode === GameMode.TOURNAMENT_REMOTE) {
+            gameSession = new TournamentRemote(mode, gameId, 4); // TEMP HARDCODED TO 4 PLAYERS
         }
         else {
             gameSession = new GameSession(mode, gameId);
@@ -88,7 +91,7 @@ class GameManager {
         return this.createGame(mode, client);
     }
 
-    async runGame(gameSession: GameSession): Promise<void> {
+    async runGame(gameSession: GameSession | TournamentLocal | TournamentRemote): Promise<void> {
         if (gameSession.running) return ;
         db.updateStartTime(gameSession.id);
         await gameSession.start();
@@ -100,7 +103,7 @@ class GameManager {
      * @param gameId - The unique ID of the game session.
      * @returns The game session if found, otherwise undefined.
      */
-    getGame(gameId: string): GameSession | undefined {
+    getGame(gameId: string): GameSession | TournamentLocal | TournamentRemote | undefined {
         return this.games.get(gameId);
     }
 
