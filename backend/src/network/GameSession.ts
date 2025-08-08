@@ -69,9 +69,14 @@ export class GameSession {
 	}
 
 	add_CPU() {
-		while (this.players.length < this.player_capacity) {
-			this.players.push(new Player(`CPU_${this.players[RIGHT_PADDLE].id}`, "CPU"));
+		for (let i = 1; this.players.length < this.player_capacity; i++) {
+			this.players.push(new Player(`CPU_${i}`, "CPU"));
 		}
+
+		if (this.mode === GameMode.TWO_PLAYER_REMOTE) {
+			this.mode = GameMode.SINGLE_PLAYER
+		}
+
 		this.client_capacity === this.clients.length;
     }
 
