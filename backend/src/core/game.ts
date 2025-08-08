@@ -27,11 +27,11 @@ export class Game {
 	winner!: Player;
 	paddles: (Paddle | EasyBot | MediumBot | HardBot | ExactBot)[] = [new Paddle(LEFT_PADDLE), new Paddle(RIGHT_PADDLE)];
 	ball!: Ball;
-	match_id?: number; // for tournament matches only
+	match_id?: string; // for tournament matches only
 	// Callback function to broadcast the game state
 	private _broadcast: (message: ServerMessage, clients?: Client[]) => void;
 
-	constructor(players: Player[], broadcast_callback: (message: ServerMessage, clients?: Client[]) => void, match_id?: number) {
+	constructor(players: Player[], broadcast_callback: (message: ServerMessage, clients?: Client[]) => void, match_id?: string) {
 		// Initialize game properties
 		this.match_id = match_id;
 		this.clock = new Clock();
