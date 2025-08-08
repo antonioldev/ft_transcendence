@@ -3,7 +3,6 @@ import { GAME_CONFIG, LEFT_PADDLE, RIGHT_PADDLE} from '../shared/gameConfig.js';
 import { Client, Player } from '../models/Client.js';
 import { MessageType, GameMode } from '../shared/constants.js';
 import { PlayerInput, ServerMessage } from '../shared/types.js';
-import { MediumBot } from '../core/Paddle.js';
 import { diff } from 'util';
 
 export class GameSession {
