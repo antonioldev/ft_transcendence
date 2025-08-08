@@ -3,6 +3,8 @@ import { Tournament } from '../network/Tournament.js';
 import { Client } from './Client.js';
 import { GameMode } from '../shared/constants.js';
 import { registerNewGame, addPlayer2 } from '../data/validation.js';
+import * as db from "../data/validation.js";
+import { GAME_CONFIG } from '../shared/gameConfig.js';
 
 /**
  * Manages game sessions and player interactions within the game.
@@ -37,6 +39,9 @@ class GameManager {
         gameSession.add_client(client);
         this.games.set(gameId, gameSession);
 
+        // if gameSession not full after a period of time then start automatically with CPU's
+        setTimeout(() => this.runGame(gameSession), (GAME_CONFIG.maxJoinWaitTime * 1000));
+
         console.log(`Created ${mode} game: ${gameId}`);
         return gameId;
     }
@@ -63,9 +68,8 @@ class GameManager {
      * @returns The unique ID of the found or created game session.
      */
     findOrCreateGame(mode: GameMode, client: Client): string {
-        //For single player, just create a game
+        //For local games, just create game
         if (mode === GameMode.SINGLE_PLAYER || mode === GameMode.TWO_PLAYER_LOCAL|| mode === GameMode.TOURNAMENT_LOCAL) {
-            
             return this.createGame(mode, client);
         }
         else { // all remote games
@@ -73,8 +77,7 @@ class GameManager {
             for (const [gameId, game] of this.games) {
                 if (game.mode === mode && !game.full) {
                     game.add_client(client);
-                    addPlayer2(gameId, client.username); //add security
-
+                    addPlayer2(gameId, client.username); // add security
                     return gameId;
                 }
 
@@ -83,6 +86,12 @@ class GameManager {
 
         // No waiting games, create new one
         return this.createGame(mode, client);
+    }
+
+    async runGame(gameSession: GameSession): Promise<void> {
+        db.updateStartTime(gameSession.id);
+        await gameSession.start();
+        gameManager.removeGame(gameSession.id);
     }
 
     /**

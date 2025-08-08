@@ -98,6 +98,7 @@ export class GameSession {
 
 	async start() {
 		if (this.running) return;
+        this.add_CPU(); // add any CPU's if necessary
 
 		this.running = true;
 		this.game = new Game(this.players, this.broadcast.bind(this))

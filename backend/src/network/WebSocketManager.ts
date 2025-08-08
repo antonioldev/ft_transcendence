@@ -198,15 +198,8 @@ export class WebSocketManager {
         gameSession.setClientReady(client);
         if (gameSession.allClientsReady() && gameSession.full && !gameSession.running) {
             console.log(`All clients ready in game ${gameSession.id}, sending ALL_READY`);
-            this.runGame(gameSession);
+            await gameManager.runGame(gameSession);
         }
-    }
-
-    private async runGame(gameSession: GameSession) {
-        gameSession.add_CPU(); // add any CPU's if necessary
-        db.updateStartTime(gameSession.id);
-        await gameSession.start();
-        gameManager.removeGame(gameSession.id);
     }
 
     /**
