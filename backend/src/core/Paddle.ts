@@ -46,7 +46,8 @@ export class ExactBot extends Paddle {
 		side: number,
 		public ball: Ball,
 		public speed: number = GAME_CONFIG.paddleSpeed,
-		public direction: number = 0
+		public direction: number = 0,
+		public noiseFactor: number = 1.5 // 0=impossible, 1.5=hard, 2=medium, 3=easy
 	) {
 		super(side);
 	}
@@ -90,11 +91,14 @@ export class ExactBot extends Paddle {
 	}
 
 	update(dt: number): void {
+		// set bot difficulty using noise in intercept prediction
+		// const noise = (Math.random() - 0.5) * GAME_CONFIG.paddleWidth * this.noiseFactor;
+
 		// refresh once per second
 		this._view_timer += dt;
 		if (this._view_timer >= 1000.0) {
 			this._target_x = this._ballMovingTowards()
-				? this._predict_intercept_x()
+				? this._predict_intercept_x()// + noise
 				: this._center_x();
 			this._view_timer = 0.0;
 		}
@@ -128,6 +132,14 @@ export class HardBot extends ExactBot {
 	protected _predict_intercept_x(): number {
 		const raw = super._predict_intercept_x();
 		const noise = (Math.random() - 0.5) * GAME_CONFIG.paddleWidth * 1.5;
+		return raw + noise;
+	}
+}
+
+export class ImpossibleBot extends ExactBot {
+	protected _predict_intercept_x(): number {
+		const raw = super._predict_intercept_x();
+		const noise = (Math.random() - 0.5) * GAME_CONFIG.paddleWidth * 0;
 		return raw + noise;
 	}
 }
