@@ -74,7 +74,9 @@ export enum Direction {
 // States the game can be in
 export enum GameState {
     PLAYING = 0,
-    PAUSED = 1
+    PAUSED = 1,
+    WAITING = 2,
+    MATCH_ENDED = 3
 }
 
 // View modes for the game

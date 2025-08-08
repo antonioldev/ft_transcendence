@@ -98,7 +98,7 @@ export class Tournament extends GameSession {
 
 		// run each match in parallel and await [] of match promises
 		for (const match of matches) {
-			match.game = new Game(match.players, (message) => this.broadcast(message, match.clients));
+			match.game = new Game(match.players, (message) => this.broadcast(message, match.clients), match.id);
 			let winner_promise: Promise<Player> = match.game.run();
 			winner_promises.push(winner_promise);
 		}
@@ -115,7 +115,7 @@ export class Tournament extends GameSession {
 	// runs each game in a round one by one and awaits each game before starting the next
 	private async _run_one_by_one(matches: Match[]) {
 		for (const match of matches) {
-			match.game = new Game(match.players, this.broadcast.bind(this));
+			match.game = new Game(match.players, this.broadcast.bind(this), match.id);
 			const winner = await match.game.run();
 			match.next?.add_player(winner);
 		}

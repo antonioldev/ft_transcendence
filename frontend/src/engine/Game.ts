@@ -180,7 +180,7 @@ export class Game {
     }
 
     isInGame(): boolean {
-        return this.currentState === GameState.PLAYING && !this.isExiting;
+        return (this.currentState === GameState.PLAYING || this.currentState === GameState.MATCH_ENDED) && !this.isExiting;
     }
 
     isPaused(): boolean {
@@ -302,13 +302,17 @@ export class Game {
     private setupGlobalKeyboardEvents(): void {
         document.addEventListener('keydown', (event) => {
             if (event.key === 'Escape') {
-                if (this.isInGame()) Game.pause();
-                else if (this.isPaused()) Game.resume();
+                if (this.isInGame() && this.currentState === GameState.PLAYING)
+                    Game.pause();
+                else if (this.isPaused())
+                    Game.resume();
             }
             
             if (this.isPaused()) {
-                if (event.key === 'Y' || event.key === 'y') this.requestExitToMenu();
-                else if (event.key === 'N' || event.key === 'n') Game.resume();
+                if (event.key === 'Y' || event.key === 'y')
+                    this.requestExitToMenu();
+                else if (event.key === 'N' || event.key === 'n')
+                    Game.resume();
             }
         });
     }
@@ -358,6 +362,9 @@ export class Game {
             Logger.errorAndThrow('Server sent ALL_READY without countdown parameter', 'Game');
 
         uiManager.setLoadingScreenVisible(false);
+
+        if (this.currentState === GameState.MATCH_ENDED)
+            this.resetForNextMatch();
         if (countdown === 5) {
             this.renderManager?.startCameraAnimation(
                 this.gameObjects?.cameras, 
@@ -375,6 +382,7 @@ export class Game {
             this.audioManager?.startGameMusic();
             this.renderManager?.stopCameraAnimation();
             this.guiManager?.hideCountdown();
+            this.setGameState(GameState.PLAYING);
             this.start();
         }
     }
@@ -384,8 +392,7 @@ export class Game {
         if (this.isDisposed || !this.isRunning) return;
 
         Logger.info('Server confirmed game is paused', 'Game');
-        
-        this.audioManager?.pauseGameMusic();
+
         this.isPausedByServer = true;
         this.isRunning = false;
         this.updateGamePauseState(true);
@@ -424,6 +431,27 @@ export class Game {
         uiManager.setElementVisibility('pause-dialog-3d', false);
         // if (this.config.gameMode === GameMode.SINGLE_PLAYER
         //     || this.config.gameMode === GameMode.TOURNAMENT_REMOTE || this.config.gameMode === GameMode.TWO_PLAYER_REMOTE)
+        await this.guiManager?.showWinner(gameWinner);
+
+        this.audioManager?.stopGameMusic();
+        this.controlledSides = [];
+        this.stopGameLoop();
+        this.setGameState(GameState.MATCH_ENDED);
+        Logger.info('Game ended by server', 'Game');
+    }
+
+    private async onServerEndedSession(winner: string): Promise<void> {
+        if (this.isDisposed) return;
+
+        if (!this.renderManager?.isRendering())
+            this.renderManager?.startRendering();
+
+        let gameWinner = "CPU";
+        if (winner !== undefined) // TODO what shall we send
+            gameWinner = winner;
+        uiManager.setElementVisibility('pause-dialog-3d', false);
+        // if (this.config.gameMode === GameMode.SINGLE_PLAYER
+        //     || this.config.gameMode === GameMode.TOURNAMENT_REMOTE || this.config.gameMode === GameMode.TWO_PLAYER_REMOTE)
             await this.guiManager?.showWinner(gameWinner);
 
         this.audioManager?.stopGameMusic();
@@ -431,29 +459,6 @@ export class Game {
         this.stopGameLoop();
         Game.disposeGame();
         this.resetToMenu();
-
-        Logger.info('Game ended by server', 'Game');
-    }
-
-    private async onServerEndedSession(winner: string): Promise<void> {
-        // if (this.isDisposed) return;
-
-        // if (!this.renderManager?.isRendering())
-        //     this.renderManager?.startRendering();
-
-        // let gameWinner = "CPU";
-        // if (winner !== undefined) // TODO what shall we send
-        //     gameWinner = winner;
-        // uiManager.setElementVisibility('pause-dialog-3d', false);
-        // // if (this.config.gameMode === GameMode.SINGLE_PLAYER
-        // //     || this.config.gameMode === GameMode.TOURNAMENT_REMOTE || this.config.gameMode === GameMode.TWO_PLAYER_REMOTE)
-        //     await this.guiManager?.showWinner(gameWinner);
-
-        // this.audioManager?.stopGameMusic();
-        // this.renderManager?.stopRendering();
-        // this.stopGameLoop();
-        // Game.disposeGame();
-        // this.resetToMenu();
 
         Logger.info('Session ended by server', 'Game');
     }
@@ -485,6 +490,28 @@ export class Game {
             clearInterval(this.gameLoopObserver);
             this.gameLoopObserver = null;
         }
+    }
+
+    private resetForNextMatch(): void {
+        if (this.isDisposed)
+            return;
+
+        this.playerLeftScore = 0;
+        this.playerRightScore = 0;
+
+        if (this.gameObjects) {
+            if (this.gameObjects.players.left)
+                this.gameObjects.players.left.position.x = 0;
+            if (this.gameObjects.players.right)
+                this.gameObjects.players.right.position.x = 0;
+            if (this.gameObjects.ball) {
+                this.gameObjects.ball.position.x = 0;
+                this.gameObjects.ball.position.z = 0;
+            }
+        }
+
+        this.guiManager?.updateScores(0, 0);
+        Logger.info('Game reset for next match', 'Game');
     }
 
     // ========================================

@@ -101,9 +101,11 @@ export class WebSocketClient {
                 this.triggerCallback(WebSocketEvent.GAME_RESUMED);
                 break;
             case MessageType.GAME_ENDED:
+                console.error("Game ended message");
                 this.triggerCallback(WebSocketEvent.GAME_ENDED, message);
                 break;
             case MessageType.SESSION_ENDED:
+                console.error("Session ended message");
                 this.triggerCallback(WebSocketEvent.SESSION_ENDED, message);
                 break;
             case MessageType.ALL_READY:
