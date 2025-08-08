@@ -16,7 +16,7 @@ export enum MessageType {
     GAME_ENDED,         // SERVER -> CLIENTS: Server notifies game ended (when someone quits with Y)
     WELCOME,             // SERVER -> CLIENT: Welcome message on connection
     PLAYER_READY,       // CLIENT -> SERVER: Client loaded babylon and is waiting for server
-    ALL_READY,                  // SERVER -> CLIENT: All players are ready, game starts in 5 seconds
+    ALL_READY,           // SERVER -> CLIENT: All players are ready, game starts in 5 seconds
     REGISTER_USER,         // New User want to register --> going to create a new row in db
     LOGIN_USER,            // User want to connect to their account --> calling function for validate info
     SUCCESS_LOGIN,         // Successfully login a user 

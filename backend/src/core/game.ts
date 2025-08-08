@@ -191,6 +191,7 @@ export class Game {
 
 	// Stop the execution of the game & broadcast the winner
 	stop(gameId?: string): void { 
+		if (!this.running) return ;
 		this.running = false;
 
 		// TODO: save score to db
