@@ -474,8 +474,10 @@ export class GUIManager {
             this.createCameraBasedFireworks(scene);
         await new Promise(resolve => setTimeout(resolve, 5000));
 
-        this.hudGrid.isVisible = true;
-        this.endGameOverlay.isVisible = false;
+        if (this.hudGrid)
+            this.hudGrid.isVisible = true;
+        if (this.endGameOverlay)
+            this.endGameOverlay.isVisible = false;
     }
 
 

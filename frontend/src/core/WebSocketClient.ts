@@ -172,12 +172,12 @@ export class WebSocketClient {
         this.sendMessage(MessageType.PLAYER_INPUT, { side, direction, match_id });
     }
     
-    sendPauseRequest(): void {
-        this.sendMessage(MessageType.PAUSE_REQUEST);
+    sendPauseRequest(match_id: string): void {
+        this.sendMessage(MessageType.PAUSE_REQUEST, {match_id});
     }
     
-    sendResumeRequest(): void {
-        this.sendMessage(MessageType.RESUME_REQUEST);
+    sendResumeRequest(match_id: string): void {
+        this.sendMessage(MessageType.RESUME_REQUEST, {match_id});
     }
 
     sendQuitGame(match_id: string): void {

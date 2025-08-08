@@ -43,8 +43,11 @@ class GameManager {
         this.games.set(gameId, gameSession);
 
         // if gameSession not full after a period of time then start automatically with CPU's
-        setTimeout(() => this.runGame(gameSession), (GAME_CONFIG.maxJoinWaitTime * 1000));
-
+        // setTimeout(() => this.runGame(gameSession), (GAME_CONFIG.maxJoinWaitTime * 1000));
+        setTimeout(() => { // [x] added a check if gameId exist, so it won't launch a new game
+            if (this.games.has(gameId))
+                this.runGame(gameSession);
+        }, (GAME_CONFIG.maxJoinWaitTime * 1000));
         console.log(`Created ${mode} game: ${gameId}`);
         return gameId;
     }

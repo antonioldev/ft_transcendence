@@ -108,10 +108,10 @@ export class WebSocketManager {
                     await this.handlePlayerInput(client, data);
                     break;
                 case MessageType.PAUSE_REQUEST:
-                    await this.handlePauseRequest(client);
+                    await this.handlePauseRequest(client, data);
                     break;
                 case MessageType.RESUME_REQUEST:
-                    await this.handleResumeRequest(client);
+                    await this.handleResumeRequest(client, data);
                     break;
                 case MessageType.LOGIN_USER:
                     console.log("HandleMessage WSM: calling Login_user");
@@ -234,7 +234,7 @@ export class WebSocketManager {
      * Handles the request from a client to pause a game
      * @param client - The client that send the request.
      */
-    private async handlePauseRequest(client: Client): Promise<void> {
+    private async handlePauseRequest(client: Client, data: ClientMessage): Promise<void> {
         const gameSession = this.findClientGame(client);
         if (!gameSession) {
             console.warn(`Client ${client.id} not in any game for pause request`);
@@ -246,7 +246,7 @@ export class WebSocketManager {
             return;
         }
 
-        const success = await gameSession.pause(client);
+        const success = await gameSession.pause(client, data.match_id);
         
         if (success) {
             console.log(`Game ${gameSession.id} paused by client ${client.id}`);
@@ -260,7 +260,7 @@ export class WebSocketManager {
      * Handles the request from a client to resume a game
      * @param client - The client that send the request.
      */
-    private async handleResumeRequest(client: Client): Promise<void> {
+    private async handleResumeRequest(client: Client, data: ClientMessage): Promise<void> {
         const gameSession = this.findClientGame(client);
         if (!gameSession) {
             console.warn(`Client ${client.id} not in any game for resume request`);
@@ -272,7 +272,7 @@ export class WebSocketManager {
             return;
         }
 
-        const success = await gameSession.resume(client);
+        const success = await gameSession.resume(client, data.match_id);
         if (success) {
             console.log(`Game ${gameSession.id} resumed by client ${client.id}`);
         }
@@ -292,9 +292,10 @@ export class WebSocketManager {
             return;
         }
         
+        
+        gameSession.handlePlayerQuit(client.id, data.match_id);
         gameManager.removeClientFromGames(client);
-        gameSession.handlePlayerQuit(client.id);
-        gameManager.removeGame(gameSession.id);
+        // gameManager.removeGame(gameSession.id);
         console.log(`Game ${gameSession.id} ended by client ${client.id}`);
     }
 

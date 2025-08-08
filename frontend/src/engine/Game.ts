@@ -84,14 +84,14 @@ export class Game {
         const game = Game.currentInstance;
         if (!game || game.isDisposed || game.isPausedByServer) return;
         Logger.info('Requesting pause from server...', 'Game');
-        webSocketClient.sendPauseRequest();
+        webSocketClient.sendPauseRequest(game.match_id);
     }
 
     static resume(): void {
         const game = Game.currentInstance;
         if (!game || game.isDisposed || !game.isPausedByServer) return;
         Logger.info('Requesting resume from server...', 'Game');
-        webSocketClient.sendResumeRequest();
+        webSocketClient.sendResumeRequest(game.match_id);
     }
 
     static stop(): void {
@@ -422,16 +422,18 @@ export class Game {
     private async onServerEndedGame(winner: string): Promise<void> {
         if (this.isDisposed) return;
 
-        if (!this.renderManager?.isRendering())
-            this.renderManager?.startRendering();
+        // if (!this.renderManager?.isRendering())
+        //     this.renderManager?.startRendering();
 
-        let gameWinner = "CPU";
-        if (winner !== undefined) // TODO what shall we send
-            gameWinner = winner;
+        // let gameWinner = "CPU";
+        // if (winner !== undefined) // TODO what shall we send
+        //     gameWinner = winner;
         uiManager.setElementVisibility('pause-dialog-3d', false);
         // if (this.config.gameMode === GameMode.SINGLE_PLAYER
         //     || this.config.gameMode === GameMode.TOURNAMENT_REMOTE || this.config.gameMode === GameMode.TWO_PLAYER_REMOTE)
-        await this.guiManager?.showWinner(gameWinner);
+        if (winner !== undefined)
+            console.log(winner);
+        //     await this.guiManager?.showWinner(winner);
 
         this.audioManager?.stopGameMusic();
         this.controlledSides = [];
@@ -446,16 +448,19 @@ export class Game {
         if (!this.renderManager?.isRendering())
             this.renderManager?.startRendering();
 
-        let gameWinner = "CPU";
-        if (winner !== undefined) // TODO what shall we send
-            gameWinner = winner;
+        // let gameWinner = "CPU";
+        // if (winner !== undefined) // TODO what shall we send
+        //     gameWinner = winner;
         uiManager.setElementVisibility('pause-dialog-3d', false);
         // if (this.config.gameMode === GameMode.SINGLE_PLAYER
         //     || this.config.gameMode === GameMode.TOURNAMENT_REMOTE || this.config.gameMode === GameMode.TWO_PLAYER_REMOTE)
-            await this.guiManager?.showWinner(gameWinner);
+        console.error(winner);
+        if (winner !== undefined)
+            await this.guiManager?.showWinner(winner);
 
         this.audioManager?.stopGameMusic();
         this.renderManager?.stopRendering();
+        this.controlledSides = []
         this.stopGameLoop();
         Game.disposeGame();
         this.resetToMenu();
