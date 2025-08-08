@@ -165,15 +165,16 @@ export class WebSocketManager {
         try {
             const gameId = gameManager.findOrCreateGame(data.gameMode, client);
             const gameSession = gameManager.getGame(gameId);
+            
+            if (data.aiDifficulty !== undefined) {
+                gameSession?.set_ai_difficulty(data.aiDifficulty);
+            }
             setCurrentGameId(gameId);
 
             // add players to gameSession
-            if (data.players && gameSession) {
+            if (data.players) {
                 for (const player of data.players) {
-                    gameSession.add_player(new Player(player.id, player.name, client));
-                }
-                if (gameSession.mode === GameMode.SINGLE_PLAYER) {
-                    gameSession.add_player(new Player(`CPU_${data.aiDifficulty}`, "CPU"));
+                    gameSession?.add_player(new Player(player.id, player.name, client));
                 }
             }
         } catch (error) {

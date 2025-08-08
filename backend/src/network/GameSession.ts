@@ -3,6 +3,8 @@ import { GAME_CONFIG, LEFT_PADDLE, RIGHT_PADDLE} from '../shared/gameConfig.js';
 import { Client, Player } from '../models/Client.js';
 import { MessageType, GameMode } from '../shared/constants.js';
 import { PlayerInput, ServerMessage } from '../shared/types.js';
+import { MediumBot } from '../core/Paddle.js';
+import { diff } from 'util';
 
 export class GameSession {
 	mode: GameMode;
@@ -16,6 +18,7 @@ export class GameSession {
 	running: boolean = false;
 	private paused: boolean = false;
 	private readyClients: Set<string> = new Set(); // New, keep track of clients that finish loading
+	ai_difficulty?: number; // hardcoded to be set to Impossible, we should make an enum
 
     constructor(mode: GameMode, game_id: string) {
 		this.id = game_id
@@ -39,6 +42,11 @@ export class GameSession {
 		for (const client of deleted_clients) {
 			this.remove_client(client);
 		}
+	}
+
+	set_ai_difficulty(difficulty: number | undefined) {
+		this.ai_difficulty = difficulty;
+		// if we want to change the ai diffiulty mid game we can add to this function and update the bot in the game
 	}
 
 	add_client(client: Client) {
@@ -68,9 +76,9 @@ export class GameSession {
 		}
 	}
 
-	add_CPU() {
+	add_CPUs() {
 		for (let i = 1; this.players.length < this.player_capacity; i++) {
-			this.players.push(new Player(`CPU_${i}`, "CPU"));
+			this.players.push(new Player(`CPU_${i}`, "CPU", undefined, this.ai_difficulty));
 		}
 
 		if (this.mode === GameMode.TWO_PLAYER_REMOTE) {
@@ -98,7 +106,7 @@ export class GameSession {
 
 	async start() {
 		if (this.running) return;
-        this.add_CPU(); // add any CPU's if necessary
+        this.add_CPUs(); // add any CPU's if necessary
 
 		this.running = true;
 		this.game = new Game(this.players, this.broadcast.bind(this))

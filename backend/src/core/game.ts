@@ -4,7 +4,7 @@ import { Clock } from './utils.js';
 import { GAME_CONFIG, LEFT_PADDLE, RIGHT_PADDLE } from '../shared/gameConfig.js';
 import { GameMode, MessageType} from '../shared/constants.js';
 import { PlayerInput, GameStateData, ServerMessage } from '../shared/types.js';
-import { Client, Player } from '../models/Client.js'
+import { Client, Player} from '../models/Client.js'
 import { saveGameResult } from '../data/validation.js';
 
 type Bot = new (side: number, ball: Ball) => Paddle;
@@ -45,10 +45,9 @@ export class Game {
 		this.ball = new Ball(this.paddles, this._update_score.bind(this));
 
 		for (const side of [LEFT_PADDLE, RIGHT_PADDLE]) {
-			const player = this.players[side];
-			if (!player.client && player.id.startsWith("CPU_")) {
-				const diff = parseInt(player.id.split("_")[1]);
-				const Bot = BOT_MAP[diff as keyof typeof BOT_MAP];
+			const player: Player = this.players[side];
+			if (player.name === "CPU") {
+				const Bot = BOT_MAP[player.difficulty as keyof typeof BOT_MAP];
 				this.paddles[side] = new Bot(side, this.ball);
 			}
 		}
