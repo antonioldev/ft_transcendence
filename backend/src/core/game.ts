@@ -1,5 +1,5 @@
 import { Ball } from './Ball.js';
-import { Paddle, EasyBot, MediumBot, HardBot, ExactBot } from './Paddle.js';
+import { Paddle, CPUBot } from './Paddle.js';
 import { Clock } from './utils.js';
 import { GAME_CONFIG, LEFT_PADDLE, RIGHT_PADDLE } from '../shared/gameConfig.js';
 import { GameMode, MessageType} from '../shared/constants.js';
@@ -7,13 +7,14 @@ import { PlayerInput, GameStateData, ServerMessage } from '../shared/types.js';
 import { Client, Player} from '../models/Client.js'
 import { saveGameResult } from '../data/validation.js';
 
-type Bot = new (side: number, ball: Ball) => Paddle;
-const BOT_MAP = {
-	0: EasyBot,
-	1: MediumBot,
-	2: HardBot,
-	3: ExactBot,
-} satisfies Record<number, Bot>;
+
+
+const BOT_DIFFICULTY: Record<number, number> = {
+  0: 3,  // Easy
+  1: 2, // Medium
+  2: 1.5,  // Hard
+  3: 0,    // Impossible
+};
 
 
 // The Game class runs the core game logic for all game modes.
@@ -25,7 +26,7 @@ export class Game {
 	paused: boolean = false;
 	players: Player[]
 	winner!: Player;
-	paddles: (Paddle | EasyBot | MediumBot | HardBot | ExactBot)[] = [new Paddle(LEFT_PADDLE), new Paddle(RIGHT_PADDLE)];
+	paddles: (Paddle | CPUBot)[] = [new Paddle(LEFT_PADDLE), new Paddle(RIGHT_PADDLE)];
 	ball!: Ball;
 	match_id?: string; // for tournament matches only
 	// Callback function to broadcast the game state
@@ -47,14 +48,17 @@ export class Game {
 		for (const side of [LEFT_PADDLE, RIGHT_PADDLE]) {
 			const player: Player = this.players[side];
 			if (player.name === "CPU") {
-				const Bot = BOT_MAP[player.difficulty as keyof typeof BOT_MAP];
-				this.paddles[side] = new Bot(side, this.ball);
+				const noiseFactor =  1; // TODO: connect to difficulty from client
+				this.paddles[side] = new CPUBot(side, this.ball, noiseFactor);
 			}
 		}
 	}
 
 
-	private isBot(paddle: Paddle): paddle is Paddle & { update: (dt: number) => void } {
+	// private isBot(paddle: Paddle): paddle is Paddle & { update: (dt: number) => void } {
+	// 	return typeof (paddle as any).update === 'function';
+	// }
+	private isBot(paddle: Paddle | CPUBot): paddle is CPUBot {
 		return typeof (paddle as any).update === 'function';
 	}
 
@@ -154,7 +158,7 @@ export class Game {
 	async run(): Promise<Player> {
 		await this.send_sides_and_countdown();
 		// if both are CPU then choose a random winner
-		if (this.paddles[LEFT_PADDLE] instanceof ExactBot && this.paddles[RIGHT_PADDLE] instanceof ExactBot) {
+		if (this.paddles[LEFT_PADDLE] instanceof CPUBot && this.paddles[RIGHT_PADDLE] instanceof CPUBot) {
 			const index = (Math.random() > 0.5) ? 0 : 1;
 			this.winner = this.players[index];
 			this.running = false;
