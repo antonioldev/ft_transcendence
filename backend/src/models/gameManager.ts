@@ -1,4 +1,5 @@
 import { GameSession } from '../network/GameSession.js';
+import { Tournament } from '../network/Tournament.js';
 import { Client } from './Client.js';
 import { GameMode } from '../shared/constants.js';
 import { registerNewGame, addPlayer2 } from '../data/validation.js';
@@ -18,12 +19,20 @@ class GameManager {
      */
     createGame(mode: GameMode, client: Client): string {
         const gameId = `game_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        const gameSession = new GameSession(mode, gameId);
         // Create a new game in DB with 1st player as client only if the game is remote
         if (mode === GameMode.TWO_PLAYER_REMOTE)
             registerNewGame(gameId, client.username, 0);
         else if (mode === GameMode.TOURNAMENT_REMOTE)
             registerNewGame(gameId, client.username, 1);
+
+        // Create new gamesession and add the client
+        let gameSession: GameSession
+        if (mode === GameMode.TOURNAMENT_LOCAL || mode === GameMode.TOURNAMENT_REMOTE) {
+            gameSession = new Tournament(mode, gameId, 4); // TEMP HARDCODED TO 4 PLAYERS
+        }
+        else {
+            gameSession = new GameSession(mode, gameId);
+        }
 
         gameSession.add_client(client);
         this.games.set(gameId, gameSession);
