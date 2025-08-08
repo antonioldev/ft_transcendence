@@ -281,7 +281,7 @@ export class WebSocketManager {
             return;
         }
         
-        // gameManager.removeClientFromGames(client); // think this is unnecessary 
+        gameManager.removeClientFromGames(client);
         gameSession.handlePlayerQuit(client.id);
         gameManager.removeGame(gameSession.id);
         console.log(`Game ${gameSession.id} ended by client ${client.id}`);
@@ -292,6 +292,9 @@ export class WebSocketManager {
      * @param client - The client that disconnected.
      */
     private handleDisconnection(client: Client): void {
+        const gameSession = this.findClientGame(client);
+        gameSession.stop(); // TODO: temp as wont work for Tournament 
+
         gameManager.removeClientFromGames(client);
         this.clients.delete(client.id);
     }  

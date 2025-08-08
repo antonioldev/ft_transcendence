@@ -160,7 +160,7 @@ export class GameSession {
 	}
 
 	stop() {
-		if (this.game) {
+		if (this.game && this.game.running) {
 			this.game.stop(this.id);
 		}
 		this.running = false;
