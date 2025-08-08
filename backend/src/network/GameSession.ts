@@ -93,12 +93,7 @@ export abstract class AbstractGameSession {
 		}
 	}
 
-	async waitingForPlayersReady() {
-		while (!this.allClientsReady()) {
-			return new Promise(resolve => setTimeout(resolve, 1000));
-		}
-	}
-
+	abstract waitingForPlayersReady(match_id?: string): void;
 	abstract start(): Promise<void>; 
 	abstract stop(match_id?: string): void;
 	abstract pause(match_id?: string): boolean;
@@ -182,6 +177,12 @@ export class GameSession extends AbstractGameSession{
 		return (this.readyClients.size === this.clients.length && this.clients.length > 0);
 	}
 
+	async waitingForPlayersReady() {
+		while (!this.allClientsReady()) {
+			return new Promise(resolve => setTimeout(resolve, 1000));
+		}
+	}
+	
 	handlePlayerQuit(quitter_id: string): void {
 		if (this.game && this.mode == GameMode.TWO_PLAYER_REMOTE) {
 			this.game.setOtherPlayerWinner(quitter_id);

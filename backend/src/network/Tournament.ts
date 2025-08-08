@@ -162,6 +162,7 @@ abstract class AbstractTournament extends AbstractGameSession{
 	}
 
 	enqueue(input: PlayerInput, match_id?: string): void  {
+		console.log("match id = " + match_id);
 		if (match_id) {
 			this.match_map.get(match_id)?.game.enqueue(input);
 		}
@@ -180,6 +181,12 @@ abstract class AbstractTournament extends AbstractGameSession{
 
 		match.readyClients.add(client.id);
 		console.log(`Client ${client.id} marked as ready. Ready clients: ${match.readyClients.size}/${this.clients.length}`);
+	}
+
+	async waitingForPlayersReady(match_id: string) {
+		while (!this.allClientsReady(match_id)) {
+			return new Promise(resolve => setTimeout(resolve, 1000));
+		}
 	}
 
 	canClientControlGame(client: Client, match_id: string) {
@@ -203,6 +210,7 @@ export class TournamentLocal extends AbstractTournament {
 	async run(matches: Match[]): Promise<void> {
 		for (const match of matches) {
 			match.game = new Game(match.players, this.broadcast.bind(this), match.id);
+			await this.waitingForPlayersReady(match.id);
 			const winner = await match.game.run();
 			match.next?.add_player(winner);
 		}
