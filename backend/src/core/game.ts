@@ -107,8 +107,9 @@ export class Game {
 
 	// Add a new input to the queue
 	enqueue(input: PlayerInput): void {
-		if (!this.paused)
+		if (!this.paused) {
 			this.queue.push(input);
+		}
 	}
 
 	// Retrieve the current game state as a data object
@@ -142,10 +143,12 @@ export class Game {
 		// broadcast the countdown timer on every second
 		for (let countdown = GAME_CONFIG.startDelay; countdown >= 0; countdown--) {
 			console.log(`Sending countdown: ${countdown}`);
+
 			this._broadcast({
 				type: MessageType.COUNTDOWN,
 				countdown: countdown,
 			});
+
 			if (countdown > 0) {
 				await this.clock.sleep(1000);
 			}
@@ -175,7 +178,7 @@ export class Game {
 				state: this.get_state()
 			});
 		}
-		this.stop();
+		await this.stop();
 		return (this.winner);
 	}
 
@@ -184,20 +187,22 @@ export class Game {
 		if(!this.paused) {
 			this.paused = true;
 			this.queue = []
+			this._broadcast( {type: MessageType.PAUSED} );
 		}
 	}
 
 	// Resume the game
-	resume(): void { this.paused = false; }
+	resume(): void { 
+		this.paused = false; 
+		this._broadcast({type: MessageType.RESUMED});
+	}
 
 	// Returns if the game is currently paused
 	isPaused(): boolean { return this.paused; }
 
 	// Stop the execution of the game & broadcast the winner
-	stop(gameId?: string): void { 
-		if (!this.running) return ;
+	async stop(gameId?: string): Promise<void> {
 		this.running = false;
-
 		// TODO: save score to db
 		if (gameId && this.players[LEFT_PADDLE].client?.id != this.players[RIGHT_PADDLE].client?.id) {
 			const player1_score = this.paddles[LEFT_PADDLE].score;
@@ -213,6 +218,8 @@ export class Game {
 			type: MessageType.GAME_ENDED,
 			...(this.winner && { winner: this.winner.name }) // optionally send winner if exists
 		});
+
+		console.log("game ended: broadcasting game end");
 	}
 	
 	// If someone quits a remote game, the opposing player wins

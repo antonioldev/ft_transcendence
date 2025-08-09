@@ -1,23 +1,18 @@
 import { Game } from '../core/game.js';
-import { GAME_CONFIG, LEFT_PADDLE, RIGHT_PADDLE} from '../shared/gameConfig.js';
 import { Client, Player } from '../models/Client.js';
 import { MessageType, GameMode } from '../shared/constants.js';
 import { PlayerInput, ServerMessage } from '../shared/types.js';
-import { diff } from 'util';
 
-export class GameSession {
+export abstract class AbstractGameSession {
 	mode: GameMode;
 	id: string;
 	clients: Client[] = [];
 	players: Player[] = [];
 	player_capacity: number = 2;
 	client_capacity: number = 1;
-	game?: Game;
 	full: boolean = false;
 	running: boolean = false;
-	paused: boolean = false;
-	readyClients: Set<string> = new Set(); // New, keep track of clients that finish loading
-	ai_difficulty?: number; // hardcoded to be set to Impossible
+	ai_difficulty?: number; // temp hardcoded to be set to Impossible 
 
     constructor(mode: GameMode, game_id: string) {
 		this.id = game_id
@@ -61,7 +56,7 @@ export class GameSession {
 		const index = this.clients.indexOf(client);
 		if (index !== -1) {
 			this.clients.splice(index, 1);
-			this.readyClients.delete(client.id); // Added
+			// this.readyClients.delete(client.id); // WILL CHANGE AFTER
 			this.full = false;
 		}
 		if (this.clients.length === 0) {
@@ -80,11 +75,11 @@ export class GameSession {
 			this.players.push(new Player(`CPU_${i}`, "CPU", undefined, this.ai_difficulty));
 		}
 
-		if (this.mode === GameMode.TWO_PLAYER_REMOTE) {
-			this.mode = GameMode.SINGLE_PLAYER
-		}
+		// if (this.mode === GameMode.TWO_PLAYER_REMOTE) {
+		// 	this.mode = GameMode.SINGLE_PLAYER
+		// }
 
-		this.client_capacity === this.clients.length;
+		this.client_capacity = this.clients.length;
     }
 
 	remove_player(player: Player) {
@@ -98,73 +93,108 @@ export class GameSession {
 		}
 	}
 
-	setClientReady(client: Client): void { //New function, add client in the readyClient list
-		this.readyClients.add(client.id);
-		console.log(`Client ${client.id} marked as ready. Ready clients: ${this.readyClients.size}/${this.clients.length}`);
+	abstract waitingForPlayersReady(match_id?: string): void;
+	abstract start(): Promise<void>; 
+	abstract stop(match_id?: string): void;
+	abstract pause(match_id?: string): boolean;
+	abstract resume(match_id?: string): boolean;
+
+	abstract enqueue(input: PlayerInput): void;
+	abstract setClientReady(client: Client, match_id?: string): void;
+	abstract allClientsReady(match_id?: string): boolean;
+	abstract handlePlayerQuit(quitter_id: string, match_id?: string): void;
+	abstract canClientControlGame(client: Client, match_id?: string): boolean;
+}
+
+export class GameSession extends AbstractGameSession{
+	game!: Game;
+	readyClients: Set<string> = new Set(); // New, keep track of clients that finish loading
+
+	constructor (mode: GameMode, game_id: string) {
+		super(mode, game_id)
 	}
 
-	async start() {
+	async start(): Promise<void> {
 		if (this.running) return;
-        this.add_CPUs(); // add any CPU's if necessary
-
 		this.running = true;
-		this.game = new Game(this.players, this.broadcast.bind(this))
 		
+		this.add_CPUs(); // add any CPU's if necessary
+		await this.waitingForPlayersReady();
+		
+		this.game = new Game(this.players, this.broadcast.bind(this))
 		await this.game.run();
 		this.stop();
 	}
 
-	pauseGame(client: Client): boolean {
-		if (this.paused) {
-			console.log(`Game ${this.id} is already paused`);
-			return false;
-		}
+	stop(): void {
+		if (!this.running) return;
+		
+		let winner: string | undefined;
+		if (this.game?.winner)
+			winner = this.game.winner.name;
+		if (this.game?.running)
+			this.game.stop(this.id);
+		
+		this.running = false;
+		this.broadcast({ 
+			type: MessageType.SESSION_ENDED,
+			...(winner && { winner: winner })
+		});
+	}
+	
+	pause(): boolean {
 		if (!this.running || !this.game) {
 			console.log(`Game ${this.id} is not running, cannot pause`);
 			return false;
 		}
-		try {
-			this.game.pause();
-			this.paused = true;
-			this.broadcast({type: MessageType.PAUSED});
-			
-			console.log(`Game ${this.id} paused by client ${client.id}`);
-			return true;
-		} catch (error) {
-			console.error(`Error pausing game ${this.id}:`, error);
+		if (this.game.paused) {
+			console.log(`Game ${this.id} is already paused`);
 			return false;
 		}
+
+		this.game.pause();
+		return true;
 	}
 
-	resumeGame(client: Client): boolean {
-		if (!this.paused) {
-			console.log(`Game ${this.id} is not paused`);
-			return false;
-		}
+	resume(): boolean {
 		if (!this.running || !this.game) {
 			console.log(`Game ${this.id} is not running, cannot resume`);
 			return false;
 		}
-		try {
-			this.game.resume();
-			this.paused = false;
-			this.broadcast({type: MessageType.RESUMED});
-			
-			console.log(`Game ${this.id} resumed by client ${client.id}`);
-			return true;
-		} catch (error) {
-			console.error(`Error pausing game ${this.id}:`, error);
+		if (!this.game.paused) {
+			console.log(`Game ${this.id} is not paused`);
 			return false;
 		}
+
+		this.game.resume();
+		return true;
 	}
 
-	stop() {
-		if (this.game && this.game.running) {
-			this.game.stop(this.id);
+	enqueue(input: PlayerInput): void  {
+		this.game?.enqueue(input);
+	}
+
+	setClientReady(client: Client): void { // New function, add client in the readyClient list
+		this.readyClients.add(client.id);
+		console.log(`Client ${client.id} marked as ready. Ready clients: ${this.readyClients.size}/${this.clients.length}`);
+	}
+
+	allClientsReady(): boolean {
+		console.log(`All clients ready in game ${this.id}, sending ALL_READY`);
+		return (this.readyClients.size === this.clients.length && this.clients.length > 0);
+	}
+
+	async waitingForPlayersReady() {
+		while (!this.allClientsReady()) {
+			await new Promise(resolve => setTimeout(resolve, 1000));
 		}
-		this.running = false;
-		this.paused = false;
-		this.broadcast({ type: MessageType.SESSION_ENDED });
+	}
+	
+	handlePlayerQuit(quitter_id: string): void {
+		if (this.game && this.mode == GameMode.TWO_PLAYER_REMOTE) {
+			this.game.setOtherPlayerWinner(quitter_id);
+		}
+		this.stop();
 	}
 
 	canClientControlGame(client: Client) {
@@ -175,25 +205,4 @@ export class GameSession {
 		return true;
 	}
 
-	isPaused(): boolean {
-		return this.paused;
-	}
-
-	// wrapper needed as is polymorphised for Tournament
-	enqueue(input: PlayerInput): void  {
-		if (this.game) {
-			this.game.enqueue(input);
-		}
-	}
-
-	allClientsReady(): boolean {
-		return this.readyClients.size === this.clients.length && this.clients.length > 0;
-	}
-
-	handlePlayerQuit(quitter_id: string): void {
-		if (this.game && this.mode == GameMode.TWO_PLAYER_REMOTE) {
-			this.game.setOtherPlayerWinner(quitter_id);
-		}
-		this.stop();
-	}
 }

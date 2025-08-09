@@ -44,6 +44,7 @@ export enum WebSocketEvent {
     GAME_PAUSED = 'gamePaused',
     GAME_RESUMED = 'gameResumed',
     GAME_ENDED = 'gameEnded',
+    SESSION_ENDED = 'sessionEnded',
     STATUS_CHANGE = 'statusChange',
     ALL_READY = 'all_ready',
     LOGIN_SUCCESS = 'LOGIN_SUCCESS',
@@ -73,7 +74,9 @@ export enum Direction {
 // States the game can be in
 export enum GameState {
     PLAYING = 0,
-    PAUSED = 1
+    PAUSED = 1,
+    WAITING = 2,
+    MATCH_ENDED = 3
 }
 
 // View modes for the game

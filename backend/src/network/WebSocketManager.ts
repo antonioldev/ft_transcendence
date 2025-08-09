@@ -7,6 +7,8 @@ import * as db from "../data/validation.js";
 import { UserStats, GameHistoryEntry } from '../shared/types.js';
 import { GameSession } from './GameSession.js';
 
+// TODO: set timer for online player search, if not found then start with CPU
+
 /**
  * Manages WebSocket connections, client interactions, and game-related messaging.
  */
@@ -106,10 +108,10 @@ export class WebSocketManager {
                     await this.handlePlayerInput(client, data);
                     break;
                 case MessageType.PAUSE_REQUEST:
-                    await this.handlePauseRequest(client);
+                    await this.handlePauseRequest(client, data);
                     break;
                 case MessageType.RESUME_REQUEST:
-                    await this.handleResumeRequest(client);
+                    await this.handleResumeRequest(client, data);
                     break;
                 case MessageType.LOGIN_USER:
                     console.log("HandleMessage WSM: calling Login_user");
@@ -132,7 +134,7 @@ export class WebSocketManager {
                 //     await this.handleUserProfileRequest(socket, data);
                 //     break;
                 case MessageType.QUIT_GAME:  // TODO I added because it was creating issue, need to check
-                    await this.handleQuitGame(client);
+                    await this.handleQuitGame(client, data);
                     break;
                 default:
                     await this.sendError(socket, 'Unknown message type');
@@ -177,6 +179,9 @@ export class WebSocketManager {
                     gameSession?.add_player(new Player(player.id, player.name, client));
                 }
             }
+            if (gameSession?.full && !gameSession.running) {
+                gameManager.runGame(gameSession);
+            }
         } catch (error) {
             console.error('❌ Error joining game:', error);
             await this.sendError(socket, 'Failed to join game');
@@ -195,12 +200,7 @@ export class WebSocketManager {
             console.warn(`Client ${client.id} not in any game for ready signal`);
             return;
         }
-
         gameSession.setClientReady(client);
-        if (gameSession.allClientsReady() && gameSession.full && !gameSession.running) {
-            console.log(`All clients ready in game ${gameSession.id}, sending ALL_READY`);
-            await gameManager.runGame(gameSession);
-        }
     }
 
     /**
@@ -221,14 +221,13 @@ export class WebSocketManager {
             return;
         }
 
-        if (gameSession.isPaused()) return;
-
         const input = {
             id: client.id,
             type: MessageType.PLAYER_INPUT,
             side: data.side,
             dx: data.direction
         }
+        console.log("match id backend = " + data.match_id);
         gameSession.enqueue(input, data.match_id);
     }
 
@@ -236,7 +235,7 @@ export class WebSocketManager {
      * Handles the request from a client to pause a game
      * @param client - The client that send the request.
      */
-    private async handlePauseRequest(client: Client): Promise<void> {
+    private async handlePauseRequest(client: Client, data: ClientMessage): Promise<void> {
         const gameSession = this.findClientGame(client);
         if (!gameSession) {
             console.warn(`Client ${client.id} not in any game for pause request`);
@@ -248,16 +247,21 @@ export class WebSocketManager {
             return;
         }
 
-        const success = await gameSession.pauseGame(client);
-        if (!success)
+        const success = await gameSession.pause(client, data.match_id);
+        
+        if (success) {
+            console.log(`Game ${gameSession.id} paused by client ${client.id}`);
+        }
+        else {
             console.warn(`Failed to pause game for client ${client.id}`);
+        }
     }
 
     /**
      * Handles the request from a client to resume a game
      * @param client - The client that send the request.
      */
-    private async handleResumeRequest(client: Client): Promise<void> {
+    private async handleResumeRequest(client: Client, data: ClientMessage): Promise<void> {
         const gameSession = this.findClientGame(client);
         if (!gameSession) {
             console.warn(`Client ${client.id} not in any game for resume request`);
@@ -269,21 +273,30 @@ export class WebSocketManager {
             return;
         }
 
-        const success = await gameSession.resumeGame(client);
-        if (!success)
+        const success = await gameSession.resume(client, data.match_id);
+        if (success) {
+            console.log(`Game ${gameSession.id} resumed by client ${client.id}`);
+        }
+        else {
             console.warn(`Failed to resume game for client ${client.id}`);
+        }
     }
 
-    private async handleQuitGame(client: Client): Promise<void> {
+   /**
+     * Handles the disconnection of a client, removing them from games and cleaning up resources.
+     * @param data - The user information that are used to confirm login
+     */
+    private async handleQuitGame(client: Client, data: ClientMessage): Promise<void> {
         const gameSession = this.findClientGame(client);
         if (!gameSession) {
             console.warn(`Client ${client.id} not in any game to quit`);
             return;
         }
         
+        
+        gameSession.handlePlayerQuit(client.id, data.match_id);
         gameManager.removeClientFromGames(client);
-        gameSession.handlePlayerQuit(client.id);
-        gameManager.removeGame(gameSession.id);
+        // gameManager.removeGame(gameSession.id);
         console.log(`Game ${gameSession.id} ended by client ${client.id}`);
     }
 
@@ -293,8 +306,8 @@ export class WebSocketManager {
      */
     private handleDisconnection(client: Client): void {
         const gameSession = this.findClientGame(client);
+        if (!gameSession) return ;
         gameSession.stop(); // TODO: temp as wont work for Tournament 
-
         gameManager.removeClientFromGames(client);
         this.clients.delete(client.id);
     }  
