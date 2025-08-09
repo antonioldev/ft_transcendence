@@ -1,4 +1,5 @@
 import { Paddle } from '../core/Paddle.js'
+import { AiDifficulty } from '../shared/constants.js';
 
 /**
  * Represents a physical device/browser connection to the server
@@ -31,7 +32,7 @@ export class Player {
     name: string;         // Display name shown in game
     client?: Client;    // Which client connection controls this player (undefined for AI)
     side: number = 0;         // Which paddle this player controls (LEFT_PADDLE/RIGHT_PADDLE)
-    difficulty?: number;    // difficulty of CPU
+    difficulty?: AiDifficulty;    // difficulty of CPU
 
     constructor(id: string, name: string, client?: Client, difficulty: number = 3) {
         this.id = id;

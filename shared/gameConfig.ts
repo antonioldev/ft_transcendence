@@ -2,6 +2,7 @@
 // Shared game configuration between frontend and backend
 
 import { Position, Size } from './types.js';
+import { AiDifficulty } from './constants.js';
 
 const fieldWidth = 20; // Width of the game field
 const fieldHeight = 40; // Height of the game field
@@ -68,9 +69,17 @@ export const GAME_CONFIG = {
     // Timing
     startDelay: 3.0, // Delay before the game starts
     ballDelay: 1.0, // Delay before the ball starts between rounds
-    maxJoinWaitTime: 30.0 // Max time the server will wait for remote players to join before starting with CPU's
+    maxJoinWaitTime: 30.0, // Max time the server will wait for remote players to join before starting with CPU's
 
 } as const;
+
+    // CPU Difficulty: we pass this directly as the noise factor to regualate the CPU ability
+export const CPUDifficultyMap: Record<AiDifficulty, number> = {
+    [AiDifficulty.EASY]: 3,
+    [AiDifficulty.MEDIUM]: 2,
+    [AiDifficulty.HARD]: 1.5,
+    [AiDifficulty.IMPOSSIBLE]: 0,
+}
 
 // Paddle/Player constants
 export const LEFT_PADDLE = 0; // Identifier for the left paddle

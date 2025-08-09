@@ -1,6 +1,6 @@
 import { Game } from '../core/game.js';
 import { Client, Player } from '../models/Client.js';
-import { MessageType, GameMode } from '../shared/constants.js';
+import { MessageType, GameMode, AiDifficulty } from '../shared/constants.js';
 import { PlayerInput, ServerMessage } from '../shared/types.js';
 
 export abstract class AbstractGameSession {
@@ -12,7 +12,7 @@ export abstract class AbstractGameSession {
 	client_capacity: number = 1;
 	full: boolean = false;
 	running: boolean = false;
-	ai_difficulty?: number; // temp hardcoded to be set to Impossible 
+	ai_difficulty?: AiDifficulty; // temp hardcoded to be set to Impossible 
 
     constructor(mode: GameMode, game_id: string) {
 		this.id = game_id
@@ -38,7 +38,7 @@ export abstract class AbstractGameSession {
 		}
 	}
 
-	set_ai_difficulty(difficulty: number | undefined) {
+	set_ai_difficulty(difficulty: AiDifficulty) {
 		this.ai_difficulty = difficulty;
 		// if we want to change the ai diffiulty mid game we can add to this function and update the bot in the game
 	}

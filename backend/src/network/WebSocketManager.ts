@@ -5,7 +5,6 @@ import { MessageType, Direction, GameMode, UserManagement } from '../shared/cons
 import { ClientMessage, ServerMessage, GetUserProfile, UserProfileData } from '../shared/types.js';
 import * as db from "../data/validation.js";
 import { UserStats, GameHistoryEntry } from '../shared/types.js';
-import { GameSession } from './GameSession.js';
 
 // TODO: set timer for online player search, if not found then start with CPU
 
@@ -162,14 +161,14 @@ export class WebSocketManager {
             await this.sendError(socket, 'Game mode required');
             return;
         }
-        if (data.aiDifficulty !== null) // We can use this to set the ai difficulty. on start the game aiDifficulty is going to be always there
-            console.log("DIFFUCLTY: " + data.aiDifficulty);
+
         try {
             const gameId = gameManager.findOrCreateGame(data.gameMode, client);
             const gameSession = gameManager.getGame(gameId);
             
             if (data.aiDifficulty !== undefined) {
                 gameSession?.set_ai_difficulty(data.aiDifficulty);
+                console.log("AI difficulty = " + data.aiDifficulty);
             }
             setCurrentGameId(gameId);
 

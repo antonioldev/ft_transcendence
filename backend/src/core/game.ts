@@ -1,21 +1,11 @@
 import { Ball } from './Ball.js';
 import { Paddle, CPUBot } from './Paddle.js';
 import { Clock } from './utils.js';
-import { GAME_CONFIG, LEFT_PADDLE, RIGHT_PADDLE } from '../shared/gameConfig.js';
+import { GAME_CONFIG, CPUDifficultyMap, LEFT_PADDLE, RIGHT_PADDLE } from '../shared/gameConfig.js';
 import { GameMode, MessageType} from '../shared/constants.js';
 import { PlayerInput, GameStateData, ServerMessage } from '../shared/types.js';
 import { Client, Player} from '../models/Client.js'
 import { saveGameResult } from '../data/validation.js';
-
-
-
-const BOT_DIFFICULTY: Record<number, number> = {
-  0: 3,  // Easy
-  1: 2, // Medium
-  2: 1.5,  // Hard
-  3: 0,    // Impossible
-};
-
 
 // The Game class runs the core game logic for all game modes.
 export class Game {
@@ -47,8 +37,8 @@ export class Game {
 
 		for (const side of [LEFT_PADDLE, RIGHT_PADDLE]) {
 			const player: Player = this.players[side];
-			if (player.name === "CPU") {
-				const noiseFactor =  1; // TODO: connect to difficulty from client
+			if (player.name === "CPU" && player.difficulty !== undefined) {
+				const noiseFactor =  CPUDifficultyMap[player.difficulty];
 				this.paddles[side] = new CPUBot(side, this.ball, noiseFactor);
 			}
 		}
