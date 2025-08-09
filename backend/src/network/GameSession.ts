@@ -75,9 +75,9 @@ export abstract class AbstractGameSession {
 			this.players.push(new Player(`CPU_${i}`, "CPU", undefined, this.ai_difficulty));
 		}
 
-		if (this.mode === GameMode.TWO_PLAYER_REMOTE) {
-			this.mode = GameMode.SINGLE_PLAYER
-		}
+		// if (this.mode === GameMode.TWO_PLAYER_REMOTE) {
+		// 	this.mode = GameMode.SINGLE_PLAYER
+		// }
 
 		this.client_capacity = this.clients.length;
     }
@@ -118,7 +118,7 @@ export class GameSession extends AbstractGameSession{
 		if (this.running) return;
 		this.running = true;
 		
-        this.add_CPUs(); // add any CPU's if necessary
+		this.add_CPUs(); // add any CPU's if necessary
 		await this.waitingForPlayersReady();
 		
 		this.game = new Game(this.players, this.broadcast.bind(this))
@@ -126,14 +126,21 @@ export class GameSession extends AbstractGameSession{
 		this.stop();
 	}
 
-	stop() {
-		if (!this.game || !this.game.running) return false;
-
-		this.game.stop(this.id);
+	stop(): void {
+		if (!this.running) return;
+		
+		let winner: string | undefined;
+		if (this.game?.winner)
+			winner = this.game.winner.name;
+		if (this.game?.running)
+			this.game.stop(this.id);
+		
 		this.running = false;
-		this.broadcast({ type: MessageType.SESSION_ENDED });
+		this.broadcast({ 
+			type: MessageType.SESSION_ENDED,
+			...(winner && { winner: winner })
+		});
 	}
-
 	
 	pause(): boolean {
 		if (!this.running || !this.game) {
@@ -179,7 +186,7 @@ export class GameSession extends AbstractGameSession{
 
 	async waitingForPlayersReady() {
 		while (!this.allClientsReady()) {
-			return new Promise(resolve => setTimeout(resolve, 1000));
+			await new Promise(resolve => setTimeout(resolve, 1000));
 		}
 	}
 	

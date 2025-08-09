@@ -84,14 +84,14 @@ export class Game {
         const game = Game.currentInstance;
         if (!game || game.isDisposed || game.isPausedByServer) return;
         Logger.info('Requesting pause from server...', 'Game');
-        webSocketClient.sendPauseRequest();
+        webSocketClient.sendPauseRequest(game.match_id);
     }
 
     static resume(): void {
         const game = Game.currentInstance;
         if (!game || game.isDisposed || !game.isPausedByServer) return;
         Logger.info('Requesting resume from server...', 'Game');
-        webSocketClient.sendResumeRequest();
+        webSocketClient.sendResumeRequest(game.match_id);
     }
 
     static stop(): void {
@@ -341,7 +341,7 @@ export class Game {
     // ========================================
 
     start(): void {
-        if (!this.isInitialized || this.isRunning || this.isDisposed) return;
+        if (!this.isInitialized || this.isDisposed) return;
 
         try {
             Logger.info('Starting game...', 'Game');
@@ -382,7 +382,6 @@ export class Game {
             this.audioManager?.startGameMusic();
             this.renderManager?.stopCameraAnimation();
             this.guiManager?.hideCountdown();
-            this.setGameState(GameState.PLAYING);
             this.start();
         }
     }
@@ -422,16 +421,18 @@ export class Game {
     private async onServerEndedGame(winner: string): Promise<void> {
         if (this.isDisposed) return;
 
-        if (!this.renderManager?.isRendering())
-            this.renderManager?.startRendering();
+        // if (!this.renderManager?.isRendering())
+        //     this.renderManager?.startRendering();
 
-        let gameWinner = "CPU";
-        if (winner !== undefined) // TODO what shall we send
-            gameWinner = winner;
+        // let gameWinner = "CPU";
+        // if (winner !== undefined) // TODO what shall we send
+        //     gameWinner = winner;
         uiManager.setElementVisibility('pause-dialog-3d', false);
         // if (this.config.gameMode === GameMode.SINGLE_PLAYER
         //     || this.config.gameMode === GameMode.TOURNAMENT_REMOTE || this.config.gameMode === GameMode.TWO_PLAYER_REMOTE)
-        await this.guiManager?.showWinner(gameWinner);
+        if (winner !== undefined)
+            console.log(winner);
+        //     await this.guiManager?.showWinner(winner);
 
         this.audioManager?.stopGameMusic();
         this.controlledSides = [];
@@ -446,16 +447,18 @@ export class Game {
         if (!this.renderManager?.isRendering())
             this.renderManager?.startRendering();
 
-        let gameWinner = "CPU";
-        if (winner !== undefined) // TODO what shall we send
-            gameWinner = winner;
+        // let gameWinner = "CPU";
+        // if (winner !== undefined) // TODO what shall we send
+        //     gameWinner = winner;
         uiManager.setElementVisibility('pause-dialog-3d', false);
         // if (this.config.gameMode === GameMode.SINGLE_PLAYER
         //     || this.config.gameMode === GameMode.TOURNAMENT_REMOTE || this.config.gameMode === GameMode.TWO_PLAYER_REMOTE)
-            await this.guiManager?.showWinner(gameWinner);
+        if (winner !== undefined)
+            await this.guiManager?.showWinner(winner);
 
         this.audioManager?.stopGameMusic();
         this.renderManager?.stopRendering();
+        this.controlledSides = []
         this.stopGameLoop();
         Game.disposeGame();
         this.resetToMenu();
@@ -712,6 +715,7 @@ export class Game {
             this.guiManager.updatePlayerNames(leftPlayerName, rightPlayerName);
         if (match_id)
             this.match_id = match_id;
+        this.controlledSides = []
         this.assignPlayerSide(leftPlayerName, 0);
         this.assignPlayerSide(rightPlayerName, 1);
         this.setActiveCameras();
@@ -720,17 +724,18 @@ export class Game {
             const rightPlayerControlled = this.controlledSides.includes(1);
             this.guiManager.updateControlVisibility(leftPlayerControlled, rightPlayerControlled);
         }
+        console.log(`Match ${match_id}: Left=${leftPlayerName}, Right=${rightPlayerName}, Controlled sides: [${this.controlledSides}]`);
     }
 
     // Update input state - call this in render loop
     private updateInput(): void {
         if (this.isDisposed || !this.deviceSourceManager || !this.gameObjects) return;
-
         try {
             const keyboardSource = this.deviceSourceManager.getDeviceSource(BABYLON.DeviceType.Keyboard);
             if (keyboardSource) {
                 // Handle left player (side 0)
                 this.handlePlayerInput(keyboardSource, this.gameObjects.players.left, this.config.controls.playerLeft, 0);
+                
                 // Handle right player (side 1)  
                 this.handlePlayerInput(keyboardSource, this.gameObjects.players.right, this.config.controls.playerRight, 1);
             }

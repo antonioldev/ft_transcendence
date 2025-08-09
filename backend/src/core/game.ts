@@ -174,7 +174,7 @@ export class Game {
 				state: this.get_state()
 			});
 		}
-		this.stop();
+		await this.stop();
 		return (this.winner);
 	}
 
@@ -197,9 +197,8 @@ export class Game {
 	isPaused(): boolean { return this.paused; }
 
 	// Stop the execution of the game & broadcast the winner
-	stop(gameId?: string): void { 
+	async stop(gameId?: string): Promise<void> {
 		this.running = false;
-
 		// TODO: save score to db
 		if (gameId && this.players[LEFT_PADDLE].client?.id != this.players[RIGHT_PADDLE].client?.id) {
 			const player1_score = this.paddles[LEFT_PADDLE].score;
