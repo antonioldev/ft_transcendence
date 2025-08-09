@@ -169,6 +169,7 @@ export class WebSocketClient {
     }
 
     sendPlayerInput(side: number, direction: Direction, match_id: string): void {
+        console.log("match id FRONT = " + match_id);
         this.sendMessage(MessageType.PLAYER_INPUT, { side, direction, match_id });
     }
     

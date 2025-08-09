@@ -741,6 +741,7 @@ export class Game {
 
     private handlePlayerInput(keyboardSource: any, player: any, controls: PlayerControls, side: number): void {
         // Check if we should listen to this player
+
         if (!(this.isLocalMultiplayer || this.controlledSides.includes(side))) return;
 
         let direction = Direction.STOP;
@@ -752,7 +753,8 @@ export class Game {
             direction = Direction.RIGHT;
 
         // Send input directly
-        if (direction !== Direction.STOP)
+        if (direction !== Direction.STOP) {
             webSocketClient.sendPlayerInput(side, direction, this.match_id);
+        }
     }
 }

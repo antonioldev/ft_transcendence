@@ -139,10 +139,12 @@ export class Game {
 		// broadcast the countdown timer on every second
 		for (let countdown = GAME_CONFIG.startDelay; countdown >= 0; countdown--) {
 			console.log(`Sending countdown: ${countdown}`);
+
 			this._broadcast({
 				type: MessageType.COUNTDOWN,
 				countdown: countdown,
 			});
+
 			if (countdown > 0) {
 				await this.clock.sleep(1000);
 			}
@@ -213,6 +215,7 @@ export class Game {
 			type: MessageType.GAME_ENDED,
 			...(this.winner && { winner: this.winner.name }) // optionally send winner if exists
 		});
+
 		console.log("game ended: broadcasting game end");
 	}
 	

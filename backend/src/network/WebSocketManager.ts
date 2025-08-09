@@ -227,6 +227,7 @@ export class WebSocketManager {
             side: data.side,
             dx: data.direction
         }
+        console.log("match id backend = " + data.match_id);
         gameSession.enqueue(input, data.match_id);
     }
 
@@ -247,7 +248,6 @@ export class WebSocketManager {
         }
 
         const success = await gameSession.pause(client);
-        
         if (success) {
             console.log(`Game ${gameSession.id} paused by client ${client.id}`);
         }
