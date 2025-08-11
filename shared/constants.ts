@@ -33,6 +33,7 @@ export enum MessageType {
     REQUEST_USER_PROFILE,    // Type for back to frontend comm
     UPDATE_USER_PROFILE,     // Request to update user information 
     COUNTDOWN,               // Used to send ountdown timer before game starts
+    SESSION_ENDED,
 }
 
 export enum WebSocketEvent {
