@@ -97,6 +97,14 @@ export enum AuthState {
     LOGGED_FAILED = 2
 }
 
+export enum AuthCode {
+  OK = 0,
+  NotFound = 1,
+  BadCredentials = 2,
+  UsernameTaken = 2,
+  UserExists = 1,
+}
+
 export enum ConnectionStatus {
     CONNECTING = 0,    // Attempting to connect
     CONNECTED = 1,     // Connected and ready

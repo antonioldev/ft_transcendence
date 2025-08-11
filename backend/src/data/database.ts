@@ -10,6 +10,7 @@ enum UserField {
 let db: Database.Database;
 
 export function registerDatabaseFunctions(database: Database.Database) {
+	console.log("registering db");
 	db = database;
 }
 
@@ -203,12 +204,12 @@ export function userExist(id?: number, username?: string, email?: string): numbe
 			const user = db.prepare('SELECT * FROM users WHERE id = ?').get(id);
 			if (user) return 1;
 		}
-		if (email && email.trim() !== '') {
+		if (email && email.trim() !== '' && email !== undefined) {
 			email = email.trim();
 			const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
 			if (user) return 1;
 		}
-		if (username && username.trim() !== '') {
+		if (username && username.trim() !== '' && username !== undefined) {
 			username = username.trim();
 			const user = db.prepare('SELECT * FROM users WHERE username = ?').get(username);
 			if (user) return 2;

@@ -12,5 +12,6 @@ export async function hashPassword(pw: string) {
 }
 
 export async function verifyPassword(stored: string, pw: string) {
-  return argon2.verify(stored, pw + PEPPER);
+	console.log(`Authentification.ts -- verifyPassword: received: ${pw} + ${PEPPER}, stored: ${stored}`);
+	return argon2.verify(stored, pw + PEPPER);
 }

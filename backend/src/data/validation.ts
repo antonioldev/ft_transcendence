@@ -1,8 +1,9 @@
 // Program to sanitize info before sending to SQL and ensure SQL injection avoidance
 import * as dbFunction from '../data/database.js';
+import { verifyPassword, hashPassword } from './authentification.js';
 import { UserProfileData, UserStats, GameHistoryEntry } from '../shared/types.js';
 
-export function verifyLogin(username: string, password: string): number {
+export async function verifyLogin(username: string, password: string): Promise<number> {
     // Check if input is an email (contains @) or username
     const isEmail = username.includes('@');
     
@@ -30,13 +31,14 @@ export function verifyLogin(username: string, password: string): number {
     const register_pwd = dbFunction.getUserPwd(user_email);
     // function to compare password with hashing one saved in db
     console.log("Validation.ts, verifyLogin: password to check and password saved", password, register_pwd);
-    if (password === register_pwd)
+    const isMatch = await verifyPassword(register_pwd, password);
+    if (isMatch)
         return 0;
     else
         return 2;
 }
 
-export function registerNewUser(username: string, email: string, password:string): number {
+export async function registerNewUser(username: string, email: string, password:string): Promise<number> {
     // const hs_pwd = function to hash password to add here 
     let checkvalue = dbFunction.userExist(undefined, username, email);
     if (checkvalue === 1) {
@@ -47,7 +49,9 @@ export function registerNewUser(username: string, email: string, password:string
     console.log("Validation.ts, registerNewUser: info sent", username, email, password);
 
     try {
-        dbFunction.registerUser(username, email, password);
+        const hash_pwd = await hashPassword(password);
+        dbFunction.registerUser(username, email, hash_pwd);
+        console.log(`Register password of user ${username} is ${hash_pwd}`);
         return 0; // registration success
     } catch (err) {
         console.error("registerUser: fail to register ", err);

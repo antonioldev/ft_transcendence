@@ -2,8 +2,9 @@ import Database from 'better-sqlite3';
 import { existsSync, readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { registerNewUser } from './validation.js';
 
-export function initialisazeDatabase(dbPath: string): Database.Database {
+export async function initialisazeDatabase(dbPath: string): Promise<Database.Database> {
 	const dir = dirname(dbPath);
 	if (!existsSync(dir)) {
 		console.log("Error, not able to find db file");
@@ -31,6 +32,7 @@ export function initialisazeDatabase(dbPath: string): Database.Database {
 			})();
 
 			console.log('Database initialised successfully');
+			
 		}
 		return db;
 	} catch (error) {
