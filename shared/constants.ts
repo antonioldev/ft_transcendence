@@ -16,8 +16,7 @@ export enum MessageType {
     GAME_ENDED,         // SERVER -> CLIENTS: Server notifies game ended (when someone quits with Y)
     WELCOME,             // SERVER -> CLIENT: Welcome message on connection
     PLAYER_READY,       // CLIENT -> SERVER: Client loaded babylon and is waiting for server
-    ALL_READY,                  // SERVER -> CLIENT: All players are ready, game starts in 5 seconds
-    SESSION_ENDED,         // SERVER -> CLIENTS: Server notifies game ended (when someone quits with Y)
+    ALL_READY,           // SERVER -> CLIENT: All players are ready, game starts in 5 seconds
     REGISTER_USER,         // New User want to register --> going to create a new row in db
     LOGIN_USER,            // User want to connect to their account --> calling function for validate info
     SUCCESS_LOGIN,         // Successfully login a user 
@@ -44,6 +43,7 @@ export enum WebSocketEvent {
     GAME_PAUSED = 'gamePaused',
     GAME_RESUMED = 'gameResumed',
     GAME_ENDED = 'gameEnded',
+    SESSION_ENDED = 'sessionEnded',
     STATUS_CHANGE = 'statusChange',
     ALL_READY = 'all_ready',
     LOGIN_SUCCESS = 'LOGIN_SUCCESS',
@@ -73,7 +73,9 @@ export enum Direction {
 // States the game can be in
 export enum GameState {
     PLAYING = 0,
-    PAUSED = 1
+    PAUSED = 1,
+    WAITING = 2,
+    MATCH_ENDED = 3
 }
 
 // View modes for the game

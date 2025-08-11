@@ -3,7 +3,6 @@ import { Ball } from './Ball.js'
 import { GAME_CONFIG, getBallStartPosition, getPlayerLeftPosition, 
          getPlayerRightPosition, LEFT_PADDLE, RIGHT_PADDLE, getPlayerBoundaries } from '../shared/gameConfig.js';
 
-
 export class Paddle {
 	side: number;
 	score: number = 0;
@@ -37,7 +36,7 @@ export class Paddle {
 	}
 }
 
-export class ExactBot extends Paddle {
+export class CPUBot extends Paddle {
 	private _view_timer = 0;
 	private _target_x   = getBallStartPosition().x;
 	private _boundaries = getPlayerBoundaries();
@@ -45,8 +44,9 @@ export class ExactBot extends Paddle {
 	constructor(
 		side: number,
 		public ball: Ball,
+		public noiseFactor: number = 1.5, // 0=impossible, 1.5=hard, 2=medium, 3=easy
 		public speed: number = GAME_CONFIG.paddleSpeed,
-		public direction: number = 0
+		public direction: number = 0,
 	) {
 		super(side);
 	}
@@ -90,11 +90,14 @@ export class ExactBot extends Paddle {
 	}
 
 	update(dt: number): void {
+		// set bot difficulty using noise in intercept prediction
+		
 		// refresh once per second
 		this._view_timer += dt;
 		if (this._view_timer >= 1000.0) {
+			const noise = (Math.random() - 0.5) * GAME_CONFIG.paddleWidth * this.noiseFactor;
 			this._target_x = this._ballMovingTowards()
-				? this._predict_intercept_x()
+				? this._predict_intercept_x() + noise
 				: this._center_x();
 			this._view_timer = 0.0;
 		}
@@ -103,31 +106,5 @@ export class ExactBot extends Paddle {
 
 		const dx = this.rect.centerx < this._target_x ? 1 : -1;
 		this.move(dt, dx);
-	}
-}
-
-export class EasyBot extends ExactBot {
-	protected _predict_intercept_x(): number {
-		const raw = super._predict_intercept_x();
-		const noise = (Math.random() - 0.5) * GAME_CONFIG.paddleWidth * 3;
-		return raw + noise;
-	}
-}
-
-
-export class MediumBot extends ExactBot {
-	protected _predict_intercept_x(): number {
-		const raw = super._predict_intercept_x();
-		const noise = (Math.random() - 0.5) * GAME_CONFIG.paddleWidth * 2;
-		return raw + noise;
-	}
-}
-
-
-export class HardBot extends ExactBot {
-	protected _predict_intercept_x(): number {
-		const raw = super._predict_intercept_x();
-		const noise = (Math.random() - 0.5) * GAME_CONFIG.paddleWidth * 1.5;
-		return raw + noise;
 	}
 }

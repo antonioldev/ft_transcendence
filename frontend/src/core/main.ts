@@ -12,6 +12,11 @@ import { DashboardManager } from './DashboardManager.js';
 // Initialize the detector
 // const memoryDetector = new MemoryLeakDetector();
 
+// TODO: distinguish SESSION_ENDED FROM GAME_ENDED for tournaments
+// TODO: in message before countdown, store the match_id and send match_id for:
+    // - player movement messages
+    // - player quits / disconnects
+
 function loadPage(): void {
     // Initialize classes
     uiManager.initializeStyles();

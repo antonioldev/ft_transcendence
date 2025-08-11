@@ -1,20 +1,11 @@
 import { Ball } from './Ball.js';
-import { Paddle, EasyBot, MediumBot, HardBot, ExactBot } from './Paddle.js';
+import { Paddle, CPUBot } from './Paddle.js';
 import { Clock } from './utils.js';
-import { GAME_CONFIG, LEFT_PADDLE, RIGHT_PADDLE } from '../shared/gameConfig.js';
+import { GAME_CONFIG, CPUDifficultyMap, LEFT_PADDLE, RIGHT_PADDLE } from '../shared/gameConfig.js';
 import { GameMode, MessageType} from '../shared/constants.js';
 import { PlayerInput, GameStateData, ServerMessage } from '../shared/types.js';
 import { Client, Player} from '../models/Client.js'
 import { saveGameResult } from '../data/validation.js';
-
-type Bot = new (side: number, ball: Ball) => Paddle;
-const BOT_MAP = {
-	0: EasyBot,
-	1: MediumBot,
-	2: HardBot,
-	3: ExactBot,
-} satisfies Record<number, Bot>;
-
 
 // The Game class runs the core game logic for all game modes.
 export class Game {
@@ -25,13 +16,13 @@ export class Game {
 	paused: boolean = false;
 	players: Player[]
 	winner!: Player;
-	paddles: (Paddle | EasyBot | MediumBot | HardBot | ExactBot)[] = [new Paddle(LEFT_PADDLE), new Paddle(RIGHT_PADDLE)];
+	paddles: (Paddle | CPUBot)[] = [new Paddle(LEFT_PADDLE), new Paddle(RIGHT_PADDLE)];
 	ball!: Ball;
-	match_id?: number; // for tournament matches only
+	match_id?: string; // for tournament matches only
 	// Callback function to broadcast the game state
 	private _broadcast: (message: ServerMessage, clients?: Client[]) => void;
 
-	constructor(players: Player[], broadcast_callback: (message: ServerMessage, clients?: Client[]) => void, match_id?: number) {
+	constructor(players: Player[], broadcast_callback: (message: ServerMessage, clients?: Client[]) => void, match_id?: string) {
 		// Initialize game properties
 		this.match_id = match_id;
 		this.clock = new Clock();
@@ -46,15 +37,18 @@ export class Game {
 
 		for (const side of [LEFT_PADDLE, RIGHT_PADDLE]) {
 			const player: Player = this.players[side];
-			if (player.name === "CPU") {
-				const Bot = BOT_MAP[player.difficulty as keyof typeof BOT_MAP];
-				this.paddles[side] = new Bot(side, this.ball);
+			if (player.name === "CPU" && player.difficulty !== undefined) {
+				const noiseFactor =  CPUDifficultyMap[player.difficulty];
+				this.paddles[side] = new CPUBot(side, this.ball, noiseFactor);
 			}
 		}
 	}
 
 
-	private isBot(paddle: Paddle): paddle is Paddle & { update: (dt: number) => void } {
+	// private isBot(paddle: Paddle): paddle is Paddle & { update: (dt: number) => void } {
+	// 	return typeof (paddle as any).update === 'function';
+	// }
+	private isBot(paddle: Paddle | CPUBot): paddle is CPUBot {
 		return typeof (paddle as any).update === 'function';
 	}
 
@@ -103,8 +97,9 @@ export class Game {
 
 	// Add a new input to the queue
 	enqueue(input: PlayerInput): void {
-		if (!this.paused)
+		if (!this.paused) {
 			this.queue.push(input);
+		}
 	}
 
 	// Retrieve the current game state as a data object
@@ -138,10 +133,12 @@ export class Game {
 		// broadcast the countdown timer on every second
 		for (let countdown = GAME_CONFIG.startDelay; countdown >= 0; countdown--) {
 			console.log(`Sending countdown: ${countdown}`);
+
 			this._broadcast({
 				type: MessageType.COUNTDOWN,
 				countdown: countdown,
 			});
+
 			if (countdown > 0) {
 				await this.clock.sleep(1000);
 			}
@@ -154,7 +151,7 @@ export class Game {
 	async run(): Promise<Player> {
 		await this.send_sides_and_countdown();
 		// if both are CPU then choose a random winner
-		if (this.paddles[LEFT_PADDLE] instanceof ExactBot && this.paddles[RIGHT_PADDLE] instanceof ExactBot) {
+		if (this.paddles[LEFT_PADDLE] instanceof CPUBot && this.paddles[RIGHT_PADDLE] instanceof CPUBot) {
 			const index = (Math.random() > 0.5) ? 0 : 1;
 			this.winner = this.players[index];
 			this.running = false;
@@ -171,7 +168,7 @@ export class Game {
 				state: this.get_state()
 			});
 		}
-		this.stop();
+		await this.stop();
 		return (this.winner);
 	}
 
@@ -180,19 +177,22 @@ export class Game {
 		if(!this.paused) {
 			this.paused = true;
 			this.queue = []
+			this._broadcast( {type: MessageType.PAUSED} );
 		}
 	}
 
 	// Resume the game
-	resume(): void { this.paused = false; }
+	resume(): void { 
+		this.paused = false; 
+		this._broadcast({type: MessageType.RESUMED});
+	}
 
 	// Returns if the game is currently paused
 	isPaused(): boolean { return this.paused; }
 
 	// Stop the execution of the game & broadcast the winner
-	stop(gameId?: string): void { 
+	async stop(gameId?: string): Promise<void> {
 		this.running = false;
-
 		// TODO: save score to db
 		if (gameId && this.players[LEFT_PADDLE].client?.id != this.players[RIGHT_PADDLE].client?.id) {
 			const player1_score = this.paddles[LEFT_PADDLE].score;
@@ -208,6 +208,8 @@ export class Game {
 			type: MessageType.GAME_ENDED,
 			...(this.winner && { winner: this.winner.name }) // optionally send winner if exists
 		});
+
+		console.log("game ended: broadcasting game end");
 	}
 	
 	// If someone quits a remote game, the opposing player wins

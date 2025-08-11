@@ -36,7 +36,7 @@ import { AudioManager } from './AudioManager.js';
 export class Game {
     private static currentInstance: Game | null = null;
 
-        private engine: any = null;
+    private engine: any = null;
     private scene: any = null;
     private canvas: HTMLCanvasElement | null = null;
     private gameObjects: GameObjects | null = null;
@@ -58,6 +58,7 @@ export class Game {
     private isExiting: boolean = false;
     private playerLeftScore: number = 0;
     private playerRightScore: number = 0;
+    private match_id: string;
 
     static getCurrentInstance(): Game | null {
         return Game.currentInstance;
@@ -83,14 +84,14 @@ export class Game {
         const game = Game.currentInstance;
         if (!game || game.isDisposed || game.isPausedByServer) return;
         Logger.info('Requesting pause from server...', 'Game');
-        webSocketClient.sendPauseRequest();
+        webSocketClient.sendPauseRequest(game.match_id);
     }
 
     static resume(): void {
         const game = Game.currentInstance;
         if (!game || game.isDisposed || !game.isPausedByServer) return;
         Logger.info('Requesting resume from server...', 'Game');
-        webSocketClient.sendResumeRequest();
+        webSocketClient.sendResumeRequest(game.match_id);
     }
 
     static stop(): void {
@@ -113,7 +114,7 @@ export class Game {
         if (Game.currentInstance)
             Game.currentInstance.dispose();
         Game.currentInstance = this;
-
+        this.match_id = "";
         try {
             this.guiManager = new GUIManager();
             this.renderManager = new RenderManager();
@@ -160,7 +161,7 @@ export class Game {
         Logger.info('Exiting to menu...', 'Game');
         
         try {
-            webSocketClient.sendQuitGame();
+            webSocketClient.sendQuitGame(this.match_id);
             Logger.info('Request to end the game sent', 'Game');
         } catch (error) {
             Logger.error('Error during request exit', 'Game', error);
@@ -179,7 +180,7 @@ export class Game {
     }
 
     isInGame(): boolean {
-        return this.currentState === GameState.PLAYING && !this.isExiting;
+        return (this.currentState === GameState.PLAYING || this.currentState === GameState.MATCH_ENDED) && !this.isExiting;
     }
 
     isPaused(): boolean {
@@ -301,13 +302,17 @@ export class Game {
     private setupGlobalKeyboardEvents(): void {
         document.addEventListener('keydown', (event) => {
             if (event.key === 'Escape') {
-                if (this.isInGame()) Game.pause();
-                else if (this.isPaused()) Game.resume();
+                if (this.isInGame() && this.currentState === GameState.PLAYING)
+                    Game.pause();
+                else if (this.isPaused())
+                    Game.resume();
             }
             
             if (this.isPaused()) {
-                if (event.key === 'Y' || event.key === 'y') this.requestExitToMenu();
-                else if (event.key === 'N' || event.key === 'n') Game.resume();
+                if (event.key === 'Y' || event.key === 'y')
+                    this.requestExitToMenu();
+                else if (event.key === 'N' || event.key === 'n')
+                    Game.resume();
             }
         });
     }
@@ -320,12 +325,9 @@ export class Game {
         webSocketClient.registerCallback(WebSocketEvent.GAME_PAUSED, () => { this.onServerPausedGame(); });
         webSocketClient.registerCallback(WebSocketEvent.GAME_RESUMED, () => { this.onServerResumedGame(); });
         webSocketClient.registerCallback(WebSocketEvent.GAME_ENDED, (message: any) => { this.onServerEndedGame(message.winner); });
-        webSocketClient.registerCallback(WebSocketEvent.ALL_READY, (message: any) => {
-            this.handlePlayerAssignment(message.left, message.right);
-        });
-        webSocketClient.registerCallback(WebSocketEvent.COUNTDOWN, (message: any) => {
-            this.handleCountdown(message.countdown); 
-        })
+        webSocketClient.registerCallback(WebSocketEvent.SESSION_ENDED, (message: any) => { this.onServerEndedSession(message.winner); });
+        webSocketClient.registerCallback(WebSocketEvent.ALL_READY, (message: any) => { this.handlePlayerAssignment(message.left, message.right, message.match_id); });
+        webSocketClient.registerCallback(WebSocketEvent.COUNTDOWN, (message: any) => { this.handleCountdown(message.countdown);  })
     }
 
     async connect(aiDifficulty: number): Promise<void> {
@@ -339,7 +341,7 @@ export class Game {
     // ========================================
 
     start(): void {
-        if (!this.isInitialized || this.isRunning || this.isDisposed) return;
+        if (!this.isInitialized || this.isDisposed) return;
 
         try {
             Logger.info('Starting game...', 'Game');
@@ -360,6 +362,9 @@ export class Game {
             Logger.errorAndThrow('Server sent ALL_READY without countdown parameter', 'Game');
 
         uiManager.setLoadingScreenVisible(false);
+
+        if (this.currentState === GameState.MATCH_ENDED)
+            this.resetForNextMatch();
         if (countdown === 5) {
             this.renderManager?.startCameraAnimation(
                 this.gameObjects?.cameras, 
@@ -386,8 +391,7 @@ export class Game {
         if (this.isDisposed || !this.isRunning) return;
 
         Logger.info('Server confirmed game is paused', 'Game');
-        
-        this.audioManager?.pauseGameMusic();
+
         this.isPausedByServer = true;
         this.isRunning = false;
         this.updateGamePauseState(true);
@@ -417,24 +421,49 @@ export class Game {
     private async onServerEndedGame(winner: string): Promise<void> {
         if (this.isDisposed) return;
 
-        if (!this.renderManager?.isRendering())
-            this.renderManager?.startRendering();
+        // if (!this.renderManager?.isRendering())
+        //     this.renderManager?.startRendering();
 
-        let gameWinner = "CPU";
-        if (winner !== undefined) // TODO what shall we send
-            gameWinner = winner;
+        // let gameWinner = "CPU";
+        // if (winner !== undefined) // TODO what shall we send
+        //     gameWinner = winner;
         uiManager.setElementVisibility('pause-dialog-3d', false);
         // if (this.config.gameMode === GameMode.SINGLE_PLAYER
         //     || this.config.gameMode === GameMode.TOURNAMENT_REMOTE || this.config.gameMode === GameMode.TWO_PLAYER_REMOTE)
-            await this.guiManager?.showWinner(gameWinner);
+        if (winner !== undefined)
+            console.log(winner);
+        //     await this.guiManager?.showWinner(winner);
+
+        this.audioManager?.stopGameMusic();
+        this.controlledSides = [];
+        this.stopGameLoop();
+        this.setGameState(GameState.MATCH_ENDED);
+        Logger.info('Game ended by server', 'Game');
+    }
+
+    private async onServerEndedSession(winner: string): Promise<void> {
+        if (this.isDisposed) return;
+
+        if (!this.renderManager?.isRendering())
+            this.renderManager?.startRendering();
+
+        // let gameWinner = "CPU";
+        // if (winner !== undefined) // TODO what shall we send
+        //     gameWinner = winner;
+        uiManager.setElementVisibility('pause-dialog-3d', false);
+        // if (this.config.gameMode === GameMode.SINGLE_PLAYER
+        //     || this.config.gameMode === GameMode.TOURNAMENT_REMOTE || this.config.gameMode === GameMode.TWO_PLAYER_REMOTE)
+        if (winner !== undefined)
+            await this.guiManager?.showWinner(winner);
 
         this.audioManager?.stopGameMusic();
         this.renderManager?.stopRendering();
+        this.controlledSides = []
         this.stopGameLoop();
         Game.disposeGame();
         this.resetToMenu();
 
-        Logger.info('Game ended by server', 'Game');
+        Logger.info('Session ended by server', 'Game');
     }
 
     // ========================================
@@ -464,6 +493,28 @@ export class Game {
             clearInterval(this.gameLoopObserver);
             this.gameLoopObserver = null;
         }
+    }
+
+    private resetForNextMatch(): void {
+        if (this.isDisposed)
+            return;
+
+        this.playerLeftScore = 0;
+        this.playerRightScore = 0;
+
+        if (this.gameObjects) {
+            if (this.gameObjects.players.left)
+                this.gameObjects.players.left.position.x = 0;
+            if (this.gameObjects.players.right)
+                this.gameObjects.players.right.position.x = 0;
+            if (this.gameObjects.ball) {
+                this.gameObjects.ball.position.x = 0;
+                this.gameObjects.ball.position.z = 0;
+            }
+        }
+
+        this.guiManager?.updateScores(0, 0);
+        Logger.info('Game reset for next match', 'Game');
     }
 
     // ========================================
@@ -545,6 +596,7 @@ export class Game {
         this.isPausedByServer = false;
         this.currentState = null;
         this.isExiting = false;
+        this.match_id = "";
 
         try {
             this.stopGameLoop();
@@ -658,10 +710,12 @@ export class Game {
 
     }
 
-    private handlePlayerAssignment(leftPlayerName: string, rightPlayerName: string): void {
+    private handlePlayerAssignment(leftPlayerName: string, rightPlayerName: string, match_id: string): void {
         if (this.guiManager)
             this.guiManager.updatePlayerNames(leftPlayerName, rightPlayerName);
-
+        if (match_id)
+            this.match_id = match_id;
+        this.controlledSides = []
         this.assignPlayerSide(leftPlayerName, 0);
         this.assignPlayerSide(rightPlayerName, 1);
         this.setActiveCameras();
@@ -670,17 +724,18 @@ export class Game {
             const rightPlayerControlled = this.controlledSides.includes(1);
             this.guiManager.updateControlVisibility(leftPlayerControlled, rightPlayerControlled);
         }
+        console.log(`Match ${match_id}: Left=${leftPlayerName}, Right=${rightPlayerName}, Controlled sides: [${this.controlledSides}]`);
     }
 
     // Update input state - call this in render loop
     private updateInput(): void {
         if (this.isDisposed || !this.deviceSourceManager || !this.gameObjects) return;
-
         try {
             const keyboardSource = this.deviceSourceManager.getDeviceSource(BABYLON.DeviceType.Keyboard);
             if (keyboardSource) {
                 // Handle left player (side 0)
                 this.handlePlayerInput(keyboardSource, this.gameObjects.players.left, this.config.controls.playerLeft, 0);
+                
                 // Handle right player (side 1)  
                 this.handlePlayerInput(keyboardSource, this.gameObjects.players.right, this.config.controls.playerRight, 1);
             }
@@ -691,6 +746,7 @@ export class Game {
 
     private handlePlayerInput(keyboardSource: any, player: any, controls: PlayerControls, side: number): void {
         // Check if we should listen to this player
+
         if (!(this.isLocalMultiplayer || this.controlledSides.includes(side))) return;
 
         let direction = Direction.STOP;
@@ -702,7 +758,8 @@ export class Game {
             direction = Direction.RIGHT;
 
         // Send input directly
-        if (direction !== Direction.STOP)
-            webSocketClient.sendPlayerInput(side, direction);
+        if (direction !== Direction.STOP) {
+            webSocketClient.sendPlayerInput(side, direction, this.match_id);
+        }
     }
 }

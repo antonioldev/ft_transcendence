@@ -101,7 +101,12 @@ export class WebSocketClient {
                 this.triggerCallback(WebSocketEvent.GAME_RESUMED);
                 break;
             case MessageType.GAME_ENDED:
+                console.error("Game ended message");
                 this.triggerCallback(WebSocketEvent.GAME_ENDED, message);
+                break;
+            case MessageType.SESSION_ENDED:
+                console.error("Session ended message");
+                this.triggerCallback(WebSocketEvent.SESSION_ENDED, message);
                 break;
             case MessageType.ALL_READY:
                 this.triggerCallback(WebSocketEvent.ALL_READY, message);
@@ -163,20 +168,21 @@ export class WebSocketClient {
         this.sendMessage(MessageType.PLAYER_READY);
     }
 
-    sendPlayerInput(side: number, direction: Direction): void {
-        this.sendMessage(MessageType.PLAYER_INPUT, { side, direction });
+    sendPlayerInput(side: number, direction: Direction, match_id: string): void {
+        console.log("match id FRONT = " + match_id);
+        this.sendMessage(MessageType.PLAYER_INPUT, { side, direction, match_id });
     }
     
-    sendPauseRequest(): void {
-        this.sendMessage(MessageType.PAUSE_REQUEST);
+    sendPauseRequest(match_id: string): void {
+        this.sendMessage(MessageType.PAUSE_REQUEST, {match_id});
     }
     
-    sendResumeRequest(): void {
-        this.sendMessage(MessageType.RESUME_REQUEST);
+    sendResumeRequest(match_id: string): void {
+        this.sendMessage(MessageType.RESUME_REQUEST, {match_id});
     }
 
-    sendQuitGame(): void {
-        this.sendMessage(MessageType.QUIT_GAME);
+    sendQuitGame(match_id: string): void {
+        this.sendMessage(MessageType.QUIT_GAME, {match_id});
     }
 
     private sendMessage(type: MessageType, data: any = {}): void {
