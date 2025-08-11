@@ -29,6 +29,9 @@ export class Match {
 		if (player.client && !this.clients.includes(player.client)) {
 			this.clients.push(player.client);
 			this.client_match_map.set(player.client.id, this);
+			console.log("client id: " + player.client.id);
+			console.log("match id: " + this.id);
+			console.log("Match entry id: " + this.client_match_map.get(player.client.id)?.id);
 		}
 	}
 
@@ -168,11 +171,12 @@ abstract class AbstractTournament extends AbstractGameSession{
 
 	enqueue(input: PlayerInput, client_id?: string): void  {
 		if (client_id) {
-			this.client_match_map.get(client_id)?.game.enqueue(input);
+			const match = this.client_match_map.get(client_id);
+			console.log("ENQUEUE: MATCH GAME?: " + (match?.game === undefined));
+
+			match?.game?.enqueue(input);
 		}
 	}
-
-
 
 	setClientReady(client_id: string): void { // New function, add client in the readyClient list
 		const match = this.client_match_map.get(client_id);
@@ -209,8 +213,10 @@ export class TournamentLocal extends AbstractTournament {
 	async run(matches: Match[]): Promise<void> {
 		let finalWinner: Player | undefined;
 		for (const match of matches) {
-			await this.waitForPlayersReady(match);
 			match.game = new Game(match.players, this.broadcast.bind(this));
+			console.log("MATCH ID: " + match.id);
+			console.log("MATCH GAME?: " + (match.game === undefined));
+			await this.waitForPlayersReady(match);
 
 			const winner = await match.game.run();
 			finalWinner = winner;

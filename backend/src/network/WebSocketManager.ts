@@ -2,7 +2,7 @@ import { FastifyInstance } from 'fastify';
 import { gameManager } from '../models/gameManager.js';
 import { Client, Player } from '../models/Client.js';
 import { MessageType, Direction, GameMode, UserManagement } from '../shared/constants.js';
-import { ClientMessage, ServerMessage, GetUserProfile, UserProfileData } from '../shared/types.js';
+import { ClientMessage, ServerMessage, PlayerInput, GetUserProfile, UserProfileData } from '../shared/types.js';
 import * as db from "../data/validation.js";
 import { UserStats, GameHistoryEntry } from '../shared/types.js';
 
@@ -193,12 +193,12 @@ export class WebSocketManager {
     private async handlePlayerReady(client: Client): Promise<void> {
         console.log(`Client ${client.id} is ready`);
 
-        const gameSession = this.findClientGame(client);
+        const gameSession = gameManager.findClientGame(client);
         if (!gameSession) {
             console.warn(`Client ${client.id} not in any game for ready signal`);
             return;
         }
-        gameSession.setClientReady(client);
+        gameSession.setClientReady(client.id);
     }
 
     /**
@@ -213,13 +213,13 @@ export class WebSocketManager {
         }
 
         // Find the game this client is in
-        const gameSession = this.findClientGame(client);
+        const gameSession = gameManager.findClientGame(client);
         if (!gameSession) {
             console.warn(`Client ${client.id} not in any game`);
             return;
         }
 
-        const input = {
+        const input: PlayerInput = {
             id: client.id,
             type: MessageType.PLAYER_INPUT,
             side: data.side,
@@ -233,7 +233,7 @@ export class WebSocketManager {
      * @param client - The client that send the request.
      */
     private async handlePauseRequest(client: Client): Promise<void> {
-        const gameSession = this.findClientGame(client);
+        const gameSession = gameManager.findClientGame(client);
         if (!gameSession) {
             console.warn(`Client ${client.id} not in any game for pause request`);
             return;
@@ -244,7 +244,7 @@ export class WebSocketManager {
             return;
         }
 
-        const success = await gameSession.pause(client, client.id);
+        const success = gameSession.pause(client.id);
         
         if (success) {
             console.log(`Game ${gameSession.id} paused by client ${client.id}`);
@@ -259,7 +259,7 @@ export class WebSocketManager {
      * @param client - The client that send the request.
      */
     private async handleResumeRequest(client: Client): Promise<void> {
-        const gameSession = this.findClientGame(client);
+        const gameSession = gameManager.findClientGame(client);
         if (!gameSession) {
             console.warn(`Client ${client.id} not in any game for resume request`);
             return;
@@ -270,7 +270,7 @@ export class WebSocketManager {
             return;
         }
 
-        const success = await gameSession.resume(client, client.id);
+        const success = gameSession.resume(client.id);
         if (success) {
             console.log(`Game ${gameSession.id} resumed by client ${client.id}`);
         }
@@ -284,14 +284,14 @@ export class WebSocketManager {
      * @param data - The user information that are used to confirm login
      */
     private async handleQuitGame(client: Client): Promise<void> {
-        const gameSession = this.findClientGame(client);
+        const gameSession = gameManager.findClientGame(client);
         if (!gameSession) {
             console.warn(`Client ${client.id} not in any game to quit`);
             return;
         }
         
         
-        gameSession.handlePlayerQuit(client.id, client.id);
+        gameSession.handlePlayerQuit(client.id);
         gameManager.removeClientFromGames(client);
         // gameManager.removeGame(gameSession.id);
         console.log(`Game ${gameSession.id} ended by client ${client.id}`);
@@ -302,7 +302,7 @@ export class WebSocketManager {
      * @param client - The client that disconnected.
      */
     private handleDisconnection(client: Client): void {
-        const gameSession = this.findClientGame(client);
+        const gameSession = gameManager.findClientGame(client);
         if (!gameSession) return ;
         gameSession.stop(); // TODO: temp as wont work for Tournament 
         gameManager.removeClientFromGames(client);
@@ -573,20 +573,6 @@ export class WebSocketManager {
         } catch (error) {
             console.error('❌ Failed to send welcome message:', error);
         }
-    }
-
-    /**
-     * Finds the game a client is currently participating in.
-     * @param client - The client whose game is being searched for.
-     * @returns The game object or null if the client is not in a game.
-     */
-    private findClientGame(client: Client): any {
-        for (const [gameId, gameSession] of (gameManager as any).games) {
-            if (gameSession.clients.includes(client)) {
-                return gameSession;
-            }
-        }
-        return null;
     }
 
     /**

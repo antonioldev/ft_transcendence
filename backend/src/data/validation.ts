@@ -204,7 +204,7 @@ export function updatePlayers(winner_id: number, looser_id: number, tournament: 
 export function updateTournamentWinner(player1_name: string): boolean {
 	const player1_id = dbFunction.retrieveUserID(player1_name);
     if (player1_id === -1) {
-		console.error('❌ validation -- updatePlayerTournamentWinner: player1 do not exist in DB');
+		console.error('❌ validation -- updatePlayerTournamentWinner: player1 ');
 		return false;
     }
     if (dbFunction.updateUserTournamentWin(player1_id, 1))

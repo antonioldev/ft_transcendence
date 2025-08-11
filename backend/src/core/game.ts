@@ -198,7 +198,7 @@ export class Game {
 			const player2_username = this.players[RIGHT_PADDLE].name;
 			const endTime = Date.now();
 			console.log(`TO VERIFY ==> player1_name: ${player1_username}, player2_name: ${player2_username} // client1_name: ${this.players[LEFT_PADDLE].client?.username}, client2_name: ${this.players[RIGHT_PADDLE].client?.username}`)
-			saveGameResult(gameId, player1_username, player2_username, player1_score, player2_score, endTime) // add check for error
+			// saveGameResult(gameId, player1_username, player2_username, player1_score, player2_score, endTime) // add check for error
 		}
 
 		this._broadcast({

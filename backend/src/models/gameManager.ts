@@ -112,6 +112,19 @@ class GameManager {
     }
 
     /**
+     * Finds the game a client is currently participating in.
+     * @param client - The client whose game is being searched for.
+     * @returns The game object or null if the client is not in a game.
+     */
+    findClientGame(client: Client): GameSession | TournamentLocal | TournamentRemote | undefined {
+        for (const gameSession of this.games.values()) {
+            if (gameSession.clients.includes(client)) {
+                return gameSession;
+            }
+        }
+    }
+
+    /**
      * Removes a game session by its unique ID.
      * @param gameId - The unique ID of the game session to be removed.
      */

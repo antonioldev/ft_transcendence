@@ -168,21 +168,20 @@ export class WebSocketClient {
         this.sendMessage(MessageType.PLAYER_READY);
     }
 
-    sendPlayerInput(side: number, direction: Direction, match_id: string): void {
-        console.log("match id FRONT = " + match_id);
-        this.sendMessage(MessageType.PLAYER_INPUT, { side, direction, match_id });
+    sendPlayerInput(side: number, direction: Direction): void {
+        this.sendMessage(MessageType.PLAYER_INPUT, { side, direction});
     }
     
-    sendPauseRequest(match_id: string): void {
-        this.sendMessage(MessageType.PAUSE_REQUEST, {match_id});
+    sendPauseRequest(): void {
+        this.sendMessage(MessageType.PAUSE_REQUEST);
     }
     
-    sendResumeRequest(match_id: string): void {
-        this.sendMessage(MessageType.RESUME_REQUEST, {match_id});
+    sendResumeRequest(): void {
+        this.sendMessage(MessageType.RESUME_REQUEST);
     }
 
-    sendQuitGame(match_id: string): void {
-        this.sendMessage(MessageType.QUIT_GAME, {match_id});
+    sendQuitGame(): void {
+        this.sendMessage(MessageType.QUIT_GAME);
     }
 
     private sendMessage(type: MessageType, data: any = {}): void {
