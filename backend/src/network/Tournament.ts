@@ -3,6 +3,7 @@ import { Game } from '../core/game.js';
 import { Client, Player } from '../models/Client.js';
 import { GameMode, MessageType } from '../shared/constants.js';
 import { PlayerInput } from '../shared/types.js';
+import { gameManager } from '../models/gameManager.js';
 
 
 export class Match {
@@ -99,8 +100,6 @@ abstract class AbstractTournament extends AbstractGameSession{
 			round_one[i].add_player(this.players[j + 1]);
 		}
 	}
-	
-	abstract run(matches: Match[]): Promise<void>;
 
 	async start(): Promise<void> {
 		if (this.running || this.players.length != this.player_capacity) return ;
@@ -118,11 +117,88 @@ abstract class AbstractTournament extends AbstractGameSession{
 		// call db {updateTournamentWinner(player1_name: string)} to update final winner nb of tournament victory
 	}
 
-	async waitForPlayersReady(match: Match) {
-		while (!match.allClientsReady()) {
-			return new Promise(resolve => setTimeout(resolve, 1000));
+
+	pause(client_id: string | undefined): boolean {
+		const match = this.findMatch(client_id);
+		if (!match) return false ;
+
+		if (!match || !match.game || !match.game.running) {
+			console.log(`Game ${match?.id} is not running, cannot pause`);
+			return false;
+		}
+
+		if (match.game.paused) {
+			console.log(`Game ${match.id} is already paused`);
+			return false;
+		}
+
+		match.game.pause();
+		return true;
+	}
+
+	resume(client_id: string | undefined): boolean {
+		const match = this.findMatch(client_id);
+		if (!match) return false ;
+
+		if (!match ||!match.game || !match.game.running) {
+			console.log(`Game ${this.id} is not running, cannot resume`);
+			return false;
+		}
+		if (!match.game.paused) {
+			console.log(`Game ${this.id} is not paused`);
+			return false;
+		}
+
+		match.game.resume();
+		return true;
+	}
+
+	enqueue(input: PlayerInput, client_id: string | undefined): void  {
+		const match = this.findMatch(client_id);
+		if (!match) return ;
+
+		match?.game?.enqueue(input);
+	}
+
+	setClientReady(client_id: string): void {
+		const match = this.findMatch(client_id);
+		if (!match) return ;
+
+		match.readyClients.add(client_id);
+		console.log(`Client ${client_id} marked as ready.}`);
+		
+		if (match.allClientsReady()) {
+			gameManager.emit(`all-ready-${match.id}`);
+			console.log(`Tournament ${this.id}: Match ${match.id}: all clients ready.`);
 		}
 	}
+
+	async waitForPlayersReady(match: Match) {
+		if (match.allClientsReady()) return ;
+
+		await new Promise(resolve => {
+			gameManager.once(`all-ready-${match.id}`, resolve);
+		});
+	}
+
+	canClientControlGame(client: Client) {
+		const match = this.findMatch();
+		if (!match || !match.clients.includes(client))
+			return false;
+		return true;
+	}
+
+	// The opposing player wins their current match and the tournament continues
+	handlePlayerQuit(quitter_id: string, client_id?: string): void {
+		const match: Match | undefined = this.findMatch(client_id);
+		if (!match) return ;
+
+		match.game.setOtherPlayerWinner(quitter_id);
+		match.game.stop();
+	}
+
+	abstract run(matches: Match[]): Promise<void>;
+	abstract findMatch(client_id?: string): Match | undefined;
 }
 
 export class TournamentLocal extends AbstractTournament {
@@ -153,7 +229,6 @@ export class TournamentLocal extends AbstractTournament {
 		}
 	}
 
-
 	stop() {
 		if (!this.running) return ;
 
@@ -162,56 +237,14 @@ export class TournamentLocal extends AbstractTournament {
 		this.broadcast({ type: MessageType.SESSION_ENDED });
 	}
 
-	pause(client_id: string): boolean {
-		if (!this.current_match || !this.current_match.game || !this.current_match.game.running) {
-			console.log(`Game ${this.current_match?.id} is not running, cannot pause`);
-			return false;
-		}
-
-		if (this.current_match.game.paused) {
-			console.log(`Game ${this.current_match.id} is already paused`);
-			return false;
-		}
-
-		this.current_match.game.pause();
-		return true;
-	}
-
-	resume(client_id: string): boolean {
-		if (!this.current_match ||!this.current_match.game || !this.current_match.game.running) {
-			console.log(`Game ${this.id} is not running, cannot resume`);
-			return false;
-		}
-		if (!this.current_match.game.paused) {
-			console.log(`Game ${this.id} is not paused`);
-			return false;
-		}
-
-		this.current_match.game.resume();
-		return true;
-	}
-
-	enqueue(input: PlayerInput): void  {
-		this.current_match?.game?.enqueue(input);
-	}
-
-	setClientReady(client_id: string): void { // New function, add client in the readyClient list
-		this.current_match?.readyClients.add(client_id);
-		console.log(`Client ${client_id} marked as ready. Ready clients: ${this.current_match?.readyClients.size}/${this.clients.length}`);
-	}
-
-	canClientControlGame(client: Client) {
-		if (!this.current_match || !this.current_match.clients.includes(client))
-			return false;
-
-		// TODO need to add more check
-		return true;
-	}
-
 	handlePlayerQuit(): void {
 		// need to display message saying tournament ended with no winner 
 		this.stop();
 	};
+
+	findMatch(): Match | undefined {
+		return (this.current_match);
+	}
 }
 
 export class TournamentRemote extends AbstractTournament {
@@ -246,87 +279,15 @@ export class TournamentRemote extends AbstractTournament {
 		if (!this.running) return ;
 
 		for (const match of this.client_match_map.values()) {
-			this.stopMatch(match.id);
+			match.game.stop(this.id);
 		}
 
 		this.running = false;
 		this.broadcast({ type: MessageType.SESSION_ENDED });
 	}
 
-	stopMatch(client_id: string) {
-		const match = this.client_match_map.get(client_id);
-		if (!match || !match.game || !match.game.running) return ;
-
-		match.game.stop(this.id);
-	}
-
-	pause(client_id: string): boolean {
-		const match = this.client_match_map.get(client_id);
-		if (!match || !match.game || !match.game.running) {
-			console.log(`Game ${match?.id} is not running, cannot pause`);
-			return false;
-		}
-
-		if (match.game.paused) {
-			console.log(`Game ${match.id} is already paused`);
-			return false;
-		}
-
-		match.game.pause();
-		return true;
-	}
-
-	resume(client_id: string): boolean {
-		const match = this.client_match_map.get(client_id);
-		if (!match) return false;
-		
-		if (!match.game || !match.game.running) {
-			console.log(`Game ${this.id} is not running, cannot resume`);
-			return false;
-		}
-		if (!match.game.paused) {
-			console.log(`Game ${this.id} is not paused`);
-			return false;
-		}
-
-		match.game.resume();
-		return true;
-	}
-
-	enqueue(input: PlayerInput, client_id?: string): void  {
-		if (client_id) {
-			const match = this.client_match_map.get(client_id);
-			match?.game?.enqueue(input);
-		}
-	}
-
-	setClientReady(client_id: string): void { // New function, add client in the readyClient list
-		const match = this.client_match_map.get(client_id);
-		if (!match) return;
-
-		match.readyClients.add(client_id);
-		console.log(`Client ${client_id} marked as ready. Ready clients: ${match.readyClients.size}/${this.clients.length}`);
-	}
-
-	canClientControlGame(client: Client) {
-		const match = this.client_match_map.get(client.id);
-		if (!match) return false;
-		
-		if (!match.clients.includes(client))
-			return false;
-
-		// TODO need to add more check
-		return true;
-	}
-
-	// Tthe opposing player wins their current match and the tournament continues
-	handlePlayerQuit(quitter_id: string, client_id?: string): void {
-		if (client_id) {
-			const match: Match | undefined = this.client_match_map.get(client_id);
-			if (!match) return ;
-
-			match.game.setOtherPlayerWinner(quitter_id);
-			match.game.stop();
-		}
+	findMatch(client_id?: string): Match | undefined {
+		if (!client_id) return ;
+		return (this.client_match_map.get(client_id));
 	}
 }

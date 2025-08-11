@@ -244,13 +244,8 @@ export class WebSocketManager {
             return;
         }
 
-        const success = gameSession.pause(client.id);
-        
-        if (success) {
+        if (gameSession.pause(client.id)) {
             console.log(`Game ${gameSession.id} paused by client ${client.id}`);
-        }
-        else {
-            console.warn(`Failed to pause game for client ${client.id}`);
         }
     }
 
@@ -270,12 +265,8 @@ export class WebSocketManager {
             return;
         }
 
-        const success = gameSession.resume(client.id);
-        if (success) {
+        if (gameSession.resume(client.id)) {
             console.log(`Game ${gameSession.id} resumed by client ${client.id}`);
-        }
-        else {
-            console.warn(`Failed to resume game for client ${client.id}`);
         }
     }
 

@@ -5,11 +5,12 @@ import { GameMode } from '../shared/constants.js';
 import { registerNewGame, addPlayer2 } from '../data/validation.js';
 import * as db from "../data/validation.js";
 import { GAME_CONFIG } from '../shared/gameConfig.js';
+import { EventEmitter } from 'events';
 
 /**
  * Manages game sessions and player interactions within the game.
  */
-class GameManager {
+class GameManager extends EventEmitter {
     private games: Map<string, GameSession | TournamentLocal | TournamentRemote> = new Map();
     private waitingPlayers: Client[] = [];
 
