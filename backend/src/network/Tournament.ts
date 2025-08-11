@@ -118,6 +118,130 @@ abstract class AbstractTournament extends AbstractGameSession{
 		// call db {updateTournamentWinner(player1_name: string)} to update final winner nb of tournament victory
 	}
 
+	async waitForPlayersReady(match: Match) {
+		while (!match.allClientsReady()) {
+			return new Promise(resolve => setTimeout(resolve, 1000));
+		}
+	}
+}
+
+export class TournamentLocal extends AbstractTournament {
+	current_match?: Match;
+
+	constructor(mode: GameMode, game_id: string, capacity: number) {
+		super(mode, game_id, capacity);
+	}
+
+	// runs each game in a round one by one and awaits each game before starting the next
+	async run(matches: Match[]): Promise<void> {
+		let finalWinner: Player | undefined;
+		
+		for (const match of matches) {
+			this.current_match = match;
+			match.game = new Game(match.players, this.broadcast.bind(this));
+			await this.waitForPlayersReady(match);
+			const winner = await match.game.run();
+			finalWinner = winner;
+			match.next?.add_player(winner);
+		}
+	
+		if (this.current_round === this.num_rounds) {
+			this.broadcast({ 
+				type: MessageType.SESSION_ENDED,
+				...(finalWinner && { winner: finalWinner.name })
+			});
+		}
+	}
+
+
+	stop() {
+		if (!this.running) return ;
+
+		this.current_match?.game.stop();
+		this.running = false;
+		this.broadcast({ type: MessageType.SESSION_ENDED });
+	}
+
+	pause(client_id: string): boolean {
+		if (!this.current_match || !this.current_match.game || !this.current_match.game.running) {
+			console.log(`Game ${this.current_match?.id} is not running, cannot pause`);
+			return false;
+		}
+
+		if (this.current_match.game.paused) {
+			console.log(`Game ${this.current_match.id} is already paused`);
+			return false;
+		}
+
+		this.current_match.game.pause();
+		return true;
+	}
+
+	resume(client_id: string): boolean {
+		if (!this.current_match ||!this.current_match.game || !this.current_match.game.running) {
+			console.log(`Game ${this.id} is not running, cannot resume`);
+			return false;
+		}
+		if (!this.current_match.game.paused) {
+			console.log(`Game ${this.id} is not paused`);
+			return false;
+		}
+
+		this.current_match.game.resume();
+		return true;
+	}
+
+	enqueue(input: PlayerInput): void  {
+		this.current_match?.game?.enqueue(input);
+	}
+
+	setClientReady(client_id: string): void { // New function, add client in the readyClient list
+		this.current_match?.readyClients.add(client_id);
+		console.log(`Client ${client_id} marked as ready. Ready clients: ${this.current_match?.readyClients.size}/${this.clients.length}`);
+	}
+
+	canClientControlGame(client: Client) {
+		if (!this.current_match || !this.current_match.clients.includes(client))
+			return false;
+
+		// TODO need to add more check
+		return true;
+	}
+
+	handlePlayerQuit(): void {
+		// need to display message saying tournament ended with no winner 
+		this.stop();
+	};
+}
+
+export class TournamentRemote extends AbstractTournament {
+
+	constructor(mode: GameMode, game_id: string, capacity: number) {
+		super(mode, game_id, capacity);
+		this.client_capacity = capacity;
+	}
+
+	// runs all matches in a given round in parallel
+	async run(matches: Match[]): Promise<void> {
+		let winner_promises: Promise<Player>[] = [];
+
+		// run each match in parallel and await [] of match promises
+		for (const match of matches) {
+			match.game = new Game(match.players, (message) => this.broadcast(message, match.clients));
+			let winner_promise: Promise<Player> = match.game.run();
+			winner_promises.push(winner_promise);
+		}
+		const winners = await Promise.all(winner_promises);
+
+		// promote winners once all promises are resolved
+		for (let i = 0; i < winners.length; i++) {
+			const match = matches[i];
+			const winner = winners[i];
+			match.next?.add_player(winner);
+		}
+
+	}
+
 	stop() {
 		if (!this.running) return ;
 
@@ -172,8 +296,6 @@ abstract class AbstractTournament extends AbstractGameSession{
 	enqueue(input: PlayerInput, client_id?: string): void  {
 		if (client_id) {
 			const match = this.client_match_map.get(client_id);
-			console.log("ENQUEUE: MATCH GAME?: " + (match?.game === undefined));
-
 			match?.game?.enqueue(input);
 		}
 	}
@@ -186,12 +308,6 @@ abstract class AbstractTournament extends AbstractGameSession{
 		console.log(`Client ${client_id} marked as ready. Ready clients: ${match.readyClients.size}/${this.clients.length}`);
 	}
 
-	async waitForPlayersReady(match: Match) {
-		while (!match.allClientsReady()) {
-			return new Promise(resolve => setTimeout(resolve, 1000));
-		}
-	}
-
 	canClientControlGame(client: Client) {
 		const match = this.client_match_map.get(client.id);
 		if (!match) return false;
@@ -201,67 +317,6 @@ abstract class AbstractTournament extends AbstractGameSession{
 
 		// TODO need to add more check
 		return true;
-	}
-}
-
-export class TournamentLocal extends AbstractTournament {
-	constructor(mode: GameMode, game_id: string, capacity: number) {
-		super(mode, game_id, capacity);
-	}
-
-	// runs each game in a round one by one and awaits each game before starting the next
-	async run(matches: Match[]): Promise<void> {
-		let finalWinner: Player | undefined;
-		for (const match of matches) {
-			match.game = new Game(match.players, this.broadcast.bind(this));
-			console.log("MATCH ID: " + match.id);
-			console.log("MATCH GAME?: " + (match.game === undefined));
-			await this.waitForPlayersReady(match);
-
-			const winner = await match.game.run();
-			finalWinner = winner;
-			match.next?.add_player(winner);
-		}
-	
-		if (this.current_round === this.num_rounds) {
-			this.broadcast({ 
-				type: MessageType.SESSION_ENDED,
-				...(finalWinner && { winner: finalWinner.name })
-			});
-		}
-	}
-
-	handlePlayerQuit(): void {
-		// need to display message saying tournament ended with no winner 
-		this.stop();
-	};
-}
-
-export class TournamentRemote extends AbstractTournament {
-	constructor(mode: GameMode, game_id: string, capacity: number) {
-		super(mode, game_id, capacity);
-		this.client_capacity = capacity;
-	}
-
-	// runs all matches in a given round in parallel
-	async run(matches: Match[]): Promise<void> {
-		let winner_promises: Promise<Player>[] = [];
-
-		// run each match in parallel and await [] of match promises
-		for (const match of matches) {
-			match.game = new Game(match.players, (message) => this.broadcast(message, match.clients));
-			let winner_promise: Promise<Player> = match.game.run();
-			winner_promises.push(winner_promise);
-		}
-		const winners = await Promise.all(winner_promises);
-
-		// promote winners once all promises are resolved
-		for (let i = 0; i < winners.length; i++) {
-			const match = matches[i];
-			const winner = winners[i];
-			match.next?.add_player(winner);
-		}
-
 	}
 
 	// Tthe opposing player wins their current match and the tournament continues
