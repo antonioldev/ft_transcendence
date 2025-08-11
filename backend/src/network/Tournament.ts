@@ -5,14 +5,13 @@ import { GameMode, MessageType } from '../shared/constants.js';
 import { PlayerInput } from '../shared/types.js';
 import { gameManager } from '../models/gameManager.js';
 
-
 export class Match {
 	id: string = crypto.randomUUID();
 	round: number;
 	players: Player[] = [];
 	clients: Client[] = [];
 	readyClients: Set<string> = new Set(); // New, keep track of clients that finish loading
-	client_match_map!: Map<string, Match>;
+	client_match_map?: Map<string, Match>;
 	game!: Game;
 
 	left?: Match;
@@ -29,10 +28,7 @@ export class Match {
 		}
 		if (player.client && !this.clients.includes(player.client)) {
 			this.clients.push(player.client);
-			this.client_match_map.set(player.client.id, this);
-			console.log("client id: " + player.client.id);
-			console.log("match id: " + this.id);
-			console.log("Match entry id: " + this.client_match_map.get(player.client.id)?.id);
+			this.client_match_map?.set(player.client.id, this); // for remote tournament only
 		}
 	}
 
@@ -42,7 +38,7 @@ export class Match {
 }
 
 abstract class AbstractTournament extends AbstractGameSession{
-	client_match_map: Map<string, Match> = new Map();	// Maps client id to match, used for easy insertion from client input
+	client_match_map?: Map<string, Match>;	// Maps client id to match, used for easy insertion from client input
 	rounds: Map<number, Match[]> = new Map();	// Maps rounds to match[], used for easy traversal to run games
 	num_rounds: number;
 	current_round: number = 1;
@@ -113,8 +109,6 @@ abstract class AbstractTournament extends AbstractGameSession{
 			
 			await this.run(matches);
 		}
-		// TODO: display final winner screen
-		// call db {updateTournamentWinner(player1_name: string)} to update final winner nb of tournament victory
 	}
 
 
@@ -248,7 +242,7 @@ export class TournamentLocal extends AbstractTournament {
 }
 
 export class TournamentRemote extends AbstractTournament {
-
+	client_match_map: Map<string, Match> = new Map();	// Maps client id to match, used for easy insertion from client input
 	constructor(mode: GameMode, game_id: string, capacity: number) {
 		super(mode, game_id, capacity);
 		this.client_capacity = capacity;
@@ -272,7 +266,6 @@ export class TournamentRemote extends AbstractTournament {
 			const winner = winners[i];
 			match.next?.add_player(winner);
 		}
-
 	}
 
 	stop() {
