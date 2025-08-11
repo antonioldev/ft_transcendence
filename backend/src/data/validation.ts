@@ -79,32 +79,24 @@ export function getUserStats(username: string): UserStats | undefined { // TODO 
   };
 }
 
-export function getGameHistoryForUser(username: string): GameHistoryEntry[] | undefined { //TODO create a real function to return the game history of a user
-  if (!username) return undefined;
+export function getGameHistoryForUser(username: string): GameHistoryEntry[] | undefined {
+//   if (!username) return undefined;
 
-  return [
-    {
-      playedAt: '2025-07-15 10:32',
-      opponent: 'rival_one',
-      score: '10 - 7',
-      result: 'Win',
-      duration: 300
-    },
-    {
-      playedAt: '2025-07-14 18:45',
-      opponent: 'challengerX',
-      score: '6 - 10',
-      result: 'Loss',
-      duration: 280
-    },
-    {
-      playedAt: '2025-07-13 13:10',
-      opponent: 'alpha',
-      score: '12 - 11',
-      result: 'Win',
-      duration: 350
-    }
-  ];
+  try { username = (JSON.parse(username) as any).username ?? username; } catch {}
+
+
+  const userId = dbFunction.retrieveUserID(username);
+  if (userId === -1) return [];
+
+  const rows = dbFunction.getUserGameHistoryRows(userId) as any[];
+
+  return rows.map(r => ({
+    playedAt: r.startedAt ?? '-',
+    opponent: r.opponent ?? '-',
+    score: (r.yourScore != null && r.opponentScore != null) ? `${r.yourScore} - ${r.opponentScore}` : '-',
+    result: r.didWin == null ? '-' : (r.didWin ? 'Win' : 'Loss'),
+    duration: r.durationSeconds ?? 0,
+  }));
 }
 
 export function findOrCreateGoogleUser(profile: { sub: string, name: string, email: string }): UserProfileData | null {
