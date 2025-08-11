@@ -18,13 +18,11 @@ export class Game {
 	winner!: Player;
 	paddles: (Paddle | CPUBot)[] = [new Paddle(LEFT_PADDLE), new Paddle(RIGHT_PADDLE)];
 	ball!: Ball;
-	match_id?: string; // for tournament matches only
 	// Callback function to broadcast the game state
 	private _broadcast: (message: ServerMessage, clients?: Client[]) => void;
 
-	constructor(players: Player[], broadcast_callback: (message: ServerMessage, clients?: Client[]) => void, match_id?: string) {
+	constructor(players: Player[], broadcast_callback: (message: ServerMessage, clients?: Client[]) => void) {
 		// Initialize game properties
-		this.match_id = match_id;
 		this.clock = new Clock();
 		this._broadcast = broadcast_callback;
 		this.players = players;
@@ -127,7 +125,6 @@ export class Game {
 			type: MessageType.ALL_READY,
 			left: this.players[LEFT_PADDLE]?.name,
 			right: this.players[RIGHT_PADDLE]?.name,
-			...(this.match_id && { match_id: this.match_id }) // optionally includes match_id for tournament
 		});
 		
 		// broadcast the countdown timer on every second

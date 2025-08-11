@@ -6,7 +6,6 @@ import { ClientMessage, ServerMessage, GetUserProfile, UserProfileData } from '.
 import * as db from "../data/validation.js";
 import { UserStats, GameHistoryEntry } from '../shared/types.js';
 
-// TODO: set timer for online player search, if not found then start with CPU
 
 /**
  * Manages WebSocket connections, client interactions, and game-related messaging.
@@ -107,10 +106,10 @@ export class WebSocketManager {
                     await this.handlePlayerInput(client, data);
                     break;
                 case MessageType.PAUSE_REQUEST:
-                    await this.handlePauseRequest(client, data);
+                    await this.handlePauseRequest(client);
                     break;
                 case MessageType.RESUME_REQUEST:
-                    await this.handleResumeRequest(client, data);
+                    await this.handleResumeRequest(client);
                     break;
                 case MessageType.LOGIN_USER:
                     console.log("HandleMessage WSM: calling Login_user");
@@ -133,7 +132,7 @@ export class WebSocketManager {
                 //     await this.handleUserProfileRequest(socket, data);
                 //     break;
                 case MessageType.QUIT_GAME:  // TODO I added because it was creating issue, need to check
-                    await this.handleQuitGame(client, data);
+                    await this.handleQuitGame(client);
                     break;
                 default:
                     await this.sendError(socket, 'Unknown message type');
@@ -226,15 +225,14 @@ export class WebSocketManager {
             side: data.side,
             dx: data.direction
         }
-        console.log("match id backend = " + data.match_id);
-        gameSession.enqueue(input, data.match_id);
+        gameSession.enqueue(input, client.id);
     }
 
    /**
      * Handles the request from a client to pause a game
      * @param client - The client that send the request.
      */
-    private async handlePauseRequest(client: Client, data: ClientMessage): Promise<void> {
+    private async handlePauseRequest(client: Client): Promise<void> {
         const gameSession = this.findClientGame(client);
         if (!gameSession) {
             console.warn(`Client ${client.id} not in any game for pause request`);
@@ -246,7 +244,7 @@ export class WebSocketManager {
             return;
         }
 
-        const success = await gameSession.pause(client, data.match_id);
+        const success = await gameSession.pause(client, client.id);
         
         if (success) {
             console.log(`Game ${gameSession.id} paused by client ${client.id}`);
@@ -260,7 +258,7 @@ export class WebSocketManager {
      * Handles the request from a client to resume a game
      * @param client - The client that send the request.
      */
-    private async handleResumeRequest(client: Client, data: ClientMessage): Promise<void> {
+    private async handleResumeRequest(client: Client): Promise<void> {
         const gameSession = this.findClientGame(client);
         if (!gameSession) {
             console.warn(`Client ${client.id} not in any game for resume request`);
@@ -272,7 +270,7 @@ export class WebSocketManager {
             return;
         }
 
-        const success = await gameSession.resume(client, data.match_id);
+        const success = await gameSession.resume(client, client.id);
         if (success) {
             console.log(`Game ${gameSession.id} resumed by client ${client.id}`);
         }
@@ -285,7 +283,7 @@ export class WebSocketManager {
      * Handles the disconnection of a client, removing them from games and cleaning up resources.
      * @param data - The user information that are used to confirm login
      */
-    private async handleQuitGame(client: Client, data: ClientMessage): Promise<void> {
+    private async handleQuitGame(client: Client): Promise<void> {
         const gameSession = this.findClientGame(client);
         if (!gameSession) {
             console.warn(`Client ${client.id} not in any game to quit`);
@@ -293,7 +291,7 @@ export class WebSocketManager {
         }
         
         
-        gameSession.handlePlayerQuit(client.id, data.match_id);
+        gameSession.handlePlayerQuit(client.id, client.id);
         gameManager.removeClientFromGames(client);
         // gameManager.removeGame(gameSession.id);
         console.log(`Game ${gameSession.id} ended by client ${client.id}`);

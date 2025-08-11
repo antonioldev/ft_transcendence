@@ -2,6 +2,7 @@ import { Game } from '../core/game.js';
 import { Client, Player } from '../models/Client.js';
 import { MessageType, GameMode, AiDifficulty } from '../shared/constants.js';
 import { PlayerInput, ServerMessage } from '../shared/types.js';
+import { Match } from './Tournament.js';
 
 export abstract class AbstractGameSession {
 	mode: GameMode;
@@ -93,17 +94,16 @@ export abstract class AbstractGameSession {
 		}
 	}
 
-	abstract waitingForPlayersReady(match_id?: string): void;
 	abstract start(): Promise<void>; 
-	abstract stop(match_id?: string): void;
-	abstract pause(match_id?: string): boolean;
-	abstract resume(match_id?: string): boolean;
-
-	abstract enqueue(input: PlayerInput): void;
-	abstract setClientReady(client: Client, match_id?: string): void;
-	abstract allClientsReady(match_id?: string): boolean;
-	abstract handlePlayerQuit(quitter_id: string, match_id?: string): void;
-	abstract canClientControlGame(client: Client, match_id?: string): boolean;
+	abstract stop(client_id?: string): void;
+	abstract pause(client_id?: string): boolean;
+	abstract resume(client_id?: string): boolean;
+	
+	abstract enqueue(input: PlayerInput, client_id?: string): void;
+	abstract waitForPlayersReady(match?: Match): void;
+	abstract setClientReady(client_id?: string): void;
+	abstract handlePlayerQuit(quitter_id: string): void;
+	abstract canClientControlGame(client: Client): boolean;
 }
 
 export class GameSession extends AbstractGameSession{
@@ -118,8 +118,8 @@ export class GameSession extends AbstractGameSession{
 		if (this.running) return;
 		this.running = true;
 		
+		await this.waitForPlayersReady();
 		this.add_CPUs(); // add any CPU's if necessary
-		await this.waitingForPlayersReady();
 		
 		this.game = new Game(this.players, this.broadcast.bind(this))
 		await this.game.run();
@@ -174,9 +174,9 @@ export class GameSession extends AbstractGameSession{
 		this.game?.enqueue(input);
 	}
 
-	setClientReady(client: Client): void { // New function, add client in the readyClient list
-		this.readyClients.add(client.id);
-		console.log(`Client ${client.id} marked as ready. Ready clients: ${this.readyClients.size}/${this.clients.length}`);
+	setClientReady(client_id: string): void { // New function, add client in the readyClient list
+		this.readyClients.add(client_id);
+		console.log(`Client ${client_id} marked as ready. Ready clients: ${this.readyClients.size}/${this.clients.length}`);
 	}
 
 	allClientsReady(): boolean {
@@ -184,7 +184,7 @@ export class GameSession extends AbstractGameSession{
 		return (this.readyClients.size === this.clients.length && this.clients.length > 0);
 	}
 
-	async waitingForPlayersReady() {
+	async waitForPlayersReady() {
 		while (!this.allClientsReady()) {
 			await new Promise(resolve => setTimeout(resolve, 1000));
 		}
