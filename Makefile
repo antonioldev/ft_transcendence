@@ -4,6 +4,19 @@ BACKEND_DIR = ./backend
 VOLUME = ./backend/src/database/transcendence.sqlite
 
 #################################################################################
+############################## PEPPER GENERATION ################################
+
+PEPPER_GEN = node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+pepper-env:
+	@if ! grep -q '^PEPPER=' .env; then \
+		PEPPER_VALUE=$$($(PEPPER_GEN)); \
+		echo "PEPPER not found. Generating one..."; \
+		echo -n "\nPEPPER=\"$${PEPPER_VALUE}\"" >> .env; \
+	else \
+		echo "PEPPER already set in .env"; \
+	fi
+
+#################################################################################
 #################################     MAIN      #################################
 
 run: build start
@@ -14,7 +27,7 @@ start:
 stop:
 	docker-compose down
 
-build: build-backend build-frontend
+build: pepper-env build-backend build-frontend
 
 build-frontend:
 	@mkdir -p frontend/src/shared
@@ -98,4 +111,5 @@ update: update-deps fclean up-build
         build build-frontend build-backend \
         logs logs-frontend logs-backend \
         clean fclean re restart \
-        ps update update-deps
+        ps update update-deps \
+		pepper-env
