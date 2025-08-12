@@ -95,11 +95,11 @@ export function getGameHistoryForUser(username: string): GameHistoryEntry[] | un
     if (rows.length === 0) return [];
 
     return rows.map(r => ({
-        playedAt: r.startedAt ?? '-',
-        opponent: r.opponent ?? '-',
-        score: (r.yourScore != null && r.opponentScore != null) ? `${r.yourScore} - ${r.opponentScore}` : '-',
-        result: r.didWin == null ? '-' : (r.didWin ? 'Win' : 'Loss'),
-        duration: r.durationSeconds ?? 0,
+        playedAt: r.startedAt ?? 'error',
+        opponent: r.opponent ?? 'error',
+        score: (r.yourScore != null && r.opponentScore != null) ? `${r.yourScore} - ${r.opponentScore}` : 'error',
+        result: r.didWin == null ? 'error' : (r.didWin ? 'Win' : 'Loss'),
+        duration: r.durationSeconds ?? 999,
     }));
 }
 
