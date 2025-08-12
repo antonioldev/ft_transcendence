@@ -36,6 +36,24 @@ export class DashboardManager {
         if (!container) return;
         container.innerHTML = '';
 
+        // Table
+        const table = document.createElement('table');
+        table.innerHTML = `
+            <thead>
+                <tr><th>Victories</th><th>Defeats</th><th>Games</th><th>Win Ratio</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>${stats.victories}</td>
+                    <td>${stats.defeats}</td>
+                    <td>${stats.games}</td>
+                    <td>${(stats.winRatio * 100).toFixed(1)}%</td>
+                </tr>
+            </tbody>
+        `;
+        container.appendChild(table);
+
+
         // Bar Chart
         const barChart = this.createBarChart([
             { label: 'Victories', value: stats.victories, color: '#4caf50' },
