@@ -127,9 +127,6 @@ export class GameSession extends AbstractGameSession{
 	}
 
 	stop(): void {
-		console.log('\x1b[32m%s\x1b[0m', 'stop() in GameSession called');
-		console.log('\x1b[32m%s\x1b[0m', 'is running:', this.game.running, 'game:', this.id);
-
 		if (!this.running) return;
 		
 		let winner: string | undefined;
