@@ -325,7 +325,7 @@ export function getUserNbTournamentWin(id: number) {
 	try {
 		id = nonNegInt(id, 'user id');
 
-		const user = db.prepare('SELECT tournament_in FROM users WHERE id = ?');
+		const user = db.prepare('SELECT tournament_win FROM users WHERE id = ?');
 		const userTournamentWin = user.get(id) as { tournament_win: number };
 		if (!userTournamentWin) {
 			console.error('User not found');
