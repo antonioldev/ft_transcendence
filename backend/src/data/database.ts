@@ -361,8 +361,13 @@ export function getUserNbGames(id: number) {
 
 		const user = db.prepare('SELECT games FROM users WHERE id = ?');
 		const userGames = user.get(id) as { games: number };
+		console.log('[DBG][getUserNbGames] id=%s row=%s', id, JSON.stringify(userGames));
+		console.log('[DBG][getUserNbGames] games field =', (userGames as any)?.games, 'type =', typeof (userGames as any)?.games);
+
 		if (!userGames) {
 			console.error('User not found');
+			console.log('[DBG] Recent users:', db.prepare('SELECT id, username, games FROM users ORDER BY id DESC LIMIT 5').all());
+  			console.log('[DBG] Sample games for id:', id, db.prepare('SELECT game_id, player1_id, player2_id, winner_id, played_at FROM games WHERE player1_id=? OR player2_id=? ORDER BY played_at DESC LIMIT 5').all(id, id));
 			return -1;
 		}
 		return userGames.games;
