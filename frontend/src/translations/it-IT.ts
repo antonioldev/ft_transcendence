@@ -41,6 +41,7 @@ export const italian: Translation = {
     viewMode: 'Modalità di visualizzazione',
     backToMain: 'Torna al menu principale',
     pleaseFilllAllFields: 'Compila tutti i campi',
+    passwordFormat: "La password deve essere lunga 8 caratteri e contenere almeno una lettera (maiuscola e minuscola), un numero e un carattere speciale",
     passwordsDoNotMatch: 'Le password non corrispondono',
     dontHaveAccount: 'Non hai un account?',
     alreadyHaveAccount: 'Hai già un account?',
