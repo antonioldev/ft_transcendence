@@ -716,7 +716,6 @@ export function displayGameInfo(gameId: string) {
 		gameId = safeGameId(gameId);
 
 		const gameInfo = db.prepare('SELECT * FROM games WHERE game_id = ?');
-		console.log(gameInfo.get(gameId));
 	} catch (err) {
 		console.error('Error in printing game info', err);
 	}
@@ -727,8 +726,39 @@ export function displayPlayerInfo(playerId: number) {
 		playerId = nonNegInt(playerId, 'player id');
 
 		const gameInfo = db.prepare('SELECT * FROM users WHERE id = ?');
-		console.log(gameInfo.get(playerId));
 	} catch (err) {
 		console.error('Error in printing game info', err);
+	}
+}
+
+// Get entire game history for a user
+export function getUserGameHistoryRows(userId: number) {
+	try {
+		userId = nonNegInt(userId, 'user id');
+
+		const stmt = db.prepare(`
+		SELECT
+			g.game_id                       AS gameId,
+			g.played_at                     AS startedAt,
+			COALESCE(g.duration_seconds, 0) AS durationSeconds,
+			g.tournament                    AS isTournament,
+			CASE WHEN g.player1_id = ? THEN u2.username ELSE u1.username END AS opponent,
+			CASE WHEN g.player1_id = ? THEN g.player1_score ELSE g.player2_score END AS yourScore,
+			CASE WHEN g.player1_id = ? THEN g.player2_score ELSE g.player1_score END AS opponentScore,
+			CASE
+			WHEN g.winner_id IS NULL THEN NULL
+			WHEN g.winner_id = ?     THEN 1
+			ELSE 0
+			END                            AS didWin
+		FROM games g
+		JOIN users u1 ON u1.id = g.player1_id
+		JOIN users u2 ON u2.id = g.player2_id
+		WHERE g.player1_id = ? OR g.player2_id = ?
+		ORDER BY g.played_at DESC, g.game_id DESC
+		`);
+		return stmt.all(userId, userId, userId, userId, userId, userId);
+	} catch (err) {
+		console.error('Error in getUserGameHistoryRows:', err);
+		return [];
 	}
 }

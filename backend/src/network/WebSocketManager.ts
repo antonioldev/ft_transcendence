@@ -484,7 +484,9 @@ export class WebSocketManager {
 
     private async handleUserStats(socket: any, message: string) {
         const stats = db.getUserStats(message); // from DB
+        console.log('\x1b[32m%s\x1b[0m', 'pulling real handleUserStats', JSON.stringify(stats))
         if (!stats)
+            
             this.sendError(socket, 'user not recognised');
         else
             this.sendUserStats(socket, stats);
@@ -493,6 +495,7 @@ export class WebSocketManager {
 
     private async handleUserGameHistory(socket: any, message: string) {
         const history = db.getGameHistoryForUser(message); // from DB
+        console.log('\x1b[32m%s\x1b[0m', 'pulling real handleUserGameHistory', JSON.stringify(history))
         if (!history)
             this.sendError(socket, 'user not recognised');
         else
@@ -508,7 +511,7 @@ export class WebSocketManager {
         try {
             await socket.send(JSON.stringify(msg));
         } catch (error) {
-            console.error('❌ Failed to send success message:', error);
+            console.error('❌ Failed to sendUserStats:', error);
         }
     } 
 
@@ -521,7 +524,7 @@ export class WebSocketManager {
         try {
             await socket.send(JSON.stringify(msg));
         } catch (error) {
-            console.error('❌ Failed to send success message:', error);
+            console.error('❌ Failed to sendUserGameHistory:', error);
         }
     } 
 
