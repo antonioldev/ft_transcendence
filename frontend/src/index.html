@@ -247,16 +247,23 @@
     </div>
 
     <!-- Stats Dashboard -->
-    <div id="stats-dashboard" class="screen overlay" style="display: none;">
+    <div id="stats-dashboard" class="screen overlay"
+        style="display:none; flex-direction:column; align-items:center; gap:24px;">
 
-    <h2>User Stats</h2>
-    <div id="user-stats-chart"></div>
+    <!-- <h2 style="width:100%; text-align:center; margin:12px 0 4px;">User Stats</h2> -->
+     <h2 style="width:100%; text-align:center; margin:12px 0 4px; font-size:24px; font-weight:700;">User Stats</h2>
+    <div id="user-stats-chart" style="display:block; width:100%; max-width:900px; margin:0 auto;"></div>
 
-    <h2>Game History</h2>
-    <div id="game-history-table"></div>
+    <!-- <h2 style="width:100%; text-align:center; margin:24px 0 4px;">Game History</h2> -->
+     <h2 style="width:100%; text-align:center; margin:24px 0 4px; font-size:24px; font-weight:700;">Game History</h2>
+    <div id="game-history-table" style="display:block; width:100%; max-width:900px; margin:0 auto;"></div>
 
-    <button id="dashboard-back" class="button secondary">Back</button>
+    <div style="width:100%; text-align:center; margin:24px 0 8px;">
+        <button id="dashboard-back" class="button secondary">Back</button>
     </div>
+    </div>
+
+
 
     <script type="module" src="./core/main.js"></script>
 </body>

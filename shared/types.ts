@@ -118,6 +118,9 @@ export interface UserStats {
   games: number;
   winRatio: number;
   [key: string]: number;
+  tournamentsPlayed: number;
+  tournamentWins: number;
+  tournamentWinRatio: number;
 }
 
 export interface GameHistoryEntry {

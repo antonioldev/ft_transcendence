@@ -68,7 +68,7 @@ export function requestUserInformation(username: string): UserProfileData | unde
     return userInfo;    
 }
 
-export function getUserStats(username: string): UserStats | undefined { // TODO create a real function to return the stats of a user
+export function getUserStats(username: string): UserStats | undefined {
 //   if (!username) return undefined;
     try { username = (JSON.parse(username) as any).username ?? username; } catch {}
     console.log('\x1b[32m%s\x1b[0m', "getUserStats: username", username);
@@ -80,12 +80,18 @@ export function getUserStats(username: string): UserStats | undefined { // TODO 
     const defeats = dbFunction.getUserNbDefeat(userId);
     const games = dbFunction.getUserNbGames(userId);
     const winRatio = games > 0 ? victories / games : 0;
+    const tournamentsPlayed = dbFunction.getUserNbTournament(userId);
+    const tournamentWins = dbFunction.getUserNbTournamentWin(userId);
+    const tournamentWinRatio = tournamentsPlayed > 0 ? tournamentWins / tournamentsPlayed : 0;
 
     return {
         victories: victories,
         defeats: defeats,
         games: victories,
-        winRatio: winRatio
+        winRatio: winRatio,
+        tournamentsPlayed: tournamentsPlayed,
+        tournamentWins: tournamentWins,
+        tournamentWinRatio: tournamentWinRatio
     };
 }
 

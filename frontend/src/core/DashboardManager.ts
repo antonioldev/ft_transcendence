@@ -35,71 +35,103 @@ export class DashboardManager {
         const container = getElementById(EL.DASHBOARD.USER_STATS_CHART);
         if (!container) return;
         container.innerHTML = '';
+        // layout for table + pie (row, centered)
+        (container as HTMLElement).style.display = 'flex';
+        (container as HTMLElement).style.flexDirection = 'column';
+        (container as HTMLElement).style.alignItems = 'center';
+        (container as HTMLElement).style.textAlign = 'center';
+        (container as HTMLElement).style.gap = '16px';
 
-        // Table
         const table = document.createElement('table');
+        table.style.borderCollapse = 'collapse';
+        table.style.width = 'auto';         // allow pie to sit beside
+        table.style.minWidth = '420px';
+
         table.innerHTML = `
             <thead>
-                <tr><th>Victories</th><th>Defeats</th><th>Games</th><th>Win Ratio</th></tr>
+                <tr>
+                    <th style="text-align:center; padding:6px 12px;">Victories</th>
+                    <th style="text-align:center; padding:6px 12px;">Defeats</th>
+                    <th style="text-align:center; padding:6px 12px;">Games</th>
+                    <th style="text-align:center; padding:6px 12px;">Win Ratio</th>
+                    <th style="text-align:center; padding:6px 12px;">Tournaments Played</th>
+                    <th style="text-align:center; padding:6px 12px;">Tournament Wins</th>
+                    <th style="text-align:center; padding:6px 12px;">Tournament Win Ratio</th>
+                </tr>
             </thead>
             <tbody>
                 <tr>
-                    <td>${stats.victories}</td>
-                    <td>${stats.defeats}</td>
-                    <td>${stats.games}</td>
-                    <td>${(stats.winRatio * 100).toFixed(1)}%</td>
+                    <td style="padding:6px 12px;">${stats.victories}</td>
+                    <td style="padding:6px 12px;">${stats.defeats}</td>
+                    <td style="padding:6px 12px;">${stats.games}</td>
+                    <td style="padding:6px 12px;">${(stats.winRatio * 100).toFixed(1)}%</td>
+                    <td style="padding:6px 12px;">${stats.tournamentsPlayed}</td>
+                    <td style="padding:6px 12px;">${stats.tournamentWins}</td>
+                    <td style="padding:6px 12px;">${(stats.tournamentWinRatio * 100).toFixed(1)}%</td>
                 </tr>
             </tbody>
         `;
-        container.appendChild(table);
 
-
-        // // Bar Chart
-        // const barChart = this.createBarChart([
-        //     { label: 'Victories', value: stats.victories, color: '#4caf50' },
-        //     { label: 'Defeats', value: stats.defeats, color: '#f44336' },
-        //     { label: 'Games', value: stats.games, color: '#2196f3' }
-        // ]);
-        // container.appendChild(barChart);
-
-        // Pie Chart
         const pieChart = this.createPieChart([
             { label: 'Victories', value: stats.victories, color: '#4caf50' },
             { label: 'Defeats', value: stats.defeats, color: '#f44336' }
         ]);
-        container.appendChild(pieChart);
+
+        // place table + pie side-by-side, centered
+        const row = document.createElement('div');
+        row.style.display = 'flex';
+        row.style.gap = '24px';
+        row.style.alignItems = 'flex-start';
+        row.style.justifyContent = 'center';
+        row.style.flexWrap = 'wrap';
+        row.appendChild(table);
+        row.appendChild(pieChart);
+        container.appendChild(row);
     }
+
+
 
     private renderGameHistory(history: GameHistoryEntry[]): void {
         const container = getElementById(EL.DASHBOARD.GAME_HISTORY_TABLE);
         if (!container) return;
         container.innerHTML = '';
+        (container as HTMLElement).style.display = 'block';
+        (container as HTMLElement).style.textAlign = 'center';
 
         const table = document.createElement('table');
+        table.style.borderCollapse = 'collapse';
+        table.style.width = '100%';
+        table.style.maxWidth = '900px';
+        table.style.margin = '0 auto';
+
         table.innerHTML = `
             <thead>
                 <tr>
-                    <th>Date</th><th>Opponent</th><th>Score</th><th>Result</th><th>Tournament</th><th>Duration</th>
+                    <th style="text-align:center; padding:6px 12px;">Date & Time</th>
+                    <th style="text-align:center; padding:6px 12px;">Opponent</th>
+                    <th style="text-align:center; padding:6px 12px;">Score</th>
+                    <th style="text-align:center; padding:6px 12px;">Result</th>
+                    <th style="text-align:center; padding:6px 12px;">Tournament</th>
+                    <th style="text-align:center; padding:6px 12px;">Duration</th>
                 </tr>
             </thead>
             <tbody>
-                ${history.map(entry => {
-                    const friendlyDate = new Date(entry.playedAt).toLocaleString();
-                    return `
-                        <tr>
-                            <td>${friendlyDate}</td>
-                            <td>${entry.opponent}</td>
-                            <td>${entry.score}</td>
-                            <td>${entry.result}</td>
-                            <td>${entry.isTournament ? 'Yes' : 'No'}</td>
-                            <td>${entry.duration}s</td>
-                        </tr>
-                    `;
-                }).join('')}
+                ${history.map(e => `
+                    <tr>
+                        <td style="padding:6px 12px;">${new Date(e.playedAt).toLocaleString()}</td>
+                        <td style="padding:6px 12px;">${e.opponent}</td>
+                        <td style="padding:6px 12px;">${e.score}</td>
+                        <td style="padding:6px 12px;">${e.result}</td>
+                        <td style="padding:6px 12px;">${e.isTournament ? 'No' : 'Yes'}</td>
+                        <td style="padding:6px 12px;">${e.duration}s</td>
+                    </tr>
+                `).join('')}
             </tbody>
         `;
         container.appendChild(table);
     }
+
+
 
     // private createBarChart(data: { label: string; value: number; color: string }[]): HTMLElement {
     //     const max = Math.max(...data.map(d => d.value));
