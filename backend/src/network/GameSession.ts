@@ -136,7 +136,6 @@ export class GameSession extends AbstractGameSession{
 		if (this.game?.winner)
 			winner = this.game.winner.name;
 		// if (this.game?.running) // this is false before scores updated in this.game.stop(), removing check fixes DB bug
-		// 	console.log('\x1b[32m%s\x1b[0m', 'games stop in GameSession stop() called with gameId:', this.id);
 		this.game.stop(this.id);
 		
 		this.running = false;

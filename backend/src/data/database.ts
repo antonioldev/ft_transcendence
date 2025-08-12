@@ -486,8 +486,6 @@ export function deleteGame(id: number): boolean {
 
 // UPDATE game info
 export function updateGameInfo(id: string, player1_score: number, player2_score: number, winner: number, looser: number, endTime: number): boolean {
-	console.log('\x1b[32m%s\x1b[0m', 'trying updateGameInfo');
-
 	try {
 		id = safeGameId(id);
 		player1_score = nonNegInt(player1_score, 'player1_score');
@@ -718,7 +716,6 @@ export function displayGameInfo(gameId: string) {
 		gameId = safeGameId(gameId);
 
 		const gameInfo = db.prepare('SELECT * FROM games WHERE game_id = ?');
-		console.log('\x1b[31m%s\x1b[0m', `real displayGameInfo:`, gameInfo.get(gameId));
 	} catch (err) {
 		console.error('Error in printing game info', err);
 	}
@@ -729,13 +726,12 @@ export function displayPlayerInfo(playerId: number) {
 		playerId = nonNegInt(playerId, 'player id');
 
 		const gameInfo = db.prepare('SELECT * FROM users WHERE id = ?');
-		// shows only on game end
-		console.log('\x1b[32m%s\x1b[0m', `real displayPLayerInfo:`, gameInfo.get(playerId));
 	} catch (err) {
 		console.error('Error in printing game info', err);
 	}
 }
 
+// Get entire game history for a user
 export function getUserGameHistoryRows(userId: number) {
 	try {
 		userId = nonNegInt(userId, 'user id');

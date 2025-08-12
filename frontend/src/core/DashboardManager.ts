@@ -35,7 +35,7 @@ export class DashboardManager {
         const container = getElementById(EL.DASHBOARD.USER_STATS_CHART);
         if (!container) return;
         container.innerHTML = '';
-        // layout for table + pie (row, centered)
+
         (container as HTMLElement).style.display = 'flex';
         (container as HTMLElement).style.flexDirection = 'column';
         (container as HTMLElement).style.alignItems = 'center';
@@ -44,7 +44,7 @@ export class DashboardManager {
 
         const table = document.createElement('table');
         table.style.borderCollapse = 'collapse';
-        table.style.width = 'auto';         // allow pie to sit beside
+        table.style.width = 'auto';
         table.style.minWidth = '420px';
 
         table.innerHTML = `
@@ -77,7 +77,7 @@ export class DashboardManager {
             { label: 'Defeats', value: stats.defeats, color: '#f44336' }
         ]);
 
-        // place table + pie side-by-side, centered
+        // center & arrange table and pie chart
         const row = document.createElement('div');
         row.style.display = 'flex';
         row.style.gap = '24px';
@@ -88,7 +88,6 @@ export class DashboardManager {
         row.appendChild(pieChart);
         container.appendChild(row);
     }
-
 
 
     private renderGameHistory(history: GameHistoryEntry[]): void {
@@ -132,42 +131,6 @@ export class DashboardManager {
     }
 
 
-
-    // private createBarChart(data: { label: string; value: number; color: string }[]): HTMLElement {
-    //     const max = Math.max(...data.map(d => d.value));
-    //     const container = document.createElement('div');
-    //     container.style.display = 'flex';
-    //     container.style.alignItems = 'flex-end';
-    //     container.style.gap = '10px';
-    //     container.style.height = '150px';
-    //     container.style.marginBottom = '20px';
-
-    //     data.forEach(d => {
-    //         const bar = document.createElement('div');
-    //         const height = (d.value / max) * 100;
-    //         bar.style.width = '50px';
-    //         bar.style.height = `${height}%`;
-    //         bar.style.backgroundColor = d.color;
-    //         bar.title = `${d.label}: ${d.value}`;
-
-    //         const label = document.createElement('div');
-    //         label.innerText = d.label;
-    //         label.style.textAlign = 'center';
-    //         label.style.marginTop = '5px';
-
-    //         const barWrapper = document.createElement('div');
-    //         barWrapper.style.display = 'flex';
-    //         barWrapper.style.flexDirection = 'column';
-    //         barWrapper.style.alignItems = 'center';
-
-    //         barWrapper.appendChild(bar);
-    //         barWrapper.appendChild(label);
-    //         container.appendChild(barWrapper);
-    //     });
-
-    //     return container;
-    // }
-
     private createPieChart(data: { label: string; value: number; color: string }[]): SVGElement {
         const radius = 50;
         const total  = data.reduce((sum, d) => sum + d.value, 0);
@@ -178,6 +141,7 @@ export class DashboardManager {
         svg.setAttribute("height", "120");
         svg.setAttribute("viewBox", "0 0 120 120");
 
+        // handle 0 or 1 win/loss cases
         const nonZero = data.filter(d => d.value > 0);
         if (total <= 0 || nonZero.length === 1) {
             const cx = radius + 10, cy = radius + 10;
@@ -219,7 +183,7 @@ export class DashboardManager {
             path.setAttribute("d", dAttr);
             path.setAttribute("fill", d.color);
             path.setAttribute("title", d.label);
-            path.setAttribute("stroke", "#000");        // thin separators
+            path.setAttribute("stroke", "#000");        // separators
             path.setAttribute("stroke-width", "1");
             svg.appendChild(path);
         });
@@ -234,6 +198,41 @@ export class DashboardManager {
 
         return svg;
     }
+    
+    // private createBarChart(data: { label: string; value: number; color: string }[]): HTMLElement {
+    //     const max = Math.max(...data.map(d => d.value));
+    //     const container = document.createElement('div');
+    //     container.style.display = 'flex';
+    //     container.style.alignItems = 'flex-end';
+    //     container.style.gap = '10px';
+    //     container.style.height = '150px';
+    //     container.style.marginBottom = '20px';
+
+    //     data.forEach(d => {
+    //         const bar = document.createElement('div');
+    //         const height = (d.value / max) * 100;
+    //         bar.style.width = '50px';
+    //         bar.style.height = `${height}%`;
+    //         bar.style.backgroundColor = d.color;
+    //         bar.title = `${d.label}: ${d.value}`;
+
+    //         const label = document.createElement('div');
+    //         label.innerText = d.label;
+    //         label.style.textAlign = 'center';
+    //         label.style.marginTop = '5px';
+
+    //         const barWrapper = document.createElement('div');
+    //         barWrapper.style.display = 'flex';
+    //         barWrapper.style.flexDirection = 'column';
+    //         barWrapper.style.alignItems = 'center';
+
+    //         barWrapper.appendChild(bar);
+    //         barWrapper.appendChild(label);
+    //         container.appendChild(barWrapper);
+    //     });
+
+    //     return container;
+    // }
 
 }
 

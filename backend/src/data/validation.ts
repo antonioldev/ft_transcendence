@@ -69,13 +69,9 @@ export function requestUserInformation(username: string): UserProfileData | unde
 }
 
 export function getUserStats(username: string): UserStats | undefined {
-//   if (!username) return undefined;
     try { username = (JSON.parse(username) as any).username ?? username; } catch {}
-    console.log('\x1b[32m%s\x1b[0m', "getUserStats: username", username);
+    const userId = dbFunction.retrieveUserID(username);
 
-        const userId = dbFunction.retrieveUserID(username);
-    // if (userId === -1) return [];
-    // pull victories, defeats etc from db
     const victories = dbFunction.getUserNbVictory(userId);
     const defeats = dbFunction.getUserNbDefeat(userId);
     const games = dbFunction.getUserNbGames(userId);
@@ -96,18 +92,12 @@ export function getUserStats(username: string): UserStats | undefined {
 }
 
 export function getGameHistoryForUser(username: string): GameHistoryEntry[] | undefined {
-//   if (!username) return undefined;
-
     try { username = (JSON.parse(username) as any).username ?? username; } catch {}
-    console.log('\x1b[32m%s\x1b[0m', "getGameHistoryForUser: username", username);
-
 
     const userId = dbFunction.retrieveUserID(username);
     if (userId === -1) return [];
 
     const rows = dbFunction.getUserGameHistoryRows(userId) as any[];
-    // print the first 3 of these rows
-    console.log('\x1b[32m%s\x1b[0m', "Game history rows for user:", username, rows.slice(0, 2));
     if (rows.length === 0) return [];
 
     return rows.map(r => ({
@@ -137,13 +127,11 @@ export function findOrCreateGoogleUser(profile: { sub: string, name: string, ema
 }
 
 export function registerNewGame(gameId: string, playerUsername: string, tournament: number) : boolean {
-	console.log('\x1b[32m%s\x1b[0m', `DB create game instance: creating a new game: {player1 ${playerUsername}}`);
 	if (playerUsername === undefined) {
 		console.error("Validation.ts -- registerNewGame: playerUsername is undefined");
 		return false;
 	}
 	const player_id = dbFunction.retrieveUserID(playerUsername);
-	console.log('\x1b[32m%s\x1b[0m', `BD create game instance: player1 id {player1: ${player_id}}`);
 	if (player_id === -1) {
 		console.error("Validation.ts -- registerNewGame: Player doesn't exist in db");
 		return false;
@@ -156,7 +144,6 @@ export function registerNewGame(gameId: string, playerUsername: string, tourname
 }
 
 export function addPlayer2(gameId: string, player2: string): boolean {
-	console.log('\x1b[32m%s\x1b[0m', `validation -- addPlayer2: we are adding 2nd player to exisitng game {gameid: ${gameId}, player2: ${player2}}`);
 	if (gameId === undefined)
 		return false;
 	if (dbFunction.gameExist(gameId) === false) {
@@ -180,7 +167,6 @@ export function updateStartTime(gameId: string) {
 }
 
 export function saveGameResult(gameId: string, player1_name: string, player2_name: string, player1_score: number, player2_score: number, endTime: number): boolean {
-    console.log('\x1b[32m%s\x1b[0m', 'inside saveGameResult:');
 	const player1_id = dbFunction.retrieveUserID(player1_name);
 	const player2_id = dbFunction.retrieveUserID(player2_name);
     if (player1_id === -1 || player2_id === -1) {
@@ -197,7 +183,7 @@ export function saveGameResult(gameId: string, player1_name: string, player2_nam
 
 	const gameUpdate = dbFunction.updateGameInfo(gameId, player1_score, player2_score, winner_id, looser_id, endTime);
 	if (gameUpdate) {
-		console.log('\x1b[32m%s\x1b[0m', '✅ Game result saved:', { gameId });
+		console.log('✅ Game result saved:', { gameId });
 		updatePlayers(winner_id, looser_id, isGameTournament);
 		dbFunction.displayGameInfo(gameId);
         dbFunction.displayPlayerInfo(player1_id);
@@ -210,14 +196,12 @@ export function saveGameResult(gameId: string, player1_name: string, player2_nam
 }
 
 export function updatePlayers(winner_id: number, looser_id: number, tournament: number) {
-    console.log('\x1b[32m%s\x1b[0m', 'calling updatePlayers:');
 	dbFunction.updateUserGame(winner_id, 1);
     dbFunction.updateUserVictory(winner_id, 1);
     dbFunction.updateUserGame(looser_id, 1);
     dbFunction.updateUserDefeat(looser_id, 1);
     if (tournament)
         dbFunction.updateUserTournament(looser_id, 1);
-    console.log('\x1b[32m%s\x1b[0m', '✅ updatePlayers done');
 }
 
 export function updateTournamentWinner(player1_name: string): boolean {
