@@ -69,21 +69,31 @@ export function requestUserInformation(username: string): UserProfileData | unde
 }
 
 export function getUserStats(username: string): UserStats | undefined { // TODO create a real function to return the stats of a user
-  if (!username) return undefined;
+//   if (!username) return undefined;
+    try { username = (JSON.parse(username) as any).username ?? username; } catch {}
+    console.log('\x1b[32m%s\x1b[0m', "getUserStats: username", username);
 
-  return {
-    victories: 12,
-    defeats: 8,
-    games: 20,
-    winRatio: 0.6
-  };
+        const userId = dbFunction.retrieveUserID(username);
+    // if (userId === -1) return [];
+    // pull victories, defeats etc from db
+    const victories = dbFunction.getUserNbVictory(userId);
+    const defeats = dbFunction.getUserNbDefeat(userId);
+    const games = dbFunction.getUserNbGames(userId);
+    const winRatio = games > 0 ? victories / games : 0;
+
+    return {
+        victories: victories,
+        defeats: defeats,
+        games: victories,
+        winRatio: winRatio
+    };
 }
 
 export function getGameHistoryForUser(username: string): GameHistoryEntry[] | undefined {
 //   if (!username) return undefined;
 
     try { username = (JSON.parse(username) as any).username ?? username; } catch {}
-    console.log('\x1b[31m%s\x1b[0m', "getGameHistoryForUser: username", username);
+    console.log('\x1b[32m%s\x1b[0m', "getGameHistoryForUser: username", username);
 
 
     const userId = dbFunction.retrieveUserID(username);
@@ -91,7 +101,7 @@ export function getGameHistoryForUser(username: string): GameHistoryEntry[] | un
 
     const rows = dbFunction.getUserGameHistoryRows(userId) as any[];
     // print the first 3 of these rows
-    console.log('\x1b[31m%s\x1b[0m', "Game history rows for user:", username, rows.slice(0, 2));
+    console.log('\x1b[32m%s\x1b[0m', "Game history rows for user:", username, rows.slice(0, 2));
     if (rows.length === 0) return [];
 
     return rows.map(r => ({
