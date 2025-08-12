@@ -495,7 +495,7 @@ export class WebSocketManager {
 
     private async handleUserGameHistory(socket: any, message: string) {
         const history = db.getGameHistoryForUser(message); // from DB
-        console.log(JSON.stringify(history))
+        console.log('\x1b[31m%s\x1b[0m', 'pulling real handleUserGameHistory', JSON.stringify(history))
         if (!history)
             this.sendError(socket, 'user not recognised');
         else

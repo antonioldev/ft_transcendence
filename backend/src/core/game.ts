@@ -168,7 +168,8 @@ export class Game {
 				state: this.get_state()
 			});
 		}
-		await this.stop();
+		// await this.stop();
+		await this.stop(this.match_id);
 		return (this.winner);
 	}
 
@@ -194,7 +195,15 @@ export class Game {
 	async stop(gameId?: string): Promise<void> {
 		this.running = false;
 		// TODO: save score to db
+		console.log('\x1b[31m%s\x1b[0m', 'inside stop(), saveGameResult shoould save scores to db here)');
+
+		// debug this line: if (gameId && this.players[LEFT_PADDLE].client?.id != this.players[RIGHT_PADDLE].client?.id)
+		console.log('\x1b[31m%s\x1b[0m', 'gameID', gameId, 'paddle.clients:', this.players[LEFT_PADDLE].client?.id, this.players[RIGHT_PADDLE].client?.id);
+		console.log('\x1b[31m%s\x1b[0m', `Game ended: ${this.players[LEFT_PADDLE].name} vs ${this.players[RIGHT_PADDLE].name}`);
+		console.log('\x1b[31m%s\x1b[0m', `Scores: ${this.paddles[LEFT_PADDLE].score} - ${this.paddles[RIGHT_PADDLE].score}`);
+
 		if (gameId && this.players[LEFT_PADDLE].client?.id != this.players[RIGHT_PADDLE].client?.id) {
+			console.log('\x1b[31m%s\x1b[0m', `finally if in stop() is triggered, game updated in db`);			
 			const player1_score = this.paddles[LEFT_PADDLE].score;
 			const player2_score = this.paddles[RIGHT_PADDLE].score;
 			const player1_username = this.players[LEFT_PADDLE].name;

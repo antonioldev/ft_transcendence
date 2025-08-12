@@ -127,13 +127,17 @@ export class GameSession extends AbstractGameSession{
 	}
 
 	stop(): void {
+		console.log('\x1b[32m%s\x1b[0m', 'stop() in GameSession called');
+		console.log('\x1b[32m%s\x1b[0m', 'is running:', this.game.running, 'game:', this.id);
+
 		if (!this.running) return;
 		
 		let winner: string | undefined;
 		if (this.game?.winner)
 			winner = this.game.winner.name;
-		if (this.game?.running)
-			this.game.stop(this.id);
+		// if (this.game?.running) // this is false before scores updated in this.game.stop(), removing check fixes DB bug
+		// 	console.log('\x1b[32m%s\x1b[0m', 'games stop in GameSession stop() called with gameId:', this.id);
+		this.game.stop(this.id);
 		
 		this.running = false;
 		this.broadcast({ 
