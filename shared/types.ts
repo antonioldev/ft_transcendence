@@ -125,6 +125,7 @@ export interface GameHistoryEntry {
   opponent: string;
   score: string;
   result: string;
+  isTournament: string;
   duration: number;
 }
 

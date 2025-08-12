@@ -729,6 +729,7 @@ export function displayPlayerInfo(playerId: number) {
 		playerId = nonNegInt(playerId, 'player id');
 
 		const gameInfo = db.prepare('SELECT * FROM users WHERE id = ?');
+		// shows only on game end
 		console.log('\x1b[32m%s\x1b[0m', `real displayPLayerInfo:`, gameInfo.get(playerId));
 	} catch (err) {
 		console.error('Error in printing game info', err);
@@ -744,6 +745,7 @@ export function getUserGameHistoryRows(userId: number) {
 			g.game_id                       AS gameId,
 			g.played_at                     AS startedAt,
 			COALESCE(g.duration_seconds, 0) AS durationSeconds,
+			g.tournament                    AS isTournament,
 			CASE WHEN g.player1_id = ? THEN u2.username ELSE u1.username END AS opponent,
 			CASE WHEN g.player1_id = ? THEN g.player1_score ELSE g.player2_score END AS yourScore,
 			CASE WHEN g.player1_id = ? THEN g.player2_score ELSE g.player1_score END AS opponentScore,

@@ -54,13 +54,13 @@ export class DashboardManager {
         container.appendChild(table);
 
 
-        // Bar Chart
-        const barChart = this.createBarChart([
-            { label: 'Victories', value: stats.victories, color: '#4caf50' },
-            { label: 'Defeats', value: stats.defeats, color: '#f44336' },
-            { label: 'Games', value: stats.games, color: '#2196f3' }
-        ]);
-        container.appendChild(barChart);
+        // // Bar Chart
+        // const barChart = this.createBarChart([
+        //     { label: 'Victories', value: stats.victories, color: '#4caf50' },
+        //     { label: 'Defeats', value: stats.defeats, color: '#f44336' },
+        //     { label: 'Games', value: stats.games, color: '#2196f3' }
+        // ]);
+        // container.appendChild(barChart);
 
         // Pie Chart
         const pieChart = this.createPieChart([
@@ -71,57 +71,70 @@ export class DashboardManager {
     }
 
     private renderGameHistory(history: GameHistoryEntry[]): void {
-        const tbody = getElementById<HTMLTableElement>(EL.DASHBOARD.GAME_HISTORY_TABLE);
-        if (!tbody) return;
-        tbody.innerHTML = '';
+        const container = getElementById(EL.DASHBOARD.GAME_HISTORY_TABLE);
+        if (!container) return;
+        container.innerHTML = '';
 
-        history.forEach(entry => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${entry.playedAt}</td>
-                <td>${entry.opponent}</td>
-                <td>${entry.score}</td>
-                <td>${entry.result}</td>
-                <td>${entry.duration}s</td>
-            `;
-            tbody.appendChild(row);
-        });
+        const table = document.createElement('table');
+        table.innerHTML = `
+            <thead>
+                <tr>
+                    <th>Date</th><th>Opponent</th><th>Score</th><th>Result</th><th>Tournament</th><th>Duration</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${history.map(entry => {
+                    const friendlyDate = new Date(entry.playedAt).toLocaleString();
+                    return `
+                        <tr>
+                            <td>${friendlyDate}</td>
+                            <td>${entry.opponent}</td>
+                            <td>${entry.score}</td>
+                            <td>${entry.result}</td>
+                            <td>${entry.isTournament ? 'Yes' : 'No'}</td>
+                            <td>${entry.duration}s</td>
+                        </tr>
+                    `;
+                }).join('')}
+            </tbody>
+        `;
+        container.appendChild(table);
     }
 
-    private createBarChart(data: { label: string; value: number; color: string }[]): HTMLElement {
-        const max = Math.max(...data.map(d => d.value));
-        const container = document.createElement('div');
-        container.style.display = 'flex';
-        container.style.alignItems = 'flex-end';
-        container.style.gap = '10px';
-        container.style.height = '150px';
-        container.style.marginBottom = '20px';
+    // private createBarChart(data: { label: string; value: number; color: string }[]): HTMLElement {
+    //     const max = Math.max(...data.map(d => d.value));
+    //     const container = document.createElement('div');
+    //     container.style.display = 'flex';
+    //     container.style.alignItems = 'flex-end';
+    //     container.style.gap = '10px';
+    //     container.style.height = '150px';
+    //     container.style.marginBottom = '20px';
 
-        data.forEach(d => {
-            const bar = document.createElement('div');
-            const height = (d.value / max) * 100;
-            bar.style.width = '50px';
-            bar.style.height = `${height}%`;
-            bar.style.backgroundColor = d.color;
-            bar.title = `${d.label}: ${d.value}`;
+    //     data.forEach(d => {
+    //         const bar = document.createElement('div');
+    //         const height = (d.value / max) * 100;
+    //         bar.style.width = '50px';
+    //         bar.style.height = `${height}%`;
+    //         bar.style.backgroundColor = d.color;
+    //         bar.title = `${d.label}: ${d.value}`;
 
-            const label = document.createElement('div');
-            label.innerText = d.label;
-            label.style.textAlign = 'center';
-            label.style.marginTop = '5px';
+    //         const label = document.createElement('div');
+    //         label.innerText = d.label;
+    //         label.style.textAlign = 'center';
+    //         label.style.marginTop = '5px';
 
-            const barWrapper = document.createElement('div');
-            barWrapper.style.display = 'flex';
-            barWrapper.style.flexDirection = 'column';
-            barWrapper.style.alignItems = 'center';
+    //         const barWrapper = document.createElement('div');
+    //         barWrapper.style.display = 'flex';
+    //         barWrapper.style.flexDirection = 'column';
+    //         barWrapper.style.alignItems = 'center';
 
-            barWrapper.appendChild(bar);
-            barWrapper.appendChild(label);
-            container.appendChild(barWrapper);
-        });
+    //         barWrapper.appendChild(bar);
+    //         barWrapper.appendChild(label);
+    //         container.appendChild(barWrapper);
+    //     });
 
-        return container;
-    }
+    //     return container;
+    // }
 
     private createPieChart(data: { label: string; value: number; color: string }[]): SVGElement {
         const radius = 50;
