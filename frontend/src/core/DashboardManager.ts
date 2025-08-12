@@ -170,13 +170,37 @@ export class DashboardManager {
 
     private createPieChart(data: { label: string; value: number; color: string }[]): SVGElement {
         const radius = 50;
-        const total = data.reduce((sum, d) => sum + d.value, 0);
+        const total  = data.reduce((sum, d) => sum + d.value, 0);
         let cumulative = 0;
 
         const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
         svg.setAttribute("width", "120");
         svg.setAttribute("height", "120");
         svg.setAttribute("viewBox", "0 0 120 120");
+
+        const nonZero = data.filter(d => d.value > 0);
+        if (total <= 0 || nonZero.length === 1) {
+            const cx = radius + 10, cy = radius + 10;
+            const color = nonZero[0]?.color
+                || data.find(d => /victor/i.test(d.label))?.color
+                || data[0]?.color || '#4caf50';
+
+            const full = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            full.setAttribute("cx", String(cx));
+            full.setAttribute("cy", String(cy));
+            full.setAttribute("r",  String(radius));
+            full.setAttribute("fill", color);
+            svg.appendChild(full);
+
+            const hole = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            hole.setAttribute("cx", String(cx));
+            hole.setAttribute("cy", String(cy));
+            hole.setAttribute("r",  String(radius / 3));
+            hole.setAttribute("fill", "#000");
+            svg.appendChild(hole);
+
+            return svg;
+        }
 
         data.forEach(d => {
             const [startX, startY] = polarToCartesian(radius, cumulative / total);
@@ -195,12 +219,22 @@ export class DashboardManager {
             path.setAttribute("d", dAttr);
             path.setAttribute("fill", d.color);
             path.setAttribute("title", d.label);
-
+            path.setAttribute("stroke", "#000");        // thin separators
+            path.setAttribute("stroke-width", "1");
             svg.appendChild(path);
         });
 
+        // make it a donut
+        const hole = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        hole.setAttribute("cx", String(radius + 10));
+        hole.setAttribute("cy", String(radius + 10));
+        hole.setAttribute("r",  String(radius / 3));
+        hole.setAttribute("fill", "#000");
+        svg.appendChild(hole);
+
         return svg;
     }
+
 }
 
 function polarToCartesian(radius: number, fraction: number): [number, number] {
