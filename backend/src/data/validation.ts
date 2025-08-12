@@ -68,43 +68,46 @@ export function requestUserInformation(username: string): UserProfileData | unde
     return userInfo;    
 }
 
-export function getUserStats(username: string): UserStats | undefined { // TODO create a real function to return the stats of a user
-  if (!username) return undefined;
+export function getUserStats(username: string): UserStats | undefined {
+    try { username = (JSON.parse(username) as any).username ?? username; } catch {}
+    const userId = dbFunction.retrieveUserID(username);
 
-  return {
-    victories: 12,
-    defeats: 8,
-    games: 20,
-    winRatio: 0.6
-  };
+    const victories = dbFunction.getUserNbVictory(userId);
+    const defeats = dbFunction.getUserNbDefeat(userId);
+    const games = dbFunction.getUserNbGames(userId);
+    const winRatio = games > 0 ? victories / games : 0;
+    const tournamentsPlayed = dbFunction.getUserNbTournament(userId);
+    const tournamentWins = dbFunction.getUserNbTournamentWin(userId);
+    const tournamentWinRatio = tournamentsPlayed > 0 ? tournamentWins / tournamentsPlayed : 0;
+
+    return {
+        victories: victories,
+        defeats: defeats,
+        games: victories,
+        winRatio: winRatio,
+        tournamentsPlayed: tournamentsPlayed,
+        tournamentWins: tournamentWins,
+        tournamentWinRatio: tournamentWinRatio
+    };
 }
 
-export function getGameHistoryForUser(username: string): GameHistoryEntry[] | undefined { //TODO create a real function to return the game history of a user
-  if (!username) return undefined;
+export function getGameHistoryForUser(username: string): GameHistoryEntry[] | undefined {
+    try { username = (JSON.parse(username) as any).username ?? username; } catch {}
 
-  return [
-    {
-      playedAt: '2025-07-15 10:32',
-      opponent: 'rival_one',
-      score: '10 - 7',
-      result: 'Win',
-      duration: 300
-    },
-    {
-      playedAt: '2025-07-14 18:45',
-      opponent: 'challengerX',
-      score: '6 - 10',
-      result: 'Loss',
-      duration: 280
-    },
-    {
-      playedAt: '2025-07-13 13:10',
-      opponent: 'alpha',
-      score: '12 - 11',
-      result: 'Win',
-      duration: 350
-    }
-  ];
+    const userId = dbFunction.retrieveUserID(username);
+    if (userId === -1) return [];
+
+    const rows = dbFunction.getUserGameHistoryRows(userId) as any[];
+    if (rows.length === 0) return [];
+
+    return rows.map(r => ({
+        playedAt: r.startedAt ?? 'error',
+        opponent: r.opponent ?? 'error',
+        score: (r.yourScore != null && r.opponentScore != null) ? `${r.yourScore} - ${r.opponentScore}` : 'error',
+        result: r.didWin == null ? 'error' : (r.didWin ? 'Win' : 'Loss'),
+        isTournament: r.isTournament ? 'No' : 'Yes',
+        duration: r.durationSeconds ?? 999,
+    }));
 }
 
 export function findOrCreateGoogleUser(profile: { sub: string, name: string, email: string }): UserProfileData | null {
@@ -124,13 +127,11 @@ export function findOrCreateGoogleUser(profile: { sub: string, name: string, ema
 }
 
 export function registerNewGame(gameId: string, playerUsername: string, tournament: number) : boolean {
-	console.log(`DB create game instance: creating a new game: {player1 ${playerUsername}}`);
 	if (playerUsername === undefined) {
 		console.error("Validation.ts -- registerNewGame: playerUsername is undefined");
 		return false;
 	}
 	const player_id = dbFunction.retrieveUserID(playerUsername);
-	console.log(`BD create game instance: player1 id {player1: ${player_id}}`);
 	if (player_id === -1) {
 		console.error("Validation.ts -- registerNewGame: Player doesn't exist in db");
 		return false;
@@ -143,7 +144,6 @@ export function registerNewGame(gameId: string, playerUsername: string, tourname
 }
 
 export function addPlayer2(gameId: string, player2: string): boolean {
-	console.log(`validation -- addPlayer2: we are adding 2nd player to exisitng game {gameid: ${gameId}, player2: ${player2}}`);
 	if (gameId === undefined)
 		return false;
 	if (dbFunction.gameExist(gameId) === false) {
@@ -167,7 +167,6 @@ export function updateStartTime(gameId: string) {
 }
 
 export function saveGameResult(gameId: string, player1_name: string, player2_name: string, player1_score: number, player2_score: number, endTime: number): boolean {
-
 	const player1_id = dbFunction.retrieveUserID(player1_name);
 	const player2_id = dbFunction.retrieveUserID(player2_name);
     if (player1_id === -1 || player2_id === -1) {
