@@ -12,7 +12,8 @@ import { authRoutes } from './auth/auth_google.js';
 dotenv.config();
 
 const fastify = Fastify({
-    logger: config.debug === 'yes' ? true : false
+    logger: config.debug === 'yes' ? true : false,
+    trustProxy: true,
 });
 
 // init the database
@@ -37,9 +38,10 @@ await fastify.register(fastifyJwt, {
 
 // Enable CORS for the frontend application
 await fastify.register(fastifyCors, {
-    origin: "http://localhost:8080",
+    origin: "https://localhost",
     methods: ['GET', 'POST', 'OPTIONS'],
     credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization'],
 });
 
 // Register the authentication routes
@@ -73,7 +75,8 @@ const start = async (): Promise<void> => {
     try {
         await fastify.listen({ 
             port: config.server.port,
-            host: config.server.host 
+            // host: config.server.host
+            host: '0.0.0.0' 
         });
         console.log(`Pong server ready`);
     } catch (err) {
