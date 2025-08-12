@@ -19,7 +19,7 @@ export class WebSocketManager {
      * @param fastify - The Fastify instance to configure.
      */
     async setupRoutes(fastify: FastifyInstance): Promise<void> {
-        fastify.get('/', { websocket: true } as any, (socket, req) => {
+        fastify.get('/ws', { websocket: true } as any, (socket, req) => { //testing change here
             const token = (req.query as { token?: string }).token;
             if (token) {
                 try {

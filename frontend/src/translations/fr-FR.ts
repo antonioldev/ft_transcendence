@@ -41,6 +41,7 @@ export const french: Translation = {
     viewMode: 'Mode d\'affichage',
     backToMain: 'Retour au menu principal',
     pleaseFilllAllFields: 'Veuillez remplir tous les champs',
+    passwordFormat: "Votre mot de passe doit comporter 8 caractères et contenir au moins une lettre (minuscule et majuscule), un chiffre et un caractère spécial",
     passwordsDoNotMatch: 'Les mots de passe ne correspondent pas',
     dontHaveAccount: "Vous n'avez pas de compte ?",
     alreadyHaveAccount: 'Vous avez déjà un compte ?',

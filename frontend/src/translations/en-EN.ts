@@ -42,6 +42,7 @@ export const english: Translation = {
     backToMain: 'Back to Main',
     pleaseFilllAllFields: 'Please fill in all fields',
     passwordsDoNotMatch: 'Passwords do not match',
+    passwordFormat: "Your password must be 8 characters long and contain at least one letter (lower and uppercase), one number and one special character",
     dontHaveAccount: "Don't have an account?",
     alreadyHaveAccount: 'Already have an account?',
     availableOnlyOffline: 'Available only in offline mode',

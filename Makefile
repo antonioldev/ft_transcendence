@@ -53,6 +53,9 @@ logs-frontend:
 logs-backend:
 	docker-compose logs backend
 
+logs-nginx:
+	docker-compose logs nginx
+
 #################################################################################
 #################################     CLEAN     #################################
 

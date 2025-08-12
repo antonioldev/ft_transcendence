@@ -171,7 +171,7 @@ export class AuthManager {
             alert(t.pleaseFilllAllFields);
             uiManager.clearForm(this.loginFields);
             return;
-        }
+        }    
 
         const user: LoginUser = { username, password };
         // Register the callback function
@@ -227,6 +227,16 @@ export class AuthManager {
             uiManager.clearForm(this.registrationFields);
             return;
         }
+
+        // Validation for strong password
+        // if password is not 8 length long, doesn't contain 1 letter (capital and small), 1 number and 1 character
+        const strongPw = /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{8,}$/;
+
+        if (!strongPw.test(password)) {
+        alert(t.passwordFormat);
+        uiManager.clearForm(this.registrationFields);
+        return;
+        } 
 
         if (password !== confirmPassword) {
             alert(t.passwordsDoNotMatch);
