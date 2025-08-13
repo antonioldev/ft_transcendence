@@ -107,8 +107,9 @@ abstract class AbstractTournament extends AbstractGameSession{
 
 	async start(): Promise<void> {
 		if (this.running || this.players.length != this.player_capacity) return ;
-
 		this.running = true;
+
+		this.add_CPUs();
 		this._match_players();
 		
 		for (let current_round = 1; current_round <= this.num_rounds; current_round++) {
