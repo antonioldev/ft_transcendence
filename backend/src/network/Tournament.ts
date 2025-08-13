@@ -194,13 +194,10 @@ export class TournamentLocal extends AbstractTournament {
 	async run(matches: Match[]): Promise<void> {
 		let finalWinner: Player | undefined;
 		
+		await this.waitForPlayersReady();
 		for (const match of matches) {
 			this.current_match = match;
 			match.game = new Game(match.players, this.broadcast.bind(this));
-			
-			await this.waitForPlayersReady(match);
-			console.log("players ready");
-
 			const winner = await match.game.run();
 			finalWinner = winner;
 			match.next?.add_player(winner);
@@ -227,28 +224,6 @@ export class TournamentLocal extends AbstractTournament {
 		this.stop();
 	};
 
-	allClientsReady(): boolean {
-		return (this.readyClients.size === 1);
-	}
-
-	async waitForPlayersReady(match: Match) {
-		if (this.allClientsReady()) return ;
-
-		await new Promise(resolve => {
-			gameManager.once(`all-ready-${match.id}`, resolve);
-		});
-	}
-
-	setClientReady(client_id: string): void {
-		this.readyClients.add(client_id);
-		console.log(`Client ${client_id} marked as ready.}`);
-		
-		if (this.allClientsReady()) {
-			gameManager.emit(`all-ready-${this.id}`);
-			console.log(`Tournament ${this.id}: all clients ready.`);
-		}
-	}
-	
 	findMatch(): Match | undefined {
 		return (this.current_match);
 	}

@@ -14,7 +14,8 @@ export abstract class AbstractGameSession {
 	client_capacity: number = 1;
 	full: boolean = false;
 	running: boolean = false;
-	ai_difficulty?: AiDifficulty; // temp hardcoded to be set to Impossible 
+	ai_difficulty?: AiDifficulty;
+	readyClients: Set<string> = new Set(); // Keep track of clients that finish loading
 
     constructor(mode: GameMode, game_id: string) {
 		this.id = game_id
@@ -95,21 +96,40 @@ export abstract class AbstractGameSession {
 		}
 	}
 
+	allClientsReady(match?: Match): boolean {
+		return (this.readyClients.size === this.clients.length && this.clients.length > 0);
+	}
+
+	async waitForPlayersReady(match?: Match) {
+		if (this.allClientsReady()) return ;
+
+		await new Promise(resolve => {
+			gameManager.once(`all-ready-${this.id}`, resolve);
+		});
+	}
+
+	setClientReady(client_id: string, match?: Match): void {
+		this.readyClients.add(client_id);
+		console.log(`Client ${client_id} marked as ready.}`);
+		
+		if (this.allClientsReady()) {
+			gameManager.emit(`all-ready-${this.id}`);
+			console.log(`GameSession ${this.id}: all clients ready.`);
+		}
+	}
+
 	abstract start(): Promise<void>; 
 	abstract stop(client_id?: string): void;
 	abstract pause(client_id?: string): boolean;
 	abstract resume(client_id?: string): boolean;
 	
 	abstract enqueue(input: PlayerInput, client_id?: string): void;
-	abstract waitForPlayersReady(match?: Match): void;
-	abstract setClientReady(client_id?: string): void;
 	abstract handlePlayerQuit(quitter_id: string): void;
 	abstract canClientControlGame(client: Client): boolean;
 }
 
 export class GameSession extends AbstractGameSession{
 	game!: Game;
-	readyClients: Set<string> = new Set(); // New, keep track of clients that finish loading
 
 	constructor (mode: GameMode, game_id: string) {
 		super(mode, game_id)
@@ -119,8 +139,8 @@ export class GameSession extends AbstractGameSession{
 		if (this.running) return;
 		this.running = true;
 		
-		await this.waitForPlayersReady();
 		this.add_CPUs(); // add any CPU's if necessary
+		await this.waitForPlayersReady();
 		
 		this.game = new Game(this.players, this.broadcast.bind(this))
 		await this.game.run();
@@ -131,11 +151,12 @@ export class GameSession extends AbstractGameSession{
 		if (!this.running) return;
 		
 		let winner: string | undefined;
-		if (this.game?.winner)
+		if (this.game?.winner) {
 			winner = this.game.winner.name;
-		if (this.game?.running)
+		}
+		if (this.game?.running){
 			this.game.stop(this.id);
-		
+		}
 		this.running = false;
 		this.broadcast({ 
 			type: MessageType.SESSION_ENDED,
@@ -174,28 +195,6 @@ export class GameSession extends AbstractGameSession{
 	enqueue(input: PlayerInput): void  {
 		this.game?.enqueue(input);
 	}
-
-	allClientsReady(): boolean {
-		return (this.readyClients.size === this.clients.length && this.clients.length > 0);
-	}
-
-	async waitForPlayersReady() {
-		if (this.allClientsReady()) return ;
-
-		await new Promise(resolve => {
-			gameManager.once(`all-ready-${this.id}`, resolve);
-		});
-	}
-
-	setClientReady(client_id: string): void {
-		this.readyClients.add(client_id);
-		console.log(`Client ${client_id} marked as ready.}`);
-		
-		if (this.allClientsReady()) {
-			gameManager.emit(`all-ready-${this.id}`);
-			console.log(`GameSession ${this.id}: all clients ready.`);
-		}
-	}
 	
 	handlePlayerQuit(quitter_id: string): void {
 		if (this.game && this.mode == GameMode.TWO_PLAYER_REMOTE) {
@@ -205,11 +204,6 @@ export class GameSession extends AbstractGameSession{
 	}
 
 	canClientControlGame(client: Client) {
-		if (!this.clients.includes(client))
-			return false;
-
-		// TODO need to add more check
-		return true;
+		return (this.clients.includes(client))
 	}
-
 }
