@@ -5,13 +5,14 @@ import { GameMode, MessageType } from '../shared/constants.js';
 import { PlayerInput } from '../shared/types.js';
 import { gameManager } from '../models/gameManager.js';
 
+// TODO: make sure tournament count is always 4,8,16,32...
+
 export class Match {
 	id: string = crypto.randomUUID();
 	round: number;
 	players: Player[] = [];
 	clients: Client[] = [];
 	readyClients: Set<string> = new Set(); // New, keep track of clients that finish loading
-	client_match_map?: Map<string, Match>;
 	game!: Game;
 
 	left?: Match;
@@ -28,12 +29,7 @@ export class Match {
 		}
 		if (player.client && !this.clients.includes(player.client)) {
 			this.clients.push(player.client);
-			this.client_match_map?.set(player.client.id, this); // for remote tournament only
 		}
-	}
-
-	allClientsReady(): boolean {
-		return (this.readyClients.size === this.clients.length && this.clients.length > 0);
 	}
 }
 
@@ -70,7 +66,6 @@ abstract class AbstractTournament extends AbstractGameSession{
 	// creates the tournament tree structure and assigns each match to the rounds map
 	private _create_match_tree(current_match: Match) {
 		this.rounds.get(current_match.round)?.push(current_match);
-		current_match.client_match_map = this.client_match_map;
 
 		if (current_match.round === 1) return ;
 
@@ -85,15 +80,28 @@ abstract class AbstractTournament extends AbstractGameSession{
 	}
 
 	// assigns players to the matches in round_1
-	_match_players(): void {
+	private _match_players(): void {
 		// TODO: randomize start order ??
 
 		const round_one = this.rounds.get(1);
-		if (!round_one) return ; // maybe throw err
+		if (!round_one) {
+			console.error(`Tournament ${this.id}: Error matching players`); 
+			return ; 
+		}
 
 		for (let i = 0, j = 0; j < this.player_capacity; i++, j+=2) {
-			round_one[i].add_player(this.players[j]);
-			round_one[i].add_player(this.players[j + 1]);
+			let player_left = this.players[j];
+			let player_right = this.players[j + 1];
+			const match = round_one[i];
+
+			match.add_player(player_left);
+			match.add_player(player_right);
+
+			if (player_left && player_left.client && player_right && player_right.client) {
+				this.client_match_map?.set(player_left.client.id, match);
+				this.client_match_map?.set(player_right.client.id, match);
+			}
+
 		}
 	}
 
@@ -112,7 +120,7 @@ abstract class AbstractTournament extends AbstractGameSession{
 	}
 
 
-	pause(client_id: string | undefined): boolean {
+	pause(client_id?: string | undefined): boolean {
 		const match = this.findMatch(client_id);
 		if (!match) return false ;
 
@@ -130,7 +138,7 @@ abstract class AbstractTournament extends AbstractGameSession{
 		return true;
 	}
 
-	resume(client_id: string | undefined): boolean {
+	resume(client_id?: string | undefined): boolean {
 		const match = this.findMatch(client_id);
 		if (!match) return false ;
 
@@ -154,27 +162,6 @@ abstract class AbstractTournament extends AbstractGameSession{
 		match?.game?.enqueue(input);
 	}
 
-	setClientReady(client_id: string): void {
-		const match = this.findMatch(client_id);
-		if (!match) return ;
-
-		match.readyClients.add(client_id);
-		console.log(`Client ${client_id} marked as ready.}`);
-		
-		if (match.allClientsReady()) {
-			gameManager.emit(`all-ready-${match.id}`);
-			console.log(`Tournament ${this.id}: Match ${match.id}: all clients ready.`);
-		}
-	}
-
-	async waitForPlayersReady(match: Match) {
-		if (match.allClientsReady()) return ;
-
-		await new Promise(resolve => {
-			gameManager.once(`all-ready-${match.id}`, resolve);
-		});
-	}
-
 	canClientControlGame(client: Client) {
 		const match = this.findMatch();
 		if (!match || !match.clients.includes(client))
@@ -196,7 +183,8 @@ abstract class AbstractTournament extends AbstractGameSession{
 }
 
 export class TournamentLocal extends AbstractTournament {
-	current_match?: Match;
+	current_match?: Match; // used for the server to access the current active match
+	readyClients: Set<string> = new Set(); // Keep track of clients that finish loading
 
 	constructor(mode: GameMode, game_id: string, capacity: number) {
 		super(mode, game_id, capacity);
@@ -209,7 +197,10 @@ export class TournamentLocal extends AbstractTournament {
 		for (const match of matches) {
 			this.current_match = match;
 			match.game = new Game(match.players, this.broadcast.bind(this));
+			
 			await this.waitForPlayersReady(match);
+			console.log("players ready");
+
 			const winner = await match.game.run();
 			finalWinner = winner;
 			match.next?.add_player(winner);
@@ -226,7 +217,7 @@ export class TournamentLocal extends AbstractTournament {
 	stop() {
 		if (!this.running) return ;
 
-		this.current_match?.game.stop();
+		this.current_match?.game?.stop();
 		this.running = false;
 		this.broadcast({ type: MessageType.SESSION_ENDED });
 	}
@@ -236,6 +227,28 @@ export class TournamentLocal extends AbstractTournament {
 		this.stop();
 	};
 
+	allClientsReady(): boolean {
+		return (this.readyClients.size === 1);
+	}
+
+	async waitForPlayersReady(match: Match) {
+		if (this.allClientsReady()) return ;
+
+		await new Promise(resolve => {
+			gameManager.once(`all-ready-${match.id}`, resolve);
+		});
+	}
+
+	setClientReady(client_id: string): void {
+		this.readyClients.add(client_id);
+		console.log(`Client ${client_id} marked as ready.}`);
+		
+		if (this.allClientsReady()) {
+			gameManager.emit(`all-ready-${this.id}`);
+			console.log(`Tournament ${this.id}: all clients ready.`);
+		}
+	}
+	
 	findMatch(): Match | undefined {
 		return (this.current_match);
 	}
@@ -263,8 +276,11 @@ export class TournamentRemote extends AbstractTournament {
 		// promote winners once all promises are resolved
 		for (let i = 0; i < winners.length; i++) {
 			const match = matches[i];
-			const winner = winners[i];
+			const winner: Player = winners[i];
 			match.next?.add_player(winner);
+			if (winner && winner.client && winner.client.id && match.next) {
+				this.client_match_map.set(winner?.client?.id, match.next);
+			}
 		}
 	}
 
@@ -277,6 +293,31 @@ export class TournamentRemote extends AbstractTournament {
 
 		this.running = false;
 		this.broadcast({ type: MessageType.SESSION_ENDED });
+	}
+
+	allClientsReady(match: Match): boolean {
+		return (match.readyClients.size === match.clients.length && match.clients.length > 0);
+	}
+
+	async waitForPlayersReady(match: Match) {
+		if (this.allClientsReady(match)) return ;
+
+		await new Promise(resolve => {
+			gameManager.once(`all-ready-${match.id}`, resolve);
+		});
+	}
+
+	setClientReady(client_id: string): void {
+		const match = this.findMatch(client_id);
+		if (!match) return ;
+
+		match.readyClients.add(client_id);
+		console.log(`Client ${client_id} marked as ready.}`);
+		
+		if (this.allClientsReady(match)) {
+			gameManager.emit(`all-ready-${match.id}`);
+			console.log(`Tournament ${this.id}: Match ${match.id}: all clients ready.`);
+		}
 	}
 
 	findMatch(client_id?: string): Match | undefined {

@@ -3,6 +3,7 @@ import { Client, Player } from '../models/Client.js';
 import { MessageType, GameMode, AiDifficulty } from '../shared/constants.js';
 import { PlayerInput, ServerMessage } from '../shared/types.js';
 import { Match } from './Tournament.js';
+import { gameManager } from '../models/gameManager.js';
 
 export abstract class AbstractGameSession {
 	mode: GameMode;
@@ -174,19 +175,25 @@ export class GameSession extends AbstractGameSession{
 		this.game?.enqueue(input);
 	}
 
-	setClientReady(client_id: string): void { // New function, add client in the readyClient list
-		this.readyClients.add(client_id);
-		console.log(`Client ${client_id} marked as ready. Ready clients: ${this.readyClients.size}/${this.clients.length}`);
-	}
-
 	allClientsReady(): boolean {
-		console.log(`All clients ready in game ${this.id}, sending ALL_READY`);
 		return (this.readyClients.size === this.clients.length && this.clients.length > 0);
 	}
 
 	async waitForPlayersReady() {
-		while (!this.allClientsReady()) {
-			await new Promise(resolve => setTimeout(resolve, 1000));
+		if (this.allClientsReady()) return ;
+
+		await new Promise(resolve => {
+			gameManager.once(`all-ready-${this.id}`, resolve);
+		});
+	}
+
+	setClientReady(client_id: string): void {
+		this.readyClients.add(client_id);
+		console.log(`Client ${client_id} marked as ready.}`);
+		
+		if (this.allClientsReady()) {
+			gameManager.emit(`all-ready-${this.id}`);
+			console.log(`GameSession ${this.id}: all clients ready.`);
 		}
 	}
 	
