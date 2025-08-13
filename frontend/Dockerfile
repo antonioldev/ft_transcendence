@@ -16,12 +16,14 @@ ARG GOOGLE_CLIENT_ID
 # Inject GOOGLE_CLIENT_ID into the frontend code
 RUN mkdir -p /app/dist && echo "window.GOOGLE_CLIENT_ID = '${GOOGLE_CLIENT_ID}';" > /app/dist/env-config.js
 
-# Copy TypeScript source
+# Copy TypeScript source and config files
 COPY src/ ./src/
 COPY index.html ./
 COPY tsconfig.json ./
+COPY tailwind.config.js ./
+COPY postcss.config.js ./
 
-# Build TypeScript
+# Build TypeScript and CSS
 RUN npm run build
 
 # Production stage
