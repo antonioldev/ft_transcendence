@@ -163,8 +163,9 @@ abstract class AbstractTournament extends AbstractGameSession{
 
 	canClientControlGame(client: Client) {
 		const match = this.findMatch();
-		if (!match || !match.clients.includes(client))
+		if (!match || !match.clients.includes(client)) {
 			return false;
+		}
 		return true;
 	}
 

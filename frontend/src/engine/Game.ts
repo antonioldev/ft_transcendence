@@ -324,7 +324,7 @@ export class Game {
         webSocketClient.registerCallback(WebSocketEvent.GAME_RESUMED, () => { this.onServerResumedGame(); });
         webSocketClient.registerCallback(WebSocketEvent.GAME_ENDED, (message: any) => { this.onServerEndedGame(message.winner); });
         webSocketClient.registerCallback(WebSocketEvent.SESSION_ENDED, (message: any) => { this.onServerEndedSession(message.winner); });
-        webSocketClient.registerCallback(WebSocketEvent.ALL_READY, (message: any) => { this.handlePlayerAssignment(message.left, message.right); });
+        webSocketClient.registerCallback(WebSocketEvent.SIDE_ASSIGNMENT, (message: any) => { this.handlePlayerAssignment(message.left, message.right); });
         webSocketClient.registerCallback(WebSocketEvent.COUNTDOWN, (message: any) => { this.handleCountdown(message.countdown);  })
     }
 
@@ -356,9 +356,9 @@ export class Game {
     }
 
     private handleCountdown(countdown: number): void {
-        if (countdown === undefined || countdown === null)
-            Logger.errorAndThrow('Server sent ALL_READY without countdown parameter', 'Game');
-
+        if (countdown === undefined || countdown === null) {
+            Logger.errorAndThrow('Server sent SI without countdown parameter', 'Game');
+        }
         uiManager.setLoadingScreenVisible(false);
 
         if (this.currentState === GameState.MATCH_ENDED)

@@ -108,8 +108,8 @@ export class WebSocketClient {
                 console.error("Session ended message");
                 this.triggerCallback(WebSocketEvent.SESSION_ENDED, message);
                 break;
-            case MessageType.ALL_READY:
-                this.triggerCallback(WebSocketEvent.ALL_READY, message);
+            case MessageType.SIDE_ASSIGNMENT:
+                this.triggerCallback(WebSocketEvent.SIDE_ASSIGNMENT, message);
                 break;
             case MessageType.WELCOME:
                 Logger.info('Server says', 'WebSocketClient', message.message);

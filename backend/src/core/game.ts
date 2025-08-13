@@ -122,7 +122,7 @@ export class Game {
 	async send_sides_and_countdown(): Promise<void> { // New function, send to clients message to start + countdown
 		// broadcast the side assignment to all clients
 		this._broadcast({
-			type: MessageType.ALL_READY,
+			type: MessageType.SIDE_ASSIGNMENT,
 			left: this.players[LEFT_PADDLE]?.name,
 			right: this.players[RIGHT_PADDLE]?.name,
 		});
@@ -146,14 +146,15 @@ export class Game {
 
 	// Main game loop 
 	async run(): Promise<Player> {
-		await this.send_sides_and_countdown();
 		// if both are CPU then choose a random winner
 		if (this.paddles[LEFT_PADDLE] instanceof CPUBot && this.paddles[RIGHT_PADDLE] instanceof CPUBot) {
 			const index = (Math.random() > 0.5) ? 0 : 1;
 			this.winner = this.players[index];
-			this.running = false;
+			this.stop();
+			return (this.winner);
 		}
-
+		
+		await this.send_sides_and_countdown();
 		// run game loop, updating and broadcasting state to clients until win
 		while (this.running) {
 			const dt = await this.clock.tick(60);
@@ -165,7 +166,7 @@ export class Game {
 				state: this.get_state()
 			});
 		}
-		await this.stop();
+		this.stop();
 		return (this.winner);
 	}
 
@@ -188,8 +189,9 @@ export class Game {
 	isPaused(): boolean { return this.paused; }
 
 	// Stop the execution of the game & broadcast the winner
-	async stop(gameId?: string): Promise<void> {
+	stop(gameId?: string) {
 		this.running = false;
+
 		// TODO: save score to db
 		if (gameId && this.players[LEFT_PADDLE].client?.id != this.players[RIGHT_PADDLE].client?.id) {
 			const player1_score = this.paddles[LEFT_PADDLE].score;
