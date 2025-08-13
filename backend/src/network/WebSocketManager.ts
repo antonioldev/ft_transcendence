@@ -131,7 +131,7 @@ export class WebSocketManager {
                 //     console.log("HandleMessage WSM: Requesting user profile");
                 //     await this.handleUserProfileRequest(socket, data);
                 //     break;
-                case MessageType.QUIT_GAME:  // TODO I added because it was creating issue, need to check
+                case MessageType.QUIT_GAME:
                     await this.handleQuitGame(client);
                     break;
                 default:
@@ -172,10 +172,8 @@ export class WebSocketManager {
             setCurrentGameId(gameId);
 
             // add players to gameSession
-            if (data.players) {
-                for (const player of data.players) {
-                    gameSession?.add_player(new Player(player.id, player.name, client));
-                }
+            for (const player of data.players ?? []) {
+                gameSession?.add_player(new Player(player.id, player.name, client));
             }
             if (gameSession?.full && !gameSession.running) {
                 gameManager.runGame(gameSession);
