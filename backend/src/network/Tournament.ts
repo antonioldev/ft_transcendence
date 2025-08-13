@@ -14,6 +14,7 @@ export class Match {
 	clients: Client[] = [];
 	readyClients: Set<string> = new Set(); // New, keep track of clients that finish loading
 	game!: Game;
+	winner?: Player;
 
 	left?: Match;
 	right?: Match;
@@ -37,7 +38,6 @@ abstract class AbstractTournament extends AbstractGameSession{
 	client_match_map?: Map<string, Match>;	// Maps client id to match, used for easy insertion from client input
 	rounds: Map<number, Match[]> = new Map();	// Maps rounds to match[], used for easy traversal to run games
 	num_rounds: number;
-	current_round: number = 1;
 
 	constructor(mode: GameMode, game_id: string, capacity: number) {
 		super(mode, game_id);
@@ -111,14 +111,13 @@ abstract class AbstractTournament extends AbstractGameSession{
 		this.running = true;
 		this._match_players();
 		
-		for (this.current_round = 1; this.current_round <= this.num_rounds; this.current_round++) {
-			const matches = this.rounds.get(this.current_round);
+		for (let current_round = 1; current_round <= this.num_rounds; current_round++) {
+			const matches = this.rounds.get(current_round);
 			if (!matches) return ; // maybe throw err
 			
 			await this.run(matches);
 		}
 	}
-
 
 	pause(client_id?: string | undefined): boolean {
 		const match = this.findMatch(client_id);
@@ -192,21 +191,18 @@ export class TournamentLocal extends AbstractTournament {
 
 	// runs each game in a round one by one and awaits each game before starting the next
 	async run(matches: Match[]): Promise<void> {
-		let finalWinner: Player | undefined;
-		
 		await this.waitForPlayersReady();
 		for (const match of matches) {
 			this.current_match = match;
 			match.game = new Game(match.players, this.broadcast.bind(this));
-			const winner = await match.game.run();
-			finalWinner = winner;
-			match.next?.add_player(winner);
+			match.winner = await match.game.run();
+			match.next?.add_player(match.winner);
 		}
 	
-		if (this.current_round === this.num_rounds) {
+		if (matches.length === 1) /* if final match */ {
 			this.broadcast({ 
 				type: MessageType.SESSION_ENDED,
-				...(finalWinner && { winner: finalWinner.name })
+				winner: matches[0].winner?.name,
 			});
 		}
 	}
@@ -231,6 +227,7 @@ export class TournamentLocal extends AbstractTournament {
 
 export class TournamentRemote extends AbstractTournament {
 	client_match_map: Map<string, Match> = new Map();	// Maps client id to match, used for easy insertion from client input
+	
 	constructor(mode: GameMode, game_id: string, capacity: number) {
 		super(mode, game_id, capacity);
 		this.client_capacity = capacity;

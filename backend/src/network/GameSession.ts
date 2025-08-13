@@ -43,7 +43,6 @@ export abstract class AbstractGameSession {
 
 	set_ai_difficulty(difficulty: AiDifficulty) {
 		this.ai_difficulty = difficulty;
-		// if we want to change the ai diffiulty mid game we can add to this function and update the bot in the game
 	}
 
 	add_client(client: Client) {
