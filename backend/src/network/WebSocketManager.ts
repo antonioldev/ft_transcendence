@@ -77,7 +77,7 @@ export class WebSocketManager {
             this.handleDisconnection(client);
         });
 
-        this.sendWelcomeMessage(socket);
+        this.send(socket, MessageType.WELCOME, 'Connected to game server');
     }
 
     /**
@@ -136,11 +136,11 @@ export class WebSocketManager {
                     await this.handleQuitGame(client);
                     break;
                 default:
-                    this.sendError(socket, 'Unknown message type');
+                    this.send(socket, MessageType.ERROR, 'Unknown message type');
             }
         } catch (error) {
             console.error('❌ Error parsing message:', error);
-            this.sendError(socket, 'Invalid message format');
+            this.send(socket, MessageType.ERROR, 'Invalid message format');
         }
     }
 
@@ -158,7 +158,7 @@ export class WebSocketManager {
         setCurrentGameId: (gameId: string) => void
     ): Promise<void> {
         if (!data.gameMode) {
-            await this.sendError(socket, 'Game mode required');
+            this.send(socket, MessageType.ERROR, 'Game mode required');
             return;
         }
 
@@ -181,7 +181,7 @@ export class WebSocketManager {
             }
         } catch (error) {
             console.error('❌ Error joining game:', error);
-            this.sendError(socket, 'Failed to join game');
+            this.send(socket, MessageType.ERROR, 'Failed to join game');
         }
     }
 
@@ -308,7 +308,7 @@ export class WebSocketManager {
 
         if (!loginInfo?.username || typeof loginInfo.password !== 'string') {
             console.warn("Missing login information");
-            await this.sendErrorLogin(socket, "Missing username or password");
+            this.send(socket, MessageType.LOGIN_FAILURE, "Missing username or password");
             return;
         }
 
@@ -321,25 +321,25 @@ export class WebSocketManager {
             switch (result) {
             case AuthCode.OK:
                 console.log("handleLoginUser WSM: sending success");
-                await this.sendSuccessLogin(socket, "User ID confirmed");
+                this.send(socket, MessageType.SUCCESS_LOGIN, "User ID confirmed");
                 client.username = loginInfo.username;
                 client.loggedIn = true;
                 return;
 
             case AuthCode.NotFound:
                 console.log("handleLoginUser WSM: user not found");
-                await this.sendErrorUserNotExist(socket, "User doesn't exist");
+                this.send(socket, MessageType.USER_NOTEXIST, "User doesn't exist");
                 return;
 
             case AuthCode.BadCredentials:
             default:
                 console.log("handleLoginUser WSM: bad credentials");
-                await this.sendErrorLogin(socket, "Username or password are incorrect");
+                this.send(socket, MessageType.LOGIN_FAILURE, "Username or password are incorrect");
                 return;
             }
         } catch (error) {
             console.error('❌ Error checking user login information:', error);
-            await this.sendError(socket, 'Failed to log user');
+            this.send(socket, MessageType.ERROR, 'Failed to log user');
         }
     }
     /**
@@ -351,7 +351,7 @@ export class WebSocketManager {
 
         if (!regInfo) {
             console.warn("Missing registration object");
-            this.sendError(socket, "Missing registration data");
+            this.send(socket, MessageType.ERROR, "Missing registration data");
             return;
         }
 
@@ -359,7 +359,7 @@ export class WebSocketManager {
 
         if (!username || !email || typeof password !== 'string') {
             console.warn("Missing registration fields:", username, email, !!password);
-            this.sendError(socket, "Missing username, email, or password");
+            this.send(socket, MessageType.ERROR, "Missing username, email, or password");
             return;
         }
 
@@ -368,21 +368,21 @@ export class WebSocketManager {
 
             switch (result) {
             case AuthCode.OK:
-                await this.sendSuccessRegistration(socket, "User registered successfully");
+                this.send(socket, MessageType.SUCCESS_REGISTRATION, "User registered successfully");
                 return;
 
             case AuthCode.UserExists:
-                await this.sendErrorUserExist(socket, "User already exists");
+                this.send(socket, MessageType.USER_EXIST, "User already exists");
                 return;
 
             case AuthCode.UsernameTaken:
             default:
-                await this.sendErrorUsernameTaken(socket, "Username is already registered");
+                this.send(socket, MessageType.USERNAME_TAKEN, "Username is already registered");
                 return;
             }
         } catch (error) {
             console.error('❌ Error registering user:', error);
-            this.sendError(socket, 'Failed to register user');
+            this.send(socket, MessageType.ERROR, 'Failed to register user');
         }
     }
 
@@ -392,100 +392,56 @@ export class WebSocketManager {
      * @param message - The messagee to send.
      */
 
-    private send(socket: any, message: ServerMessage) {
-        socket.send(JSON.stringify(message), (err?: Error) => {
+    private send(socket: any, messageType: MessageType, message: string) {
+        const msg: ServerMessage = {
+            type: messageType,
+            message: message
+        };
+
+        socket.send(JSON.stringify(msg), (err?: Error) => {
             if (err) console.error(`❌ Failed to send message: `, err.stack);
         });
-    }
-
-    private async sendSuccessLogin(socket: any, message: string): Promise<void> {
-        const successMsg: ServerMessage = {
-            type: MessageType.SUCCESS_LOGIN,
-            message: message
-        };
-        
-        this.send(socket, successMsg);
     }  
-
-    private async sendSuccessRegistration(socket: any, message: string): Promise<void> {
-        const successMsg: ServerMessage = {
-            type: MessageType.SUCCESS_REGISTRATION,
-            message: message
-        };
-        
-        this.send(socket, successMsg);
-    }  
-
-    private async sendErrorLogin(socket: any, message: string): Promise<void> {
-        const errorMsg: ServerMessage = {
-            type: MessageType.LOGIN_FAILURE,
-            message: message
-        };
-        
-        this.send(socket, errorMsg);
-    }  
-
-    private async sendErrorUserNotExist(socket: any, message: string): Promise<void> {
-        const errorMsg: ServerMessage = {
-            type: MessageType.USER_NOTEXIST,
-            message: message
-        };
-        this.send(socket, errorMsg);
-    }  
-
-    private async sendErrorUserExist(socket: any, message: string): Promise<void> {
-        const errorMsg: ServerMessage = {
-            type: MessageType.USER_EXIST,
-            message: message
-        };
-        this.send(socket, errorMsg);
-    }  
-
-    private async sendErrorUsernameTaken(socket: any, message: string): Promise<void> {
-        const errorMsg: ServerMessage = {
-            type: MessageType.USERNAME_TAKEN,
-            message: message
-        };
-        this.send(socket, errorMsg);
-    } 
-
 
     private async handleUserStats(socket: any, message: string) {
         const stats = db.getUserStats(message); // from DB
         if (!stats) {
-            this.sendError(socket, 'user not recognised');
+            this.send(socket, MessageType.ERROR, 'user not recognised');
         }
         else {
             this.sendUserStats(socket, stats);
         }
     }
 
-
-    private async handleUserGameHistory(socket: any, message: string) {
+    private handleUserGameHistory(socket: any, message: string): void {
         const history = db.getGameHistoryForUser(message); // from DB
         if (!history) {
-            this.sendError(socket, 'user not recognised');
+            this.send(socket, MessageType.ERROR, 'user not recognised');
         }
         else {
             this.sendUserGameHistory(socket, history);
         }
     }
 
-    private async sendUserStats(socket: any, data: UserStats): Promise<void> {
+    private sendUserStats(socket: any, data: UserStats): void {
         const msg: ServerMessage = {
             type: MessageType.SEND_USER_STATS,
             stats: data
         };
         
-        this.send(socket, msg);
+        socket.send(JSON.stringify(msg), (err?: Error) => {
+            if (err) console.error(`❌ Failed to send message: `, err.stack);
+        });
     } 
 
-    private async sendUserGameHistory(socket: any, data: GameHistoryEntry[]): Promise<void> {
+    private sendUserGameHistory(socket: any, data: GameHistoryEntry[]): void {
         const msg: ServerMessage = {
             type: MessageType.SEND_GAME_HISTORY,
             gameHistory: data
         };
-        this.send(socket, msg);
+        socket.send(JSON.stringify(msg), (err?: Error) => {
+            if (err) console.error(`❌ Failed to send message: `, err.stack);
+        });
     } 
 
     /**
@@ -525,30 +481,6 @@ export class WebSocketManager {
     //     }
     // }  
 
-    /**
-     * Sends an error message to a client.
-     * @param socket - The WebSocket connection object.
-     * @param message - The error message to send.
-     */
-    private sendError(socket: any, message: string): void {
-        const errorMsg: ServerMessage = {
-            type: MessageType.ERROR,
-            message: message
-        };
-        this.send(socket, errorMsg);
-    }
-
-    /**
-     * Sends a welcome message to a newly connected client.
-     * @param socket - The WebSocket connection object.
-     */
-    private sendWelcomeMessage(socket: any): void {
-        const welcome: ServerMessage = {
-            type: MessageType.WELCOME,
-            message: 'Connected to game server'
-        };
-        this.send(socket, welcome);
-    }
 
     /**
      * Generates a unique client ID.
