@@ -6,7 +6,6 @@ import { ClientMessage, ServerMessage, PlayerInput, GetUserProfile, UserProfileD
 import * as db from "../data/validation.js";
 import { UserStats, GameHistoryEntry } from '../shared/types.js';
 
-
 /**
  * Manages WebSocket connections, client interactions, and game-related messaging.
  */
@@ -76,6 +75,7 @@ export class WebSocketManager {
             console.error(`❌ WebSocket error for client ${clientId}:`, error);
             this.handleDisconnection(client);
         });
+
         this.send(socket, {
             type: MessageType.WELCOME,
             message: 'Connected to game server'
@@ -180,7 +180,7 @@ export class WebSocketManager {
                 gameSession.add_player(new Player(player.id, player.name, client));
             }
             if (gameSession.full && !gameSession.running) {
-                gameManager.runGame(gameSession);
+                gameManager.runGame(gameSession, client.id);
             }
         } catch (error) {
             console.error('❌ Error joining game:', error);
@@ -287,7 +287,7 @@ export class WebSocketManager {
         
         gameSession.handlePlayerQuit(client.id);
         gameManager.removeClientFromGames(client);
-        // gameManager.removeGame(gameSession.id);
+        // gameManager.endGame(gameSession, client.id); // unecessary as .removeClientFromGames() handles this
         console.log(`Game ${gameSession.id} ended by client ${client.id}`);
     }
 
@@ -302,7 +302,8 @@ export class WebSocketManager {
         gameSession.stop(); // TODO: temp as wont work for Tournament 
         gameManager.removeClientFromGames(client);
         this.clients.delete(client.id);
-    }  
+    } 
+
    /**
      * Handles the disconnection of a client, removing them from games and cleaning up resources.
      * @param data - The user information that are used to confirm login

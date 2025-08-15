@@ -6,12 +6,14 @@ import { registerNewGame, addPlayer2 } from '../data/validation.js';
 import * as db from "../data/validation.js";
 import { GAME_CONFIG } from '../shared/gameConfig.js';
 import { EventEmitter } from 'events';
+import { Cipheriv } from 'crypto';
 
 /**
  * Manages game sessions and player interactions within the game.
  */
 class GameManager extends EventEmitter {
-    private games: Map<string, GameSession | TournamentLocal | TournamentRemote> = new Map();
+    private gameIdMap: Map<string, GameSession | TournamentLocal | TournamentRemote> = new Map();
+    private clientGamesMap: Map<string, GameSession | TournamentLocal | TournamentRemote> = new Map(); // maps client id to gameSession
     private waitingPlayers: Client[] = [];
 
     /**
@@ -41,32 +43,34 @@ class GameManager extends EventEmitter {
         }
 
         gameSession.add_client(client);
-        this.games.set(gameId, gameSession);
+        this.gameIdMap.set(gameId, gameSession);
+        this.clientGamesMap.set(client.id, gameSession);
 
         // if gameSession not full after a period of time then start automatically with CPU's
-        // setTimeout(() => this.runGame(gameSession), (GAME_CONFIG.maxJoinWaitTime * 1000));
-        setTimeout(() => { // [x] added a check if gameId exist, so it won't launch a new game
-            if (this.games.has(gameId))
-                this.runGame(gameSession);
+        setTimeout(() => {
+            if (this.gameIdMap.has(gameId)) this.runGame(gameSession, client.id);
         }, (GAME_CONFIG.maxJoinWaitTime * 1000));
+        
         console.log(`Created ${mode} game: ${gameId}`);
         return gameId;
     }
 
-    /**
-     * Allows a client to join an existing game session if it is not full.
-     * @param gameId - The unique ID of the game session.
-     * @param client - The client attempting to join the game.
-     * @returns True if the client successfully joined the game, otherwise false.
-     */
-    joinGame(gameId: string, client: Client): boolean {
-        const game = this.games.get(gameId);
-        if (game && !game.full) {
-            game.add_client(client);
-            return true;
-        }
-        return false;
-    }
+    // UNUSED FUNCTION
+    // /**
+    //  * Allows a client to join an existing game session if it is not full.
+    //  * @param gameId - The unique ID of the game session.
+    //  * @param client - The client attempting to join the game.
+    //  * @returns True if the client successfully joined the game, otherwise false.
+    //  */
+    
+    // joinGame(gameId: string, client: Client): boolean {
+    //     const game = this.games.get(gameId);
+    //     if (game && !game.full) {
+    //         game.add_client(client);
+    //         return true;
+    //     }
+    //     return false;
+    // }
 
     /**
      * Finds an available game session for the specified mode or creates a new one.
@@ -74,33 +78,32 @@ class GameManager extends EventEmitter {
      * @param client - The client looking for a game session.
      * @returns The unique ID of the found or created game session.
      */
+
     findOrCreateGame(mode: GameMode, client: Client): string {
         //For local games, just create game
         if (mode === GameMode.SINGLE_PLAYER || mode === GameMode.TWO_PLAYER_LOCAL|| mode === GameMode.TOURNAMENT_LOCAL) {
             return this.createGame(mode, client);
         }
-        else { // all remote games
+        else /* Remote games*/ {
             // Try to find waiting game or create new one
-            for (const [gameId, game] of this.games) {
+            for (const [gameId, game] of this.gameIdMap) {
                 if (game.mode === mode && !game.full) {
                     game.add_client(client);
                     addPlayer2(gameId, client.username); // add security
                     return gameId;
                 }
-
             }
         }
-
         // No waiting games, create new one
         return this.createGame(mode, client);
     }
 
-    async runGame(gameSession: GameSession | TournamentLocal | TournamentRemote): Promise<void> {
+    async runGame(gameSession: GameSession | TournamentLocal | TournamentRemote, client_id: string): Promise<void> {
         if (gameSession.running) return ;
 
         db.updateStartTime(gameSession.id);
         await gameSession.start();
-        gameManager.removeGame(gameSession.id);
+        gameManager.endGame(gameSession, client_id);
     }
 
     /**
@@ -109,7 +112,7 @@ class GameManager extends EventEmitter {
      * @returns The game session if found, otherwise undefined.
      */
     getGame(gameId: string): GameSession | TournamentLocal | TournamentRemote | undefined {
-        return this.games.get(gameId);
+        return this.gameIdMap.get(gameId);
     }
 
     /**
@@ -118,20 +121,23 @@ class GameManager extends EventEmitter {
      * @returns The game object or null if the client is not in a game.
      */
     findClientGame(client: Client): GameSession | TournamentLocal | TournamentRemote | undefined {
-        for (const gameSession of this.games.values()) {
-            if (gameSession.clients.includes(client)) {
-                return gameSession;
-            }
-        }
+        // for (const gameSession of this.gameIdMap.values()) {
+        //     if (gameSession.clients.includes(client)) {
+        //         return gameSession;
+        //     }
+        // }
+        return (this.clientGamesMap.get(client.id));
     }
 
     /**
      * Removes a game session by its unique ID.
      * @param gameId - The unique ID of the game session to be removed.
      */
-    removeGame(gameId: string): void {
-        this.games.delete(gameId);
-        console.log(`Removed game: ${gameId}`);
+    endGame(gameSession: GameSession | TournamentLocal | TournamentRemote, client_id: string): void {
+        gameSession.stop();
+        this.gameIdMap.delete(gameSession.id);
+        this.clientGamesMap.delete(client_id);
+        console.log(`Removed game: ${gameSession.id}`);
     }
 
     /**
@@ -140,12 +146,25 @@ class GameManager extends EventEmitter {
      * @param client - The client to be removed from game sessions.
      */
     removeClientFromGames(client: Client): void {
-        for (const [gameId, game] of this.games) {
-            game.remove_client(client);
-            if (game.clients.length === 0) {
-                this.removeGame(gameId);
+        const gameSession = this.clientGamesMap.get(client.id);
+        if (!gameSession) return ;
+
+        if (gameSession instanceof TournamentRemote) {
+            gameSession.remove_client(client);
+            if (gameSession.clients.length === 0) {
+                this.endGame(gameSession, client.id);
             }
         }
+        else {
+            this.endGame(gameSession, client.id);
+        }
+        
+        // for (const [gameId, game] of this.gameIdMap) {
+        //     game.remove_client(client);
+        //     if (game.clients.length === 0) {
+        //         this.removeGame(gameId);
+        //     }
+        // }
     }
 }
 
