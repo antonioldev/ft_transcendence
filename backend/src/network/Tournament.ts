@@ -247,6 +247,8 @@ export class TournamentRemote extends AbstractTournament {
 
 		// run each match in parallel and await [] of match promises
 		for (const match of matches) {
+			if (!this.running) return ;
+
 			match.game = new Game(match.players, (message) => this.broadcast(message, match.clients));
 			let winner_promise: Promise<Player> = match.game.run();
 			winner_promises.push(winner_promise);
