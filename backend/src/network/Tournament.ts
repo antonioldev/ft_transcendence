@@ -220,7 +220,6 @@ export class TournamentLocal extends AbstractTournament {
 	}
 
 	handlePlayerQuit(): void {
-		// need to display message saying tournament ended with no winner 
 		this.stop();
 	};
 
