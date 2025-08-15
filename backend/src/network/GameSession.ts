@@ -117,14 +117,45 @@ export abstract class AbstractGameSession {
 		}
 	}
 
+	resume(client_id?: string): boolean {
+		const game = this.findGame(client_id);
+		if (!this.running || !game || !game.running) {
+			console.log(`Game ${this.id} is not running, cannot resume`);
+			return false;
+		}
+		if (!game.paused) {
+			console.log(`Game ${this.id} is not paused`);
+			return false;
+		}
+
+		game.resume();
+		return true;
+	}
+
+	pause(client_id?: string): boolean {
+		const game = this.findGame(client_id);
+		if (!this.running || !game || !game.running) {
+			console.log(`Game ${this.id} is not running, cannot pause`);
+			return false;
+		}
+		if (game.paused) {
+			console.log(`Game ${this.id} is already paused`);
+			return false;
+		}
+
+		game.pause();
+		return true;
+	}
+
 	abstract start(): Promise<void>; 
 	abstract stop(client_id?: string): void;
-	abstract pause(client_id?: string): boolean;
-	abstract resume(client_id?: string): boolean;
+	// abstract pause(client_id?: string): boolean;
+	// abstract resume(client_id?: string): boolean;
 	
 	abstract enqueue(input: PlayerInput, client_id?: string): void;
 	abstract handlePlayerQuit(quitter_id: string): void;
 	abstract canClientControlGame(client: Client): boolean;
+	abstract findGame(client_id?: string): Game | undefined;
 }
 
 export class OneOffGame extends AbstractGameSession{
@@ -147,49 +178,45 @@ export class OneOffGame extends AbstractGameSession{
 	}
 
 	stop(): void {
-		if (!this.running) return;
+		if (!this.running || !this.game) return;
 		
-		let winner: string | undefined;
-		if (this.game?.winner) {
-			winner = this.game.winner.name;
-		}
-		if (this.game?.running){
+		if (this.game.running){
 			this.game.stop(this.id);
 		}
 		this.running = false;
 		this.broadcast({ 
 			type: MessageType.SESSION_ENDED,
-			...(winner && { winner: winner })
+			...(this.game.winner.name && { winner: this.game.winner.name })
 		});
 	}
 	
-	pause(): boolean {
-		if (!this.running || !this.game) {
-			console.log(`Game ${this.id} is not running, cannot pause`);
-			return false;
-		}
-		if (this.game.paused) {
-			console.log(`Game ${this.id} is already paused`);
-			return false;
-		}
+	// pause(): boolean {
+	// 	if (!this.running || !this.game) {
+	// 		console.log(`Game ${this.id} is not running, cannot pause`);
+	// 		return false;
+	// 	}
+	// 	if (this.game.paused) {
+	// 		console.log(`Game ${this.id} is already paused`);
+	// 		return false;
+	// 	}
 
-		this.game.pause();
-		return true;
-	}
+	// 	this.game.pause();
+	// 	return true;
+	// }
 
-	resume(): boolean {
-		if (!this.running || !this.game) {
-			console.log(`Game ${this.id} is not running, cannot resume`);
-			return false;
-		}
-		if (!this.game.paused) {
-			console.log(`Game ${this.id} is not paused`);
-			return false;
-		}
+	// resume(): boolean {
+	// 	if (!this.running || !this.game) {
+	// 		console.log(`Game ${this.id} is not running, cannot resume`);
+	// 		return false;
+	// 	}
+	// 	if (!this.game.paused) {
+	// 		console.log(`Game ${this.id} is not paused`);
+	// 		return false;
+	// 	}
 
-		this.game.resume();
-		return true;
-	}
+	// 	this.game.resume();
+	// 	return true;
+	// }
 
 	enqueue(input: PlayerInput): void  {
 		this.game?.enqueue(input);
@@ -204,5 +231,9 @@ export class OneOffGame extends AbstractGameSession{
 
 	canClientControlGame(client: Client) {
 		return (this.clients.includes(client))
+	}
+
+	findGame() {
+		return (this.game);
 	}
 }

@@ -122,40 +122,40 @@ abstract class AbstractTournament extends AbstractGameSession{
 		}
 	}
 
-	pause(client_id?: string | undefined): boolean {
-		const match = this.findMatch(client_id);
-		if (!match) return false ;
+	// pause(client_id?: string | undefined): boolean {
+	// 	const match = this.findMatch(client_id);
+	// 	if (!match) return false ;
 
-		if (!match || !match.game || !match.game.running) {
-			console.log(`Game ${match?.id} is not running, cannot pause`);
-			return false;
-		}
+	// 	if (!match || !match.game || !match.game.running) {
+	// 		console.log(`Game ${match.id} is not running, cannot pause`);
+	// 		return false;
+	// 	}
 
-		if (match.game.paused) {
-			console.log(`Game ${match.id} is already paused`);
-			return false;
-		}
+	// 	if (match.game.paused) {
+	// 		console.log(`Game ${match.id} is already paused`);
+	// 		return false;
+	// 	}
 
-		match.game.pause();
-		return true;
-	}
+	// 	match.game.pause();
+	// 	return true;
+	// }
 
-	resume(client_id?: string | undefined): boolean {
-		const match = this.findMatch(client_id);
-		if (!match) return false ;
+	// resume(client_id?: string | undefined): boolean {
+	// 	const match = this.findMatch(client_id);
+	// 	if (!match) return false ;
 
-		if (!match ||!match.game || !match.game.running) {
-			console.log(`Game ${this.id} is not running, cannot resume`);
-			return false;
-		}
-		if (!match.game.paused) {
-			console.log(`Game ${this.id} is not paused`);
-			return false;
-		}
+	// 	if (!match ||!match.game || !match.game.running) {
+	// 		console.log(`Game ${this.id} is not running, cannot resume`);
+	// 		return false;
+	// 	}
+	// 	if (!match.game.paused) {
+	// 		console.log(`Game ${this.id} is not paused`);
+	// 		return false;
+	// 	}
 
-		match.game.resume();
-		return true;
-	}
+	// 	match.game.resume();
+	// 	return true;
+	// }
 
 	enqueue(input: PlayerInput, client_id: string | undefined): void  {
 		const match = this.findMatch(client_id);
@@ -225,6 +225,10 @@ export class TournamentLocal extends AbstractTournament {
 
 	findMatch(): Match | undefined {
 		return (this.current_match);
+	}
+
+	findGame() {
+		return (this.current_match?.game);
 	}
 }
 
@@ -298,5 +302,10 @@ export class TournamentRemote extends AbstractTournament {
 	findMatch(client_id?: string): Match | undefined {
 		if (!client_id) return ;
 		return (this.client_match_map.get(client_id));
+	}
+
+	findGame(client_id?: string) {
+		if (!client_id) return ;
+		return (this.client_match_map.get(client_id)?.game);
 	}
 }
