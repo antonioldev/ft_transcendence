@@ -136,11 +136,11 @@ export class WebSocketManager {
                     await this.handleQuitGame(client);
                     break;
                 default:
-                    await this.sendError(socket, 'Unknown message type');
+                    this.sendError(socket, 'Unknown message type');
             }
         } catch (error) {
             console.error('❌ Error parsing message:', error);
-            await this.sendError(socket, 'Invalid message format');
+            this.sendError(socket, 'Invalid message format');
         }
     }
 
@@ -181,7 +181,7 @@ export class WebSocketManager {
             }
         } catch (error) {
             console.error('❌ Error joining game:', error);
-            await this.sendError(socket, 'Failed to join game');
+            this.sendError(socket, 'Failed to join game');
         }
     }
 
@@ -351,7 +351,7 @@ export class WebSocketManager {
 
         if (!regInfo) {
             console.warn("Missing registration object");
-            await this.sendError(socket, "Missing registration data");
+            this.sendError(socket, "Missing registration data");
             return;
         }
 
@@ -359,7 +359,7 @@ export class WebSocketManager {
 
         if (!username || !email || typeof password !== 'string') {
             console.warn("Missing registration fields:", username, email, !!password);
-            await this.sendError(socket, "Missing username, email, or password");
+            this.sendError(socket, "Missing username, email, or password");
             return;
         }
 
@@ -382,7 +382,7 @@ export class WebSocketManager {
             }
         } catch (error) {
             console.error('❌ Error registering user:', error);
-            await this.sendError(socket, 'Failed to register user');
+            this.sendError(socket, 'Failed to register user');
         }
     }
 
@@ -391,15 +391,20 @@ export class WebSocketManager {
      * @param socket - The WebSocket connection object.
      * @param message - The messagee to send.
      */
+
+    private send(socket: any, message: ServerMessage) {
+        socket.send(JSON.stringify(message), (err?: Error) => {
+            if (err) console.error(`❌ Failed to send message: `, err.stack);
+        });
+    }
+
     private async sendSuccessLogin(socket: any, message: string): Promise<void> {
         const successMsg: ServerMessage = {
             type: MessageType.SUCCESS_LOGIN,
             message: message
         };
         
-        socket.send(JSON.stringify(successMsg), (err?: Error) => {
-               if (err) console.error('❌ Failed to send success message:', err);
-        });
+        this.send(socket, successMsg);
     }  
 
     private async sendSuccessRegistration(socket: any, message: string): Promise<void> {
@@ -408,9 +413,7 @@ export class WebSocketManager {
             message: message
         };
         
-        socket.send(JSON.stringify(successMsg), (err?: Error) => {
-            if (err) console.error('❌ Failed to send success message:', err);
-        });
+        this.send(socket, successMsg);
     }  
 
     private async sendErrorLogin(socket: any, message: string): Promise<void> {
@@ -419,9 +422,7 @@ export class WebSocketManager {
             message: message
         };
         
-        socket.send(JSON.stringify(errorMsg), (err?: Error) => {
-            if (err) console.error('❌ Failed to send error message:', err);
-        });
+        this.send(socket, errorMsg);
     }  
 
     private async sendErrorUserNotExist(socket: any, message: string): Promise<void> {
@@ -429,10 +430,7 @@ export class WebSocketManager {
             type: MessageType.USER_NOTEXIST,
             message: message
         };
-        
-        socket.send(JSON.stringify(errorMsg), (err?: Error) => {
-            if (err) console.error('❌ Failed to send error message:', err);
-        });
+        this.send(socket, errorMsg);
     }  
 
     private async sendErrorUserExist(socket: any, message: string): Promise<void> {
@@ -440,10 +438,7 @@ export class WebSocketManager {
             type: MessageType.USER_EXIST,
             message: message
         };
-        
-        socket.send(JSON.stringify(errorMsg), (err?: Error) => {
-            if (err) console.error('❌ Failed to send error message:', err);
-        });
+        this.send(socket, errorMsg);
     }  
 
     private async sendErrorUsernameTaken(socket: any, message: string): Promise<void> {
@@ -451,29 +446,29 @@ export class WebSocketManager {
             type: MessageType.USERNAME_TAKEN,
             message: message
         };
-        
-        socket.send(JSON.stringify(errorMsg), (err?: Error) => {
-            if (err) console.error('❌ Failed to send error message:', err);
-        });
+        this.send(socket, errorMsg);
     } 
 
 
     private async handleUserStats(socket: any, message: string) {
         const stats = db.getUserStats(message); // from DB
-        if (!stats)
-            
+        if (!stats) {
             this.sendError(socket, 'user not recognised');
-        else
+        }
+        else {
             this.sendUserStats(socket, stats);
+        }
     }
 
 
     private async handleUserGameHistory(socket: any, message: string) {
         const history = db.getGameHistoryForUser(message); // from DB
-        if (!history)
+        if (!history) {
             this.sendError(socket, 'user not recognised');
-        else
+        }
+        else {
             this.sendUserGameHistory(socket, history);
+        }
     }
 
     private async sendUserStats(socket: any, data: UserStats): Promise<void> {
@@ -482,9 +477,7 @@ export class WebSocketManager {
             stats: data
         };
         
-        socket.send(JSON.stringify(msg), (err?: Error) => {
-            if (err) console.error('❌ Failed to sendUserStats:', err);
-        });
+        this.send(socket, msg);
     } 
 
     private async sendUserGameHistory(socket: any, data: GameHistoryEntry[]): Promise<void> {
@@ -492,10 +485,7 @@ export class WebSocketManager {
             type: MessageType.SEND_GAME_HISTORY,
             gameHistory: data
         };
-
-        socket.send(JSON.stringify(msg), (err?: Error) => {
-            if (err) console.error('❌ Failed to sendUserGameHistory:', err);
-        });
+        this.send(socket, msg);
     } 
 
     /**
@@ -540,30 +530,24 @@ export class WebSocketManager {
      * @param socket - The WebSocket connection object.
      * @param message - The error message to send.
      */
-    private async sendError(socket: any, message: string): Promise<void> {
+    private sendError(socket: any, message: string): void {
         const errorMsg: ServerMessage = {
             type: MessageType.ERROR,
             message: message
         };
-        
-        socket.send(JSON.stringify(errorMsg), (err?: Error) => {
-            if (err) console.error('❌ Failed to send error message:', err);
-        });
+        this.send(socket, errorMsg);
     }
 
     /**
      * Sends a welcome message to a newly connected client.
      * @param socket - The WebSocket connection object.
      */
-    private async sendWelcomeMessage(socket: any): Promise<void> {
+    private sendWelcomeMessage(socket: any): void {
         const welcome: ServerMessage = {
             type: MessageType.WELCOME,
             message: 'Connected to game server'
         };
-        
-        socket.send(JSON.stringify(welcome), (err?: Error) => {
-            if (err) console.error('❌ Failed to send welcome message:', err);
-        });
+        this.send(socket, welcome);
     }
 
     /**
