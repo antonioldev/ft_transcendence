@@ -157,12 +157,12 @@ abstract class AbstractTournament extends AbstractGameSession{
 	// 	return true;
 	// }
 
-	enqueue(input: PlayerInput, client_id: string | undefined): void  {
-		const match = this.findMatch(client_id);
-		if (!match) return ;
+	// enqueue(input: PlayerInput, client_id?: string): void  {
+	// 	const match = this.findMatch(client_id);
+	// 	if (!match) return ;
 
-		match?.game?.enqueue(input);
-	}
+	// 	match?.game?.enqueue(input);
+	// }
 
 	canClientControlGame(client: Client) {
 		const match = this.findMatch();

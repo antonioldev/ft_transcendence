@@ -147,12 +147,17 @@ export abstract class AbstractGameSession {
 		return true;
 	}
 
+	enqueue(input: PlayerInput, client_id?: string): void  {
+		const game = this.findGame(client_id);
+		game?.enqueue(input);
+	}
+
 	abstract start(): Promise<void>; 
 	abstract stop(client_id?: string): void;
 	// abstract pause(client_id?: string): boolean;
 	// abstract resume(client_id?: string): boolean;
 	
-	abstract enqueue(input: PlayerInput, client_id?: string): void;
+	// abstract enqueue(input: PlayerInput, client_id?: string): void;
 	abstract handlePlayerQuit(quitter_id: string): void;
 	abstract canClientControlGame(client: Client): boolean;
 	abstract findGame(client_id?: string): Game | undefined;
@@ -218,9 +223,9 @@ export class OneOffGame extends AbstractGameSession{
 	// 	return true;
 	// }
 
-	enqueue(input: PlayerInput): void  {
-		this.game?.enqueue(input);
-	}
+	// enqueue(input: PlayerInput): void  {
+	// 	this.game?.enqueue(input);
+	// }
 	
 	handlePlayerQuit(quitter_id: string): void {
 		if (this.game && this.mode == GameMode.TWO_PLAYER_REMOTE) {
