@@ -192,7 +192,6 @@ export class Game {
 	stop(gameId?: string) {
 		this.running = false;
 
-		// TODO: save score to db
 		if (gameId && this.players[LEFT_PADDLE].client?.id != this.players[RIGHT_PADDLE].client?.id) {
 			const player1_score = this.paddles[LEFT_PADDLE].score;
 			const player2_score = this.paddles[RIGHT_PADDLE].score;

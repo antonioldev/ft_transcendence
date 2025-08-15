@@ -43,6 +43,7 @@ export interface Translation {
     viewMode: string;
     backToMain: string;
     pleaseFilllAllFields: string;
+    passwordFormat: string,
     passwordsDoNotMatch: string;
     dontHaveAccount: string;
     alreadyHaveAccount: string;

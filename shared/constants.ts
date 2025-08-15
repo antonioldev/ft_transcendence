@@ -32,7 +32,7 @@ export enum MessageType {
     REQUEST_USER_PROFILE,    // Type for back to frontend comm
     UPDATE_USER_PROFILE,     // Request to update user information 
     COUNTDOWN,               // Used to send ountdown timer before game starts
-    SESSION_ENDED,         // SERVER -> CLIENTS: Server notifies game ended (when someone quits with Y)
+    SESSION_ENDED,
 }
 
 export enum WebSocketEvent {
@@ -94,6 +94,14 @@ export enum AuthState {
     GUEST = 0,
     LOGGED_IN = 1,
     LOGGED_FAILED = 2
+}
+
+export enum AuthCode {
+  OK = 0,
+  NotFound = 1,
+  BadCredentials = 2,
+  UsernameTaken = 2,
+  UserExists = 1,
 }
 
 export enum ConnectionStatus {

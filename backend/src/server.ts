@@ -6,17 +6,30 @@ import { webSocketManager }  from './network/WebSocketManager.js';
 import config from './config/default.js';
 import { initialisazeDatabase } from './data/db-init.js';
 import { registerDatabaseFunctions } from './data/database.js';
+import { registerNewUser } from './data/validation.js';
 import { authRoutes } from './auth/auth_google.js';
 
 dotenv.config();
 
 const fastify = Fastify({
-    logger: config.debug === 'yes' ? true : false
+    logger: config.debug === 'yes' ? true : false,
+    trustProxy: true,
 });
 
 // init the database
-const db = initialisazeDatabase('./database/transcendence.sqlite');
+const db = await initialisazeDatabase('./database/transcendence.sqlite');
 registerDatabaseFunctions(db);
+await seedDefaultUsers();
+
+
+async function seedDefaultUsers() {
+  // pick simple starter passwords; your registerUser should pepper+argon2-hash before insert
+  await registerNewUser('Player1', 'player1@example.com', 'Password1!' );
+  await registerNewUser('Player2', 'player2@example.com', 'Password2!' );
+  await registerNewUser('Player3', 'player3@example.com', 'Password3!' );
+  await registerNewUser('Player4', 'player4@example.com', 'Password4!' );
+  console.log('Seeded 4 default users via registration flow');
+}
 
 // Register JWT plugin
 await fastify.register(fastifyJwt, {
@@ -25,9 +38,10 @@ await fastify.register(fastifyJwt, {
 
 // Enable CORS for the frontend application
 await fastify.register(fastifyCors, {
-    origin: "http://localhost:8080",
+    origin: "https://localhost",
     methods: ['GET', 'POST', 'OPTIONS'],
     credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization'],
 });
 
 // Register the authentication routes
@@ -61,7 +75,8 @@ const start = async (): Promise<void> => {
     try {
         await fastify.listen({ 
             port: config.server.port,
-            host: config.server.host 
+            // host: config.server.host
+            host: '0.0.0.0' 
         });
         console.log(`Pong server ready`);
     } catch (err) {
