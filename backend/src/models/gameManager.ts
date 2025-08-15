@@ -1,4 +1,4 @@
-import { GameSession } from '../network/GameSession.js';
+import { OneOffGame, AbstractGameSession } from '../network/GameSession.js';
 import { TournamentLocal, TournamentRemote } from '../network/Tournament.js';
 import { Client } from './Client.js';
 import { GameMode } from '../shared/constants.js';
@@ -12,8 +12,8 @@ import { Cipheriv } from 'crypto';
  * Manages game sessions and player interactions within the game.
  */
 class GameManager extends EventEmitter {
-    private gameIdMap: Map<string, GameSession | TournamentLocal | TournamentRemote> = new Map();
-    private clientGamesMap: Map<string, GameSession | TournamentLocal | TournamentRemote> = new Map(); // maps client id to gameSession
+    private gameIdMap: Map<string, AbstractGameSession> = new Map();
+    private clientGamesMap: Map<string, AbstractGameSession> = new Map(); // maps client id to gameSession
     private waitingPlayers: Client[] = [];
 
     /**
@@ -31,7 +31,7 @@ class GameManager extends EventEmitter {
             registerNewGame(gameId, client.username, 1);
 
         // Create new gamesession and add the client
-        let gameSession: GameSession | TournamentLocal | TournamentRemote;
+        let gameSession: AbstractGameSession;
         if (mode === GameMode.TOURNAMENT_LOCAL) {
             gameSession = new TournamentLocal(mode, gameId, 4); // TEMP HARDCODED TO 4 PLAYERS
         }
@@ -39,7 +39,7 @@ class GameManager extends EventEmitter {
             gameSession = new TournamentRemote(mode, gameId, 4); // TEMP HARDCODED TO 4 PLAYERS
         }
         else {
-            gameSession = new GameSession(mode, gameId);
+            gameSession = new OneOffGame(mode, gameId);
         }
 
         gameSession.add_client(client);
@@ -98,7 +98,7 @@ class GameManager extends EventEmitter {
         return this.createGame(mode, client);
     }
 
-    async runGame(gameSession: GameSession | TournamentLocal | TournamentRemote, client_id: string): Promise<void> {
+    async runGame(gameSession: AbstractGameSession, client_id: string): Promise<void> {
         if (gameSession.running) return ;
 
         db.updateStartTime(gameSession.id);
@@ -111,7 +111,7 @@ class GameManager extends EventEmitter {
      * @param gameId - The unique ID of the game session.
      * @returns The game session if found, otherwise undefined.
      */
-    getGame(gameId: string): GameSession | TournamentLocal | TournamentRemote | undefined {
+    getGame(gameId: string): AbstractGameSession | undefined {
         return this.gameIdMap.get(gameId);
     }
 
@@ -120,7 +120,7 @@ class GameManager extends EventEmitter {
      * @param client - The client whose game is being searched for.
      * @returns The game object or null if the client is not in a game.
      */
-    findClientGame(client: Client): GameSession | TournamentLocal | TournamentRemote | undefined {
+    findClientGame(client: Client): AbstractGameSession | undefined {
         // for (const gameSession of this.gameIdMap.values()) {
         //     if (gameSession.clients.includes(client)) {
         //         return gameSession;
@@ -133,7 +133,7 @@ class GameManager extends EventEmitter {
      * Removes a game session by its unique ID.
      * @param gameId - The unique ID of the game session to be removed.
      */
-    endGame(gameSession: GameSession | TournamentLocal | TournamentRemote, client_id: string): void {
+    endGame(gameSession: AbstractGameSession, client_id: string): void {
         gameSession.stop();
         this.gameIdMap.delete(gameSession.id);
         this.clientGamesMap.delete(client_id);

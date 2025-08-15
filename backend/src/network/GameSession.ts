@@ -127,7 +127,7 @@ export abstract class AbstractGameSession {
 	abstract canClientControlGame(client: Client): boolean;
 }
 
-export class GameSession extends AbstractGameSession{
+export class OneOffGame extends AbstractGameSession{
 	game!: Game;
 
 	constructor (mode: GameMode, game_id: string) {
