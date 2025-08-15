@@ -103,7 +103,6 @@ abstract class AbstractTournament extends AbstractGameSession{
 				this.client_match_map?.set(player_left.client.id, match);
 				this.client_match_map?.set(player_right.client.id, match);
 			}
-
 		}
 	}
 
@@ -197,6 +196,8 @@ export class TournamentLocal extends AbstractTournament {
 	async run(matches: Match[]): Promise<void> {
 		await this.waitForPlayersReady();
 		for (const match of matches) {
+			if (!this.running) return ;
+			
 			this.current_match = match;
 			match.game = new Game(match.players, this.broadcast.bind(this));
 			match.winner = await match.game.run();
@@ -214,8 +215,8 @@ export class TournamentLocal extends AbstractTournament {
 	stop() {
 		if (!this.running) return ;
 
-		this.current_match?.game?.stop();
 		this.running = false;
+		this.current_match?.game?.stop();
 		this.broadcast({ type: MessageType.SESSION_ENDED });
 	}
 
@@ -265,12 +266,12 @@ export class TournamentRemote extends AbstractTournament {
 
 	stop() {
 		if (!this.running) return ;
-
+		this.running = false;
+		
 		for (const match of this.client_match_map.values()) {
 			match.game.stop(this.id);
 		}
-
-		this.running = false;
+		
 		this.broadcast({ type: MessageType.SESSION_ENDED });
 	}
 

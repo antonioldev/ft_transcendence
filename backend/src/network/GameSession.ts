@@ -185,10 +185,9 @@ export class OneOffGame extends AbstractGameSession{
 	stop(): void {
 		if (!this.running || !this.game) return;
 		
-		if (this.game.running){
-			this.game.stop(this.id);
-		}
 		this.running = false;
+		this.game.stop(this.id);
+		
 		this.broadcast({ 
 			type: MessageType.SESSION_ENDED,
 			...(this.game.winner.name && { winner: this.game.winner.name })
