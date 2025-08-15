@@ -100,34 +100,30 @@ export class WebSocketManager {
             
             switch (data.type) {
                 case MessageType.JOIN_GAME:
-                    await this.handleJoinGame(socket, client, data, setCurrentGameId);
+                    this.handleJoinGame(socket, client, data, setCurrentGameId);
                     break;
                 case MessageType.PLAYER_READY:
-                    await this.handlePlayerReady(client);
+                    this.handlePlayerReady(client);
                     break;
                 case MessageType.PLAYER_INPUT:
-                    await this.handlePlayerInput(client, data);
+                    this.handlePlayerInput(client, data);
                     break;
                 case MessageType.PAUSE_REQUEST:
-                    await this.handlePauseRequest(client);
+                    this.handlePauseRequest(client);
                     break;
                 case MessageType.RESUME_REQUEST:
-                    await this.handleResumeRequest(client);
+                    this.handleResumeRequest(client);
                     break;
                 case MessageType.LOGIN_USER:
-                    console.log("HandleMessage WSM: calling Login_user");
                     await this.handleLoginUser(socket, client, data);
                     break;
                 case MessageType.REGISTER_USER:
-                    console.log("HandleMessage WSM: calling Register_user");
                     await this.handleRegisterNewUser(socket, data);
                     break;
                 case MessageType.REQUEST_USER_STATS:
-                    console.log("HandleMessage WSM: calling get User stats");
                     await this.handleUserStats(socket, message);
                     break;
                 case MessageType.REQUEST_GAME_HISTORY:
-                    console.log("HandleMessage WSM: calling get User game history");
                     this.handleUserGameHistory(socket, message);
                     break;
                 // case MessageType.REQUEST_USER_PROFILE:
@@ -135,7 +131,7 @@ export class WebSocketManager {
                 //     await this.handleUserProfileRequest(socket, data);
                 //     break;
                 case MessageType.QUIT_GAME:
-                    await this.handleQuitGame(client);
+                    this.handleQuitGame(client);
                     break;
                 default:
                     this.send(socket, {
@@ -160,35 +156,30 @@ export class WebSocketManager {
      * @param data - The message data containing game mode information.
      * @param setCurrentGameId - Callback to update the current game ID for the client.
      */
-    private async handleJoinGame(
-        socket: any, 
-        client: Client, 
-        data: ClientMessage,
-        setCurrentGameId: (gameId: string) => void
-    ): Promise<void> {
+    private handleJoinGame(socket: any, client: Client, data: ClientMessage, setCurrentGameId: (gameId: string) => void) {
         if (!data.gameMode) {
             this.send(socket, {
                 type: MessageType.ERROR,
                 message: 'Game mode required'
-            });
+            }); 
             return;
         }
-
         try {
             const gameId = gameManager.findOrCreateGame(data.gameMode, client);
             const gameSession = gameManager.getGame(gameId);
+            if (!gameSession) return ;
             
             if (data.aiDifficulty !== undefined) {
-                gameSession?.set_ai_difficulty(data.aiDifficulty);
                 console.log("AI difficulty = " + data.aiDifficulty);
+                gameSession.set_ai_difficulty(data.aiDifficulty);
             }
             setCurrentGameId(gameId);
 
             // add players to gameSession
             for (const player of data.players ?? []) {
-                gameSession?.add_player(new Player(player.id, player.name, client));
+                gameSession.add_player(new Player(player.id, player.name, client));
             }
-            if (gameSession?.full && !gameSession.running) {
+            if (gameSession.full && !gameSession.running) {
                 gameManager.runGame(gameSession);
             }
         } catch (error) {
@@ -204,7 +195,7 @@ export class WebSocketManager {
      * Handles when a client signals they are ready (finished loading)
      * @param client - The client that is ready
      */
-    private async handlePlayerReady(client: Client): Promise<void> {
+    private handlePlayerReady(client: Client): void {
         console.log(`Client ${client.id} is ready`);
 
         const gameSession = gameManager.findClientGame(client);
@@ -220,13 +211,12 @@ export class WebSocketManager {
      * @param client - The client sending the input.
      * @param data - The message data containing input details.
      */
-    private async handlePlayerInput(client: Client, data: ClientMessage): Promise<void> {
+    private handlePlayerInput(client: Client, data: ClientMessage): void {
         if (data.direction === undefined || data.side === undefined) {
             console.warn('Invalid player input: missing direction or side');
             return;
         }
 
-        // Find the game this client is in
         const gameSession = gameManager.findClientGame(client);
         if (!gameSession) {
             console.warn(`Client ${client.id} not in any game`);
@@ -246,7 +236,7 @@ export class WebSocketManager {
      * Handles the request from a client to pause a game
      * @param client - The client that send the request.
      */
-    private async handlePauseRequest(client: Client): Promise<void> {
+    private handlePauseRequest(client: Client): void {
         const gameSession = gameManager.findClientGame(client);
         if (!gameSession) {
             console.warn(`Client ${client.id} not in any game for pause request`);
@@ -267,7 +257,7 @@ export class WebSocketManager {
      * Handles the request from a client to resume a game
      * @param client - The client that send the request.
      */
-    private async handleResumeRequest(client: Client): Promise<void> {
+    private handleResumeRequest(client: Client): void {
         const gameSession = gameManager.findClientGame(client);
         if (!gameSession) {
             console.warn(`Client ${client.id} not in any game for resume request`);
@@ -318,7 +308,7 @@ export class WebSocketManager {
      * @param data - The user information that are used to confirm login
      */
     private async handleLoginUser(socket: any, client: Client, data: ClientMessage): Promise<void> {
-        console.log("handleLoginUser WSM called()");
+        console.log("HandleMessage WSM: calling Login_user");
         const loginInfo = data.loginUser;
 
         if (!loginInfo?.username || typeof loginInfo.password !== 'string') {
@@ -376,6 +366,7 @@ export class WebSocketManager {
      * @param data - The user information that are used to confirm login
      */
     private async handleRegisterNewUser(socket: any, data: ClientMessage): Promise<void> {
+        console.log("HandleMessage WSM: calling Register_user");
         const regInfo = data.registerUser;
 
         if (!regInfo) {
@@ -446,6 +437,7 @@ export class WebSocketManager {
     }  
 
     private async handleUserStats(socket: any, message: string) {
+        console.log("HandleMessage WSM: calling get User stats");
         const stats = db.getUserStats(message); // from DB
         if (!stats) {
             this.send(socket, {
@@ -462,6 +454,7 @@ export class WebSocketManager {
     }
 
     private handleUserGameHistory(socket: any, message: string): void {
+        console.log("HandleMessage WSM: calling get User game history");
         const history = db.getGameHistoryForUser(message); // from DB
         if (!history) {
             this.send(socket, {
@@ -534,7 +527,7 @@ export class WebSocketManager {
     /**
      * Disconnects all connected clients and clears the client list.
      */
-    async disconnectAllClients(): Promise<void> {
+    disconnectAllClients(): void {
         for (const [clientId, client] of this.clients) {
             try {
                 client.websocket.close();
