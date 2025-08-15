@@ -128,7 +128,7 @@ export class WebSocketManager {
                     break;
                 case MessageType.REQUEST_GAME_HISTORY:
                     console.log("HandleMessage WSM: calling get User game history");
-                    await this.handleUserGameHistory(socket, message);
+                    this.handleUserGameHistory(socket, message);
                     break;
                 // case MessageType.REQUEST_USER_PROFILE:
                 //     console.log("HandleMessage WSM: Requesting user profile");
@@ -288,13 +288,12 @@ export class WebSocketManager {
      * Handles the disconnection of a client, removing them from games and cleaning up resources.
      * @param data - The user information that are used to confirm login
      */
-    private async handleQuitGame(client: Client): Promise<void> {
+    private handleQuitGame(client: Client): void {
         const gameSession = gameManager.findClientGame(client);
         if (!gameSession) {
             console.warn(`Client ${client.id} not in any game to quit`);
             return;
         }
-        
         
         gameSession.handlePlayerQuit(client.id);
         gameManager.removeClientFromGames(client);
@@ -309,6 +308,7 @@ export class WebSocketManager {
     private handleDisconnection(client: Client): void {
         const gameSession = gameManager.findClientGame(client);
         if (!gameSession) return ;
+
         gameSession.stop(); // TODO: temp as wont work for Tournament 
         gameManager.removeClientFromGames(client);
         this.clients.delete(client.id);
@@ -333,7 +333,6 @@ export class WebSocketManager {
         try {
             // DO NOT log the password
             console.log("handleLoginUser WSM: username received:", loginInfo.username);
-
             const result = await db.verifyLogin(loginInfo.username, loginInfo.password);
 
             switch (result) {

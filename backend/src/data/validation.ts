@@ -24,6 +24,7 @@ export async function verifyLogin(username: string, password: string): Promise<n
         }
     }
     
+    // Return values should be using the AuthCode enum for clarity
     if (!userExists) {
         return 1; // User doesn't exist
     }
