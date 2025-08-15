@@ -25,6 +25,8 @@ export class Match {
 	}
 
 	add_player(player: Player) {
+		if (!player) return ;
+
 		if (!this.players.includes(player)) {
 			this.players.push(player);
 		}
