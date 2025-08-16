@@ -248,9 +248,7 @@ export class WebSocketManager {
             return;
         }
 
-        if (gameSession.pause(client.id)) {
-            console.log(`Game ${gameSession.id} paused by client ${client.id}`);
-        }
+        gameSession.pause(client.id);
     }
 
     /**
@@ -269,9 +267,7 @@ export class WebSocketManager {
             return;
         }
 
-        if (gameSession.resume(client.id)) {
-            console.log(`Game ${gameSession.id} resumed by client ${client.id}`);
-        }
+        gameSession.resume(client.id);
     }
 
    /**

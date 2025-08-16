@@ -117,34 +117,34 @@ export abstract class AbstractGameSession {
 		}
 	}
 
-	resume(client_id?: string): boolean {
+	resume(client_id?: string): void {
 		const game = this.findGame(client_id);
 		if (!this.running || !game || !game.running) {
 			console.log(`Game ${this.id} is not running, cannot resume`);
-			return false;
+			return ;
 		}
 		if (!game.paused) {
 			console.log(`Game ${this.id} is not paused`);
-			return false;
+			return ;
 		}
 
 		game.resume();
-		return true;
+		console.log(`Game ${this.id} resumed by client ${client_id}`);
 	}
 
-	pause(client_id?: string): boolean {
+	pause(client_id?: string): void {
 		const game = this.findGame(client_id);
 		if (!this.running || !game || !game.running) {
 			console.log(`Game ${this.id} is not running, cannot pause`);
-			return false;
+			return ;
 		}
 		if (game.paused) {
 			console.log(`Game ${this.id} is already paused`);
-			return false;
+			return ;
 		}
 
 		game.pause();
-		return true;
+		console.log(`Game ${this.id} paused by client ${client_id}`);
 	}
 
 	enqueue(input: PlayerInput, client_id?: string): void  {
