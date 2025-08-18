@@ -193,6 +193,9 @@ export class AuthManager {
                 setTimeout(() => {
                     appStateManager.navigateTo(AppState.REGISTER);
                 }, 500);
+            } else if (msg === "User already login") {
+                alert(t.alreadyLogin)
+                uiManager.clearForm(this.loginFields); 
             } else {
                 alert(t.passwordsDoNotMatch);
                 uiManager.clearForm(this.loginFields); 
@@ -388,6 +391,8 @@ export class AuthManager {
 
     // Logs out the current user and returns to guest state. Clears user data and updates UI accordingly.
     logout(): void {
+        const wsClient = WebSocketClient.getInstance();
+        wsClient.logoutUser();
         this.authState = AuthState.GUEST;
         this.currentUser = null;
         uiManager.showAuthButtons();

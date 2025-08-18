@@ -1,6 +1,7 @@
 // DB command to create, update and remove information from db and tables
 import Database from 'better-sqlite3';
-import { UserProfileData } from '../shared/types.js';
+import { UserProfileData, SessionUser } from '../shared/types.js';
+import crypto from 'crypto';
 
 enum UserField {
 	EMAIL,
@@ -8,6 +9,8 @@ enum UserField {
 }
 
 let db: Database.Database;
+const DAY = 86400;
+const nowSec = () => Math.floor(Date.now() / 1000);
 
 export function registerDatabaseFunctions(database: Database.Database) {
 	console.log("registering db");
@@ -766,4 +769,67 @@ export function getUserGameHistoryRows(userId: number) {
 		console.error('Error in getUserGameHistoryRows:', err);
 		return [];
 	}
+}
+
+// Session cookie creation to ensure no double login and refresh doesn't logout user
+
+export function createSession(userId: number): string | undefined {
+	try {
+		if (userId === -1) {
+			console.error("error in createSession, userId is invalid");
+			return undefined;
+		}
+		const now = nowSec();
+		const ttlDays = 7;
+
+		deleteSessionExpired(userId);
+
+		// Block if any still-active session exists
+		const active = db.prepare('SELECT id FROM sessions WHERE user_id=? AND expires_at > ? LIMIT 1'
+		).get(userId, now) as { id: string } | undefined;
+
+		if (active) return undefined;
+
+		// Create new session
+		const sid = crypto.randomBytes(32).toString('hex');
+		const expiresAt = now + ttlDays * DAY;
+
+		db.prepare(
+		`INSERT INTO sessions (id, user_id, created_at, expires_at, user_agent, ip)
+		VALUES (?,?,?,?,?,?)`
+		).run(sid, userId, now, expiresAt, null, null);
+
+		return sid;
+	} catch (err) {
+		console.error('Error in createSession:', err);
+		return undefined;
+	}
+}
+
+export function deleteSessionExpired(userId: number) {
+	const now = nowSec();
+	db.prepare('DELETE FROM sessions WHERE user_id=? AND expires_at <= ?').run(userId, now);
+}
+
+export function deleteSessionLogout(userId: number) {
+	try {
+		db.prepare('DELETE FROM sessions WHERE user_id=?').run(userId);
+		console.log('Session deleted successfully');
+	} catch (err) {
+		console.error('Error on deleting session');
+	}
+
+}
+
+export function getSessionInfo(userId: number): SessionUser | null {
+  try {
+    const row = db.prepare('SELECT id, user_id, created_at, expires_at FROM sessions WHERE user_id=?'
+    ).get(userId) as { sid: string, user_id: number; created_at: number; expires_at: number } | undefined;
+
+    if (!row) return null;
+    return { sid: row.sid, userId: row.user_id, createdAt: row.created_at, expiresAt: row.expires_at };
+  } catch (err) {
+    console.error('Error in getSessionInfo:', err);
+    return null;
+  }
 }

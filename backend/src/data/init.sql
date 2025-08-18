@@ -34,6 +34,18 @@ CREATE TABLE IF NOT EXISTS games (
 	FOREIGN KEY (looser_id) REFERENCES users(id)
 );
 
+-- sessions.sql
+CREATE TABLE IF NOT EXISTS sessions (
+  id TEXT UNIQUE PRIMARY KEY,        -- random opaque session id
+  user_id INTEGER NOT NULL,
+  created_at INTEGER NOT NULL,       -- epoch seconds
+  expires_at INTEGER NOT NULL,       -- e.g., now + 7 days
+  revoked INTEGER NOT NULL DEFAULT 0,
+  user_agent TEXT,
+  ip TEXT
+);
+
+
 -- friends table 
 -- CREATE TABLE IF NOT EXISTS friends (
 --  user_id INTEGER NOT NULL,

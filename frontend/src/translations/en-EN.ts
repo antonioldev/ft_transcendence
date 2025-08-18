@@ -41,6 +41,7 @@ export const english: Translation = {
     viewMode: 'View Mode',
     backToMain: 'Back to Main',
     pleaseFilllAllFields: 'Please fill in all fields',
+    alreadyLogin: 'This account is already in login on another device',
     passwordsDoNotMatch: 'Passwords do not match',
     passwordFormat: "Your password must be 8 characters long and contain at least one letter (lower and uppercase), one number and one special character",
     dontHaveAccount: "Don't have an account?",

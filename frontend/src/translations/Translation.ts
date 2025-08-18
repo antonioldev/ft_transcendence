@@ -44,6 +44,7 @@ export interface Translation {
     backToMain: string;
     pleaseFilllAllFields: string;
     passwordFormat: string,
+    alreadyLogin: string,
     passwordsDoNotMatch: string;
     dontHaveAccount: string;
     alreadyHaveAccount: string;

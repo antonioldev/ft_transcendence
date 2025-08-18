@@ -41,6 +41,7 @@ export const portuguese: Translation = {
     viewMode: 'Modo de visualização',
     backToMain: 'Voltar ao menu principal',
     pleaseFilllAllFields: 'Preencha todos os campos',
+    alreadyLogin: 'Esta conta já está em login em outro dispositivo',
     passwordFormat: "A sua palavra-passe deve ter 8 caracteres e conter pelo menos uma letra (minúscula e maiúscula), um número e um caractere especial",
     passwordsDoNotMatch: 'As senhas não coincidem',
     dontHaveAccount: 'Não tem uma conta?',

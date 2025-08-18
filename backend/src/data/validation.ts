@@ -32,10 +32,34 @@ export async function verifyLogin(username: string, password: string): Promise<n
     // function to compare password with hashing one saved in db
     console.log("Validation.ts, verifyLogin: password to check and password saved", password, register_pwd);
     const isMatch = await verifyPassword(register_pwd, password);
-    if (isMatch)
+    if (isMatch) {
+        const userId = dbFunction.retrieveUserID(username);
+        if (dbFunction.createSession(userId) === undefined)
+            return 3;
         return 0;
-    else
+    } else
         return 2;
+}
+
+export async function logoutUser(username: string): Promise<number> {
+    let checkvalue = dbFunction.userExist(undefined, username);
+    if (checkvalue === 0) {
+        console.log("User doesn't exist in db");
+        return 0;
+    }
+    const userId = dbFunction.retrieveUserID(username);
+    if (userId === -1) {
+        console.log("Error in retrieving userId");
+        return 0;
+    }
+    try {
+        dbFunction.deleteSessionLogout(userId);
+        console.log("successfully logout user in db");
+        return 1;
+    } catch (error) {
+        console.error("Error in deleting session");
+        return 0;
+    }
 }
 
 export async function registerNewUser(username: string, email: string, password:string): Promise<number> {

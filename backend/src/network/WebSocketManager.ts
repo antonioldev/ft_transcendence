@@ -116,6 +116,10 @@ export class WebSocketManager {
                     console.log("HandleMessage WSM: calling Login_user");
                     await this.handleLoginUser(socket, client, data);
                     break;
+                case MessageType.LOGOUT_USER:
+                    console.log("HandleMessage WSM: calling Logout_user");
+                    await this.handleLogoutUser(socket, client, data);
+                    break;                    
                 case MessageType.REGISTER_USER:
                     console.log("HandleMessage WSM: calling Register_user");
                     await this.handleRegisterNewUser(socket, data);
@@ -344,14 +348,30 @@ export class WebSocketManager {
                 return;
 
             case AuthCode.BadCredentials:
-            default:
                 console.log("handleLoginUser WSM: bad credentials");
                 await this.sendErrorLogin(socket, "Username or password are incorrect");
+                return;
+            
+            case AuthCode.AlreadyLogin:
+                console.log("handleLoginUser WSM: user already login");
+                await this.sendErrorLogin(socket, "User already login");
                 return;
             }
         } catch (error) {
             console.error('❌ Error checking user login information:', error);
             await this.sendError(socket, 'Failed to log user');
+        }
+    }
+
+    private async handleLogoutUser(socket: any, client: Client, data: ClientMessage): Promise<void> {
+        console.log("handleLoginUser WSM called()");
+        const username = client.username;
+        console.log(`client.username ${username}`);
+        try {
+            await db.logoutUser(username);
+            console.log('User successfully logout');
+        } catch (err) {
+            console.error('Error in logout user');
         }
     }
     /**

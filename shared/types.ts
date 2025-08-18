@@ -89,6 +89,13 @@ export interface LoginUser {
     password: string;
 }
 
+export interface SessionUser {
+    sid: string;
+    userId: number;
+    createdAt: number; 
+    expiresAt: number; 
+}
+
 // ============================== USER MANAGEMENT TYPES ==============================
 
 export interface UserProfileData {

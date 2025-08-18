@@ -19,6 +19,7 @@ export enum MessageType {
     ALL_READY,           // SERVER -> CLIENT: All players are ready, game starts in 5 seconds
     REGISTER_USER,         // New User want to register --> going to create a new row in db
     LOGIN_USER,            // User want to connect to their account --> calling function for validate info
+    LOGOUT_USER,
     SUCCESS_LOGIN,         // Successfully login a user 
     SUCCESS_REGISTRATION,  // Succesfylly register new user
     LOGIN_FAILURE,         // failure in login user -- id or pwd not matching
@@ -103,6 +104,7 @@ export enum AuthCode {
   BadCredentials = 2,
   UsernameTaken = 2,
   UserExists = 1,
+  AlreadyLogin = 3,
 }
 
 export enum ConnectionStatus {

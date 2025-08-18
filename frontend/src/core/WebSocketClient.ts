@@ -229,6 +229,16 @@ export class WebSocketClient {
         }          
     }
 
+    logoutUser(): void {
+        Logger.debug('In logout user', 'WebSocketClient');
+        if (this.isConnected()) {
+            const message: ClientMessage = {
+                type: MessageType.LOGOUT_USER,
+            };
+            this.ws!.send(JSON.stringify(message));
+        }          
+    }
+
     // ========================================
     // DASHBOARD
     // ========================================
