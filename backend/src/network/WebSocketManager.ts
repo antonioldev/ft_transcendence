@@ -47,6 +47,8 @@ export class WebSocketManager {
     private handleConnection(socket: any, authenticatedUser?: { username: string; email: string }): void {
         const clientId = this.generateClientId();
 
+        
+
         let client: Client;
         if (authenticatedUser) {
             // Google authenticated user
