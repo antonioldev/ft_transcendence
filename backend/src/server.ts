@@ -1,6 +1,7 @@
 import Fastify from 'fastify';
 import fastifyJwt from '@fastify/jwt';
 import fastifyCors from '@fastify/cors';
+import cookie from '@fastify/cookie';
 import * as dotenv from 'dotenv';
 import { webSocketManager }  from './network/WebSocketManager.js';
 import config from './config/default.js';
@@ -8,6 +9,7 @@ import { initialisazeDatabase } from './data/db-init.js';
 import { registerDatabaseFunctions } from './data/database.js';
 import { registerNewUser } from './data/validation.js';
 import { authRoutes } from './auth/auth_google.js';
+import sessionBindRoutes from "./auth/auth_local.js"
 
 dotenv.config();
 
@@ -15,6 +17,13 @@ const fastify = Fastify({
     logger: config.debug === 'yes' ? true : false,
     trustProxy: true,
 });
+
+fastify.register(cookie, {
+  secret: process.env.COOKIE_SECRET,
+  hook: 'onRequest',
+});
+
+fastify.register(sessionBindRoutes);
 
 // init the database
 const db = await initialisazeDatabase('./database/transcendence.sqlite');

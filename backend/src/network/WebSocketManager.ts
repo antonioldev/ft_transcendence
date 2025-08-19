@@ -5,6 +5,7 @@ import { MessageType, Direction, GameMode, UserManagement, AuthCode } from '../s
 import { ClientMessage, ServerMessage, GetUserProfile, UserProfileData } from '../shared/types.js';
 import * as db from "../data/validation.js";
 import { UserStats, GameHistoryEntry } from '../shared/types.js';
+import { getUserBySession, getSessionByUsername } from '../data/validation.js';
 
 // TODO: set timer for online player search, if not found then start with CPU
 
@@ -20,7 +21,23 @@ export class WebSocketManager {
      */
     async setupRoutes(fastify: FastifyInstance): Promise<void> {
         fastify.get('/ws', { websocket: true } as any, (socket, req) => { //testing change here
-            const token = (req.query as { token?: string }).token;
+            // const token = (req.query as { token?: string }).token;
+            const cookieHeader = req.headers.cookie || '';
+            const sidFromCookie = this.parseCookie(cookieHeader)['sid'];
+
+            // 2) optional fallbacks: ?sid=... or Google ?token=...
+            const { sid: sidFromQuery, token } = (req.query as { sid?: string; token?: string }) || {};
+            const sid = sidFromCookie || sidFromQuery;
+
+            if (sid) {
+                const user = this.safeGetUserBySession(sid);
+                if (user) {
+                console.log(`WS session auth OK for ${user.username}`);
+                this.handleConnection(socket, { username: user.username, email: user.email ?? '' });
+                return;
+                }
+                console.log('WS: invalid/expired session id, trying token fallback');
+            }
             if (token) {
                 try {
                     // Google authentication: verify JWT token
@@ -47,7 +64,7 @@ export class WebSocketManager {
     private handleConnection(socket: any, authenticatedUser?: { username: string; email: string }): void {
         const clientId = this.generateClientId();
 
-        
+
 
         let client: Client;
         if (authenticatedUser) {
@@ -339,7 +356,18 @@ export class WebSocketManager {
             switch (result) {
             case AuthCode.OK:
                 console.log("handleLoginUser WSM: sending success");
-                await this.sendSuccessLogin(socket, "User ID confirmed");
+                const sid = getSessionByUsername(loginInfo.username); // or db.createOrGetSession(userId)
+                if (!sid) {
+                  // If you enforce "one active session per user", keep this as error:
+                    console.log(`SID is not valid: ${sid}`);
+                    await this.sendErrorLogin(socket, "SID is not valid");
+                    return;
+                }
+                await this.sendSuccessLogin(socket, {
+                    message: "User ID confirmed",
+                    sid,
+                    username: loginInfo.username,
+                });
                 client.username = loginInfo.username;
                 client.loggedIn = true;
                 return;
@@ -425,12 +453,19 @@ export class WebSocketManager {
      * @param socket - The WebSocket connection object.
      * @param message - The messagee to send.
      */
-    private async sendSuccessLogin(socket: any, message: string): Promise<void> {
-        const successMsg: ServerMessage = {
-            type: MessageType.SUCCESS_LOGIN,
-            message: message
-        };
-        
+        private async sendSuccessLogin(socket: any, payload: { message: string; sid: any; username: string }): Promise<void> {
+            const messageBody = {
+                text: payload.message,             // keep the human-readable part
+                sid: payload.sid,                  // <- what the frontend needs
+                username: payload.username
+            };
+            const successMsg: ServerMessage = {
+                type: MessageType.SUCCESS_LOGIN,
+                message: JSON.stringify(messageBody),
+                sid: payload.sid,
+                username: payload.username,
+            };
+            
         try {
             await socket.send(JSON.stringify(successMsg));
         } catch (error) {
@@ -662,6 +697,20 @@ export class WebSocketManager {
             }
         }
         this.clients.clear();
+    }
+
+    private parseCookie(cookieHeader: string): Record<string, string> {
+        const out: Record<string, string> = {};
+        cookieHeader.split(';').forEach(kv => {
+            const [k, ...rest] = kv.trim().split('=');
+            if (k) out[k] = decodeURIComponent(rest.join('=') || '');
+        });
+    return out;
+    }
+
+    private safeGetUserBySession(sid: string) {
+        try { return getUserBySession(sid); }
+        catch (e) { console.error('getUserBySession error:', e); return null; }
     }
 }
 

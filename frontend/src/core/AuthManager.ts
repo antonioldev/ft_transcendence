@@ -31,6 +31,7 @@ export class AuthManager {
     static initialize(): void {
         const authManager = AuthManager.getInstance();
         authManager.setupEventListeners();
+        authManager.restoreSessionOnBoot();
     }
 
     // ========================================
@@ -159,6 +160,33 @@ export class AuthManager {
     // AUTHENTICATION HANDLERS
     // ========================================
 
+    private async restoreSessionOnBoot(): Promise<void> {
+        try {
+            const res = await fetch('/api/auth/session/me', {
+            method: 'GET',
+            credentials: 'include', // include cookie
+            });
+            if (!res.ok) {
+            // not logged in; leave UI as-is
+            return;
+            }
+            const data = await res.json(); // { ok: true, user: { id, username, email? } }
+            if (!data?.ok || !data.user?.username) return;
+
+            // ✅ Set your UI to "logged in"
+            this.authState = AuthState.LOGGED_IN;
+            this.currentUser = { username: data.user.username };
+
+            uiManager.showUserInfo(this.currentUser.username);
+            appStateManager.navigateTo(AppState.MAIN_MENU);
+
+            // Ensure WS is connected (constructor already calls connect(), but this is safe)
+            WebSocketClient.getInstance();
+        } catch (e) {
+            // ignore/network issue
+        }
+    }
+
     // Handles the login form submission process. Validates input fields, processes authentication, and updates UI state.
     private handleLoginSubmit(): void {
         const username = requireElementById<HTMLInputElement>(EL.AUTH.LOGIN_USERNAME).value.trim();
@@ -174,15 +202,62 @@ export class AuthManager {
         }    
 
         const user: LoginUser = { username, password };
-        // Register the callback function
-        wsClient.registerCallback(WebSocketEvent.LOGIN_SUCCESS, (msg: string) => {
-            this.authState = AuthState.LOGGED_IN;
-            this.currentUser = {username};
-            // Clear form and navigate back to main menu
-            uiManager.clearForm(this.loginFields);
-            appStateManager.navigateTo(AppState.MAIN_MENU);
-            uiManager.showUserInfo(user.username);     
-            Logger.info(msg, 'AuthManager');
+        
+        // --- Helper: set HttpOnly cookie via binder route ---
+        const bindSessionCookie = async (sid: string) => {
+        console.log('[BINDER] sending SID:', sid, 'len=', sid?.length);
+        const res = await fetch('/api/auth/session/bind', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sid }),
+            credentials: 'include',
+        });
+        const dbg = await res.clone().text();
+        console.log('[BINDER] status=', res.status, 'body=', dbg);
+        if (!res.ok) throw new Error('bind_failed');
+        };
+
+        // --- Helper: parse the server string payload safely ---
+        // Accepts either:
+        //  - "User ID confirmed"
+        //  - '{"text":"User ID confirmed","sid":"...","username":"bob"}'
+        //  - '{"message":"ok","user":{"username":"bob"},"sid":"..."}'
+        const parsePayload = (raw: string): { text: string; sid?: string; uname?: string } => {
+            try {
+                const p = JSON.parse(raw);
+                const text = p.text ?? p.message ?? 'Login success';
+                const sid = p.sid ?? p.sessionId ?? p.data?.sid;
+                const uname = p.username ?? p.user?.username;
+                console.log(`parsePayload: ${text} ${sid} ${uname}`);
+                return { text, sid, uname };
+            } catch {
+                return { text: raw }; // legacy plain string
+            }
+        };
+
+        // SUCCESS: the callback still receives a string; we parse it here
+        wsClient.registerCallback(WebSocketEvent.LOGIN_SUCCESS, async (raw: string) => {
+            try {
+                const { text, sid, uname } = parsePayload(raw);
+
+                if (!sid) {
+                    Logger.error('Missing sid in LOGIN_SUCCESS payload', 'AuthManager', { raw });
+                    alert('Login succeeded but session binding failed (no sid).');
+                    return;
+                }
+
+                await bindSessionCookie(sid);
+
+                this.authState = AuthState.LOGGED_IN;
+                this.currentUser = { username: uname ?? username }; // prefer payload username if provided
+                uiManager.clearForm(this.loginFields);
+                appStateManager.navigateTo(AppState.MAIN_MENU);
+                uiManager.showUserInfo(this.currentUser.username);
+                Logger.info(text ?? 'Login ok', 'AuthManager');
+            } catch (e) {
+                Logger.error('Binder call failed', 'AuthManager', e);
+                alert('Login succeeded but could not finalize session. Please retry.');
+            }
         });
 
         wsClient.registerCallback(WebSocketEvent.LOGIN_FAILURE, (msg: string) => {

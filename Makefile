@@ -7,6 +7,7 @@ VOLUME = ./backend/src/database/transcendence.sqlite
 ############################## PEPPER GENERATION ################################
 
 PEPPER_GEN = node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+COOKIE_GEN = node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 pepper-env:
 	@if ! grep -q '^PEPPER=' .env; then \
 		PEPPER_VALUE=$$($(PEPPER_GEN)); \
@@ -15,6 +16,17 @@ pepper-env:
 	else \
 		echo "PEPPER already set in .env"; \
 	fi
+
+cookie-env:
+	@if ! grep -q '^PEPPER=' .env; then \
+		COOKIE_VALUE=$$($(COOKIE_GEN)); \
+		echo "COOKIE not found. Generating one..."; \
+		echo -n "\nCOOKIE_SECRET=\"$${COOKIE_VALUE}\"" >> .env; \
+	else \
+		echo "COOKIE already set in .env"; \
+	fi
+
+secret-env: pepper-env cookie-env
 
 #################################################################################
 #################################     MAIN      #################################
@@ -27,7 +39,7 @@ start:
 stop:
 	docker-compose down
 
-build: pepper-env build-backend build-frontend
+build: secret-env build-backend build-frontend
 
 build-frontend:
 	@mkdir -p frontend/src/shared

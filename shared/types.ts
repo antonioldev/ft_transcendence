@@ -56,8 +56,10 @@ export interface ServerMessage {
     countdown?: number;
     gameHistory?: GameHistoryEntry[];
     winner?: string; // sent on end Game to display who won
-    left?: string, // name of player on the left
-    right?: string, // name of player on the right
+    left?: string; // name of player on the left
+    right?: string; // name of player on the right
+    username?: string;
+    sid?: string
 }
 
 // Player information for game sessions

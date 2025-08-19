@@ -788,8 +788,10 @@ export function createSession(userId: number): string | undefined {
 		const active = db.prepare('SELECT id FROM sessions WHERE user_id=? AND expires_at > ? LIMIT 1'
 		).get(userId, now) as { id: string } | undefined;
 
-		if (active) return undefined;
-
+		if (active !== undefined) {
+			console.log(`SID is not undefined so the user is already connected somewhere ${active.id}`);
+			return undefined;
+		}
 		// Create new session
 		const sid = crypto.randomBytes(32).toString('hex');
 		const expiresAt = now + ttlDays * DAY;
@@ -806,9 +808,14 @@ export function createSession(userId: number): string | undefined {
 	}
 }
 
-export function deleteSessionExpired(userId: number) {
-	const now = nowSec();
-	db.prepare('DELETE FROM sessions WHERE user_id=? AND expires_at <= ?').run(userId, now);
+export function deleteSessionExpired(userId: number): boolean {
+	try {
+		const now = nowSec();
+		db.prepare('DELETE FROM sessions WHERE user_id=? AND expires_at <= ?').run(userId, now);
+		return true;
+	} catch (err) {
+		return false;
+	}
 }
 
 export function deleteSessionLogout(userId: number) {
@@ -832,4 +839,33 @@ export function getSessionInfo(userId: number): SessionUser | null {
     console.error('Error in getSessionInfo:', err);
     return null;
   }
+}
+
+export function getUserBySession(sid: string): { id: number; username: string, email?: string} | null {
+	try {
+		const userId = db.prepare('SELECT user_id FROM sessions WHERE id = ?').get(sid) as { user_id: number } | undefined;
+		if (!userId) return null;
+		const row = db.prepare('SELECT id, username, email FROM users WHERE id = ?').get(userId.user_id) as { id:number; username:string; email?:string } | undefined;
+		if (!row) return null;
+		console.log(`in database.ts we found the session by user: ${row.username}, ${row.email}, ${row.id} where userId: ${userId.user_id}`);
+		return row;
+	} catch (e) {
+		console.error('getUserBySession error:', e);
+		return null;
+	}
+}
+
+export function retrieveSessionID(userID: number): string | null {
+	try {
+		const sid = db.prepare('SELECT id FROM sessions WHERE user_id = ?');
+		const SID = sid.get(userID) as { id: string } | undefined;
+		if (SID === undefined) {
+			console.error('SID not found');
+			return null;
+		}
+		return SID.id;
+	} catch (err) {
+		console.error('Error in get User ID:', err);
+		return null;
+	}
 }

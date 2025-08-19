@@ -29,7 +29,7 @@ function loadPage(): void {
     updateLanguageDisplay();
     setupLanguageListeners();
 
-    // memoryDetector.startMonitoring(); // Logs memory usage (only google)
+    // memoryDetector.startMonitoring(); // Logs memory usage (only google) 
 
     // Setup WebSocket monitoring
     webSocketClient.registerCallback(WebSocketEvent.STATUS_CHANGE, (status: ConnectionStatus) => {

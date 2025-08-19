@@ -1,60 +1,75 @@
-// // src/routes/auth-session.ts
-// import fp from 'fastify-plugin';
-// import cookie from '@fastify/cookie';
-// import type { FastifyPluginAsync } from 'fastify';
-// import { createSession, validateSession, revokeSession, getSidFromCookieHeader } from '../services/session';
-// import Database from 'better-sqlite3';
-// import * as dbFunction from '../data/database.js';
+import { FastifyInstance } from 'fastify';
+import { getUserBySession } from '../data/validation.js'; // <-- change path if needed
 
-// let db: Database.Database;
+const COOKIE_NAME = 'sid';
+const COOKIE_MAX_AGE = 7 * 24 * 60 * 60;
 
-// export function registerDatabaseFunctions(database: Database.Database) {
-// 	console.log("registering db");
-// 	db = database;
-// }
+export default async function sessionBindRoutes(fastify: FastifyInstance) {
+  // POST /api/auth/session/bind   (if you register this file with { prefix: '/api' })
+  // If you DON'T use a prefix, change the path below to '/api/auth/session/bind'
+  fastify.post('/api/auth/session/bind', async (req, reply) => {
+    console.log('[BIND] HIT', req.method, req.url);
+    console.log('[BIND] cookie header =', req.headers.cookie);
 
-// export const authSessionRoutes: FastifyPluginAsync = fp(async (app) => {
-//   await app.register(cookie, { secret: process.env.COOKIE_SECRET });
+    try {
+      const body: any = req.body || {};
+      console.log('[BIND] body =', body);
 
-//   // Call this ONLY after your own "auth_state === LOGIN_SUCCESS"
-//   // Body must include a server-trustable userId (or present a temporary server-signed code you validate here).
-//   app.post('/auth/session', async (req, reply) => {
-//     const { userId } = req.body as { userId: number };
+      const sid = body.sid;
+      if (!sid || typeof sid !== 'string') {
+        console.log('[BIND] missing sid');
+        reply.code(400).send({ ok: false, error: 'missing_sid' });
+        return;
+      }
 
+      const user = getUserBySession(sid);
+      console.log('[BIND] lookup sid', (sid || '').slice(0, 8), '-> user =', user);
 
-//     const r = createSession(db, userId, req.headers['user-agent'], req.ip);
-//     if ('error' in r && r.error === 'ALREADY_LOGGED_IN_ELSEWHERE') {
-//       return reply.code(409).send({ error: 'already_logged_in_elsewhere' });
-//     }
+      if (!user) {
+        console.log('[BIND] invalid or expired sid');
+        reply.code(401).send({ ok: false, error: 'invalid_or_expired' });
+        return;
+      }
 
-//     reply.setCookie('sid', r.sid, {
-//       path: '/',
-//       httpOnly: true,
-//       secure: true,          // HTTPS only
-//       sameSite: 'lax',       // same-origin frontend <-> backend; use 'none' if cross-site
-//       maxAge: 7 * 24 * 3600  // persist across refresh
-//     });
-//     return reply.send({ ok: true, expiresAt: r.expires });
-//   });
+      reply.setCookie(COOKIE_NAME, sid, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'lax',  // use 'none' ONLY if your frontend is on a different site
+        path: '/',
+        maxAge: COOKIE_MAX_AGE,
+      });
+	  reply.send({ ok: true });
 
-//   app.get('/me', async (req, reply) => {
-//     const sid = (req.cookies as any)?.sid;
-//     if (!sid) return reply.code(401).send();
-//     const s = validateSession(db, sid);
-//     const now = Math.floor(Date.now()/1000);
-//     if (!s || s.revoked || s.expires_at <= now) {
-//       reply.clearCookie('sid', { path: '/' });
-//       return reply.code(401).send();
-//     }
-//     // return the profile you need
-//     const user = db.prepare('SELECT id, username, email FROM users WHERE id=?').get(s.user_id);
-//     return reply.send({ user });
-//   });
+      console.log('[BIND] cookie set, responding ok');
+      reply.send({ ok: true });
+    } catch (e) {
+      console.error('[BIND] ERROR', e);
+      reply.code(500).send({ ok: false, error: 'server_error' });
+    }
+  });
 
-//   app.post('/logout', async (req, reply) => {
-//     const sid = (req.cookies as any)?.sid;
-//     if (sid) revokeSession(db, sid);
-//     reply.clearCookie('sid', { path: '/' });
-//     return reply.send({ ok: true });
-//   });
-// });
+  // GET /api/auth/session/me   (same note about prefix)
+  fastify.get('/api/auth/session/me', async (req, reply) => {
+    console.log('[ME] HIT', req.method, req.url);
+    console.log('[ME] cookie header =', req.headers.cookie);
+
+    const sid = (req as any).cookies?.[COOKIE_NAME];
+    console.log('[ME] sid from cookie =', sid);
+
+    if (!sid) {
+      reply.code(401).send({ ok: false, error: 'no_cookie' });
+      return;
+    }
+
+    const user = getUserBySession(sid);
+    console.log('[ME] lookup user =', user);
+
+    if (!user) {
+      reply.code(401).send({ ok: false, error: 'invalid_or_expired' });
+      return;
+    }
+
+    reply.send({ ok: true, user });
+  });
+}
+
