@@ -4,8 +4,8 @@ FROM nginx:alpine
 RUN apk add --no-cache openssl
 
 # Put your vhost directly in conf.d and remove the default
-COPY transcendence.conf /etc/nginx/conf.d/transcendence.conf
 RUN rm -f /etc/nginx/conf.d/default.conf
+COPY transcendence.conf /etc/nginx/conf.d/transcendence.conf
 
 # Create cert dirs and generate a self-signed cert
 RUN mkdir -p /etc/nginx/ssl/certs /etc/nginx/ssl/private && \

@@ -18,7 +18,7 @@ pepper-env:
 	fi
 
 cookie-env:
-	@if ! grep -q '^PEPPER=' .env; then \
+	@if ! grep -q '^COOKIE_SECRET=' .env; then \
 		COOKIE_VALUE=$$($(COOKIE_GEN)); \
 		echo "COOKIE not found. Generating one..."; \
 		echo -n "\nCOOKIE_SECRET=\"$${COOKIE_VALUE}\"" >> .env; \
@@ -81,6 +81,7 @@ fclean:
 	@chmod -R u+w backend/src/shared || true
 	@rm -rf backend/src/shared || true
 	@rm -rf backend/src/database/transcendence.sqlite
+	
 
 clean-db:
 	@rm -f backend/src/database/transcendence.sqlite
@@ -113,6 +114,9 @@ backend-sh:
 
 frontend-sh:
 	docker exec -it transcendence-frontend /bin/sh
+
+nginx-sh:
+	docker exec -it transcendence-nginx /bin/sh
 
 #################################################################################
 #################################    UPDATES    #################################
