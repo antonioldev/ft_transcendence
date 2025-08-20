@@ -249,7 +249,7 @@ export class WebSocketManager {
             side: data.side,
             dx: data.direction
         }
-        console.log("match id backend = " + data.match_id);
+        // console.log("match id backend = " + data.match_id);
         gameSession.enqueue(input, data.match_id);
     }
 

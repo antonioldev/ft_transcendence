@@ -194,7 +194,7 @@ export class Game {
 	// Stop the execution of the game & broadcast the winner
 	async stop(gameId?: string): Promise<void> {
 		this.running = false;
-
+		console.log(`Game id in async stop of game.ts: ${gameId}`);
 		if (gameId && this.players[LEFT_PADDLE].client?.id != this.players[RIGHT_PADDLE].client?.id) {
 			const player1_score = this.paddles[LEFT_PADDLE].score;
 			const player2_score = this.paddles[RIGHT_PADDLE].score;

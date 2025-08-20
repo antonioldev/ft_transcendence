@@ -422,6 +422,7 @@ export function createNewGame(gameId: string, player1_id: number, tournament: nu
 export function gameExist(id: string): boolean {
 	try {
 		id = safeGameId(id);
+		console.log(`Gameid is: ${id}`);
 
 		const game = db.prepare('SELECT * FROM games WHERE game_id = ?').get(id);
 		if (game) return true;

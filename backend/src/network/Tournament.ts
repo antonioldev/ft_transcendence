@@ -3,10 +3,11 @@ import { Game } from '../core/game.js';
 import { Client, Player } from '../models/Client.js';
 import { GameMode, MessageType } from '../shared/constants.js';
 import { PlayerInput } from '../shared/types.js';
+import { addPlayer2, registerNewGame } from '../data/validation.js';
 
 
 class Match {
-	id: string = crypto.randomUUID();
+	id: string = `game_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 	round: number;
 	players: Player[] = [];
 	clients: Client[] = [];
@@ -243,6 +244,9 @@ export class TournamentRemote extends AbstractTournament {
 
 		// run each match in parallel and await [] of match promises
 		for (const match of matches) {
+			console.log(`Match id in the tournament: ${match.id}, for P1:${match.players[0].name}, P2: ${match.players[1].name}`);
+			registerNewGame(match.id, match.players[0].name, 1);
+			addPlayer2(match.id, match.players[1].name);
 			match.game = new Game(match.players, (message) => this.broadcast(message, match.clients), match.id);
 			let winner_promise: Promise<Player> = match.game.run();
 			winner_promises.push(winner_promise);
