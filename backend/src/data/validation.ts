@@ -173,6 +173,8 @@ export function findOrCreateGoogleUser(profile: { sub: string, name: string, ema
 	} else {
 		dbFunction.createGoogleUser(profile);
 	}
+	const userId = dbFunction.retrieveUserID(profile.name);
+	dbFunction.createSession(userId);
 	
 	return dbFunction.findUserByGoogleId(profile.sub);
 }

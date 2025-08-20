@@ -162,28 +162,58 @@ export class AuthManager {
 
     private async restoreSessionOnBoot(): Promise<void> {
         try {
+            // 1) Try classic cookie session
             const res = await fetch('/api/auth/session/me', {
-            method: 'GET',
-            credentials: 'include', // include cookie
+                method: 'GET',
+                credentials: 'include',
+                cache: 'no-store',
             });
-            if (!res.ok) {
-            // not logged in; leave UI as-is
-            return;
+
+            if (res.ok) {
+                const data = await res.json(); // expected: { ok: true, user: {...} }
+                if (data?.ok && data.user?.username) {
+                    this.authState = AuthState.LOGGED_IN;
+                    this.currentUser = { username: data.user.username };
+                    uiManager.showUserInfo(this.currentUser.username);
+                    appStateManager.navigateTo(AppState.MAIN_MENU);
+                    WebSocketClient.getInstance();
+                    return;
+                }
             }
-            const data = await res.json(); // { ok: true, user: { id, username, email? } }
-            if (!data?.ok || !data.user?.username) return;
 
-            // ✅ Set your UI to "logged in"
-            this.authState = AuthState.LOGGED_IN;
-            this.currentUser = { username: data.user.username };
+            // 2) Fallback: try Google restore if you kept the Google token
+            const googleIdToken = localStorage.getItem('google_id_token'); // set this on Google login success
+                if (googleIdToken) {
+                // Hit your Google restore endpoint that verifies the Google token
+                // and SETS the same 'sid' cookie as classic login
+                const gRes = await fetch('/api/auth/google/restore', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include', // <-- must include so cookie gets set
+                    body: JSON.stringify({ token: googleIdToken }),
+                });
 
-            uiManager.showUserInfo(this.currentUser.username);
-            appStateManager.navigateTo(AppState.MAIN_MENU);
-
-            // Ensure WS is connected (constructor already calls connect(), but this is safe)
-            WebSocketClient.getInstance();
+                if (gRes.ok) {
+                    // After cookie set, ask the unified "who am I" (classic) again
+                    const res2 = await fetch('/api/auth/session/me', {
+                    method: 'GET',
+                    credentials: 'include',
+                    cache: 'no-store',
+                    });
+                    if (res2.ok) {
+                    const data2 = await res2.json();
+                    if (data2?.ok && data2.user?.username) {
+                        this.authState = AuthState.LOGGED_IN;
+                        this.currentUser = { username: data2.user.username };
+                        uiManager.showUserInfo(this.currentUser.username);
+                        appStateManager.navigateTo(AppState.MAIN_MENU);
+                        WebSocketClient.getInstance();
+                    }
+                    }
+                }
+            }
         } catch (e) {
-            // ignore/network issue
+            console.error("Error in restoring session using cookie");
         }
     }
 
@@ -376,63 +406,63 @@ export class AuthManager {
 
     // Prepares and initializes Google Sign-In for the application
     private prepareGoogleLogin(): void {
-        const googleClientId = window.GOOGLE_CLIENT_ID;
+    const googleClientId = window.GOOGLE_CLIENT_ID;
+    if (!googleClientId) {
+        console.error("Google Client ID not found in global window.");
+        return;
+    }
 
-        if (!googleClientId) {
-            console.error("Google Client ID not found in global window.");
-            return;
+    const handleAuthSuccess = async (googleResponse: google.accounts.id.CredentialResponse) => {
+        console.log("Google token received, sending to backend...");
+        try {
+        // 1) Hit your backend; allow cookies to be set
+        const authRes = await fetch('/api/auth/google', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',                      // ⬅️ IMPORTANT
+            body: JSON.stringify({ token: googleResponse.credential })
+        });
+
+        if (!authRes.ok) {
+            const err = await authRes.json().catch(() => ({}));
+            throw new Error(`Backend authentication failed: ${err.message || err.error || authRes.statusText}`);
         }
 
-        // Defines the asynchronous function to handle successful Google authentication responses
-        const handleAuthSuccess = async (googleResponse: google.accounts.id.CredentialResponse) => {
-            console.log("Google token received, sending to backend...");
-            try {
-                // Sends the Google credential token to the backend for verification
-                const backendResponse = await fetch('/api/auth/google', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ token: googleResponse.credential })
-                });
+        // 2) Immediately restore the session from the cookie
+        const sessionRes = await fetch('/api/auth/session', {
+            method: 'GET',
+            credentials: 'include'                       // ⬅️ send the cookie back
+        });
 
-                if (!backendResponse.ok) {
-                    const errorData = await backendResponse.json();
-                    throw new Error(`Backend authentication failed: ${errorData.message || errorData.error || 'Unknown error'}`);
-                }
+        if (!sessionRes.ok) {
+            throw new Error('Session restore failed');
+        }
 
-                // Parses the response to get the session token from your application
-                const { sessionToken } = await backendResponse.json();
-                console.log("Backend responded with session token:", sessionToken);
+        const { authenticated, user } = await sessionRes.json();
+        if (!authenticated || !user) {
+            throw new Error('Not authenticated after Google login');
+        }
 
-                // TODO: Store the sessionToken
-                
-                // Decodes the session token and updates the current user and authentication state
-                const decodedToken = JSON.parse(atob(sessionToken.split('.')[1]));
-                this.currentUser = { username: decodedToken.user.username };
-                this.authState = AuthState.LOGGED_IN;
-                
-                // Updates the UI to show user information and navigates to the main menu
-                uiManager.showUserInfo(this.currentUser.username);
-                // uiManager.hideOverlays('login-modal');
-                appStateManager.navigateTo(AppState.MAIN_MENU);
+        // 3) Update your state/UI
+        this.currentUser = { username: user.username };
+        this.authState = AuthState.LOGGED_IN;
+        uiManager.showUserInfo(this.currentUser.username);
+        appStateManager.navigateTo(AppState.MAIN_MENU);
 
-            } catch (error) {
-                console.error("Backend communication failed:", error);
-                alert("Could not complete login.");
-            }
-        };
+        } catch (error) {
+            console.error("Backend communication failed:", error);
+            alert("Could not complete login.");
+        }
+    };
 
-        // Initializes the Google service and then renders the sign-in button
-        initializeGoogleSignIn(googleClientId, handleAuthSuccess)
-            .then(() => {
-                renderGoogleButton('google-login-btn-container');
-                console.log("Attempted to render Google button in 'google-login-btn-container'.");
-
-                renderGoogleButton('google-register-btn-container');
-                console.log("Attempted to render Google button in 'google-register-btn-container'.");
-            })
-            .catch(error => {
-                console.error("Failed to initialize or render Google button due to an error:", error);
-            });
+    initializeGoogleSignIn(googleClientId, handleAuthSuccess)
+        .then(() => {
+            renderGoogleButton('google-login-btn-container');
+            renderGoogleButton('google-register-btn-container');
+        })
+        .catch(error => {
+            console.error("Failed  to initialize or render Google button due to an error:", error);
+        });
     }
 
     // ========================================

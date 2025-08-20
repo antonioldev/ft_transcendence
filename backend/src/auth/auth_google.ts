@@ -3,64 +3,67 @@ import { OAuth2Client } from 'google-auth-library';
 import * as validation from '../data/validation.js';
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+const COOKIE_NAME = 'sid';
+const COOKIE_MAX_AGE = 7 * 24 * 60 * 60;
 
-/**
- * @brief Configures the authentication routes for the application.
- * @details This function sets up the route for Google authentication, where it verifies the token received from the frontend,
- * finds or creates a user in the database, and returns a session token.
- * @param fastify - The Fastify instance to register the routes on.
- */
 export async function authRoutes(fastify: FastifyInstance) {
+  fastify.post('/api/auth/google', async (request, reply) => {
+    try {
+      const { token } = request.body as { token: string };
+      if (!token) return reply.code(400).send({ error: 'Token not provided' });
 
-    fastify.post('/api/auth/google', async (request, reply) => {
-        console.log('Google auth endpoint called');
-        try {
-            const { token } = request.body as { token: string };
-            console.log('Received token:', token ? 'present' : 'missing');
-            
-            if (!token) {
-                console.log('Token not provided');
-                return reply.status(400).send({ error: 'Token not provided' });
-            }
+      // 1) Verify Google ID token
+      const ticket = await googleClient.verifyIdToken({
+        idToken: token,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      });
+      const payload = ticket.getPayload();
+      if (!payload) return reply.code(401).send({ error: 'Invalid Google Token' });
 
-            console.log('Verifying Google token...');
-            // Verify the Google token
-            const ticket = await googleClient.verifyIdToken({
-                idToken: token,
-                audience: process.env.GOOGLE_CLIENT_ID,
-            });
-            
-            console.log('Google token verified successfully');
-            const payload = ticket.getPayload();
-            if (!payload) {
-                console.log('Invalid Google Token - no payload');
-                return reply.status(401).send({ error: 'Invalid Google Token' });
-            }
+      // 2) Find or create local user
+      const user = validation.findOrCreateGoogleUser(payload as any);
+      if (!user) return reply.code(500).send({ error: 'Could not find or create user' });
 
-            console.log('Google payload received:', payload.sub, payload.name);
-            // Find or create the user in our database
-            const user = validation.findOrCreateGoogleUser(payload as any);
-            if (!user) {
-                console.log('Could not find or create user');
-                return reply.status(500).send({ error: 'Could not find or create user' });
-            }
+      // 3) Create a DB session (same as classic)
+      const sid = validation.getSessionByUsername(user.username);            // returns string | undefined
+      if (!sid) {
+        // you currently block multiple active sessions; adjust message if you prefer rotating
+        return reply.code(409).send({ error: 'Active session already exists' });
+      }
+      const COOKIE_OPTS = {
+        httpOnly: true,               // not accessible from JS (prevents XSS stealing)
+        secure: true,                 // cookie only sent over HTTPS
+        sameSite: 'lax' as const,     // prevents most CSRF attacks
+        path: '/',                    // available on all routes
+        maxAge: COOKIE_MAX_AGE      // 7 days in seconds
+        };
 
-            console.log('User found/created:', user.username);
-            // Create a session token for the user
-            const sessionToken = fastify.jwt.sign({ user });
-            console.log('Session token generated successfully');
+      // 4) Set the cookie
+      reply.setCookie('sid', sid, COOKIE_OPTS);
 
-            // Send the session token back to the client
-            return reply.send({ 
-                success: true,
-                sessionToken: sessionToken,
-                user: user 
-            });
-
-        } catch (error) {
-            console.log('Google authentication failed:', error);
-            fastify.log.error('Google authentication failed', error);
-            return reply.status(500).send({ error: 'Authentication failed' });
+      // 5) Return a minimal payload (no need to expose any token)
+      return reply.send({
+        success: true,
+        user: {
+          username: user.username,
+          email: user.email,
+          // any other safe public fields
         }
+      });
+    } catch (error) {
+      request.log.error('Google authentication failed', error);
+      return reply.code(500).send({ error: 'Authentication failed' });
+    }
+  });
+    fastify.get('/api/auth/session', async (req, reply) => {
+    const sid = req.cookies?.[COOKIE_NAME];
+    if (!sid) return reply.code(401).send({ authenticated: false });
+
+    const user = validation.getUserBySession(sid); // your existing helper
+    if (!user) return reply.code(401).send({ authenticated: false });
+
+    return reply.send({ authenticated: true, user });
     });
 }
+
+
