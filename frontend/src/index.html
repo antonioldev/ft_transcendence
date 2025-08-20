@@ -12,7 +12,196 @@
     <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
     <script src="/env-config.js"></script>
 </head>
-<body class="bg-gray-background">
-        <h1 class="text-light-green text-9xl font-tiny5-regular">Teste do Background</h1>
+<body class="bg-gray-background min-h-screen relative px-4 py-8">
+    <!-- Main Menu -->
+    <main id="main-menu" class="contents">
+        <!-- Small ft_transcendence in top left -->
+        <div class="absolute top-4 left-4">
+            <h2 class="text-light-green font-tiny5-regular text-sm sm:text-base md:text-lg">
+                ft_transcendence
+            </h2>
+        </div>
+        
+        <!-- Centered PONG text -->
+        <div class="bg-gray-background flex flex-col items-center justify-center h-screen pb-40">
+            <h1 class="text-light-green text-center">
+                <span class="font-tiny5-regular text-6xl sm:text-8xl md:text-9xl lg:text-10xl xl:text-[10rem] 2xl:text-[12rem]">
+                    PONG
+                </span>
+            </h1>
+        </div>
+        
+        <!-- Main navigation buttons - Bottom Left -->
+        <nav class="absolute bottom-8 left-8 flex flex-col gap-3 sm:gap-1 md:gap-3 lg:gap-4 xl:gap-5">
+            <!-- PLAY button -->
+            <button type="button" 
+                    id="play-btn" 
+                    class="bg-transparent text-light-green font-tiny5-regular text-lg px-6 py-2 
+                        hover:bg-orange hover:text-gray-background transition-colors duration-200
+                        border border-light-green hover:border-orange
+                        min-w-[120px] text-left">
+                PLAY
+            </button>
+            
+            <!-- LOGIN button -->
+            <button type="button" 
+                    id="login-btn" 
+                    class="bg-transparent text-light-green font-tiny5-regular text-lg px-6 py-2 
+                        hover:bg-light-green hover:text-gray-background transition-colors duration-200
+                        border border-light-green
+                        min-w-[120px] text-left">
+                LOGIN
+            </button>
+            
+            <!-- REGISTER button -->
+            <button type="button" 
+                    id="register-btn" 
+                    class="bg-transparent text-light-green font-tiny5-regular text-lg px-6 py-2 
+                        hover:bg-light-green hover:text-gray-background transition-colors duration-200
+                        border border-light-green
+                        min-w-[120px] text-left">
+                REGISTER
+            </button>
+            
+            <!-- Language selector -->
+            <div class="flex items-center gap-2 mt-2">
+                <button type="button" 
+                        id="back" 
+                        class="text-light-green hover:text-white transition-colors duration-200 
+                            font-tiny5-regular text-lg px-2">
+                    ←
+                </button>
+                <span id="language-selector" 
+                    class="text-light-green font-tiny5-regular text-lg min-w-[80px] text-center">
+                    ENGLISH
+                </span>
+                <button type="button" 
+                        id="forward" 
+                        class="text-light-green hover:text-white transition-colors duration-200 
+                            font-tiny5-regular text-lg px-2">
+                    →
+                </button>
+            </div>
+        </nav>
+
+        <!-- Atari image in bottom right -->
+        <img 
+            src="/atari.png" 
+            alt="Atari"
+            class="absolute bottom-4 right-4 md:bottom-4 md:right-4 lg:bottom-4 lg:right-4 
+                   w-48 h-48 sm:w-60 sm:h-60 md:w-72 md:h-72 lg:w-84 lg:h-84 xl:w-96 xl:h-96
+                   object-contain opacity-80"
+        />
+    </main>
+
+    <!-- EM FASE DE TESTE -->
+
+    <!-- Login Page (Hidden) -->
+    <div id="login-modal" class="fixed inset-0 bg-gray-background hidden">
+        <!-- ft_transcendence in top left -->
+        <div class="absolute top-4 left-4 z-10">
+            <h2 class="text-light-green font-tiny5-regular text-sm sm:text-base md:text-lg">
+                ft_transcendence
+            </h2>
+        </div>
+        
+        <div class="h-full flex items-center justify-center px-40 py-12">
+            <div class="w-full max-w-md mx-auto space-y-8">
+                <div>
+                    <h1 class="text-center text-2xl font-bold tracking-tight text-light-green font-sans">
+                        Sign in to your account
+                    </h1>
+                </div>
+
+                <form action="#" method="POST" class="space-y-6">
+                    <div>
+                        <label for="login-username" class="block text-sm font-medium text-light-green font-sans">
+                            Email address
+                        </label>
+                        <div class="mt-2">
+                            <input id="login-username" type="email" name="email" required autocomplete="email" 
+                                class="block w-full rounded-md bg-transparent border border-light-green px-3 py-1.5 text-sm text-light-green 
+                                       placeholder:text-gray-400 focus:outline-2 focus:outline-orange font-sans" 
+                                placeholder="enter your email or username" />
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="flex items-center justify-between">
+                            <label for="login-password" class="block text-sm font-medium text-light-green font-sans">
+                                Password
+                            </label>
+                            <div class="text-sm">
+                                <a href="#" class="font-semibold text-orange hover:text-light-green transition-colors duration-200 font-sans">
+                                    Forgot password?
+                                </a>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <input id="login-password" type="password" name="password" required autocomplete="current-password" 
+                                class="block w-full rounded-md bg-transparent border border-light-green px-3 py-1.5 text-sm text-light-green 
+                                       placeholder:text-gray-400 focus:outline-2 focus:outline-orange font-sans" 
+                                placeholder="enter your password" />
+                        </div>
+                    </div>
+
+                    <div>
+                        <button type="submit" id="login-submit"
+                            class="flex w-full justify-center rounded-md bg-light-green px-3 py-1.5 text-sm font-semibold text-gray-background 
+                                   hover:bg-orange transition-colors duration-200 font-sans">
+                            Sign in
+                        </button>
+                        
+                        <!-- Google Login Button Container -->
+                        <div id="google-login-btn-container" class="mt-4"></div>
+                    </div>
+                </form>
+
+                <p class="text-center text-sm text-light-green font-sans">
+                    Not a member?
+                    <a href="#" id="show-register" class="font-semibold text-orange hover:text-light-green transition-colors duration-200">
+                        Create account
+                    </a>
+                </p>
+                
+                <!-- Back button -->
+                <div class="text-center">
+                    <button type="button" id="login-back"
+                        class="bg-transparent text-light-green font-sans text-sm px-4 py-2 
+                               hover:bg-light-green hover:text-gray-background transition-colors duration-200
+                               border border-light-green rounded-md">
+                        Back to Main Menu
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden elements for JS compatibility -->
+    <div id="auth-buttons" style="display: none;"></div>
+    <div id="logout-btn" style="display: none;"></div>
+    <div id="show-login" style="display: none;"></div>
+    <div id="user-info" style="display: none;">
+        <span id="user-name"></span>
+        <button type="button" id="dashboard-btn">Dashboard</button>
+    </div>
+    <div id="google-register-btn-container" style="display: none;"></div>
+    <select id="language_select" style="display: none;">
+        <option value="en">English</option>
+        <option value="fr">Français</option>
+        <option value="pt">Português</option>
+    </select>
+    <!-- FIM DO TRECHO EM FASE DE TESTE -->
+
+    <!-- Atari image in bottom right -->
+    <img 
+        src="/atari.png" 
+        alt="Atari"
+        class="absolute bottom-4 right-4 md:bottom-4 md:right-4 lg:bottom-4 lg:right-4 
+               w-48 h-48 sm:w-60 sm:h-60 md:w-72 md:h-72 lg:w-84 lg:h-84 xl:w-96 xl:h-96
+               object-contain opacity-80"
+    />
+
+    <script type="module" src="./core/main.js"></script>
 </body>
 </html>
