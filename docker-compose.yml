@@ -18,8 +18,14 @@ services:
         - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
     expose:
       - "80"
-    #ports:
-    #  - "${FRONTEND_PORT:-8080}:80"
+
+    ports:
+      # - "${FRONTEND_PORT:-8080}:80"
+      - "5173:5173" # FASE DE DESENVOLVIMENTO -> DELETE!!!!
+    volumes: # FASE DE DESENVOLVIMENTO -> DELETE!!!!
+      - ./frontend/src:/app/src
+      - ./frontend/vite.config.js:/app/vite.config.js
+
     # env_file:
     #   - .env
     depends_on:
