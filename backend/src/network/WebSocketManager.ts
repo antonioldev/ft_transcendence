@@ -354,7 +354,7 @@ export class WebSocketManager {
                     console.log(`SID is not valid: ${sid}`);
                     // await this.sendErrorLogin(socket, "SID is not valid");
                     this.send(socket, {
-                        type: MessageType.ERROR,
+                        type: MessageType.LOGIN_FAILURE,
                         message: 'SID is not valid',
                     });
                     return;
@@ -388,7 +388,7 @@ export class WebSocketManager {
             case AuthCode.AlreadyLogin:
                 console.log("handleLoginUser WSM: user already login");
                 this.send(socket, {
-                    type: MessageType.ERROR,
+                    type: MessageType.LOGIN_FAILURE,
                     message: "User already login"}
                 );
                 return;
