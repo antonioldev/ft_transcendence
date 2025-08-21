@@ -18,13 +18,11 @@ export class Game {
 	winner!: Player;
 	paddles: (Paddle | CPUBot)[] = [new Paddle(LEFT_PADDLE), new Paddle(RIGHT_PADDLE)];
 	ball!: Ball;
-	match_id?: string; // for tournament matches only
 	// Callback function to broadcast the game state
 	private _broadcast: (message: ServerMessage, clients?: Client[]) => void;
 
-	constructor(players: Player[], broadcast_callback: (message: ServerMessage, clients?: Client[]) => void, match_id?: string) {
+	constructor(players: Player[], broadcast_callback: (message: ServerMessage, clients?: Client[]) => void) {
 		// Initialize game properties
-		this.match_id = match_id;
 		this.clock = new Clock();
 		this._broadcast = broadcast_callback;
 		this.players = players;
@@ -121,16 +119,18 @@ export class Game {
 		}
 	}
 
-	async send_sides_and_countdown(): Promise<void> { // New function, send to clients message to start + countdown
-		// broadcast the side assignment to all clients
+	assign_sides() {
+		if (!this.players[LEFT_PADDLE] || !this.players[RIGHT_PADDLE]) {
+			console.error("Error assigning sides: player(s) undefined")
+			return ;
+		}
 		this._broadcast({
-			type: MessageType.ALL_READY,
-			left: this.players[LEFT_PADDLE]?.name,
-			right: this.players[RIGHT_PADDLE]?.name,
-			...(this.match_id && { match_id: this.match_id }) // optionally includes match_id for tournament
+			type: MessageType.SIDE_ASSIGNMENT,
+			left: this.players[LEFT_PADDLE].name,
+			right: this.players[RIGHT_PADDLE].name,
 		});
-		
-		// broadcast the countdown timer on every second
+	}
+	async send_countdown(): Promise<void> {
 		for (let countdown = GAME_CONFIG.startDelay; countdown >= 0; countdown--) {
 			console.log(`Sending countdown: ${countdown}`);
 
@@ -149,14 +149,15 @@ export class Game {
 
 	// Main game loop 
 	async run(): Promise<Player> {
-		await this.send_sides_and_countdown();
 		// if both are CPU then choose a random winner
 		if (this.paddles[LEFT_PADDLE] instanceof CPUBot && this.paddles[RIGHT_PADDLE] instanceof CPUBot) {
 			const index = (Math.random() > 0.5) ? 0 : 1;
 			this.winner = this.players[index];
-			this.running = false;
+			this.stop();
+			return (this.winner);
 		}
-
+		this.assign_sides();
+		await this.send_countdown();
 		// run game loop, updating and broadcasting state to clients until win
 		while (this.running) {
 			const dt = await this.clock.tick(60);
@@ -168,8 +169,7 @@ export class Game {
 				state: this.get_state()
 			});
 		}
-		// await this.stop();
-		await this.stop(this.match_id);
+		this.stop();
 		return (this.winner);
 	}
 
@@ -192,7 +192,8 @@ export class Game {
 	isPaused(): boolean { return this.paused; }
 
 	// Stop the execution of the game & broadcast the winner
-	async stop(gameId?: string): Promise<void> {
+	stop(gameId?: string) {
+		if (!this.running) return ;
 		this.running = false;
 		console.log(`Game id in async stop of game.ts: ${gameId}`);
 		if (gameId && this.players[LEFT_PADDLE].client?.id != this.players[RIGHT_PADDLE].client?.id) {
@@ -202,7 +203,7 @@ export class Game {
 			const player2_username = this.players[RIGHT_PADDLE].name;
 			const endTime = Date.now();
 			console.log(`TO VERIFY ==> player1_name: ${player1_username}, player2_name: ${player2_username} // client1_name: ${this.players[LEFT_PADDLE].client?.username}, client2_name: ${this.players[RIGHT_PADDLE].client?.username}`)
-			saveGameResult(gameId, player1_username, player2_username, player1_score, player2_score, endTime) // add check for error
+			// saveGameResult(gameId, player1_username, player2_username, player1_score, player2_score, endTime) // add check for error
 		}
 
 		this._broadcast({

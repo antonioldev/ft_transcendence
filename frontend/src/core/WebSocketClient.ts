@@ -35,7 +35,7 @@ export class WebSocketClient {
         const WS_URL = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws';
 
         this.ws = new WebSocket(WS_URL);
-        // this.ws = new WebSocket('ws://localhost:3000'); // TODO make it a variable
+        // this.ws = new WebSocket('wss://localhost:3000/ws'); // TODO make it a variable
 
         const timeout = setTimeout(() => {
             if (this.connectionStatus === ConnectionStatus.CONNECTING) {
@@ -110,8 +110,8 @@ export class WebSocketClient {
                 console.error("Session ended message");
                 this.triggerCallback(WebSocketEvent.SESSION_ENDED, message);
                 break;
-            case MessageType.ALL_READY:
-                this.triggerCallback(WebSocketEvent.ALL_READY, message);
+            case MessageType.SIDE_ASSIGNMENT:
+                this.triggerCallback(WebSocketEvent.SIDE_ASSIGNMENT, message);
                 break;
             case MessageType.WELCOME:
                 Logger.info('Server says', 'WebSocketClient', message.message);
@@ -170,21 +170,20 @@ export class WebSocketClient {
         this.sendMessage(MessageType.PLAYER_READY);
     }
 
-    sendPlayerInput(side: number, direction: Direction, match_id: string): void {
-        console.log("match id FRONT = " + match_id);
-        this.sendMessage(MessageType.PLAYER_INPUT, { side, direction, match_id });
+    sendPlayerInput(side: number, direction: Direction): void {
+        this.sendMessage(MessageType.PLAYER_INPUT, { side, direction});
     }
     
-    sendPauseRequest(match_id: string): void {
-        this.sendMessage(MessageType.PAUSE_REQUEST, {match_id});
+    sendPauseRequest(): void {
+        this.sendMessage(MessageType.PAUSE_REQUEST);
     }
     
-    sendResumeRequest(match_id: string): void {
-        this.sendMessage(MessageType.RESUME_REQUEST, {match_id});
+    sendResumeRequest(): void {
+        this.sendMessage(MessageType.RESUME_REQUEST);
     }
 
-    sendQuitGame(match_id: string): void {
-        this.sendMessage(MessageType.QUIT_GAME, {match_id});
+    sendQuitGame(): void {
+        this.sendMessage(MessageType.QUIT_GAME);
     }
 
     private sendMessage(type: MessageType, data: any = {}): void {

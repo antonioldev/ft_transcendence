@@ -2,12 +2,10 @@ import { FastifyInstance } from 'fastify';
 import { gameManager } from '../models/gameManager.js';
 import { Client, Player } from '../models/Client.js';
 import { MessageType, Direction, GameMode, UserManagement, AuthCode } from '../shared/constants.js';
-import { ClientMessage, ServerMessage, GetUserProfile, UserProfileData } from '../shared/types.js';
+import { ClientMessage, ServerMessage, PlayerInput, GetUserProfile, UserProfileData } from '../shared/types.js';
 import * as db from "../data/validation.js";
 import { UserStats, GameHistoryEntry } from '../shared/types.js';
 import { getUserBySession, getSessionByUsername } from '../data/validation.js';
-
-// TODO: set timer for online player search, if not found then start with CPU
 
 /**
  * Manages WebSocket connections, client interactions, and game-related messaging.
@@ -88,6 +86,7 @@ export class WebSocketManager {
         });
 
         socket.on('close', () => {
+            console.log(`WebSocket closed for client ${clientId}:`);
             this.handleDisconnection(client);
         });
 
@@ -96,7 +95,10 @@ export class WebSocketManager {
             this.handleDisconnection(client);
         });
 
-        this.sendWelcomeMessage(socket);
+        this.send(socket, {
+            type: MessageType.WELCOME,
+            message: 'Connected to game server'
+        });
     }
 
     /**
@@ -117,22 +119,21 @@ export class WebSocketManager {
             
             switch (data.type) {
                 case MessageType.JOIN_GAME:
-                    await this.handleJoinGame(socket, client, data, setCurrentGameId);
+                    this.handleJoinGame(socket, client, data, setCurrentGameId);
                     break;
                 case MessageType.PLAYER_READY:
-                    await this.handlePlayerReady(client);
+                    this.handlePlayerReady(client);
                     break;
                 case MessageType.PLAYER_INPUT:
-                    await this.handlePlayerInput(client, data);
+                    this.handlePlayerInput(client, data);
                     break;
                 case MessageType.PAUSE_REQUEST:
-                    await this.handlePauseRequest(client, data);
+                    this.handlePauseRequest(client);
                     break;
                 case MessageType.RESUME_REQUEST:
-                    await this.handleResumeRequest(client, data);
+                    this.handleResumeRequest(client);
                     break;
                 case MessageType.LOGIN_USER:
-                    console.log("HandleMessage WSM: calling Login_user");
                     await this.handleLoginUser(socket, client, data);
                     break;
                 case MessageType.LOGOUT_USER:
@@ -140,30 +141,34 @@ export class WebSocketManager {
                     await this.handleLogoutUser(socket, client, data);
                     break;                    
                 case MessageType.REGISTER_USER:
-                    console.log("HandleMessage WSM: calling Register_user");
                     await this.handleRegisterNewUser(socket, data);
                     break;
                 case MessageType.REQUEST_USER_STATS:
-                    console.log("HandleMessage WSM: calling get User stats");
                     await this.handleUserStats(socket, message);
                     break;
                 case MessageType.REQUEST_GAME_HISTORY:
-                    console.log("HandleMessage WSM: calling get User game history");
-                    await this.handleUserGameHistory(socket, message);
+                    this.handleUserGameHistory(socket, message);
                     break;
                 // case MessageType.REQUEST_USER_PROFILE:
                 //     console.log("HandleMessage WSM: Requesting user profile");
                 //     await this.handleUserProfileRequest(socket, data);
                 //     break;
-                case MessageType.QUIT_GAME:  // TODO I added because it was creating issue, need to check
-                    await this.handleQuitGame(client, data);
+                case MessageType.QUIT_GAME:
+                    this.handleQuitGame(client);
                     break;
                 default:
-                    await this.sendError(socket, 'Unknown message type');
+                    this.send(socket, {
+                        type: MessageType.ERROR,
+                        message: 'Unknown message type'
+                    });
+
             }
         } catch (error) {
             console.error('❌ Error parsing message:', error);
-            await this.sendError(socket, 'Invalid message format');
+            this.send(socket, {
+                type: MessageType.ERROR,
+                message: 'Invalid message format'
+            });
         }
     }
 
@@ -174,39 +179,38 @@ export class WebSocketManager {
      * @param data - The message data containing game mode information.
      * @param setCurrentGameId - Callback to update the current game ID for the client.
      */
-    private async handleJoinGame(
-        socket: any, 
-        client: Client, 
-        data: ClientMessage,
-        setCurrentGameId: (gameId: string) => void
-    ): Promise<void> {
+    private handleJoinGame(socket: any, client: Client, data: ClientMessage, setCurrentGameId: (gameId: string) => void) {
         if (!data.gameMode) {
-            await this.sendError(socket, 'Game mode required');
+            this.send(socket, {
+                type: MessageType.ERROR,
+                message: 'Game mode required'
+            }); 
             return;
         }
-
         try {
             const gameId = gameManager.findOrCreateGame(data.gameMode, client);
             const gameSession = gameManager.getGame(gameId);
+            if (!gameSession) return ;
             
             if (data.aiDifficulty !== undefined) {
-                gameSession?.set_ai_difficulty(data.aiDifficulty);
                 console.log("AI difficulty = " + data.aiDifficulty);
+                gameSession.set_ai_difficulty(data.aiDifficulty);
             }
             setCurrentGameId(gameId);
 
             // add players to gameSession
-            if (data.players) {
-                for (const player of data.players) {
-                    gameSession?.add_player(new Player(player.id, player.name, client));
-                }
+            for (const player of data.players ?? []) {
+                gameSession.add_player(new Player(player.id, player.name, client));
             }
-            if (gameSession?.full && !gameSession.running) {
-                gameManager.runGame(gameSession);
+            if (gameSession.full && !gameSession.running) {
+                gameManager.runGame(gameSession, client.id);
             }
         } catch (error) {
             console.error('❌ Error joining game:', error);
-            await this.sendError(socket, 'Failed to join game');
+            this.send(socket, {
+                type: MessageType.ERROR,
+                message: 'Failed to join game'
+            });
         }
     }
 
@@ -214,15 +218,15 @@ export class WebSocketManager {
      * Handles when a client signals they are ready (finished loading)
      * @param client - The client that is ready
      */
-    private async handlePlayerReady(client: Client): Promise<void> {
+    private handlePlayerReady(client: Client): void {
         console.log(`Client ${client.id} is ready`);
 
-        const gameSession = this.findClientGame(client);
+        const gameSession = gameManager.findClientGame(client);
         if (!gameSession) {
             console.warn(`Client ${client.id} not in any game for ready signal`);
             return;
         }
-        gameSession.setClientReady(client);
+        gameSession.setClientReady(client.id);
     }
 
     /**
@@ -230,35 +234,33 @@ export class WebSocketManager {
      * @param client - The client sending the input.
      * @param data - The message data containing input details.
      */
-    private async handlePlayerInput(client: Client, data: ClientMessage): Promise<void> {
+    private handlePlayerInput(client: Client, data: ClientMessage): void {
         if (data.direction === undefined || data.side === undefined) {
             console.warn('Invalid player input: missing direction or side');
             return;
         }
 
-        // Find the game this client is in
-        const gameSession = this.findClientGame(client);
+        const gameSession = gameManager.findClientGame(client);
         if (!gameSession) {
             console.warn(`Client ${client.id} not in any game`);
             return;
         }
 
-        const input = {
+        const input: PlayerInput = {
             id: client.id,
             type: MessageType.PLAYER_INPUT,
             side: data.side,
             dx: data.direction
         }
-        // console.log("match id backend = " + data.match_id);
-        gameSession.enqueue(input, data.match_id);
+        gameSession.enqueue(input, client.id);
     }
 
    /**
      * Handles the request from a client to pause a game
      * @param client - The client that send the request.
      */
-    private async handlePauseRequest(client: Client, data: ClientMessage): Promise<void> {
-        const gameSession = this.findClientGame(client);
+    private handlePauseRequest(client: Client): void {
+        const gameSession = gameManager.findClientGame(client);
         if (!gameSession) {
             console.warn(`Client ${client.id} not in any game for pause request`);
             return;
@@ -269,22 +271,15 @@ export class WebSocketManager {
             return;
         }
 
-        const success = await gameSession.pause(client, data.match_id);
-        
-        if (success) {
-            console.log(`Game ${gameSession.id} paused by client ${client.id}`);
-        }
-        else {
-            console.warn(`Failed to pause game for client ${client.id}`);
-        }
+        gameSession.pause(client.id);
     }
 
     /**
      * Handles the request from a client to resume a game
      * @param client - The client that send the request.
      */
-    private async handleResumeRequest(client: Client, data: ClientMessage): Promise<void> {
-        const gameSession = this.findClientGame(client);
+    private handleResumeRequest(client: Client): void {
+        const gameSession = gameManager.findClientGame(client);
         if (!gameSession) {
             console.warn(`Client ${client.id} not in any game for resume request`);
             return;
@@ -295,30 +290,23 @@ export class WebSocketManager {
             return;
         }
 
-        const success = await gameSession.resume(client, data.match_id);
-        if (success) {
-            console.log(`Game ${gameSession.id} resumed by client ${client.id}`);
-        }
-        else {
-            console.warn(`Failed to resume game for client ${client.id}`);
-        }
+        gameSession.resume(client.id);
     }
 
    /**
      * Handles the disconnection of a client, removing them from games and cleaning up resources.
      * @param data - The user information that are used to confirm login
      */
-    private async handleQuitGame(client: Client, data: ClientMessage): Promise<void> {
-        const gameSession = this.findClientGame(client);
+    private handleQuitGame(client: Client): void {
+        const gameSession = gameManager.findClientGame(client);
         if (!gameSession) {
             console.warn(`Client ${client.id} not in any game to quit`);
             return;
         }
         
-        
-        gameSession.handlePlayerQuit(client.id, data.match_id);
+        gameSession.handlePlayerQuit(client.id);
         gameManager.removeClientFromGames(client);
-        // gameManager.removeGame(gameSession.id);
+        // gameManager.endGame(gameSession, client.id); // unecessary as .removeClientFromGames() handles this
         console.log(`Game ${gameSession.id} ended by client ${client.id}`);
     }
 
@@ -327,30 +315,34 @@ export class WebSocketManager {
      * @param client - The client that disconnected.
      */
     private handleDisconnection(client: Client): void {
-        const gameSession = this.findClientGame(client);
+        const gameSession = gameManager.findClientGame(client);
         if (!gameSession) return ;
+
         gameSession.stop(); // TODO: temp as wont work for Tournament 
         gameManager.removeClientFromGames(client);
         this.clients.delete(client.id);
-    }  
+    } 
+
    /**
      * Handles the disconnection of a client, removing them from games and cleaning up resources.
      * @param data - The user information that are used to confirm login
      */
     private async handleLoginUser(socket: any, client: Client, data: ClientMessage): Promise<void> {
-        console.log("handleLoginUser WSM called()");
+        console.log("HandleMessage WSM: calling Login_user");
         const loginInfo = data.loginUser;
 
         if (!loginInfo?.username || typeof loginInfo.password !== 'string') {
             console.warn("Missing login information");
-            await this.sendErrorLogin(socket, "Missing username or password");
+            this.send(socket, {
+                type: MessageType.LOGIN_FAILURE,
+                message: 'Missing username or password'
+            });
             return;
         }
 
         try {
             // DO NOT log the password
             console.log("handleLoginUser WSM: username received:", loginInfo.username);
-
             const result = await db.verifyLogin(loginInfo.username, loginInfo.password);
 
             switch (result) {
@@ -360,12 +352,17 @@ export class WebSocketManager {
                 if (!sid) {
                   // If you enforce "one active session per user", keep this as error:
                     console.log(`SID is not valid: ${sid}`);
-                    await this.sendErrorLogin(socket, "SID is not valid");
+                    // await this.sendErrorLogin(socket, "SID is not valid");
+                    this.send(socket, {
+                        type: MessageType.ERROR,
+                        message: 'SID is not valid',
+                    });
                     return;
                 }
-                await this.sendSuccessLogin(socket, {
+                this.send(socket, {
+                    type: MessageType.SUCCESS_LOGIN,
                     message: "User ID confirmed",
-                    sid,
+                    sid: sid,
                     username: loginInfo.username,
                 });
                 client.username = loginInfo.username;
@@ -374,22 +371,34 @@ export class WebSocketManager {
 
             case AuthCode.NotFound:
                 console.log("handleLoginUser WSM: user not found");
-                await this.sendErrorUserNotExist(socket, "User doesn't exist");
+                this.send(socket, {
+                    type: MessageType.USER_NOTEXIST,
+                    message: "User doesn't exist"
+                });
                 return;
 
             case AuthCode.BadCredentials:
                 console.log("handleLoginUser WSM: bad credentials");
-                await this.sendErrorLogin(socket, "Username or password are incorrect");
+                this.send(socket, {
+                    type: MessageType.LOGIN_FAILURE,
+                    message: 'Username or password are incorrect'
+                });
                 return;
             
             case AuthCode.AlreadyLogin:
                 console.log("handleLoginUser WSM: user already login");
-                await this.sendErrorLogin(socket, "User already login");
+                this.send(socket, {
+                    type: MessageType.ERROR,
+                    message: "User already login"}
+                );
                 return;
             }
         } catch (error) {
             console.error('❌ Error checking user login information:', error);
-            await this.sendError(socket, 'Failed to log user');
+            this.send(socket, {
+                type: MessageType.ERROR,
+                message: 'Failed to log user'
+            });
         }
     }
 
@@ -409,11 +418,15 @@ export class WebSocketManager {
      * @param data - The user information that are used to confirm login
      */
     private async handleRegisterNewUser(socket: any, data: ClientMessage): Promise<void> {
+        console.log("HandleMessage WSM: calling Register_user");
         const regInfo = data.registerUser;
 
         if (!regInfo) {
             console.warn("Missing registration object");
-            await this.sendError(socket, "Missing registration data");
+            this.send(socket, {
+                type: MessageType.ERROR,
+                message: 'Missing registration data'
+            });
             return;
         }
 
@@ -421,7 +434,10 @@ export class WebSocketManager {
 
         if (!username || !email || typeof password !== 'string') {
             console.warn("Missing registration fields:", username, email, !!password);
-            await this.sendError(socket, "Missing username, email, or password");
+            this.send(socket, {
+                type: MessageType.ERROR,
+                message: 'Missing username, email, or password'
+            });
             return;
         }
 
@@ -430,158 +446,104 @@ export class WebSocketManager {
 
             switch (result) {
             case AuthCode.OK:
-                await this.sendSuccessRegistration(socket, "User registered successfully");
+                this.send(socket, {
+                    type: MessageType.SUCCESS_REGISTRATION,
+                    message: 'User registered successfully'
+                });
                 return;
 
             case AuthCode.UserExists:
-                await this.sendErrorUserExist(socket, "User already exists");
+                this.send(socket, {
+                    type: MessageType.USER_EXIST,
+                    message: 'User already exists'
+                });
                 return;
 
             case AuthCode.UsernameTaken:
             default:
-                await this.sendErrorUsernameTaken(socket, "Username is already registered");
+                this.send(socket, {
+                    type: MessageType.USERNAME_TAKEN,
+                    message: 'Username is already registered'
+                });
                 return;
             }
         } catch (error) {
             console.error('❌ Error registering user:', error);
-            await this.sendError(socket, 'Failed to register user');
+            this.send(socket, {
+                type: MessageType.ERROR,
+                message: 'Failed to register user'
+            });
         }
     }
 
-    /**
-     * Sends an status message to a client to confirm login/registration or error
-     * @param socket - The WebSocket connection object.
-     * @param message - The messagee to send.
-     */
-        private async sendSuccessLogin(socket: any, payload: { message: string; sid: any; username: string }): Promise<void> {
-            const messageBody = {
-                text: payload.message,             // keep the human-readable part
-                sid: payload.sid,                  // <- what the frontend needs
-                username: payload.username
-            };
-            const successMsg: ServerMessage = {
-                type: MessageType.SUCCESS_LOGIN,
-                message: JSON.stringify(messageBody),
-                sid: payload.sid,
-                username: payload.username,
-            };
+    // /**
+    //  * Sends an status message to a client to confirm login/registration or error
+    //  * @param socket - The WebSocket connection object.
+    //  * @param message - The message to send.
+    //  */
+    //     private async sendSuccessLogin(socket: any, payload: { message: string; sid: any; username: string }): Promise<void> {
+    //         const messageBody = {
+    //             text: payload.message,             // keep the human-readable part
+    //             sid: payload.sid,                  // <- what the frontend needs
+    //             username: payload.username
+    //         };
+    //         const successMsg: ServerMessage = {
+    //             type: MessageType.SUCCESS_LOGIN,
+    //             message: JSON.stringify({
+    //                 text: payload.message,             // keep the human-readable part
+    //                 sid: payload.sid,                  // <- what the frontend needs
+    //                 username: payload.username
+    //             }),
+    //             sid: payload.sid,
+    //             username: payload.username,
+    //         };
             
-        try {
-            await socket.send(JSON.stringify(successMsg));
-        } catch (error) {
-            console.error('❌ Failed to send success message:', error);
-        }
-    }  
+    //     try {
+    //         await socket.send(JSON.stringify(successMsg));
+    //     } catch (error) {
+    //         console.error('❌ Failed to send success message:', error);
+    //     }
+    // }  
 
-    private async sendSuccessRegistration(socket: any, message: string): Promise<void> {
-        const successMsg: ServerMessage = {
-            type: MessageType.SUCCESS_REGISTRATION,
-            message: message
-        };
-        
-        try {
-            await socket.send(JSON.stringify(successMsg));
-        } catch (error) {
-            console.error('❌ Failed to send success message:', error);
-        }
-    }  
-
-    private async sendErrorLogin(socket: any, message: string): Promise<void> {
-        const errorMsg: ServerMessage = {
-            type: MessageType.LOGIN_FAILURE,
-            message: message
-        };
-        
-        try {
-            await socket.send(JSON.stringify(errorMsg));
-        } catch (error) {
-            console.error('❌ Failed to send success message:', error);
-        }
-    }  
-
-    private async sendErrorUserNotExist(socket: any, message: string): Promise<void> {
-        const errorMsg: ServerMessage = {
-            type: MessageType.USER_NOTEXIST,
-            message: message
-        };
-        
-        try {
-            await socket.send(JSON.stringify(errorMsg));
-        } catch (error) {
-            console.error('❌ Failed to send success message:', error);
-        }
-    }  
-
-    private async sendErrorUserExist(socket: any, message: string): Promise<void> {
-        const errorMsg: ServerMessage = {
-            type: MessageType.USER_EXIST,
-            message: message
-        };
-        
-        try {
-            await socket.send(JSON.stringify(errorMsg));
-        } catch (error) {
-            console.error('❌ Failed to send success message:', error);
-        }
-    }  
-
-    private async sendErrorUsernameTaken(socket: any, message: string): Promise<void> {
-        const errorMsg: ServerMessage = {
-            type: MessageType.USERNAME_TAKEN,
-            message: message
-        };
-        
-        try {
-            await socket.send(JSON.stringify(errorMsg));
-        } catch (error) {
-            console.error('❌ Failed to send success message:', error);
-        }
-    } 
-
+    private send(socket: any, message: ServerMessage) {
+        socket.send(JSON.stringify(message), (err?: Error) => {
+            if (err) console.error(`❌ Failed to send message: `, err.stack);
+        });
+    }
 
     private async handleUserStats(socket: any, message: string) {
+        console.log("HandleMessage WSM: calling get User stats");
         const stats = db.getUserStats(message); // from DB
-        if (!stats)
-            
-            this.sendError(socket, 'user not recognised');
-        else
-            this.sendUserStats(socket, stats);
+        if (!stats) {
+            this.send(socket, {
+                type: MessageType.ERROR,
+                message: 'user not recognised'
+            });
+        }
+        else {
+            this.send(socket, {
+                type: MessageType.SEND_USER_STATS,
+                stats: stats
+            });
+        }
     }
 
-
-    private async handleUserGameHistory(socket: any, message: string) {
+    private handleUserGameHistory(socket: any, message: string): void {
+        console.log("HandleMessage WSM: calling get User game history");
         const history = db.getGameHistoryForUser(message); // from DB
-        if (!history)
-            this.sendError(socket, 'user not recognised');
-        else
-            this.sendUserGameHistory(socket, history);
+        if (!history) {
+            this.send(socket, {
+                type: MessageType.ERROR,
+                message: 'user not recognised'
+            });
+        }
+        else {
+            this.send(socket, {
+                type: MessageType.SEND_GAME_HISTORY,
+                gameHistory: history
+            });
+        }
     }
-
-    private async sendUserStats(socket: any, data: UserStats): Promise<void> {
-        const msg: ServerMessage = {
-            type: MessageType.SEND_USER_STATS,
-            stats: data
-        };
-        
-        try {
-            await socket.send(JSON.stringify(msg));
-        } catch (error) {
-            console.error('❌ Failed to sendUserStats:', error);
-        }
-    } 
-
-    private async sendUserGameHistory(socket: any, data: GameHistoryEntry[]): Promise<void> {
-        const msg: ServerMessage = {
-            type: MessageType.SEND_GAME_HISTORY,
-            gameHistory: data
-        };
-        
-        try {
-            await socket.send(JSON.stringify(msg));
-        } catch (error) {
-            console.error('❌ Failed to sendUserGameHistory:', error);
-        }
-    } 
 
     /**
      * Handle displaying information
@@ -620,54 +582,6 @@ export class WebSocketManager {
     //     }
     // }  
 
-    /**
-     * Sends an error message to a client.
-     * @param socket - The WebSocket connection object.
-     * @param message - The error message to send.
-     */
-    private async sendError(socket: any, message: string): Promise<void> {
-        const errorMsg: ServerMessage = {
-            type: MessageType.ERROR,
-            message: message
-        };
-        
-        try {
-            await socket.send(JSON.stringify(errorMsg));
-        } catch (error) {
-            console.error('❌ Failed to send error message:', error);
-        }
-    }
-
-    /**
-     * Sends a welcome message to a newly connected client.
-     * @param socket - The WebSocket connection object.
-     */
-    private async sendWelcomeMessage(socket: any): Promise<void> {
-        const welcome: ServerMessage = {
-            type: MessageType.WELCOME,
-            message: 'Connected to game server'
-        };
-        
-        try {
-            await socket.send(JSON.stringify(welcome));
-        } catch (error) {
-            console.error('❌ Failed to send welcome message:', error);
-        }
-    }
-
-    /**
-     * Finds the game a client is currently participating in.
-     * @param client - The client whose game is being searched for.
-     * @returns The game object or null if the client is not in a game.
-     */
-    private findClientGame(client: Client): any {
-        for (const [gameId, gameSession] of (gameManager as any).games) {
-            if (gameSession.clients.includes(client)) {
-                return gameSession;
-            }
-        }
-        return null;
-    }
 
     /**
      * Generates a unique client ID.
@@ -688,7 +602,7 @@ export class WebSocketManager {
     /**
      * Disconnects all connected clients and clears the client list.
      */
-    async disconnectAllClients(): Promise<void> {
+    disconnectAllClients(): void {
         for (const [clientId, client] of this.clients) {
             try {
                 client.websocket.close();

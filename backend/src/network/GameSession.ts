@@ -2,6 +2,8 @@ import { Game } from '../core/game.js';
 import { Client, Player } from '../models/Client.js';
 import { MessageType, GameMode, AiDifficulty } from '../shared/constants.js';
 import { PlayerInput, ServerMessage } from '../shared/types.js';
+import { Match } from './Tournament.js';
+import { gameManager } from '../models/gameManager.js';
 
 export abstract class AbstractGameSession {
 	mode: GameMode;
@@ -12,7 +14,8 @@ export abstract class AbstractGameSession {
 	client_capacity: number = 1;
 	full: boolean = false;
 	running: boolean = false;
-	ai_difficulty?: AiDifficulty; // temp hardcoded to be set to Impossible 
+	ai_difficulty?: AiDifficulty;
+	readyClients: Set<string> = new Set(); // Keep track of clients that finish loading
 
     constructor(mode: GameMode, game_id: string) {
 		this.id = game_id
@@ -40,7 +43,6 @@ export abstract class AbstractGameSession {
 
 	set_ai_difficulty(difficulty: AiDifficulty) {
 		this.ai_difficulty = difficulty;
-		// if we want to change the ai diffiulty mid game we can add to this function and update the bot in the game
 	}
 
 	add_client(client: Client) {
@@ -93,22 +95,76 @@ export abstract class AbstractGameSession {
 		}
 	}
 
-	abstract waitingForPlayersReady(match_id?: string): void;
-	abstract start(): Promise<void>; 
-	abstract stop(match_id?: string): void;
-	abstract pause(match_id?: string): boolean;
-	abstract resume(match_id?: string): boolean;
+	allClientsReady(match?: Match): boolean {
+		return (this.readyClients.size === this.clients.length && this.clients.length > 0);
+	}
 
-	abstract enqueue(input: PlayerInput): void;
-	abstract setClientReady(client: Client, match_id?: string): void;
-	abstract allClientsReady(match_id?: string): boolean;
-	abstract handlePlayerQuit(quitter_id: string, match_id?: string): void;
-	abstract canClientControlGame(client: Client, match_id?: string): boolean;
+	async waitForPlayersReady(match?: Match) {
+		if (this.allClientsReady()) return ;
+
+		await new Promise(resolve => {
+			gameManager.once(`all-ready-${this.id}`, resolve);
+		});
+	}
+
+	setClientReady(client_id: string, match?: Match): void {
+		this.readyClients.add(client_id);
+		console.log(`Client ${client_id} marked as ready.}`);
+		
+		if (this.allClientsReady()) {
+			gameManager.emit(`all-ready-${this.id}`);
+			console.log(`GameSession ${this.id}: all clients ready.`);
+		}
+	}
+
+	resume(client_id?: string): void {
+		const game = this.findGame(client_id);
+		if (!this.running || !game || !game.running) {
+			console.log(`Game ${this.id} is not running, cannot resume`);
+			return ;
+		}
+		if (!game.paused) {
+			console.log(`Game ${this.id} is not paused`);
+			return ;
+		}
+
+		game.resume();
+		console.log(`Game ${this.id} resumed by client ${client_id}`);
+	}
+
+	pause(client_id?: string): void {
+		const game = this.findGame(client_id);
+		if (!this.running || !game || !game.running) {
+			console.log(`Game ${this.id} is not running, cannot pause`);
+			return ;
+		}
+		if (game.paused) {
+			console.log(`Game ${this.id} is already paused`);
+			return ;
+		}
+
+		game.pause();
+		console.log(`Game ${this.id} paused by client ${client_id}`);
+	}
+
+	enqueue(input: PlayerInput, client_id?: string): void  {
+		const game = this.findGame(client_id);
+		game?.enqueue(input);
+	}
+
+	abstract start(): Promise<void>; 
+	abstract stop(client_id?: string): void;
+	// abstract pause(client_id?: string): boolean;
+	// abstract resume(client_id?: string): boolean;
+	
+	// abstract enqueue(input: PlayerInput, client_id?: string): void;
+	abstract handlePlayerQuit(quitter_id: string): void;
+	abstract canClientControlGame(client: Client): boolean;
+	abstract findGame(client_id?: string): Game | undefined;
 }
 
-export class GameSession extends AbstractGameSession{
+export class OneOffGame extends AbstractGameSession{
 	game!: Game;
-	readyClients: Set<string> = new Set(); // New, keep track of clients that finish loading
 
 	constructor (mode: GameMode, game_id: string) {
 		super(mode, game_id)
@@ -119,7 +175,7 @@ export class GameSession extends AbstractGameSession{
 		this.running = true;
 		
 		this.add_CPUs(); // add any CPU's if necessary
-		await this.waitingForPlayersReady();
+		await this.waitForPlayersReady();
 		
 		this.game = new Game(this.players, this.broadcast.bind(this))
 		await this.game.run();
@@ -127,68 +183,48 @@ export class GameSession extends AbstractGameSession{
 	}
 
 	stop(): void {
-		if (!this.running) return;
-		
-		let winner: string | undefined;
-		if (this.game?.winner)
-			winner = this.game.winner.name;
-		// if (this.game?.running) // this is false before scores updated in this.game.stop(), removing check fixes DB bug
-		this.game.stop(this.id);
+		if (!this.running || !this.game) return;
 		
 		this.running = false;
+		this.game.stop(this.id);
+		
 		this.broadcast({ 
 			type: MessageType.SESSION_ENDED,
-			...(winner && { winner: winner })
+			...(this.game.winner.name && { winner: this.game.winner.name })
 		});
 	}
 	
-	pause(): boolean {
-		if (!this.running || !this.game) {
-			console.log(`Game ${this.id} is not running, cannot pause`);
-			return false;
-		}
-		if (this.game.paused) {
-			console.log(`Game ${this.id} is already paused`);
-			return false;
-		}
+	// pause(): boolean {
+	// 	if (!this.running || !this.game) {
+	// 		console.log(`Game ${this.id} is not running, cannot pause`);
+	// 		return false;
+	// 	}
+	// 	if (this.game.paused) {
+	// 		console.log(`Game ${this.id} is already paused`);
+	// 		return false;
+	// 	}
 
-		this.game.pause();
-		return true;
-	}
+	// 	this.game.pause();
+	// 	return true;
+	// }
 
-	resume(): boolean {
-		if (!this.running || !this.game) {
-			console.log(`Game ${this.id} is not running, cannot resume`);
-			return false;
-		}
-		if (!this.game.paused) {
-			console.log(`Game ${this.id} is not paused`);
-			return false;
-		}
+	// resume(): boolean {
+	// 	if (!this.running || !this.game) {
+	// 		console.log(`Game ${this.id} is not running, cannot resume`);
+	// 		return false;
+	// 	}
+	// 	if (!this.game.paused) {
+	// 		console.log(`Game ${this.id} is not paused`);
+	// 		return false;
+	// 	}
 
-		this.game.resume();
-		return true;
-	}
+	// 	this.game.resume();
+	// 	return true;
+	// }
 
-	enqueue(input: PlayerInput): void  {
-		this.game?.enqueue(input);
-	}
-
-	setClientReady(client: Client): void { // New function, add client in the readyClient list
-		this.readyClients.add(client.id);
-		console.log(`Client ${client.id} marked as ready. Ready clients: ${this.readyClients.size}/${this.clients.length}`);
-	}
-
-	allClientsReady(): boolean {
-		console.log(`All clients ready in game ${this.id}, sending ALL_READY`);
-		return (this.readyClients.size === this.clients.length && this.clients.length > 0);
-	}
-
-	async waitingForPlayersReady() {
-		while (!this.allClientsReady()) {
-			await new Promise(resolve => setTimeout(resolve, 1000));
-		}
-	}
+	// enqueue(input: PlayerInput): void  {
+	// 	this.game?.enqueue(input);
+	// }
 	
 	handlePlayerQuit(quitter_id: string): void {
 		if (this.game && this.mode == GameMode.TWO_PLAYER_REMOTE) {
@@ -198,11 +234,10 @@ export class GameSession extends AbstractGameSession{
 	}
 
 	canClientControlGame(client: Client) {
-		if (!this.clients.includes(client))
-			return false;
-
-		// TODO need to add more check
-		return true;
+		return (this.clients.includes(client))
 	}
 
+	findGame() {
+		return (this.game);
+	}
 }
