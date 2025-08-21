@@ -248,28 +248,26 @@ export class AuthManager {
         };
 
         // --- Helper: parse the server string payload safely ---
-        // Accepts either:
-        //  - "User ID confirmed"
-        //  - '{"text":"User ID confirmed","sid":"...","username":"bob"}'
-        //  - '{"message":"ok","user":{"username":"bob"},"sid":"..."}'
-        const parsePayload = (raw: string): { text: string; sid?: string; uname?: string } => {
-            try {
-                const p = JSON.parse(raw);
-                const text = p.text ?? p.message ?? 'Login success';
-                const sid = p.sid ?? p.sessionId ?? p.data?.sid;
-                const uname = p.username ?? p.user?.username;
-                console.log(`parsePayload: ${text} ${sid} ${uname}`);
-                return { text, sid, uname };
-            } catch {
-                return { text: raw }; // legacy plain string
+        const parsePayload = (raw: unknown): { text: string; sid?: string; uname?: string } => {
+            let payload: any = raw;
+            if (typeof payload === 'string') {
+                try {
+                    payload = JSON.parse(payload);
+                } catch {
+                    return { text: payload };
+                }
             }
+            const text  = payload.text ?? payload.message ?? 'Login success';
+            const sid   = payload.sid ?? payload.sessionId ?? payload.data?.sid;
+            const uname = payload.username ?? payload.user?.username;
+            return { text, sid, uname };
         };
 
         // SUCCESS: the callback still receives a string; we parse it here
         wsClient.registerCallback(WebSocketEvent.LOGIN_SUCCESS, async (raw: string) => {
             try {
                 const { text, sid, uname } = parsePayload(raw);
-
+                console.log(`data parsed: ${text}, ${sid}, ${uname}`);
                 if (!sid) {
                     Logger.error('Missing sid in LOGIN_SUCCESS payload', 'AuthManager', { raw });
                     alert('Login succeeded but session binding failed (no sid).');
@@ -279,7 +277,7 @@ export class AuthManager {
                 await bindSessionCookie(sid);
 
                 this.authState = AuthState.LOGGED_IN;
-                this.currentUser = { username: uname ?? username }; // prefer payload username if provided
+                this.currentUser = { username: uname ?? username };
                 uiManager.clearForm(this.loginFields);
                 appStateManager.navigateTo(AppState.MAIN_MENU);
                 uiManager.showUserInfo(this.currentUser.username);

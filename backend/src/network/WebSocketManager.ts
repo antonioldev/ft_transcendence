@@ -348,7 +348,8 @@ export class WebSocketManager {
             switch (result) {
             case AuthCode.OK:
                 console.log("handleLoginUser WSM: sending success");
-                const sid = getSessionByUsername(loginInfo.username); // or db.createOrGetSession(userId)
+                const sid = getSessionByUsername(loginInfo.username);
+                console.log(`SID: ${sid}`);
                 if (!sid) {
                   // If you enforce "one active session per user", keep this as error:
                     console.log(`SID is not valid: ${sid}`);
@@ -359,12 +360,14 @@ export class WebSocketManager {
                     });
                     return;
                 }
-                this.send(socket, {
-                    type: MessageType.SUCCESS_LOGIN,
-                    message: "User ID confirmed",
-                    sid: sid,
-                    username: loginInfo.username,
-                });
+                socket.send(JSON.stringify({
+                type: MessageType.SUCCESS_LOGIN,
+                message: {                     // keep "message" as an OBJECT, not a string
+                    text: 'Login success',
+                    sid: sid,                         // <-- put your generated session id here
+                    username: loginInfo.username
+                }
+                }));
                 client.username = loginInfo.username;
                 client.loggedIn = true;
                 return;

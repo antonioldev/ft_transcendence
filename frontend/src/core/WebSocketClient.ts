@@ -274,6 +274,7 @@ export class WebSocketClient {
     
     triggerCallback(event: WebSocketEvent, data?: any): void {
         const callback = this.callbacks[event];
+        console.log(`DATA: ${data}`);
         if (callback) {
             try {
                 callback(data);
