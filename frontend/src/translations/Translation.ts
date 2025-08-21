@@ -3,7 +3,6 @@
  * Each property corresponds to a translatable string in the application.
  */
 export interface Translation {
-    appTitle: string;
     classicMode: string;
     immersiveMode: string;
     selectGameMode: string;
