@@ -8,7 +8,7 @@ import { EL, requireElementById } from '../ui/elements.js';
 import { TranslationKey } from './Translation.js';
 
 export let currentLang = 0;
-export const langs: string[] = ['🇬🇧 English 🇬🇧', '🇮🇹 Italiano 🇮🇹', '🇫🇷 Français 🇫🇷', '🇧🇷 Brasileiro 🇧🇷', '🇷🇺 Русский 🇷🇺'];
+export const langs: string[] = ['🇬🇧  English', '🇮🇹  Italiano', '🇫🇷  Français', '🇧🇷  Brasileiro', '🇷🇺  Русский'];
 
 const allTranslations = [english, italian, french, portuguese, russian];
 
@@ -24,10 +24,6 @@ export function updateLanguageDisplay(): void {
     // Language selector
     const langDisplay = requireElementById(EL.DISPLAY.LANGUAGE_SELECT);
     langDisplay.textContent = langs[currentLang];
-
-    // Main menu
-    const mainTitle = requireElementById(EL.DISPLAY.MAIN_TITLE);
-    mainTitle.textContent = t.appTitle;
 
     const playBtn = requireElementById(EL.BUTTONS.PLAY);
     playBtn.textContent = t.play;

@@ -1,7 +1,6 @@
 import { Translation } from './Translation.js';
 
 export const russian: Translation = {
-    appTitle: '🏓 PONG',
     classicMode: 'Классический режим',
     immersiveMode: 'Иммерсивный режим',
     selectGameMode: 'Выберите режим игры',

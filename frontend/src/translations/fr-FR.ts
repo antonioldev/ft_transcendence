@@ -1,7 +1,6 @@
 import { Translation } from './Translation.js';
 
 export const french: Translation = {
-    appTitle: '🏓 PONG',
     classicMode: 'Mode Classique',
     immersiveMode: 'Mode Immersif',
     selectGameMode: 'Sélectionner le Mode de Jeu',
