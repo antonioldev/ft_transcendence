@@ -178,9 +178,9 @@ export class AuthManager {
         wsClient.registerCallback(WebSocketEvent.LOGIN_SUCCESS, (msg: string) => {
             this.authState = AuthState.LOGGED_IN;
             this.currentUser = {username};
-            // Clear form and navigate back to main menu
+            // Clear form and navigate to game mode selection
             uiManager.clearForm(this.loginFields);
-            appStateManager.navigateTo(AppState.MAIN_MENU);
+            appStateManager.navigateTo(AppState.GAME_MODE);
             uiManager.showUserInfo(user.username);     
             Logger.info(msg, 'AuthManager');
         });
@@ -322,10 +322,10 @@ export class AuthManager {
                 this.currentUser = { username: decodedToken.user.username };
                 this.authState = AuthState.LOGGED_IN;
                 
-                // Updates the UI to show user information and navigates to the main menu
+                // Updates the UI to show user information and navigates to game mode selection
                 uiManager.showUserInfo(this.currentUser.username);
                 // uiManager.hideOverlays('login-modal');
-                appStateManager.navigateTo(AppState.MAIN_MENU);
+                appStateManager.navigateTo(AppState.GAME_MODE);
 
             } catch (error) {
                 console.error("Backend communication failed:", error);
