@@ -232,56 +232,15 @@ export class AuthManager {
         }    
 
         const user: LoginUser = { username, password };
-        
-        // --- Helper: set HttpOnly cookie via binder route ---
-        const bindSessionCookie = async (sid: string) => {
-        const res = await fetch('/api/auth/session/bind', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ sid }),
-            credentials: 'include',
-        });
-        if (!res.ok) throw new Error('bind_failed');
-        };
-
-        // --- Helper: parse the server string payload safely ---
-        const parsePayload = (raw: unknown): { text: string; sid?: string; uname?: string } => {
-            let payload: any = raw;
-            if (typeof payload === 'string') {
-                try {
-                    payload = JSON.parse(payload);
-                } catch {
-                    return { text: payload };
-                }
-            }
-            const text  = payload.text ?? payload.message ?? 'Login success';
-            const sid   = payload.sid ?? payload.sessionId ?? payload.data?.sid;
-            const uname = payload.username ?? payload.user?.username;
-            return { text, sid, uname };
-        };
-
-        // SUCCESS: the callback still receives a string; we parse it here
-        wsClient.registerCallback(WebSocketEvent.LOGIN_SUCCESS, async (raw: string) => {
-            try {
-                const { text, sid, uname } = parsePayload(raw);
-                if (!sid) {
-                    Logger.error('Missing sid in LOGIN_SUCCESS payload', 'AuthManager', { raw });
-                    alert('Login succeeded but session binding failed (no sid).');
-                    return;
-                }
-
-                await bindSessionCookie(sid);
-
-                this.authState = AuthState.LOGGED_IN;
-                this.currentUser = { username: uname ?? username };
-                uiManager.clearForm(this.loginFields);
-                appStateManager.navigateTo(AppState.MAIN_MENU);
-                uiManager.showUserInfo(this.currentUser.username);
-                Logger.info(text ?? 'Login ok', 'AuthManager');
-            } catch (e) {
-                Logger.error('Binder call failed', 'AuthManager', e);
-                alert('Login succeeded but could not finalize session. Please retry.');
-            }
+        // Register the callback function
+        wsClient.registerCallback(WebSocketEvent.LOGIN_SUCCESS, (msg: string) => {
+            this.authState = AuthState.LOGGED_IN;
+            this.currentUser = {username};
+            // Clear form and navigate back to main menu
+            uiManager.clearForm(this.loginFields);
+            appStateManager.navigateTo(AppState.MAIN_MENU);
+            uiManager.showUserInfo(user.username);     
+            Logger.info(msg, 'AuthManager');
         });
 
         wsClient.registerCallback(WebSocketEvent.LOGIN_FAILURE, (msg: string) => {
@@ -417,31 +376,26 @@ export class AuthManager {
             body: JSON.stringify({ token: googleResponse.credential })
         });
 
-        if (!authRes.ok) {
-            const err = await authRes.json().catch(() => ({}));
-            throw new Error(`Backend authentication failed: ${err.message || err.error || authRes.statusText}`);
-        }
+                if (!backendResponse.ok) {
+                    const errorData = await backendResponse.json();
+                    throw new Error(`Backend authentication failed: ${errorData.message || errorData.error || 'Unknown error'}`);
+                }
 
-        // 2) Immediately restore the session from the cookie
-        const sessionRes = await fetch('/api/auth/session', {
-            method: 'GET',
-            credentials: 'include'                       // ⬅️ send the cookie back
-        });
+                // Parses the response to get the session token from your application
+                const { sessionToken } = await backendResponse.json();
+                console.log("Backend responded with session token:", sessionToken);
 
-        if (!sessionRes.ok) {
-            throw new Error('Session restore failed');
-        }
-
-        const { authenticated, user } = await sessionRes.json();
-        if (!authenticated || !user) {
-            throw new Error('Not authenticated after Google login');
-        }
-
-        // 3) Update your state/UI
-        this.currentUser = { username: user.username };
-        this.authState = AuthState.LOGGED_IN;
-        uiManager.showUserInfo(this.currentUser.username);
-        appStateManager.navigateTo(AppState.MAIN_MENU);
+                // TODO: Store the sessionToken
+                
+                // Decodes the session token and updates the current user and authentication state
+                const decodedToken = JSON.parse(atob(sessionToken.split('.')[1]));
+                this.currentUser = { username: decodedToken.user.username };
+                this.authState = AuthState.LOGGED_IN;
+                
+                // Updates the UI to show user information and navigates to the main menu
+                uiManager.showUserInfo(this.currentUser.username);
+                // uiManager.hideOverlays('login-modal');
+                appStateManager.navigateTo(AppState.MAIN_MENU);
 
         } catch (error) {
             console.error("Backend communication failed:", error);
