@@ -16,8 +16,6 @@ services:
       dockerfile: Dockerfile
       args:
         - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
-    ports:
-      - "${FRONTEND_PORT:-8080}:80"
     # env_file:
     #   - .env
     depends_on:
