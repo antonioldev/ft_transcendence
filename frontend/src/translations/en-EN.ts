@@ -66,12 +66,12 @@ export const english: Translation = {
 	escToClose: 'Press ESC to close',
     
     // Validation error messages
-    errorEnterEmailOrUsername: 'Please enter your email or username',
-    errorEnterPassword: 'Please enter your password',
+    errorEnterEmailOrUsername: 'Please enter email or username',
+    errorEnterPassword: 'Please enter password',
     errorEnterUsername: 'Please enter a username',
     errorEnterEmail: 'Please enter an email',
     errorEnterValidEmail: 'Please enter a valid email',
     errorPasswordMinLength: 'Password must be at least 6 characters',
-    errorConfirmPassword: 'Please confirm your password',
+    errorConfirmPassword: 'Please confirm password',
     errorPasswordsDoNotMatch: 'Passwords do not match'
 };
