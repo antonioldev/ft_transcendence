@@ -58,12 +58,12 @@ export const portuguese: Translation = {
     impossible: ' (Impossível)',
     
     // Validation error messages
-    errorEnterEmailOrUsername: 'Por favor, insira seu email ou nome de usuário',
-    errorEnterPassword: 'Por favor, insira sua senha',
+    errorEnterEmailOrUsername: 'Por favor, insira email ou nome de usuário',
+    errorEnterPassword: 'Por favor, insira senha',
     errorEnterUsername: 'Por favor, insira um nome de usuário',
     errorEnterEmail: 'Por favor, insira um email',
     errorEnterValidEmail: 'Por favor, insira um email válido',
     errorPasswordMinLength: 'A senha deve ter pelo menos 6 caracteres',
-    errorConfirmPassword: 'Por favor, confirme sua senha',
+    errorConfirmPassword: 'Por favor, confirme senha',
     errorPasswordsDoNotMatch: 'As senhas não coincidem'
 };

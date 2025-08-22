@@ -3,3 +3,55 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+  /* Form validation styles */
+  .field-error {
+    border-color: #eb3f00 !important;
+    background-color: rgba(239, 68, 68, 0.1) !important;
+  }
+  
+  .field-error:focus {
+    outline-color: #eb3f00 !important;
+  }
+  
+  .error-message {
+    color: #eb3f00;
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+    display: none;
+  }
+  
+  .error-message.show {
+    display: block;
+  }
+  
+  /* Form field containers and inputs */
+  .form-field-container {
+    min-height: 4.5rem;
+  }
+  
+  .form-input {
+    height: 2.5rem;
+    min-width: 300px;
+    width: 100%;
+    max-width: 400px;
+  }
+  
+  .error-message {
+    height: 1rem;
+    line-height: 1rem;
+    min-width: 280px;
+    width: 100%;
+    max-width: 400px;
+  }
+}
+
+@layer utilities {
+  @media (max-width: 320px) {
+    .form-input,
+    .error-message {
+      min-width: 260px;
+    }
+  }
+}
