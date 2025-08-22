@@ -26,6 +26,7 @@ export const english: Translation = {
     alertPlayer2: 'Please enter a name for Player 2',
     register: 'Register',
     login: 'Login',
+    greeting: 'Hi',
     username: 'Username:',
     email: 'Email:',
     password: 'Password:',
