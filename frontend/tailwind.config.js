@@ -10,9 +10,9 @@ module.exports = {
         'tiny5-regular': ['"Tiny5"', 'sans-serif'],
       },
       colors: {
-        'gray-background': '#565656',
-        'light-green': '#B2FFA9',
-        'orange': '#FF4A1C',
+        'blue-background': '#143D60',
+        'light-green': '#A0C878',
+        'orange': '#EB5B00',
         'light-brown': '#81523F',
         'dark-brown': '#3F2A2B'
       }
