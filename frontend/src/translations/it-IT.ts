@@ -59,5 +59,15 @@ export const italian: Translation = {
     hard: ' (Difficile)',
     impossible: ' (Impossibile)',
     winner: 'Vincitore della partita',
-    continue: 'Premi SPAZIO per continuare'
+    continue: 'Premi SPAZIO per continuare',
+    
+    // Validation error messages
+    errorEnterEmailOrUsername: 'Inserisci la tua email o nome utente',
+    errorEnterPassword: 'Inserisci la tua password',
+    errorEnterUsername: 'Inserisci un nome utente',
+    errorEnterEmail: 'Inserisci un email',
+    errorEnterValidEmail: 'Inserisci un email valido',
+    errorPasswordMinLength: 'La password deve contenere almeno 6 caratteri',
+    errorConfirmPassword: 'Conferma la tua password',
+    errorPasswordsDoNotMatch: 'Le password non corrispondono'
 };

@@ -59,5 +59,15 @@ export const russian: Translation = {
     hard: ' (Сложный)',
     impossible: ' (Невозможный)',
     winner: 'Победитель матча',
-    continue: 'Нажмите ПРОБЕЛ, чтобы продолжить'
+    continue: 'Нажмите ПРОБЕЛ, чтобы продолжить',
+    
+    // Validation error messages
+    errorEnterEmailOrUsername: 'Пожалуйста, введите email или имя пользователя',
+    errorEnterPassword: 'Пожалуйста, введите пароль',
+    errorEnterUsername: 'Пожалуйста, введите имя пользователя',
+    errorEnterEmail: 'Пожалуйста, введите email',
+    errorEnterValidEmail: 'Пожалуйста, введите действительный email',
+    errorPasswordMinLength: 'Пароль должен содержать не менее 6 символов',
+    errorConfirmPassword: 'Пожалуйста, подтвердите пароль',
+    errorPasswordsDoNotMatch: 'Пароли не совпадают'
 };

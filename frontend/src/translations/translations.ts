@@ -8,7 +8,7 @@ import { EL, requireElementById } from '../ui/elements.js';
 import { TranslationKey } from './Translation.js';
 
 export let currentLang = 0;
-export const langs: string[] = ['🇬🇧  English', '🇮🇹  Italiano', '🇫🇷  Français', '🇧🇷  Brasileiro', '🇷🇺  Русский'];
+export const langs: string[] = ['🇬🇧 English', '🇮🇹   Italiano', '🇫🇷  Français', '🇧🇷  Brasileiro', '🇷🇺    Русский'];
 
 const allTranslations = [english, italian, french, portuguese, russian];
 
@@ -42,14 +42,12 @@ export function updateLanguageDisplay(): void {
     const loginUsernameLabel = document.querySelector('#login-modal label[for="login-username"]');
     if (loginUsernameLabel) loginUsernameLabel.textContent = t.usernameOrEmail;
 
-    const loginUsernameInput = requireElementById<HTMLInputElement>(EL.AUTH.LOGIN_USERNAME);
-    loginUsernameInput.placeholder = t.enterUsernameOrEmail;
+    // const loginUsernameInput = requireElementById<HTMLInputElement>(EL.AUTH.LOGIN_USERNAME);
 
     const loginPasswordLabel = document.querySelector('#login-modal label[for="login-password"]');
     if (loginPasswordLabel) loginPasswordLabel.textContent = t.password;
 
-    const loginPasswordInput = requireElementById<HTMLInputElement>(EL.AUTH.LOGIN_PASSWORD);
-    loginPasswordInput.placeholder = t.enterPassword;
+    // const loginPasswordInput = requireElementById<HTMLInputElement>(EL.AUTH.LOGIN_PASSWORD);
 
     const loginSubmit = requireElementById(EL.BUTTONS.LOGIN_SUBMIT);
     loginSubmit.textContent = t.login;
@@ -68,26 +66,22 @@ export function updateLanguageDisplay(): void {
     const registerUsernameLabel = document.querySelector('#register-modal label[for="register-username"]');
     if (registerUsernameLabel) registerUsernameLabel.textContent = t.username;
 
-    const registerUsernameInput = requireElementById<HTMLInputElement>(EL.AUTH.REGISTER_USERNAME);
-    registerUsernameInput.placeholder = t.enterUsername;
+    // const registerUsernameInput = requireElementById<HTMLInputElement>(EL.AUTH.REGISTER_USERNAME);
 
     const registerEmailLabel = document.querySelector('#register-modal label[for="register-email"]');
     if (registerEmailLabel) registerEmailLabel.textContent = t.email;
 
-    const registerEmailInput = requireElementById<HTMLInputElement>(EL.AUTH.REGISTER_EMAIL);
-    registerEmailInput.placeholder = t.enterEmail;
+    // const registerEmailInput = requireElementById<HTMLInputElement>(EL.AUTH.REGISTER_EMAIL);
 
     const registerPasswordLabel = document.querySelector('#register-modal label[for="register-password"]');
     if (registerPasswordLabel) registerPasswordLabel.textContent = t.password;
 
-    const registerPasswordInput = requireElementById<HTMLInputElement>(EL.AUTH.REGISTER_PASSWORD);
-    registerPasswordInput.placeholder = t.enterPassword;
+    // const registerPasswordInput = requireElementById<HTMLInputElement>(EL.AUTH.REGISTER_PASSWORD);
 
     const registerConfirmPasswordLabel = document.querySelector('#register-modal label[for="register-confirm-password"]');
     if (registerConfirmPasswordLabel) registerConfirmPasswordLabel.textContent = t.confirmPassword;
 
-    const registerConfirmPasswordInput = requireElementById<HTMLInputElement>(EL.AUTH.REGISTER_CONFIRM_PASSWORD);
-    registerConfirmPasswordInput.placeholder = t.confirmPasswordPlaceholder;
+    // const registerConfirmPasswordInput = requireElementById<HTMLInputElement>(EL.AUTH.REGISTER_CONFIRM_PASSWORD);
 
     const registerSubmit = requireElementById(EL.BUTTONS.REGISTER_SUBMIT);
     registerSubmit.textContent = t.createAccount;
@@ -133,45 +127,38 @@ export function updateLanguageDisplay(): void {
     const soloLabel = document.querySelector('#solo-setup label[for="player1-name"]');
     if (soloLabel) soloLabel.textContent = t.playerName;
 
-    const soloInput = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER1_NAME);
-    soloInput.placeholder = t.enterName;
+    // const soloInput = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER1_NAME);
 
     const localLabel1 = document.querySelector('#two-players-setup label[for="player1-name-local"]');
     if (localLabel1) localLabel1.textContent = t.player1Name;
 
-    const localInput1 = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER1_NAME_LOCAL);
-    localInput1.placeholder = t.enterPlayer1Name;
+    // const localInput1 = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER1_NAME_LOCAL);
 
     const localLabel2 = document.querySelector('#two-players-setup label[for="player2-name-local"]');
     if (localLabel2) localLabel2.textContent = t.player2Name;
 
-    const localInput2 = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER2_NAME_LOCAL);
-    localInput2.placeholder = t.enterPlayer2Name;
+    // const localInput2 = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER2_NAME_LOCAL);
 
     // Tournament labels
     const tournamentLabel1 = document.querySelector('#tournament-setup label[for="player1-name-tournament"]');
     if (tournamentLabel1) tournamentLabel1.textContent = t.player1Name;
 
-    const tournamentInput1 = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER1_NAME_TOURNAMENT);
-    tournamentInput1.placeholder = t.enterPlayer1Name;
+    // const tournamentInput1 = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER1_NAME_TOURNAMENT);
 
     const tournamentLabel2 = document.querySelector('#tournament-setup label[for="player2-name-tournament"]');
     if (tournamentLabel2) tournamentLabel2.textContent = t.player2Name;
 
-    const tournamentInput2 = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER2_NAME_TOURNAMENT);
-    tournamentInput2.placeholder = t.enterPlayer2Name;
+    // const tournamentInput2 = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER2_NAME_TOURNAMENT);
 
     const tournamentLabel3 = document.querySelector('#tournament-setup label[for="player3-name-tournament"]');
     if (tournamentLabel3) tournamentLabel3.textContent = "Player 3 Name:";
 
-    const tournamentInput3 = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER3_NAME_TOURNAMENT);
-    tournamentInput3.placeholder = "Enter Player 3 name";
+    // const tournamentInput3 = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER3_NAME_TOURNAMENT);
 
     const tournamentLabel4 = document.querySelector('#tournament-setup label[for="player4-name-tournament"]');
     if (tournamentLabel4) tournamentLabel4.textContent = "Player 4 Name:";
 
-    const tournamentInput4 = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER4_NAME_TOURNAMENT);
-    tournamentInput4.placeholder = "Enter Player 4 name";
+    // const tournamentInput4 = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER4_NAME_TOURNAMENT);
 
     const startBtn = requireElementById(EL.BUTTONS.START_GAME);
     startBtn.textContent = t.startGame;
@@ -186,6 +173,26 @@ export function updateLanguageDisplay(): void {
     // Dashboard
     const greeting = requireElementById(EL.DISPLAY.GREETING);
     greeting.textContent = t.greeting;
+
+    // Update error message spans with translated text
+    const loginUsernameError = document.getElementById(EL.ERRORS.LOGIN_USERNAME_ERROR);
+    if (loginUsernameError) loginUsernameError.textContent = t.errorEnterEmailOrUsername;
+
+    const loginPasswordError = document.getElementById(EL.ERRORS.LOGIN_PASSWORD_ERROR);
+    if (loginPasswordError) loginPasswordError.textContent = t.errorEnterPassword;
+
+    const registerUsernameError = document.getElementById(EL.ERRORS.REGISTER_USERNAME_ERROR);
+    if (registerUsernameError) registerUsernameError.textContent = t.errorEnterUsername;
+
+    const registerEmailError = document.getElementById(EL.ERRORS.REGISTER_EMAIL_ERROR);
+    if (registerEmailError) registerEmailError.textContent = t.errorEnterValidEmail;
+
+    const registerPasswordError = document.getElementById(EL.ERRORS.REGISTER_PASSWORD_ERROR);
+    if (registerPasswordError) registerPasswordError.textContent = t.errorEnterPassword;
+
+    const registerConfirmPasswordError = document.getElementById(EL.ERRORS.REGISTER_CONFIRM_PASSWORD_ERROR);
+    if (registerConfirmPasswordError) registerConfirmPasswordError.textContent = t.errorConfirmPassword;
+
 }
 
 // Cycles to the next language in the list and updates the UI accordingly.
