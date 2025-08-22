@@ -337,10 +337,7 @@ export class AuthManager {
         initializeGoogleSignIn(googleClientId, handleAuthSuccess)
             .then(() => {
                 renderGoogleButton('google-login-btn-container');
-                console.log("Attempted to render Google button in 'google-login-btn-container'.");
-
                 renderGoogleButton('google-register-btn-container');
-                console.log("Attempted to render Google button in 'google-register-btn-container'.");
             })
             .catch(error => {
                 console.error("Failed to initialize or render Google button due to an error:", error);

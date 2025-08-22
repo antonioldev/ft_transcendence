@@ -98,8 +98,6 @@
         />
     </main>
 
-    <!-- EM FASE DE TESTE -->
-
     <!-- Login Page (Hidden) -->
     <div id="login-modal" class="fixed inset-0 bg-blue-background flex items-center justify-center" style="display: none;">
         <!-- ft_transcendence in top left -->
@@ -280,9 +278,22 @@
     <!-- Hidden elements for JS compatibility -->
     <div id="auth-buttons" style="display: none;"></div>
     <div id="logout-btn" style="display: none;"></div>
-    <div id="user-info" style="display: none;">
-        <span id="user-name"></span>
-        <button type="button" id="dashboard-btn">Dashboard</button>
+    <div id="user-info" class="fixed top-16 right-7 z-40 bg-blue-background border border-light-green p-3 text-xs text-light-green font-sans text-center" style="display: none;">
+        <div class="flex flex-col items-center gap-1">
+            <div class="text-light-green font-tiny5-regular text-sm">
+                <span id="greeting">Hi</span>, <span id="user-name" class="font-sans font-bold"></span>
+            </div>
+            <div class="flex items-center gap-2">
+                <button type="button" id="dashboard-btn" 
+                        class="text-light-green hover:text-white transition-colors duration-200 font-tiny5-regular text-xs px-1">
+                    Dashboard
+                </button>
+                <button type="button" id="logout-btn" 
+                        class="text-orange hover:text-white transition-colors duration-200 font-tiny5-regular text-xs px-1">
+                    Logout
+                </button>
+            </div>
+        </div>
     </div>
 
     <!-- Game Mode Selection Overlay -->
@@ -564,7 +575,6 @@
             </div>
         </div>
     </div>
-      <!-- FIM DO TRECHO EM FASE DE TESTE -->
 
     <!-- <script type="module" src="./core/main.js"></script> -->
      <script type="module" src="./core/main.ts"></script> <!-- FASE DE DESENVOLVIMENTO -> DELETE!!!! -->

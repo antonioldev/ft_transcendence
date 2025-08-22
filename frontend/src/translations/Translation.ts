@@ -28,6 +28,7 @@ export interface Translation {
     alertPlayer2: string;
     register: string;
     login: string;
+    greeting: string;
     username: string;
     email: string;
     password: string;
