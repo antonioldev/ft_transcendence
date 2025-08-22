@@ -58,6 +58,16 @@ export interface Translation {
     medium: string;
     hard: string;
     impossible: string;
+    
+    // Validation error messages
+    errorEnterEmailOrUsername: string;
+    errorEnterPassword: string;
+    errorEnterUsername: string;
+    errorEnterEmail: string;
+    errorEnterValidEmail: string;
+    errorPasswordMinLength: string;
+    errorConfirmPassword: string;
+    errorPasswordsDoNotMatch: string;
 }
 
 export type TranslationKey = keyof Translation;

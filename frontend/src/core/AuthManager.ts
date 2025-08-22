@@ -153,6 +153,105 @@ export class AuthManager {
             e.preventDefault();
             this.handleRegisterSubmit();
         });
+
+        // Also handle form submit events for Enter key
+        const loginForm = loginSubmit?.closest('form');
+        const registerForm = registerSubmit?.closest('form');
+
+        loginForm?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.handleLoginSubmit();
+        });
+
+        registerForm?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.handleRegisterSubmit();
+        });
+
+        // Add real-time validation
+        this.setupRealTimeValidation();
+    }
+
+    /**
+     * Sets up real-time validation for form fields
+     */
+    private setupRealTimeValidation(): void {
+        // Login form validation
+        const loginUsername = document.getElementById('login-username');
+        const loginPassword = document.getElementById('login-password');
+
+        loginUsername?.addEventListener('blur', () => {
+            const value = (loginUsername as HTMLInputElement).value.trim();
+            const t = getCurrentTranslation();
+            if (!value) {
+                this.showFieldError('login-username', t.errorEnterEmailOrUsername);
+            } else {
+                this.clearValidationErrors(['login-username']);
+            }
+        });
+
+        loginPassword?.addEventListener('blur', () => {
+            const value = (loginPassword as HTMLInputElement).value;
+            const t = getCurrentTranslation();
+            if (!value) {
+                this.showFieldError('login-password', t.errorEnterPassword);
+            } else {
+                this.clearValidationErrors(['login-password']);
+            }
+        });
+
+        // Register form validation
+        const registerUsername = document.getElementById('register-username');
+        const registerEmail = document.getElementById('register-email');
+        const registerPassword = document.getElementById('register-password');
+        const registerConfirmPassword = document.getElementById('register-confirm-password');
+
+        registerUsername?.addEventListener('blur', () => {
+            const value = (registerUsername as HTMLInputElement).value.trim();
+            const t = getCurrentTranslation();
+            if (!value) {
+                this.showFieldError('register-username', t.errorEnterUsername);
+            } else {
+                this.clearValidationErrors(['register-username']);
+            }
+        });
+
+        registerEmail?.addEventListener('blur', () => {
+            const value = (registerEmail as HTMLInputElement).value.trim();
+            const t = getCurrentTranslation();
+            if (!value) {
+                this.showFieldError('register-email', t.errorEnterEmail);
+            } else if (!this.isValidEmail(value)) {
+                this.showFieldError('register-email', t.errorEnterValidEmail);
+            } else {
+                this.clearValidationErrors(['register-email']);
+            }
+        });
+
+        registerPassword?.addEventListener('blur', () => {
+            const value = (registerPassword as HTMLInputElement).value;
+            const t = getCurrentTranslation();
+            if (!value) {
+                this.showFieldError('register-password', t.errorEnterPassword);
+            } else if (value.length < 6) {
+                this.showFieldError('register-password', t.errorPasswordMinLength);
+            } else {
+                this.clearValidationErrors(['register-password']);
+            }
+        });
+
+        registerConfirmPassword?.addEventListener('blur', () => {
+            const confirmValue = (registerConfirmPassword as HTMLInputElement).value;
+            const passwordValue = (registerPassword as HTMLInputElement)?.value;
+            const t = getCurrentTranslation();
+            if (!confirmValue) {
+                this.showFieldError('register-confirm-password', t.errorConfirmPassword);
+            } else if (confirmValue !== passwordValue) {
+                this.showFieldError('register-confirm-password', t.errorPasswordsDoNotMatch);
+            } else {
+                this.clearValidationErrors(['register-confirm-password']);
+            }
+        });
     }
 
     // ========================================
@@ -161,15 +260,31 @@ export class AuthManager {
 
     // Handles the login form submission process. Validates input fields, processes authentication, and updates UI state.
     private handleLoginSubmit(): void {
-        const username = requireElementById<HTMLInputElement>(EL.AUTH.LOGIN_USERNAME).value.trim();
-        const password = requireElementById<HTMLInputElement>(EL.AUTH.LOGIN_PASSWORD).value;
+        const usernameInput = requireElementById<HTMLInputElement>(EL.AUTH.LOGIN_USERNAME);
+        const passwordInput = requireElementById<HTMLInputElement>(EL.AUTH.LOGIN_PASSWORD);
+        const username = usernameInput.value.trim();
+        const password = passwordInput.value;
         const t = getCurrentTranslation();
-        const wsClient = WebSocketClient.getInstance(); // or use a shared instance if you already have one
+        const wsClient = WebSocketClient.getInstance();
         
-        // Basic validation
-        if (!username || !password) {
-            alert(t.pleaseFilllAllFields);
-            uiManager.clearForm(this.loginFields);
+        // Clear previous errors
+        this.clearValidationErrors(['login-username', 'login-password']);
+        
+        let hasErrors = false;
+
+        // Validate username/email
+        if (!username) {
+            this.showFieldError('login-username', t.errorEnterEmailOrUsername);
+            hasErrors = true;
+        }
+
+        // Validate password
+        if (!password) {
+            this.showFieldError('login-password', t.errorEnterPassword);
+            hasErrors = true;
+        }
+
+        if (hasErrors) {
             return;
         }
 
@@ -214,23 +329,57 @@ export class AuthManager {
     // Handles the registration form submission process.
     // Validates input fields, processes registration, and provides user feedback.
     private handleRegisterSubmit(): void {
-        const username = requireElementById<HTMLInputElement>(EL.AUTH.REGISTER_USERNAME).value.trim();
-        const email = requireElementById<HTMLInputElement>(EL.AUTH.REGISTER_EMAIL).value;
-        const password = requireElementById<HTMLInputElement>(EL.AUTH.REGISTER_PASSWORD).value;
-        const confirmPassword = requireElementById<HTMLInputElement>(EL.AUTH.REGISTER_CONFIRM_PASSWORD).value;
+        const usernameInput = requireElementById<HTMLInputElement>(EL.AUTH.REGISTER_USERNAME);
+        const emailInput = requireElementById<HTMLInputElement>(EL.AUTH.REGISTER_EMAIL);
+        const passwordInput = requireElementById<HTMLInputElement>(EL.AUTH.REGISTER_PASSWORD);
+        const confirmPasswordInput = requireElementById<HTMLInputElement>(EL.AUTH.REGISTER_CONFIRM_PASSWORD);
+        
+        const username = usernameInput.value.trim();
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+        const confirmPassword = confirmPasswordInput.value;
         const t = getCurrentTranslation();
         const wsClient = WebSocketClient.getInstance();
 
-        // Check if fiels are all full
-        if (!username || !email || !password || !confirmPassword) {
-            alert(t.pleaseFilllAllFields);
-            uiManager.clearForm(this.registrationFields);
-            return;
+        // Clear previous errors
+        this.clearValidationErrors(['register-username', 'register-email', 'register-password', 'register-confirm-password']);
+        
+        let hasErrors = false;
+
+        // Validate username
+        if (!username) {
+            this.showFieldError('register-username', t.errorEnterUsername);
+            hasErrors = true;
         }
 
-        if (password !== confirmPassword) {
-            alert(t.passwordsDoNotMatch);
-            uiManager.clearForm(this.registrationFields);
+        // Validate email
+        if (!email) {
+            this.showFieldError('register-email', t.errorEnterEmail);
+            hasErrors = true;
+        } else if (!this.isValidEmail(email)) {
+            this.showFieldError('register-email', t.errorEnterValidEmail);
+            hasErrors = true;
+        }
+
+        // Validate password
+        if (!password) {
+            this.showFieldError('register-password', t.errorEnterPassword);
+            hasErrors = true;
+        } else if (password.length < 6) {
+            this.showFieldError('register-password', t.errorPasswordMinLength);
+            hasErrors = true;
+        }
+
+        // Validate confirm password
+        if (!confirmPassword) {
+            this.showFieldError('register-confirm-password', t.errorConfirmPassword);
+            hasErrors = true;
+        } else if (password !== confirmPassword) {
+            this.showFieldError('register-confirm-password', t.errorPasswordsDoNotMatch);
+            hasErrors = true;
+        }
+
+        if (hasErrors) {
             return;
         }
 
@@ -367,6 +516,44 @@ export class AuthManager {
     isGuest(): boolean {
         return this.authState === AuthState.GUEST;
 
+    }
+
+    // ========================================
+    // FORM VALIDATION HELPERS
+    // ========================================
+
+    private showFieldError(fieldId: string, message: string): void {
+        const field = document.getElementById(fieldId);
+        const errorElement = document.getElementById(`${fieldId}-error`);
+        
+        if (field) {
+            field.classList.add('field-error');
+        }
+        
+        if (errorElement) {
+            errorElement.textContent = message;
+            errorElement.classList.add('show');
+        }
+    }
+
+    private clearValidationErrors(fieldIds: string[]): void {
+        fieldIds.forEach(fieldId => {
+            const field = document.getElementById(fieldId);
+            const errorElement = document.getElementById(`${fieldId}-error`);
+            
+            if (field) {
+                field.classList.remove('field-error');
+            }
+            
+            if (errorElement) {
+                errorElement.classList.remove('show');
+            }
+        });
+    }
+
+    private isValidEmail(email: string): boolean {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
     }
 
     // ========================================
