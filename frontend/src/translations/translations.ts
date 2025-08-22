@@ -9,6 +9,7 @@ import { TranslationKey } from './Translation.js';
 
 export let currentLang = 0;
 export const langs: string[] = ['🇬🇧 English', '🇮🇹   Italiano', '🇫🇷  Français', '🇧🇷  Brasileiro', '🇷🇺    Русский'];
+export const langs: string[] = ['🇬🇧 English', '🇮🇹   Italiano', '🇫🇷  Français', '🇧🇷  Brasileiro', '🇷🇺    Русский'];
 
 const allTranslations = [english, italian, french, portuguese, russian];
 
@@ -129,30 +130,32 @@ export function updateLanguageDisplay(): void {
 
     // const soloInput = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER1_NAME);
 
-	// const localLabel1 = document.querySelector('#two-players-setup label[for="player1-name-local"]');
-	// if (localLabel1) localLabel1.textContent = t.player1Name;
+    const localLabel1 = document.querySelector('#two-players-setup label[for="player1-name-local"]');
+    if (localLabel1) localLabel1.textContent = t.player1Name;
 
     // const localInput1 = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER1_NAME_LOCAL);
 
-	// const localLabel2 = document.querySelector('#two-players-setup label[for="player2-name-local"]');
-	// if (localLabel2) localLabel2.textContent = t.player2Name;
+    const localLabel2 = document.querySelector('#two-players-setup label[for="player2-name-local"]');
+    if (localLabel2) localLabel2.textContent = t.player2Name;
 
     // const localInput2 = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER2_NAME_LOCAL);
 
-	// // Tournament labels
-	// const tournamentLabel1 = document.querySelector('#tournament-setup label[for="player1-name-tournament"]');
-	// if (tournamentLabel1) tournamentLabel1.textContent = t.player1Name;
+    // Tournament labels
+    const tournamentLabel1 = document.querySelector('#tournament-setup label[for="player1-name-tournament"]');
+    if (tournamentLabel1) tournamentLabel1.textContent = t.player1Name;
 
     // const tournamentInput1 = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER1_NAME_TOURNAMENT);
 
-	// const tournamentLabel2 = document.querySelector('#tournament-setup label[for="player2-name-tournament"]');
-	// if (tournamentLabel2) tournamentLabel2.textContent = t.player2Name;
+    const tournamentLabel2 = document.querySelector('#tournament-setup label[for="player2-name-tournament"]');
+    if (tournamentLabel2) tournamentLabel2.textContent = t.player2Name;
 
+    // const tournamentInput2 = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER2_NAME_TOURNAMENT);
     // const tournamentInput2 = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER2_NAME_TOURNAMENT);
 
     const tournamentLabel3 = document.querySelector('#tournament-setup label[for="player3-name-tournament"]');
     if (tournamentLabel3) tournamentLabel3.textContent = "Player 3 Name:"; // TODO: Add translation key for player3Name
 
+    // const tournamentInput3 = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER3_NAME_TOURNAMENT);
     // const tournamentInput3 = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER3_NAME_TOURNAMENT);
 
     const tournamentLabel4 = document.querySelector('#tournament-setup label[for="player4-name-tournament"]');

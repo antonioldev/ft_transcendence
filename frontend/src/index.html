@@ -13,6 +13,25 @@
     <script src="https://cdn.babylonjs.com/gui/babylon.gui.min.js"></script>
     <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
     <script src="/env-config.js"></script>
+    <style>
+        /* Form validation styles */
+        .field-error {
+            border-color: #ef4444 !important;
+            background-color: rgba(239, 68, 68, 0.1) !important;
+        }
+        .field-error:focus {
+            outline-color: #ef4444 !important;
+        }
+        .error-message {
+            color: #ef4444;
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
+            display: none;
+        }
+        .error-message.show {
+            display: block;
+        }
+    </style>
 </head>
 <body class="bg-blue-background h-screen relative px-4 py-4">
     <!-- Language selector - Fixed in top right for all screens -->
@@ -127,10 +146,11 @@
                     <div class="form-field-container">
                         <label for="login-username" class="block text-sm sm:text-base font-medium text-light-green font-sans">
                         </label>
-                        <div class="mt-1 sm:mt-2">
-                            <input id="login-username" type="email" name="email" required autocomplete="email" 
-                                class="block w-full rounded-md bg-transparent border border-light-green px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-light-green 
-                                     focus:outline-2 focus:outline-orange font-sans" />
+                        <div class="mt-2">
+                            <input id="login-username" name="email" type="text" autocomplete="email" required 
+                                   class="block w-full rounded-md bg-transparent border border-light-green px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-light-green 
+                                          focus:outline-2 focus:outline-orange font-sans">
+                            <span class="error-message" id="login-username-error">Please enter your email or username</span>
                         </div>
                     </div>                    <div class="form-field-container">
                         <div class="flex items-center justify-between">
