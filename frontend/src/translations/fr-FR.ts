@@ -62,12 +62,12 @@ export const french: Translation = {
     continue: 'Appuyez sur ESPACE pour continuer',
     
     // Validation error messages
-    errorEnterEmailOrUsername: 'Veuillez entrer votre email ou nom d\'utilisateur',
-    errorEnterPassword: 'Veuillez entrer votre mot de passe',
+    errorEnterEmailOrUsername: 'Veuillez entrer email ou nom d\'utilisateur',
+    errorEnterPassword: 'Veuillez entrer mot de passe',
     errorEnterUsername: 'Veuillez entrer un nom d\'utilisateur',
     errorEnterEmail: 'Veuillez entrer un email',
     errorEnterValidEmail: 'Veuillez entrer un email valide',
     errorPasswordMinLength: 'Le mot de passe doit contenir au moins 6 caractères',
-    errorConfirmPassword: 'Veuillez confirmer votre mot de passe',
+    errorConfirmPassword: 'Veuillez confirmer mot de passe',
     errorPasswordsDoNotMatch: 'Les mots de passe ne correspondent pas'
 };

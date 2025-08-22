@@ -62,12 +62,12 @@ export const italian: Translation = {
     continue: 'Premi SPAZIO per continuare',
     
     // Validation error messages
-    errorEnterEmailOrUsername: 'Inserisci la tua email o nome utente',
-    errorEnterPassword: 'Inserisci la tua password',
+    errorEnterEmailOrUsername: 'Inserisci email o nome utente',
+    errorEnterPassword: 'Inserisci password',
     errorEnterUsername: 'Inserisci un nome utente',
     errorEnterEmail: 'Inserisci un email',
     errorEnterValidEmail: 'Inserisci un email valido',
     errorPasswordMinLength: 'La password deve contenere almeno 6 caratteri',
-    errorConfirmPassword: 'Conferma la tua password',
+    errorConfirmPassword: 'Conferma password',
     errorPasswordsDoNotMatch: 'Le password non corrispondono'
 };
