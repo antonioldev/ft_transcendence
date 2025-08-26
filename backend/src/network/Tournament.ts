@@ -202,6 +202,9 @@ export class TournamentLocal extends AbstractTournament {
 			this.current_match = match;
 			match.game = new Game(match.players, this.broadcast.bind(this));
 			match.winner = await match.game.run();
+
+			this.readyClients.clear();
+			await this.waitForPlayersReady();
 			match.next?.add_player(match.winner);
 		}
 	

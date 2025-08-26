@@ -103,11 +103,9 @@ export class WebSocketClient {
                 this.triggerCallback(WebSocketEvent.GAME_RESUMED);
                 break;
             case MessageType.GAME_ENDED:
-                console.error("Game ended message");
                 this.triggerCallback(WebSocketEvent.GAME_ENDED, message);
                 break;
             case MessageType.SESSION_ENDED:
-                console.error("Session ended message");
                 this.triggerCallback(WebSocketEvent.SESSION_ENDED, message);
                 break;
             case MessageType.SIDE_ASSIGNMENT:
@@ -173,17 +171,21 @@ export class WebSocketClient {
     sendPlayerInput(side: number, direction: Direction): void {
         this.sendMessage(MessageType.PLAYER_INPUT, { side, direction});
     }
-    
+
     sendPauseRequest(): void {
         this.sendMessage(MessageType.PAUSE_REQUEST);
     }
-    
+
     sendResumeRequest(): void {
         this.sendMessage(MessageType.RESUME_REQUEST);
     }
 
     sendQuitGame(): void {
         this.sendMessage(MessageType.QUIT_GAME);
+    }
+
+    notifyGameAnimationDone(): void {
+        this.sendMessage(MessageType.PARTIAL_WINNER_ANIMATION_DONE)
     }
 
     private sendMessage(type: MessageType, data: any = {}): void {

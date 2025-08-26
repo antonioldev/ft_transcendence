@@ -84,6 +84,9 @@ export class AudioManager {
         }
 
         try {
+            if (this.gameMusic.isPlaying)
+                this.gameMusic.stop();
+
             this.gameMusic.play();
         } catch (error) {
             Logger.error('Error starting game music', 'BabylonAudioManager', error);

@@ -257,7 +257,8 @@ export class Game {
             this.connectComponents();
             this.isInitialized = true;
             webSocketClient.sendPlayerReady();
-            uiManager.updateLoadingText();
+            if (this.config.gameMode === GameMode.TWO_PLAYER_REMOTE || this.config.gameMode === GameMode.TOURNAMENT_REMOTE)
+                uiManager.updateLoadingText();
             Logger.info('Game initialized successfully', 'Game');
 
         } catch (error) {
@@ -363,7 +364,7 @@ export class Game {
 
         if (this.currentState === GameState.MATCH_ENDED)
             this.resetForNextMatch();
-        if (countdown === 5) {
+        if (countdown === GAME_CONFIG.startDelay) {
             this.renderManager?.startCameraAnimation(
                 this.gameObjects?.cameras, 
                 this.config.viewMode,
@@ -417,21 +418,15 @@ export class Game {
 
     // Handle server ending the game
     private async onServerEndedGame(winner: string): Promise<void> {
-        if (this.isDisposed) return;
-
-        // if (!this.renderManager?.isRendering())
-        //     this.renderManager?.startRendering();
-
-        // let gameWinner = "CPU";
-        // if (winner !== undefined) // TODO what shall we send
-        //     gameWinner = winner;
+        if (this.isDisposed)
+            return;
+        if (!(this.config.gameMode === GameMode.TOURNAMENT_LOCAL) && !(this.config.gameMode === GameMode.TOURNAMENT_REMOTE))
+            return;
         uiManager.setElementVisibility('pause-dialog-3d', false);
-        // if (this.config.gameMode === GameMode.SINGLE_PLAYER
-        //     || this.config.gameMode === GameMode.TOURNAMENT_REMOTE || this.config.gameMode === GameMode.TWO_PLAYER_REMOTE)
-        if (winner !== undefined)
-            console.log(winner);
-        //     await this.guiManager?.showWinner(winner);
-
+        // if (this.config.gameMode === GameMode.TOURNAMENT_LOCAL || this.config.gameMode === GameMode.TOURNAMENT_REMOTE)
+        await this.guiManager?.showPartialWinner(winner);
+        webSocketClient.notifyGameAnimationDone();
+        await this.guiManager?.hidePartialWinner();
         this.audioManager?.stopGameMusic();
         this.controlledSides = [];
         this.stopGameLoop();
@@ -445,12 +440,7 @@ export class Game {
         if (!this.renderManager?.isRendering())
             this.renderManager?.startRendering();
 
-        // let gameWinner = "CPU";
-        // if (winner !== undefined) // TODO what shall we send
-        //     gameWinner = winner;
         uiManager.setElementVisibility('pause-dialog-3d', false);
-        // if (this.config.gameMode === GameMode.SINGLE_PLAYER
-        //     || this.config.gameMode === GameMode.TOURNAMENT_REMOTE || this.config.gameMode === GameMode.TWO_PLAYER_REMOTE)
         if (winner !== undefined)
             await this.guiManager?.showWinner(winner);
 
@@ -512,7 +502,6 @@ export class Game {
         }
 
         this.guiManager?.updateScores(0, 0);
-        Logger.info('Game reset for next match', 'Game');
     }
 
     // ========================================

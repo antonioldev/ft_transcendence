@@ -35,6 +35,10 @@ export class GUIManager {
     private isInitialized: boolean = false;
     private endGameOverlay: any = null;
     private endGameWinnerText: any = null;
+    private partialEndGameOverlay: any = null;
+    private partialCircle: any = null;
+    private partialText: any = null;
+    private partialVisible = false;
     private fireworkColorIndex: number = 0;
 
     // Initialize and create all GUI elements
@@ -53,6 +57,7 @@ export class GUIManager {
             this.createViewModeElements(config);
             this.createCountdownDisplay(config);
             this.createEndGameOverlay();
+            this.createPartialEndGameOverlay();
 
             this.isInitialized = true;
 
@@ -365,6 +370,34 @@ export class GUIManager {
         this.advancedTexture.addControl(this.endGameOverlay);
     }
 
+    private createPartialEndGameOverlay(): void {
+        this.partialEndGameOverlay = new BABYLON.GUI.Rectangle("partialWinnerLayer");
+        this.partialEndGameOverlay.thickness = 0;
+        this.partialEndGameOverlay.width = "100%";
+        this.partialEndGameOverlay.height = "100%";
+        this.partialEndGameOverlay.isPointerBlocker = true;
+        this.partialEndGameOverlay.isVisible = false;
+        this.partialEndGameOverlay.zIndex = 9999;
+        this.advancedTexture.addControl(this.partialEndGameOverlay);
+
+        // Main circle (black fill + yellow border)
+        this.partialCircle = new BABYLON.GUI.Ellipse("pw_circle");
+        this.partialCircle.thickness = 6;
+        this.partialCircle.color = "#FFD700";
+        this.partialCircle.background = "#000000";
+        this.partialCircle.alpha = 0.9;
+        this.partialEndGameOverlay.addControl(this.partialCircle);
+
+        // Winner text
+        this.partialText = new BABYLON.GUI.TextBlock("pw_text", "");
+        this.partialText.color = "#FFD700";
+        this.partialText.fontSize = 36;
+        this.partialText.fontStyle = "bold";
+        this.partialText.alpha = 0;
+        this.partialEndGameOverlay.addControl(this.partialText);
+
+    }
+
     private createCameraBasedFireworks(scene: any): void {
         const cameras = this.getActiveCameras(scene);
         cameras.forEach((camera) => {
@@ -465,6 +498,62 @@ export class GUIManager {
             this.endGameOverlay.isVisible = false;
     }
 
+    async showPartialWinner(winner: string): Promise<void> {
+        if (!this.advancedTexture || this.partialVisible)
+            return;
+
+        const scene = this.advancedTexture.getScene();
+        const maxScale = 4.5
+        const expandFrames = 180;
+
+        this.partialText.text = `Winner: ${winner}`;
+        this.partialText.alpha = 0;
+        this.partialCircle.scaleX = 0.06;
+        this.partialCircle.scaleY = 0.06;
+
+        this.partialEndGameOverlay.isVisible = true;
+        this.partialEndGameOverlay.isPointerBlocker = true;
+
+        const fadeIn = BABYLON.Animation.CreateAnimation("alpha", BABYLON.Animation.ANIMATIONTYPE_FLOAT, 60, new BABYLON.QuadraticEase());
+        fadeIn.setKeys([{frame:0,value:0},{frame:10,value:1}]);
+        const ex = BABYLON.Animation.CreateAnimation("scaleX", BABYLON.Animation.ANIMATIONTYPE_FLOAT, 60, new BABYLON.QuadraticEase());
+        const ey = BABYLON.Animation.CreateAnimation("scaleY", BABYLON.Animation.ANIMATIONTYPE_FLOAT, 60, new BABYLON.QuadraticEase());
+        ex.setKeys([{frame:0,value:0.06},{frame:expandFrames,value:maxScale}]);
+        ey.setKeys([{frame:0,value:0.06},{frame:expandFrames,value:maxScale}]);
+
+        this.partialText.animations = [fadeIn];
+        this.partialCircle.animations = [ex, ey];
+
+        await Promise.all([
+            new Promise(r => scene.beginAnimation(this.partialText!, 0, 10, false, 1, r)),
+            new Promise(r => scene.beginAnimation(this.partialCircle!, 0, expandFrames, false, 1, r)),
+        ]);
+
+    }
+
+    async hidePartialWinner(): Promise<void> {
+        if (!this.partialEndGameOverlay || !this.partialCircle || !this.partialText) return;
+        const scene = this.advancedTexture.getScene();
+
+        const fadeOut = BABYLON.Animation.CreateAnimation("alpha", BABYLON.Animation.ANIMATIONTYPE_FLOAT, 60, new BABYLON.QuadraticEase());
+        fadeOut.setKeys([{frame:0,value:1},{frame:10,value:0}]);
+        const sx = BABYLON.Animation.CreateAnimation("scaleX", BABYLON.Animation.ANIMATIONTYPE_FLOAT, 60, new BABYLON.QuadraticEase());
+        const sy = BABYLON.Animation.CreateAnimation("scaleY", BABYLON.Animation.ANIMATIONTYPE_FLOAT, 60, new BABYLON.QuadraticEase());
+        sx.setKeys([{frame:0,value:this.partialCircle.scaleX},{frame:10,value:0.05}]);
+        sy.setKeys([{frame:0,value:this.partialCircle.scaleY},{frame:10,value:0.05}]);
+
+        this.partialText.animations = [fadeOut];
+        this.partialCircle.animations = [sx, sy];
+
+        await Promise.all([
+            new Promise(r => scene.beginAnimation(this.partialText!, 0, 10, false, 1, r)),
+            new Promise(r => scene.beginAnimation(this.partialCircle!, 0, 10, false, 1, r)),
+        ]);
+
+        this.partialEndGameOverlay.isPointerBlocker = false;
+        this.partialEndGameOverlay.isVisible = false;
+    }
+
 
     // Clean up all GUI resources
     dispose(): void {
@@ -483,9 +572,11 @@ export class GUIManager {
             this.endGameWinnerText = null;
             this.endGameOverlay = null;
             this.hudGrid = null;
+            this.partialEndGameOverlay = null;
+            this.partialCircle = null;
+            this.partialText = null;
 
-            if (this.advancedTexture)
-                this.advancedTexture.dispose();
+            this.advancedTexture?.dispose();
             this.advancedTexture = null;
 
             this.isInitialized = false;

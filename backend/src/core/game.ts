@@ -193,7 +193,7 @@ export class Game {
 
 	// Stop the execution of the game & broadcast the winner
 	stop(gameId?: string) {
-		if (!this.running) return ;
+		// if (!this.running) return ;
 		this.running = false;
 		console.log(`Game id in async stop of game.ts: ${gameId}`);
 		if (gameId && this.players[LEFT_PADDLE].client?.id != this.players[RIGHT_PADDLE].client?.id) {
@@ -205,7 +205,7 @@ export class Game {
 			console.log(`TO VERIFY ==> player1_name: ${player1_username}, player2_name: ${player2_username} // client1_name: ${this.players[LEFT_PADDLE].client?.username}, client2_name: ${this.players[RIGHT_PADDLE].client?.username}`)
 			// saveGameResult(gameId, player1_username, player2_username, player1_score, player2_score, endTime) // add check for error
 		}
-
+		
 		this._broadcast({
 			type: MessageType.GAME_ENDED,
 			...(this.winner && { winner: this.winner.name }) // optionally send winner if exists
