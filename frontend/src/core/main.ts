@@ -16,7 +16,7 @@ import { DashboardManager } from './DashboardManager.js';
 
 function loadPage(): void {
     // Initialize classes
-    uiManager.initializeStyles();
+    // uiManager.initializeStyles();
     AppStateManager.initialize();
     AuthManager.initialize();
     MenuFlowManager.initialize();
