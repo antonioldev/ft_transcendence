@@ -79,34 +79,41 @@ export class GUIManager {
         }
     }
 
-    private createHUDBox(): any {
+    private addHUDBox(col: number, controls: any | any[]): void {
         const box = new BABYLON.GUI.Rectangle();
         box.background = "rgba(0, 0, 0, 0.83)";
         box.thickness = 0;
-        return box;
+
+        const list = Array.isArray(controls) ? controls : [controls];
+        for (const items of list)
+            box.addControl(items);
+
+        this.hudGrid.addControl(box, 0, col);
     }
 
     private applyRichTextEffects(textBlock: any): void {
-        if (true){//config.viewMode === ViewMode.MODE_3D) {
-            // Add shadow effect
-            textBlock.shadowOffsetX = 3;
-            textBlock.shadowOffsetY = 3;
-            textBlock.shadowBlur = 8;
-            textBlock.shadowColor = "rgba(255, 107, 107, 0.5)";
-            
-            // Make text bold and add outline
-            textBlock.fontWeight = "bold";
-            textBlock.outlineWidth = 2;
-            textBlock.outlineColor = "black";  
-        }
+        // Add shadow effect
+        textBlock.shadowOffsetX = 3;
+        textBlock.shadowOffsetY = 3;
+        textBlock.shadowBlur = 8;
+        textBlock.shadowColor = "rgba(255, 107, 107, 0.5)";
+        
+        // Make text bold and add outline
+        textBlock.fontWeight = "bold";
+        textBlock.outlineWidth = 2;
+        textBlock.outlineColor = "black";  
     }
 
-    private createTextBlock(name: string, size: number, top?: string) {
+    private createTextBlock(name: string, size: number, top?: string, h_align?: any, v_align?: any) {
         const label = new BABYLON.GUI.TextBlock();
         label.text = name;
         label.color = "white";
         if (top !== null && top !== undefined)
             label.top = top;
+        if (h_align !== null && h_align !== undefined)
+            label.textHorizontalAlignment = h_align;
+        if (v_align !== null && v_align !== undefined)
+            label.textVerticalAlignment = v_align;
         label.fontSize = size;
         label.width = "100%";
         return label;
@@ -156,67 +163,46 @@ export class GUIManager {
         this.advancedTexture.addControl(this.hudGrid);
 
         // Box 1: FPS
-        const box1 = this.createHUDBox();
         this.fpsText = this.createTextBlock("FPS: 0", 18, "0px");
-        box1.addControl(this.fpsText);
-        this.hudGrid.addControl(box1, 0, 0);
+        this.addHUDBox(0, this.fpsText);
 
         // Box 2: Instructions P1
-        const box2 = this.createHUDBox();
-        box2.addControl(this.createPlayerControls(config, 1));
-        this.hudGrid.addControl(box2, 0, 1);
+        this.addHUDBox(1, this.createPlayerControls(config, 1));
 
         // Box 3: P1 score + label
-        const box3 = this.createHUDBox();
-        this.player1Label = this.createTextBlock("Player 2", 48, "0px");
-        this.player1Label.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
-        this.player1Label.textVerticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
+        this.player1Label = this.createTextBlock("Player 2", 48, "0px", BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER, BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP);
         this.applyRichTextEffects(this.player1Label);
-        this.score1Text = this.createTextBlock("0", 56, "-15px");
-        this.score1Text.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
-        this.score1Text.textVerticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
+
+        this.score1Text = this.createTextBlock("0", 56, "-15px", BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER, BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM);
         this.applyRichTextEffects(this.score1Text);
-        box3.addControl(this.player1Label);
-        box3.addControl(this.score1Text);
-        this.hudGrid.addControl(box3, 0, 2);
+
+        this.addHUDBox(2, [this.player1Label, this.score1Text]);
 
         // Box 4: P2 score + label  
-        const box4 = this.createHUDBox();
-        this.player2Label = this.createTextBlock("Player 2", 48, "0px");
-        this.player2Label.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
-        this.player2Label.textVerticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
+        this.player2Label = this.createTextBlock("Player 2", 48, "0px", BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER, BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP);
         this.applyRichTextEffects(this.player2Label);
 
-        this.score2Text = this.createTextBlock("0", 56, "-15px");
-        this.score2Text.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
-        this.score2Text.textVerticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
+        this.score2Text = this.createTextBlock("0", 56, "-15px", BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER, BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM);
         this.applyRichTextEffects(this.score2Text);
-        box4.addControl(this.player2Label);
-        box4.addControl(this.score2Text);
-        this.hudGrid.addControl(box4, 0, 3);
+
+        this.addHUDBox(3, [this.player2Label, this.score2Text]);
 
         // Box 5: Instructions P2
-        const box5 = this.createHUDBox();
-        box5.addControl(this.createPlayerControls(config, 2));
-        this.hudGrid.addControl(box5, 0, 4);
+        this.addHUDBox(4, this.createPlayerControls(config, 2));
 
         // Box 6: Rally
-        const box6 = this.createHUDBox();
-        this.rallyText = this.createTextBlock("Rally", 48, "0px");
-        this.rallyText.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
-        this.rallyText.textVerticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
-        this.rally = this.createTextBlock("0", 56, "-15px");
-        this.rally.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
-        this.rally.textVerticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
+        this.rallyText = this.createTextBlock("Rally", 48, "0px", BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER, BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP);
+
+        this.rally = this.createTextBlock("0", 56, "-15px", BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER, BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM);
         this.rally.transformCenterY = 1;
         this.rally.scaleX = 1;
         this.rally.scaleY = 1;
+
         const animationScaleX = this.createAnimation("scaleX", 1, 1.3);
         const animationScaleY = this.createAnimation("scaleY", 1, 1.3);
         this.rally.animations = [animationScaleX, animationScaleY];
-        box6.addControl(this.rallyText);
-        box6.addControl(this.rally);
-        this.hudGrid.addControl(box6, 0, 5);
+
+        this.addHUDBox(5, [this.rallyText, this.rally]);
     }
 
     private createCountdownDisplay(config: GameConfig): void {
@@ -418,7 +404,6 @@ export class GUIManager {
     private createExplosion(scene: any, pos: any): void {
         const explosion = new BABYLON.ParticleSystem(`gameEnd_explosion_${Date.now()}`, 1500, scene);
         try {
-            // explosion.particleTexture = new BABYLON.Texture("assets/textures/particle/gradient_line.png", scene);
             explosion.particleTexture = new BABYLON.Texture("assets/textures/particle/flare_transparent.png", scene);
         } catch (error) {
             explosion.particleTexture = new BABYLON.Texture("assets/textures/particle/flare.png", scene);
