@@ -12,25 +12,6 @@
     <script src="https://cdn.babylonjs.com/gui/babylon.gui.min.js"></script>
     <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
     <script src="/env-config.js"></script>
-    <style>
-        /* Form validation styles */
-        .field-error {
-            border-color: #ef4444 !important;
-            background-color: rgba(239, 68, 68, 0.1) !important;
-        }
-        .field-error:focus {
-            outline-color: #ef4444 !important;
-        }
-        .error-message {
-            color: #ef4444;
-            font-size: 0.75rem;
-            margin-top: 0.25rem;
-            display: none;
-        }
-        .error-message.show {
-            display: block;
-        }
-    </style>
 </head>
 <body class="bg-blue-background min-h-screen relative px-4 py-8">
     <!-- Language selector - Fixed in top right for all screens -->
@@ -111,7 +92,7 @@
         <img 
             src="/assets/images/atari.png" 
             alt="Atari"
-            class="absolute bottom-2 right-4 md:bottom-2 md:right-4 lg:bottom-2 lg:right-4 
+            class="absolute bottom-1 right-4 md:bottom-2 md:right-4 lg:bottom-2 lg:right-4 
                    w-48 h-48 sm:w-60 sm:h-60 md:w-72 md:h-72 lg:w-84 lg:h-84 xl:w-96 xl:h-96
                    object-contain opacity-80"
         />
@@ -135,16 +116,16 @@
                 </div>
 
                 <form action="#" method="POST" class="space-y-4 sm:space-y-6">
-                    <div>
+                    <div class="form-field-container">
                         <label for="login-username" class="block text-sm sm:text-base font-medium text-light-green font-sans">
                         </label>
                         <div class="mt-2">
                             <input id="login-username" name="email" type="text" autocomplete="email" required 
-                                   class="block w-full rounded-md bg-transparent border border-light-green px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-light-green 
+                                   class="form-input block rounded-md bg-transparent border border-light-green px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-light-green 
                                           focus:outline-2 focus:outline-orange font-sans">
                             <span class="error-message" id="login-username-error">Please enter your email or username</span>
                         </div>
-                    </div>                    <div>
+                    </div>                    <div class="form-field-container">
                         <div class="flex items-center justify-between">
                             <label for="login-password" class="block text-sm sm:text-base font-medium text-light-green font-sans">
                                 Password
@@ -157,7 +138,7 @@
                         </div>
                         <div class="mt-1 sm:mt-2">
                             <input id="login-password" type="password" name="password" required autocomplete="current-password" 
-                                class="block w-full rounded-md bg-transparent border border-light-green px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-light-green 
+                                class="form-input block rounded-md bg-transparent border border-light-green px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-light-green 
                                     focus:outline-2 focus:outline-orange font-sans" />
                             <span class="error-message" id="login-password-error">Please enter your password</span>
                         </div>
@@ -213,46 +194,46 @@
                 </div>
 
                 <form action="#" method="POST" class="space-y-4 sm:space-y-6">
-                    <div>
+                    <div class="form-field-container">
                         <label for="register-username" class="block text-sm sm:text-base font-medium text-light-green font-sans">
                         </label>
                         <div class="mt-2">
                             <input id="register-username" name="username" type="text" autocomplete="username" required 
-                                   class="block w-full rounded-md bg-transparent border border-light-green px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-light-green 
+                                   class="form-input block rounded-md bg-transparent border border-light-green px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-light-green 
                                           focus:outline-2 focus:outline-orange font-sans">
                             <span class="error-message" id="register-username-error">Please enter a username</span>
                         </div>
-                    </div>                    <div>
+                    </div>                    <div class="form-field-container">
                         <label for="register-email" class="block text-sm sm:text-base font-medium text-light-green font-sans">
                             Email
                         </label>
                         <div class="mt-1 sm:mt-2">
                             <input id="register-email" type="email" name="email" required autocomplete="email" 
-                                class="block w-full rounded-md bg-transparent border border-light-green px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-light-green 
+                                class="form-input block rounded-md bg-transparent border border-light-green px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-light-green 
                                       focus:outline-2 focus:outline-orange font-sans" />
                             <span class="error-message" id="register-email-error">Please enter a valid email</span>
                         </div>
                     </div>
 
-                    <div>
+                    <div class="form-field-container">
                         <label for="register-password" class="block text-sm sm:text-base font-medium text-light-green font-sans">
                             Password
                         </label>
                         <div class="mt-1 sm:mt-2">
                             <input id="register-password" type="password" name="password" required autocomplete="new-password" 
-                                class="block w-full rounded-md bg-transparent border border-light-green px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-light-green 
+                                class="form-input block rounded-md bg-transparent border border-light-green px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-light-green 
                                       focus:outline-2 focus:outline-orange font-sans" />
                             <span class="error-message" id="register-password-error">Please enter a password</span>
                         </div>
                     </div>
 
-                    <div>
+                    <div class="form-field-container">
                         <label for="register-confirm-password" class="block text-sm sm:text-base font-medium text-light-green font-sans">
                             Confirm Password
                         </label>
                         <div class="mt-1 sm:mt-2">
                             <input id="register-confirm-password" type="password" name="confirm-password" required autocomplete="new-password" 
-                                class="block w-full rounded-md bg-transparent border border-light-green px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-light-green 
+                                class="form-input block rounded-md bg-transparent border border-light-green px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-light-green 
                                       focus:outline-2 focus:outline-orange font-sans" />
                             <span class="error-message" id="register-confirm-password-error">Please confirm your password</span>
                         </div>
@@ -588,3 +569,4 @@
      <script type="module" src="./core/main.ts"></script> <!-- FASE DE DESENVOLVIMENTO -> DELETE!!!! -->
 </body>
 </html>
+

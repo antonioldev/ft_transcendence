@@ -5,7 +5,6 @@
   "scripts": {
     "build": "tsc && tailwindcss -i ./src/styles/input.css -o ./dist/output.css",
     "dev": "vite"
-    // "dev": "tsc --watch"
   },
   "devDependencies": {
     "@babylonjs/core": "^8.17.0",
