@@ -95,6 +95,13 @@ export function updateLanguageDisplay(): void {
     const registerFooter = document.querySelector('#register-modal .modal-footer .info-text');
     if (registerFooter) registerFooter.textContent = t.alreadyHaveAccount;
 
+    // TODO: add translations for:
+    //       - "Sign in to your account"
+    //       - "Forgot password?"
+    //       - "Not a member?"
+    //       - "Create your account"
+    //       - "Already have an account?"
+
     // Game mode selection
     const modeTitle = requireElementById(EL.DISPLAY.MODE_TITLE);
     modeTitle.textContent = t.selectGameMode;
@@ -151,12 +158,12 @@ export function updateLanguageDisplay(): void {
     // const tournamentInput2 = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER2_NAME_TOURNAMENT);
 
     const tournamentLabel3 = document.querySelector('#tournament-setup label[for="player3-name-tournament"]');
-    if (tournamentLabel3) tournamentLabel3.textContent = "Player 3 Name:";
+    if (tournamentLabel3) tournamentLabel3.textContent = "Player 3 Name:"; // TODO: Add translation key for player3Name
 
     // const tournamentInput3 = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER3_NAME_TOURNAMENT);
 
     const tournamentLabel4 = document.querySelector('#tournament-setup label[for="player4-name-tournament"]');
-    if (tournamentLabel4) tournamentLabel4.textContent = "Player 4 Name:";
+    if (tournamentLabel4) tournamentLabel4.textContent = "Player 4 Name:"; // TODO: Add translation key for player4Name
 
     // const tournamentInput4 = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER4_NAME_TOURNAMENT);
 
