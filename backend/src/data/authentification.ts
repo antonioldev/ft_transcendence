@@ -1,5 +1,6 @@
 // Where the hashing algo will secure the password before saving to db
 import argon2 from "argon2";
+
 const PEPPER = process.env.PEPPER ?? "";
 
 export async function hashPassword(pw: string) {
@@ -12,6 +13,5 @@ export async function hashPassword(pw: string) {
 }
 
 export async function verifyPassword(stored: string, pw: string) {
-	console.log(`Authentification.ts -- verifyPassword: received: ${pw} + ${PEPPER}, stored: ${stored}`);
 	return argon2.verify(stored, pw + PEPPER);
 }

@@ -235,15 +235,12 @@ export class AuthManager {
         
         // --- Helper: set HttpOnly cookie via binder route ---
         const bindSessionCookie = async (sid: string) => {
-        console.log('[BINDER] sending SID:', sid, 'len=', sid?.length);
         const res = await fetch('/api/auth/session/bind', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ sid }),
             credentials: 'include',
         });
-        const dbg = await res.clone().text();
-        console.log('[BINDER] status=', res.status, 'body=', dbg);
         if (!res.ok) throw new Error('bind_failed');
         };
 
@@ -267,7 +264,6 @@ export class AuthManager {
         wsClient.registerCallback(WebSocketEvent.LOGIN_SUCCESS, async (raw: string) => {
             try {
                 const { text, sid, uname } = parsePayload(raw);
-                console.log(`data parsed: ${text}, ${sid}, ${uname}`);
                 if (!sid) {
                     Logger.error('Missing sid in LOGIN_SUCCESS payload', 'AuthManager', { raw });
                     alert('Login succeeded but session binding failed (no sid).');
