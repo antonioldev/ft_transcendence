@@ -23,7 +23,7 @@ export class GUIManager {
     private isInitialized: boolean = false;
 
     private hudGrid: any = null;
-    private hudColor: string = "rgba(0, 0, 0, 0.83)";
+    private hudColor: string = "rgba(0, 0, 0, 0.50)";
 
     private fpsText: any = null;
 
@@ -41,12 +41,10 @@ export class GUIManager {
 
     private endGameOverlay: any = null;
     private endGameWinnerText: any = null;
-    private fireworkColorIndex: number = 0;
 
     private partialEndGameOverlay: any = null;
     private partialTransitionFill: any = null;
     private partialText: any = null;
-    private partialVisible = false;
     private partialParticleSystem: any | null = null;
 
 
@@ -396,23 +394,16 @@ export class GUIManager {
         this.partialEndGameOverlay.addControl(this.partialTransitionFill);
 
         const scene = this.advancedTexture.getScene();
-        const radius = 5;
-        const thickness = 0.05;
         this.partialParticleSystem = new BABYLON.ParticleSystem("partialWinnerParticles", 2000, scene);
         this.partialParticleSystem.particleTexture = new BABYLON.Texture("assets/textures/particle/flare.png", scene);
-        this.partialParticleSystem.createCylinderEmitter(radius, thickness, 1);
-        this.partialParticleSystem.emitRate = 500;
-        this.partialParticleSystem.minScaleX = 0.5;
-        this.partialParticleSystem.maxScaleX = 0.5;
-        this.partialParticleSystem.minLifeTime = 1;
-        this.partialParticleSystem.maxLifeTime = 2;
-        this.partialParticleSystem.minAngularSpeed = 10;
-        this.partialParticleSystem.maxAngularSpeed = 15;
-        this.partialParticleSystem.minEmitPower = 2;
-        this.partialParticleSystem.maxEmitPower = 4;
+        this.partialParticleSystem.createCylinderEmitter(30, 0.05, 1);
+        this.partialParticleSystem.emitRate = 1000;
+        this.partialParticleSystem.minEmitPower = 5;
+        this.partialParticleSystem.maxEmitPower = 20;
+        this.partialParticleSystem.minAngularSpeed = 5;
+        this.partialParticleSystem.maxAngularSpeed = 8;
+        this.partialParticleSystem.updateSpeed  = 0.05;
         this.partialParticleSystem.emitter = new BABYLON.Vector3(0, 0, 0);
-        this.partialParticleSystem.zIndex = 11;
-
     }
 
     private createCameraBasedFireworks(scene: any): void {
@@ -452,6 +443,8 @@ export class GUIManager {
     }
 
     private createExplosion(scene: any, pos: any): void {
+        let fireworkColorIndex: number = 0;
+
         const explosion = new BABYLON.ParticleSystem(`gameEnd_explosion_${Date.now()}`, 1500, scene);
         try {
             explosion.particleTexture = new BABYLON.Texture("assets/textures/particle/flare_transparent.png", scene);
@@ -467,8 +460,8 @@ export class GUIManager {
             [new BABYLON.Color4(1, 0.3, 0.8, 1), new BABYLON.Color4(1, 0.3, 0.8, 1)], // Pink
             [new BABYLON.Color4(0.8, 0.2, 1, 1), new BABYLON.Color4(0.8, 0.2, 1, 1)], // Purple
         ];
-        const selectedColor = colorOptions[this.fireworkColorIndex % colorOptions.length];
-        this.fireworkColorIndex++;
+        const selectedColor = colorOptions[fireworkColorIndex % colorOptions.length];
+        fireworkColorIndex++;
 
         explosion.color1 = selectedColor[0];
         explosion.color2 = selectedColor[1];
@@ -564,10 +557,8 @@ export class GUIManager {
 
 
     async showPartialWinner(winner: string): Promise<void> {
-        if (!this.advancedTexture || this.partialVisible)
-            return;
+        if (!this.advancedTexture) return;
 
-        this.partialVisible = true;
         const scene = this.advancedTexture.getScene();
         const fps = 60;
         const totalFrames = 180;
@@ -585,7 +576,7 @@ export class GUIManager {
         this.partialParticleSystem?.reset();
         this.partialParticleSystem?.start();
 
-        await new Promise(r => scene.beginAnimation(this.partialText!, 0, 10, false, 1, r)),
+        await new Promise(r => scene.beginAnimation(this.partialText!, 0, 10, false, 1, r));
         await new Promise(r => setTimeout(r, totalFrames));
 
     }
@@ -601,7 +592,7 @@ export class GUIManager {
 
         this.partialText.animations = [fadeOut];
 
-        await new Promise(r => scene.beginAnimation(this.partialText!, 0, totalFrames, false, 1, r)),
+        await new Promise(r => scene.beginAnimation(this.partialText!, 0, totalFrames, false, 1, r));
 
 
         this.partialParticleSystem?.stop();
@@ -609,7 +600,6 @@ export class GUIManager {
 
         this.partialEndGameOverlay.isPointerBlocker = false;
         this.partialEndGameOverlay.isVisible = false;
-        this.partialVisible = false;
     }
 
 
