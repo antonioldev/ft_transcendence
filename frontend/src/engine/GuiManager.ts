@@ -20,26 +20,35 @@ import { getCurrentTranslation } from '../translations/translations.js';
  */
 export class GUIManager {
     private advancedTexture: any = null;
+    private isInitialized: boolean = false;
 
     private hudGrid: any = null;
+    private hudColor: string = "rgba(0, 0, 0, 0.83)";
+
     private fpsText: any = null;
+
     private score1Text: any = null;
     private score2Text: any = null;
     private player1Label: any = null;
     private player2Label: any = null;
+
     private rallyText: any | null;
     private rally: any = null;
     private previousRally: number = 1;
+
     private countdownText: any = null;
     private countdownContainer: any = null;
-    private isInitialized: boolean = false;
+
     private endGameOverlay: any = null;
     private endGameWinnerText: any = null;
+    private fireworkColorIndex: number = 0;
+
     private partialEndGameOverlay: any = null;
-    private partialContainer: any = null;
+    private partialTransitionFill: any = null;
     private partialText: any = null;
     private partialVisible = false;
-    private fireworkColorIndex: number = 0;
+    private partialParticleSystem: any | null = null;
+
 
     // Initialize and create all GUI elements
     createGUI(scene: any, config: GameConfig): void {
@@ -56,8 +65,8 @@ export class GUIManager {
             this.createHUD(config);
             this.createViewModeElements(config);
             this.createCountdownDisplay(config);
-            this.createEndGameOverlay();
             this.createPartialEndGameOverlay();
+            this.createEndGameOverlay();
 
             this.isInitialized = true;
 
@@ -86,7 +95,7 @@ export class GUIManager {
 
     private addHUDBox(col: number, controls: any | any[]): void {
         const box = new BABYLON.GUI.Rectangle();
-        box.background = "rgba(0, 0, 0, 0.83)";
+        box.background = this.hudColor;
         box.thickness = 0;
 
         const list = Array.isArray(controls) ? controls : [controls];
@@ -115,9 +124,8 @@ export class GUIManager {
         label.color = "white";
         label.textHorizontalAlignment = h_align;
         label.textVerticalAlignment = v_align;
-        label.horizontalAlignment = h_align;
-        label.verticalAlignment = v_align;
         label.fontSize = size;
+        label.height = "100%";
         label.width = "100%";
         return label;
     }
@@ -155,6 +163,7 @@ export class GUIManager {
         this.hudGrid.height = "20%";
         this.hudGrid.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
         this.hudGrid.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
+        this.hudGrid.zIndex = 8;
 
         this.hudGrid.addColumnDefinition(0.10); // FPS
         this.hudGrid.addColumnDefinition(0.15); // P1 instructions
@@ -213,15 +222,18 @@ export class GUIManager {
         this.countdownContainer.width = "200px";
         this.countdownContainer.height = "200px";
         this.countdownContainer.cornerRadius = 60;
-        this.countdownContainer.color = "#ffffffff";
-        this.countdownContainer.thickness = 3;
+        this.countdownContainer.thickness = 0;
+        this.countdownContainer.background = "transparent";
         if (config.viewMode === ViewMode.MODE_2D)
-            this.countdownContainer.background = "rgba(0, 0, 0, 1)";
-        else
-            this.countdownContainer.background = "rgba(0, 0, 0, 0.8)";
+            console.log(); // TODO remove
+        // if (config.viewMode === ViewMode.MODE_2D)
+        //     this.countdownContainer.background = "rgba(0, 0, 0, 1)";
+        // else
+        //     this.countdownContainer.background = "rgba(0, 0, 0, 0.8)";
         this.countdownContainer.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
         this.countdownContainer.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
         this.countdownContainer.isVisible = false;
+        this.countdownContainer.zIndex = 10;
 
         // Create countdown text
         this.countdownText = this.createTextBlock("5", 72, BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER, BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER);
@@ -335,7 +347,7 @@ export class GUIManager {
     }
 
     private createEndGameOverlay(): void {
-        this.endGameOverlay = new BABYLON.GUI.Grid(); // Use Grid like HUD
+        this.endGameOverlay = new BABYLON.GUI.Grid();
         this.endGameOverlay.width = "100%";
         this.endGameOverlay.height = "20%";
         this.endGameOverlay.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
@@ -362,16 +374,8 @@ export class GUIManager {
         this.partialEndGameOverlay.height = "100%";
         this.partialEndGameOverlay.isPointerBlocker = true;
         this.partialEndGameOverlay.isVisible = false;
-        this.partialEndGameOverlay.zIndex = 9999;
+        this.partialEndGameOverlay.zIndex = 9;
         this.advancedTexture.addControl(this.partialEndGameOverlay);
-
-        this.partialContainer = new BABYLON.GUI.Rectangle("pw_circle");
-        this.partialContainer.thickness = 10;
-        this.partialContainer.cornerRadius = 60;
-        this.partialContainer.color = "#FFD700";
-        this.partialContainer.background = "#000000";
-        this.partialContainer.alpha = 0.5;
-        this.partialEndGameOverlay.addControl(this.partialContainer);
 
         this.partialText = new BABYLON.GUI.TextBlock("pw_text", "");
         this.partialText.fontSize = 72;
@@ -379,7 +383,35 @@ export class GUIManager {
         this.partialText.outlineWidth = 2;
         this.partialText.outlineColor = "#ffffffee";  
         this.partialText.alpha = 0;
+        this.partialText.zIndex = 11;
         this.partialEndGameOverlay.addControl(this.partialText);
+
+        this.partialTransitionFill = new BABYLON.GUI.Rectangle("partialTransitionFill");
+        this.partialTransitionFill.thickness = 0;
+        this.partialTransitionFill.width = "100%";
+        this.partialTransitionFill.heightInPixels = 0;
+        this.partialTransitionFill.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+        this.partialTransitionFill.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
+        this.partialTransitionFill.background = this.hudColor;
+        this.partialEndGameOverlay.addControl(this.partialTransitionFill);
+
+        const scene = this.advancedTexture.getScene();
+        const radius = 5;
+        const thickness = 0.05;
+        this.partialParticleSystem = new BABYLON.ParticleSystem("partialWinnerParticles", 2000, scene);
+        this.partialParticleSystem.particleTexture = new BABYLON.Texture("assets/textures/particle/flare.png", scene);
+        this.partialParticleSystem.createCylinderEmitter(radius, thickness, 1);
+        this.partialParticleSystem.emitRate = 500;
+        this.partialParticleSystem.minScaleX = 0.5;
+        this.partialParticleSystem.maxScaleX = 0.5;
+        this.partialParticleSystem.minLifeTime = 1;
+        this.partialParticleSystem.maxLifeTime = 2;
+        this.partialParticleSystem.minAngularSpeed = 10;
+        this.partialParticleSystem.maxAngularSpeed = 15;
+        this.partialParticleSystem.minEmitPower = 2;
+        this.partialParticleSystem.maxEmitPower = 4;
+        this.partialParticleSystem.emitter = new BABYLON.Vector3(0, 0, 0);
+        this.partialParticleSystem.zIndex = 11;
 
     }
 
@@ -415,7 +447,7 @@ export class GUIManager {
             
             setTimeout(() => {
                 this.createExplosion(scene, pos);
-            }, i * (150 + Math.random() * 200)); // Faster timing
+            }, i * (150 + Math.random() * 200));
         }
     }
 
@@ -483,85 +515,83 @@ export class GUIManager {
             this.endGameOverlay.isVisible = false;
     }
 
+    async animateBackground(show: boolean): Promise<void> {
+        if (!this.advancedTexture || !this.partialTransitionFill || !this.partialEndGameOverlay) return;
+
+        const scene = this.advancedTexture.getScene();
+        const fps = 60;
+        const frames = 30;
+        const target = Math.round(this.advancedTexture.getSize().height);
+
+        const current = this.partialTransitionFill.heightInPixels ?? 0;
+        const end     = show ? target : 0;
+        if (show) {
+            this.partialEndGameOverlay.isVisible = true;
+            if (this.hudGrid) this.hudGrid.isVisible = false;
+        }
+
+        if (current === end) {
+            if (!show) this.partialEndGameOverlay.isVisible = false;
+            return;
+        }
+
+        const ease = new BABYLON.QuadraticEase();
+        ease.setEasingMode(show
+            ? BABYLON.EasingFunction.EASINGMODE_EASEOUT // grow fast then slow
+            : BABYLON.EasingFunction.EASINGMODE_EASEIN   // shrink slow then fast
+        );
+
+        const anim = BABYLON.Animation.CreateAnimation("heightInPixels",
+            BABYLON.Animation.ANIMATIONTYPE_FLOAT, fps, ease);
+        anim.setKeys([{ frame: 0, value: current }, { frame: frames, value: end }]);
+        this.partialTransitionFill.animations = [anim];
+        await new Promise<void>(r => scene.beginAnimation(this.partialTransitionFill, 0, frames, false, 1, r));
+        if (!show) {
+            this.partialEndGameOverlay.isVisible = false;
+            this.hudGrid.isVisible = true;
+        }
+    }
+
+    // private showGameFillImmediate(): void {
+    //     if (!this.partialTransitionFill || !this.advancedTexture) return;
+    //     this.partialTransitionFill.heightInPixels = Math.round(this.advancedTexture.getSize().height * 0.80);
+    // }
+
+    // private hideGameFillImmediate(): void {
+    //     if (!this.partialTransitionFill) return;
+    //     this.partialTransitionFill.heightInPixels = 0;
+    // }
+
 
     async showPartialWinner(winner: string): Promise<void> {
         if (!this.advancedTexture || this.partialVisible)
             return;
 
+        this.partialVisible = true;
         const scene = this.advancedTexture.getScene();
-        const maxScale = 1.5
         const fps = 60;
         const totalFrames = 180;
 
         this.partialText.text = `Winner: ${winner}`;
         this.partialText.alpha = 0;
-        this.partialContainer.scaleX = 0.05;
-        this.partialContainer.scaleY = 0.05;
-        this.partialContainer.alpha  = 0.25;
 
         this.partialEndGameOverlay.isVisible = true;
         this.partialEndGameOverlay.isPointerBlocker = true;
 
         const fadeIn = BABYLON.Animation.CreateAnimation("alpha", BABYLON.Animation.ANIMATIONTYPE_FLOAT, fps, new BABYLON.QuadraticEase());
         fadeIn.setKeys([{frame:0,value:0},{frame:10,value:1}]);
-        const ex = BABYLON.Animation.CreateAnimation("scaleX", BABYLON.Animation.ANIMATIONTYPE_FLOAT, fps, new BABYLON.QuadraticEase());
-        const ey = BABYLON.Animation.CreateAnimation("scaleY", BABYLON.Animation.ANIMATIONTYPE_FLOAT, fps, new BABYLON.QuadraticEase());
-        const ca = BABYLON.Animation.CreateAnimation("alpha", BABYLON.Animation.ANIMATIONTYPE_FLOAT, fps, new BABYLON.QuadraticEase());
-        ex.setKeys([{frame:0,value:0.05},{frame:totalFrames,value:maxScale}]);
-        ey.setKeys([{frame:0,value:0.05},{frame:totalFrames,value:maxScale}]);
-        ca.setKeys([{ frame: 0, value: 0.25 }, { frame: totalFrames, value: 0.95 }]);
-
-
         this.partialText.animations = [fadeIn];
-        this.partialContainer.animations = [ex, ey, ca];
 
-        await Promise.all([
-            new Promise(r => scene.beginAnimation(this.partialText!, 0, 10, false, 1, r)),
-            new Promise(r => scene.beginAnimation(this.partialContainer!, 0, totalFrames, false, 1, r)),
-        ]);
+        this.partialParticleSystem?.reset();
+        this.partialParticleSystem?.start();
 
-        const count = 64, radiusMin = 24, radiusMax = 120, dur = 0.45;
-        const end = Math.round(dur * fps);
+        await new Promise(r => scene.beginAnimation(this.partialText!, 0, 10, false, 1, r)),
+        await new Promise(r => setTimeout(r, totalFrames));
 
-        for (let i = 0; i < count; i++) {
-            const sp = new BABYLON.GUI.Ellipse("sp" + Math.random());
-            const size = 6 + Math.random() * 6;
-            sp.widthInPixels = size;
-            sp.heightInPixels = size;
-            sp.thickness = 1;
-            sp.background = "#FFD700";
-            sp.color = "#ffffffff";
-            sp.alpha = 0.95;
-            sp.leftInPixels = 0;
-            sp.topInPixels = 0;
-
-            const ang = Math.random() * Math.PI * 2;
-            const r   = radiusMin + Math.random() * (radiusMax - radiusMin);
-            const tx  = Math.cos(ang) * r;
-            const ty  = Math.sin(ang) * r;
-
-            const easeQ = new BABYLON.QuadraticEase();
-            const easeS = new BABYLON.SineEase();
-
-            const aX = BABYLON.Animation.CreateAnimation("leftInPixels", BABYLON.Animation.ANIMATIONTYPE_FLOAT, fps, easeQ);
-            const aY = BABYLON.Animation.CreateAnimation("topInPixels",  BABYLON.Animation.ANIMATIONTYPE_FLOAT, fps, easeQ);
-            const aA = BABYLON.Animation.CreateAnimation("alpha",        BABYLON.Animation.ANIMATIONTYPE_FLOAT, fps, easeS);
-
-            aX.setKeys([{ frame: 0, value: 0 }, { frame: end, value: tx }]);
-            aY.setKeys([{ frame: 0, value: 0 }, { frame: end, value: ty }]);
-            aA.setKeys([{ frame: 0, value: 0.95 }, { frame: end, value: 0 }]);
-
-            sp.animations = [aX, aY, aA];
-            this.partialContainer.addControl(sp);
-            scene.beginAnimation(sp, 0, end, false, 1, () => {
-                this.partialContainer.removeControl(sp);
-                sp.dispose();
-            });
-        }
     }
 
     async hidePartialWinner(): Promise<void> {
-        if (!this.partialEndGameOverlay || !this.partialContainer || !this.partialText) return;
+        if (!this.partialEndGameOverlay || !this.partialText) return;
         const scene = this.advancedTexture.getScene();
         const fps = 60;
         const totalFrames = 60;
@@ -569,23 +599,17 @@ export class GUIManager {
         const fadeOut = BABYLON.Animation.CreateAnimation("alpha", BABYLON.Animation.ANIMATIONTYPE_FLOAT, fps, new BABYLON.QuadraticEase());
         fadeOut.setKeys([{frame:0,value:1},{frame:totalFrames,value:0}]);
 
-        const sx = BABYLON.Animation.CreateAnimation("scaleX", BABYLON.Animation.ANIMATIONTYPE_FLOAT, fps, new BABYLON.QuadraticEase());
-        const sy = BABYLON.Animation.CreateAnimation("scaleY", BABYLON.Animation.ANIMATIONTYPE_FLOAT, fps, new BABYLON.QuadraticEase());
-        const ca = BABYLON.Animation.CreateAnimation("alpha",  BABYLON.Animation.ANIMATIONTYPE_FLOAT, fps, new BABYLON.QuadraticEase());
-        sx.setKeys([{frame:0,value:this.partialContainer.scaleX},{frame:totalFrames,value:0.05}]);
-        sy.setKeys([{frame:0,value:this.partialContainer.scaleY},{frame:totalFrames,value:0.05}]);
-        ca.setKeys([{ frame: 0, value: this.partialContainer.alpha }, { frame: totalFrames, value: 0.2 }]);
-
         this.partialText.animations = [fadeOut];
-        this.partialContainer.animations = [sx, sy, ca];
 
-        await Promise.all([
-            new Promise(r => scene.beginAnimation(this.partialText!, 0, totalFrames, false, 1, r)),
-            new Promise(r => scene.beginAnimation(this.partialContainer!, 0, totalFrames, false, 1, r)),
-        ]);
+        await new Promise(r => scene.beginAnimation(this.partialText!, 0, totalFrames, false, 1, r)),
+
+
+        this.partialParticleSystem?.stop();
+        this.partialParticleSystem?.reset();
 
         this.partialEndGameOverlay.isPointerBlocker = false;
         this.partialEndGameOverlay.isVisible = false;
+        this.partialVisible = false;
     }
 
 
@@ -607,8 +631,9 @@ export class GUIManager {
             this.endGameOverlay = null;
             this.hudGrid = null;
             this.partialEndGameOverlay = null;
-            this.partialContainer = null;
             this.partialText = null;
+            this.partialParticleSystem?.dispose();
+            this.partialParticleSystem = null;
 
             this.advancedTexture?.dispose();
             this.advancedTexture = null;
