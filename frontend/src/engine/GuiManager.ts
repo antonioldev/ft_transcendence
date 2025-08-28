@@ -36,7 +36,7 @@ export class GUIManager {
     private endGameOverlay: any = null;
     private endGameWinnerText: any = null;
     private partialEndGameOverlay: any = null;
-    private partialCircle: any = null;
+    private partialContainer: any = null;
     private partialText: any = null;
     private partialVisible = false;
     private fireworkColorIndex: number = 0;
@@ -106,19 +106,17 @@ export class GUIManager {
         // Make text bold and add outline
         textBlock.fontWeight = "bold";
         textBlock.outlineWidth = 2;
-        textBlock.outlineColor = "black";  
+        textBlock.outlineColor = "black";
     }
 
-    private createTextBlock(name: string, size: number, top?: string, h_align?: any, v_align?: any) {
+    private createTextBlock(name: string, size: number, h_align: any, v_align: any) {
         const label = new BABYLON.GUI.TextBlock();
         label.text = name;
         label.color = "white";
-        if (top !== null && top !== undefined)
-            label.top = top;
-        if (h_align !== null && h_align !== undefined)
-            label.textHorizontalAlignment = h_align;
-        if (v_align !== null && v_align !== undefined)
-            label.textVerticalAlignment = v_align;
+        label.textHorizontalAlignment = h_align;
+        label.textVerticalAlignment = v_align;
+        label.horizontalAlignment = h_align;
+        label.verticalAlignment = v_align;
         label.fontSize = size;
         label.width = "100%";
         return label;
@@ -168,26 +166,26 @@ export class GUIManager {
         this.advancedTexture.addControl(this.hudGrid);
 
         // Box 1: FPS
-        this.fpsText = this.createTextBlock("FPS: 0", 18, "0px");
+        this.fpsText = this.createTextBlock("FPS: 0", 18, BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER, BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER);
         this.addHUDBox(0, this.fpsText);
 
         // Box 2: Instructions P1
         this.addHUDBox(1, this.createPlayerControls(config, 1));
 
         // Box 3: P1 score + label
-        this.player1Label = this.createTextBlock("Player 2", 48, "0px", BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER, BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP);
+        this.player1Label = this.createTextBlock("Player 1", 48, BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER, BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER);
         this.applyRichTextEffects(this.player1Label);
 
-        this.score1Text = this.createTextBlock("0", 56, "-15px", BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER, BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM);
+        this.score1Text = this.createTextBlock("0", 56, BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER, BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM);
         this.applyRichTextEffects(this.score1Text);
 
         this.addHUDBox(2, [this.player1Label, this.score1Text]);
 
         // Box 4: P2 score + label  
-        this.player2Label = this.createTextBlock("Player 2", 48, "0px", BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER, BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP);
+        this.player2Label = this.createTextBlock("Player 2", 48, BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER, BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER);
         this.applyRichTextEffects(this.player2Label);
 
-        this.score2Text = this.createTextBlock("0", 56, "-15px", BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER, BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM);
+        this.score2Text = this.createTextBlock("0", 56, BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER, BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM);
         this.applyRichTextEffects(this.score2Text);
 
         this.addHUDBox(3, [this.player2Label, this.score2Text]);
@@ -196,9 +194,9 @@ export class GUIManager {
         this.addHUDBox(4, this.createPlayerControls(config, 2));
 
         // Box 6: Rally
-        this.rallyText = this.createTextBlock("Rally", 48, "0px", BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER, BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP);
+        this.rallyText = this.createTextBlock("Rally", 48, BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER, BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER);
 
-        this.rally = this.createTextBlock("0", 56, "-15px", BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER, BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM);
+        this.rally = this.createTextBlock("0", 56, BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER, BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM);
         this.rally.transformCenterY = 1;
         this.rally.scaleX = 1;
         this.rally.scaleY = 1;
@@ -215,7 +213,7 @@ export class GUIManager {
         this.countdownContainer.width = "200px";
         this.countdownContainer.height = "200px";
         this.countdownContainer.cornerRadius = 60;
-        this.countdownContainer.color = "white";
+        this.countdownContainer.color = "#ffffffff";
         this.countdownContainer.thickness = 3;
         if (config.viewMode === ViewMode.MODE_2D)
             this.countdownContainer.background = "rgba(0, 0, 0, 1)";
@@ -226,11 +224,7 @@ export class GUIManager {
         this.countdownContainer.isVisible = false;
 
         // Create countdown text
-        this.countdownText = this.createTextBlock("5", 72, "20px");
-        this.countdownText.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
-        this.countdownText.textVerticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
-        this.countdownText.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
-        this.countdownText.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
+        this.countdownText = this.createTextBlock("5", 72, BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER, BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER);
         this.applyRichTextEffects(this.countdownText);
         this.countdownContainer.addControl(this.countdownText);
         this.advancedTexture.addControl(this.countdownContainer);
@@ -278,9 +272,8 @@ export class GUIManager {
 
     // Update the FPS display
     updateFPS(fps: number): void {
-        if (this.fpsText) {
+        if (this.fpsText)
             this.fpsText.text = `FPS: ${Math.round(fps)}`;
-        }
     }
 
     updateRally(rally: number): void {
@@ -312,7 +305,6 @@ export class GUIManager {
     updatePlayerNames(player1Name: string, player2Name: string): void {
         this.player1Label.text = player1Name;
         this.player2Label.text = player2Name;
-        Logger.debug(`Player names updated: ${player1Name} vs ${player2Name}`, 'GUIManager');
     }
 
     // Check if GUI is properly initialized
@@ -355,17 +347,10 @@ export class GUIManager {
         this.endGameOverlay.addColumnDefinition(1.0);
 
         // Create winner text
-        this.endGameWinnerText = new BABYLON.GUI.TextBlock();
-        this.endGameWinnerText.text = "";
+        this.endGameWinnerText = this.createTextBlock("", 72, BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER, BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER);
         this.endGameWinnerText.color = "#FFD700";
-        this.endGameWinnerText.fontSize = 72;
         this.endGameWinnerText.fontWeight = "bold";
-        this.endGameWinnerText.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
-        this.endGameWinnerText.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
-
         this.applyRichTextEffects(this.endGameWinnerText);
-
-        // Add text to grid at position (0, 0)
         this.endGameOverlay.addControl(this.endGameWinnerText, 0, 0);
         this.advancedTexture.addControl(this.endGameOverlay);
     }
@@ -380,19 +365,19 @@ export class GUIManager {
         this.partialEndGameOverlay.zIndex = 9999;
         this.advancedTexture.addControl(this.partialEndGameOverlay);
 
-        // Main circle (black fill + yellow border)
-        this.partialCircle = new BABYLON.GUI.Ellipse("pw_circle");
-        this.partialCircle.thickness = 6;
-        this.partialCircle.color = "#FFD700";
-        this.partialCircle.background = "#000000";
-        this.partialCircle.alpha = 0.9;
-        this.partialEndGameOverlay.addControl(this.partialCircle);
+        this.partialContainer = new BABYLON.GUI.Rectangle("pw_circle");
+        this.partialContainer.thickness = 10;
+        this.partialContainer.cornerRadius = 60;
+        this.partialContainer.color = "#FFD700";
+        this.partialContainer.background = "#000000";
+        this.partialContainer.alpha = 0.5;
+        this.partialEndGameOverlay.addControl(this.partialContainer);
 
-        // Winner text
         this.partialText = new BABYLON.GUI.TextBlock("pw_text", "");
+        this.partialText.fontSize = 72;
         this.partialText.color = "#FFD700";
-        this.partialText.fontSize = 36;
-        this.partialText.fontStyle = "bold";
+        this.partialText.outlineWidth = 2;
+        this.partialText.outlineColor = "#ffffffee";  
         this.partialText.alpha = 0;
         this.partialEndGameOverlay.addControl(this.partialText);
 
@@ -498,56 +483,105 @@ export class GUIManager {
             this.endGameOverlay.isVisible = false;
     }
 
+
     async showPartialWinner(winner: string): Promise<void> {
         if (!this.advancedTexture || this.partialVisible)
             return;
 
         const scene = this.advancedTexture.getScene();
-        const maxScale = 4.5
-        const expandFrames = 180;
+        const maxScale = 1.5
+        const fps = 60;
+        const totalFrames = 180;
 
         this.partialText.text = `Winner: ${winner}`;
         this.partialText.alpha = 0;
-        this.partialCircle.scaleX = 0.06;
-        this.partialCircle.scaleY = 0.06;
+        this.partialContainer.scaleX = 0.05;
+        this.partialContainer.scaleY = 0.05;
+        this.partialContainer.alpha  = 0.25;
 
         this.partialEndGameOverlay.isVisible = true;
         this.partialEndGameOverlay.isPointerBlocker = true;
 
-        const fadeIn = BABYLON.Animation.CreateAnimation("alpha", BABYLON.Animation.ANIMATIONTYPE_FLOAT, 60, new BABYLON.QuadraticEase());
+        const fadeIn = BABYLON.Animation.CreateAnimation("alpha", BABYLON.Animation.ANIMATIONTYPE_FLOAT, fps, new BABYLON.QuadraticEase());
         fadeIn.setKeys([{frame:0,value:0},{frame:10,value:1}]);
-        const ex = BABYLON.Animation.CreateAnimation("scaleX", BABYLON.Animation.ANIMATIONTYPE_FLOAT, 60, new BABYLON.QuadraticEase());
-        const ey = BABYLON.Animation.CreateAnimation("scaleY", BABYLON.Animation.ANIMATIONTYPE_FLOAT, 60, new BABYLON.QuadraticEase());
-        ex.setKeys([{frame:0,value:0.06},{frame:expandFrames,value:maxScale}]);
-        ey.setKeys([{frame:0,value:0.06},{frame:expandFrames,value:maxScale}]);
+        const ex = BABYLON.Animation.CreateAnimation("scaleX", BABYLON.Animation.ANIMATIONTYPE_FLOAT, fps, new BABYLON.QuadraticEase());
+        const ey = BABYLON.Animation.CreateAnimation("scaleY", BABYLON.Animation.ANIMATIONTYPE_FLOAT, fps, new BABYLON.QuadraticEase());
+        const ca = BABYLON.Animation.CreateAnimation("alpha", BABYLON.Animation.ANIMATIONTYPE_FLOAT, fps, new BABYLON.QuadraticEase());
+        ex.setKeys([{frame:0,value:0.05},{frame:totalFrames,value:maxScale}]);
+        ey.setKeys([{frame:0,value:0.05},{frame:totalFrames,value:maxScale}]);
+        ca.setKeys([{ frame: 0, value: 0.25 }, { frame: totalFrames, value: 0.95 }]);
+
 
         this.partialText.animations = [fadeIn];
-        this.partialCircle.animations = [ex, ey];
+        this.partialContainer.animations = [ex, ey, ca];
 
         await Promise.all([
             new Promise(r => scene.beginAnimation(this.partialText!, 0, 10, false, 1, r)),
-            new Promise(r => scene.beginAnimation(this.partialCircle!, 0, expandFrames, false, 1, r)),
+            new Promise(r => scene.beginAnimation(this.partialContainer!, 0, totalFrames, false, 1, r)),
         ]);
 
+        const count = 64, radiusMin = 24, radiusMax = 120, dur = 0.45;
+        const end = Math.round(dur * fps);
+
+        for (let i = 0; i < count; i++) {
+            const sp = new BABYLON.GUI.Ellipse("sp" + Math.random());
+            const size = 6 + Math.random() * 6;
+            sp.widthInPixels = size;
+            sp.heightInPixels = size;
+            sp.thickness = 1;
+            sp.background = "#FFD700";
+            sp.color = "#ffffffff";
+            sp.alpha = 0.95;
+            sp.leftInPixels = 0;
+            sp.topInPixels = 0;
+
+            const ang = Math.random() * Math.PI * 2;
+            const r   = radiusMin + Math.random() * (radiusMax - radiusMin);
+            const tx  = Math.cos(ang) * r;
+            const ty  = Math.sin(ang) * r;
+
+            const easeQ = new BABYLON.QuadraticEase();
+            const easeS = new BABYLON.SineEase();
+
+            const aX = BABYLON.Animation.CreateAnimation("leftInPixels", BABYLON.Animation.ANIMATIONTYPE_FLOAT, fps, easeQ);
+            const aY = BABYLON.Animation.CreateAnimation("topInPixels",  BABYLON.Animation.ANIMATIONTYPE_FLOAT, fps, easeQ);
+            const aA = BABYLON.Animation.CreateAnimation("alpha",        BABYLON.Animation.ANIMATIONTYPE_FLOAT, fps, easeS);
+
+            aX.setKeys([{ frame: 0, value: 0 }, { frame: end, value: tx }]);
+            aY.setKeys([{ frame: 0, value: 0 }, { frame: end, value: ty }]);
+            aA.setKeys([{ frame: 0, value: 0.95 }, { frame: end, value: 0 }]);
+
+            sp.animations = [aX, aY, aA];
+            this.partialContainer.addControl(sp);
+            scene.beginAnimation(sp, 0, end, false, 1, () => {
+                this.partialContainer.removeControl(sp);
+                sp.dispose();
+            });
+        }
     }
 
     async hidePartialWinner(): Promise<void> {
-        if (!this.partialEndGameOverlay || !this.partialCircle || !this.partialText) return;
+        if (!this.partialEndGameOverlay || !this.partialContainer || !this.partialText) return;
         const scene = this.advancedTexture.getScene();
+        const fps = 60;
+        const totalFrames = 60;
 
-        const fadeOut = BABYLON.Animation.CreateAnimation("alpha", BABYLON.Animation.ANIMATIONTYPE_FLOAT, 60, new BABYLON.QuadraticEase());
-        fadeOut.setKeys([{frame:0,value:1},{frame:10,value:0}]);
-        const sx = BABYLON.Animation.CreateAnimation("scaleX", BABYLON.Animation.ANIMATIONTYPE_FLOAT, 60, new BABYLON.QuadraticEase());
-        const sy = BABYLON.Animation.CreateAnimation("scaleY", BABYLON.Animation.ANIMATIONTYPE_FLOAT, 60, new BABYLON.QuadraticEase());
-        sx.setKeys([{frame:0,value:this.partialCircle.scaleX},{frame:10,value:0.05}]);
-        sy.setKeys([{frame:0,value:this.partialCircle.scaleY},{frame:10,value:0.05}]);
+        const fadeOut = BABYLON.Animation.CreateAnimation("alpha", BABYLON.Animation.ANIMATIONTYPE_FLOAT, fps, new BABYLON.QuadraticEase());
+        fadeOut.setKeys([{frame:0,value:1},{frame:totalFrames,value:0}]);
+
+        const sx = BABYLON.Animation.CreateAnimation("scaleX", BABYLON.Animation.ANIMATIONTYPE_FLOAT, fps, new BABYLON.QuadraticEase());
+        const sy = BABYLON.Animation.CreateAnimation("scaleY", BABYLON.Animation.ANIMATIONTYPE_FLOAT, fps, new BABYLON.QuadraticEase());
+        const ca = BABYLON.Animation.CreateAnimation("alpha",  BABYLON.Animation.ANIMATIONTYPE_FLOAT, fps, new BABYLON.QuadraticEase());
+        sx.setKeys([{frame:0,value:this.partialContainer.scaleX},{frame:totalFrames,value:0.05}]);
+        sy.setKeys([{frame:0,value:this.partialContainer.scaleY},{frame:totalFrames,value:0.05}]);
+        ca.setKeys([{ frame: 0, value: this.partialContainer.alpha }, { frame: totalFrames, value: 0.2 }]);
 
         this.partialText.animations = [fadeOut];
-        this.partialCircle.animations = [sx, sy];
+        this.partialContainer.animations = [sx, sy, ca];
 
         await Promise.all([
-            new Promise(r => scene.beginAnimation(this.partialText!, 0, 10, false, 1, r)),
-            new Promise(r => scene.beginAnimation(this.partialCircle!, 0, 10, false, 1, r)),
+            new Promise(r => scene.beginAnimation(this.partialText!, 0, totalFrames, false, 1, r)),
+            new Promise(r => scene.beginAnimation(this.partialContainer!, 0, totalFrames, false, 1, r)),
         ]);
 
         this.partialEndGameOverlay.isPointerBlocker = false;
@@ -573,7 +607,7 @@ export class GUIManager {
             this.endGameOverlay = null;
             this.hudGrid = null;
             this.partialEndGameOverlay = null;
-            this.partialCircle = null;
+            this.partialContainer = null;
             this.partialText = null;
 
             this.advancedTexture?.dispose();

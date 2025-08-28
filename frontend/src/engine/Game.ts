@@ -425,8 +425,8 @@ export class Game {
         uiManager.setElementVisibility('pause-dialog-3d', false);
         // if (this.config.gameMode === GameMode.TOURNAMENT_LOCAL || this.config.gameMode === GameMode.TOURNAMENT_REMOTE)
         await this.guiManager?.showPartialWinner(winner);
-        webSocketClient.notifyGameAnimationDone();
         await this.guiManager?.hidePartialWinner();
+        webSocketClient.notifyGameAnimationDone();
         this.audioManager?.stopGameMusic();
         this.controlledSides = [];
         this.stopGameLoop();
