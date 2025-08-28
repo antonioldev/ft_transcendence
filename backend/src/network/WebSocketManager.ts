@@ -137,7 +137,6 @@ export class WebSocketManager {
                     await this.handleLoginUser(socket, client, data);
                     break;
                 case MessageType.LOGOUT_USER:
-                    console.log("HandleMessage WSM: calling Logout_user");
                     await this.handleLogoutUser(socket, client, data);
                     break;                    
                 case MessageType.REGISTER_USER:

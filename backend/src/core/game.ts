@@ -169,7 +169,6 @@ export class Game {
 				state: this.get_state()
 			});
 		}
-		this.stop();
 		return (this.winner);
 	}
 
