@@ -1,10 +1,9 @@
 import { FastifyInstance } from 'fastify';
 import { gameManager } from '../models/gameManager.js';
 import { Client, Player } from '../models/Client.js';
-import { MessageType, Direction, GameMode, UserManagement, AuthCode } from '../shared/constants.js';
-import { ClientMessage, ServerMessage, PlayerInput, GetUserProfile, UserProfileData } from '../shared/types.js';
+import { MessageType, AuthCode } from '../shared/constants.js';
+import { ClientMessage, ServerMessage, PlayerInput} from '../shared/types.js';
 import * as db from "../data/validation.js";
-import { UserStats, GameHistoryEntry } from '../shared/types.js';
 import { getUserBySession, getSessionByUsername } from '../data/validation.js';
 
 /**
@@ -30,20 +29,16 @@ export class WebSocketManager {
             if (sid) {
                 const user = this.safeGetUserBySession(sid);
                 if (user) {
-                console.log(`WS session auth OK for ${user.username}`);
-                this.handleConnection(socket, { username: user.username, email: user.email ?? '' });
-                return;
+                    this.handleConnection(socket, { username: user.username, email: user.email ?? '' });
+                    return;
                 }
-                console.log('WS: invalid/expired session id, trying token fallback');
             }
             if (token) {
                 try {
                     // Google authentication: verify JWT token
                     const decoded = fastify.jwt.verify(token) as any;
-                    console.log(`Google user: ${decoded.user.username}`);
                     this.handleConnection(socket, decoded.user);
                 } catch (err) {
-                    console.log('Invalid Google token');
                     socket.close(1008, 'Invalid token');
                     return;
                 }
@@ -62,17 +57,13 @@ export class WebSocketManager {
     private handleConnection(socket: any, authenticatedUser?: { username: string; email: string }): void {
         const clientId = this.generateClientId();
 
-
-
         let client: Client;
         if (authenticatedUser) {
             // Google authenticated user
-            console.log(`Google authenticated user connected: ${authenticatedUser.username}`);
             client = new Client(clientId, authenticatedUser.username, authenticatedUser.email, socket);
             client.loggedIn = true; // Mark as already authenticated
         } else {
             // Traditional authentication will authenticate via messages
-            console.log('Traditional connection');
             client = new Client(clientId, 'temp', '', socket); // will be updated if server approve a classic login request from client
         }
 
@@ -148,10 +139,6 @@ export class WebSocketManager {
                 case MessageType.REQUEST_GAME_HISTORY:
                     this.handleUserGameHistory(socket, message);
                     break;
-                // case MessageType.REQUEST_USER_PROFILE:
-                //     console.log("HandleMessage WSM: Requesting user profile");
-                //     await this.handleUserProfileRequest(socket, data);
-                //     break;
                 case MessageType.QUIT_GAME:
                     this.handleQuitGame(client);
                     break;
@@ -327,7 +314,6 @@ export class WebSocketManager {
      * @param data - The user information that are used to confirm login
      */
     private async handleLoginUser(socket: any, client: Client, data: ClientMessage): Promise<void> {
-        console.log("HandleMessage WSM: calling Login_user");
         const loginInfo = data.loginUser;
 
         if (!loginInfo?.username || typeof loginInfo.password !== 'string') {
@@ -340,19 +326,11 @@ export class WebSocketManager {
         }
 
         try {
-            // DO NOT log the password
-            console.log("handleLoginUser WSM: username received:", loginInfo.username);
             const result = await db.verifyLogin(loginInfo.username, loginInfo.password);
-
             switch (result) {
             case AuthCode.OK:
-                console.log("handleLoginUser WSM: sending success");
                 const sid = getSessionByUsername(loginInfo.username);
-                console.log(`SID: ${sid}`);
                 if (!sid) {
-                  // If you enforce "one active session per user", keep this as error:
-                    console.log(`SID is not valid: ${sid}`);
-                    // await this.sendErrorLogin(socket, "SID is not valid");
                     this.send(socket, {
                         type: MessageType.LOGIN_FAILURE,
                         message: 'SID is not valid',
@@ -370,25 +348,19 @@ export class WebSocketManager {
                 client.username = loginInfo.username;
                 client.loggedIn = true;
                 return;
-
-            case AuthCode.NotFound:
-                console.log("handleLoginUser WSM: user not found");
+            case AuthCode.NOT_FOUND:
                 this.send(socket, {
                     type: MessageType.USER_NOTEXIST,
                     message: "User doesn't exist"
                 });
                 return;
-
-            case AuthCode.BadCredentials:
-                console.log("handleLoginUser WSM: bad credentials");
+            case AuthCode.BAD_CREDENTIALS:
                 this.send(socket, {
                     type: MessageType.LOGIN_FAILURE,
                     message: 'Username or password are incorrect'
                 });
                 return;
-            
-            case AuthCode.AlreadyLogin:
-                console.log("handleLoginUser WSM: user already login");
+            case AuthCode.ALREADY_LOGIN:
                 this.send(socket, {
                     type: MessageType.LOGIN_FAILURE,
                     message: "User already login"}
@@ -405,9 +377,7 @@ export class WebSocketManager {
     }
 
     private async handleLogoutUser(socket: any, client: Client, data: ClientMessage): Promise<void> {
-        console.log("handleLoginUser WSM called()");
         const username = client.username;
-        console.log(`client.username ${username}`);
         try {
             await db.logoutUser(username);
             console.log('User successfully logout');
@@ -420,7 +390,6 @@ export class WebSocketManager {
      * @param data - The user information that are used to confirm login
      */
     private async handleRegisterNewUser(socket: any, data: ClientMessage): Promise<void> {
-        console.log("HandleMessage WSM: calling Register_user");
         const regInfo = data.registerUser;
 
         if (!regInfo) {
@@ -435,7 +404,6 @@ export class WebSocketManager {
         const { username, email, password } = regInfo;
 
         if (!username || !email || typeof password !== 'string') {
-            console.warn("Missing registration fields:", username, email, !!password);
             this.send(socket, {
                 type: MessageType.ERROR,
                 message: 'Missing username, email, or password'
@@ -453,16 +421,13 @@ export class WebSocketManager {
                     message: 'User registered successfully'
                 });
                 return;
-
-            case AuthCode.UserExists:
+            case AuthCode.USER_EXISTS:
                 this.send(socket, {
                     type: MessageType.USER_EXIST,
                     message: 'User already exists'
                 });
                 return;
-
-            case AuthCode.UsernameTaken:
-            default:
+            case AuthCode.USERNAME_TAKEN:
                 this.send(socket, {
                     type: MessageType.USERNAME_TAKEN,
                     message: 'Username is already registered'
@@ -477,35 +442,6 @@ export class WebSocketManager {
             });
         }
     }
-
-    // /**
-    //  * Sends an status message to a client to confirm login/registration or error
-    //  * @param socket - The WebSocket connection object.
-    //  * @param message - The message to send.
-    //  */
-    //     private async sendSuccessLogin(socket: any, payload: { message: string; sid: any; username: string }): Promise<void> {
-    //         const messageBody = {
-    //             text: payload.message,             // keep the human-readable part
-    //             sid: payload.sid,                  // <- what the frontend needs
-    //             username: payload.username
-    //         };
-    //         const successMsg: ServerMessage = {
-    //             type: MessageType.SUCCESS_LOGIN,
-    //             message: JSON.stringify({
-    //                 text: payload.message,             // keep the human-readable part
-    //                 sid: payload.sid,                  // <- what the frontend needs
-    //                 username: payload.username
-    //             }),
-    //             sid: payload.sid,
-    //             username: payload.username,
-    //         };
-            
-    //     try {
-    //         await socket.send(JSON.stringify(successMsg));
-    //     } catch (error) {
-    //         console.error('❌ Failed to send success message:', error);
-    //     }
-    // }  
 
     private send(socket: any, message: ServerMessage) {
         socket.send(JSON.stringify(message), (err?: Error) => {
@@ -546,44 +482,6 @@ export class WebSocketManager {
             });
         }
     }
-
-    /**
-     * Handle displaying information
-    */
-    // private async handleUserProfileRequest(socket: any, data: string) {
-    //     const userName = data;
-    //     if (!userName) {
-    //         console.warn("Missing userID");
-    //         return;
-    //     }
-    //     try { 
-    //         const userInfo = db.requestUserInformation(userName);
-    //         if (userInfo) {
-    //             await this.sendUserProfile(socket, userInfo);
-    //             return;
-    //         } else {
-    //             await this.sendErrorUserNotExist(socket, "User doesn't exist");
-    //             return;
-    //         }
-    //     } catch (error) {
-    //         console.error('❌ Error get user profile:', error);
-    //         await this.sendError(socket, 'Failed to get user profile information');
-    //     }        
-    // }
-
-    // private async sendUserProfile(socket: any, data: UserProfileData): Promise<void> {
-    //     const userProfile: UserProfileMessage= {
-    //         type: MessageType.SEND_USER_PROFILE,
-    //         data: data,
-    //     };
-        
-    //     try {
-    //         await socket.send(JSON.stringify(userProfile));
-    //     } catch (error) {
-    //         console.error('❌ Failed to send user Profile Information:', error);
-    //     }
-    // }  
-
 
     /**
      * Generates a unique client ID.

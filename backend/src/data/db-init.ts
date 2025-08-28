@@ -7,14 +7,12 @@ import { registerNewUser } from './validation.js';
 export async function initialisazeDatabase(dbPath: string): Promise<Database.Database> {
 	const dir = dirname(dbPath);
 	if (!existsSync(dir)) {
-		console.log("Error, not able to find db file");
 		throw new Error('Database folder does not exist');
 	}
 	const __filename = fileURLToPath(import.meta.url);
 	const __dirname = dirname(__filename);
 
 	const db = new Database(dbPath);
-	console.log("trying to initialise db");
 
 	try {
 		db.pragma('foreign_keys = ON');
@@ -23,7 +21,6 @@ export async function initialisazeDatabase(dbPath: string): Promise<Database.Dat
 		if (user_version === 0) {
 			console.log('Initilising new database...');
 			const initPath = join(__dirname, 'init.sql');
-			console.log('initPath: ',initPath);
 			const initScript = readFileSync(initPath, 'utf-8');
 
 			db.transaction(() => {
