@@ -69,8 +69,8 @@ export class Game {
 
 		this.paddles[side].score += score;
 		if (this.paddles[side].score >= GAME_CONFIG.scoreToWin) {
-			this.running = false;
 			this.winner = this.players[side];
+			this.stop();
 		}
 	}
 
@@ -193,6 +193,7 @@ export class Game {
 	// Stop the execution of the game & broadcast the winner
 	stop(gameId?: string) {
 		if (!this.running) return ;
+
 		this.running = false;
 		console.log(`Game id in async stop of game.ts: ${gameId}`);
 		if (gameId && this.players[LEFT_PADDLE].client?.id != this.players[RIGHT_PADDLE].client?.id) {
