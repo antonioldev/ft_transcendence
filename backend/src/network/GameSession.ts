@@ -154,10 +154,7 @@ export abstract class AbstractGameSession {
 
 	abstract start(): Promise<void>; 
 	abstract stop(client_id?: string): void;
-	// abstract pause(client_id?: string): boolean;
-	// abstract resume(client_id?: string): boolean;
 	
-	// abstract enqueue(input: PlayerInput, client_id?: string): void;
 	abstract handlePlayerQuit(quitter_id: string): void;
 	abstract canClientControlGame(client: Client): boolean;
 	abstract findGame(client_id?: string): Game | undefined;

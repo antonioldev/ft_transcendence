@@ -100,11 +100,11 @@ export enum AuthState {
 
 export enum AuthCode {
   OK = 0,
-  NotFound = 1,
-  BadCredentials = 2,
-  UsernameTaken = 2,
-  UserExists = 1,
-  AlreadyLogin = 3,
+  NOT_FOUND = 1,
+  BAD_CREDENTIALS = 2,
+  USERNAME_TAKEN = 2,
+  USER_EXISTS = 1,
+  ALREADY_LOGIN = 3,
 }
 
 export enum ConnectionStatus {

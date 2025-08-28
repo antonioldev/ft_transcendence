@@ -113,6 +113,7 @@ abstract class AbstractTournament extends AbstractGameSession{
 
 		this.add_CPUs();
 		this._match_players();
+		await this.waitForPlayersReady();
 		
 		for (let current_round = 1; current_round <= this.num_rounds; current_round++) {
 			const matches = this.rounds.get(current_round);
@@ -121,48 +122,6 @@ abstract class AbstractTournament extends AbstractGameSession{
 			await this.run(matches);
 		}
 	}
-
-	// pause(client_id?: string | undefined): boolean {
-	// 	const match = this.findMatch(client_id);
-	// 	if (!match) return false ;
-
-	// 	if (!match || !match.game || !match.game.running) {
-	// 		console.log(`Game ${match.id} is not running, cannot pause`);
-	// 		return false;
-	// 	}
-
-	// 	if (match.game.paused) {
-	// 		console.log(`Game ${match.id} is already paused`);
-	// 		return false;
-	// 	}
-
-	// 	match.game.pause();
-	// 	return true;
-	// }
-
-	// resume(client_id?: string | undefined): boolean {
-	// 	const match = this.findMatch(client_id);
-	// 	if (!match) return false ;
-
-	// 	if (!match ||!match.game || !match.game.running) {
-	// 		console.log(`Game ${this.id} is not running, cannot resume`);
-	// 		return false;
-	// 	}
-	// 	if (!match.game.paused) {
-	// 		console.log(`Game ${this.id} is not paused`);
-	// 		return false;
-	// 	}
-
-	// 	match.game.resume();
-	// 	return true;
-	// }
-
-	// enqueue(input: PlayerInput, client_id?: string): void  {
-	// 	const match = this.findMatch(client_id);
-	// 	if (!match) return ;
-
-	// 	match?.game?.enqueue(input);
-	// }
 
 	canClientControlGame(client: Client) {
 		const match = this.findMatch();
@@ -195,7 +154,6 @@ export class TournamentLocal extends AbstractTournament {
 
 	// runs each game in a round one by one and awaits each game before starting the next
 	async run(matches: Match[]): Promise<void> {
-		await this.waitForPlayersReady();
 		for (const match of matches) {
 			if (!this.running) return ;
 			

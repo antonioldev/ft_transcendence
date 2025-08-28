@@ -1,39 +1,65 @@
-// DB command to create, update and remove information from db and tables
+// ------------------------
+// Helpers / constants
+// ------------------------
 import Database from 'better-sqlite3';
-import { UserProfileData, SessionUser } from '../shared/types.js';
 import crypto from 'crypto';
-
-enum UserField {
-	EMAIL,
-	PASSWORD,
-}
+import { UserProfileData, SessionUser } from '../shared/types.js';
 
 let db: Database.Database;
-const DAY = 86400;
-const nowSec = () => Math.floor(Date.now() / 1000);
 
 export function registerDatabaseFunctions(database: Database.Database) {
-	console.log("registering db");
-	db = database;
+  console.log('registering db');
+  db = database;
 }
 
-// HELPER FUNCTION TO CHECK UNVALID DATA FORMAT
-const int = (v: unknown, name = 'value') => {
-	const n = Number(v);
-	if (!Number.isInteger(n)) throw new Error(`Invalid ${name}`);
-	return n;
+const HOUR = 60 * 60;
+
+const nowSec = () => Math.floor(Date.now() / 1000);
+
+const GAME_ID_RE = /^game_\d{13}_[a-z0-9]{9}$/;
+const SID_RE     = /^[a-f0-9]{64}$/;
+
+enum UserField {
+  EMAIL,
+  PASSWORD,
+}
+
+// ------------------------
+// Validation helpers
+// ------------------------
+const toInt = (v: unknown, name = 'value') => {
+  const n = Number(v);
+  if (!Number.isInteger(n)) throw new Error(`Invalid ${name}: must be an integer`);
+  return n;
 };
 
 const nonNegInt = (v: unknown, name = 'value') => {
-	const n = int(v, name);
-	if (n < 0) throw new Error(`Invalid ${name}: must be >= 0`);
-	return n;
+  const n = toInt(v, name);
+  if (n < 0) throw new Error(`Invalid ${name}: must be >= 0`);
+  return n;
 };
 
-const GAME_ID_RE = /^game_\d{13}_[a-z0-9]{9}$/;
-const safeGameId = (s: string) => {
-	if (!GAME_ID_RE.test(s)) throw new Error('Invalid game_id');
-	return s;
+const trimString = (v: string, name = 'value') => {
+  if (typeof v !== 'string') throw new Error(`Invalid ${name}: must be a string`);
+  const s = v.trim();
+  if (!s) throw new Error(`Invalid ${name}: cannot be empty`);
+  return s;
+};
+
+// ------------------------
+// ID formats (+ safe wrappers)
+// ------------------------
+
+export const safeGameId = (s: string) => {
+  s = trimString(s, 'game_id');
+  if (!GAME_ID_RE.test(s)) throw new Error('Invalid game_id');
+  return s;
+};
+
+export const safeSid = (s: string) => {
+  s = trimString(s, 'sid');
+  if (!SID_RE.test(s)) throw new Error('Invalid sid');
+  return s;
 };
 
 /**
@@ -384,8 +410,8 @@ export function getUserProfile(username: string): UserProfileData | null {
 	username = username.trim();
 
 	const userInfo = db.prepare(`
-    SELECT id, username, email, victories, defeats, games
-    FROM users WHERE username = ?
+	SELECT id, username, email, victories, defeats, games
+	FROM users WHERE username = ?
   `).get(username) as UserProfileData | undefined;
 
 	if (!userInfo) return null;
@@ -776,27 +802,22 @@ export function getUserGameHistoryRows(userId: number) {
 
 export function createSession(userId: number): string | undefined {
 	try {
+		userId = nonNegInt(userId, 'user id');
 		if (userId === -1) {
 			console.error("error in createSession, userId is invalid");
 			return undefined;
 		}
 		const now = nowSec();
-		const ttlDays = 7;
-
 		deleteSessionExpired(userId);
 
-		// Block if any still-active session exists
-		const active = db.prepare('SELECT id FROM sessions WHERE user_id=? AND expires_at > ? LIMIT 1'
+		// Block if there is any active session for this user
+		const active = db.prepare(
+		'SELECT id FROM sessions WHERE user_id=? AND expires_at > ? LIMIT 1'
 		).get(userId, now) as { id: string } | undefined;
-
-		if (active !== undefined) {
-			console.log(`SID is not undefined so the user is already connected somewhere ${active.id}`);
-			return undefined;
-		}
-		// Create new session
+		if (active !== undefined) return undefined;
+		
 		const sid = crypto.randomBytes(32).toString('hex');
-		const expiresAt = now + ttlDays * DAY;
-
+		const expiresAt = now + HOUR;
 		db.prepare(
 		`INSERT INTO sessions (id, user_id, created_at, expires_at, user_agent, ip)
 		VALUES (?,?,?,?,?,?)`
@@ -811,18 +832,19 @@ export function createSession(userId: number): string | undefined {
 
 export function deleteSessionExpired(userId: number): boolean {
 	try {
+		userId = nonNegInt(userId, 'user id');
 		const now = nowSec();
 		db.prepare('DELETE FROM sessions WHERE user_id=? AND expires_at <= ?').run(userId, now);
 		return true;
 	} catch (err) {
 		return false;
-	}
+	 }
 }
 
 export function deleteSessionLogout(userId: number) {
 	try {
+		userId = nonNegInt(userId, 'user id');
 		db.prepare('DELETE FROM sessions WHERE user_id=?').run(userId);
-		console.log('Session deleted successfully');
 	} catch (err) {
 		console.error('Error on deleting session');
 	}
@@ -830,20 +852,22 @@ export function deleteSessionLogout(userId: number) {
 }
 
 export function getSessionInfo(userId: number): SessionUser | null {
-  try {
-    const row = db.prepare('SELECT id, user_id, created_at, expires_at FROM sessions WHERE user_id=?'
-    ).get(userId) as { sid: string, user_id: number; created_at: number; expires_at: number } | undefined;
+	try {
+		userId = nonNegInt(userId, 'user id');
+		const row = db.prepare('SELECT id, user_id, created_at, expires_at FROM sessions WHERE user_id=?'
+		).get(userId) as { sid: string, user_id: number; created_at: number; expires_at: number } | undefined;
 
-    if (!row) return null;
-    return { sid: row.sid, userId: row.user_id, createdAt: row.created_at, expiresAt: row.expires_at };
-  } catch (err) {
-    console.error('Error in getSessionInfo:', err);
-    return null;
-  }
+		if (!row) return null;
+			return { sid: row.sid, userId: row.user_id, createdAt: row.created_at, expiresAt: row.expires_at };
+	} catch (err) {
+		console.error('Error in getSessionInfo:', err);
+		return null;
+	}
 }
 
 export function getUserBySession(sid: string): { id: number; username: string, email?: string} | null {
 	try {
+		sid = safeSid(sid);
 		const userId = db.prepare('SELECT user_id FROM sessions WHERE id = ?').get(sid) as { user_id: number } | undefined;
 		if (!userId) return null;
 		const row = db.prepare('SELECT id, username, email FROM users WHERE id = ?').get(userId.user_id) as { id:number; username:string; email?:string } | undefined;
@@ -856,10 +880,11 @@ export function getUserBySession(sid: string): { id: number; username: string, e
 	}
 }
 
-export function retrieveSessionID(userID: number): string | null {
+export function retrieveSessionID(userId: number): string | null {
 	try {
+		userId = nonNegInt(userId, 'user id');
 		const sid = db.prepare('SELECT id FROM sessions WHERE user_id = ?');
-		const SID = sid.get(userID) as { id: string } | undefined;
+		const SID = sid.get(userId) as { id: string } | undefined;
 		if (SID === undefined) {
 			console.error('SID not found');
 			return null;
