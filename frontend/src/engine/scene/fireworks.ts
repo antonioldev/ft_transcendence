@@ -56,8 +56,8 @@ export const FINAL_FIREWORKS: FireworkDetails = {
 export const PARTIAL_FIREWORKS: FireworkDetails = {
   bursts: 4,
   delay: { min: 120, max: 280 },
-  distance: { min: 5, max: 8 },
-  spread: 3,
+  distance: { min: 6, max: 12 },
+  spread: 10,
   liftY: { min: 0.5, max: 1.5 },
   particle: {
     capacity: 800,
@@ -156,7 +156,7 @@ export function spawnFireworksInFrontOfCameras(
   cameras = cameras.filter(
     cam => cam.name !== "guiCamera" && cam.layerMask !== 0x20000000
   );
-  
+
   cameras.forEach((cam) => spawnBurstsForCamera(scene, cam, profile));
 }
 

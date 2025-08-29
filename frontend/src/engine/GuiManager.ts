@@ -39,6 +39,7 @@ export class GUIManager {
     private partialEndGameOverlay: any = null;
     private partialTransitionFill: any = null;
     private partialText: any = null;
+    private continueText: any = null;
 
 
     // Initialize and create all GUI elements
@@ -374,11 +375,24 @@ export class GUIManager {
         this.partialTransitionFill = new BABYLON.GUI.Rectangle("partialTransitionFill");
         this.partialTransitionFill.thickness = 0;
         this.partialTransitionFill.width = "100%";
-        this.partialTransitionFill.heightInPixels = 0;
+        this.partialTransitionFill.height = "100%";
         this.partialTransitionFill.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
         this.partialTransitionFill.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
-        this.partialTransitionFill.background = this.hudColor;
+        this.partialTransitionFill.background = "black";
+        this.partialTransitionFill.alpha = 0;
         this.partialEndGameOverlay.addControl(this.partialTransitionFill);
+
+        this.continueText = new BABYLON.GUI.TextBlock("continue_text", "Space");
+        this.continueText.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+        this.continueText.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
+        this.continueText.fontSize = 25;
+        this.continueText.color = "#FFD700";
+        this.continueText.outlineWidth = 2;
+        this.continueText.outlineColor = "#ffffffee";  
+        this.continueText.alpha = 0;
+        this.continueText.zIndex = 11;
+        this.continueText.isVisible = "false";
+        this.partialEndGameOverlay.addControl(this.partialText);
     }
 
     async showWinner(winner: string): Promise<void> {
@@ -393,7 +407,6 @@ export class GUIManager {
         if (scene) {
             const cams = scene.activeCameras?.length ? scene.activeCameras : scene.activeCamera;
             spawnFireworksInFrontOfCameras(scene, FINAL_FIREWORKS, cams);
-            // this.createCameraBasedFireworks(scene);
         }
         await new Promise(resolve => setTimeout(resolve, 5000));
 
@@ -406,40 +419,48 @@ export class GUIManager {
     async animateBackground(show: boolean): Promise<void> {
         if (!this.advancedTexture || !this.partialTransitionFill || !this.partialEndGameOverlay) return;
 
-        const scene = this.advancedTexture.getScene();
-        const fps = 60;
-        const frames = 30;
-        const target = Math.round(this.advancedTexture.getSize().height);
+        const scene  = this.advancedTexture.getScene();
+        const fps    = 60;
+        const frames = 15;
 
-        const current = this.partialTransitionFill.heightInPixels ?? 0;
-        const end     = show ? target : 0;
         if (show) {
             this.partialEndGameOverlay.isVisible = true;
-            if (this.hudGrid) this.hudGrid.isVisible = false;
+            if (this.hudGrid)
+                this.hudGrid.isVisible = false;
         }
 
+        const current = this.partialTransitionFill.alpha ?? 0;
+        const end = show ? 0.30 : 0.0;
+
         if (current === end) {
-            if (!show) this.partialEndGameOverlay.isVisible = false;
+            if (!show) {
+                this.partialEndGameOverlay.isVisible = false;
+                if (this.hudGrid)
+                    this.hudGrid.isVisible = true;
+            }
             return;
         }
 
         const ease = new BABYLON.QuadraticEase();
         ease.setEasingMode(show
-            ? BABYLON.EasingFunction.EASINGMODE_EASEOUT // grow fast then slow
-            : BABYLON.EasingFunction.EASINGMODE_EASEIN   // shrink slow then fast
+            ? BABYLON.EasingFunction.EASINGMODE_EASEOUT
+            : BABYLON.EasingFunction.EASINGMODE_EASEIN
         );
 
-        const anim = BABYLON.Animation.CreateAnimation("heightInPixels",
-            BABYLON.Animation.ANIMATIONTYPE_FLOAT, fps, ease);
+        const anim = BABYLON.Animation.CreateAnimation("alpha",
+            BABYLON.Animation.ANIMATIONTYPE_FLOAT,fps,ease);
         anim.setKeys([{ frame: 0, value: current }, { frame: frames, value: end }]);
         this.partialTransitionFill.animations = [anim];
-        scene.beginAnimation(this.partialTransitionFill, 0, frames, false);
-        // await new Promise<void>(r => scene.beginAnimation(this.partialTransitionFill, 0, frames, false, 1, r));
-        if (!show) {
-            this.partialEndGameOverlay.isVisible = false;
-            this.hudGrid.isVisible = true;
-        }
+
+        scene.beginAnimation(this.partialTransitionFill, 0, frames, false, 1, () => {
+            if (!show) {
+                this.partialEndGameOverlay.isVisible = false;
+                if (this.hudGrid)
+                    this.hudGrid.isVisible = true;
+            }
+        });
     }
+
     
 
     async showPartialWinner(winner: string): Promise<void> {
@@ -464,6 +485,31 @@ export class GUIManager {
         await new Promise(r => scene.beginAnimation(this.partialText!, 0, 10, false, 1, r));
         await new Promise(r => setTimeout(r, totalFrames));
 
+    }
+
+    async waitForSpaceToContinue(): Promise<void> {
+        if (!this.advancedTexture) return;
+        const scene = this.advancedTexture.getScene();
+        if (this.continueText) {
+            this.continueText.text = "Press SPACE to continue";
+            this.continueText.isVisible = "true";
+        }
+
+        return new Promise<void>((resolve) => {
+            const sub = scene.onKeyboardObservable.add((kbInfo: any) => {
+            if (kbInfo.type === BABYLON.KeyboardEventTypes.KEYDOWN) {
+                const e = kbInfo.event as KeyboardEvent;
+                // handle both ' ' and 'Space'
+                if (e.code === "Space" || e.key === " ") {
+                scene.onKeyboardObservable.remove(sub);
+                this.continueText.isVisible = "false";
+                resolve();
+                }
+            }
+            });
+            // kick the pulse
+            scene.beginAnimation(this.continueText, 0, 60, true);
+        });
     }
 
     async hidePartialWinner(): Promise<void> {
