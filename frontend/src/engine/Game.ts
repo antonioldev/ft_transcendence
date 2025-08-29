@@ -356,15 +356,16 @@ export class Game {
         }
     }
 
-    private handleCountdown(countdown: number): void {
-        if (countdown === undefined || countdown === null) {
-            Logger.errorAndThrow('Server sent SI without countdown parameter', 'Game');
-        }
+    private async handleCountdown(countdown: number): Promise<void> {
+        if (countdown === undefined || countdown === null)
+            Logger.errorAndThrow('Server sent SIGNAL without countdown parameter', 'Game');
+
         uiManager.setLoadingScreenVisible(false);
 
         if (this.currentState === GameState.MATCH_ENDED)
             this.resetForNextMatch();
         if (countdown === GAME_CONFIG.startDelay) {
+            await this.guiManager?.animateBackground(true);
             this.renderManager?.startCameraAnimation(
                 this.gameObjects?.cameras, 
                 this.config.viewMode,
@@ -381,6 +382,7 @@ export class Game {
             this.audioManager?.startGameMusic();
             this.renderManager?.stopCameraAnimation();
             this.guiManager?.hideCountdown();
+            await this.guiManager?.animateBackground(false);
             this.start();
         }
     }
@@ -424,6 +426,7 @@ export class Game {
             return;
         uiManager.setElementVisibility('pause-dialog-3d', false);
         // if (this.config.gameMode === GameMode.TOURNAMENT_LOCAL || this.config.gameMode === GameMode.TOURNAMENT_REMOTE)
+        await this.guiManager?.animateBackground(true);
         await this.guiManager?.showPartialWinner(winner);
         await this.guiManager?.hidePartialWinner();
         webSocketClient.notifyGameAnimationDone();
