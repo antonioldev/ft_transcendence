@@ -57,5 +57,7 @@ export const portuguese: Translation = {
     easy: ' (Fácil)',
     medium: ' (Médio)',
     hard: ' (Difícil)',
-    impossible: ' (Impossível)'
+    impossible: ' (Impossível)',
+    winner: 'Vencedor da partida',
+    continue: 'Pressione ESPAÇO para continuar'
 };

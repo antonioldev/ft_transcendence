@@ -57,5 +57,7 @@ export const italian: Translation = {
     easy: ' (Facile)',
     medium: ' (Medio)',
     hard: ' (Difficile)',
-    impossible: ' (Impossibile)'
+    impossible: ' (Impossibile)',
+    winner: 'Vincitore della partita',
+    continue: 'Premi SPAZIO per continuare'
 };

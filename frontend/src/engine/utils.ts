@@ -74,5 +74,30 @@ export function get3DCamera2Viewport() {
     return VIEWPORTS.RIGHT_HALF;
 }
 
+export interface TextBlockOptions {
+    text?: string;
+    fontSize?: number;
+    zIndex?: number;
+    color?: string;
+    horizontalAlignment?: any;
+    verticalAlignment?: any;
+    fontWeight?: string;
+    width?: string;
+    height?: string;
+    // Rich text effects
+    applyRichEffects?: boolean;
+    shadowOffsetX?: number;
+    shadowOffsetY?: number;
+    shadowBlur?: number;
+    shadowColor?: string;
+    outlineWidth?: number;
+    outlineColor?: string;
+    // Additional properties
+    alpha?: number;
+    lineSpacing?: string;
+    resizeToFit?: boolean;
+}
+
+
 
 

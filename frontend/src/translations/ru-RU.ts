@@ -57,5 +57,7 @@ export const russian: Translation = {
     easy: ' (Лёгкий)',
     medium: ' (Средний)',
     hard: ' (Сложный)',
-    impossible: ' (Невозможный)'
+    impossible: ' (Невозможный)',
+    winner: 'Победитель матча',
+    continue: 'Нажмите ПРОБЕЛ, чтобы продолжить'
 };
