@@ -7,16 +7,10 @@ import { GameMode } from '../shared/constants.js';
 import { ViewMode } from '../shared/constants.js';
 import { Logger } from '../utils/LogManager.js';
 import { getCurrentTranslation } from '../translations/translations.js';
+import { spawnFireworksInFrontOfCameras, FINAL_FIREWORKS, PARTIAL_FIREWORKS } from './scene/fireworks.js'
 
 /**
- * Manages all GUI elements for the game including HUD, scores, FPS display
- * 
- * Responsibilities:
- * - Creating and managing Babylon.js GUI elements
- * - Updating score displays
- * - Managing FPS counter
- * - Handling view mode specific UI (like split screen divider)
- * - GUI cleanup and disposal
+ * Manages all GUI elements for the game including HUD, scores, FPS display, rally and animations
  */
 export class GUIManager {
     private advancedTexture: any = null;
@@ -45,7 +39,7 @@ export class GUIManager {
     private partialEndGameOverlay: any = null;
     private partialTransitionFill: any = null;
     private partialText: any = null;
-    private partialParticleSystem: any | null = null;
+    private continueText: any = null;
 
 
     // Initialize and create all GUI elements
@@ -262,6 +256,12 @@ export class GUIManager {
         }
     }
 
+    hideCountdown(): void {
+        if (this.countdownContainer)
+            this.countdownContainer.isVisible = false;
+        this.countdownText.animations = [];
+    }
+
     private createAnimation(property: string, start: number, end: number): any {
         const scale = BABYLON.Animation.CreateAnimation(
             property, BABYLON.Animation.ANIMATIONTYPE_FLOAT, 60, new BABYLON.SineEase());
@@ -274,13 +274,6 @@ export class GUIManager {
         return scale;
     }
 
-    hideCountdown(): void {
-        if (this.countdownContainer)
-            this.countdownContainer.isVisible = false;
-        this.countdownText.animations = [];
-    }
-
-    // Update the FPS display
     updateFPS(fps: number): void {
         if (this.fpsText)
             this.fpsText.text = `FPS: ${Math.round(fps)}`;
@@ -326,11 +319,6 @@ export class GUIManager {
                this.score2Text !== null &&
                this.countdownContainer !== null &&
                this.countdownText !== null;
-    }
-
-    // Get the advanced texture
-    getAdvancedTexture(): any {
-        return this.advancedTexture;
     }
 
     //instructions for movement
@@ -387,106 +375,24 @@ export class GUIManager {
         this.partialTransitionFill = new BABYLON.GUI.Rectangle("partialTransitionFill");
         this.partialTransitionFill.thickness = 0;
         this.partialTransitionFill.width = "100%";
-        this.partialTransitionFill.heightInPixels = 0;
+        this.partialTransitionFill.height = "100%";
         this.partialTransitionFill.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
         this.partialTransitionFill.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
-        this.partialTransitionFill.background = this.hudColor;
+        this.partialTransitionFill.background = "black";
+        this.partialTransitionFill.alpha = 0;
         this.partialEndGameOverlay.addControl(this.partialTransitionFill);
 
-        const scene = this.advancedTexture.getScene();
-        this.partialParticleSystem = new BABYLON.ParticleSystem("partialWinnerParticles", 2000, scene);
-        this.partialParticleSystem.particleTexture = new BABYLON.Texture("assets/textures/particle/flare.png", scene);
-        this.partialParticleSystem.createCylinderEmitter(30, 0.05, 1);
-        this.partialParticleSystem.emitRate = 1000;
-        this.partialParticleSystem.minEmitPower = 5;
-        this.partialParticleSystem.maxEmitPower = 20;
-        this.partialParticleSystem.minAngularSpeed = 5;
-        this.partialParticleSystem.maxAngularSpeed = 8;
-        this.partialParticleSystem.updateSpeed  = 0.05;
-        this.partialParticleSystem.emitter = new BABYLON.Vector3(0, 0, 0);
-    }
-
-    private createCameraBasedFireworks(scene: any): void {
-        const cameras = this.getActiveCameras(scene);
-        cameras.forEach((camera) => {
-            this.createFireworksForCamera(scene, camera);
-        });
-    }
-
-    private getActiveCameras(scene: any): any[] {
-        // Return array of active cameras
-        if (scene.activeCameras && scene.activeCameras.length > 0) {
-            return scene.activeCameras; // Split screen mode
-        } else if (scene.activeCamera) {
-            return [scene.activeCamera]; // Single camera mode
-        }
-        return [];
-    }
-
-    private createFireworksForCamera(scene: any, camera: any): void {
-        const numberOfFireworks = 8;
-        
-        for (let i = 0; i < numberOfFireworks; i++) {
-            const distance = 6 + Math.random() * 4;
-            const spread = 4;
-
-            const forward = camera.getForwardRay ? camera.getForwardRay().direction : new BABYLON.Vector3(0, 0, 1);
-            const x = camera.position.x + forward.x * distance + (Math.random() - 0.5) * spread;
-            const y = camera.position.y + forward.y * distance + Math.random() * 3;
-            const z = camera.position.z + forward.z * distance + (Math.random() - 0.5) * spread;
-            const pos = new BABYLON.Vector3(x, y, z);
-            
-            setTimeout(() => {
-                this.createExplosion(scene, pos);
-            }, i * (150 + Math.random() * 200));
-        }
-    }
-
-    private createExplosion(scene: any, pos: any): void {
-        let fireworkColorIndex: number = 0;
-
-        const explosion = new BABYLON.ParticleSystem(`gameEnd_explosion_${Date.now()}`, 1500, scene);
-        try {
-            explosion.particleTexture = new BABYLON.Texture("assets/textures/particle/flare_transparent.png", scene);
-        } catch (error) {
-            explosion.particleTexture = new BABYLON.Texture("assets/textures/particle/flare.png", scene);
-        }
-        explosion.emitter = pos;
-
-        const colorOptions = [
-            [new BABYLON.Color4(1, 0.8, 0.2, 1), new BABYLON.Color4(1, 0.8, 0.2, 1)], // Gold
-            [new BABYLON.Color4(0.2, 1, 0.3, 1), new BABYLON.Color4(0.2, 1, 0.3, 1)], // Green
-            [new BABYLON.Color4(0.3, 0.5, 1, 1), new BABYLON.Color4(0.3, 0.5, 1, 1)], // Blue
-            [new BABYLON.Color4(1, 0.3, 0.8, 1), new BABYLON.Color4(1, 0.3, 0.8, 1)], // Pink
-            [new BABYLON.Color4(0.8, 0.2, 1, 1), new BABYLON.Color4(0.8, 0.2, 1, 1)], // Purple
-        ];
-        const selectedColor = colorOptions[fireworkColorIndex % colorOptions.length];
-        fireworkColorIndex++;
-
-        explosion.color1 = selectedColor[0];
-        explosion.color2 = selectedColor[1];
-        explosion.colorDead = new BABYLON.Color4(0, 0, 0, 0);
-
-        explosion.minSize = 0.1;
-        explosion.maxSize = 0.8;
-        explosion.minLifeTime = 1.5;
-        explosion.maxLifeTime = 3.0;
-        explosion.emitRate = 600;
-        explosion.createSphereEmitter(2);
-        explosion.minEmitPower = 6;
-        explosion.maxEmitPower = 12;
-        explosion.gravity = new BABYLON.Vector3(0, -9.81, 0);
-        explosion.blendMode = BABYLON.ParticleSystem.BLENDMODE_ONEONE;
-        
-        explosion.start();
-        
-        // Auto cleanup
-        setTimeout(() => {
-            explosion.stop();
-            setTimeout(() => {
-                explosion.dispose();
-            }, 3000);
-        }, 2000);
+        this.continueText = new BABYLON.GUI.TextBlock("continue_text", "Space");
+        this.continueText.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+        this.continueText.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
+        this.continueText.fontSize = 25;
+        this.continueText.color = "#FFD700";
+        this.continueText.outlineWidth = 2;
+        this.continueText.outlineColor = "#ffffffee";  
+        this.continueText.alpha = 0;
+        this.continueText.zIndex = 11;
+        this.continueText.isVisible = "false";
+        this.partialEndGameOverlay.addControl(this.partialText);
     }
 
     async showWinner(winner: string): Promise<void> {
@@ -498,8 +404,10 @@ export class GUIManager {
         this.endGameWinnerText.text = `🏆 ${winner} WINS! 🏆`;
         this.endGameOverlay.isVisible = true;
         const scene = this.advancedTexture.getScene();
-        if (scene)
-            this.createCameraBasedFireworks(scene);
+        if (scene) {
+            const cams = scene.activeCameras?.length ? scene.activeCameras : scene.activeCamera;
+            spawnFireworksInFrontOfCameras(scene, FINAL_FIREWORKS, cams);
+        }
         await new Promise(resolve => setTimeout(resolve, 5000));
 
         if (this.hudGrid)
@@ -511,50 +419,49 @@ export class GUIManager {
     async animateBackground(show: boolean): Promise<void> {
         if (!this.advancedTexture || !this.partialTransitionFill || !this.partialEndGameOverlay) return;
 
-        const scene = this.advancedTexture.getScene();
-        const fps = 60;
-        const frames = 30;
-        const target = Math.round(this.advancedTexture.getSize().height);
+        const scene  = this.advancedTexture.getScene();
+        const fps    = 60;
+        const frames = 15;
 
-        const current = this.partialTransitionFill.heightInPixels ?? 0;
-        const end     = show ? target : 0;
         if (show) {
             this.partialEndGameOverlay.isVisible = true;
-            if (this.hudGrid) this.hudGrid.isVisible = false;
+            if (this.hudGrid)
+                this.hudGrid.isVisible = false;
         }
 
+        const current = this.partialTransitionFill.alpha ?? 0;
+        const end = show ? 0.30 : 0.0;
+
         if (current === end) {
-            if (!show) this.partialEndGameOverlay.isVisible = false;
+            if (!show) {
+                this.partialEndGameOverlay.isVisible = false;
+                if (this.hudGrid)
+                    this.hudGrid.isVisible = true;
+            }
             return;
         }
 
         const ease = new BABYLON.QuadraticEase();
         ease.setEasingMode(show
-            ? BABYLON.EasingFunction.EASINGMODE_EASEOUT // grow fast then slow
-            : BABYLON.EasingFunction.EASINGMODE_EASEIN   // shrink slow then fast
+            ? BABYLON.EasingFunction.EASINGMODE_EASEOUT
+            : BABYLON.EasingFunction.EASINGMODE_EASEIN
         );
 
-        const anim = BABYLON.Animation.CreateAnimation("heightInPixels",
-            BABYLON.Animation.ANIMATIONTYPE_FLOAT, fps, ease);
+        const anim = BABYLON.Animation.CreateAnimation("alpha",
+            BABYLON.Animation.ANIMATIONTYPE_FLOAT,fps,ease);
         anim.setKeys([{ frame: 0, value: current }, { frame: frames, value: end }]);
         this.partialTransitionFill.animations = [anim];
-        await new Promise<void>(r => scene.beginAnimation(this.partialTransitionFill, 0, frames, false, 1, r));
-        if (!show) {
-            this.partialEndGameOverlay.isVisible = false;
-            this.hudGrid.isVisible = true;
-        }
+
+        scene.beginAnimation(this.partialTransitionFill, 0, frames, false, 1, () => {
+            if (!show) {
+                this.partialEndGameOverlay.isVisible = false;
+                if (this.hudGrid)
+                    this.hudGrid.isVisible = true;
+            }
+        });
     }
 
-    // private showGameFillImmediate(): void {
-    //     if (!this.partialTransitionFill || !this.advancedTexture) return;
-    //     this.partialTransitionFill.heightInPixels = Math.round(this.advancedTexture.getSize().height * 0.80);
-    // }
-
-    // private hideGameFillImmediate(): void {
-    //     if (!this.partialTransitionFill) return;
-    //     this.partialTransitionFill.heightInPixels = 0;
-    // }
-
+    
 
     async showPartialWinner(winner: string): Promise<void> {
         if (!this.advancedTexture) return;
@@ -573,12 +480,36 @@ export class GUIManager {
         fadeIn.setKeys([{frame:0,value:0},{frame:10,value:1}]);
         this.partialText.animations = [fadeIn];
 
-        this.partialParticleSystem?.reset();
-        this.partialParticleSystem?.start();
-
+        const cams = scene.activeCameras?.length ? scene.activeCameras : scene.activeCamera;
+        spawnFireworksInFrontOfCameras(scene, PARTIAL_FIREWORKS, cams);
         await new Promise(r => scene.beginAnimation(this.partialText!, 0, 10, false, 1, r));
         await new Promise(r => setTimeout(r, totalFrames));
 
+    }
+
+    async waitForSpaceToContinue(): Promise<void> {
+        if (!this.advancedTexture) return;
+        const scene = this.advancedTexture.getScene();
+        if (this.continueText) {
+            this.continueText.text = "Press SPACE to continue";
+            this.continueText.isVisible = "true";
+        }
+
+        return new Promise<void>((resolve) => {
+            const sub = scene.onKeyboardObservable.add((kbInfo: any) => {
+            if (kbInfo.type === BABYLON.KeyboardEventTypes.KEYDOWN) {
+                const e = kbInfo.event as KeyboardEvent;
+                // handle both ' ' and 'Space'
+                if (e.code === "Space" || e.key === " ") {
+                scene.onKeyboardObservable.remove(sub);
+                this.continueText.isVisible = "false";
+                resolve();
+                }
+            }
+            });
+            // kick the pulse
+            scene.beginAnimation(this.continueText, 0, 60, true);
+        });
     }
 
     async hidePartialWinner(): Promise<void> {
@@ -593,10 +524,6 @@ export class GUIManager {
         this.partialText.animations = [fadeOut];
 
         await new Promise(r => scene.beginAnimation(this.partialText!, 0, totalFrames, false, 1, r));
-
-
-        this.partialParticleSystem?.stop();
-        this.partialParticleSystem?.reset();
 
         this.partialEndGameOverlay.isPointerBlocker = false;
         this.partialEndGameOverlay.isVisible = false;

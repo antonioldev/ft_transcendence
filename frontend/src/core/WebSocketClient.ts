@@ -200,7 +200,6 @@ export class WebSocketClient {
     
         try {
             this.ws!.send(JSON.stringify(message));
-            Logger.debug(`Message sent: ${type}`, 'WebSocketClient', message);
         } catch (error) {
             Logger.error(`Error sending message of type ${type}`, 'WebSocketClient', error);
         }
@@ -278,7 +277,6 @@ export class WebSocketClient {
     
     triggerCallback(event: WebSocketEvent, data?: any): void {
         const callback = this.callbacks[event];
-        console.log(`DATA: ${data}`);
         if (callback) {
             try {
                 callback(data);

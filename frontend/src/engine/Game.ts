@@ -365,7 +365,7 @@ export class Game {
         if (this.currentState === GameState.MATCH_ENDED)
             this.resetForNextMatch();
         if (countdown === GAME_CONFIG.startDelay) {
-            this.guiManager?.animateBackground(true);
+            await this.guiManager?.animateBackground(true);
             this.renderManager?.startCameraAnimation(
                 this.gameObjects?.cameras, 
                 this.config.viewMode,
@@ -428,6 +428,7 @@ export class Game {
         // if (this.config.gameMode === GameMode.TOURNAMENT_LOCAL || this.config.gameMode === GameMode.TOURNAMENT_REMOTE)
         await this.guiManager?.animateBackground(true);
         await this.guiManager?.showPartialWinner(winner);
+        await this.guiManager?.waitForSpaceToContinue();
         await this.guiManager?.hidePartialWinner();
         webSocketClient.notifyGameAnimationDone();
         this.audioManager?.stopGameMusic();
