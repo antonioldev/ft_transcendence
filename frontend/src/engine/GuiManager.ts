@@ -38,7 +38,8 @@ export class GUIManager {
 
     private partialEndGameOverlay: any = null;
     private partialTransitionFill: any = null;
-    private partialText: any = null;
+    private partialWinnerLabel: any = null;
+    private partialWinnerName: any = null;
     private continueText: any = null;
 
 
@@ -363,15 +364,6 @@ export class GUIManager {
         this.partialEndGameOverlay.zIndex = 9;
         this.advancedTexture.addControl(this.partialEndGameOverlay);
 
-        this.partialText = new BABYLON.GUI.TextBlock("pw_text", "");
-        this.partialText.fontSize = 72;
-        this.partialText.color = "#FFD700";
-        this.partialText.outlineWidth = 2;
-        this.partialText.outlineColor = "#ffffffee";  
-        this.partialText.alpha = 0;
-        this.partialText.zIndex = 11;
-        this.partialEndGameOverlay.addControl(this.partialText);
-
         this.partialTransitionFill = new BABYLON.GUI.Rectangle("partialTransitionFill");
         this.partialTransitionFill.thickness = 0;
         this.partialTransitionFill.width = "100%";
@@ -380,19 +372,58 @@ export class GUIManager {
         this.partialTransitionFill.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
         this.partialTransitionFill.background = "black";
         this.partialTransitionFill.alpha = 0;
+        this.partialTransitionFill.zIndex = 8;
         this.partialEndGameOverlay.addControl(this.partialTransitionFill);
 
-        this.continueText = new BABYLON.GUI.TextBlock("continue_text", "Space");
+        const centerColumn = new BABYLON.GUI.StackPanel("winnerStack");
+        centerColumn.isVertical = true;
+        centerColumn.width = "100%";
+        centerColumn.height = "100%";
+        // (centerColumn as any).spacing = 6; // optional
+        centerColumn.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+        centerColumn.verticalAlignment   = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
+        centerColumn.zIndex = 10;
+        this.partialEndGameOverlay.addControl(centerColumn);
+
+        this.partialWinnerLabel = new BABYLON.GUI.TextBlock("winnerLabel", "Winner");
+        this.partialWinnerLabel.color = "#FFFFFF";
+        this.partialWinnerLabel.outlineWidth = 2;
+        this.partialWinnerLabel.outlineColor = "#000000";
+        this.partialWinnerLabel.fontSize = 36;
+        this.partialWinnerLabel.zIndex = 11;
+        this.partialWinnerLabel.isVisible = false;
+        this.partialWinnerLabel.resizeToFit = true;
+        this.partialWinnerLabel.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+        this.partialWinnerLabel.textVerticalAlignment   = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
+        centerColumn.addControl(this.partialWinnerLabel);
+
+        this.partialWinnerName = new BABYLON.GUI.TextBlock("winnerName", "");
+        this.partialWinnerName.color = "#FFD700";
+        this.partialWinnerName.outlineWidth = 2;
+        this.partialWinnerName.outlineColor = "#ffffffee";
+        this.partialWinnerName.fontSize = 72;
+        this.partialWinnerName.fontWeight = "bold";
+        this.partialWinnerName.isVisible = false;
+        this.partialWinnerName.zIndex = 11;
+        this.partialWinnerName.resizeToFit  = true;
+        this.partialWinnerName.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+        this.partialWinnerName.textVerticalAlignment   = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
+        centerColumn.addControl(this.partialWinnerName);
+
+        this.continueText = new BABYLON.GUI.TextBlock("continue_text", "Press SPACE to continue");
         this.continueText.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
-        this.continueText.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
+        this.continueText.verticalAlignment   = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
+        this.continueText.width  = "100%";
+        this.continueText.height = "50px";
+        (this.continueText as any).paddingBottom = "24px";
         this.continueText.fontSize = 25;
         this.continueText.color = "#FFD700";
         this.continueText.outlineWidth = 2;
-        this.continueText.outlineColor = "#ffffffee";  
-        this.continueText.alpha = 0;
+        this.continueText.outlineColor = "#ffffffee";
+        this.continueText.alpha = 1;
+        this.continueText.isVisible = false;
         this.continueText.zIndex = 11;
-        this.continueText.isVisible = "false";
-        this.partialEndGameOverlay.addControl(this.partialText);
+        this.partialEndGameOverlay.addControl(this.continueText);
     }
 
     async showWinner(winner: string): Promise<void> {
@@ -470,19 +501,22 @@ export class GUIManager {
         const fps = 60;
         const totalFrames = 180;
 
-        this.partialText.text = `Winner: ${winner}`;
-        this.partialText.alpha = 0;
+        this.partialWinnerLabel.text = "Winner";
+        this.partialWinnerName.text  = winner;
+        this.partialWinnerLabel.isVisible = true;
+        this.partialWinnerName.isVisible = true;
+        this.partialWinnerName.alpha = 0;
 
         this.partialEndGameOverlay.isVisible = true;
         this.partialEndGameOverlay.isPointerBlocker = true;
 
         const fadeIn = BABYLON.Animation.CreateAnimation("alpha", BABYLON.Animation.ANIMATIONTYPE_FLOAT, fps, new BABYLON.QuadraticEase());
-        fadeIn.setKeys([{frame:0,value:0},{frame:10,value:1}]);
-        this.partialText.animations = [fadeIn];
+        fadeIn.setKeys([{frame:0,value:0},{frame:30,value:1}]);
+        this.partialWinnerName.animations = [fadeIn];
 
         const cams = scene.activeCameras?.length ? scene.activeCameras : scene.activeCamera;
         spawnFireworksInFrontOfCameras(scene, PARTIAL_FIREWORKS, cams);
-        await new Promise(r => scene.beginAnimation(this.partialText!, 0, 10, false, 1, r));
+        await new Promise(r => scene.beginAnimation(this.partialWinnerName!, 0, 10, false, 1, r));
         await new Promise(r => setTimeout(r, totalFrames));
 
     }
@@ -490,10 +524,8 @@ export class GUIManager {
     async waitForSpaceToContinue(): Promise<void> {
         if (!this.advancedTexture) return;
         const scene = this.advancedTexture.getScene();
-        if (this.continueText) {
-            this.continueText.text = "Press SPACE to continue";
-            this.continueText.isVisible = "true";
-        }
+        if (this.continueText)
+            this.continueText.isVisible = true;
 
         return new Promise<void>((resolve) => {
             const sub = scene.onKeyboardObservable.add((kbInfo: any) => {
@@ -502,7 +534,7 @@ export class GUIManager {
                 // handle both ' ' and 'Space'
                 if (e.code === "Space" || e.key === " ") {
                 scene.onKeyboardObservable.remove(sub);
-                this.continueText.isVisible = "false";
+                this.continueText.isVisible = false;
                 resolve();
                 }
             }
@@ -513,7 +545,7 @@ export class GUIManager {
     }
 
     async hidePartialWinner(): Promise<void> {
-        if (!this.partialEndGameOverlay || !this.partialText) return;
+        if (!this.partialEndGameOverlay) return;
         const scene = this.advancedTexture.getScene();
         const fps = 60;
         const totalFrames = 60;
@@ -521,12 +553,14 @@ export class GUIManager {
         const fadeOut = BABYLON.Animation.CreateAnimation("alpha", BABYLON.Animation.ANIMATIONTYPE_FLOAT, fps, new BABYLON.QuadraticEase());
         fadeOut.setKeys([{frame:0,value:1},{frame:totalFrames,value:0}]);
 
-        this.partialText.animations = [fadeOut];
+        this.partialWinnerName.animations = [fadeOut];
 
-        await new Promise(r => scene.beginAnimation(this.partialText!, 0, totalFrames, false, 1, r));
+        await new Promise(r => scene.beginAnimation(this.partialWinnerName!, 0, totalFrames, false, 1, r));
 
         this.partialEndGameOverlay.isPointerBlocker = false;
         this.partialEndGameOverlay.isVisible = false;
+        this.partialWinnerLabel.isVisible = false;
+        this.partialWinnerName.isVisible = false;
     }
 
 
@@ -548,9 +582,9 @@ export class GUIManager {
             this.endGameOverlay = null;
             this.hudGrid = null;
             this.partialEndGameOverlay = null;
-            this.partialText = null;
-            this.partialParticleSystem?.dispose();
-            this.partialParticleSystem = null;
+            this.partialWinnerLabel = null;
+            this.partialWinnerName = null;
+            this.continueText = null;
 
             this.advancedTexture?.dispose();
             this.advancedTexture = null;
