@@ -17,7 +17,7 @@ export function getStandardTextureScale(
 ): { u: number, v: number } {
     const divisor = TEXTURE_SCALING.standardDivisor;
     const multiplier = TEXTURE_SCALING.multipliers[objectType];
-    
+
     return {
         u: (width / divisor) * multiplier,
         v: (height / divisor) * multiplier

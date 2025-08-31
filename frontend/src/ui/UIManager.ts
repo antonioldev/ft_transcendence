@@ -1,5 +1,5 @@
 import { ConnectionStatus } from '../shared/constants.js';
-import { UI_COLORS, UI_STYLES } from './styles.js';
+import { UI_STYLES } from './styles.js';
 import { EL, requireElementById} from './elements.js';
 import { getCurrentTranslation } from '../translations/translations.js';
 
@@ -77,14 +77,6 @@ class UIManager {
 
         // Game dialogs & overlays
         this.applyStylesToAll('.game-overlay', UI_STYLES.gameOverlay);
-        this.applyStylesToAll('.pause-title, .pause-text, .pause-controls', {
-            color: UI_COLORS.text,
-            textAlign: 'center' as const,
-            userSelect: 'none' as const
-        });
-        this.applyStylesToAll('.pause-title', UI_STYLES.pauseLarge);
-        this.applyStylesToAll('.pause-text', UI_STYLES.pauseMedium);
-        this.applyStylesToAll('.pause-controls', UI_STYLES.pauseSmall);
         this.applyStylesToAll('.setup-form', UI_STYLES.setupForm);
 
         this.applyStylesToAll('.loading-content', UI_STYLES.loadingContent);

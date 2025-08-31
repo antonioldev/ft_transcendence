@@ -11,7 +11,6 @@ export class AudioManager {
     private currentRally: number = 1;
 
     // Sound effects
-    private gameStartSound: Sound | null = null;
     private countdownSound: Sound | null = null;
     private paddleHitSound: Sound | null = null;
     private scoreSound: Sound | null = null;
@@ -91,10 +90,8 @@ export class AudioManager {
         }
 
         try {
-            if (this.gameMusic.isPlaying)
-                this.gameMusic.stop();
-
-            this.gameMusic.play();
+            if (this.gameMusic.isPlaying !== true )
+                this.gameMusic.play();
         } catch (error) {
             Logger.error('Error starting game music', 'BabylonAudioManager', error);
         }
@@ -131,10 +128,6 @@ export class AudioManager {
     }
 
     // Sound effects methods
-    playGameStart(): void {
-        if (this.gameStartSound && this.gameStartSound.isReady())
-            this.gameStartSound.play();
-    }
 
     playPaddleHit(): void {
         this.paddleHitSound?.play();
@@ -168,9 +161,6 @@ export class AudioManager {
 
             this.scoreSound?.dispose();
             this.scoreSound = null;
-
-            this.gameStartSound?.dispose();
-            this.gameStartSound = null;
 
             this.scene = null;
             this.isInitialized = false;

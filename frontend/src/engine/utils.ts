@@ -86,10 +86,6 @@ export interface TextBlockOptions {
     height?: string;
     // Rich text effects
     applyRichEffects?: boolean;
-    shadowOffsetX?: number;
-    shadowOffsetY?: number;
-    shadowBlur?: number;
-    shadowColor?: string;
     outlineWidth?: number;
     outlineColor?: string;
     // Additional properties

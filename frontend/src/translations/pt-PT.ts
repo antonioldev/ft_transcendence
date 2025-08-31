@@ -19,7 +19,7 @@ export const portuguese: Translation = {
     enterPlayer2Name: 'Digite o nome do Jogador 2',
     onlineInfo: 'Você será pareado com outro jogador online',
     startGame: 'Iniciar Jogo',
-    gamePaused: 'Jogo Pausado',
+    gamePaused: 'JOGO PAUSADO',
     exitGame: 'Sair do jogo?',
     pauseControls: 'Y - Sim | N - Não | ESC - Retomar',
     pauseControls3D: 'Y | N',

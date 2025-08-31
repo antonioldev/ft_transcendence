@@ -36,7 +36,6 @@ import { appStateManager } from '../core/AppStateManager.js';
 import { authManager } from '../core/AuthManager.js';
 import { PlayerInfo } from '../shared/types.js';
 import { GameConfigFactory } from './GameConfig.js';
-import { EL } from '../ui/elements.js';
 import { AudioManager } from './AudioManager.js';
 
 /**
@@ -98,7 +97,7 @@ export class Game {
 
     static pause(): void {
         const game = Game.currentInstance;
-        if (!game || game.isDisposed || game.isPausedByServer) return;
+        if (!game || game.isDisposed || game.isPausedByServer || !game.isRunning) return;
         Logger.info('Requesting pause from server...', 'Game');
         webSocketClient.sendPauseRequest();
     }
@@ -162,10 +161,7 @@ export class Game {
 
     private updateGamePauseState(isPaused: boolean): void {
         this.currentState = isPaused ? GameState.PAUSED : GameState.PLAYING;
-        
-        // Update UI directly
-        uiManager.setElementVisibility(EL.GAME.PAUSE_DIALOG_3D, isPaused);
-        
+        this.guiManager?.setPauseVisible(isPaused);
         Logger.info(`Game ${isPaused ? 'paused' : 'resumed'}`, 'Game');
     }
 
@@ -285,7 +281,7 @@ export class Game {
     }
 
     // Initialize Babylon.js engine
-    private async initializeBabylonEngine(): Promise<any> {
+    private async initializeBabylonEngine(): Promise<Engine> {
         const engine = new Engine(this.canvas, true, { 
             preserveDrawingBuffer: true, 
             stencil: true, 
@@ -298,7 +294,7 @@ export class Game {
     }
 
     // Create scene based on view mode
-    private async  createScene(): Promise<any> {
+    private async  createScene(): Promise<Scene> {
         const scene = new Scene(this.engine!);
         scene.createDefaultEnvironment({ createGround: false, createSkybox: false });
         scene.clearColor = new Color4(0, 0, 0, 1);
@@ -317,7 +313,7 @@ export class Game {
 
     private setupGlobalKeyboardEvents(): void {
         document.addEventListener('keydown', (event) => {
-            if (event.key === 'Escape') {
+            if (event.key === 'Escape' && this.isRunning) {
                 if (this.isInGame() && this.currentState === GameState.PLAYING)
                     Game.pause();
                 else if (this.isPaused())
@@ -382,7 +378,6 @@ export class Game {
         if (this.currentState === GameState.MATCH_ENDED)
             this.resetForNextMatch();
         if (countdown === GAME_CONFIG.startDelay) {
-            await this.guiManager?.animateBackground(true);
             this.renderManager?.startCameraAnimation(
                 this.gameObjects?.cameras, 
                 this.config.viewMode,
@@ -390,15 +385,15 @@ export class Game {
                 this.isLocalMultiplayer
             );
         }
-        if (countdown > 0) {
+        else if (countdown > 0 && GAME_CONFIG.startDelay - 1) {
+            this.guiManager?.showCountdown(true, countdown);
             this.audioManager?.playCountdown();
-            this.guiManager?.showCountdown(countdown);
         }
         else {
             this.audioManager?.stopCountdown();
             this.audioManager?.startGameMusic();
             this.renderManager?.stopCameraAnimation();
-            this.guiManager?.hideCountdown();
+            this.guiManager?.showCountdown(false);
             await this.guiManager?.animateBackground(false);
             this.start();
         }
@@ -414,7 +409,6 @@ export class Game {
         this.isRunning = false;
         this.updateGamePauseState(true);
         this.audioManager?.pauseGameMusic();
-        this.renderManager?.stopRendering();
         this.stopGameLoop();
         
         Logger.info('Game paused by server', 'Game');
@@ -441,7 +435,7 @@ export class Game {
             return;
         if (!(this.config.gameMode === GameMode.TOURNAMENT_LOCAL) && !(this.config.gameMode === GameMode.TOURNAMENT_REMOTE))
             return;
-        uiManager.setElementVisibility('pause-dialog-3d', false);
+        this.guiManager?.setPauseVisible(false);
         await this.guiManager?.animateBackground(true);
         await this.guiManager?.showPartialWinner(winner);
         await this.guiManager?.waitForSpaceToContinue(2000);
@@ -457,10 +451,10 @@ export class Game {
     private async onServerEndedSession(winner: string): Promise<void> {
         if (this.isDisposed) return;
 
-        if (!this.renderManager?.isRendering())
+        if (!this.renderManager?.isRenderingActive)
             this.renderManager?.startRendering();
 
-        uiManager.setElementVisibility('pause-dialog-3d', false);
+        this.guiManager?.setPauseVisible(false);
         if (winner !== undefined)
             await this.guiManager?.showWinner(winner);
 
@@ -551,7 +545,7 @@ export class Game {
             this.audioManager?.updateMusicSpeed(state.ball.current_rally);
 
             // Update Score
-            if (this.guiManager && this.guiManager.isReady()){
+            if (this.guiManager && this.guiManager.isInitialized){
                 if (this.playerLeftScore < state.paddleLeft.score) {
                     this.playerLeftScore = state.paddleLeft.score
                     this.audioManager?.playScore();
@@ -717,17 +711,16 @@ export class Game {
     }
 
     private handlePlayerAssignment(leftPlayerName: string, rightPlayerName: string): void {
-        if (this.guiManager)
-            this.guiManager.updatePlayerNames(leftPlayerName, rightPlayerName);
+        this.guiManager?.updatePlayerNames(leftPlayerName, rightPlayerName);
         this.controlledSides = []
         this.assignPlayerSide(leftPlayerName, 0);
         this.assignPlayerSide(rightPlayerName, 1);
         this.setActiveCameras();
-        if (this.guiManager) {
-            const leftPlayerControlled = this.controlledSides.includes(0);
-            const rightPlayerControlled = this.controlledSides.includes(1);
-            this.guiManager.updateControlVisibility(leftPlayerControlled, rightPlayerControlled);
-        }
+
+        const leftPlayerControlled = this.controlledSides.includes(0);
+        const rightPlayerControlled = this.controlledSides.includes(1);
+        this.guiManager?.updateControlVisibility(leftPlayerControlled, rightPlayerControlled);
+    
         console.log(`Left=${leftPlayerName}, Right=${rightPlayerName}, Controlled sides: [${this.controlledSides}]`);
     }
 

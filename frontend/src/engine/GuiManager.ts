@@ -1,5 +1,5 @@
 import { AdvancedDynamicTexture, Control, Rectangle, TextBlock, Grid} from "@babylonjs/gui";
-import { KeyboardEventTypes, Animation, SineEase } from "@babylonjs/core";
+import { Scene, KeyboardEventTypes, Animation, SineEase } from "@babylonjs/core";
 import { Logger } from '../utils/LogManager.js';
 import { GameConfig } from './GameConfig.js';
 import { GameMode, ViewMode } from '../shared/constants.js';
@@ -15,29 +15,36 @@ export class GUIManager {
     private readonly V_CENTER = Control.VERTICAL_ALIGNMENT_CENTER;
     private readonly V_BOTTOM = Control.VERTICAL_ALIGNMENT_BOTTOM;
     private advancedTexture: AdvancedDynamicTexture | null = null;
-    private isInitialized: boolean = false;
-    private hudGrid: any = null;
-    private fpsText: any = null;
-    private score1Text: any = null;
-    private score2Text: any = null;
-    private player1Label: any = null;
-    private player2Label: any = null;
-    private rallyText: any | null;
-    private rally: any = null;
+    isInitialized: boolean = false;
+    private hudGrid!: Grid;
+    private fpsText!: TextBlock;
+    private score1Text!: TextBlock;
+    private score2Text!: TextBlock;
+    private player1Label!: TextBlock;
+    private player2Label!: TextBlock;
+    private rallyText!: TextBlock;
+    private rally!: TextBlock;
     private previousRally: number = 1;
-    private countdownText: any = null;
-    private countdownContainer: any = null;
-    private endGameOverlay: any = null;
-    private endGameWinnerText: any = null;
-    private partialEndGameOverlay: any = null;
-    private partialTransitionFill: any = null;
-    private partialWinnerLabel: any = null;
-    private partialWinnerName: any = null;
-    private continueText: any = null;
+    private countdownText!: TextBlock;
+    private countdownContainer!: Rectangle;
+    private endGameOverlay!: Grid;
+    private endGameWinnerText!: TextBlock;
+    private partialEndGameOverlay!: Rectangle;
+    private partialTransitionFill!: Rectangle;
+    private partialWinnerLabel!: TextBlock;
+    private partialWinnerName!: TextBlock;
+    private continueText!: TextBlock;
+
+    private pauseOverlay!: Rectangle;
+    private pauseGrid!: Grid;
+    private pauseTitle!: TextBlock;
+    private pauseInstruction!: TextBlock;
+    private pauseHint!: TextBlock;
+
 
 
     // Initialize and create all GUI elements
-    createGUI(scene: any, config: GameConfig): void {
+    createGUI(scene: Scene, config: GameConfig): void {
         if (this.isInitialized) {
             Logger.warn('GUI already initialized, skipping creation', 'GUIManager');
             return;
@@ -49,6 +56,7 @@ export class GUIManager {
             this.advancedTexture!.layer!.layerMask = 0x20000000;
 
             this.createHUD(config);
+            this.createPauseOverlay();
             this.createViewModeElements(config);
             this.createCountdownDisplay();
             this.createPartialEndGameOverlay();
@@ -62,130 +70,82 @@ export class GUIManager {
         }
     }
 
-    // Create split screen divider if is in split screen mode
-    private createViewModeElements(config: GameConfig): void {
-        if (config.viewMode === ViewMode.MODE_3D && 
-            (config.gameMode === GameMode.TWO_PLAYER_LOCAL || config.gameMode === GameMode.TOURNAMENT_LOCAL)) {
-            const dividerLine = new Rectangle();
-            dividerLine.widthInPixels = 5;
-            dividerLine.height = "100%";
-            dividerLine.color = "black";
-            dividerLine.background = "black";
-            dividerLine.verticalAlignment = this.V_CENTER;
-            dividerLine.horizontalAlignment = this.H_CENTER;
-            
-            this.advancedTexture!.addControl(dividerLine);
-            Logger.info('Split screen divider created', 'GUIManager');
-        }
-    }
-
-    private addHUDBox(col: number, controls: any | any[]): void {
-        const box = new Rectangle();
-        box.background = "rgba(0, 0, 0, 0.50)";
-        box.thickness = 0;
-
-        const list = Array.isArray(controls) ? controls : [controls];
-        for (const items of list)
-            box.addControl(items);
-
-        this.hudGrid.addControl(box, 0, col);
-    }
-
-    private createTextBlock(name: string, options: TextBlockOptions = {}): TextBlock {
-        const textBlock = new TextBlock();
-
-        textBlock.fontFamily = 'Poppins, Arial, sans-serif';
-        textBlock.text = options.text || name;
-        textBlock.fontSize = options.fontSize || 24;
-        textBlock.color = options.color || "#FFFFFF";
-        textBlock.fontWeight = options.fontWeight || "normal";
-        textBlock.width = options.width || "100%";
-        textBlock.height = options.height || "100%";
-
-        textBlock.textHorizontalAlignment = options.horizontalAlignment || this.H_CENTER;
-        textBlock.textVerticalAlignment = options.verticalAlignment || this.V_CENTER;
-
-        if (options.alpha !== undefined) textBlock.alpha = options.alpha;
-        if (options.lineSpacing) textBlock.lineSpacing = options.lineSpacing;
-        if (options.resizeToFit !== undefined) textBlock.resizeToFit = options.resizeToFit;
-        
-        // Apply rich text effects if requested
-        if (options.applyRichEffects) {
-            textBlock.shadowOffsetX = options.shadowOffsetX || 3;
-            textBlock.shadowOffsetY = options.shadowOffsetY || 3;
-            textBlock.shadowBlur = options.shadowBlur || 8;
-            textBlock.shadowColor = options.shadowColor || "rgba(255, 107, 107, 0.5)";
-            textBlock.fontWeight = "bold";
-            textBlock.outlineWidth = options.outlineWidth || 2;
-            textBlock.outlineColor = options.outlineColor || "black";
-        }
-
-        return textBlock;
-    }
-
-
-    private createPlayerControls(config: GameConfig, player: number): any {
-        const pControls = this.createTextBlock("PlayerControls", {
-            text: this.getControlsText(config.viewMode, player),
-            lineSpacing: "10px",
-            color: "rgba(0, 0, 0, 0)",
-            fontSize: 30
-        });
-        return pControls;
-    }
-
-    updateControlVisibility(player1: boolean, player2: boolean): void {
-        if (!this.hudGrid) return;
-
-        const player1ControlBox = this.hudGrid.getChildrenAt(0, 1)[0];
-        const player2ControlBox = this.hudGrid.getChildrenAt(0, 4)[0];
-
-        if (player1ControlBox && player1ControlBox.children.length > 0) {
-            const player1Controls = player1ControlBox.children[0];
-            player1Controls.color = player1 ? "rgba(255,255,255,0.7)" : "rgba(0, 0, 0, 0)";
-        }
-
-        if (player2ControlBox && player2ControlBox.children.length > 0) {
-            const player2Controls = player2ControlBox.children[0];
-            player2Controls.color = player2 ? "rgba(255,255,255,0.7)" : "rgba(0, 0, 0, 0)";
-        }
+    setPauseVisible(visible: boolean): void {
+        if (!this.pauseOverlay) return;
+        this.pauseOverlay.isVisible = visible;
     }
 
     private createHUD(config: GameConfig): void {
-        this.hudGrid = new Grid();
-        this.hudGrid.width = "100%";
-        this.hudGrid.height = "20%";
-        this.hudGrid.horizontalAlignment = this.H_CENTER;
-        this.hudGrid.verticalAlignment = this.V_BOTTOM;
+        this.hudGrid = this.createGrid("hudGrid", "20%", this.V_BOTTOM);
+        this.hudGrid.background = "rgba(0, 0, 0, 0.55)"
         this.hudGrid.zIndex = 8;
 
-        this.hudGrid.addColumnDefinition(0.10); // FPS
-        this.hudGrid.addColumnDefinition(0.15); // P1 instructions
-        this.hudGrid.addColumnDefinition(0.25); // P1 score
-        this.hudGrid.addColumnDefinition(0.25); // P2 score
-        this.hudGrid.addColumnDefinition(0.15); // P2 instructions
-        this.hudGrid.addColumnDefinition(0.10); // Rally
+        this.hudGrid.addColumnDefinition(0.10, false); // FPS
+        this.hudGrid.addColumnDefinition(0.15, false); // P1 instructions
+        this.hudGrid.addColumnDefinition(0.25, false); // P1 score
+        this.hudGrid.addColumnDefinition(0.25, false); // P2 score
+        this.hudGrid.addColumnDefinition(0.15, false); // P2 instructions
+        this.hudGrid.addColumnDefinition(0.10, false); // Rally
 
         this.advancedTexture!.addControl(this.hudGrid);
 
-        // Box 1: FPS
-        this.fpsText = this.createTextBlock("FPS: 0", { fontSize: 18 });
-        this.addHUDBox(0, this.fpsText);
-        // Box 2: Instructions P1
-        this.addHUDBox(1, this.createPlayerControls(config, 1));
-        // Box 3: P1 score + label
-        this.player1Label = this.createTextBlock("Player 1", { fontSize: 48, applyRichEffects: true });
-        this.score1Text = this.createTextBlock("0", { fontSize: 56, verticalAlignment: this.V_BOTTOM, applyRichEffects: true });
-        this.addHUDBox(2, [this.player1Label, this.score1Text]);
-        // Box 4: P2 score + label  
-        this.player2Label = this.createTextBlock("Player 2", { fontSize: 48, applyRichEffects: true });
-        this.score2Text = this.createTextBlock("0", { fontSize: 56, verticalAlignment: this.V_BOTTOM, applyRichEffects: true });
-        this.addHUDBox(3, [this.player2Label, this.score2Text]);
-        // Box 5: Instructions P2
-        this.addHUDBox(4, this.createPlayerControls(config, 2));
-        // Box 6: Rally
-        this.rallyText = this.createTextBlock("Rally", {fontSize: 48});
-        this.rally = this.createTextBlock("0", { fontSize: 56, verticalAlignment: this.V_BOTTOM });
+        // FPS (col 0)
+        this.fpsText = this.createTextBlock("fpsText", { text: "FPS: 0", fontSize: 18 });
+        this.hudGrid.addControl(this.fpsText, 0, 0);
+
+        // P1 controls (col 1)
+        this.hudGrid.addControl(this.createPlayerControls(config, 1), 0, 1);
+
+        // P1 score+label (col 2)
+        const p1Cell = new Grid();
+        p1Cell.addRowDefinition(1, false);
+        p1Cell.addRowDefinition(1, false);
+        p1Cell.addColumnDefinition(1, false);
+
+        this.player1Label = this.createTextBlock("player1Label", {
+        text: "Player 1", fontSize: 48, applyRichEffects: true
+        });
+        this.score1Text = this.createTextBlock("score1Text", {
+        text: "0", fontSize: 56, verticalAlignment: this.V_BOTTOM, applyRichEffects: true
+        });
+        p1Cell.addControl(this.player1Label, 0, 0);
+        p1Cell.addControl(this.score1Text,  1, 0);
+        this.hudGrid.addControl(p1Cell, 0, 2);
+
+        // P2 score+label (col 3)
+        const p2Cell = new Grid();
+        p2Cell.addRowDefinition(1, false);
+        p2Cell.addRowDefinition(1, false);
+        p2Cell.addColumnDefinition(1, false);
+
+        this.player2Label = this.createTextBlock("player2Label", {
+        text: "Player 2", fontSize: 48, applyRichEffects: true
+        });
+        this.score2Text = this.createTextBlock("score2Text", {
+        text: "0", fontSize: 56, verticalAlignment: this.V_BOTTOM, applyRichEffects: true
+        });
+        p2Cell.addControl(this.player2Label, 0, 0);
+        p2Cell.addControl(this.score2Text,  1, 0);
+        this.hudGrid.addControl(p2Cell, 0, 3);
+
+        // P2 controls (col 4)
+        this.hudGrid.addControl(this.createPlayerControls(config, 2), 0, 4);
+
+        // Rally (col 5)
+        const rallyCell = new Grid();
+        rallyCell.addRowDefinition(1, false);
+        rallyCell.addRowDefinition(1, false);
+        rallyCell.addColumnDefinition(1, false);
+
+        this.rallyText = this.createTextBlock("rallyText", { text: "Rally", fontSize: 48 });
+        this.rally = this.createTextBlock("rallyValue", { text: "0", fontSize: 56, verticalAlignment: this.V_BOTTOM });
+        this.rally.transformCenterY = 1;
+        this.rally.scaleX = 1; this.rally.scaleY = 1;
+
+        rallyCell.addControl(this.rallyText, 0, 0);
+        rallyCell.addControl(this.rally,     1, 0);
+        this.hudGrid.addControl(rallyCell, 0, 5);
+
         this.rally.transformCenterY = 1;
         this.rally.scaleX = 1;
         this.rally.scaleY = 1;
@@ -194,28 +154,144 @@ export class GUIManager {
         const animationScaleY = this.createAnimation("scaleY", 1, 1.3);
         this.rally.animations = [animationScaleX, animationScaleY];
 
-        this.addHUDBox(5, [this.rallyText, this.rally]);
+    }
+
+    private createPlayerControls(config: GameConfig, player: number): TextBlock {
+        const pControls = this.createTextBlock(`PlayerControls_p${player}`, {
+            text: this.getControlsText(config.viewMode, player),
+            lineSpacing: "10px",
+            color: "rgba(0, 0, 0, 0)",
+            fontSize: 30
+        });
+        pControls.name = `PlayerControls_p${player}`;
+        return pControls;
+    }
+
+    private createPauseOverlay(): void {
+        if (!this.advancedTexture) return;
+
+        const t = getCurrentTranslation();
+        this.pauseOverlay = this.createRect("pauseOverlay", "100%", 11, this.V_CENTER ,"rgba(2, 2, 2, 0.74)");
+        this.pauseOverlay.isVisible = false;
+        this.advancedTexture.addControl(this.pauseOverlay);
+
+        this.pauseGrid = this.createGrid("pauseGrid", "20%");
+
+        this.pauseGrid.addRowDefinition(0.5, false);
+        this.pauseGrid.addRowDefinition(0.3, false);
+        this.pauseGrid.addRowDefinition(0.2, false);
+        this.pauseOverlay.addControl(this.pauseGrid);
+
+        this.pauseTitle = this.createTextBlock("pauseTitle",{
+            text: t.gamePaused,
+            fontWeight: "bold",
+            fontSize: 36,
+        });
+        this.pauseGrid.addControl(this.pauseTitle, 0, 0);
+
+        this.pauseInstruction = this.createTextBlock("pauseInstruction",{ text: t.exitGame, });
+        this.pauseGrid.addControl(this.pauseInstruction, 1, 0);
+
+        this.pauseHint = this.createTextBlock("pauseHint", { text: t.pauseControls, });
+        this.pauseGrid.addControl(this.pauseHint, 2, 0);
+
+    }
+
+    private createViewModeElements(config: GameConfig): void {
+        if (config.viewMode === ViewMode.MODE_3D && 
+            (config.gameMode === GameMode.TWO_PLAYER_LOCAL || config.gameMode === GameMode.TOURNAMENT_LOCAL)) {
+            const dividerLine = this.createRect("divider", "100%", 6, this.V_CENTER, "#000000ff")
+            dividerLine.widthInPixels = 5;
+
+            this.advancedTexture!.addControl(dividerLine);
+            Logger.info('Split screen divider created', 'GUIManager');
+        }
     }
 
     private createCountdownDisplay(): void {
-        this.countdownContainer = new Rectangle("countdownContainer");
-        this.countdownContainer.width = "200px";
-        this.countdownContainer.height = "200px";
-        this.countdownContainer.cornerRadius = 60;
+        this.countdownContainer = this.createRect("countdownContainer", "100%", 10);
         this.countdownContainer.thickness = 0;
-        this.countdownContainer.background = "transparent";
-        this.countdownContainer.horizontalAlignment = this.H_CENTER;
-        this.countdownContainer.verticalAlignment = this.V_CENTER;
         this.countdownContainer.isVisible = false;
-        this.countdownContainer.zIndex = 10;
 
         this.countdownText = this.createTextBlock("5", { fontSize: 72, applyRichEffects: true });
         this.countdownContainer.addControl(this.countdownText);
         this.advancedTexture!.addControl(this.countdownContainer);
     }
 
-    showCountdown(count: number): void {
-        if (this.countdownText && this.countdownContainer) {
+    private createPartialEndGameOverlay(): void {
+        this.partialEndGameOverlay = this.createRect("partialWinnerLayer", "100%", 7);
+        this.partialEndGameOverlay.isVisible = false;
+        this.advancedTexture!.addControl(this.partialEndGameOverlay);
+
+        this.partialTransitionFill = this.createRect("partialTransitionFill", "100%", 8, this.V_BOTTOM, "#000000ff");
+        this.partialTransitionFill.alpha = 0;
+        this.partialEndGameOverlay.addControl(this.partialTransitionFill);
+
+        const centerColumn = this.createGrid("winnerGrid", "100%");
+        centerColumn.zIndex = 9;
+
+        centerColumn.addRowDefinition(0.3);
+        centerColumn.addRowDefinition(0.5);
+        centerColumn.addRowDefinition(0.2);
+        this.partialEndGameOverlay.addControl(centerColumn);
+
+        const t = getCurrentTranslation();
+        this.partialWinnerLabel = this.createTextBlock("winnerLabel", {
+            text: t.winner,
+            outlineWidth: 2,
+            outlineColor: "#000000",
+            fontSize: 48,
+            zIndex: 10,
+        });
+        this.partialWinnerLabel.isVisible =  false;
+        centerColumn.addControl(this.partialWinnerLabel, 0, 0);
+
+        this.partialWinnerName = this.createTextBlock("winnerName", {
+            text: "",
+            color: "#FFD700",
+            outlineWidth: 2,
+            outlineColor: "#ffffffee",
+            fontSize: 100,
+            fontWeight: "bold",
+            zIndex: 10,
+            alpha: 0,
+        });
+        this.partialWinnerName.isVisible =  false;
+        centerColumn.addControl(this.partialWinnerName, 1, 0);
+
+        this.continueText = this.createTextBlock("continue_text", {
+            text: t.continue,
+            fontSize: 25,
+            color: "#FFD700",
+            outlineWidth: 2,
+            outlineColor: "#ffffffee",
+            zIndex: 10,
+        });
+        this.continueText.isVisible =  false;
+        centerColumn.addControl(this.continueText, 2, 0);
+    }
+    private createEndGameOverlay(): void {
+        this.endGameOverlay = this.createGrid("endGameOverlay", "20%", this.V_BOTTOM);
+        this.endGameOverlay.background = "rgba(0, 0, 0, 0.9)";
+        this.endGameOverlay.isVisible = false;
+        this.endGameOverlay.addColumnDefinition(1.0);
+
+        this.endGameWinnerText = this.createTextBlock("endGameWinnerText", {
+            fontSize: 72,
+            color: "#FFD700",
+            applyRichEffects: true
+        });
+        this.endGameOverlay.addControl(this.endGameWinnerText, 0, 0);
+        this.advancedTexture!.addControl(this.endGameOverlay);
+    }
+
+
+    //API to update the GUI
+    showCountdown(show: boolean, count?: number): void {
+        if (!show) {
+            this.countdownContainer.isVisible = false;
+            this.countdownText.animations = [];
+        } else if (count !== undefined) {
             this.countdownText.text = count.toString();
             this.countdownContainer.isVisible = true;
             this.countdownText.scaleX = 1;
@@ -230,35 +306,6 @@ export class GUIManager {
                 scene?.beginAnimation(this.countdownText, 0, 60, false);
             }
         }
-    }
-
-    hideCountdown(): void {
-        if (this.countdownContainer)
-            this.countdownContainer.isVisible = false;
-        this.countdownText.animations = [];
-    }
-
-    private createAnimation(property: string, from: number, end: number, frames: number = 60, pingPong: boolean = true): Animation {
-
-        const fps: number = 60;
-        const anim = Animation.CreateAnimation(
-            property, Animation.ANIMATIONTYPE_FLOAT, fps, new SineEase());
-        anim.loopMode = Animation.ANIMATIONLOOPMODE_CYCLE;
-
-        if (pingPong) {
-            const mid = Math.floor(frames / 2);
-            anim.setKeys([
-            { frame: 0,      value: from },
-            { frame: mid,    value: end },
-            { frame: frames, value: from },
-            ]);
-        } else {
-            anim.setKeys([
-            { frame: 0,      value: from },
-            { frame: frames, value: end },
-            ]);
-        }
-        return anim;
     }
 
     updateFPS(fps: number): void {
@@ -295,120 +342,6 @@ export class GUIManager {
         this.player2Label.text = player2Name;
     }
 
-    // Check if GUI is properly initialized
-    isReady(): boolean {
-        return this.isInitialized && 
-               this.advancedTexture !== null && 
-               this.fpsText !== null && 
-               this.score1Text !== null && 
-               this.score2Text !== null &&
-               this.countdownContainer !== null &&
-               this.countdownText !== null;
-    } // TODO add the rest
-
-    //instructions for movement
-    private getControlsText(viewMode: ViewMode, player: number): string {
-        const t = getCurrentTranslation();
-        const move = t.controls;
-        
-        if (viewMode === ViewMode.MODE_2D)
-            return player === 1 ? move + "\nP1: W / S" : move + "\nP2: ↑ / ↓";
-        else
-            return player === 1 ? move + "\nP1: A / D" : move + "\nP2: ← / →";
-    }
-
-    private createEndGameOverlay(): void {
-        this.endGameOverlay = new Grid();
-        this.endGameOverlay.width = "100%";
-        this.endGameOverlay.height = "20%";
-        this.endGameOverlay.horizontalAlignment = this.H_CENTER;
-        this.endGameOverlay.verticalAlignment = this.V_BOTTOM;
-        this.endGameOverlay.background = "rgba(0, 0, 0, 0.9)";
-        this.endGameOverlay.isVisible = false;
-
-        // Add one column for the winner text
-        this.endGameOverlay.addColumnDefinition(1.0);
-
-        // Create winner text
-        this.endGameWinnerText = this.createTextBlock("endGameWinnerText", {
-            fontSize: 72,
-            color: "#FFD700",
-            applyRichEffects: true
-        });
-        this.endGameOverlay.addControl(this.endGameWinnerText, 0, 0);
-        this.advancedTexture!.addControl(this.endGameOverlay);
-    }
-
-    private createPartialEndGameOverlay(): void {
-        const t = getCurrentTranslation();
-        this.partialEndGameOverlay = new Rectangle("partialWinnerLayer");
-        this.partialEndGameOverlay.thickness = 0;
-        this.partialEndGameOverlay.width = "100%";
-        this.partialEndGameOverlay.height = "100%";
-        this.partialEndGameOverlay.isPointerBlocker = true;
-        this.partialEndGameOverlay.isVisible = false;
-        this.partialEndGameOverlay.zIndex = 7;
-        this.advancedTexture!.addControl(this.partialEndGameOverlay);
-
-        this.partialTransitionFill = new Rectangle("partialTransitionFill");
-        this.partialTransitionFill.thickness = 0;
-        this.partialTransitionFill.width = "100%";
-        this.partialTransitionFill.height = "100%";
-        this.partialTransitionFill.horizontalAlignment = this.H_CENTER;
-        this.partialTransitionFill.verticalAlignment = this.V_BOTTOM;
-        this.partialTransitionFill.background = "black";
-        this.partialTransitionFill.alpha = 0;
-        this.partialTransitionFill.zIndex = 8;
-        this.partialEndGameOverlay.addControl(this.partialTransitionFill);
-
-        const centerColumn = new Grid("winnerGrid");
-        centerColumn.width = "100%";
-        centerColumn.height = "100%";
-        centerColumn.horizontalAlignment = this.H_CENTER;
-        centerColumn.verticalAlignment = this.V_CENTER;
-        centerColumn.zIndex = 9;
-
-        centerColumn.addRowDefinition(0.3);
-        centerColumn.addRowDefinition(0.5);
-        centerColumn.addRowDefinition(0.2);
-        this.partialEndGameOverlay.addControl(centerColumn);
-
-        
-        this.partialWinnerLabel = this.createTextBlock("winnerLabel", {
-            text: t.winner,
-            outlineWidth: 2,
-            outlineColor: "#000000",
-            fontSize: 48,
-            zIndex: 10,
-        });
-        this.partialWinnerLabel.isVisible =  false;
-        centerColumn.addControl(this.partialWinnerLabel, 0, 0);
-
-        this.partialWinnerName = this.createTextBlock("winnerName", {
-            text: "",
-            color: "#FFD700",
-            outlineWidth: 2,
-            outlineColor: "#ffffffee",
-            fontSize: 100,
-            fontWeight: "bold",
-            zIndex: 10,
-            alpha: 0,
-        });
-        this.partialWinnerName.isVisible =  false;
-        centerColumn.addControl(this.partialWinnerName, 1, 0);
-
-        this.continueText = this.createTextBlock("continue_text", {
-            text: t.continue,
-            fontSize: 25,
-            color: "#FFD700",
-            outlineWidth: 2,
-            outlineColor: "#ffffffee",
-            zIndex: 10,
-        });
-        this.continueText.isVisible =  false;
-        centerColumn.addControl(this.continueText, 2, 0);
-    }
-
     async showWinner(winner: string): Promise<void> {
         if (!this.endGameOverlay || !this.endGameWinnerText)
             return;
@@ -419,7 +352,7 @@ export class GUIManager {
         this.endGameOverlay.isVisible = true;
         const scene = this.advancedTexture!.getScene();
         const cams = scene?.activeCameras?.length ? scene.activeCameras : scene?.activeCamera;
-        spawnFireworksInFrontOfCameras(scene, FINAL_FIREWORKS, cams);
+        spawnFireworksInFrontOfCameras(scene!, FINAL_FIREWORKS, cams);
         await new Promise(resolve => setTimeout(resolve, 5000));
 
         if (this.hudGrid)
@@ -440,7 +373,7 @@ export class GUIManager {
         }
 
         const current = this.partialTransitionFill.alpha ?? 0;
-        const end = show ? 0.30 : 0.0;
+        const end = show ? 0.50 : 0.0;
 
         const alpha = this.createAnimation("alpha", current, end, frames, false);
         this.partialTransitionFill.animations = [alpha];
@@ -478,7 +411,7 @@ export class GUIManager {
         this.partialWinnerName.animations = [fadeIn, animationScaleX, animationScaleY];
 
         const cams = scene?.activeCameras?.length ? scene.activeCameras : scene?.activeCamera;
-        spawnFireworksInFrontOfCameras(scene, PARTIAL_FIREWORKS, cams);
+        spawnFireworksInFrontOfCameras(scene!, PARTIAL_FIREWORKS, cams);
         scene?.beginAnimation(this.partialWinnerName!, 0, 60, true, 1);
         await new Promise(r => setTimeout(r, totalFrames));
 
@@ -519,28 +452,125 @@ export class GUIManager {
         this.partialEndGameOverlay.isVisible = false;
     }
 
+    //Helper functions to create Gui objects
+    createGrid(name: string, h: string, verticalAlign?: number): Grid {
+        const grid = new Grid(name);
+        grid.width = "100%";
+        grid.height = h;
+        grid.horizontalAlignment = this.H_CENTER;
+        grid.verticalAlignment = verticalAlign || this.V_CENTER;
+        return grid;
+    }
+
+    createRect(name: string, h: string, zIndex:number, verticalAlign?: number, background?: string): Rectangle {
+        const r = new Rectangle(name);
+        r.width = "100%";
+        r.height = h;
+        r.horizontalAlignment = this.H_CENTER;
+        r.verticalAlignment = verticalAlign ?? this.V_CENTER;
+        r.thickness = 0;
+        r.isPointerBlocker = true;
+        r.zIndex = zIndex;
+        if (background !== undefined) r.background = background;
+        return r;
+    }
+
+    private createTextBlock(name: string, options: TextBlockOptions = {}): TextBlock {
+        const textBlock = new TextBlock();
+
+        textBlock.fontFamily = 'Poppins, Arial, sans-serif';
+        textBlock.text = options.text || name;
+        textBlock.fontSize = options.fontSize || 24;
+        textBlock.color = options.color || "#FFFFFF";
+        textBlock.fontWeight = options.fontWeight || "normal";
+        textBlock.width = options.width || "100%";
+        textBlock.height = options.height || "100%";
+        textBlock.alpha = 1;
+
+        textBlock.textHorizontalAlignment = options.horizontalAlignment || this.H_CENTER;
+        textBlock.textVerticalAlignment = options.verticalAlignment || this.V_CENTER;
+
+        if (options.alpha !== undefined) textBlock.alpha = options.alpha;
+
+        if (options.lineSpacing) textBlock.lineSpacing = options.lineSpacing;
+        if (options.resizeToFit !== undefined) textBlock.resizeToFit = options.resizeToFit;
+
+        // Apply rich text effects if requested
+        if (options.applyRichEffects) {
+            textBlock.shadowOffsetX = 3;
+            textBlock.shadowOffsetY = 3;
+            textBlock.shadowBlur = 8;
+            textBlock.shadowColor = "rgba(255, 107, 107, 0.5)";
+            textBlock.fontWeight = "bold";
+            textBlock.outlineWidth = options.outlineWidth || 2;
+            textBlock.outlineColor = options.outlineColor || "black";
+        }
+
+        return textBlock;
+    }
+
+    updateControlVisibility(player1: boolean, player2: boolean): void {
+        const p1 = this.advancedTexture?.getControlByName("PlayerControls_p1") as TextBlock | null;
+        const p2 = this.advancedTexture?.getControlByName("PlayerControls_p2") as TextBlock | null;
+
+        if (p1) p1.color = player1 ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0)";
+        if (p2) p2.color = player2 ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0)";
+
+    }
+    private getControlsText(viewMode: ViewMode, player: number): string {
+        const t = getCurrentTranslation();
+        const move = t.controls;
+        
+        if (viewMode === ViewMode.MODE_2D)
+            return player === 1 ? move + "\nP1: W / S" : move + "\nP2: ↑ / ↓";
+        else
+            return player === 1 ? move + "\nP1: A / D" : move + "\nP2: ← / →";
+    }
+
+    private createAnimation(property: string, from: number, end: number, frames: number = 60, pingPong: boolean = true): Animation {
+
+        const fps: number = 60;
+        const anim = Animation.CreateAnimation(
+            property, Animation.ANIMATIONTYPE_FLOAT, fps, new SineEase());
+        anim.loopMode = Animation.ANIMATIONLOOPMODE_CYCLE;
+
+        if (pingPong) {
+            const mid = Math.floor(frames / 2);
+            anim.setKeys([
+            { frame: 0,      value: from },
+            { frame: mid,    value: end },
+            { frame: frames, value: from },
+            ]);
+        } else {
+            anim.setKeys([
+            { frame: 0,      value: from },
+            { frame: frames, value: end },
+            ]);
+        }
+        return anim;
+    }
 
     // Clean up all GUI resources
     dispose(): void {
         if (!this.isInitialized) return;
 
         try {
-            this.fpsText = null;
-            this.score1Text = null;
-            this.score2Text = null;
-            this.countdownText = null;
-            this.countdownContainer = null;
-            this.player1Label = null;
-            this.player2Label = null;
-            this.rallyText = null;
-            this.rally = null;
-            this.endGameWinnerText = null;
-            this.endGameOverlay = null;
-            this.hudGrid = null;
-            this.partialEndGameOverlay = null;
-            this.partialWinnerLabel = null;
-            this.partialWinnerName = null;
-            this.continueText = null;
+            this.fpsText.dispose();
+            this.score1Text.dispose();
+            this.score2Text.dispose();
+            this.countdownText.dispose();
+            this.countdownContainer.dispose();
+            this.player1Label.dispose();
+            this.player2Label.dispose();
+            this.rallyText.dispose();
+            this.rally.dispose();
+            this.endGameWinnerText.dispose();
+            this.endGameOverlay.dispose();
+            this.hudGrid.dispose();
+            this.partialEndGameOverlay.dispose();
+            this.partialWinnerLabel.dispose();
+            this.partialWinnerName.dispose();
+            this.continueText.dispose();
 
             this.advancedTexture?.dispose();
             this.advancedTexture = null;

@@ -7,7 +7,7 @@ import { createMaterial, getStandardTextureScale } from './materialFactory.js';
 import { COLORS, getSoloCameraViewport, get3DCamera1Viewport, get3DCamera2Viewport, getCamera2DPosition } from '../utils.js';
 
 // Creates a camera for the given scene
-export function createCameras(scene: Scene, name: string, viewMode: ViewMode, gameMode: GameMode): any {
+export function createCameras(scene: Scene, name: string, viewMode: ViewMode, gameMode: GameMode): any[] {
     let cameras = [];
 
     const position = getCamera2DPosition();

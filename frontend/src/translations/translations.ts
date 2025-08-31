@@ -183,16 +183,6 @@ export function updateLanguageDisplay(): void {
     const setupBack = requireElementById(EL.BUTTONS.SETUP_BACK);
     setupBack.textContent = t.back;
 
-    // Pause dialogs (3D)
-    const pauseTitle3d = requireElementById(EL.GAME.PAUSE_TITLE_3D);
-    pauseTitle3d.textContent = t.gamePaused;
-
-    const pauseText3d = requireElementById(EL.GAME.PAUSE_TEXT_3D);
-    pauseText3d.textContent = t.exitGame;
-
-    const pauseControl3d = requireElementById(EL.GAME.PAUSE_CONTROLS_3D);
-    pauseControl3d.textContent = t.pauseControls3D;
-
     // Loading
     const loading = requireElementById(EL.GAME.LOADING_TEXT);
     loading.textContent = t.loading;

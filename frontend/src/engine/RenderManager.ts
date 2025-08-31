@@ -19,14 +19,14 @@ export class RenderManager {
     private engine: Engine | null = null;
     private scene: Scene | null = null;
     private guiManager: GUIManager | null = null;
-    private isRenderingActive: boolean = false;
+    isRenderingActive: boolean = false;
     private lastFrameTime: number = 0;
     private fpsLimit: number = 60;
     private isInitialized: boolean = false;
     private camerasAnimation: any[] = [];
 
     // Initialize the render manager with required dependencies
-    initialize(engine: any, scene: any, guiManager: GUIManager): void {
+    initialize(engine: Engine, scene: Scene, guiManager: GUIManager): void {
         if (this.isInitialized) {
             Logger.warn('RenderManager already initialized', 'RenderManager');
             return;
@@ -98,29 +98,9 @@ export class RenderManager {
 
     }
 
-    // Set the FPS limit for the render loop
-    setFpsLimit(fps: number): void {
-        if (fps <= 0 || fps > 300) {
-            Logger.warn(`Invalid FPS limit: ${fps}. Using default 60 FPS`, 'RenderManager');
-            this.fpsLimit = 60;
-            return;
-        }
-        this.fpsLimit = fps;
-    }
-
-    // Get the current FPS limit
-    getFpsLimit(): number {
-        return this.fpsLimit;
-    }
-
-    // Check if rendering is currently active
-    isRendering(): boolean {
-        return this.isRenderingActive;
-    }
-
     // Update the FPS display through the GUI manager
     private updateFPSDisplay(deltaTime: number): void {
-        if (this.guiManager && this.guiManager.isReady()) {
+        if (this.guiManager && this.guiManager.isInitialized) {
             const fps = 1000 / deltaTime;
             this.guiManager.updateFPS(fps);
         }

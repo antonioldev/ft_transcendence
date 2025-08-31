@@ -1,4 +1,4 @@
-import { ParticleSystem, Texture, Color4, Vector3 } from "@babylonjs/core";
+import { ParticleSystem, Texture, Color4, Vector3, Scene} from "@babylonjs/core";
 
 interface FireworkDetails {
     bursts: number;
@@ -16,7 +16,7 @@ interface FireworkDetails {
     power: { min: number; max: number };
     gravityY: number;
     blendMode?: number;
-    colors: Array<{ c1: any; c2: any }>;
+    colors: Array<{ c1: Color4; c2: Color4 }>;
   };
   stopAfterMs: number;
   disposeDelayMs: number;
@@ -86,7 +86,7 @@ function chooseColorPair(profile: FireworkDetails) {
     return colors[idx];
 }
 
-function spawnOneExplosion(scene: any, pos: any, profile: FireworkDetails): void {
+function spawnOneExplosion(scene: Scene, pos: Vector3, profile: FireworkDetails): void {
     const p = profile.particle;
     const ps = new ParticleSystem(`fw_${Date.now()}`, p.capacity, scene);
     try {
@@ -124,7 +124,7 @@ function rand(min: number, max: number): number {
     return Math.random() * (max - min) + min;
 }
 
-function spawnBurstsForCamera(scene: any, camera: any, profile: FireworkDetails): void {
+function spawnBurstsForCamera(scene: Scene, camera: any, profile: FireworkDetails): void {
   for (let i = 0; i < profile.bursts; i++) {
     const dist   = rand(profile.distance.min, profile.distance.max);
     const spread = profile.spread;
@@ -143,7 +143,7 @@ function spawnBurstsForCamera(scene: any, camera: any, profile: FireworkDetails)
 
 // Public API
 export function spawnFireworksInFrontOfCameras(
-  scene: any,
+  scene: Scene,
   profile: FireworkDetails,
   activeCameras: any[] | any
 ): void {
