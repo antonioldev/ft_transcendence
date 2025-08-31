@@ -19,7 +19,7 @@ export const portuguese: Translation = {
     enterPlayer2Name: 'Digite o nome do Jogador 2',
     onlineInfo: 'Você será pareado com outro jogador online',
     startGame: 'Iniciar Jogo',
-    gamePaused: 'Jogo Pausado',
+    gamePaused: 'JOGO PAUSADO',
     exitGame: 'Sair do jogo?',
     pauseControls: 'Y - Sim | N - Não | ESC - Retomar',
     pauseControls3D: 'Y | N',
@@ -57,5 +57,7 @@ export const portuguese: Translation = {
     easy: ' (Fácil)',
     medium: ' (Médio)',
     hard: ' (Difícil)',
-    impossible: ' (Impossível)'
+    impossible: ' (Impossível)',
+    winner: 'Vencedor da partida',
+    continue: 'Pressione ESPAÇO para continuar'
 };

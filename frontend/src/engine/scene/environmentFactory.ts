@@ -1,4 +1,12 @@
-declare var BABYLON: typeof import('@babylonjs/core');
+import { 
+    HDRCubeTexture, 
+    MeshBuilder, 
+    StandardMaterial, 
+    Color3, 
+    Vector3, 
+    SceneLoader, 
+    Scene
+} from "@babylonjs/core";
 
 import { ViewMode } from '../../shared/constants.js';
 import { GAME_CONFIG } from '../../shared/gameConfig.js';
@@ -8,10 +16,10 @@ import { TextureSet, MAP_OBJECT_TYPE } from './sceneAssets.js';
 import { createMaterial, getStandardTextureScale } from './materialFactory.js';
 
 // Creates HDRI environment with fallback to default environment
-export function createEnvironment(scene: any, path?: string): void {
+export function createEnvironment(scene: Scene, path?: string): void {
     if (!path) return;
     try {
-        const hdrTexture = new BABYLON.HDRCubeTexture(path, scene, 1024);
+        const hdrTexture = new HDRCubeTexture(path, scene, 1024);
         
         // Set as environment texture (skybox + reflections)
         scene.environmentTexture = hdrTexture;
@@ -24,14 +32,14 @@ export function createEnvironment(scene: any, path?: string): void {
     }
 }
 
-export function createTerrain(scene: any, name: string, mode: ViewMode, texture?: TextureSet): any {
+export function createTerrain(scene: Scene, name: string, mode: ViewMode, texture?: TextureSet): any {
     const terrainWidth = GAME_CONFIG.fieldWidth * 10;
     const terrainHeight = GAME_CONFIG.fieldHeight * 10;
 
     let terrain: any;
     // Check if we have a heightmap
     if (texture?.height) {
-        terrain = BABYLON.MeshBuilder.CreateGroundFromHeightMap(name, texture.height, {
+        terrain = MeshBuilder.CreateGroundFromHeightMap(name, texture.height, {
             width: terrainWidth,
             height: terrainHeight,
             subdivisions: 100,        // More subdivisions = smoother terrain
@@ -39,7 +47,7 @@ export function createTerrain(scene: any, name: string, mode: ViewMode, texture?
             maxHeight: 10             // Highest point of terrain
         }, scene);
     } else {
-        terrain = BABYLON.MeshBuilder.CreateGround(name, { 
+        terrain = MeshBuilder.CreateGround(name, { 
             width: terrainWidth, 
             height: terrainHeight 
         }, scene);
@@ -48,23 +56,22 @@ export function createTerrain(scene: any, name: string, mode: ViewMode, texture?
     terrain.position.y = -0.01;
 
     const terrainTextureScale = getStandardTextureScale(terrainWidth, terrainHeight, MAP_OBJECT_TYPE.GROUND);
-    // const terrainTextureScale = { u: terrainWidth / 10, v: terrainHeight / 10 };
-    const material = new BABYLON.StandardMaterial(name + "Material", scene);
-    material.diffuseColor = new BABYLON.Color3(1, 1, 0);
-    terrain.material = createMaterial(scene, name + "Material",  new BABYLON.Color3(1, 1, 0), mode, texture , terrainTextureScale);
+    const material = new StandardMaterial(name + "Material", scene);
+    material.diffuseColor = new Color3(1, 1, 0);
+    terrain.material = createMaterial(scene, name + "Material",  new Color3(1, 1, 0), mode, texture, terrainTextureScale);
 
     return terrain;
 }
 
 export async function createVegetation(
-    scene: any,
+    scene: Scene,
     vegetationAsset: VegetationAsset
 ): Promise<any[]> {
     if (!vegetationAsset?.path) return [];
     const objects: any[] = []
     try {
         Logger.info("Loading vegetation from:", vegetationAsset.path);
-        const mesh = await BABYLON.SceneLoader.ImportMeshAsync("", "", vegetationAsset.path, scene);
+        const mesh = await SceneLoader.ImportMeshAsync("", "", vegetationAsset.path, scene);
         const originalMesh = mesh.meshes[0] as any;
 
         if (!originalMesh) return [];
@@ -76,9 +83,9 @@ export async function createVegetation(
             const pos = positions[i];
             const obj = originalMesh.clone('veg_' + i);
 
-            obj.position = new BABYLON.Vector3(pos.x, vegetationAsset.yOffset, pos.z);
+            obj.position = new Vector3(pos.x, vegetationAsset.yOffset, pos.z);
             obj.rotation.y = vegetationAsset.randomRotation ? Math.random() * Math.PI * 2 : 0;
-            obj.scaling = new BABYLON.Vector3(pos.scale, pos.scale, pos.scale);
+            obj.scaling = new Vector3(pos.scale, pos.scale, pos.scale);
             obj.material = materials[Math.floor(Math.random() * materials.length)];
             
             objects.push(obj);
@@ -99,14 +106,14 @@ function createMaterialVariations(baseMaterial: any, scene: any){
     if (baseMaterial)
         materials.push(baseMaterial);
 
-    const darkMaterial = baseMaterial?.clone("vegDark") || new BABYLON.StandardMaterial("vegetationDark", scene);
-    darkMaterial.diffuseColor = new BABYLON.Color3(0.1, 0.3, 0.05);
-    darkMaterial.specularColor = BABYLON.Color3.Black();
+    const darkMaterial = baseMaterial?.clone("vegDark") || new StandardMaterial("vegetationDark", scene);
+    darkMaterial.diffuseColor = new Color3(0.1, 0.3, 0.05);
+    darkMaterial.specularColor = Color3.Black();
     materials.push(darkMaterial);
     
-    const lightMaterial = baseMaterial?.clone("vegLight") || new BABYLON.StandardMaterial("vegetationLight", scene);
-    lightMaterial.diffuseColor = new BABYLON.Color3(0.3, 0.45, 0.2);
-    lightMaterial.specularColor = BABYLON.Color3.Black();
+    const lightMaterial = baseMaterial?.clone("vegLight") || new StandardMaterial("vegetationLight", scene);
+    lightMaterial.diffuseColor = new Color3(0.3, 0.45, 0.2);
+    lightMaterial.specularColor = Color3.Black();
     materials.push(lightMaterial);
 
     return materials;

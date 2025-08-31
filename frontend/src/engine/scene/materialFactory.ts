@@ -1,10 +1,9 @@
-declare var BABYLON: typeof import('@babylonjs/core');
-
 import { ViewMode } from '../../shared/constants.js';
 import { TextureSet, TEXTURE_SCALING, MAP_OBJECT_TYPE } from './sceneAssets.js';
 import { Logger } from '../../utils/LogManager.js';
+import { Color3, Scene, StandardMaterial, Texture} from "@babylonjs/core";
 
-function setTextureScale(textureScale: any, texture: any) {
+function setTextureScale(textureScale: any, texture: Texture) {
     if (textureScale) {
         texture.uScale = textureScale.u;
         texture.vScale = textureScale.v;
@@ -18,7 +17,7 @@ export function getStandardTextureScale(
 ): { u: number, v: number } {
     const divisor = TEXTURE_SCALING.standardDivisor;
     const multiplier = TEXTURE_SCALING.multipliers[objectType];
-    
+
     return {
         u: (width / divisor) * multiplier,
         v: (height / divisor) * multiplier
@@ -26,14 +25,14 @@ export function getStandardTextureScale(
 }
 
 export function createMaterial(
-    scene: any, 
+    scene: Scene, 
     name: string, 
-    color: any, 
+    color: Color3, 
     mode: ViewMode, 
     textureSet?: TextureSet,
     textureScale?: { u: number, v: number }
-): any {
-    const material = new BABYLON.StandardMaterial(name, scene);
+): StandardMaterial {
+    const material = new StandardMaterial(name, scene);
     
     // Color effect for 2D mode (without lighting)
     if (mode === ViewMode.MODE_2D) {
@@ -46,24 +45,24 @@ export function createMaterial(
     // If textureScale is passed, it set how many times the texture will be scaled
     if (mode === ViewMode.MODE_3D && textureSet) {
         try {
-            const diffuseTexture = new BABYLON.Texture(textureSet.diffuse, scene);
+            const diffuseTexture = new Texture(textureSet.diffuse, scene);
             material.diffuseTexture = diffuseTexture;
             setTextureScale(textureScale, diffuseTexture);
 
             if (textureSet.normal) {
-                const normalTexture = new BABYLON.Texture(textureSet.normal, scene);
+                const normalTexture = new Texture(textureSet.normal, scene);
                 material.bumpTexture = normalTexture;
                 setTextureScale(textureScale, normalTexture);
             }
             
             if (textureSet.roughness) {
-                const roughnessTexture = new BABYLON.Texture(textureSet.roughness, scene);
+                const roughnessTexture = new Texture(textureSet.roughness, scene);
                 material.specularTexture = roughnessTexture;
                 setTextureScale(textureScale, roughnessTexture);
             }
 
         } catch (error) {
-            Logger.warn ('Error creating textured material, using color fallback', 'materialFactory');
+            Logger.warn('Error creating textured material, using color fallback', 'materialFactory');
             // Textures will be null if they fail, use color from config file
             material.diffuseColor = color;
         }

@@ -1,13 +1,9 @@
-declare var BABYLON: typeof import('@babylonjs/core');
-
+import { Animation, Engine, QuadraticEase, Scene, Vector3 } from "@babylonjs/core";
 import { Logger } from '../utils/LogManager.js';
 import { GUIManager } from './GuiManager.js';
 import { ViewMode } from '../shared/constants.js';
-import {
-    getCamera2DPosition,
-    getCamera3DPlayer1Position,
-    getCamera3DPlayer2Position,
-} from './utils.js';
+import { getCamera2DPosition, getCamera3DPlayer1Position, getCamera3DPlayer2Position,} from './utils.js';
+
 
 /**
  * Manages the rendering and frame rate control
@@ -20,17 +16,17 @@ import {
  * - Render performance monitoring
  */
 export class RenderManager {
-    private engine: any = null;
-    private scene: any = null;
+    private engine: Engine | null = null;
+    private scene: Scene | null = null;
     private guiManager: GUIManager | null = null;
-    private isRenderingActive: boolean = false;
+    isRenderingActive: boolean = false;
     private lastFrameTime: number = 0;
     private fpsLimit: number = 60;
     private isInitialized: boolean = false;
     private camerasAnimation: any[] = [];
 
     // Initialize the render manager with required dependencies
-    initialize(engine: any, scene: any, guiManager: GUIManager): void {
+    initialize(engine: Engine, scene: Scene, guiManager: GUIManager): void {
         if (this.isInitialized) {
             Logger.warn('RenderManager already initialized', 'RenderManager');
             return;
@@ -102,29 +98,9 @@ export class RenderManager {
 
     }
 
-    // Set the FPS limit for the render loop
-    setFpsLimit(fps: number): void {
-        if (fps <= 0 || fps > 300) {
-            Logger.warn(`Invalid FPS limit: ${fps}. Using default 60 FPS`, 'RenderManager');
-            this.fpsLimit = 60;
-            return;
-        }
-        this.fpsLimit = fps;
-    }
-
-    // Get the current FPS limit
-    getFpsLimit(): number {
-        return this.fpsLimit;
-    }
-
-    // Check if rendering is currently active
-    isRendering(): boolean {
-        return this.isRenderingActive;
-    }
-
     // Update the FPS display through the GUI manager
     private updateFPSDisplay(deltaTime: number): void {
-        if (this.guiManager && this.guiManager.isReady()) {
+        if (this.guiManager && this.guiManager.isInitialized) {
             const fps = 1000 / deltaTime;
             this.guiManager.updateFPS(fps);
         }
@@ -142,7 +118,7 @@ export class RenderManager {
                 const positionAnimation = this.createCameraMoveAnimation(camera.name);
                 const targetAnimation = this.createCameraTargetAnimation();
                 camera.animations = [positionAnimation, targetAnimation];
-                const animationGroup = this.scene.beginAnimation(camera, 0, 180, false);
+                const animationGroup = this.scene?.beginAnimation(camera, 0, 180, false);
                 this.camerasAnimation.push(animationGroup);
             }
         });
@@ -150,8 +126,7 @@ export class RenderManager {
 
     stopCameraAnimation(): void {
         this.camerasAnimation.forEach(animation => {
-            if (animation)
-                animation.stop();
+            animation?.stop();
         });
         this.camerasAnimation = [];
     }
@@ -165,8 +140,8 @@ export class RenderManager {
         else
             endPosition = getCamera3DPlayer2Position();
 
-        const positionAnimation = BABYLON.Animation.CreateAnimation(
-            "position", BABYLON.Animation.ANIMATIONTYPE_VECTOR3, 60, new BABYLON.QuadraticEase());
+        const positionAnimation = Animation.CreateAnimation(
+            "position", Animation.ANIMATIONTYPE_VECTOR3, 60, new QuadraticEase());
 
         const keys = [
             { frame: 0, value: startPosition },
@@ -177,11 +152,11 @@ export class RenderManager {
     }
 
     private createCameraTargetAnimation(): any {
-        const startTarget = BABYLON.Vector3.Zero();
-        const endTarget = BABYLON.Vector3.Zero();
+        const startTarget = Vector3.Zero();
+        const endTarget = Vector3.Zero();
 
-        const targetAnimation = BABYLON.Animation.CreateAnimation(
-            "target", BABYLON.Animation.ANIMATIONTYPE_VECTOR3, 60, new BABYLON.QuadraticEase());
+        const targetAnimation = Animation.CreateAnimation(
+            "target", Animation.ANIMATIONTYPE_VECTOR3, 60, new QuadraticEase());
 
         const keys = [
             { frame: 0, value: startTarget },

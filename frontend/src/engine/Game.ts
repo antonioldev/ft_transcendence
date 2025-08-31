@@ -1,6 +1,23 @@
-declare var BABYLON: typeof import('@babylonjs/core') & {
-    GUI: typeof import('@babylonjs/gui');
-}; //declare var BABYLON: any;
+import { 
+    Engine, 
+    Scene, 
+    // Animation, 
+    // Animatable, 
+    // EasingFunction, 
+    // QuadraticEase, 
+    Color4, 
+    Vector3, 
+    DeviceSourceManager, 
+    DeviceType,
+    SceneLoader
+} from "@babylonjs/core";
+// import { 
+//     AdvancedDynamicTexture, 
+//     TextBlock, 
+//     Rectangle, 
+//     Control 
+// } from "@babylonjs/gui";
+
 
 import { GameConfig } from './GameConfig.js';
 import { buildScene2D, buildScene3D } from './scene/sceneBuilder.js';
@@ -19,7 +36,6 @@ import { appStateManager } from '../core/AppStateManager.js';
 import { authManager } from '../core/AuthManager.js';
 import { PlayerInfo } from '../shared/types.js';
 import { GameConfigFactory } from './GameConfig.js';
-import { EL } from '../ui/elements.js';
 import { AudioManager } from './AudioManager.js';
 
 /**
@@ -36,8 +52,8 @@ import { AudioManager } from './AudioManager.js';
 export class Game {
     private static currentInstance: Game | null = null;
 
-    private engine: any = null;
-    private scene: any = null;
+    private engine: Engine | null = null;
+    private scene: Scene | null = null;
     private canvas: HTMLCanvasElement | null = null;
     private gameObjects: GameObjects | null = null;
     private guiManager: GUIManager | null = null;
@@ -81,7 +97,7 @@ export class Game {
 
     static pause(): void {
         const game = Game.currentInstance;
-        if (!game || game.isDisposed || game.isPausedByServer) return;
+        if (!game || game.isDisposed || game.isPausedByServer || !game.isRunning) return;
         Logger.info('Requesting pause from server...', 'Game');
         webSocketClient.sendPauseRequest();
     }
@@ -145,10 +161,7 @@ export class Game {
 
     private updateGamePauseState(isPaused: boolean): void {
         this.currentState = isPaused ? GameState.PAUSED : GameState.PLAYING;
-        
-        // Update UI directly
-        uiManager.setElementVisibility(EL.GAME.PAUSE_DIALOG_3D, isPaused);
-        
+        this.guiManager?.setPauseVisible(isPaused);
         Logger.info(`Game ${isPaused ? 'paused' : 'resumed'}`, 'Game');
     }
 
@@ -222,7 +235,7 @@ export class Game {
         
         this.setupGlobalKeyboardEvents();
         // BABYLON.SceneLoader.ShowLoadingScreen = true;
-        BABYLON.SceneLoader.ShowLoadingScreen = false;
+        SceneLoader.ShowLoadingScreen = false;
         
         uiManager.updateLoadingProgress(0);
         uiManager.setLoadingScreenVisible(true);
@@ -235,7 +248,6 @@ export class Game {
             this.scene = await this.createScene();
             if (!this.scene) Logger.errorAndThrow('Scene not created', 'Game');
 
-            // In Game.ts initialize method:
             this.audioManager = new AudioManager(this.scene);
             await this.audioManager.initialize();
             // Build game objects
@@ -257,7 +269,8 @@ export class Game {
             this.connectComponents();
             this.isInitialized = true;
             webSocketClient.sendPlayerReady();
-            uiManager.updateLoadingText();
+            if (this.config.gameMode === GameMode.TWO_PLAYER_REMOTE || this.config.gameMode === GameMode.TOURNAMENT_REMOTE)
+                uiManager.updateLoadingText();
             Logger.info('Game initialized successfully', 'Game');
 
         } catch (error) {
@@ -268,22 +281,23 @@ export class Game {
     }
 
     // Initialize Babylon.js engine
-    private async initializeBabylonEngine(): Promise<any> {
-        const engine = new BABYLON.Engine(this.canvas, true, { 
+    private async initializeBabylonEngine(): Promise<Engine> {
+        const engine = new Engine(this.canvas, true, { 
             preserveDrawingBuffer: true, 
             stencil: true, 
             disableWebGL2Support: false,
             antialias: false,
+            audioEngine: true,
             powerPreference: "high-performance"
         });
         return engine;
     }
 
     // Create scene based on view mode
-    private async  createScene(): Promise<any> {
-        const scene = new BABYLON.Scene(this.engine);
+    private async  createScene(): Promise<Scene> {
+        const scene = new Scene(this.engine!);
         scene.createDefaultEnvironment({ createGround: false, createSkybox: false });
-        scene.clearColor = new BABYLON.Color4(0, 0, 0, 1);
+        scene.clearColor = new Color4(0, 0, 0, 1);
         return scene;
     }
 
@@ -299,7 +313,7 @@ export class Game {
 
     private setupGlobalKeyboardEvents(): void {
         document.addEventListener('keydown', (event) => {
-            if (event.key === 'Escape') {
+            if (event.key === 'Escape' && this.isRunning) {
                 if (this.isInGame() && this.currentState === GameState.PLAYING)
                     Game.pause();
                 else if (this.isPaused())
@@ -355,15 +369,15 @@ export class Game {
         }
     }
 
-    private handleCountdown(countdown: number): void {
-        if (countdown === undefined || countdown === null) {
-            Logger.errorAndThrow('Server sent SI without countdown parameter', 'Game');
-        }
+    private async handleCountdown(countdown: number): Promise<void> {
+        if (countdown === undefined || countdown === null)
+            Logger.errorAndThrow('Server sent SIGNAL without countdown parameter', 'Game');
+
         uiManager.setLoadingScreenVisible(false);
 
         if (this.currentState === GameState.MATCH_ENDED)
             this.resetForNextMatch();
-        if (countdown === 5) {
+        if (countdown === GAME_CONFIG.startDelay) {
             this.renderManager?.startCameraAnimation(
                 this.gameObjects?.cameras, 
                 this.config.viewMode,
@@ -371,15 +385,16 @@ export class Game {
                 this.isLocalMultiplayer
             );
         }
-        if (countdown > 0) {
+        else if (countdown > 0 && GAME_CONFIG.startDelay - 1) {
+            this.guiManager?.showCountdown(true, countdown);
             this.audioManager?.playCountdown();
-            this.guiManager?.showCountdown(countdown);
         }
         else {
             this.audioManager?.stopCountdown();
             this.audioManager?.startGameMusic();
             this.renderManager?.stopCameraAnimation();
-            this.guiManager?.hideCountdown();
+            this.guiManager?.showCountdown(false);
+            await this.guiManager?.animateBackground(false);
             this.start();
         }
     }
@@ -394,7 +409,6 @@ export class Game {
         this.isRunning = false;
         this.updateGamePauseState(true);
         this.audioManager?.pauseGameMusic();
-        this.renderManager?.stopRendering();
         this.stopGameLoop();
         
         Logger.info('Game paused by server', 'Game');
@@ -417,21 +431,16 @@ export class Game {
 
     // Handle server ending the game
     private async onServerEndedGame(winner: string): Promise<void> {
-        if (this.isDisposed) return;
-
-        // if (!this.renderManager?.isRendering())
-        //     this.renderManager?.startRendering();
-
-        // let gameWinner = "CPU";
-        // if (winner !== undefined) // TODO what shall we send
-        //     gameWinner = winner;
-        uiManager.setElementVisibility('pause-dialog-3d', false);
-        // if (this.config.gameMode === GameMode.SINGLE_PLAYER
-        //     || this.config.gameMode === GameMode.TOURNAMENT_REMOTE || this.config.gameMode === GameMode.TWO_PLAYER_REMOTE)
-        if (winner !== undefined)
-            console.log(winner);
-        //     await this.guiManager?.showWinner(winner);
-
+        if (this.isDisposed)
+            return;
+        if (!(this.config.gameMode === GameMode.TOURNAMENT_LOCAL) && !(this.config.gameMode === GameMode.TOURNAMENT_REMOTE))
+            return;
+        this.guiManager?.setPauseVisible(false);
+        await this.guiManager?.animateBackground(true);
+        await this.guiManager?.showPartialWinner(winner);
+        await this.guiManager?.waitForSpaceToContinue(2000);
+        await this.guiManager?.hidePartialWinner();
+        webSocketClient.notifyGameAnimationDone();
         this.audioManager?.stopGameMusic();
         this.controlledSides = [];
         this.stopGameLoop();
@@ -442,15 +451,10 @@ export class Game {
     private async onServerEndedSession(winner: string): Promise<void> {
         if (this.isDisposed) return;
 
-        if (!this.renderManager?.isRendering())
+        if (!this.renderManager?.isRenderingActive)
             this.renderManager?.startRendering();
 
-        // let gameWinner = "CPU";
-        // if (winner !== undefined) // TODO what shall we send
-        //     gameWinner = winner;
-        uiManager.setElementVisibility('pause-dialog-3d', false);
-        // if (this.config.gameMode === GameMode.SINGLE_PLAYER
-        //     || this.config.gameMode === GameMode.TOURNAMENT_REMOTE || this.config.gameMode === GameMode.TWO_PLAYER_REMOTE)
+        this.guiManager?.setPauseVisible(false);
         if (winner !== undefined)
             await this.guiManager?.showWinner(winner);
 
@@ -512,7 +516,6 @@ export class Game {
         }
 
         this.guiManager?.updateScores(0, 0);
-        Logger.info('Game reset for next match', 'Game');
     }
 
     // ========================================
@@ -542,7 +545,7 @@ export class Game {
             this.audioManager?.updateMusicSpeed(state.ball.current_rally);
 
             // Update Score
-            if (this.guiManager && this.guiManager.isReady()){
+            if (this.guiManager && this.guiManager.isInitialized){
                 if (this.playerLeftScore < state.paddleLeft.score) {
                     this.playerLeftScore = state.paddleLeft.score
                     this.audioManager?.playScore();
@@ -570,12 +573,12 @@ export class Game {
             if (camera1 &&this.gameObjects.players.left) {
                 const targetLeft = this.gameObjects.players.left.position.clone();
                 targetLeft.x = Math.max(-cameraFollowLimit, Math.min(cameraFollowLimit, targetLeft.x));
-                camera1.setTarget(BABYLON.Vector3.Lerp(camera1.getTarget(), targetLeft, GAME_CONFIG.followSpeed));
+                camera1.setTarget(Vector3.Lerp(camera1.getTarget(), targetLeft, GAME_CONFIG.followSpeed));
             }
             if (camera2 && this.gameObjects.players.right) {
                 const targetRight = this.gameObjects.players.right.position.clone();
                 targetRight.x = Math.max(-cameraFollowLimit, Math.min(cameraFollowLimit, targetRight.x));
-                camera2.setTarget(BABYLON.Vector3.Lerp(camera2.getTarget(), targetRight, GAME_CONFIG.followSpeed));
+                camera2.setTarget(Vector3.Lerp(camera2.getTarget(), targetRight, GAME_CONFIG.followSpeed));
             }
         } catch (error) {
             Logger.error('Error updating 3D cameras', 'Game', error);
@@ -660,7 +663,7 @@ export class Game {
 
     private initializeInput(): void {
         try {
-            this.deviceSourceManager = new BABYLON.DeviceSourceManager(this.scene.getEngine());
+            this.deviceSourceManager = new DeviceSourceManager(this.scene!.getEngine());
             
             // Configure input based on game mode
             this.isLocalMultiplayer = (
@@ -691,7 +694,7 @@ export class Game {
         const guiCamera = this.gameObjects.guiCamera;
 
         if (this.isLocalMultiplayer)
-            this.scene.activeCameras = [cameras[0], cameras[1], guiCamera];
+            this.scene!.activeCameras = [cameras[0], cameras[1], guiCamera];
         else {
             let activeGameCamera;
             if (this.controlledSides.includes(0))
@@ -702,23 +705,22 @@ export class Game {
                 activeGameCamera = cameras[0];
 
             if (activeGameCamera && guiCamera)
-                this.scene.activeCameras = [activeGameCamera, guiCamera];
+                this.scene!.activeCameras = [activeGameCamera, guiCamera];
         }
 
     }
 
     private handlePlayerAssignment(leftPlayerName: string, rightPlayerName: string): void {
-        if (this.guiManager)
-            this.guiManager.updatePlayerNames(leftPlayerName, rightPlayerName);
+        this.guiManager?.updatePlayerNames(leftPlayerName, rightPlayerName);
         this.controlledSides = []
         this.assignPlayerSide(leftPlayerName, 0);
         this.assignPlayerSide(rightPlayerName, 1);
         this.setActiveCameras();
-        if (this.guiManager) {
-            const leftPlayerControlled = this.controlledSides.includes(0);
-            const rightPlayerControlled = this.controlledSides.includes(1);
-            this.guiManager.updateControlVisibility(leftPlayerControlled, rightPlayerControlled);
-        }
+
+        const leftPlayerControlled = this.controlledSides.includes(0);
+        const rightPlayerControlled = this.controlledSides.includes(1);
+        this.guiManager?.updateControlVisibility(leftPlayerControlled, rightPlayerControlled);
+    
         console.log(`Left=${leftPlayerName}, Right=${rightPlayerName}, Controlled sides: [${this.controlledSides}]`);
     }
 
@@ -726,7 +728,7 @@ export class Game {
     private updateInput(): void {
         if (this.isDisposed || !this.deviceSourceManager || !this.gameObjects) return;
         try {
-            const keyboardSource = this.deviceSourceManager.getDeviceSource(BABYLON.DeviceType.Keyboard);
+            const keyboardSource = this.deviceSourceManager.getDeviceSource(DeviceType.Keyboard);
             if (keyboardSource) {
                 // Handle left player (side 0)
                 this.handlePlayerInput(keyboardSource, this.gameObjects.players.left, this.config.controls.playerLeft, 0);

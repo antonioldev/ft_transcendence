@@ -60,6 +60,8 @@ export interface Translation {
     medium: string;
     hard: string;
     impossible: string;
+    winner: string;
+    continue: string;
 }
 
 export type TranslationKey = keyof Translation;

@@ -1,5 +1,3 @@
-
-
 # Build stage for TypeScript
 FROM node:alpine AS builder
 # Using a builder stage to save space by only copying the necessary build artifacts to the final image
@@ -20,6 +18,7 @@ RUN mkdir -p /app/dist && echo "window.GOOGLE_CLIENT_ID = '${GOOGLE_CLIENT_ID}';
 
 # Copy TypeScript source
 COPY src/ ./src/
+COPY index.html ./
 COPY tsconfig.json ./
 
 # Build TypeScript
@@ -30,6 +29,9 @@ FROM nginx:alpine
 
 # Copy built JS files
 COPY --from=builder /app/dist/ /usr/share/nginx/html/
+ARG GOOGLE_CLIENT_ID
+RUN sh -c "echo \"window.GOOGLE_CLIENT_ID='${GOOGLE_CLIENT_ID}';\" > /usr/share/nginx/html/env-config.js"
+
 # COPY mime.types /etc/nginx/mime.types
 
 # Copy HTML and other static files

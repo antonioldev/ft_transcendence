@@ -19,7 +19,7 @@ export const english: Translation = {
     enterPlayer2Name: 'Enter Player 2 name',
     onlineInfo: "You'll be matched with another online player",
     startGame: 'Start Game',
-    gamePaused: 'Game Paused',
+    gamePaused: 'GAME PAUSED',
     exitGame: 'Exit the game?',
     pauseControls: 'Y - Yes | N - No | ESC - Resume',
     pauseControls3D: 'Y | N',
@@ -57,5 +57,7 @@ export const english: Translation = {
     easy: ' (Easy)',
     medium: ' (Medium)',
     hard: ' (Hard)',
-    impossible: ' (Impossible)'
+    impossible: ' (Impossible)',
+    winner: 'Winner',
+    continue: 'Press SPACE to continue'
 };

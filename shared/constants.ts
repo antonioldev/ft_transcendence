@@ -13,7 +13,9 @@ export enum MessageType {
     RESUME_REQUEST,     // CLIENT -> SERVER: Client requests resume (N key)  
     PAUSED,             // SERVER -> CLIENTS: Server confirms pause to all clients
     RESUMED,            // SERVER -> CLIENTS: Server confirms resume to all clients
-    GAME_ENDED,         // SERVER -> CLIENTS: Server notifies game ended (when someone quits with Y)
+    GAME_ENDED,         // SERVER -> CLIENTS: Server notifies game ended (single game in a tournament)
+    SESSION_ENDED,      // SERVER -> CLIENTS: Server notifies all games are completed
+    PARTIAL_WINNER_ANIMATION_DONE,  // CLIENT -> SERVER: Client notify the animation is completed, ready for new game
     WELCOME,             // SERVER -> CLIENT: Welcome message on connection
     PLAYER_READY,       // CLIENT -> SERVER: Client loaded babylon and is waiting for server
     REGISTER_USER,         // New User want to register --> going to create a new row in db
@@ -33,7 +35,6 @@ export enum MessageType {
     REQUEST_USER_PROFILE,    // Type for back to frontend comm
     UPDATE_USER_PROFILE,     // Request to update user information 
     COUNTDOWN,               // Used to send ountdown timer before game starts
-    SESSION_ENDED,
 }
 
 export enum WebSocketEvent {

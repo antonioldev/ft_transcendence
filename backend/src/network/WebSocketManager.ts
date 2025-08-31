@@ -139,6 +139,9 @@ export class WebSocketManager {
                 case MessageType.REQUEST_GAME_HISTORY:
                     this.handleUserGameHistory(socket, message);
                     break;
+                case MessageType.PARTIAL_WINNER_ANIMATION_DONE:
+                    this.handlePlayerReadyAfterGame(client);
+                    break;
                 case MessageType.QUIT_GAME:
                     this.handleQuitGame(client);
                     break;
@@ -210,6 +213,15 @@ export class WebSocketManager {
         const gameSession = gameManager.findClientGame(client);
         if (!gameSession) {
             console.warn(`Client ${client.id} not in any game for ready signal`);
+            return;
+        }
+        gameSession.setClientReady(client.id);
+    }
+
+    private handlePlayerReadyAfterGame(client: Client): void {
+        const gameSession = gameManager.findClientGame(client);
+        if (!gameSession) {
+            console.warn(`Client ${client.id} not in any games.`);
             return;
         }
         gameSession.setClientReady(client.id);

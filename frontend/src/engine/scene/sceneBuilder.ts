@@ -1,6 +1,5 @@
-declare var BABYLON: typeof import('@babylonjs/core'); //declare var BABYLON: any;
-
-import { createCameras, createGuiCamera, createLight, createGameField, createWalls, createPlayer, createBall} from './gameObjectsFactory.js';
+import { Vector3, Scene } from "@babylonjs/core";
+import { createCameras, createGuiCamera, createLight, createGameField, createWalls, createPlayer, createBall } from './gameObjectsFactory.js';
 import { GameObjects } from '../../shared/types.js';
 import { GameMode, ViewMode } from '../../shared/constants.js';
 import { COLORS, getPlayerSize, getPlayerLeftPosition, getPlayerRightPosition, getBallStartPosition } from '../utils.js';
@@ -10,7 +9,7 @@ import { createEnvironment, createTerrain, createVegetation } from './environmen
 export type LoadingProgressCallback = (progress: number) => void;
 
 export async function buildScene2D(
-    scene: any,
+    scene: Scene,
     gameMode: GameMode,
     viewMode: ViewMode,
     onProgress?: LoadingProgressCallback
@@ -20,7 +19,7 @@ export async function buildScene2D(
     let playerRight: any;
 
     onProgress?.(5);
-    const lights = createLight(scene, "light1", new BABYLON.Vector3(0, 10, 0));
+    const lights = createLight(scene, "light1", new Vector3(0, 10, 0));
     onProgress?.(15);
     const gameField = createGameField(scene, "ground", viewMode, undefined);
     onProgress?.(25);
@@ -51,7 +50,7 @@ export async function buildScene2D(
 }
 
 export async function buildScene3D(
-    scene: any,
+    scene: Scene,
     gameMode: GameMode,
     viewMode: ViewMode, 
     onProgress?: LoadingProgressCallback
@@ -63,7 +62,7 @@ export async function buildScene3D(
     let map_asset = MAP_ASSETS.map1;
 
     onProgress?.(5);
-    const lights = createLight(scene, "light1", new BABYLON.Vector3(0, 10, 0));
+    const lights = createLight(scene, "light1", new Vector3(0, 10, 0));
     onProgress?.(15);
     const gameField = createGameField(scene, "ground", viewMode, map_asset.textures.ground);
     onProgress?.(25);
@@ -74,7 +73,7 @@ export async function buildScene3D(
     
     cameras = createCameras(scene, "camera", viewMode, gameMode);
     onProgress?.(50);
-    createTerrain(scene, "terrain", viewMode, map_asset.textures.terrain)
+    createTerrain(scene, "terrain", viewMode, map_asset.textures.terrain);
     onProgress?.(60);
     playerLeft = createPlayer(scene, "player1", getPlayerLeftPosition(), getPlayerSize(), COLORS.player1_3D, viewMode, map_asset.textures.paddle);
     playerRight = createPlayer(scene, "player2", getPlayerRightPosition(), getPlayerSize(), COLORS.player2_3D, viewMode, map_asset.textures.paddle);
