@@ -257,7 +257,7 @@ export class Game {
                 this.gameObjects = await buildScene3D(this.scene, this.config.gameMode, this.config.viewMode, (progress: number) => uiManager.updateLoadingProgress(progress));
             if (!this.gameObjects) Logger.errorAndThrow('Game objects not created', 'Game');
             this.guiManager?.createGUI(this.scene, this.config);
-
+            this.guiManager?.setToggleMuteCallback(() => this.audioManager!.toggleMute());
             if (this.guiManager)
                 this.renderManager?.initialize(this.engine, this.scene, this.guiManager);
             this.renderManager?.startRendering();
@@ -323,7 +323,7 @@ export class Game {
             if (this.isPaused()) {
                 if (event.key === 'Y' || event.key === 'y')
                     this.requestExitToMenu();
-                else if (event.key === 'N' || event.key === 'n')
+                else if (event.key === 'N' || event.key === 'n' || event.key === 'Escape')
                     Game.resume();
             }
         });

@@ -10,6 +10,14 @@ export class AudioManager {
     private maxRally: number = 50;
     private currentRally: number = 1;
 
+    private muted = false;
+    private volumes = {
+        music: 0.5,
+        countdown: 0.6,
+        paddle: 0.6,
+        score: 0.7,
+    };
+
     // Sound effects
     private countdownSound: Sound | null = null;
     private paddleHitSound: Sound | null = null;
@@ -32,7 +40,7 @@ export class AudioManager {
                 {
                     loop: true,
                     autoplay: false,
-                    volume: 0.5,
+                    volume: this.volumes.music,
                     playbackRate: this.basePlaybackRate
                 }
             );
@@ -45,7 +53,7 @@ export class AudioManager {
                 {
                     loop: false,
                     autoplay: false,
-                    volume: 0.6,
+                    volume: this.volumes.paddle,
                     playbackRate: this.basePlaybackRate
                 }
             );
@@ -58,7 +66,7 @@ export class AudioManager {
                 {
                     loop: false,
                     autoplay: false,
-                    volume: 0.6,
+                    volume: this.volumes.countdown,
                     playbackRate: this.basePlaybackRate
                 }
             );
@@ -71,7 +79,7 @@ export class AudioManager {
                 {
                     loop: false,
                     autoplay: false,
-                    volume: 0.7,
+                    volume: this.volumes.score,
                     playbackRate: this.basePlaybackRate
                 }
             );
@@ -144,6 +152,30 @@ export class AudioManager {
 
     stopCountdown(): void {
         this.countdownSound?.stop();
+    }
+
+    isMuted(): boolean {
+        return this.muted;
+    }
+
+    setMuted(m: boolean): void {
+        this.muted = m;
+        this.applyVolumes();
+    }
+
+    toggleMute(): boolean {
+        this.muted = !this.muted;
+        this.applyVolumes();
+        return this.muted;
+    }
+
+    private applyVolumes(): void {
+        const base = this.muted ? 0 : 1;
+
+        this.gameMusic?.setVolume(base * this.volumes.music);
+        this.countdownSound?.setVolume(base * this.volumes.countdown);
+        this.paddleHitSound?.setVolume(base * this.volumes.paddle);
+        this.scoreSound?.setVolume(base * this.volumes.score);
     }
 
     dispose(): void {

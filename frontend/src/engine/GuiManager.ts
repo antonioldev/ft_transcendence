@@ -1,4 +1,4 @@
-import { AdvancedDynamicTexture, Control, Rectangle, TextBlock, Grid} from "@babylonjs/gui";
+import { AdvancedDynamicTexture, Control, Rectangle, TextBlock, Grid, Image} from "@babylonjs/gui";
 import { Scene, KeyboardEventTypes, Animation, SineEase } from "@babylonjs/core";
 import { Logger } from '../utils/LogManager.js';
 import { GameConfig } from './GameConfig.js';
@@ -40,6 +40,8 @@ export class GUIManager {
     private pauseTitle!: TextBlock;
     private pauseInstruction!: TextBlock;
     private pauseHint!: TextBlock;
+    private muteIcon?: Image;
+    private toggleMuteCallback?: () => boolean;
 
 
 
@@ -175,25 +177,37 @@ export class GUIManager {
         this.pauseOverlay.isVisible = false;
         this.advancedTexture.addControl(this.pauseOverlay);
 
-        this.pauseGrid = this.createGrid("pauseGrid", "20%");
+        this.pauseGrid = this.createGrid("pauseGrid", "50%");
 
         this.pauseGrid.addRowDefinition(0.5, false);
-        this.pauseGrid.addRowDefinition(0.3, false);
         this.pauseGrid.addRowDefinition(0.2, false);
+        this.pauseGrid.addRowDefinition(0.1, false);
+        this.pauseGrid.addRowDefinition(0.1, false);
         this.pauseOverlay.addControl(this.pauseGrid);
 
-        this.pauseTitle = this.createTextBlock("pauseTitle",{
-            text: t.gamePaused,
-            fontWeight: "bold",
-            fontSize: 36,
-        });
+        this.pauseTitle = this.createTextBlock("pauseTitle",{ text: t.gamePaused, fontWeight: "bold", fontSize: 42, });
         this.pauseGrid.addControl(this.pauseTitle, 0, 0);
+
 
         this.pauseInstruction = this.createTextBlock("pauseInstruction",{ text: t.exitGame, });
         this.pauseGrid.addControl(this.pauseInstruction, 1, 0);
 
         this.pauseHint = this.createTextBlock("pauseHint", { text: t.pauseControls, });
         this.pauseGrid.addControl(this.pauseHint, 2, 0);
+
+        this.muteIcon = new Image("muteIcon", "assets/icons/sound_on.png");
+        this.muteIcon.stretch = Image.STRETCH_UNIFORM;
+        this.muteIcon.paddingTop = "16px";
+        this.muteIcon.onPointerClickObservable.add(() => {
+            this.animateMuteIcon();
+            if (this.toggleMuteCallback) {
+                    const isMuted = this.toggleMuteCallback();
+                    this.muteIcon!.source = isMuted
+                        ? "assets/icons/sound_off.png"
+                        : "assets/icons/sound_on.png";
+                }
+        });
+        this.pauseGrid.addControl(this.muteIcon, 3, 0);
 
     }
 
@@ -239,7 +253,6 @@ export class GUIManager {
         this.partialWinnerLabel = this.createTextBlock("winnerLabel", {
             text: t.winner,
             outlineWidth: 2,
-            outlineColor: "#000000",
             fontSize: 48,
             zIndex: 10,
         });
@@ -452,6 +465,18 @@ export class GUIManager {
         this.partialEndGameOverlay.isVisible = false;
     }
 
+    private animateMuteIcon(): void {
+        if (!this.muteIcon || !this.advancedTexture) return;
+        const scene = this.advancedTexture.getScene();
+
+        const animX = this.createAnimation("scaleX", 1, 0.90, 12, true);
+        const animY = this.createAnimation("scaleY", 1, 0.90, 12, true);
+
+        this.muteIcon.animations = [animX, animY];
+
+        scene?.beginAnimation(this.muteIcon, 0, 12, false);
+    }
+
     //Helper functions to create Gui objects
     createGrid(name: string, h: string, verticalAlign?: number): Grid {
         const grid = new Grid(name);
@@ -548,6 +573,11 @@ export class GUIManager {
             ]);
         }
         return anim;
+    }
+
+    // Callbacks
+    setToggleMuteCallback(callback: () => boolean): void {
+        this.toggleMuteCallback = callback;
     }
 
     // Clean up all GUI resources
