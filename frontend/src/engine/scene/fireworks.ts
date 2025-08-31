@@ -1,4 +1,4 @@
-declare var BABYLON: typeof import('@babylonjs/core');
+import { ParticleSystem, Texture, Color4, Vector3 } from "@babylonjs/core";
 
 interface FireworkDetails {
     bursts: number;
@@ -40,13 +40,13 @@ export const FINAL_FIREWORKS: FireworkDetails = {
     lifeTime: { min: 1.5, max: 3.0 },
     power: { min: 6, max: 12 },
     gravityY: -9.81,
-    blendMode: BABYLON.ParticleSystem.BLENDMODE_ONEONE,
+    blendMode: ParticleSystem.BLENDMODE_ONEONE,
     colors: [
-      { c1: new BABYLON.Color4(1, 0.8, 0.2, 1), c2: new BABYLON.Color4(1, 0.8, 0.2, 1) },
-      { c1: new BABYLON.Color4(0.2, 1, 0.3, 1), c2: new BABYLON.Color4(0.2, 1, 0.3, 1) },
-      { c1: new BABYLON.Color4(0.3, 0.5, 1, 1), c2: new BABYLON.Color4(0.3, 0.5, 1, 1) },
-      { c1: new BABYLON.Color4(1, 0.3, 0.8, 1), c2: new BABYLON.Color4(1, 0.3, 0.8, 1) },
-      { c1: new BABYLON.Color4(0.8, 0.2, 1, 1), c2: new BABYLON.Color4(0.8, 0.2, 1, 1) },
+      { c1: new Color4(1, 0.8, 0.2, 1), c2: new Color4(1, 0.8, 0.2, 1) },
+      { c1: new Color4(0.2, 1, 0.3, 1), c2: new Color4(0.2, 1, 0.3, 1) },
+      { c1: new Color4(0.3, 0.5, 1, 1), c2: new Color4(0.3, 0.5, 1, 1) },
+      { c1: new Color4(1, 0.3, 0.8, 1), c2: new Color4(1, 0.3, 0.8, 1) },
+      { c1: new Color4(0.8, 0.2, 1, 1), c2: new Color4(0.8, 0.2, 1, 1) },
     ],
   },
   stopAfterMs: 2000,
@@ -71,9 +71,9 @@ export const PARTIAL_FIREWORKS: FireworkDetails = {
     lifeTime: { min: 0.7, max: 1.4 },
     power: { min: 4, max: 8 },
     gravityY: -6.0,
-    blendMode: BABYLON.ParticleSystem.BLENDMODE_ONEONE,
+    blendMode: ParticleSystem.BLENDMODE_ONEONE,
     colors: [
-      { c1: new BABYLON.Color4(1.0, 0.92, 0.5, 1.0), c2: new BABYLON.Color4(1.0, 1.0, 1.0, 1.0) },
+      { c1: new Color4(1.0, 0.92, 0.5, 1.0), c2: new Color4(1.0, 1.0, 1.0, 1.0) },
     ],
   },
   stopAfterMs: 1200,
@@ -88,18 +88,18 @@ function chooseColorPair(profile: FireworkDetails) {
 
 function spawnOneExplosion(scene: any, pos: any, profile: FireworkDetails): void {
     const p = profile.particle;
-    const ps = new BABYLON.ParticleSystem(`fw_${Date.now()}`, p.capacity, scene);
+    const ps = new ParticleSystem(`fw_${Date.now()}`, p.capacity, scene);
     try {
-        ps.particleTexture = new BABYLON.Texture("assets/textures/particle/flare_transparent.png", scene);
+        ps.particleTexture = new Texture("assets/textures/particle/flare_transparent.png", scene);
     } catch (error) {
-        ps.particleTexture = new BABYLON.Texture("assets/textures/particle/flare.png", scene);
+        ps.particleTexture = new Texture("assets/textures/particle/flare.png", scene);
     }
     ps.emitter = pos;
 
     const pair = chooseColorPair(profile);
     ps.color1 = pair.c1;
     ps.color2 = pair.c2;
-    ps.colorDead = new BABYLON.Color4(0, 0, 0, 0);
+    ps.colorDead = new Color4(0, 0, 0, 0);
 
     ps.minSize = p.size.min;
     ps.maxSize = p.size.max;
@@ -110,8 +110,8 @@ function spawnOneExplosion(scene: any, pos: any, profile: FireworkDetails): void
     ps.createSphereEmitter(p.emitterSphereRadius);
     ps.minEmitPower = p.power.min;
     ps.maxEmitPower = p.power.max;
-    ps.gravity = new BABYLON.Vector3(0, p.gravityY, 0);
-    ps.blendMode = p.blendMode ?? BABYLON.ParticleSystem.BLENDMODE_ONEONE;
+    ps.gravity = new Vector3(0, p.gravityY, 0);
+    ps.blendMode = p.blendMode ?? ParticleSystem.BLENDMODE_ONEONE;
 
     ps.start();
     setTimeout(() => {
@@ -130,11 +130,11 @@ function spawnBurstsForCamera(scene: any, camera: any, profile: FireworkDetails)
     const spread = profile.spread;
     const lift   = rand(profile.liftY.min, profile.liftY.max);
 
-    const forward = camera.getForwardRay ? camera.getForwardRay().direction : new BABYLON.Vector3(0, 0, 1);
+    const forward = camera.getForwardRay ? camera.getForwardRay().direction : new Vector3(0, 0, 1);
     const x = camera.position.x + forward.x * dist + (Math.random() - 0.5) * spread;
     const y = camera.position.y + forward.y * dist + (Math.random() - 0.5) * 2 + lift;
     const z = camera.position.z + forward.z * dist + (Math.random() - 0.5) * spread;
-    const pos = new BABYLON.Vector3(x, y, z);
+    const pos = new Vector3(x, y, z);
 
     const delay = rand(profile.delay.min, profile.delay.max);
     setTimeout(() => spawnOneExplosion(scene, pos, profile), i * delay);

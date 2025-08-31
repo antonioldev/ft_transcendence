@@ -1,3 +1,5 @@
+import "@babylonjs/loaders";
+
 import { updateLanguageDisplay, previousLanguage, nextLanguage } from '../translations/translations.js';
 import { uiManager } from '../ui/UIManager.js';
 import { webSocketClient } from './WebSocketClient.js';

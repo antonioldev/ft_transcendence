@@ -1,6 +1,23 @@
-declare var BABYLON: typeof import('@babylonjs/core') & {
-    GUI: typeof import('@babylonjs/gui');
-}; //declare var BABYLON: any;
+import { 
+    Engine, 
+    Scene, 
+    // Animation, 
+    // Animatable, 
+    // EasingFunction, 
+    // QuadraticEase, 
+    Color4, 
+    Vector3, 
+    DeviceSourceManager, 
+    DeviceType,
+    SceneLoader
+} from "@babylonjs/core";
+// import { 
+//     AdvancedDynamicTexture, 
+//     TextBlock, 
+//     Rectangle, 
+//     Control 
+// } from "@babylonjs/gui";
+
 
 import { GameConfig } from './GameConfig.js';
 import { buildScene2D, buildScene3D } from './scene/sceneBuilder.js';
@@ -36,8 +53,8 @@ import { AudioManager } from './AudioManager.js';
 export class Game {
     private static currentInstance: Game | null = null;
 
-    private engine: any = null;
-    private scene: any = null;
+    private engine: Engine | null = null;
+    private scene: Scene | null = null;
     private canvas: HTMLCanvasElement | null = null;
     private gameObjects: GameObjects | null = null;
     private guiManager: GUIManager | null = null;
@@ -222,7 +239,7 @@ export class Game {
         
         this.setupGlobalKeyboardEvents();
         // BABYLON.SceneLoader.ShowLoadingScreen = true;
-        BABYLON.SceneLoader.ShowLoadingScreen = false;
+        SceneLoader.ShowLoadingScreen = false;
         
         uiManager.updateLoadingProgress(0);
         uiManager.setLoadingScreenVisible(true);
@@ -235,7 +252,6 @@ export class Game {
             this.scene = await this.createScene();
             if (!this.scene) Logger.errorAndThrow('Scene not created', 'Game');
 
-            // In Game.ts initialize method:
             this.audioManager = new AudioManager(this.scene);
             await this.audioManager.initialize();
             // Build game objects
@@ -270,11 +286,12 @@ export class Game {
 
     // Initialize Babylon.js engine
     private async initializeBabylonEngine(): Promise<any> {
-        const engine = new BABYLON.Engine(this.canvas, true, { 
+        const engine = new Engine(this.canvas, true, { 
             preserveDrawingBuffer: true, 
             stencil: true, 
             disableWebGL2Support: false,
             antialias: false,
+            audioEngine: true,
             powerPreference: "high-performance"
         });
         return engine;
@@ -282,9 +299,9 @@ export class Game {
 
     // Create scene based on view mode
     private async  createScene(): Promise<any> {
-        const scene = new BABYLON.Scene(this.engine);
+        const scene = new Scene(this.engine!);
         scene.createDefaultEnvironment({ createGround: false, createSkybox: false });
-        scene.clearColor = new BABYLON.Color4(0, 0, 0, 1);
+        scene.clearColor = new Color4(0, 0, 0, 1);
         return scene;
     }
 
@@ -562,12 +579,12 @@ export class Game {
             if (camera1 &&this.gameObjects.players.left) {
                 const targetLeft = this.gameObjects.players.left.position.clone();
                 targetLeft.x = Math.max(-cameraFollowLimit, Math.min(cameraFollowLimit, targetLeft.x));
-                camera1.setTarget(BABYLON.Vector3.Lerp(camera1.getTarget(), targetLeft, GAME_CONFIG.followSpeed));
+                camera1.setTarget(Vector3.Lerp(camera1.getTarget(), targetLeft, GAME_CONFIG.followSpeed));
             }
             if (camera2 && this.gameObjects.players.right) {
                 const targetRight = this.gameObjects.players.right.position.clone();
                 targetRight.x = Math.max(-cameraFollowLimit, Math.min(cameraFollowLimit, targetRight.x));
-                camera2.setTarget(BABYLON.Vector3.Lerp(camera2.getTarget(), targetRight, GAME_CONFIG.followSpeed));
+                camera2.setTarget(Vector3.Lerp(camera2.getTarget(), targetRight, GAME_CONFIG.followSpeed));
             }
         } catch (error) {
             Logger.error('Error updating 3D cameras', 'Game', error);
@@ -652,7 +669,7 @@ export class Game {
 
     private initializeInput(): void {
         try {
-            this.deviceSourceManager = new BABYLON.DeviceSourceManager(this.scene.getEngine());
+            this.deviceSourceManager = new DeviceSourceManager(this.scene!.getEngine());
             
             // Configure input based on game mode
             this.isLocalMultiplayer = (
@@ -683,7 +700,7 @@ export class Game {
         const guiCamera = this.gameObjects.guiCamera;
 
         if (this.isLocalMultiplayer)
-            this.scene.activeCameras = [cameras[0], cameras[1], guiCamera];
+            this.scene!.activeCameras = [cameras[0], cameras[1], guiCamera];
         else {
             let activeGameCamera;
             if (this.controlledSides.includes(0))
@@ -694,7 +711,7 @@ export class Game {
                 activeGameCamera = cameras[0];
 
             if (activeGameCamera && guiCamera)
-                this.scene.activeCameras = [activeGameCamera, guiCamera];
+                this.scene!.activeCameras = [activeGameCamera, guiCamera];
         }
 
     }
@@ -718,7 +735,7 @@ export class Game {
     private updateInput(): void {
         if (this.isDisposed || !this.deviceSourceManager || !this.gameObjects) return;
         try {
-            const keyboardSource = this.deviceSourceManager.getDeviceSource(BABYLON.DeviceType.Keyboard);
+            const keyboardSource = this.deviceSourceManager.getDeviceSource(DeviceType.Keyboard);
             if (keyboardSource) {
                 // Handle left player (side 0)
                 this.handlePlayerInput(keyboardSource, this.gameObjects.players.left, this.config.controls.playerLeft, 0);

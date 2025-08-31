@@ -1,23 +1,20 @@
-declare var BABYLON: typeof import('@babylonjs/core') & {
-    GUI: typeof import('@babylonjs/gui');
-}; //declare var BABYLON: any;
-
-import { GameConfig } from './GameConfig.js';
-import { GameMode } from '../shared/constants.js';
-import { ViewMode } from '../shared/constants.js';
+import { AdvancedDynamicTexture, Control, Rectangle, TextBlock, Grid} from "@babylonjs/gui";
+import { KeyboardEventTypes, Animation, SineEase } from "@babylonjs/core";
 import { Logger } from '../utils/LogManager.js';
+import { GameConfig } from './GameConfig.js';
+import { GameMode, ViewMode } from '../shared/constants.js';
 import { getCurrentTranslation } from '../translations/translations.js';
-import { spawnFireworksInFrontOfCameras, FINAL_FIREWORKS, PARTIAL_FIREWORKS } from './scene/fireworks.js'
+import { spawnFireworksInFrontOfCameras, FINAL_FIREWORKS, PARTIAL_FIREWORKS } from './scene/fireworks.js';
 import { TextBlockOptions } from './utils.js';
 
 /**
  * Manages all GUI elements for the game including HUD, scores, FPS display, rally and animations
  */
 export class GUIManager {
-    private readonly H_CENTER = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
-    private readonly V_CENTER = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
-    private readonly V_BOTTOM = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
-    private advancedTexture: any = null;
+    private readonly H_CENTER = Control.HORIZONTAL_ALIGNMENT_CENTER;
+    private readonly V_CENTER = Control.VERTICAL_ALIGNMENT_CENTER;
+    private readonly V_BOTTOM = Control.VERTICAL_ALIGNMENT_BOTTOM;
+    private advancedTexture: AdvancedDynamicTexture | null = null;
     private isInitialized: boolean = false;
     private hudGrid: any = null;
     private fpsText: any = null;
@@ -48,8 +45,8 @@ export class GUIManager {
 
         try {
             // Create the main GUI texture
-            this.advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI", true, scene);
-            this.advancedTexture.layer.layerMask = 0x20000000;
+            this.advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI("UI", true, scene);
+            this.advancedTexture!.layer!.layerMask = 0x20000000;
 
             this.createHUD(config);
             this.createViewModeElements(config);
@@ -69,7 +66,7 @@ export class GUIManager {
     private createViewModeElements(config: GameConfig): void {
         if (config.viewMode === ViewMode.MODE_3D && 
             (config.gameMode === GameMode.TWO_PLAYER_LOCAL || config.gameMode === GameMode.TOURNAMENT_LOCAL)) {
-            const dividerLine = new BABYLON.GUI.Rectangle();
+            const dividerLine = new Rectangle();
             dividerLine.widthInPixels = 5;
             dividerLine.height = "100%";
             dividerLine.color = "black";
@@ -77,13 +74,13 @@ export class GUIManager {
             dividerLine.verticalAlignment = this.V_CENTER;
             dividerLine.horizontalAlignment = this.H_CENTER;
             
-            this.advancedTexture.addControl(dividerLine);
+            this.advancedTexture!.addControl(dividerLine);
             Logger.info('Split screen divider created', 'GUIManager');
         }
     }
 
     private addHUDBox(col: number, controls: any | any[]): void {
-        const box = new BABYLON.GUI.Rectangle();
+        const box = new Rectangle();
         box.background = "rgba(0, 0, 0, 0.50)";
         box.thickness = 0;
 
@@ -94,8 +91,8 @@ export class GUIManager {
         this.hudGrid.addControl(box, 0, col);
     }
 
-    private createTextBlock(name: string, options: TextBlockOptions = {}): any {
-        const textBlock = new BABYLON.GUI.TextBlock();
+    private createTextBlock(name: string, options: TextBlockOptions = {}): TextBlock {
+        const textBlock = new TextBlock();
 
         textBlock.fontFamily = 'Poppins, Arial, sans-serif';
         textBlock.text = options.text || name;
@@ -155,7 +152,7 @@ export class GUIManager {
     }
 
     private createHUD(config: GameConfig): void {
-        this.hudGrid = new BABYLON.GUI.Grid();
+        this.hudGrid = new Grid();
         this.hudGrid.width = "100%";
         this.hudGrid.height = "20%";
         this.hudGrid.horizontalAlignment = this.H_CENTER;
@@ -169,7 +166,7 @@ export class GUIManager {
         this.hudGrid.addColumnDefinition(0.15); // P2 instructions
         this.hudGrid.addColumnDefinition(0.10); // Rally
 
-        this.advancedTexture.addControl(this.hudGrid);
+        this.advancedTexture!.addControl(this.hudGrid);
 
         // Box 1: FPS
         this.fpsText = this.createTextBlock("FPS: 0", { fontSize: 18 });
@@ -201,7 +198,7 @@ export class GUIManager {
     }
 
     private createCountdownDisplay(): void {
-        this.countdownContainer = new BABYLON.GUI.Rectangle("countdownContainer");
+        this.countdownContainer = new Rectangle("countdownContainer");
         this.countdownContainer.width = "200px";
         this.countdownContainer.height = "200px";
         this.countdownContainer.cornerRadius = 60;
@@ -214,7 +211,7 @@ export class GUIManager {
 
         this.countdownText = this.createTextBlock("5", { fontSize: 72, applyRichEffects: true });
         this.countdownContainer.addControl(this.countdownText);
-        this.advancedTexture.addControl(this.countdownContainer);
+        this.advancedTexture!.addControl(this.countdownContainer);
     }
 
     showCountdown(count: number): void {
@@ -230,7 +227,7 @@ export class GUIManager {
             
             if (this.advancedTexture && this.advancedTexture.getScene) {
                 const scene = this.advancedTexture.getScene();
-                scene.beginAnimation(this.countdownText, 0, 60, false);
+                scene?.beginAnimation(this.countdownText, 0, 60, false);
             }
         }
     }
@@ -241,12 +238,12 @@ export class GUIManager {
         this.countdownText.animations = [];
     }
 
-    private createAnimation(property: string, from: number, end: number, frames: number = 60, pingPong: boolean = true): any {
+    private createAnimation(property: string, from: number, end: number, frames: number = 60, pingPong: boolean = true): Animation {
 
         const fps: number = 60;
-        const anim = BABYLON.Animation.CreateAnimation(
-            property, BABYLON.Animation.ANIMATIONTYPE_FLOAT, fps, new BABYLON.SineEase());
-        anim.loopMode = BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE;
+        const anim = Animation.CreateAnimation(
+            property, Animation.ANIMATIONTYPE_FLOAT, fps, new SineEase());
+        anim.loopMode = Animation.ANIMATIONLOOPMODE_CYCLE;
 
         if (pingPong) {
             const mid = Math.floor(frames / 2);
@@ -280,8 +277,8 @@ export class GUIManager {
             const b = Math.round(255 * (1 - intensity));
             this.rally.color = `rgb(${r}, ${g}, ${b})`;
 
-            const scene = this.advancedTexture.getScene();
-            scene.beginAnimation(this.rally, 0, 60, false);
+            const scene = this.advancedTexture!.getScene();
+            scene?.beginAnimation(this.rally, 0, 60, false);
         }
         this.previousRally = rally;
     }
@@ -321,7 +318,7 @@ export class GUIManager {
     }
 
     private createEndGameOverlay(): void {
-        this.endGameOverlay = new BABYLON.GUI.Grid();
+        this.endGameOverlay = new Grid();
         this.endGameOverlay.width = "100%";
         this.endGameOverlay.height = "20%";
         this.endGameOverlay.horizontalAlignment = this.H_CENTER;
@@ -339,21 +336,21 @@ export class GUIManager {
             applyRichEffects: true
         });
         this.endGameOverlay.addControl(this.endGameWinnerText, 0, 0);
-        this.advancedTexture.addControl(this.endGameOverlay);
+        this.advancedTexture!.addControl(this.endGameOverlay);
     }
 
     private createPartialEndGameOverlay(): void {
         const t = getCurrentTranslation();
-        this.partialEndGameOverlay = new BABYLON.GUI.Rectangle("partialWinnerLayer");
+        this.partialEndGameOverlay = new Rectangle("partialWinnerLayer");
         this.partialEndGameOverlay.thickness = 0;
         this.partialEndGameOverlay.width = "100%";
         this.partialEndGameOverlay.height = "100%";
         this.partialEndGameOverlay.isPointerBlocker = true;
         this.partialEndGameOverlay.isVisible = false;
         this.partialEndGameOverlay.zIndex = 7;
-        this.advancedTexture.addControl(this.partialEndGameOverlay);
+        this.advancedTexture!.addControl(this.partialEndGameOverlay);
 
-        this.partialTransitionFill = new BABYLON.GUI.Rectangle("partialTransitionFill");
+        this.partialTransitionFill = new Rectangle("partialTransitionFill");
         this.partialTransitionFill.thickness = 0;
         this.partialTransitionFill.width = "100%";
         this.partialTransitionFill.height = "100%";
@@ -364,7 +361,7 @@ export class GUIManager {
         this.partialTransitionFill.zIndex = 8;
         this.partialEndGameOverlay.addControl(this.partialTransitionFill);
 
-        const centerColumn = new BABYLON.GUI.Grid("winnerGrid");
+        const centerColumn = new Grid("winnerGrid");
         centerColumn.width = "100%";
         centerColumn.height = "100%";
         centerColumn.horizontalAlignment = this.H_CENTER;
@@ -420,11 +417,9 @@ export class GUIManager {
             this.hudGrid.isVisible = false;
         this.endGameWinnerText.text = `🏆 ${winner} WINS! 🏆`;
         this.endGameOverlay.isVisible = true;
-        const scene = this.advancedTexture.getScene();
-        if (scene) {
-            const cams = scene.activeCameras?.length ? scene.activeCameras : scene.activeCamera;
-            spawnFireworksInFrontOfCameras(scene, FINAL_FIREWORKS, cams);
-        }
+        const scene = this.advancedTexture!.getScene();
+        const cams = scene?.activeCameras?.length ? scene.activeCameras : scene?.activeCamera;
+        spawnFireworksInFrontOfCameras(scene, FINAL_FIREWORKS, cams);
         await new Promise(resolve => setTimeout(resolve, 5000));
 
         if (this.hudGrid)
@@ -450,7 +445,7 @@ export class GUIManager {
         const alpha = this.createAnimation("alpha", current, end, frames, false);
         this.partialTransitionFill.animations = [alpha];
 
-        scene.beginAnimation(this.partialTransitionFill, 0, frames, false, 1, () => {
+        scene?.beginAnimation(this.partialTransitionFill, 0, frames, false, 1, () => {
             if (!show) {
                 this.partialEndGameOverlay.isVisible = false;
                 this.hudGrid.isVisible = true;
@@ -482,9 +477,9 @@ export class GUIManager {
 
         this.partialWinnerName.animations = [fadeIn, animationScaleX, animationScaleY];
 
-        const cams = scene.activeCameras?.length ? scene.activeCameras : scene.activeCamera;
+        const cams = scene?.activeCameras?.length ? scene.activeCameras : scene?.activeCamera;
         spawnFireworksInFrontOfCameras(scene, PARTIAL_FIREWORKS, cams);
-        new Promise(r => scene.beginAnimation(this.partialWinnerName!, 0, 60, true, 1, r));
+        scene?.beginAnimation(this.partialWinnerName!, 0, 60, true, 1);
         await new Promise(r => setTimeout(r, totalFrames));
 
     }
@@ -492,35 +487,34 @@ export class GUIManager {
     async waitForSpaceToContinue(ms: number): Promise<void> {
         if (!this.advancedTexture) return;
         const scene = this.advancedTexture.getScene();
-        new Promise<void>(res => setTimeout(res, ms));
+        await new Promise<void>(res => setTimeout(res, ms));
         if (this.continueText)
             this.continueText.isVisible = true;
 
         return new Promise<void>((resolve) => {
-            const sub = scene.onKeyboardObservable.add((kbInfo: any) => {
-            if (kbInfo.type === BABYLON.KeyboardEventTypes.KEYDOWN) {
-                const e = kbInfo.event as KeyboardEvent;
-                if (e.code === "Space" || e.key === " ") {
-                    scene.onKeyboardObservable.remove(sub);
-                    this.continueText.isVisible = false;
-                    this.partialWinnerLabel.isVisible = false;
-                    this.partialWinnerName.isVisible = false;
-                    resolve();
+            const sub = scene?.onKeyboardObservable.add((kbInfo: any) => {
+                if (kbInfo.type === KeyboardEventTypes.KEYDOWN) {
+                    const e = kbInfo.event as KeyboardEvent;
+                    if (e.code === "Space" || e.key === " ") {
+                        scene.onKeyboardObservable.remove(sub);
+                        this.continueText.isVisible = false;
+                        this.partialWinnerLabel.isVisible = false;
+                        this.partialWinnerName.isVisible = false;
+                        resolve();
+                    }
                 }
-            }
-            });
+            }) ?? null;
         });
     }
 
     async hidePartialWinner(): Promise<void> {
         if (!this.partialEndGameOverlay) return;
-        const scene = this.advancedTexture.getScene();
+        const scene = this.advancedTexture!.getScene();
         const totalFrames = 60;
 
         const fadeOut = this.createAnimation("alpha", 1, 0, 60, false);
         this.partialWinnerName.animations = [fadeOut];
-        await new Promise(r => scene.beginAnimation(this.partialWinnerName!, 0, totalFrames, false, 1, r));
-
+        scene?.beginAnimation(this.partialWinnerName!, 0, totalFrames, false, 1);
         this.partialEndGameOverlay.isPointerBlocker = false;
         this.partialEndGameOverlay.isVisible = false;
     }

@@ -1,10 +1,9 @@
-declare var BABYLON: typeof import('@babylonjs/core');
-
+import { Scene, Sound } from "@babylonjs/core";
 import { Logger } from '../utils/LogManager.js';
 
 export class AudioManager {
-    private scene: any = null;
-    private gameMusic: any = null;
+    private scene: Scene | null = null;
+    private gameMusic: Sound | null = null;
     private isInitialized: boolean = false;
     private basePlaybackRate: number = 1.0;
     private maxPlaybackRate: number = 1.8;
@@ -12,24 +11,25 @@ export class AudioManager {
     private currentRally: number = 1;
 
     // Sound effects
-    private gameStartSound: any = null;
-    private countdownSound: any = null
-    private paddleHitSound: any = null;
-    private scoreSound: any = null;
+    private gameStartSound: Sound | null = null;
+    private countdownSound: Sound | null = null;
+    private paddleHitSound: Sound | null = null;
+    private scoreSound: Sound | null = null;
 
-    constructor(scene: any) {
+    constructor(scene: Scene) {
         this.scene = scene;
+        
     }
 
     async initialize(): Promise<void> {
         try {
             if (!this.scene)
                 Logger.error('Scene required', 'BabylonAudioManager');
-
-            await BABYLON.CreateAudioEngineAsync({ volume: 0.6 });
-            this.gameMusic = await BABYLON.CreateSoundAsync(
+            this.gameMusic = new Sound(
                 "gameMusic",
                 "/assets/audio/bg/retro2.mp3",
+                this.scene,
+                null,
                 {
                     loop: true,
                     autoplay: false,
@@ -38,9 +38,11 @@ export class AudioManager {
                 }
             );
 
-            this.paddleHitSound = await BABYLON.CreateSoundAsync(
+            this.paddleHitSound = new Sound(
                 "paddleHit",
                 "/assets/audio/hit.mp3",
+                this.scene,
+                null,
                 {
                     loop: false,
                     autoplay: false,
@@ -49,9 +51,11 @@ export class AudioManager {
                 }
             );
 
-            this.countdownSound = await BABYLON.CreateSoundAsync(
+            this.countdownSound = new Sound(
                 "countdown",
                 "/assets/audio/countdown.mp3",
+                this.scene,
+                null,
                 {
                     loop: false,
                     autoplay: false,
@@ -60,9 +64,11 @@ export class AudioManager {
                 }
             );
 
-            this.scoreSound = await BABYLON.CreateSoundAsync(
+            this.scoreSound = new Sound(
                 "score",
                 "/assets/audio/score.mp3",
+                this.scene,
+                null,
                 {
                     loop: false,
                     autoplay: false,
@@ -70,6 +76,7 @@ export class AudioManager {
                     playbackRate: this.basePlaybackRate
                 }
             );
+
             this.isInitialized = true;
         } catch (error) {
             Logger.error('Error initializing Babylon audio', 'BabylonAudioManager', error);
@@ -120,12 +127,12 @@ export class AudioManager {
         const newPlaybackRate = this.basePlaybackRate + 
             (speedCurve * (this.maxPlaybackRate - this.basePlaybackRate));
 
-        this.gameMusic.playbackRate = newPlaybackRate;
+        this.gameMusic.setPlaybackRate(newPlaybackRate);
     }
 
     // Sound effects methods
     playGameStart(): void {
-        if (this.gameStartSound && this.gameStartSound.isReady)
+        if (this.gameStartSound && this.gameStartSound.isReady())
             this.gameStartSound.play();
     }
 
