@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ft_transcendence</title>
+    <link rel="icon" href="/assets/images/42_favicon.ico" type="image/x-icon">
+    <!-- <link href="/output.css" rel="stylesheet"> -->
+    <link rel="stylesheet" href="/styles/input.css"> <!-- FASE DE DESENVOLVIMENTO -> DELETE!!!! -->
+    <link href="https://fonts.googleapis.com/css2?family=Tiny5&display=swap" rel="stylesheet">
+    <script src="https://cdn.babylonjs.com/babylon.js"></script>
+    <script src="https://cdn.babylonjs.com/gui/babylon.gui.min.js"></script>
+    <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+    <script src="/env-config.js"></script>
+</head>
+<body class="bg-blue-background h-screen relative px-4 py-4">
+    <!-- Language selector - Fixed in top right for all screens -->
+    <div class="fixed top-4 right-4 z-50 flex items-center gap-2">
+        <button type="button" 
+                id="back" 
+                class="text-light-green hover:text-white transition-colors duration-200 
+                    font-tiny5-regular text-lg px-2">
+            ←
+        </button>
+        <span id="language_select" 
+            class="text-light-green font-tiny5-regular text-lg min-w-[80px] text-center">
+            ENGLISH
+        </span>
+        <button type="button" 
+                id="forward" 
+                class="text-light-green hover:text-white transition-colors duration-200 
+                    font-tiny5-regular text-lg px-2">
+            →
+        </button>
+    </div>
+
+    <!-- Main Menu -->
+    <main id="main-menu" class="contents">
+        <!-- Small ft_transcendence in top left -->
+        <div class="absolute top-4 left-5 flex items-center gap-2">
+            <div id= "connection-status" class="text-xs text-light-green opacity-80">
+                <!-- Connection status will be updated by JS -->
+            </div>
+            <h2 class="text-light-green font-tiny5-regular text-sm sm:text-base md:text-lg">
+                ft_transcendence
+            </h2>
+        </div>
+        
+        <!-- Centered PONG text -->
+        <div class="bg-blue-background flex flex-col items-center justify-center h-screen">
+            <h1 id="main-title" class="text-light-green text-center">
+                <span class="font-tiny5-regular text-6xl sm:text-8xl md:text-9xl lg:text-10xl xl:text-[10rem] 2xl:text-[12rem]">
+                    PONG
+                </span>
+            </h1>
+        </div>
+        
+        <!-- Main navigation buttons - Bottom Left -->
+        <nav class="absolute bottom-8 left-8 flex flex-col gap-2 sm:gap-1 md:gap-2 lg:gap-3 xl:gap-4">
+            <!-- PLAY button -->
+            <button type="button" 
+                    id="play-btn" 
+                    class="bg-transparent text-light-green font-tiny5-regular text-lg px-6 py-2 
+                        hover:bg-orange hover:text-blue-background transition-colors duration-200
+                        border border-light-green hover:border-orange
+                        min-w-[120px] text-left">
+                PLAY
+            </button>
+            
+            <!-- LOGIN button -->
+            <button type="button" 
+                    id="login-btn" 
+                    class="bg-transparent text-light-green font-tiny5-regular text-lg px-6 py-2 
+                        hover:bg-light-green hover:text-blue-background transition-colors duration-200
+                        border border-light-green
+                        min-w-[120px] text-left">
+                LOGIN
+            </button>
+            
+            <!-- REGISTER button -->
+            <button type="button" 
+                    id="register-btn" 
+                    class="bg-transparent text-light-green font-tiny5-regular text-lg px-6 py-2 
+                        hover:bg-light-green hover:text-blue-background transition-colors duration-200
+                        border border-light-green
+                        min-w-[120px] text-left">
+                REGISTER
+            </button>
+        </nav>
+
+        <!-- Atari image in bottom right -->
+        <img 
+            src="/assets/images/atari.png" 
+            alt="Atari"
+            class="absolute bottom-1 right-4 md:bottom-2 md:right-4 lg:bottom-2 lg:right-4 
+                   w-48 h-48 sm:w-60 sm:h-60 md:w-72 md:h-72 lg:w-84 lg:h-84 xl:w-96 xl:h-96
+                   object-contain opacity-80"
+        />
+    </main>
+
+    <!-- Login Page (Hidden) -->
+    <div id="login-modal" class="fixed inset-0 bg-blue-background flex items-center justify-center" style="display: none;">
+        <!-- ft_transcendence in top left -->
+        <div class="absolute top-4 left-5 z-10 flex items-center gap-2">
+            <div id= "connection-status" class="text-xs text-light-green opacity-80">
+                <!-- Connection status will be updated by JS -->
+            </div>
+            <h2 class="text-light-green font-tiny5-regular text-sm sm:text-base md:text-lg">
+                ft_transcendence
+            </h2>
+        </div>
+        
+        <div class="h-full flex items-center justify-center px-4 sm:px-8 md:px-16 lg:px-40 py-8 sm:py-12">
+            <div class="w-full max-w-sm sm:max-w-md mx-auto space-y-6 sm:space-y-8">
+                <div>
+                    <h1 class="text-center text-xl sm:text-2xl font-bold tracking-tight text-light-green font-sans">
+                        Sign in to your account
+                    </h1>
+                </div>
+
+                <form action="#" method="POST" class="space-y-4 sm:space-y-6">
+                    <div class="form-field-container">
+                        <label for="login-username" class="block text-sm sm:text-base font-medium text-light-green font-sans">
+                        </label>
+                        <div class="mt-2">
+                            <input id="login-username" name="email" type="text" autocomplete="email" required 
+                                   class="form-input block rounded-md bg-transparent border border-light-green px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-light-green 
+                                          focus:outline-2 focus:outline-orange font-sans">
+                            <span class="error-message" id="login-username-error">Please enter your email or username</span>
+                        </div>
+                    </div>                    <div class="form-field-container">
+                        <div class="flex items-center justify-between">
+                            <label for="login-password" class="block text-sm sm:text-base font-medium text-light-green font-sans">
+                                Password
+                            </label>
+                            <div class="text-xs sm:text-sm">
+                                <a href="#" class="font-semibold text-orange hover:text-light-green transition-colors duration-200 font-sans">
+                                    Forgot password?
+                                </a>
+                            </div>
+                        </div>
+                        <div class="mt-1 sm:mt-2">
+                            <input id="login-password" type="password" name="password" required autocomplete="current-password" 
+                                class="form-input block rounded-md bg-transparent border border-light-green px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-light-green 
+                                    focus:outline-2 focus:outline-orange font-sans" />
+                            <span class="error-message" id="login-password-error">Please enter your password</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <button type="submit" id="login-submit"
+                            class="inline-block w-full justify-center rounded-md bg-light-green px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold text-blue-background 
+                                   hover:bg-orange transition-colors duration-200 font-sans">
+                            Sign in
+                        </button>
+                        
+                        <!-- Google Login Button Container -->
+                        <div id="google-login-btn-container" class="mt-3 sm:mt-4"></div>
+                    </div>
+                </form>
+
+                <p class="text-center text-xs sm:text-sm text-light-green font-sans">
+                    Not a member?
+                    <a href="#" id="show-register" class="font-semibold text-orange hover:text-light-green transition-colors duration-200">
+                        Create account
+                    </a>
+                </p>
+                
+                <!-- Back button -->
+                <div class="text-center">
+                    <button type="button" id="login-back"
+                        class="bg-transparent text-light-green font-sans text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 
+                               hover:bg-light-green hover:text-blue-background transition-colors duration-200
+                               border border-light-green rounded-md">
+                        Back to Main Menu
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Register Page (Hidden) -->
+    <div id="register-modal" class="fixed inset-0 bg-blue-background flex items-center justify-center" style="display: none;">
+        <!-- ft_transcendence in top left -->
+        <div class="absolute top-4 left-5 z-10 flex items-center gap-2">
+            <div id="connection-status" class="text-xs text-light-green opacity-80">
+                <!-- Connection status will be updated by JS -->
+            </div>
+            <h2 class="text-light-green font-tiny5-regular text-sm sm:text-base md:text-lg">
+                ft_transcendence
+            </h2>
+        </div>
+        
+        <div class="h-full flex items-center justify-center px-4 sm:px-8 md:px-16 lg:px-40 py-8 sm:py-12">
+            <div class="w-full max-w-sm sm:max-w-md mx-auto space-y-6 sm:space-y-8">
+                <div>
+                    <h1 class="text-center text-xl sm:text-2xl font-bold tracking-tight text-light-green font-sans">
+                        Create your account
+                    </h1>
+                </div>
+
+                <form action="#" method="POST" class="space-y-4 sm:space-y-6">
+                    <div class="form-field-container">
+                        <label for="register-username" class="block text-sm sm:text-base font-medium text-light-green font-sans">
+                        </label>
+                        <div class="mt-2">
+                            <input id="register-username" name="username" type="text" autocomplete="username" required 
+                                   class="form-input block rounded-md bg-transparent border border-light-green px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-light-green 
+                                          focus:outline-2 focus:outline-orange font-sans">
+                            <span class="error-message" id="register-username-error">Please enter a username</span>
+                        </div>
+                    </div>                    <div class="form-field-container">
+                        <label for="register-email" class="block text-sm sm:text-base font-medium text-light-green font-sans">
+                            Email
+                        </label>
+                        <div class="mt-1 sm:mt-2">
+                            <input id="register-email" type="email" name="email" required autocomplete="email" 
+                                class="form-input block rounded-md bg-transparent border border-light-green px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-light-green 
+                                      focus:outline-2 focus:outline-orange font-sans" />
+                            <span class="error-message" id="register-email-error">Please enter a valid email</span>
+                        </div>
+                    </div>
+
+                    <div class="form-field-container">
+                        <label for="register-password" class="block text-sm sm:text-base font-medium text-light-green font-sans">
+                            Password
+                        </label>
+                        <div class="mt-1 sm:mt-2">
+                            <input id="register-password" type="password" name="password" required autocomplete="new-password" 
+                                class="form-input block rounded-md bg-transparent border border-light-green px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-light-green 
+                                      focus:outline-2 focus:outline-orange font-sans" />
+                            <span class="error-message" id="register-password-error">Please enter a password</span>
+                        </div>
+                    </div>
+
+                    <div class="form-field-container">
+                        <label for="register-confirm-password" class="block text-sm sm:text-base font-medium text-light-green font-sans">
+                            Confirm Password
+                        </label>
+                        <div class="mt-1 sm:mt-2">
+                            <input id="register-confirm-password" type="password" name="confirm-password" required autocomplete="new-password" 
+                                class="form-input block rounded-md bg-transparent border border-light-green px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-light-green 
+                                      focus:outline-2 focus:outline-orange font-sans" />
+                            <span class="error-message" id="register-confirm-password-error">Please confirm your password</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <button type="submit" id="register-submit"
+                            class="inline-block w-full justify-center rounded-md bg-light-green px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold text-blue-background 
+                                   hover:bg-orange transition-colors duration-200 font-sans">
+                            Create Account
+                        </button>
+                        
+                        <!-- Google Register Button Container -->
+                        <div id="google-register-btn-container" class="mt-3 sm:mt-4"></div>
+                    </div>
+                </form>
+
+                <p class="text-center text-xs sm:text-sm text-light-green font-sans">
+                    Already have an account?
+                    <a href="#" id="show-login" class="font-semibold text-orange hover:text-light-green transition-colors duration-200">
+                        Sign in
+                    </a>
+                </p>
+                
+                <!-- Back button -->
+                <div class="text-center">
+                    <button type="button" id="register-back"
+                        class="bg-transparent text-light-green font-sans text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 
+                               hover:bg-light-green hover:text-blue-background transition-colors duration-200
+                               border border-light-green rounded-md">
+                        Back to Main Menu
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden elements for JS compatibility -->
+    <div id="auth-buttons" style="display: none;"></div>
+    <div id="logout-btn" style="display: none;"></div>
+    <div id="user-info" class="fixed top-16 right-7 z-40 bg-blue-background border border-light-green p-3 text-xs text-light-green font-sans text-center" style="display: none;">
+        <div class="flex flex-col items-center gap-1">
+            <div class="text-light-green font-tiny5-regular text-sm">
+                <span id="greeting">Hi</span>, <span id="user-name" class="font-sans font-bold"></span>
+            </div>
+            <div class="flex items-center gap-2">
+                <button type="button" id="dashboard-btn" 
+                        class="text-light-green hover:text-white transition-colors duration-200 font-tiny5-regular text-xs px-1">
+                    Dashboard
+                </button>
+                <button type="button" id="logout-btn" 
+                        class="text-orange hover:text-white transition-colors duration-200 font-tiny5-regular text-xs px-1">
+                    Logout
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Mode Selection Overlay -->
+    <div id="game-mode-overlay" class="fixed inset-0 bg-blue-background flex items-center justify-center" style="display: none;">
+        <!-- ft_transcendence in top left -->
+        <div class="absolute top-4 left-5 z-10 flex items-center gap-2">
+            <div id="connection-status" class="text-xs text-light-green opacity-80">
+                <!-- Connection status will be updated by JS -->
+            </div>
+            <h2 class="text-light-green font-tiny5-regular text-sm sm:text-base md:text-lg">
+                ft_transcendence
+            </h2>
+        </div>
+        
+        <div class="w-full max-w-2xl mx-auto px-4 py-8">
+            <h2 id="mode-title" class="text-center text-2xl sm:text-3xl font-bold text-light-green font-tiny5-regular mb-8">
+                Select Game Mode
+            </h2>
+            
+            <!-- View Mode Selector -->
+            <div class="flex items-center justify-center gap-4 mb-8">
+                <button type="button" id="view-mode-back" 
+                        class="text-light-green hover:text-white transition-colors duration-200 
+                               font-tiny5-regular text-xl px-3">
+                    ←
+                </button>
+                <span id="view-mode-display" 
+                      class="text-light-green font-tiny5-regular text-lg min-w-[150px] text-center">
+                    Classic Mode
+                </span>
+                <button type="button" id="view-mode-forward" 
+                        class="text-light-green hover:text-white transition-colors duration-200 
+                               font-tiny5-regular text-xl px-3">
+                    →
+                </button>
+            </div>
+
+            <!-- Game Mode Buttons -->
+            <div id="mode-buttons-table" class="space-y-4 max-w-md mx-auto">
+                <!-- Solo Mode with Difficulty -->
+                <div class="flex items-center gap-2">
+                    <button type="button" id="solo-difficulty-back" 
+                            class="text-light-green hover:text-white transition-colors duration-200 
+                                   font-tiny5-regular text-lg px-2">
+                        ◂
+                    </button>
+                    <button type="button" id="solo-mode" 
+                            class="flex-1 bg-transparent text-light-green font-tiny5-regular text-lg px-6 py-3 
+                                   hover:bg-light-green hover:text-blue-background transition-colors duration-200
+                                   border border-light-green text-center">
+                        vs AI (Medium)
+                    </button>
+                    <button type="button" id="solo-difficulty-forward" 
+                            class="text-light-green hover:text-white transition-colors duration-200 
+                                   font-tiny5-regular text-lg px-2">
+                        ▸
+                    </button>
+                </div>
+                
+                <!-- Other Game Modes -->
+                <button type="button" id="local-mode" 
+                        class="w-full bg-transparent text-light-green font-tiny5-regular text-lg px-6 py-3 
+                               hover:bg-light-green hover:text-blue-background transition-colors duration-200
+                               border border-light-green">
+                    Local 2 Players
+                </button>
+                
+                <button type="button" id="online-mode" 
+                        class="w-full bg-transparent text-light-green font-tiny5-regular text-lg px-6 py-3 
+                               hover:bg-light-green hover:text-blue-background transition-colors duration-200
+                               border border-light-green">
+                    Online 2 Players
+                </button>
+                
+                <button type="button" id="tournament-mode" 
+                        class="w-full bg-transparent text-light-green font-tiny5-regular text-lg px-6 py-3 
+                               hover:bg-light-green hover:text-blue-background transition-colors duration-200
+                               border border-light-green">
+                    Tournament
+                </button>
+                
+                <button type="button" id="tournament-online-mode" 
+                        class="w-full bg-transparent text-light-green font-tiny5-regular text-lg px-6 py-3 
+                               hover:bg-light-green hover:text-blue-background transition-colors duration-200
+                               border border-light-green">
+                    Tournament Online
+                </button>
+                
+                <!-- Back Button -->
+                <button type="button" id="mode-back" 
+                        class="w-full bg-transparent text-light-green font-tiny5-regular text-lg px-6 py-3 
+                               hover:bg-orange hover:text-blue-background transition-colors duration-200
+                               border border-light-green hover:border-orange mt-4">
+                    Back
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Player Setup Overlay -->
+    <div id="player-setup-overlay" class="fixed inset-0 bg-blue-background flex items-center justify-center" style="display: none;">
+        <!-- ft_transcendence in top left -->
+        <div class="absolute top-4 left-5 z-10 flex items-center gap-2">
+            <div id="connection-status" class="text-xs text-light-green opacity-80">
+                <!-- Connection status will be updated by JS -->
+            </div>
+            <h2 class="text-light-green font-tiny5-regular text-sm sm:text-base md:text-lg">
+                ft_transcendence
+            </h2>
+        </div>
+        
+        <div class="w-full max-w-md mx-auto px-4 py-8">
+            <h2 id="setup-title" class="text-center text-2xl sm:text-3xl font-bold text-light-green font-tiny5-regular mb-8">
+                Player Setup
+            </h2>
+
+            <!-- Solo Player Setup -->
+            <form id="solo-setup" class="space-y-6" style="display: none;">
+                <div>
+                    <label for="player1-name" class="block text-sm font-medium text-light-green font-sans mb-2">
+                        Player Name:
+                    </label>
+                    <input type="text" id="player1-name" name="player1-name" maxlength="20" required autocomplete="off"
+                           class="block w-full rounded-md bg-transparent border border-light-green px-3 py-2 text-sm text-light-green 
+                                  placeholder:text-gray-500 opacity-90 focus:outline-2 focus:outline-orange font-sans" />
+                </div>
+            </form>
+
+            <!-- Local 2 Player Setup -->
+            <form id="two-players-setup" class="space-y-6" style="display: none;">
+                <div>
+                    <label for="player1-name-local" class="block text-sm font-medium text-light-green font-sans mb-2">
+                        Player 1 Name:
+                    </label>
+                    <input type="text" id="player1-name-local" name="player1-name" maxlength="20" required autocomplete="off"
+                           class="block w-full rounded-md bg-transparent border border-light-green px-3 py-2 text-sm text-light-green 
+                                  placeholder:text-gray-500 opacity-90 focus:outline-2 focus:outline-orange font-sans" />
+                </div>
+                <div>
+                    <label for="player2-name-local" class="block text-sm font-medium text-light-green font-sans mb-2">
+                        Player 2 Name:
+                    </label>
+                    <input type="text" id="player2-name-local" name="player2-name" maxlength="20" required autocomplete="off"
+                           class="block w-full rounded-md bg-transparent border border-light-green px-3 py-2 text-sm text-light-green 
+                                  placeholder:text-gray-500 opacity-90 focus:outline-2 focus:outline-orange font-sans" />
+                </div>
+            </form>
+
+            <!-- Tournament Setup -->
+            <form id="tournament-setup" class="space-y-6" style="display: none;">
+                <div>
+                    <label for="player1-name-tournament" class="block text-sm font-medium text-light-green font-sans mb-2">
+                        Player 1 Name:
+                    </label>
+                    <input type="text" id="player1-name-tournament" name="player1-name" maxlength="20" required autocomplete="off"
+                           class="block w-full rounded-md bg-transparent border border-light-green px-3 py-2 text-sm text-light-green 
+                                  placeholder:text-gray-500 opacity-90 focus:outline-2 focus:outline-orange font-sans" />
+                </div>
+                <div>
+                    <label for="player2-name-tournament" class="block text-sm font-medium text-light-green font-sans mb-2">
+                        Player 2 Name:
+                    </label>
+                    <input type="text" id="player2-name-tournament" name="player2-name" maxlength="20" required autocomplete="off"
+                           class="block w-full rounded-md bg-transparent border border-light-green px-3 py-2 text-sm text-light-green 
+                                  placeholder:text-gray-500 opacity-90 focus:outline-2 focus:outline-orange font-sans" />
+                </div>
+                <div>
+                    <label for="player3-name-tournament" class="block text-sm font-medium text-light-green font-sans mb-2">
+                        Player 3 Name:
+                    </label>
+                    <input type="text" id="player3-name-tournament" name="player3-name" maxlength="20" required autocomplete="off"
+                           class="block w-full rounded-md bg-transparent border border-light-green px-3 py-2 text-sm text-light-green 
+                                  placeholder:text-gray-500 opacity-90 focus:outline-2 focus:outline-orange font-sans" />
+                </div>
+                <div>
+                    <label for="player4-name-tournament" class="block text-sm font-medium text-light-green font-sans mb-2">
+                        Player 4 Name:
+                    </label>
+                    <input type="text" id="player4-name-tournament" name="player4-name" maxlength="20" required autocomplete="off"
+                           class="block w-full rounded-md bg-transparent border border-light-green px-3 py-2 text-sm text-light-green 
+                                  placeholder:text-gray-500 opacity-90 focus:outline-2 focus:outline-orange font-sans" />
+                </div>
+                <p class="text-sm text-light-green font-sans opacity-80 text-center">
+                    Tournament will be implemented in a future update
+                </p>
+            </form>
+
+            <!-- Action Buttons -->
+            <div class="space-y-4 mt-8">
+                <button type="button" id="start-game" 
+                        class="w-full bg-light-green text-blue-background font-tiny5-regular text-lg px-6 py-3 
+                               hover:bg-orange transition-colors duration-200">
+                    Start Game
+                </button>
+                <button type="button" id="setup-back" 
+                        class="w-full bg-transparent text-light-green font-tiny5-regular text-lg px-6 py-3 
+                               hover:bg-light-green hover:text-blue-background transition-colors duration-200
+                               border border-light-green">
+                    Back
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game 3D Screen -->
+    <div id="game-3d" class="fixed inset-0 bg-blue-background" style="display: none;">
+        <canvas id="game-canvas-3d" class="w-full h-full" width="1400" height="700" 
+                aria-label="3D Game Canvas" tabindex="0"></canvas>
+        
+        <!-- Pause Dialog -->
+        <div id="pause-dialog-3d" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center" style="display: none;">
+            <div class="bg-blue-background border-2 border-light-green p-8 text-center">
+                <h2 id="pause-title-3d" class="text-light-green font-tiny5-regular text-2xl mb-4">Game Paused</h2>
+                <p id="pause-text-3d" class="text-light-green font-tiny5-regular text-lg mb-4">Exit the game?</p>
+                <p id="pause-controls-3d" class="text-light-green font-tiny5-regular text-lg">Y | N</p>
+            </div>
+        </div>
+        
+        <!-- Loading Screen -->
+        <div id="loading-screen" class="fixed inset-0 bg-blue-background flex items-center justify-center" style="display: none;">
+            <div class="text-center">
+                <h2 id="loading" class="text-light-green font-tiny5-regular text-3xl mb-6">Loading...</h2>
+                <div class="w-64 h-4 border border-light-green bg-transparent mx-auto">
+                    <div id="progress-fill" class="h-full bg-light-green transition-all duration-300" style="width: 0%;"></div>
+                </div>
+                <span id="progress-text" class="text-light-green font-tiny5-regular text-lg mt-4 block">0%</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Dashboard -->
+    <div id="stats-dashboard" class="fixed inset-0 bg-blue-background flex items-center justify-center" style="display: none;">
+        <!-- ft_transcendence in top left -->
+        <div class="absolute top-4 left-5 z-10 flex items-center gap-2">
+            <div id="connection-status" class="text-xs text-light-green opacity-80">
+                <!-- Connection status will be updated by JS -->
+            </div>
+            <h2 class="text-light-green font-tiny5-regular text-sm sm:text-base md:text-lg">
+                ft_transcendence
+            </h2>
+        </div>
+        
+        <div class="w-full max-w-4xl mx-auto px-4 py-8">
+            <h2 class="text-center text-2xl sm:text-3xl font-bold text-light-green font-tiny5-regular mb-8">
+                User Stats
+            </h2>
+            
+            <!-- Stats Chart -->
+            <div class="bg-blue-background border border-light-green p-6 mb-8">
+                <canvas id="user-stats-chart" class="w-full max-h-64"></canvas>
+            </div>
+
+            <!-- Game History -->
+            <h2 class="text-xl sm:text-2xl font-bold text-light-green font-tiny5-regular mb-4">
+                Game History
+            </h2>
+            
+            <div class="overflow-x-auto border border-light-green">
+                <table id="game-history-table" class="w-full text-light-green font-sans">
+                    <thead class="border-b border-light-green">
+                        <tr>
+                            <th class="px-4 py-2 text-left">Date</th>
+                            <th class="px-4 py-2 text-left">Opponent</th>
+                            <th class="px-4 py-2 text-left">Score</th>
+                            <th class="px-4 py-2 text-left">Result</th>
+                            <th class="px-4 py-2 text-left">Duration</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <!-- Back Button -->
+            <div class="text-center mt-8">
+                <button type="button" id="dashboard-back" 
+                        class="bg-transparent text-light-green font-tiny5-regular text-lg px-6 py-3 
+                               hover:bg-light-green hover:text-blue-background transition-colors duration-200
+                               border border-light-green">
+                    Back
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- <script type="module" src="./core/main.js"></script> -->
+     <script type="module" src="./core/main.ts"></script> <!-- FASE DE DESENVOLVIMENTO -> DELETE!!!! -->
+</body>
+</html>

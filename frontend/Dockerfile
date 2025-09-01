@@ -7,14 +7,13 @@
 # MODO DESENVOLVIMENTO
 # ======================
 FROM node:alpine AS dev
->>>>>>> d02dc99 (feat: Configure Vite as development server and build tool)
 WORKDIR /app
 
 COPY package*.json package-lock.json ./
 RUN npm install
 
 COPY src/ ./src/
-COPY index.html ./
+COPY src/index.html ./
 COPY tsconfig.json ./
 COPY tailwind.config.js ./
 COPY postcss.config.js ./
@@ -24,10 +23,10 @@ EXPOSE 5173
 
 CMD ["npm", "run", "dev"]
 
-# Copy built JS files
-COPY --from=builder /app/dist/ /usr/share/nginx/html/
-ARG GOOGLE_CLIENT_ID
-RUN sh -c "echo \"window.GOOGLE_CLIENT_ID='${GOOGLE_CLIENT_ID}';\" > /usr/share/nginx/html/env-config.js"
+# # Copy built JS files
+# COPY --from=builder /app/dist/ /usr/share/nginx/html/
+# ARG GOOGLE_CLIENT_ID
+# RUN sh -c "echo \"window.GOOGLE_CLIENT_ID='${GOOGLE_CLIENT_ID}';\" > /usr/share/nginx/html/env-config.js"
 
 # COPY mime.types /etc/nginx/mime.types
 
