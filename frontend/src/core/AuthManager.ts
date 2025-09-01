@@ -457,6 +457,8 @@ export class AuthManager {
 		return;
 		} 
 
+        let hasErrors = false;
+        
         // Validate confirm password
         if (!confirmPassword) {
             this.showFieldError('register-confirm-password', t.errorConfirmPassword);
