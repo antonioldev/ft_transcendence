@@ -1,11 +1,12 @@
 import { AdvancedDynamicTexture, Control, Rectangle, TextBlock, Grid, Image} from "@babylonjs/gui";
-import { Scene, KeyboardEventTypes, Animation, SineEase } from "@babylonjs/core";
+import { Scene, KeyboardEventTypes} from "@babylonjs/core";
 import { Logger } from '../utils/LogManager.js';
 import { GameConfig } from './GameConfig.js';
 import { GameMode, ViewMode } from '../shared/constants.js';
 import { getCurrentTranslation } from '../translations/translations.js';
 import { spawnFireworksInFrontOfCameras, FINAL_FIREWORKS, PARTIAL_FIREWORKS } from './scene/fireworks.js';
 import { TextBlockOptions } from './utils.js';
+import { AnimationManager, Motion } from "./AnimationManager.js";
 
 /**
  * Manages all GUI elements for the game including HUD, scores, FPS display, rally and animations
@@ -15,6 +16,7 @@ export class GUIManager {
     private readonly V_CENTER = Control.VERTICAL_ALIGNMENT_CENTER;
     private readonly V_BOTTOM = Control.VERTICAL_ALIGNMENT_BOTTOM;
     private advancedTexture: AdvancedDynamicTexture | null = null;
+    private animationManager : AnimationManager | null = null;
     isInitialized: boolean = false;
     private hudGrid!: Grid;
     private fpsText!: TextBlock;
@@ -57,6 +59,7 @@ export class GUIManager {
             this.advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI("UI", true, scene);
             this.advancedTexture!.layer!.layerMask = 0x20000000;
 
+            this.animationManager  = new AnimationManager(scene);
             this.createHUD(config);
             this.createPauseOverlay();
             this.createViewModeElements(config);
@@ -152,9 +155,9 @@ export class GUIManager {
         this.rally.scaleX = 1;
         this.rally.scaleY = 1;
 
-        const animationScaleX = this.createAnimation("scaleX", 1, 1.3);
-        const animationScaleY = this.createAnimation("scaleY", 1, 1.3);
-        this.rally.animations = [animationScaleX, animationScaleY];
+        // const animationScaleX = this.createAnimation("scaleX", 1, 1.3);
+        // const animationScaleY = this.createAnimation("scaleY", 1, 1.3);
+        // this.rally.animations = [animationScaleX, animationScaleY];
 
     }
 
@@ -301,24 +304,32 @@ export class GUIManager {
 
     //API to update the GUI
     showCountdown(show: boolean, count?: number): void {
-        if (!show) {
-            this.countdownContainer.isVisible = false;
-            this.countdownText.animations = [];
-        } else if (count !== undefined) {
-            this.countdownText.text = count.toString();
-            this.countdownContainer.isVisible = true;
-            this.countdownText.scaleX = 1;
-            this.countdownText.scaleY = 1;
+        this.countdownContainer.isVisible = show;
 
-            const animationScaleX = this.createAnimation("scaleX", 1, 2);
-            const animationScaleY = this.createAnimation("scaleY", 1, 2);
-            this.countdownText.animations = [animationScaleX, animationScaleY];
-            
-            if (this.advancedTexture && this.advancedTexture.getScene) {
-                const scene = this.advancedTexture.getScene();
-                scene?.beginAnimation(this.countdownText, 0, 60, false);
-            }
+        if (show && count !== undefined) {
+            this.countdownText.text = count.toString();
+            this.animationManager?.pulse(this.countdownText, Motion.F.xSlow);
+            return;
         }
+        this.countdownText.animations = [];
+        // if (!show) {
+        //     this.countdownText.animations = [];
+        // } else if (count !== undefined) {
+        //     this.countdownText.text = count.toString();
+        //     this.countdownContainer.isVisible = true;
+        //     this.animationManager?.pulse(this.countdownText, Motion.F.xSlow);
+            // this.countdownText.scaleX = 1;
+            // this.countdownText.scaleY = 1;
+
+            // const animationScaleX = this.createAnimation("scaleX", 1, 2);
+            // const animationScaleY = this.createAnimation("scaleY", 1, 2);
+            // this.countdownText.animations = [animationScaleX, animationScaleY];
+            
+            // if (this.advancedTexture && this.advancedTexture.getScene) {
+            //     const scene = this.advancedTexture.getScene();
+            //     scene?.beginAnimation(this.countdownText, 0, 60, false);
+            // }
+        // }
     }
 
     updateFPS(fps: number): void {
@@ -337,16 +348,24 @@ export class GUIManager {
             const b = Math.round(255 * (1 - intensity));
             this.rally.color = `rgb(${r}, ${g}, ${b})`;
 
-            const scene = this.advancedTexture!.getScene();
-            scene?.beginAnimation(this.rally, 0, 60, false);
+            this.animationManager?.pop(this.rally, Motion.F.base);
         }
         this.previousRally = rally;
     }
 
     updateScores(leftScore: number, rightScore: number): void {
         if (this.score1Text && this.score2Text) {
+            const oldLeft = parseInt(this.score1Text.text);
+            const oldRight = parseInt(this.score2Text.text);
+            
             this.score1Text.text = leftScore.toString();
             this.score2Text.text = rightScore.toString();
+            
+            // Animate score changes
+            if (leftScore > oldLeft)
+                this.animationManager?.pop(this.score1Text, Motion.F.fast);
+            else if (rightScore > oldRight)
+                this.animationManager?.pop(this.score2Text, Motion.F.fast);
         }
     }
 
@@ -374,68 +393,108 @@ export class GUIManager {
             this.endGameOverlay.isVisible = false;
     }
 
-    async animateBackground(show: boolean): Promise<void> {
-        if (!this.advancedTexture || !this.partialTransitionFill || !this.partialEndGameOverlay) return;
+    // async animateBackground(show: boolean): Promise<void> {
+    //     if (!this.advancedTexture || !this.partialTransitionFill || !this.partialEndGameOverlay) return;
 
-        const scene  = this.advancedTexture.getScene();
-        const frames = 15;
+    //     const scene  = this.advancedTexture.getScene();
+    //     const frames = 15;
+
+    //     if (show) {
+    //         this.partialEndGameOverlay.isVisible = true;
+    //         this.hudGrid.isVisible = false;
+    //     }
+
+    //     const current = this.partialTransitionFill.alpha ?? 0;
+    //     const end = show ? 0.50 : 0.0;
+
+    //     const alpha = this.createAnimation("alpha", current, end, frames, false);
+    //     this.partialTransitionFill.animations = [alpha];
+
+    //     scene?.beginAnimation(this.partialTransitionFill, 0, frames, false, 1, () => {
+    //         if (!show) {
+    //             this.partialEndGameOverlay.isVisible = false;
+    //             this.hudGrid.isVisible = true;
+    //         }
+    //     });
+
+    // }
+    async animateBackground(show: boolean): Promise<void> {
+        if (!this.partialTransitionFill || !this.partialEndGameOverlay) return;
 
         if (show) {
             this.partialEndGameOverlay.isVisible = true;
             this.hudGrid.isVisible = false;
+            await this.animationManager?.fadeIn(this.partialTransitionFill, Motion.F.slow);
+        } else {
+            await this.animationManager?.fadeOut(this.partialTransitionFill, Motion.F.fast);
+            this.partialEndGameOverlay.isVisible = false;
+            this.hudGrid.isVisible = true;
         }
-
-        const current = this.partialTransitionFill.alpha ?? 0;
-        const end = show ? 0.50 : 0.0;
-
-        const alpha = this.createAnimation("alpha", current, end, frames, false);
-        this.partialTransitionFill.animations = [alpha];
-
-        scene?.beginAnimation(this.partialTransitionFill, 0, frames, false, 1, () => {
-            if (!show) {
-                this.partialEndGameOverlay.isVisible = false;
-                this.hudGrid.isVisible = true;
-            }
-        });
-
     }
+
+    // async showPartialWinner(winner: string): Promise<void> {
+    //     if (!this.advancedTexture) return;
+
+    //     const scene = this.advancedTexture.getScene();
+    //     const totalFrames = 180;
+
+    //     this.partialWinnerName.text  = winner;
+    //     this.partialWinnerLabel.isVisible = true;
+    //     this.partialWinnerName.isVisible = true;
+    //     this.partialWinnerName.alpha = 0;
+    //     this.partialWinnerName.transformCenterY = 1;
+    //     this.partialWinnerName.scaleX = 1;
+    //     this.partialWinnerName.scaleY = 1;
+
+    //     this.partialEndGameOverlay.isVisible = true;
+    //     this.partialEndGameOverlay.isPointerBlocker = true;
+
+    //     const fadeIn = this.createAnimation("alpha", 0.5, 1);
+    //     const animationScaleX = this.createAnimation("scaleX", 1, 1.1);
+    //     const animationScaleY = this.createAnimation("scaleY", 1, 1.1);
+
+    //     this.partialWinnerName.animations = [fadeIn, animationScaleX, animationScaleY];
+
+    //     const cams = scene?.activeCameras?.length ? scene.activeCameras : scene?.activeCamera;
+    //     spawnFireworksInFrontOfCameras(scene!, PARTIAL_FIREWORKS, cams);
+    //     scene?.beginAnimation(this.partialWinnerName!, 0, 60, true, 1);
+    //     await new Promise(r => setTimeout(r, totalFrames));
+
+    // }
 
     async showPartialWinner(winner: string): Promise<void> {
         if (!this.advancedTexture) return;
 
         const scene = this.advancedTexture.getScene();
-        const totalFrames = 180;
-
-        this.partialWinnerName.text  = winner;
+        this.partialWinnerName.text = winner;
+        
+        // Modern entrance animation
         this.partialWinnerLabel.isVisible = true;
         this.partialWinnerName.isVisible = true;
-        this.partialWinnerName.alpha = 0;
-        this.partialWinnerName.transformCenterY = 1;
-        this.partialWinnerName.scaleX = 1;
-        this.partialWinnerName.scaleY = 1;
-
         this.partialEndGameOverlay.isVisible = true;
         this.partialEndGameOverlay.isPointerBlocker = true;
 
-        const fadeIn = this.createAnimation("alpha", 0.5, 1);
-        const animationScaleX = this.createAnimation("scaleX", 1, 1.1);
-        const animationScaleY = this.createAnimation("scaleY", 1, 1.1);
-
-        this.partialWinnerName.animations = [fadeIn, animationScaleX, animationScaleY];
+        // Slide in with fade
+        await this.animationManager?.slideInY(this.partialWinnerLabel, -50, Motion.F.base);
+        await this.animationManager?.slideInY(this.partialWinnerName, 50, Motion.F.slow);
+        
+        // Add breathing effect while displayed
+        this.animationManager?.breathe(this.partialWinnerName, Motion.F.breath);
 
         const cams = scene?.activeCameras?.length ? scene.activeCameras : scene?.activeCamera;
         spawnFireworksInFrontOfCameras(scene!, PARTIAL_FIREWORKS, cams);
-        scene?.beginAnimation(this.partialWinnerName!, 0, 60, true, 1);
-        await new Promise(r => setTimeout(r, totalFrames));
-
+        
+        await new Promise(r => setTimeout(r, 180));
     }
 
     async waitForSpaceToContinue(ms: number): Promise<void> {
         if (!this.advancedTexture) return;
         const scene = this.advancedTexture.getScene();
         await new Promise<void>(res => setTimeout(res, ms));
-        if (this.continueText)
+        if (this.continueText) {
             this.continueText.isVisible = true;
+            this.animationManager?.twinkle(this.continueText, Motion.F.slow);
+        }
 
         return new Promise<void>((resolve) => {
             const sub = scene?.onKeyboardObservable.add((kbInfo: any) => {
@@ -453,28 +512,45 @@ export class GUIManager {
         });
     }
 
+    // async hidePartialWinner(): Promise<void> {
+    //     if (!this.partialEndGameOverlay) return;
+    //     const scene = this.advancedTexture!.getScene();
+    //     const totalFrames = 60;
+
+    //     const fadeOut = this.createAnimation("alpha", 1, 0, 60, false);
+    //     this.partialWinnerName.animations = [fadeOut];
+    //     scene?.beginAnimation(this.partialWinnerName!, 0, totalFrames, false, 1);
+    //     this.partialEndGameOverlay.isPointerBlocker = false;
+    //     this.partialEndGameOverlay.isVisible = false;
+    // }
+
     async hidePartialWinner(): Promise<void> {
         if (!this.partialEndGameOverlay) return;
-        const scene = this.advancedTexture!.getScene();
-        const totalFrames = 60;
-
-        const fadeOut = this.createAnimation("alpha", 1, 0, 60, false);
-        this.partialWinnerName.animations = [fadeOut];
-        scene?.beginAnimation(this.partialWinnerName!, 0, totalFrames, false, 1);
+        
+        // Modern exit animations
+        await Promise.all([
+            this.animationManager?.slideOutY(this.partialWinnerLabel, -50, Motion.F.fast),
+            this.animationManager?.slideOutY(this.partialWinnerName, 50, Motion.F.fast)
+        ]);
+        
         this.partialEndGameOverlay.isPointerBlocker = false;
         this.partialEndGameOverlay.isVisible = false;
     }
 
-    private animateMuteIcon(): void {
-        if (!this.muteIcon || !this.advancedTexture) return;
-        const scene = this.advancedTexture.getScene();
+    // private animateMuteIcon(): void {
+    //     if (!this.muteIcon || !this.advancedTexture) return;
+    //     const scene = this.advancedTexture.getScene();
 
-        const animX = this.createAnimation("scaleX", 1, 0.90, 12, true);
-        const animY = this.createAnimation("scaleY", 1, 0.90, 12, true);
+    //     const animX = this.createAnimation("scaleX", 1, 0.90, 12, true);
+    //     const animY = this.createAnimation("scaleY", 1, 0.90, 12, true);
 
-        this.muteIcon.animations = [animX, animY];
+    //     this.muteIcon.animations = [animX, animY];
 
-        scene?.beginAnimation(this.muteIcon, 0, 12, false);
+    //     scene?.beginAnimation(this.muteIcon, 0, 12, false);
+    // }
+    private async animateMuteIcon(): Promise<void> {
+        if (!this.muteIcon) return;
+        await this.animationManager?.pop(this.muteIcon, Motion.F.xFast);
     }
 
     //Helper functions to create Gui objects
@@ -552,28 +628,28 @@ export class GUIManager {
             return player === 1 ? move + "\nP1: A / D" : move + "\nP2: ← / →";
     }
 
-    private createAnimation(property: string, from: number, end: number, frames: number = 60, pingPong: boolean = true): Animation {
+    // private createAnimation(property: string, from: number, end: number, frames: number = 60, pingPong: boolean = true): Animation {
 
-        const fps: number = 60;
-        const anim = Animation.CreateAnimation(
-            property, Animation.ANIMATIONTYPE_FLOAT, fps, new SineEase());
-        anim.loopMode = Animation.ANIMATIONLOOPMODE_CYCLE;
+    //     const fps: number = 60;
+    //     const anim = Animation.CreateAnimation(
+    //         property, Animation.ANIMATIONTYPE_FLOAT, fps, new SineEase());
+    //     anim.loopMode = Animation.ANIMATIONLOOPMODE_CYCLE;
 
-        if (pingPong) {
-            const mid = Math.floor(frames / 2);
-            anim.setKeys([
-            { frame: 0,      value: from },
-            { frame: mid,    value: end },
-            { frame: frames, value: from },
-            ]);
-        } else {
-            anim.setKeys([
-            { frame: 0,      value: from },
-            { frame: frames, value: end },
-            ]);
-        }
-        return anim;
-    }
+    //     if (pingPong) {
+    //         const mid = Math.floor(frames / 2);
+    //         anim.setKeys([
+    //         { frame: 0,      value: from },
+    //         { frame: mid,    value: end },
+    //         { frame: frames, value: from },
+    //         ]);
+    //     } else {
+    //         anim.setKeys([
+    //         { frame: 0,      value: from },
+    //         { frame: frames, value: end },
+    //         ]);
+    //     }
+    //     return anim;
+    // }
 
     // Callbacks
     setToggleMuteCallback(callback: () => boolean): void {
@@ -585,6 +661,7 @@ export class GUIManager {
         if (!this.isInitialized) return;
 
         try {
+            this.animationManager  = null;
             this.fpsText.dispose();
             this.score1Text.dispose();
             this.score2Text.dispose();
@@ -601,9 +678,17 @@ export class GUIManager {
             this.partialWinnerLabel.dispose();
             this.partialWinnerName.dispose();
             this.continueText.dispose();
+            this.muteIcon?.dispose()
+            this.pauseHint.dispose();
+            this.pauseInstruction.dispose();
+            this.pauseTitle.dispose();
+            this.pauseGrid.dispose();
+            this.pauseOverlay.dispose();
+
 
             this.advancedTexture?.dispose();
             this.advancedTexture = null;
+            
 
             this.isInitialized = false;
         } catch (error) {

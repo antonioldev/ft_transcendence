@@ -528,34 +528,29 @@ export class Game {
 
         try {
             // Update paddle positions
-            if (this.gameObjects.players.left)
-                this.gameObjects.players.left.position.x = state.paddleLeft.x;
-            if (this.gameObjects.players.right)
-                this.gameObjects.players.right.position.x = state.paddleRight.x;
+            this.gameObjects.players.left.position.x = state.paddleLeft.x;
+            this.gameObjects.players.right.position.x = state.paddleRight.x;
 
             // Update ball position
-            if (this.gameObjects.ball) {
-                this.gameObjects.ball.position.x = state.ball.x;
-                this.gameObjects.ball.position.z = state.ball.z;
-                this.gameObjects.ball.rotation.x += 0.1;
-                this.gameObjects.ball.rotation.y += 0.05;
-            }
+            this.gameObjects.ball.position.x = state.ball.x;
+            this.gameObjects.ball.position.z = state.ball.z;
+            this.gameObjects.ball.rotation.x += 0.1;
+            this.gameObjects.ball.rotation.y += 0.05;
+
 
             this.guiManager?.updateRally(state.ball.current_rally);
             this.audioManager?.updateMusicSpeed(state.ball.current_rally);
 
-            // Update Score
-            if (this.guiManager && this.guiManager.isInitialized){
-                if (this.playerLeftScore < state.paddleLeft.score) {
-                    this.playerLeftScore = state.paddleLeft.score
-                    this.audioManager?.playScore();
-                }
-                if (this.playerRightScore < state.paddleRight.score) {
-                    this.playerRightScore = state.paddleRight.score
-                    this.audioManager?.playScore();
-                }
-                this.guiManager.updateScores(state.paddleLeft.score, state.paddleRight.score);
+
+            if (this.playerLeftScore < state.paddleLeft.score) {
+                this.playerLeftScore = state.paddleLeft.score
+                this.audioManager?.playScore();
             }
+            if (this.playerRightScore < state.paddleRight.score) {
+                this.playerRightScore = state.paddleRight.score
+                this.audioManager?.playScore();
+            }
+            this.guiManager?.updateScores(state.paddleLeft.score, state.paddleRight.score);
 
         } catch (error) {
             Logger.error('Error updating game objects', 'Game', error);

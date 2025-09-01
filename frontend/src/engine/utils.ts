@@ -86,6 +86,7 @@ export interface TextBlockOptions {
     height?: string;
     // Rich text effects
     applyRichEffects?: boolean;
+    applyGradient?: boolean;
     outlineWidth?: number;
     outlineColor?: string;
     // Additional properties
