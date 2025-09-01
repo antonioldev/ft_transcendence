@@ -10,7 +10,8 @@ type FloatProp =
   | "scaleX" | "scaleY"
   | "leftInPixels" | "topInPixels"
   | "widthInPixels" | "heightInPixels"
-  | "rotation";
+  | "rotation"
+  | "thickness";
 
 export const Motion = {
     fps: 60,
@@ -68,12 +69,12 @@ export class AnimationManager {
 
     fadeIn(target: Control, frames = Motion.F.base) {
         target.alpha = 0;
-        target.animations = [ this.createFloat("alpha", 0, 0.55, frames, false, Motion.ease.quadOut()) ];
+        target.animations = [ this.createFloat("alpha", 0, 0.85, frames, false, Motion.ease.quadOut()) ];
         return this.play(target, frames, false);
     }
 
     fadeOut(target: Control, frames = Motion.F.fast) {
-        target.animations = [ this.createFloat("alpha", 0.55, 0, frames, false, Motion.ease.quadOut()) ];
+        target.animations = [ this.createFloat("alpha", 0.85, 0, frames, false, Motion.ease.quadOut()) ];
         return this.play(target, frames, false);
     }
 
@@ -86,10 +87,10 @@ export class AnimationManager {
     }
 
     /** Small press/pop feedback. */
-    pop(target: Control, frames = Motion.F.fast) {
+    pop(target: Control, frames = Motion.F.fast, end: number) {
         target.animations = [
-        this.createFloat("scaleX", 1, 0.9, frames, true, Motion.ease.quadOut()),
-        this.createFloat("scaleY", 1, 0.9, frames, true, Motion.ease.quadOut()),
+        this.createFloat("scaleX", 1, end, frames, true, Motion.ease.quadOut()),
+        this.createFloat("scaleY", 1, end, frames, true, Motion.ease.quadOut()),
         ];
         return this.play(target, frames, false);
     }
@@ -97,8 +98,8 @@ export class AnimationManager {
     /** Gentle breathing loop (call .play with loop=true). */
     breathe(target: Control, frames = Motion.F.breath) {
         target.animations = [
-        this.createFloat("scaleX", 1, 1.04, frames, true, Motion.ease.sine(), Animation.ANIMATIONLOOPMODE_CYCLE),
-        this.createFloat("scaleY", 1, 1.04, frames, true, Motion.ease.sine(), Animation.ANIMATIONLOOPMODE_CYCLE),
+        this.createFloat("scaleX", 1, 1.5, frames, true, Motion.ease.sine(), Animation.ANIMATIONLOOPMODE_CYCLE),
+        this.createFloat("scaleY", 1, 1.5, frames, true, Motion.ease.sine(), Animation.ANIMATIONLOOPMODE_CYCLE),
         ];
         return this.play(target, frames, true);
     }
@@ -124,14 +125,8 @@ export class AnimationManager {
 
     /** Quick attention ping via alpha. */
     twinkle(target: Control, frames = Motion.F.slow) {
-        target.animations = [ this.createFloat("alpha", 1, 0.6, frames, true, Motion.ease.sine(), Animation.ANIMATIONLOOPMODE_CYCLE) ];
-        return this.play(target, frames, true);
-    }
-
-    /** Subtle error shake (horizontal jiggle). */
-    shakeX(target: Control, amplitudePx = 10, frames = Motion.F.fast) {
-        target.animations = [ this.createFloat("leftInPixels", 0, amplitudePx, frames, true, Motion.ease.sine()) ];
-        return this.play(target, frames, false);
+    target.animations = [ this.createFloat("alpha", 1, 0.6, frames, true, Motion.ease.sine(), Animation.ANIMATIONLOOPMODE_CYCLE) ];
+    return this.play(target, frames, true);
     }
 
     /** One-shot rotate (e.g., spinner tick). */

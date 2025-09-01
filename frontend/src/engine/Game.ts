@@ -258,7 +258,7 @@ export class Game {
             if (!this.gameObjects) Logger.errorAndThrow('Game objects not created', 'Game');
             this.guiManager?.createGUI(this.scene, this.config);
             this.guiManager?.setToggleMuteCallback(() => this.audioManager!.toggleMute());
-            if (this.guiManager)
+            if (this.guiManager && this.guiManager.isInitialized)
                 this.renderManager?.initialize(this.engine, this.scene, this.guiManager);
             this.renderManager?.startRendering();
 
