@@ -276,6 +276,7 @@ class UIManager {
         loadingText.textContent = t.loading;
         const loadingScreen = requireElementById(EL.GAME.LOADING_SCREEN);
         loadingScreen.style.display = visible ? 'flex' : 'none';
+        this.updateLoadingProgress(0);
     }
 
     updateLoadingText(): void {

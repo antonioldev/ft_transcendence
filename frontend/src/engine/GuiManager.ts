@@ -7,6 +7,7 @@ import { getCurrentTranslation } from '../translations/translations.js';
 import { spawnFireworksInFrontOfCameras, FINAL_FIREWORKS, PARTIAL_FIREWORKS } from './scene/fireworks.js';
 import { TextBlockOptions } from './utils.js';
 import { AnimationManager, Motion } from "./AnimationManager.js";
+import { AudioManager } from "./AudioManager.js";
 
 /**
  * Manages all GUI elements for the game including HUD, scores, FPS display, rally and animations
@@ -45,7 +46,7 @@ export class GUIManager {
     private toggleMuteCallback?: () => boolean;
 
 
-    constructor(private scene: Scene, config: GameConfig, private animationManager: AnimationManager) {
+    constructor(private scene: Scene, config: GameConfig, private animationManager: AnimationManager, audioManager: AudioManager) {
         try {
             // Create the main GUI texture
             this.advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI("UI", true, this.scene);
@@ -57,9 +58,9 @@ export class GUIManager {
             this.createCountdownDisplay();
             this.createPartialEndGameOverlay();
             this.createEndGameOverlay();
+            this.setToggleMuteCallback(() => audioManager.toggleMute());
 
             this.isInitialized = true;
-
         } catch (error) {
             Logger.error('Error creating GUI', 'GUIManager', error);
             throw error;

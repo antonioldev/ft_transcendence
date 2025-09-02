@@ -10,7 +10,7 @@ import { GAME_CONFIG } from '../shared/gameConfig.js';
  * Manages the rendering and frame rate control
  */
 export class RenderManager {
-    isRenderingActive: boolean = false;
+    isRunning: boolean = false;
     private lastFrameTime: number = 0;
     private fpsLimit: number = 60;
     private isInitialized: boolean = false;
@@ -24,18 +24,13 @@ export class RenderManager {
 
     // Start the render loop
     startRendering(): void {
-        if (!this.isInitialized)
-            return (Logger.error('Cannot start rendering: RenderManager not initialized', 'RenderManager'));
-        if (this.isRenderingActive)
-            return (Logger.warn('Render loop already active', 'RenderManager'));
-        if (!this.engine || !this.scene)
-            return (Logger.error('Cannot start rendering: engine or scene not available', 'RenderManager'));
+        if (!this.isInitialized || this.isRunning || !this.engine || !this.scene)
+            return;
 
-        this.isRenderingActive = true;
+        this.isRunning = true;
         this.lastFrameTime = performance.now();
-
         this.engine.runRenderLoop(() => {
-            if (!this.isRenderingActive) return;
+            if (!this.isRunning) return;
 
             const currentTime = performance.now();
             const deltaTime = currentTime - this.lastFrameTime;
@@ -90,9 +85,9 @@ export class RenderManager {
 
     // Stop the render loop
     stopRendering(): void {
-        if (!this.isRenderingActive) return;
+        if (!this.isRunning) return;
 
-        this.isRenderingActive = false;
+        this.isRunning = false;
         if (this.engine)
             this.engine.stopRenderLoop();
 

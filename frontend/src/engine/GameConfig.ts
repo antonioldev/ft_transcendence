@@ -9,6 +9,8 @@ export interface GameConfig {
     canvasId: string;
     viewMode: ViewMode;
     gameMode: GameMode;
+    isLocalMultiplayer: boolean;
+    isTournament:boolean;
     players: PlayerInfo[];
     controls: InputConfig;
 }
@@ -21,10 +23,14 @@ export class GameConfigFactory {
         gameMode: GameMode, 
         players: PlayerInfo[]
     ): GameConfig {
+        const isLocalMultiplayer = ( gameMode === GameMode.TWO_PLAYER_LOCAL ||  gameMode === GameMode.TOURNAMENT_LOCAL );
+        const isTournament = ( gameMode === GameMode.TOURNAMENT_REMOTE ||  gameMode === GameMode.TOURNAMENT_LOCAL );
         return {
             canvasId: EL.GAME.CANVAS_3D,
             viewMode,
             gameMode,
+            isLocalMultiplayer,
+            isTournament,
             players,
             controls: viewMode === ViewMode.MODE_2D ? GAME_CONFIG.input2D : GAME_CONFIG.input3D
         };
@@ -100,4 +106,13 @@ export class GameConfigFactory {
             isGuest: false
         }];
     }
+
+    static createWithAuthCheck(viewMode: ViewMode, gameMode: GameMode): GameConfig {
+        const players = authManager.isUserAuthenticated()
+            ? this.getAuthenticatedPlayer()
+            : this.getPlayersFromUI(gameMode);
+
+        return this.createConfig(viewMode, gameMode, players);
+    }
+
 }

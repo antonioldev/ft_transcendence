@@ -14,8 +14,6 @@ import { GameMode, Direction } from '../shared/constants.js';
 import { PlayerControls} from '../shared/types.js';
 import { getPlayerBoundaries } from '../shared/gameConfig.js';
 import { appStateManager } from '../core/AppStateManager.js';
-import { authManager } from '../core/AuthManager.js';
-import { PlayerInfo } from '../shared/types.js';
 import { GameConfigFactory } from './GameConfig.js';
 import { AudioManager } from './AudioManager.js';
 
@@ -40,66 +38,31 @@ export class Game {
     private guiManager: GUIManager | null = null;
     private renderManager: RenderManager | null = null;
     private audioManager: AudioManager | null =null;
+
+    private countdownLoop: number | null = null;
+    private gameLoopObserver: any = null;
+    private deviceSourceManager: DeviceSourceManager | null = null;
+
+//////////////////////////////////////////////////
     private isInitialized: boolean = false;
     private isRunning: boolean = false;
     private isDisposed: boolean = false;
     private isPausedByServer: boolean = false;
-    private countdownLoop: number | null = null;
-    private gameLoopObserver: any = null;
-    private deviceSourceManager: any = null;
-    private boundaries = getPlayerBoundaries();
-    private isLocalMultiplayer: boolean = false;
-    private controlledSides: number[] = [];
     private currentState: GameState | null = null;
     private isExiting: boolean = false;
+
+//////////////////////////////////////////////////
+    // private isLocalMultiplayer: boolean = false;
+
+    private boundaries = getPlayerBoundaries();
+
+    private controlledSides: number[] = [];
+
     private playerLeftScore: number = 0;
     private playerRightScore: number = 0;
 
     static getCurrentInstance(): Game | null {
         return Game.currentInstance;
-    }
-
-    static async requestExitToMenu(): Promise<void> {
-        const game = Game.currentInstance;
-        if (!game) return;
-        await game.requestExitToMenu();
-    }
-
-    static isInGame(): boolean {
-        const game = Game.currentInstance;
-        return game ? game.isInGame() : false;
-    }
-
-    static isPaused(): boolean {
-        const game = Game.currentInstance;
-        return game ? game.isPaused() : false;
-    }
-
-    static pause(): void {
-        const game = Game.currentInstance;
-        if (!game || game.isDisposed || game.isPausedByServer || !game.isRunning) return;
-        webSocketClient.sendPauseRequest();
-    }
-
-    static resume(): void {
-        const game = Game.currentInstance;
-        if (!game || game.isDisposed || !game.isPausedByServer) return;
-        webSocketClient.sendResumeRequest();
-    }
-
-    static stop(): void {
-        const game = Game.currentInstance;
-        if (!game) return;
-        game.isRunning = false;
-        game.isPausedByServer = false;
-        game.renderManager?.stopRendering();
-        game.stopGameLoop();
-    }
-
-    static async disposeGame(): Promise<void> {
-        const game = Game.currentInstance;
-        if (!game) return;
-        await game.dispose();
     }
 
     constructor(private config: GameConfig) {
@@ -123,68 +86,15 @@ export class Game {
     }
 
     // ========================================
-    // GAME STATE MANAGEMENT
-    // ========================================
-    private setGameState(state: GameState): void {
-        this.currentState = state;
-        this.isExiting = false;
-    }
-
-    private updateGamePauseState(isPaused: boolean): void {
-        this.currentState = isPaused ? GameState.PAUSED : GameState.PLAYING;
-        this.guiManager?.setPauseVisible(isPaused);
-    }
-
-    async requestExitToMenu(): Promise<void> {
-        if (this.isExiting) return;
-
-        this.isExiting = true;
-
-        try {
-            webSocketClient.sendQuitGame();
-        } catch (error) {
-            Logger.error('Error during request exit', 'Game', error);
-            this.resetToMenu();
-        }
-    }
-
-    private resetToMenu(): void {
-        this.currentState = null;
-        this.isExiting = false;
-        appStateManager.navigateTo(AppState.MAIN_MENU);
-    }
-
-    isInGame(): boolean {
-        return (this.currentState === GameState.PLAYING || this.currentState === GameState.MATCH_ENDED) && !this.isExiting;
-    }
-
-    isPaused(): boolean {
-        return this.currentState === GameState.PAUSED && !this.isExiting;
-    }
-
-    // ========================================
     // INITIALIZATION
     // ========================================
 
-    static async createAndStart(viewMode: ViewMode, gameMode: GameMode, aiDifficulty: number): Promise<Game> {
+    static async create(viewMode: ViewMode, gameMode: GameMode, aiDifficulty: number): Promise<void> {
         try {
-            // Create players array
-            let players: PlayerInfo[];
-            if (authManager.isUserAuthenticated())
-                players = GameConfigFactory.getAuthenticatedPlayer();
-            else
-                players = GameConfigFactory.getPlayersFromUI(gameMode);
-
-            const config = GameConfigFactory.createConfig(viewMode, gameMode, players);
-            // Create game instance
+            const config = GameConfigFactory.createWithAuthCheck(viewMode, gameMode);
             const game = new Game(config);
-            
-            // Initialize and connect
             await game.connect(aiDifficulty);
             await game.initialize();
-
-            return game;
-
         } catch (error) {
             Logger.error('Error creating game', 'Game', error);
             throw error;
@@ -195,29 +105,35 @@ export class Game {
         if (this.isInitialized || this.isDisposed) return;
         
         this.setupGlobalKeyboardEvents();
-        // BABYLON.SceneLoader.ShowLoadingScreen = true;
         SceneLoader.ShowLoadingScreen = false;
-        
-        uiManager.updateLoadingProgress(0);
+
         uiManager.setLoadingScreenVisible(true);
         try {
             Logger.info('Initializing game...', 'Game');
 
             this.engine = await this.initializeBabylonEngine();
-            if (!this.engine) Logger.errorAndThrow('Engine not created', 'Game');
-
             this.scene = await this.createScene();
+
+            this.deviceSourceManager = new DeviceSourceManager(this.scene.getEngine());
+
             this.animationManager = new AnimationManager(this.scene);
+
             this.audioManager = new AudioManager(this.scene);
             await this.audioManager.initialize();
+
             this.gameObjects = this.config.viewMode === ViewMode.MODE_2D
                 ? await buildScene2D(this.scene, this.config.gameMode, this.config.viewMode, (progress: number) => uiManager.updateLoadingProgress(progress))
                 : await buildScene3D(this.scene, this.config.gameMode, this.config.viewMode, (progress: number) => uiManager.updateLoadingProgress(progress));
-            this.guiManager = new GUIManager(this.scene, this.config, this.animationManager);
-            this.guiManager?.setToggleMuteCallback(() => this.audioManager!.toggleMute());
+
+
+            this.guiManager = new GUIManager(this.scene, this.config, this.animationManager, this.audioManager);
+
+
             this.renderManager = new RenderManager(this.engine, this.scene, this.guiManager, this.animationManager, this.gameObjects);
             this.renderManager?.startRendering();
-            this.initializeInput();
+
+
+            // this.initializeInput();
             this.connectComponents();
             this.isInitialized = true;
             webSocketClient.sendPlayerReady();
@@ -254,16 +170,16 @@ export class Game {
         document.addEventListener('keydown', (event) => {
             if (event.key === 'Escape' && this.isRunning) {
                 if (this.isInGame() && this.currentState === GameState.PLAYING)
-                    Game.pause();
+                    this.pause();
                 else if (this.isPaused())
-                    Game.resume();
+                    this.resume();
             }
             
             if (this.isPaused()) {
                 if (event.key === 'Y' || event.key === 'y')
                     this.requestExitToMenu();
                 else if (event.key === 'N' || event.key === 'n' || event.key === 'Escape')
-                    Game.resume();
+                    this.resume();
             }
         });
     }
@@ -289,7 +205,7 @@ export class Game {
     // GAME CONTROL
     // ========================================
 
-    start(): void {
+    private start(): void {
         if (!this.isInitialized || this.isDisposed) return;
 
         try {
@@ -317,7 +233,7 @@ export class Game {
                 this.gameObjects?.cameras, 
                 this.config.viewMode,
                 this.controlledSides,
-                this.isLocalMultiplayer
+                this.config.isLocalMultiplayer
             );
         }
         else if (countdown > 0 && GAME_CONFIG.startDelay - 1) {
@@ -362,7 +278,7 @@ export class Game {
     private async onServerEndedGame(winner: string): Promise<void> {
         if (this.isDisposed)
             return;
-        if (!(this.config.gameMode === GameMode.TOURNAMENT_LOCAL) && !(this.config.gameMode === GameMode.TOURNAMENT_REMOTE))
+        if (!this.config.isTournament)
             return;
         this.guiManager?.setPauseVisible(false);
         await this.guiManager?.animateBackground(true);
@@ -379,7 +295,7 @@ export class Game {
     private async onServerEndedSession(winner: string): Promise<void> {
         if (this.isDisposed) return;
 
-        if (!this.renderManager?.isRenderingActive)
+        if (!this.renderManager?.isRunning)
             this.renderManager?.startRendering();
 
         this.guiManager?.setPauseVisible(false);
@@ -390,13 +306,13 @@ export class Game {
         this.renderManager?.stopRendering();
         this.controlledSides = []
         this.stopGameLoop();
-        Game.disposeGame();
+        this.dispose();
         this.resetToMenu();
 
     }
 
     // ========================================
-    // GAME LOOP - These are in charge of the logic check
+    // GAME LOOP
     // ========================================
 
     private startGameLoop(): void {
@@ -479,9 +395,107 @@ export class Game {
         }
     }
 
+
     // ========================================
-    // CLEANUP
+    // INPUT HANDLING
     // ========================================
+
+    private assignPlayerSide(name: string, side: number): void {
+        const isOurPlayer = this.config.players.some(player => player.name === name);
+        if (isOurPlayer && !this.controlledSides.includes(side))
+            this.controlledSides.push(side);
+    }
+
+    private handlePlayerAssignment(leftPlayerName: string, rightPlayerName: string): void {
+        this.guiManager?.updatePlayerNames(leftPlayerName, rightPlayerName);
+        this.assignPlayerSide(leftPlayerName, 0);
+        this.assignPlayerSide(rightPlayerName, 1);
+        this.renderManager?.updateActiveCameras(this.config.viewMode, this.controlledSides, this.config.isLocalMultiplayer);
+        this.guiManager?.updateControlVisibility(this.controlledSides.includes(0), this.controlledSides.includes(1));
+    }
+
+    private updateInput(): void {
+        if (this.isDisposed || !this.deviceSourceManager || !this.gameObjects) return;
+        try {
+            const keyboardSource = this.deviceSourceManager.getDeviceSource(DeviceType.Keyboard);
+            if (keyboardSource) {
+                this.handlePlayerInput(keyboardSource, this.gameObjects.players.left, this.config.controls.playerLeft, 0); // Handle left player (side 0)
+                this.handlePlayerInput(keyboardSource, this.gameObjects.players.right, this.config.controls.playerRight, 1); // Handle right player (side 1)
+            }
+        } catch (error) {
+            Logger.errorAndThrow('Error updating input', 'Game', error);
+        }
+    }
+
+    private handlePlayerInput(keyboardSource: any, player: any, controls: PlayerControls, side: number): void {
+        // if (!(this.isLocalMultiplayer || this.controlledSides.includes(side))) return; // TODO
+        if (!(this.controlledSides.includes(side))) return;
+
+        let direction = Direction.STOP;
+
+        // Check input and validate boundaries
+        if ((keyboardSource.getInput(controls.left) === 1) && (player.position.x > this.boundaries.left)) 
+            direction = Direction.LEFT;
+        else if ((keyboardSource.getInput(controls.right) === 1) && (player.position.x < this.boundaries.right))
+            direction = Direction.RIGHT;
+
+        // Send input directly
+        if (direction !== Direction.STOP) {
+            webSocketClient.sendPlayerInput(side, direction);
+        }
+    }
+
+
+
+// ====================            GAME STATE             ====================
+    isInGame(): boolean {
+        return (this.currentState === GameState.PLAYING || this.currentState === GameState.MATCH_ENDED) && !this.isExiting;
+    }
+
+    isPaused(): boolean {
+        return this.currentState === GameState.PAUSED && !this.isExiting;
+    }
+
+    pause(): void {
+        if (this.isDisposed || this.isPausedByServer || !this.isRunning) return;
+        webSocketClient.sendPauseRequest();
+    }
+
+    resume(): void {
+        if (this.isDisposed || !this.isPausedByServer) return;
+        webSocketClient.sendResumeRequest();
+    }
+
+    private setGameState(state: GameState): void {
+        this.currentState = state;
+        this.isExiting = false;
+    }
+
+    private updateGamePauseState(isPaused: boolean): void {
+        this.currentState = isPaused ? GameState.PAUSED : GameState.PLAYING;
+        this.guiManager?.setPauseVisible(isPaused);
+    }
+
+    async requestExitToMenu(): Promise<void> {
+        if (this.isExiting) return;
+
+        this.isExiting = true;
+
+        try {
+            webSocketClient.sendQuitGame();
+        } catch (error) {
+            Logger.error('Error during request exit', 'Game', error);
+            this.resetToMenu();
+        }
+    }
+
+    private resetToMenu(): void {
+        this.currentState = null;
+        this.isExiting = false;
+        appStateManager.navigateTo(AppState.MAIN_MENU);
+    }
+
+// ====================              CLEANUP              ====================
     async dispose(): Promise<void> {
         if (this.isDisposed) return;
 
@@ -511,7 +525,6 @@ export class Game {
             this.guiManager = null;
 
             uiManager.setLoadingScreenVisible(false);
-            uiManager.updateLoadingProgress(0);
 
             this.gameObjects = null;
             this.audioManager?.dispose();
@@ -543,79 +556,6 @@ export class Game {
             Logger.errorAndThrow('Error disposing game', 'Game', error);
         }
     }
-
-
-    // ========================================
-    // INPUT HANDLING
-    // ========================================
-
-    private initializeInput(): void {
-        try {
-            this.deviceSourceManager = new DeviceSourceManager(this.scene!.getEngine());
-            
-            // Configure input based on game mode
-            this.isLocalMultiplayer = (
-                this.config.gameMode === GameMode.TWO_PLAYER_LOCAL || 
-                this.config.gameMode === GameMode.TOURNAMENT_LOCAL
-            );
-
-        } catch (error) {
-            Logger.errorAndThrow('Error setting up input', 'Game', error);
-        }
-    }
-
-    private assignPlayerSide(name: string, side: number): void {
-        const isOurPlayer = this.config.players.some(player => player.name === name);
-        if (isOurPlayer && !this.controlledSides.includes(side))
-            this.controlledSides.push(side);
-    }
-
-    private handlePlayerAssignment(leftPlayerName: string, rightPlayerName: string): void {
-        this.guiManager?.updatePlayerNames(leftPlayerName, rightPlayerName);
-        this.controlledSides = []
-        this.assignPlayerSide(leftPlayerName, 0);
-        this.assignPlayerSide(rightPlayerName, 1);
-        this.renderManager?.updateActiveCameras(this.config.viewMode, this.controlledSides, this.isLocalMultiplayer);
-
-        const leftPlayerControlled = this.controlledSides.includes(0);
-        const rightPlayerControlled = this.controlledSides.includes(1);
-        this.guiManager?.updateControlVisibility(leftPlayerControlled, rightPlayerControlled);
-    
-        console.log(`Left=${leftPlayerName}, Right=${rightPlayerName}, Controlled sides: [${this.controlledSides}]`);
-    }
-
-    private updateInput(): void {
-        if (this.isDisposed || !this.deviceSourceManager || !this.gameObjects) return;
-        try {
-            const keyboardSource = this.deviceSourceManager.getDeviceSource(DeviceType.Keyboard);
-            if (keyboardSource) {
-                // Handle left player (side 0)
-                this.handlePlayerInput(keyboardSource, this.gameObjects.players.left, this.config.controls.playerLeft, 0);
-                
-                // Handle right player (side 1)  
-                this.handlePlayerInput(keyboardSource, this.gameObjects.players.right, this.config.controls.playerRight, 1);
-            }
-        } catch (error) {
-            Logger.errorAndThrow('Error updating input', 'Game', error);
-        }
-    }
-
-    private handlePlayerInput(keyboardSource: any, player: any, controls: PlayerControls, side: number): void {
-        // Check if we should listen to this player
-
-        if (!(this.isLocalMultiplayer || this.controlledSides.includes(side))) return;
-
-        let direction = Direction.STOP;
-
-        // Check input and validate boundaries
-        if ((keyboardSource.getInput(controls.left) === 1) && (player.position.x > this.boundaries.left)) 
-            direction = Direction.LEFT;
-        else if ((keyboardSource.getInput(controls.right) === 1) && (player.position.x < this.boundaries.right))
-            direction = Direction.RIGHT;
-
-        // Send input directly
-        if (direction !== Direction.STOP) {
-            webSocketClient.sendPlayerInput(side, direction);
-        }
-    }
 }
+
+

@@ -17,9 +17,9 @@ export class AppStateManager {
     private static instance: AppStateManager;
     
     static getInstance(): AppStateManager {
-        if (!AppStateManager.instance) {
+        if (!AppStateManager.instance)
             AppStateManager.instance = new AppStateManager();
-        }
+
         return AppStateManager.instance;
     }
     
@@ -32,11 +32,12 @@ export class AppStateManager {
     private setupEventListeners(): void {
         // Listen for browser back/forward button clicks
         window.addEventListener('popstate', (event) => {
-            if (Game.isInGame()) {
-                Game.pause();
+            const g = Game.getCurrentInstance();
+            if (g && g.isInGame()) {
+                g.pause();
                 return;
-            } else if (Game.isPaused()) {
-                Game.requestExitToMenu();
+            } else if (g && g.isPaused()) {
+                g.requestExitToMenu();
                 return;
             }
 
@@ -114,7 +115,7 @@ export class AppStateManager {
         try {
             uiManager.showAuthButtons();
             this.navigateTo(AppState.GAME_3D, false);
-            await Game.createAndStart(viewMode, gameMode, aiDifficulty);
+            await Game.create(viewMode, gameMode, aiDifficulty);
 
         } catch (error) {
             Logger.error('Error starting game', 'AppStateManager', error);
