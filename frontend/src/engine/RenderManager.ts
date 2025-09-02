@@ -10,10 +10,10 @@ import { GAME_CONFIG } from '../shared/gameConfig.js';
  * Manages the rendering and frame rate control
  */
 export class RenderManager {
+    private isInitialized: boolean = false;
     isRunning: boolean = false;
     private lastFrameTime: number = 0;
     private fpsLimit: number = 60;
-    private isInitialized: boolean = false;
     private camerasAnimation: any[] = [];
     private resizeHandler: (() => void) | null = null;
 

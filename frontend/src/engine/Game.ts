@@ -30,6 +30,8 @@ import { AudioManager } from './AudioManager.js';
  */
 export class Game {
     private static currentInstance: Game | null = null;
+    private isInitialized: boolean = false;
+    private currentState: GameState | null = null;
     private engine: Engine | null = null;
     private scene: Scene | null = null;
     private canvas: HTMLCanvasElement | null = null;
@@ -38,33 +40,30 @@ export class Game {
     private guiManager: GUIManager | null = null;
     private renderManager: RenderManager | null = null;
     private audioManager: AudioManager | null =null;
-
-    private countdownLoop: number | null = null;
-    private gameLoopObserver: any = null;
     private deviceSourceManager: DeviceSourceManager | null = null;
-
-//////////////////////////////////////////////////
-    private isInitialized: boolean = false;
-    private isRunning: boolean = false;
-    private isDisposed: boolean = false;
-    private isPausedByServer: boolean = false;
-    private currentState: GameState | null = null;
-    private isExiting: boolean = false;
-
-//////////////////////////////////////////////////
-    // private isLocalMultiplayer: boolean = false;
-
+    private gameLoopObserver: any = null;
     private boundaries = getPlayerBoundaries();
-
     private controlledSides: number[] = [];
-
     private playerLeftScore: number = 0;
     private playerRightScore: number = 0;
 
+// ====================            STATIC METHODS             ====================
     static getCurrentInstance(): Game | null {
         return Game.currentInstance;
     }
+    static async create(viewMode: ViewMode, gameMode: GameMode, aiDifficulty: number): Promise<void> {
+        try {
+            const config = GameConfigFactory.createWithAuthCheck(viewMode, gameMode);
+            const game = new Game(config);
+            await game.connect(aiDifficulty);
+            await game.initialize();
+        } catch (error) {
+            Logger.error('Error creating game', 'Game', error);
+            throw error;
+        }
+    }
 
+// ====================            CONSTRUCTOR               ====================
     constructor(private config: GameConfig) {
         if (Game.currentInstance)
             Game.currentInstance.dispose();
@@ -85,24 +84,9 @@ export class Game {
         }
     }
 
-    // ========================================
-    // INITIALIZATION
-    // ========================================
-
-    static async create(viewMode: ViewMode, gameMode: GameMode, aiDifficulty: number): Promise<void> {
-        try {
-            const config = GameConfigFactory.createWithAuthCheck(viewMode, gameMode);
-            const game = new Game(config);
-            await game.connect(aiDifficulty);
-            await game.initialize();
-        } catch (error) {
-            Logger.error('Error creating game', 'Game', error);
-            throw error;
-        }
-    }
-
+// ====================            INITIALIZATION            ====================
     async initialize(): Promise<void> {
-        if (this.isInitialized || this.isDisposed) return;
+        if (this.isInitialized) return;
         
         this.setupGlobalKeyboardEvents();
         SceneLoader.ShowLoadingScreen = false;
@@ -132,8 +116,6 @@ export class Game {
             this.renderManager = new RenderManager(this.engine, this.scene, this.guiManager, this.animationManager, this.gameObjects);
             this.renderManager?.startRendering();
 
-
-            // this.initializeInput();
             this.connectComponents();
             this.isInitialized = true;
             webSocketClient.sendPlayerReady();
@@ -168,18 +150,14 @@ export class Game {
 
     private setupGlobalKeyboardEvents(): void {
         document.addEventListener('keydown', (event) => {
-            if (event.key === 'Escape' && this.isRunning) {
-                if (this.isInGame() && this.currentState === GameState.PLAYING)
-                    this.pause();
-                else if (this.isPaused())
-                    this.resume();
+            if (event.key === 'Escape' && this.currentState === GameState.PLAYING) {
+                if (this.isInGame()) this.pause();
+                else if (this.isPaused()) this.resume();
             }
             
             if (this.isPaused()) {
-                if (event.key === 'Y' || event.key === 'y')
-                    this.requestExitToMenu();
-                else if (event.key === 'N' || event.key === 'n' || event.key === 'Escape')
-                    this.resume();
+                if (event.key === 'Y' || event.key === 'y') this.requestExitToMenu();
+                else if (event.key === 'N' || event.key === 'n' || event.key === 'Escape') this.resume();
             }
         });
     }
@@ -201,20 +179,14 @@ export class Game {
         webSocketClient.joinGame(this.config.gameMode, this.config.players, aiDifficulty);
     }
 
-    // ========================================
-    // GAME CONTROL
-    // ========================================
-
+// ====================            GAME CONTROL             ====================
     private start(): void {
-        if (!this.isInitialized || this.isDisposed) return;
+        if (!this.isInitialized) return;
 
         try {
-            this.setGameState(GameState.PLAYING);
+            this.currentState = GameState.PLAYING;
             // Start game loop
             this.startGameLoop();
-
-            this.isRunning = true;
-
         } catch (error) {
             Logger.errorAndThrow('Error starting game', 'Game', error);
         }
@@ -252,11 +224,10 @@ export class Game {
 
     // Handle server confirming game is paused
     private onServerPausedGame(): void {
-        if (this.isDisposed || !this.isRunning) return;
+        if (!this.isInitialized || this.currentState === GameState.PAUSED) return;
 
-        this.isPausedByServer = true;
-        this.isRunning = false;
-        this.updateGamePauseState(true);
+        this.currentState = GameState.PAUSED;
+        this.guiManager?.setPauseVisible(true);
         this.audioManager?.pauseGameMusic();
         this.stopGameLoop();
 
@@ -264,11 +235,10 @@ export class Game {
 
     // Handle server confirming game is resumed
     private onServerResumedGame(): void {
-        if (this.isDisposed || this.isRunning || !this.isPausedByServer) return;
+        if (!this.isInitialized || this.currentState === GameState.PLAYING) return;
 
-        this.isPausedByServer = false;
-        this.isRunning = true;
-        this.updateGamePauseState(false);
+        this.currentState = GameState.PLAYING;
+        this.guiManager?.setPauseVisible(false);
         this.audioManager?.resumeGameMusic();
         this.renderManager?.startRendering();
         this.startGameLoop();
@@ -276,10 +246,8 @@ export class Game {
 
     // Handle server ending the game
     private async onServerEndedGame(winner: string): Promise<void> {
-        if (this.isDisposed)
-            return;
-        if (!this.config.isTournament)
-            return;
+        if (!this.isInitialized || !this.config.isTournament) return;
+
         this.guiManager?.setPauseVisible(false);
         await this.guiManager?.animateBackground(true);
         await this.guiManager?.showPartialWinner(winner);
@@ -289,11 +257,11 @@ export class Game {
         this.audioManager?.stopGameMusic();
         this.controlledSides = [];
         this.stopGameLoop();
-        this.setGameState(GameState.MATCH_ENDED);
+        this.currentState = GameState.MATCH_ENDED;
     }
 
     private async onServerEndedSession(winner: string): Promise<void> {
-        if (this.isDisposed) return;
+        if (!this.isInitialized) return;
 
         if (!this.renderManager?.isRunning)
             this.renderManager?.startRendering();
@@ -311,22 +279,19 @@ export class Game {
 
     }
 
-    // ========================================
-    // GAME LOOP
-    // ========================================
-
+// ====================            GAME LOOP                ====================
     private startGameLoop(): void {
         if (this.gameLoopObserver) return;
         this.gameLoopObserver = setInterval(() => {
-            if (!this.isRunning || this.isDisposed) return;
-        try {
-            uiManager.setLoadingScreenVisible(false);
-            this.updateInput();
-            if (this.config.viewMode === ViewMode.MODE_3D)
-                this.renderManager?.update3DCameras();
-        } catch (error) {
-            Logger.errorAndThrow('Error in game loop', 'Game', error);
-        }
+            if (!this.isInitialized || this.currentState !== GameState.PLAYING) return;
+            try {
+                uiManager.setLoadingScreenVisible(false);
+                this.updateInput();
+                if (this.config.viewMode === ViewMode.MODE_3D)
+                    this.renderManager?.update3DCameras();
+            } catch (error) {
+                Logger.errorAndThrow('Error in game loop', 'Game', error);
+            }
         }, 16);
     }
 
@@ -338,8 +303,7 @@ export class Game {
     }
 
     private resetForNextMatch(): void {
-        if (this.isDisposed)
-            return;
+        if (!this.isInitialized) return;
 
         this.playerLeftScore = 0;
         this.playerRightScore = 0;
@@ -358,13 +322,9 @@ export class Game {
         this.guiManager?.updateScores(0, 0);
     }
 
-    // ========================================
-    // GAME STATE UPDATES
-    // ========================================
-
-    // Update game object positions from server state
+// ====================            GAME STATE UPDATES       ====================
     private updateGameObjects(state: GameStateData): void {
-        if (this.isDisposed || !this.gameObjects) return;
+        if (!this.isInitialized || !this.gameObjects) return;
 
         try {
             // Update paddle positions
@@ -395,11 +355,7 @@ export class Game {
         }
     }
 
-
-    // ========================================
-    // INPUT HANDLING
-    // ========================================
-
+// ====================            INPUT HANDLING           ====================
     private assignPlayerSide(name: string, side: number): void {
         const isOurPlayer = this.config.players.some(player => player.name === name);
         if (isOurPlayer && !this.controlledSides.includes(side))
@@ -415,7 +371,7 @@ export class Game {
     }
 
     private updateInput(): void {
-        if (this.isDisposed || !this.deviceSourceManager || !this.gameObjects) return;
+        if (!this.isInitialized || !this.deviceSourceManager || !this.gameObjects) return;
         try {
             const keyboardSource = this.deviceSourceManager.getDeviceSource(DeviceType.Keyboard);
             if (keyboardSource) {
@@ -428,93 +384,64 @@ export class Game {
     }
 
     private handlePlayerInput(keyboardSource: any, player: any, controls: PlayerControls, side: number): void {
-        // if (!(this.isLocalMultiplayer || this.controlledSides.includes(side))) return; // TODO
         if (!(this.controlledSides.includes(side))) return;
 
         let direction = Direction.STOP;
-
-        // Check input and validate boundaries
         if ((keyboardSource.getInput(controls.left) === 1) && (player.position.x > this.boundaries.left)) 
             direction = Direction.LEFT;
         else if ((keyboardSource.getInput(controls.right) === 1) && (player.position.x < this.boundaries.right))
             direction = Direction.RIGHT;
 
-        // Send input directly
-        if (direction !== Direction.STOP) {
+        if (direction !== Direction.STOP)
             webSocketClient.sendPlayerInput(side, direction);
-        }
     }
 
-
-
-// ====================            GAME STATE             ====================
+// ====================            GAME STATE               ====================
     isInGame(): boolean {
-        return (this.currentState === GameState.PLAYING || this.currentState === GameState.MATCH_ENDED) && !this.isExiting;
+        return this.currentState === GameState.PLAYING || this.currentState === GameState.MATCH_ENDED;
     }
 
     isPaused(): boolean {
-        return this.currentState === GameState.PAUSED && !this.isExiting;
+        return this.currentState === GameState.PAUSED;
     }
 
     pause(): void {
-        if (this.isDisposed || this.isPausedByServer || !this.isRunning) return;
+        if (!this.isInitialized || this.currentState !== GameState.PLAYING) return;
         webSocketClient.sendPauseRequest();
     }
 
     resume(): void {
-        if (this.isDisposed || !this.isPausedByServer) return;
+        if (!this.isInitialized) return;
         webSocketClient.sendResumeRequest();
     }
 
-    private setGameState(state: GameState): void {
-        this.currentState = state;
-        this.isExiting = false;
-    }
-
-    private updateGamePauseState(isPaused: boolean): void {
-        this.currentState = isPaused ? GameState.PAUSED : GameState.PLAYING;
-        this.guiManager?.setPauseVisible(isPaused);
-    }
-
     async requestExitToMenu(): Promise<void> {
-        if (this.isExiting) return;
-
-        this.isExiting = true;
+        if (this.currentState === GameState.EXITING) return;
 
         try {
+            this.currentState = GameState.EXITING;
             webSocketClient.sendQuitGame();
         } catch (error) {
             Logger.error('Error during request exit', 'Game', error);
+            this.stopGameLoop();
+            this.dispose();
             this.resetToMenu();
         }
     }
 
     private resetToMenu(): void {
-        this.currentState = null;
-        this.isExiting = false;
         appStateManager.navigateTo(AppState.MAIN_MENU);
     }
 
-// ====================              CLEANUP              ====================
-    async dispose(): Promise<void> {
-        if (this.isDisposed) return;
-
-        this.isDisposed = true;
-        this.isRunning = false;
-        this.isPausedByServer = false;
-        this.currentState = null;
-        this.isExiting = false;
-
+// ====================            CLEANUP                  ====================
+    private async dispose(): Promise<void> {
+    if (!this.isInitialized) return;
         try {
+            this.isInitialized = false;
             this.stopGameLoop();
 
             this.renderManager?.dispose();
             this.renderManager = null;
-
-            if (this.countdownLoop) {
-                clearInterval(this.countdownLoop);
-                this.countdownLoop = null;
-            }
 
             this.deviceSourceManager?.dispose();
             this.deviceSourceManager = null;
@@ -546,10 +473,8 @@ export class Game {
                     context.clearRect(0, 0, this.canvas.width, this.canvas.height);
             }
             this.canvas = null;
-            this.isInitialized = false;
 
-            if (Game.currentInstance === this)
-                Game.currentInstance = null;
+            if (Game.currentInstance === this) Game.currentInstance = null;
 
             Logger.debug('Game disposed successfully', 'Game');
         } catch (error) {
@@ -557,5 +482,3 @@ export class Game {
         }
     }
 }
-
-
