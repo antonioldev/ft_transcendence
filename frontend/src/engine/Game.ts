@@ -209,7 +209,7 @@ export class Game {
             this.engine = await this.initializeBabylonEngine();
             if (!this.engine) Logger.errorAndThrow('Engine not created', 'Game');
 
-this.renderManager = new RenderManager();
+// this.renderManager = new RenderManager();
             this.scene = await this.createScene();
             if (!this.scene) Logger.errorAndThrow('Scene not created', 'Game');
             this.animationManager = new AnimationManager(this.scene);
@@ -222,10 +222,10 @@ this.renderManager = new RenderManager();
                 this.gameObjects = await buildScene3D(this.scene, this.config.gameMode, this.config.viewMode, (progress: number) => uiManager.updateLoadingProgress(progress));
             if (!this.gameObjects) Logger.errorAndThrow('Game objects not created', 'Game');
             this.guiManager = new GUIManager(this.scene, this.config, this.animationManager);
-
             this.guiManager?.setToggleMuteCallback(() => this.audioManager!.toggleMute());
             if (this.guiManager && this.guiManager.isInitialized)
-                this.renderManager?.initialize(this.engine, this.scene, this.guiManager);
+                this.renderManager = new RenderManager(this.engine, this.scene, this.guiManager, this.animationManager);
+                // this.renderManager?.initialize(this.engine, this.scene, this.guiManager);
             this.renderManager?.startRendering();
 
             this.setupResizeHandler();
@@ -531,7 +531,7 @@ this.renderManager = new RenderManager();
         } catch (error) {
             Logger.errorAndThrow('Error updating 3D cameras', 'Game', error);
         }
-    } // if (camera1.getTarget && camera2.getTarget)
+    }
 
     // ========================================
     // CLEANUP

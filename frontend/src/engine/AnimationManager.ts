@@ -1,9 +1,10 @@
 import type { Scene } from "@babylonjs/core/scene";
 import { Animation } from "@babylonjs/core/Animations/animation";
-import { EasingFunction } from "@babylonjs/core/Animations/easing";
 import { SineEase } from "@babylonjs/core/Animations/easing";
-import { QuadraticEase } from "@babylonjs/core/Animations/easing";
+import { QuadraticEase, EasingFunction } from "@babylonjs/core/Animations/easing";
+import { Vector3 } from "@babylonjs/core/Maths/math.vector";
 import type { Control } from "@babylonjs/gui/2D/controls/control";
+import { getCamera2DPosition, getCamera3DPlayer1Position, getCamera3DPlayer2Position,} from './utils.js';
 
 type FloatProp =
   | "alpha"
@@ -33,7 +34,6 @@ export const Motion = {
 export class AnimationManager {
     constructor(private scene: Scene) {}
 
-    /** Core float animation builder (your helper generalized). */
     createFloat(
         property: FloatProp,
         from: number,
@@ -86,7 +86,6 @@ export class AnimationManager {
         return this.play(target, frames, false);
     }
 
-    /** Small press/pop feedback. */
     pop(target: Control, frames = Motion.F.fast, end: number) {
         target.animations = [
         this.createFloat("scaleX", 1, end, frames, true, Motion.ease.quadOut()),
@@ -95,7 +94,6 @@ export class AnimationManager {
         return this.play(target, frames, false);
     }
 
-    /** Gentle breathing loop (call .play with loop=true). */
     breathe(target: Control, frames = Motion.F.breath) {
         target.animations = [
         this.createFloat("scaleX", 1, 1.5, frames, true, Motion.ease.sine(), Animation.ANIMATIONLOOPMODE_CYCLE),
@@ -104,7 +102,6 @@ export class AnimationManager {
         return this.play(target, frames, true);
     }
 
-    /** Slide vertically (pixels) with fade. Positive from = below; negative = above. */
     slideInY(target: Control, fromPx = 40, frames = Motion.F.base) {
         target.topInPixels = fromPx;
         target.alpha = 0;
@@ -123,16 +120,46 @@ export class AnimationManager {
         return this.play(target, frames, false);
     }
 
-    /** Quick attention ping via alpha. */
     twinkle(target: Control, frames = Motion.F.slow) {
     target.animations = [ this.createFloat("alpha", 1, 0.6, frames, true, Motion.ease.sine(), Animation.ANIMATIONLOOPMODE_CYCLE) ];
     return this.play(target, frames, true);
     }
 
-    /** One-shot rotate (e.g., spinner tick). */
     rotateOnce(target: Control, turns = 1, frames = Motion.F.slow) {
         const to = Math.PI * 2 * turns;
         target.animations = [ this.createFloat("rotation", 0, to, frames, false, Motion.ease.quadInOut()) ];
         return this.play(target, frames, false);
+    }
+
+    createCameraMoveAnimation(cameraName: string): Animation {
+        const startPosition = getCamera2DPosition();
+        const endPosition = cameraName === "camera1"
+        ? getCamera3DPlayer1Position()
+        : getCamera3DPlayer2Position();
+
+        const ease = new QuadraticEase();
+        ease.setEasingMode(EasingFunction.EASINGMODE_EASEOUT);
+
+        const anim = Animation.CreateAnimation("position", Animation.ANIMATIONTYPE_VECTOR3, 60, ease);
+        anim.setKeys([
+        { frame: 0, value: startPosition },
+        { frame: 180, value: endPosition },
+        ]);
+        return anim;
+    }
+
+    createCameraTargetAnimation(): Animation {
+        const startTarget = Vector3.Zero();
+        const endTarget = Vector3.Zero();
+
+        const ease = new QuadraticEase();
+        ease.setEasingMode(EasingFunction.EASINGMODE_EASEOUT);
+
+        const anim = Animation.CreateAnimation("target", Animation.ANIMATIONTYPE_VECTOR3, 60, ease);
+        anim.setKeys([
+        { frame: 0, value: startTarget },
+        { frame: 180, value: endTarget },
+        ]);
+        return anim;
     }
 }

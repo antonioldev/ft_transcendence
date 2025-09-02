@@ -1,8 +1,8 @@
-import { Animation, Engine, QuadraticEase, Scene, Vector3 } from "@babylonjs/core";
+import { Engine, Scene} from "@babylonjs/core";
 import { Logger } from '../utils/LogManager.js';
 import { GUIManager } from './GuiManager.js';
 import { ViewMode } from '../shared/constants.js';
-import { getCamera2DPosition, getCamera3DPlayer1Position, getCamera3DPlayer2Position,} from './utils.js';
+import { AnimationManager } from "./AnimationManager.js";
 
 
 /**
@@ -16,25 +16,13 @@ import { getCamera2DPosition, getCamera3DPlayer1Position, getCamera3DPlayer2Posi
  * - Render performance monitoring
  */
 export class RenderManager {
-    private engine: Engine | null = null;
-    private scene: Scene | null = null;
-    private guiManager: GUIManager | null = null;
     isRenderingActive: boolean = false;
     private lastFrameTime: number = 0;
     private fpsLimit: number = 60;
     private isInitialized: boolean = false;
     private camerasAnimation: any[] = [];
 
-    // Initialize the render manager with required dependencies
-    initialize(engine: Engine, scene: Scene, guiManager: GUIManager): void {
-        if (this.isInitialized) {
-            Logger.warn('RenderManager already initialized', 'RenderManager');
-            return;
-        }
-
-        this.engine = engine;
-        this.scene = scene;
-        this.guiManager = guiManager;
+    constructor(private engine: Engine, private scene: Scene, private guiManager: GUIManager, private animationManager: AnimationManager) {
         this.isInitialized = true;
     }
 
@@ -115,8 +103,8 @@ export class RenderManager {
             if (!camera) return;
 
             if (isLocalMultiplayer || controlledSides.includes(index) || controlledSides.length === 0) {
-                const positionAnimation = this.createCameraMoveAnimation(camera.name);
-                const targetAnimation = this.createCameraTargetAnimation();
+                const positionAnimation = this.animationManager.createCameraMoveAnimation(camera.name);
+                const targetAnimation   = this.animationManager.createCameraTargetAnimation();
                 camera.animations = [positionAnimation, targetAnimation];
                 const animationGroup = this.scene?.beginAnimation(camera, 0, 180, false);
                 this.camerasAnimation.push(animationGroup);
@@ -131,42 +119,6 @@ export class RenderManager {
         this.camerasAnimation = [];
     }
 
-    private createCameraMoveAnimation(cameraName: string): any {
-        const startPosition = getCamera2DPosition();
-
-        let endPosition;
-        if (cameraName === "camera1")
-            endPosition = getCamera3DPlayer1Position();
-        else
-            endPosition = getCamera3DPlayer2Position();
-
-        const positionAnimation = Animation.CreateAnimation(
-            "position", Animation.ANIMATIONTYPE_VECTOR3, 60, new QuadraticEase());
-
-        const keys = [
-            { frame: 0, value: startPosition },
-            { frame: 180, value: endPosition }
-        ];
-        positionAnimation.setKeys(keys);
-        return positionAnimation;
-    }
-
-    private createCameraTargetAnimation(): any {
-        const startTarget = Vector3.Zero();
-        const endTarget = Vector3.Zero();
-
-        const targetAnimation = Animation.CreateAnimation(
-            "target", Animation.ANIMATIONTYPE_VECTOR3, 60, new QuadraticEase());
-
-        const keys = [
-            { frame: 0, value: startTarget },
-            { frame: 180, value: endTarget }
-        ];
-        targetAnimation.setKeys(keys);
-        return targetAnimation;
-    }
-
-
     // Clean up render manager resources
     dispose(): void {
         if (!this.isInitialized) return;
@@ -175,10 +127,6 @@ export class RenderManager {
         this.stopRendering();
         this.stopCameraAnimation();
 
-        // Clear references
-        this.engine = null;
-        this.scene = null;
-        this.guiManager = null;
         this.isInitialized = false;
 
         Logger.debug('Class disposed', 'RenderManager');
