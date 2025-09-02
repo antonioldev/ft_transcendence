@@ -84,12 +84,10 @@ export interface TextBlockOptions {
     fontWeight?: string;
     width?: string;
     height?: string;
-    // Rich text effects
     applyRichEffects?: boolean;
     applyGradient?: boolean;
     outlineWidth?: number;
     outlineColor?: string;
-    // Additional properties
     alpha?: number;
     lineSpacing?: string;
     resizeToFit?: boolean;

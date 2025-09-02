@@ -16,7 +16,6 @@ export class GUIManager {
     private readonly V_CENTER = Control.VERTICAL_ALIGNMENT_CENTER;
     private readonly V_BOTTOM = Control.VERTICAL_ALIGNMENT_BOTTOM;
     private advancedTexture: AdvancedDynamicTexture | null = null;
-    private animationManager : AnimationManager | null = null;
     isInitialized: boolean = false;
     private hudGrid!: Grid;
     private fpsText!: TextBlock;
@@ -46,18 +45,12 @@ export class GUIManager {
     private toggleMuteCallback?: () => boolean;
 
 
-
-    // Initialize and create all GUI elements
-    createGUI(scene: Scene, config: GameConfig): void {
-        if (this.isInitialized)
-            return (Logger.warn('GUI already initialized, skipping creation', 'GUIManager'));
-
+    constructor(private scene: Scene, config: GameConfig, private animationManager: AnimationManager) {
         try {
             // Create the main GUI texture
-            this.advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI("UI", true, scene);
+            this.advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI("UI", true, this.scene);
             this.advancedTexture!.layer!.layerMask = 0x20000000;
 
-            this.animationManager  = new AnimationManager(scene);
             this.createHUD(config);
             this.createPauseOverlay();
             this.createViewModeElements(config);
@@ -206,9 +199,7 @@ export class GUIManager {
             (config.gameMode === GameMode.TWO_PLAYER_LOCAL || config.gameMode === GameMode.TOURNAMENT_LOCAL)) {
             const dividerLine = this.createRect("divider", "100%", 6, this.V_CENTER, "#000000ff")
             dividerLine.widthInPixels = 5;
-
             this.advancedTexture!.addControl(dividerLine);
-            Logger.info('Split screen divider created', 'GUIManager');
         }
     }
 
@@ -252,7 +243,7 @@ export class GUIManager {
         centerColumn.addControl(this.partialWinnerName, 1, 0);
 
         this.continueText = this.createTextBlock("continue_text", {
-            text: t.continue, color: "#FFD700", outlineWidth: 2, outlineColor: "#ffffffee", zIndex: 10,
+            text: t.continue, color: "#ffffffff", outlineWidth: 2, outlineColor: "#FFD700", zIndex: 10,
         });
         centerColumn.addControl(this.continueText, 2, 0);
     }
@@ -362,9 +353,9 @@ export class GUIManager {
         this.endGameWinnerText.text = `🏆 ${winner} WINS! 🏆`;
         this.endGameOverlay.isVisible = true;
         this.animationManager?.pop(this.endGameWinnerText, Motion.F.fast, 0.9);
-        const scene = this.advancedTexture!.getScene();
-        const cams = scene?.activeCameras?.length ? scene.activeCameras : scene?.activeCamera;
-        spawnFireworksInFrontOfCameras(scene!, FINAL_FIREWORKS, cams);
+        const scene = this.scene;
+        const cams = scene.activeCameras?.length ? scene.activeCameras : scene.activeCamera;
+        spawnFireworksInFrontOfCameras(scene, FINAL_FIREWORKS, cams);
         await new Promise(resolve => setTimeout(resolve, 5000));
 
         this.hudGrid.isVisible = true;
@@ -387,30 +378,32 @@ export class GUIManager {
     async showPartialWinner(winner: string): Promise<void> {
         if (!this.isReady || !this.advancedTexture) return;
 
-        const scene = this.advancedTexture.getScene();
+        const scene = this.scene;
         this.partialWinnerName.text = winner;
         this.partialEndGameOverlay.isVisible = true;
+        this.partialWinnerLabel.isVisible = true;
+        this.partialWinnerName.isVisible = true;
         this.partialEndGameOverlay.isPointerBlocker = true;
 
         await this.animationManager?.slideInY(this.partialWinnerLabel, -50, Motion.F.base);
         await this.animationManager?.slideInY(this.partialWinnerName, 50, Motion.F.slow);
         this.animationManager?.breathe(this.partialWinnerName, Motion.F.breath);
 
-        const cams = scene?.activeCameras?.length ? scene.activeCameras : scene?.activeCamera;
-        spawnFireworksInFrontOfCameras(scene!, PARTIAL_FIREWORKS, cams);
+        const cams = scene.activeCameras?.length ? scene.activeCameras : scene.activeCamera;
+        spawnFireworksInFrontOfCameras(scene, PARTIAL_FIREWORKS, cams);
 
         await new Promise(r => setTimeout(r, 180));
     }
 
     async waitForSpaceToContinue(ms: number): Promise<void> {
         if (!this.isReady || !this.advancedTexture) return;
-        const scene = this.advancedTexture.getScene();
+        const scene = this.scene;
         await new Promise<void>(res => setTimeout(res, ms));
         this.continueText.isVisible = true;
         this.animationManager?.twinkle(this.continueText, Motion.F.slow);
 
         return new Promise<void>((resolve) => {
-            const sub = scene?.onKeyboardObservable.add((kbInfo: any) => {
+            const sub = scene.onKeyboardObservable.add((kbInfo: any) => {
                 if (kbInfo.type === KeyboardEventTypes.KEYDOWN) {
                     const e = kbInfo.event as KeyboardEvent;
                     if (e.code === "Space" || e.key === " ") {
@@ -529,9 +522,8 @@ export class GUIManager {
     // Clean up all GUI resources
     dispose(): void {
         if (!this.isInitialized) return;
-
+        
         try {
-            this.animationManager  = null;
             this.fpsText.dispose();
             this.score1Text.dispose();
             this.score2Text.dispose();
@@ -559,6 +551,7 @@ export class GUIManager {
             this.advancedTexture = null;
 
             this.isInitialized = false;
+            Logger.debug('Class disposed', 'GUIManager');
         } catch (error) {
             Logger.error('Error disposing GUI', 'GUIManager', error);
         }

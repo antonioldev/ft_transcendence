@@ -2,7 +2,6 @@ import { Scene, Sound } from "@babylonjs/core";
 import { Logger } from '../utils/LogManager.js';
 
 export class AudioManager {
-    private scene: Scene | null = null;
     private gameMusic: Sound | null = null;
     private isInitialized: boolean = false;
     private basePlaybackRate: number = 1.0;
@@ -23,15 +22,11 @@ export class AudioManager {
     private paddleHitSound: Sound | null = null;
     private scoreSound: Sound | null = null;
 
-    constructor(scene: Scene) {
-        this.scene = scene;
-        
+    constructor(private scene: Scene) {
     }
 
     async initialize(): Promise<void> {
         try {
-            if (!this.scene)
-                Logger.error('Scene required', 'BabylonAudioManager');
             this.gameMusic = new Sound(
                 "gameMusic",
                 "/assets/audio/bg/retro2.mp3",
@@ -86,14 +81,13 @@ export class AudioManager {
 
             this.isInitialized = true;
         } catch (error) {
-            Logger.error('Error initializing Babylon audio', 'BabylonAudioManager', error);
+            Logger.errorAndThrow('Error initializing Babylon audio', 'BabylonAudioManager', error);
         }
     }
 
     // Start playing the game music
     startGameMusic(): void {
         if (!this.gameMusic || !this.isInitialized) {
-            Logger.warn('Game music not ready', 'BabylonAudioManager');
             return;
         }
 
@@ -101,7 +95,7 @@ export class AudioManager {
             if (this.gameMusic.isPlaying !== true )
                 this.gameMusic.play();
         } catch (error) {
-            Logger.error('Error starting game music', 'BabylonAudioManager', error);
+            Logger.errorAndThrow('Error starting game music', 'BabylonAudioManager', error);
         }
     }
 
@@ -179,8 +173,6 @@ export class AudioManager {
     }
 
     dispose(): void {
-        Logger.info('Disposing audio manager...', 'BabylonAudioManager');
-
         try {
             this.gameMusic?.dispose();
             this.gameMusic = null;
@@ -194,10 +186,9 @@ export class AudioManager {
             this.scoreSound?.dispose();
             this.scoreSound = null;
 
-            this.scene = null;
             this.isInitialized = false;
 
-            Logger.info('Audio manager disposed successfully', 'BabylonAudioManager');
+            Logger.debug('Class disposed', 'BabylonAudioManager');
         } catch (error) {
             Logger.error('Error disposing audio manager', 'BabylonAudioManager', error);
         }

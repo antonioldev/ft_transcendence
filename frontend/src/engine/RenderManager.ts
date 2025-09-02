@@ -171,8 +171,6 @@ export class RenderManager {
     dispose(): void {
         if (!this.isInitialized) return;
 
-        Logger.info('Disposing RenderManager...', 'RenderManager');
-
         // Stop rendering if active
         this.stopRendering();
         this.stopCameraAnimation();
@@ -183,6 +181,6 @@ export class RenderManager {
         this.guiManager = null;
         this.isInitialized = false;
 
-        Logger.info('RenderManager disposed successfully', 'RenderManager');
+        Logger.debug('Class disposed', 'RenderManager');
     }
 }

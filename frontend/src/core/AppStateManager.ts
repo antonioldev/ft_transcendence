@@ -41,7 +41,6 @@ export class AppStateManager {
             }
 
             const state = event.state?.screen || AppState.MAIN_MENU;
-            Logger.info(`Browser BACK navigation to: ${state}`, 'AppStateManager');
             this.navigateTo(state, false); // false = don't push to history
         });
 
@@ -79,7 +78,7 @@ export class AppStateManager {
                 this.showScreen(EL.SCREENS.STATS_DASHBOARD, { hideOverlayss: true });
                 break;
             default:
-                Logger.warn(`Unknown state: ${state}, redirecting to main menu`, 'HistoryManager');
+                Logger.errorAndThrow(`Unknown state: ${state}, redirecting to main menu`, 'HistoryManager');
                 this.navigateTo(AppState.MAIN_MENU);
                 break;
         }
@@ -113,14 +112,12 @@ export class AppStateManager {
 
     async startGameWithMode(viewMode: ViewMode, gameMode: GameMode, aiDifficulty: number): Promise<void> {
         try {
-            Logger.info(`Starting game: ${gameMode} in ${ViewMode[viewMode]} mode`, 'AppStateManager');
-
             uiManager.showAuthButtons();
             this.navigateTo(AppState.GAME_3D, false);
             await Game.createAndStart(viewMode, gameMode, aiDifficulty);
 
         } catch (error) {
-            Logger.error('Error starting game', 'AppStateManager', error);
+            Logger.errorAndThrow('Error starting game', 'AppStateManager', error);
             this.navigateTo(AppState.MAIN_MENU); // Go back to menu on error
         }
     }

@@ -1,12 +1,4 @@
-import { 
-    HDRCubeTexture, 
-    MeshBuilder, 
-    StandardMaterial, 
-    Color3, 
-    Vector3, 
-    SceneLoader, 
-    Scene
-} from "@babylonjs/core";
+import { HDRCubeTexture, MeshBuilder, StandardMaterial, Color3, Vector3, SceneLoader, Scene} from "@babylonjs/core";
 
 import { ViewMode } from '../../shared/constants.js';
 import { GAME_CONFIG } from '../../shared/gameConfig.js';
@@ -28,7 +20,7 @@ export function createEnvironment(scene: Scene, path?: string): void {
         scene.createDefaultSkybox(hdrTexture, true, 1000);
         
     } catch (error) {
-        Logger.warn('Error creating HDRI environment, using default environment', 'MaterialFactory');
+        Logger.errorAndThrow('Error creating HDRI environment, using default environment', 'MaterialFactory');
     }
 }
 
@@ -70,7 +62,6 @@ export async function createVegetation(
     if (!vegetationAsset?.path) return [];
     const objects: any[] = []
     try {
-        Logger.info("Loading vegetation from:", vegetationAsset.path);
         const mesh = await SceneLoader.ImportMeshAsync("", "", vegetationAsset.path, scene);
         const originalMesh = mesh.meshes[0] as any;
 
@@ -92,10 +83,9 @@ export async function createVegetation(
         }
 
         originalMesh.setEnabled(false);
-        Logger.info(`Created ${objects.length} vegetation objects`, 'EnvironmentFactory');
 
     } catch(error) {
-        Logger.warn('Could not load vegetation', 'EnvironmentFactory', error);
+        Logger.errorAndThrow('Could not load vegetation', 'EnvironmentFactory', error);
     }
     return objects;
 }
