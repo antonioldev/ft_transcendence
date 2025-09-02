@@ -78,7 +78,7 @@ export class AppStateManager {
                 this.showScreen(EL.SCREENS.STATS_DASHBOARD, { hideOverlayss: true });
                 break;
             default:
-                Logger.errorAndThrow(`Unknown state: ${state}, redirecting to main menu`, 'HistoryManager');
+                Logger.error(`Unknown state: ${state}, redirecting to main menu`, 'HistoryManager');
                 this.navigateTo(AppState.MAIN_MENU);
                 break;
         }
@@ -117,7 +117,7 @@ export class AppStateManager {
             await Game.createAndStart(viewMode, gameMode, aiDifficulty);
 
         } catch (error) {
-            Logger.errorAndThrow('Error starting game', 'AppStateManager', error);
+            Logger.error('Error starting game', 'AppStateManager', error);
             this.navigateTo(AppState.MAIN_MENU); // Go back to menu on error
         }
     }

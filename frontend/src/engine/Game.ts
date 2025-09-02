@@ -1,4 +1,4 @@
-import { Engine, Scene, Color4, Vector3, DeviceSourceManager, DeviceType,SceneLoader} from "@babylonjs/core";
+import { Engine, Scene, Color4, DeviceSourceManager, DeviceType,SceneLoader} from "@babylonjs/core";
 import { GameConfig } from './GameConfig.js';
 import { buildScene2D, buildScene3D } from './scene/sceneBuilder.js';
 import { webSocketClient } from '../core/WebSocketClient.js';
@@ -32,7 +32,6 @@ import { AudioManager } from './AudioManager.js';
  */
 export class Game {
     private static currentInstance: Game | null = null;
-
     private engine: Engine | null = null;
     private scene: Scene | null = null;
     private canvas: HTMLCanvasElement | null = null;
@@ -41,7 +40,6 @@ export class Game {
     private guiManager: GUIManager | null = null;
     private renderManager: RenderManager | null = null;
     private audioManager: AudioManager | null =null;
-    private resizeHandler: (() => void) | null = null;
     private isInitialized: boolean = false;
     private isRunning: boolean = false;
     private isDisposed: boolean = false;
@@ -127,7 +125,6 @@ export class Game {
     // ========================================
     // GAME STATE MANAGEMENT
     // ========================================
-
     private setGameState(state: GameState): void {
         this.currentState = state;
         this.isExiting = false;
@@ -209,39 +206,26 @@ export class Game {
             this.engine = await this.initializeBabylonEngine();
             if (!this.engine) Logger.errorAndThrow('Engine not created', 'Game');
 
-// this.renderManager = new RenderManager();
             this.scene = await this.createScene();
-            if (!this.scene) Logger.errorAndThrow('Scene not created', 'Game');
             this.animationManager = new AnimationManager(this.scene);
             this.audioManager = new AudioManager(this.scene);
             await this.audioManager.initialize();
-            // Build game objects
-            if (this.config.viewMode === ViewMode.MODE_2D)
-                this.gameObjects = await buildScene2D(this.scene, this.config.gameMode, this.config.viewMode, (progress: number) => uiManager.updateLoadingProgress(progress));
-            else
-                this.gameObjects = await buildScene3D(this.scene, this.config.gameMode, this.config.viewMode, (progress: number) => uiManager.updateLoadingProgress(progress));
-            if (!this.gameObjects) Logger.errorAndThrow('Game objects not created', 'Game');
+            this.gameObjects = this.config.viewMode === ViewMode.MODE_2D
+                ? await buildScene2D(this.scene, this.config.gameMode, this.config.viewMode, (progress: number) => uiManager.updateLoadingProgress(progress))
+                : await buildScene3D(this.scene, this.config.gameMode, this.config.viewMode, (progress: number) => uiManager.updateLoadingProgress(progress));
             this.guiManager = new GUIManager(this.scene, this.config, this.animationManager);
             this.guiManager?.setToggleMuteCallback(() => this.audioManager!.toggleMute());
-            if (this.guiManager && this.guiManager.isInitialized)
-                this.renderManager = new RenderManager(this.engine, this.scene, this.guiManager, this.animationManager);
-                // this.renderManager?.initialize(this.engine, this.scene, this.guiManager);
+            this.renderManager = new RenderManager(this.engine, this.scene, this.guiManager, this.animationManager, this.gameObjects);
             this.renderManager?.startRendering();
-
-            this.setupResizeHandler();
-
             this.initializeInput();
-
             this.connectComponents();
             this.isInitialized = true;
             webSocketClient.sendPlayerReady();
             if (this.config.gameMode === GameMode.TWO_PLAYER_REMOTE || this.config.gameMode === GameMode.TOURNAMENT_REMOTE)
                 uiManager.updateLoadingText();
-
         } catch (error) {
-            Logger.error('Error initializing game', 'Game', error);
             await this.dispose();
-            throw error;
+            Logger.errorAndThrow('Error initializing game', 'Game', error);
         }
     }
 
@@ -264,16 +248,6 @@ export class Game {
         scene.createDefaultEnvironment({ createGround: false, createSkybox: false });
         scene.clearColor = new Color4(0, 0, 0, 1);
         return scene;
-    }
-
-    // Setup window resize handler
-    private setupResizeHandler(): void {
-        this.resizeHandler = () => {
-            if (!this.isDisposed && this.engine) {
-                this.engine.resize();
-            }
-        };
-        window.addEventListener("resize", this.resizeHandler);
     }
 
     private setupGlobalKeyboardEvents(): void {
@@ -431,12 +405,9 @@ export class Game {
             if (!this.isRunning || this.isDisposed) return;
         try {
             uiManager.setLoadingScreenVisible(false);
-            // Update input
             this.updateInput();
-            // Update 3D cameras if needed
-            const cameras = this.gameObjects?.cameras;
-            if (cameras && (this.config.viewMode === ViewMode.MODE_3D))
-                this.update3DCameras();
+            if (this.config.viewMode === ViewMode.MODE_3D)
+                this.renderManager?.update3DCameras();
         } catch (error) {
             Logger.errorAndThrow('Error in game loop', 'Game', error);
         }
@@ -490,10 +461,8 @@ export class Game {
             this.gameObjects.ball.rotation.x += 0.1;
             this.gameObjects.ball.rotation.y += 0.05;
 
-
             this.guiManager?.updateRally(state.ball.current_rally);
             this.audioManager?.updateMusicSpeed(state.ball.current_rally);
-
 
             if (this.playerLeftScore < state.paddleLeft.score) {
                 this.playerLeftScore = state.paddleLeft.score
@@ -507,29 +476,6 @@ export class Game {
 
         } catch (error) {
             Logger.errorAndThrow('Error updating game objects', 'Game', error);
-        }
-    }
-
-    // Update 3D camera targets to follow players
-    private update3DCameras(): void {
-        if (this.isDisposed || !this.gameObjects?.cameras) return;
-
-        try {
-            const [camera1, camera2] = this.gameObjects.cameras;
-            const cameraFollowLimit = GAME_CONFIG.cameraFollowLimit;
-
-            if (camera1 &&this.gameObjects.players.left) {
-                const targetLeft = this.gameObjects.players.left.position.clone();
-                targetLeft.x = Math.max(-cameraFollowLimit, Math.min(cameraFollowLimit, targetLeft.x));
-                camera1.setTarget(Vector3.Lerp(camera1.getTarget(), targetLeft, GAME_CONFIG.followSpeed));
-            }
-            if (camera2 && this.gameObjects.players.right) {
-                const targetRight = this.gameObjects.players.right.position.clone();
-                targetRight.x = Math.max(-cameraFollowLimit, Math.min(cameraFollowLimit, targetRight.x));
-                camera2.setTarget(Vector3.Lerp(camera2.getTarget(), targetRight, GAME_CONFIG.followSpeed));
-            }
-        } catch (error) {
-            Logger.errorAndThrow('Error updating 3D cameras', 'Game', error);
         }
     }
 
@@ -560,11 +506,6 @@ export class Game {
             this.deviceSourceManager = null;
 
             this.controlledSides = [];
-
-            if (this.resizeHandler) {
-                window.removeEventListener("resize", this.resizeHandler);
-                this.resizeHandler = null;
-            }
 
             this.guiManager?.dispose();
             this.guiManager = null;
@@ -629,36 +570,12 @@ export class Game {
             this.controlledSides.push(side);
     }
 
-    private setActiveCameras(): void {
-        if (!this.gameObjects?.cameras || this.config.viewMode === ViewMode.MODE_2D)
-            return;
-
-        const cameras = this.gameObjects.cameras;
-        const guiCamera = this.gameObjects.guiCamera;
-
-        if (this.isLocalMultiplayer)
-            this.scene!.activeCameras = [cameras[0], cameras[1], guiCamera];
-        else {
-            let activeGameCamera;
-            if (this.controlledSides.includes(0))
-                activeGameCamera = cameras[0];
-            else if (this.controlledSides.includes(1))
-                activeGameCamera = cameras[1];
-            else
-                activeGameCamera = cameras[0];
-
-            if (activeGameCamera && guiCamera)
-                this.scene!.activeCameras = [activeGameCamera, guiCamera];
-        }
-
-    }
-
     private handlePlayerAssignment(leftPlayerName: string, rightPlayerName: string): void {
         this.guiManager?.updatePlayerNames(leftPlayerName, rightPlayerName);
         this.controlledSides = []
         this.assignPlayerSide(leftPlayerName, 0);
         this.assignPlayerSide(rightPlayerName, 1);
-        this.setActiveCameras();
+        this.renderManager?.updateActiveCameras(this.config.viewMode, this.controlledSides, this.isLocalMultiplayer);
 
         const leftPlayerControlled = this.controlledSides.includes(0);
         const rightPlayerControlled = this.controlledSides.includes(1);
@@ -667,7 +584,6 @@ export class Game {
         console.log(`Left=${leftPlayerName}, Right=${rightPlayerName}, Controlled sides: [${this.controlledSides}]`);
     }
 
-    // Update input state - call this in render loop
     private updateInput(): void {
         if (this.isDisposed || !this.deviceSourceManager || !this.gameObjects) return;
         try {

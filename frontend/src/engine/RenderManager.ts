@@ -1,19 +1,13 @@
-import { Engine, Scene} from "@babylonjs/core";
+import { Engine, Scene, Vector3} from "@babylonjs/core";
 import { Logger } from '../utils/LogManager.js';
 import { GUIManager } from './GuiManager.js';
 import { ViewMode } from '../shared/constants.js';
 import { AnimationManager } from "./AnimationManager.js";
-
+import { GameObjects } from "../shared/types.js";
+import { GAME_CONFIG } from '../shared/gameConfig.js';
 
 /**
  * Manages the rendering and frame rate control
- * 
- * Responsibilities:
- * - Render loop management (start/stop)
- * - Frame rate limiting and timing
- * - FPS calculation and reporting
- * - Scene rendering coordination
- * - Render performance monitoring
  */
 export class RenderManager {
     isRenderingActive: boolean = false;
@@ -21,8 +15,10 @@ export class RenderManager {
     private fpsLimit: number = 60;
     private isInitialized: boolean = false;
     private camerasAnimation: any[] = [];
+    private resizeHandler: (() => void) | null = null;
 
-    constructor(private engine: Engine, private scene: Scene, private guiManager: GUIManager, private animationManager: AnimationManager) {
+    constructor(private engine: Engine, private scene: Scene, private guiManager: GUIManager, private animationManager: AnimationManager, private gameObjects: GameObjects) {
+        this.attachResizeHandler();
         this.isInitialized = true;
     }
 
@@ -43,18 +39,15 @@ export class RenderManager {
 
             const currentTime = performance.now();
             const deltaTime = currentTime - this.lastFrameTime;
-            
-            // Frame rate limiting
+
             if (deltaTime < (1000 / this.fpsLimit)) return;
 
             try {
                 // Render the scene
                 if (this.scene && this.scene.activeCamera)
                     this.scene.render();
-
                 // Update FPS display
                 this.updateFPSDisplay(deltaTime);
-
                 this.lastFrameTime = currentTime;
             } catch (error) {
                 Logger.error('Error in render loop', 'RenderManager', error);
@@ -74,6 +67,25 @@ export class RenderManager {
         //         this.updateFPSDisplay(deltaTime);
         //         this.lastFrameTime = currentTime;
         // });
+    }
+
+    updateActiveCameras(viewMode: ViewMode, controlledSides: number[], isLocalMultiplayer: boolean): void {
+        if (!this.scene || !this.gameObjects?.cameras || viewMode === ViewMode.MODE_2D) return;
+
+        const cameras = this.gameObjects.cameras;
+        const guiCamera = this.gameObjects.guiCamera;
+
+        if (isLocalMultiplayer) {
+            this.scene.activeCameras = [cameras[0], cameras[1], guiCamera];
+            return;
+        }
+
+        let activeGameCamera = cameras[0];
+        if (controlledSides.includes(0)) activeGameCamera = cameras[0];
+        else if (controlledSides.includes(1)) activeGameCamera = cameras[1];
+
+        if (activeGameCamera && guiCamera)
+            this.scene.activeCameras = [activeGameCamera, guiCamera];
     }
 
     // Stop the render loop
@@ -119,6 +131,47 @@ export class RenderManager {
         this.camerasAnimation = [];
     }
 
+    // Update 3D camera targets to follow players
+    update3DCameras(): void {
+        if (!this.isInitialized || !this.gameObjects?.cameras) return;
+
+        try {
+            const [camera1, camera2] = this.gameObjects.cameras;
+            const cameraFollowLimit = GAME_CONFIG.cameraFollowLimit;
+
+            if (camera1 &&this.gameObjects.players.left) {
+                const targetLeft = this.gameObjects.players.left.position.clone();
+                targetLeft.x = Math.max(-cameraFollowLimit, Math.min(cameraFollowLimit, targetLeft.x));
+                camera1.setTarget(Vector3.Lerp(camera1.getTarget(), targetLeft, GAME_CONFIG.followSpeed));
+            }
+            if (camera2 && this.gameObjects.players.right) {
+                const targetRight = this.gameObjects.players.right.position.clone();
+                targetRight.x = Math.max(-cameraFollowLimit, Math.min(cameraFollowLimit, targetRight.x));
+                camera2.setTarget(Vector3.Lerp(camera2.getTarget(), targetRight, GAME_CONFIG.followSpeed));
+            }
+        } catch (error) {
+            Logger.errorAndThrow('Error updating 3D cameras', 'Game', error);
+        }
+    }
+
+    attachResizeHandler(): void {
+        if (this.resizeHandler) return;
+        this.resizeHandler = () => {
+            if (this.engine && !this.engine.isDisposed)
+                this.engine.resize();
+        };
+        window.addEventListener("resize", this.resizeHandler);
+    }
+
+    private detachResizeHandler(): void {
+        if (this.resizeHandler) {
+            window.removeEventListener("resize", this.resizeHandler);
+            this.resizeHandler = null;
+        }
+    }
+
+
+
     // Clean up render manager resources
     dispose(): void {
         if (!this.isInitialized) return;
@@ -126,6 +179,7 @@ export class RenderManager {
         // Stop rendering if active
         this.stopRendering();
         this.stopCameraAnimation();
+        this.detachResizeHandler();
 
         this.isInitialized = false;
 
