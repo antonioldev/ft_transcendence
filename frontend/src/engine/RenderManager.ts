@@ -17,12 +17,19 @@ export class RenderManager {
     private camerasAnimation: any[] = [];
     private resizeHandler: (() => void) | null = null;
 
-    constructor(private engine: Engine, private scene: Scene, private guiManager: GUIManager, private animationManager: AnimationManager, private gameObjects: GameObjects) {
+// ====================            CONSTRUCTOR               ====================
+    constructor(
+        private engine: Engine,
+        private scene: Scene,
+        private guiManager: GUIManager,
+        private animationManager: AnimationManager,
+        private gameObjects: GameObjects) {
+
         this.attachResizeHandler();
         this.isInitialized = true;
     }
 
-    // Start the render loop
+// ====================            RENDER LOOP               ====================
     startRendering(): void {
         if (!this.isInitialized || this.isRunning || !this.engine || !this.scene)
             return;
@@ -64,6 +71,23 @@ export class RenderManager {
         // });
     }
 
+    stopRendering(): void {
+        if (!this.isRunning) return;
+
+        this.isRunning = false;
+        if (this.engine)
+            this.engine.stopRenderLoop();
+
+    }
+
+    private updateFPSDisplay(deltaTime: number): void {
+        if (this.guiManager && this.guiManager.isInitialized) {
+            const fps = 1000 / deltaTime;
+            this.guiManager.updateFPS(fps);
+        }
+    }
+
+// ====================            CAMERA MANAGEMENT         ====================
     updateActiveCameras(viewMode: ViewMode, controlledSides: number[], isLocalMultiplayer: boolean): void {
         if (!this.scene || !this.gameObjects?.cameras || viewMode === ViewMode.MODE_2D) return;
 
@@ -81,24 +105,6 @@ export class RenderManager {
 
         if (activeGameCamera && guiCamera)
             this.scene.activeCameras = [activeGameCamera, guiCamera];
-    }
-
-    // Stop the render loop
-    stopRendering(): void {
-        if (!this.isRunning) return;
-
-        this.isRunning = false;
-        if (this.engine)
-            this.engine.stopRenderLoop();
-
-    }
-
-    // Update the FPS display through the GUI manager
-    private updateFPSDisplay(deltaTime: number): void {
-        if (this.guiManager && this.guiManager.isInitialized) {
-            const fps = 1000 / deltaTime;
-            this.guiManager.updateFPS(fps);
-        }
     }
 
     startCameraAnimation(cameras: any, viewMode: ViewMode, controlledSides: number[] = [], isLocalMultiplayer: boolean = false) {
@@ -149,6 +155,7 @@ export class RenderManager {
         }
     }
 
+// ====================            RESIZE HANDLING           ====================
     attachResizeHandler(): void {
         if (this.resizeHandler) return;
         this.resizeHandler = () => {
@@ -165,9 +172,7 @@ export class RenderManager {
         }
     }
 
-
-
-    // Clean up render manager resources
+// ====================            CLEANUP                   ====================
     dispose(): void {
         if (!this.isInitialized) return;
 
