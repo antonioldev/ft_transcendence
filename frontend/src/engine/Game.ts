@@ -270,7 +270,6 @@ export class Game {
         this.controlledSides = []
         this.stopGameLoop();
         this.dispose();
-        console.error("endSessiomn");
         this.resetToMenu();
 
     }

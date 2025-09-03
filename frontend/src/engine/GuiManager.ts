@@ -4,7 +4,7 @@ import { Logger } from '../utils/LogManager.js';
 import { GameConfig } from './GameConfig.js';
 import { GameMode, ViewMode } from '../shared/constants.js';
 import { getCurrentTranslation } from '../translations/translations.js';
-import { spawnFireworksInFrontOfCameras, FINAL_FIREWORKS, PARTIAL_FIREWORKS, spawnGUISparkles } from './scene/fireworks.js';
+import { spawnFireworksInFrontOfCameras, FINAL_FIREWORKS, spawnGUISparkles } from './scene/fireworks.js';
 import { TextBlockOptions } from './utils.js';
 import { AnimationManager, Motion } from "./AnimationManager.js";
 import { AudioManager } from "./AudioManager.js";
