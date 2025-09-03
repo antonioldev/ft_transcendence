@@ -7,7 +7,10 @@ import { GameObjects } from "../shared/types.js";
 import { GAME_CONFIG } from '../shared/gameConfig.js';
 
 /**
- * Manages the rendering and frame rate control
+ * The RenderManager class is responsible for managing the rendering loop,
+ * camera updates, and screen resizing. It ensures smooth rendering of the
+ * game scene, handles camera animations, and updates the active cameras
+ * based on the game state and player controls.
  */
 export class RenderManager {
     private isInitialized: boolean = false;

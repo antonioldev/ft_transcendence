@@ -1,6 +1,10 @@
 import { Scene, Sound } from "@babylonjs/core";
 import { Logger } from '../utils/LogManager.js';
 
+/**
+ * Manages audio playback for the game, including background music, sound effects,
+ * volume control, and dynamic adjustments based on game events.
+ */
 export class AudioManager {
     private gameMusic: Sound | null = null;
     private isInitialized: boolean = false;

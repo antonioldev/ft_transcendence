@@ -17,12 +17,12 @@ type FloatProp =
 export const Motion = {
     fps: 60,
     F: {
-        xFast: 8,   // ~133ms
-        fast: 12,   // ~200ms
-        base: 16,   // ~266ms
-        slow: 24,   // ~400ms
-        xSlow: 60,  // ~1s
-        breath: 120 // ~2s
+        xFast: 8,
+        fast: 12,
+        base: 16,
+        slow: 24,
+        xSlow: 60,  // 1seconds
+        breath: 120
     },
     ease: {
         sine: () => new SineEase(),
@@ -31,6 +31,10 @@ export const Motion = {
     }
 };
 
+/**
+ * Manages animations for UI controls and camera movements, providing utility methods
+ * for creating and playing various types of animations with customizable properties.
+ */
 export class AnimationManager {
     constructor(private scene: Scene) {}
 

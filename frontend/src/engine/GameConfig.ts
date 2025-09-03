@@ -15,9 +15,8 @@ export interface GameConfig {
     controls: InputConfig;
 }
 
-// Factory for creating game configurations
+// Class for creating a complete game configuration
 export class GameConfigFactory {
-    // Creates a complete game configuration
     static createConfig(
         viewMode: ViewMode, 
         gameMode: GameMode, 

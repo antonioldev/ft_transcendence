@@ -304,7 +304,6 @@ export class AuthManager {
         try {
             wsClient.loginUser(user);
         } catch (error) {
-            Logger.errorAndThrow('Error sending login request', 'AuthManager', error);
             this.authState = AuthState.LOGGED_FAILED;
             alert('Loggin failed due to connection error.');  
         }

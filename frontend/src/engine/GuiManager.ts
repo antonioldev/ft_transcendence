@@ -10,7 +10,7 @@ import { AnimationManager, Motion } from "./AnimationManager.js";
 import { AudioManager } from "./AudioManager.js";
 
 /**
- * Manages all GUI elements for the game including HUD, scores, FPS display, rally and animations
+ * Manages all GUI elements for the game
  */
 export class GUIManager {
     private readonly H_CENTER = Control.HORIZONTAL_ALIGNMENT_CENTER;
@@ -48,7 +48,6 @@ export class GUIManager {
 
     constructor(private scene: Scene, config: GameConfig, private animationManager: AnimationManager, audioManager: AudioManager) {
         try {
-            // Create the main GUI texture
             this.advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI("UI", true, this.scene);
             this.advancedTexture!.layer!.layerMask = 0x20000000;
 

@@ -18,15 +18,10 @@ import { GameConfigFactory } from './GameConfig.js';
 import { AudioManager } from './AudioManager.js';
 
 /**
- * Main Game class that handles everything for running one game instance.
- * 
- * Responsibilities:
- * - Babylon.js engine/scene creation and management
- * - Render loop control
- * - Game object updates from network state
- * - FPS display
- * - Input and network coordination
- * - Complete game session lifecycle
+ * The Game class serves as the core of the game engine, managing the initialization,
+ * state, and lifecycle of the game. It handles rendering, input, audio, and communication
+ * with the server, as well as coordinating various game components such as scenes,
+ * animations, and GUI elements.
  */
 export class Game {
     private static currentInstance: Game | null = null;
