@@ -8,24 +8,11 @@ import { getCurrentTranslation } from '../translations/translations.js';
 class UIManager {
 	private static instance: UIManager;
 
-	static getInstance(): UIManager {
-		if (!UIManager.instance)
-			UIManager.instance = new UIManager()
-		return UIManager.instance;
-	}
-
-	// ========================================
-	// STYLE APPLICATION UTILITIES
-	// ========================================
-	private applyStyles(element: HTMLElement, styles: Record<string, any>): void {
-		Object.assign(element.style, styles);
-	}
-
-	private applyStylesToAll(selector: string, styles: Record<string, any>): void {
-		document.querySelectorAll(selector).forEach((element) => {
-			this.applyStyles(element as HTMLElement, styles);
-		});
-	}
+    static getInstance(): UIManager {
+        if (!UIManager.instance)
+            UIManager.instance = new UIManager()
+        return UIManager.instance;
+    }
 
     // ========================================
     // INITIALIZATION
@@ -106,31 +93,59 @@ class UIManager {
     //     }
     // }
 
-	// ========================================
-	// SCREEN & LAYOUT MANAGEMENT
-	// ========================================
-	showScreen(screenId: string): void {
-		this.applyStylesToAll('.screen', { display: 'none' });
-		const screen = document.getElementById(screenId);
-		if (screen) {
-			screen.style.display = screenId === 'main-menu' ? 'block' : 'flex';
-		}
-	}
+    // ========================================
+    // SCREEN & LAYOUT MANAGEMENT
+    // ========================================
+    showScreen(screenId: string): void {
+        
+        // Hide all main screens/overlays
+        const screensToHide = [
+            'main-menu',
+            'login-modal', 
+            'register-modal',
+            'game-mode-overlay',
+            'player-setup-overlay',
+            'game-3d',
+            'stats-dashboard'
+        ];
+        
+        screensToHide.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.style.display = 'none';
+            }
+        });
+        
+        const screen = document.getElementById(screenId);
+        if (screen) {
+            const displayValue = screenId === 'main-menu' ? 'block' : 'flex';
+            console.log(`Setting display to: ${displayValue}`);
+            screen.style.display = displayValue;
+        } else {
+            console.error(`Screen element not found: ${screenId}`);
+        }
+    }
 
-	// showSetupForm(formType: string): void {
-	// 	this.applyStylesToAll('.setup-form', { display: 'none' });
-	// 	const targetForm = document.getElementById(`${formType}-setup`);
-	// 	if (targetForm) {
-	// 		targetForm.style.display = 'block';
-	// 	}
-	// }
-	showSetupForm(formId: string) {
-		const all = ['player-setup' /* old: 'solo-setup','two-players-setup','tournament-setup' */];
-		for (const id of all) {
-			const form = document.getElementById(id);
-			if (form) form.style.display = (id === formId) ? '' : 'none';
-		}
-	}
+    showSetupForm(formType: string): void {
+        // Hide all setup forms
+        const setupForms = [
+            'solo-setup',
+            'two-players-setup', 
+            'tournament-setup'
+        ];
+        
+        setupForms.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.style.display = 'none';
+            }
+        });
+        
+        const targetForm = document.getElementById(`${formType}-setup`);
+        if (targetForm) {
+            targetForm.style.display = 'block';
+        }
+    }
 
 	// ========================================
 	// AUTHENTICATION UI

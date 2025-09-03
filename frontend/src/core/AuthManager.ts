@@ -567,27 +567,30 @@ export class AuthManager {
 			}, 500);
 		});
 
-		wsClient.registerCallback(WebSocketEvent.REGISTRATION_SUCCESS, (msg: string) => {
-			this.authState = AuthState.LOGGED_IN;
-			uiManager.clearForm(this.registrationFields);
-			alert(msg || 'Registration successful! You can now login.');
-			setTimeout(() => {
-				appStateManager.navigateTo(AppState.LOGIN);
-			}, 500);
-		});
+        wsClient.registerCallback(WebSocketEvent.REGISTRATION_SUCCESS, (msg: string) => {
+            this.authState = AuthState.LOGGED_IN;
+            this.currentUser = { username };
+            uiManager.clearForm(this.registrationFields);
+            uiManager.showUserInfo(username);
+            alert(msg || 'Registration successful! Welcome to the game!');
+            setTimeout(() => {
+                appStateManager.navigateTo(AppState.GAME_MODE);
+            }, 500);
+        });
 
-		// Apptempt to register new user
-		try {
-			wsClient.registerNewUser(user);
-			this.authState = AuthState.LOGGED_IN;
-		} catch (error) {
-			Logger.errorAndThrow('Error sending registration request', 'AuthManager', error);
-			this.authState = AuthState.LOGGED_FAILED;
-			uiManager.clearForm(this.registrationFields);
-			alert('Registration failed due to connection error.');  
-		}
-		
-	}
+        // Apptempt to register new user
+        try {
+            wsClient.registerNewUser(user);
+            Logger.info('Register attempt', 'AuthManager', { username, email });
+            // Keep the state as GUEST until registration confirmation
+        } catch (error) {
+            Logger.error('Error sending registration request', 'AuthManager', error);
+            this.authState = AuthState.LOGGED_FAILED;
+            uiManager.clearForm(this.registrationFields);
+            alert('Registration failed due to connection error.');  
+        }
+        
+    }
 
 	public setupGoogleLoginButton(): void {
 		this.prepareGoogleLogin();
