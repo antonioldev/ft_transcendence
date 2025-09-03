@@ -345,6 +345,7 @@ export class GUIManager {
         if (!this.isReady) return;
         this.player1Label.text = player1Name;
         this.player2Label.text = player2Name;
+        this.hudGrid.isVisible = true;
     }
 
     async showWinner(winner: string): Promise<void> {
@@ -381,11 +382,11 @@ export class GUIManager {
         const scene = this.scene;
         this.partialWinnerName.text = winner;
         this.partialEndGameOverlay.isVisible = true;
-        this.partialWinnerLabel.isVisible = true;
-        this.partialWinnerName.isVisible = true;
+        // this.partialWinnerLabel.isVisible = true;
+        // this.partialWinnerName.isVisible = true;
         this.partialEndGameOverlay.isPointerBlocker = true;
 
-        await this.animationManager?.slideInY(this.partialWinnerLabel, -50, Motion.F.base);
+        await this.animationManager?.slideInY(this.partialWinnerLabel, -200, Motion.F.base);
         await this.animationManager?.slideInY(this.partialWinnerName, 50, Motion.F.slow);
         this.animationManager?.breathe(this.partialWinnerName, Motion.F.breath);
 
