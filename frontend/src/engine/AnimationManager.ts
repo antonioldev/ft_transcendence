@@ -73,12 +73,12 @@ export class AnimationManager {
 
     fadeIn(target: Control, frames = Motion.F.base) {
         target.alpha = 0;
-        target.animations = [ this.createFloat("alpha", 0, 0.85, frames, false, Motion.ease.quadOut()) ];
+        target.animations = [ this.createFloat("alpha", 0, 1, frames, false, Motion.ease.quadOut()) ];
         return this.play(target, frames, false);
     }
 
     fadeOut(target: Control, frames = Motion.F.fast) {
-        target.animations = [ this.createFloat("alpha", 0.85, 0, frames, false, Motion.ease.quadOut()) ];
+        target.animations = [ this.createFloat("alpha", 1, 0, frames, false, Motion.ease.quadOut()) ];
         return this.play(target, frames, false);
     }
 

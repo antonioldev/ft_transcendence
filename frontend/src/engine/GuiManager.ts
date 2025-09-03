@@ -141,7 +141,7 @@ export class GUIManager {
     private createPlayerControls(config: GameConfig, player: number): TextBlock {
         const pControls = this.createTextBlock(`PlayerControls_p${player}`, {
             text: this.getControlsText(config.viewMode, player),
-            lineSpacing: "10px", color: "rgba(0, 0, 0, 0)", fontSize: 30
+            lineSpacing: "10px", color: "rgba(0, 0, 0, 0.55)", fontSize: 30
         });
         pControls.name = `PlayerControls_p${player}`;
         return pControls;
@@ -152,7 +152,7 @@ export class GUIManager {
 
         const t = getCurrentTranslation();
         this.pauseOverlay = this.createRect("pauseOverlay", "100%", 11, this.V_CENTER ,"rgba(2, 2, 2, 0.98)");
-        this.pauseOverlay.color = "#FFFFFF";
+        this.pauseOverlay.color = "rgba(255, 255, 255, 1)";
         this.pauseOverlay.isVisible = false;
         this.advancedTexture.addControl(this.pauseOverlay);
 
@@ -208,7 +208,8 @@ export class GUIManager {
     }
 
     private createPartialEndGameOverlay(): void {
-        this.partialEndGameOverlay = this.createRect("partialWinnerLayer", "100%", 8, this.V_BOTTOM, "#000000");
+        this.partialEndGameOverlay = this.createRect("partialWinnerLayer", "100%", 8, this.V_BOTTOM, "rgba(0, 0, 0, 1)");
+        this.partialEndGameOverlay.background = "rgba(0, 0, 0, 1)";
         this.partialEndGameOverlay.isVisible = false;
         this.advancedTexture!.addControl(this.partialEndGameOverlay);
 
@@ -222,18 +223,18 @@ export class GUIManager {
 
         const t = getCurrentTranslation();
         this.partialWinnerLabel = this.createTextBlock("winnerLabel", {
-            text: t.winner, outlineWidth: 2, fontSize: 64, zIndex: 10, alpha: 0
+            text: t.winner, outlineWidth: 2, fontSize: 80, zIndex: 10, alpha: 0
         });
         centerColumn.addControl(this.partialWinnerLabel, 0, 0);
 
         this.partialWinnerName = this.createTextBlock("winnerName", {
-            text: "", color: "#FFD700", outlineWidth: 2, outlineColor: "#ffffffee",
-            fontSize: 100, fontWeight: "bold", zIndex: 10, alpha: 0
+            text: "", color: "rgb(255, 215, 0)", outlineWidth: 2, outlineColor: "rgb(255, 255, 255)",
+            fontSize: 110, fontWeight: "bold", zIndex: 10, alpha: 0, applyGlowEffects: true
         });
         centerColumn.addControl(this.partialWinnerName, 1, 0);
 
         this.continueText = this.createTextBlock("continue_text", {
-            text: t.continue, color: "#ffffffff", outlineWidth: 2, outlineColor: "#FFD700", zIndex: 10,
+            text: t.continue, color: "rgb(255, 255, 255)", outlineWidth: 2, outlineColor: "rgb(255, 215, 0)", zIndex: 10,
         });
         centerColumn.addControl(this.continueText, 2, 0);
     }
@@ -244,8 +245,11 @@ export class GUIManager {
         this.endGameOverlay.isVisible = false;
         this.endGameOverlay.addColumnDefinition(1.0);
 
+        // this.endGameWinnerText = this.createTextBlock("endGameWinnerText", {
+        //     fontSize: 72, color: "#rgb(255, 215, 0)", applyRichEffects: true
+        // });
         this.endGameWinnerText = this.createTextBlock("endGameWinnerText", {
-            fontSize: 72, color: "#FFD700", applyRichEffects: true
+            fontSize: 72, applyRichEffects: true
         });
         this.endGameOverlay.addControl(this.endGameWinnerText, 0, 0);
         this.advancedTexture!.addControl(this.endGameOverlay);
@@ -340,6 +344,7 @@ export class GUIManager {
         if (!this.isReady) return;
         this.hudGrid.isVisible = false;
         this.endGameWinnerText.text = `🏆 ${winner} WINS! 🏆`;
+        this.endGameWinnerText.color = "rgba(255, 255, 255, 1)";
         this.endGameOverlay.isVisible = true;
         this.animationManager?.pop(this.endGameWinnerText, Motion.F.fast, 0.9);
         const scene = this.scene;
@@ -367,7 +372,7 @@ export class GUIManager {
     async showPartialWinner(winner: string): Promise<void> {
         if (!this.isReady || !this.advancedTexture) return;
 
-        const scene = this.scene;
+        // const scene = this.scene;
         this.partialWinnerName.text = winner;
         this.partialEndGameOverlay.isVisible = true;
         this.partialWinnerLabel.isVisible = true;
@@ -377,11 +382,12 @@ export class GUIManager {
         spawnGUISparkles(this.advancedTexture, this.animationManager);
 
         await this.animationManager?.slideInY(this.partialWinnerLabel, -200, Motion.F.base);
+        await new Promise(r => setTimeout(r, 60));
         await this.animationManager?.slideInY(this.partialWinnerName, 50, Motion.F.slow);
         this.animationManager?.breathe(this.partialWinnerName, Motion.F.breath);
 
-        const cams = scene.activeCameras?.length ? scene.activeCameras : scene.activeCamera;
-        spawnFireworksInFrontOfCameras(scene, PARTIAL_FIREWORKS, cams);
+        // const cams = scene.activeCameras?.length ? scene.activeCameras : scene.activeCamera;
+        // spawnFireworksInFrontOfCameras(scene, PARTIAL_FIREWORKS, cams);
 
         await new Promise(r => setTimeout(r, 180));
     }
@@ -468,14 +474,19 @@ export class GUIManager {
         if (options.lineSpacing) textBlock.lineSpacing = options.lineSpacing;
         if (options.resizeToFit !== undefined) textBlock.resizeToFit = options.resizeToFit;
 
+        if (options.applyGlowEffects) {
+            textBlock.shadowBlur = 20;
+            textBlock.shadowColor = "rgba(255, 215, 0, 0.8)";
+        }
+
         if (options.applyRichEffects) {
-            textBlock.shadowOffsetX = 3;
-            textBlock.shadowOffsetY = 3;
+            textBlock.shadowOffsetX = 1;
+            textBlock.shadowOffsetY = 1;
             textBlock.shadowBlur = 8;
-            textBlock.shadowColor = "rgba(255, 107, 107, 0.5)";
+            textBlock.shadowColor = "rgba(255, 217, 0, 0.80)";
             textBlock.fontWeight = "bold";
             textBlock.outlineWidth = options.outlineWidth || 2;
-            textBlock.outlineColor = options.outlineColor || "black";
+            textBlock.outlineColor = options.outlineColor || "rgba(0, 0, 0, 0.66)";
         }
         return textBlock;
     }
@@ -485,8 +496,8 @@ export class GUIManager {
         const p1 = this.advancedTexture?.getControlByName("PlayerControls_p1") as TextBlock | null;
         const p2 = this.advancedTexture?.getControlByName("PlayerControls_p2") as TextBlock | null;
 
-        if (p1) p1.color = player1 ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0)";
-        if (p2) p2.color = player2 ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0)";
+        if (p1) p1.color = player1 ? "rgba(255, 255, 255, 0.7)" : "rgba(0, 0, 0, 0)";
+        if (p2) p2.color = player2 ? "rgba(255, 255, 255, 0.7)" : "rgba(0, 0, 0, 0)";
 
     }
     private getControlsText(viewMode: ViewMode, player: number): string {

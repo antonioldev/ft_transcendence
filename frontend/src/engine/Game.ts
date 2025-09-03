@@ -270,6 +270,7 @@ export class Game {
         this.controlledSides = []
         this.stopGameLoop();
         this.dispose();
+        console.error("endSessiomn");
         this.resetToMenu();
 
     }
@@ -420,6 +421,7 @@ export class Game {
             Logger.error('Error during request exit', 'Game', error);
             this.stopGameLoop();
             this.dispose();
+            console.error("request EXIT");
             this.resetToMenu();
         }
     }

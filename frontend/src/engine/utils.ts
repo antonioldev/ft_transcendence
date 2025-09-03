@@ -84,6 +84,7 @@ export interface TextBlockOptions {
     fontWeight?: string;
     width?: string;
     height?: string;
+    applyGlowEffects?:boolean;
     applyRichEffects?: boolean;
     applyGradient?: boolean;
     outlineWidth?: number;
