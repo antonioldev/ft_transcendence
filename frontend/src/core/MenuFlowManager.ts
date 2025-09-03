@@ -94,12 +94,16 @@ export class MenuFlowManager {
         });
 
         const backButton = requireElementById(EL.BUTTONS.MODE_BACK);
-        backButton.addEventListener('click', () => this.handleModeBackButton());
+        console.log('Setting up mode back button:', backButton);
+        backButton.addEventListener('click', () => {
+            this.handleModeBackButton();
+        });
     }
     
     private handleModeBackButton(): void {
         this.selectedGameMode = null;
-        appStateManager.navigateTo(AppState.MAIN_MENU);;
+        console.log('Navigating to MAIN_MENU');
+        appStateManager.navigateTo(AppState.MAIN_MENU);
     }
 
     // ========================================

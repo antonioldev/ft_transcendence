@@ -498,10 +498,12 @@ export class AuthManager {
 
         wsClient.registerCallback(WebSocketEvent.REGISTRATION_SUCCESS, (msg: string) => {
             this.authState = AuthState.LOGGED_IN;
+            this.currentUser = { username };
             uiManager.clearForm(this.registrationFields);
-            alert(msg || 'Registration successful! You can now login.');
+            uiManager.showUserInfo(username);
+            alert(msg || 'Registration successful! Welcome to the game!');
             setTimeout(() => {
-                appStateManager.navigateTo(AppState.LOGIN);
+                appStateManager.navigateTo(AppState.GAME_MODE);
             }, 500);
         });
 
@@ -509,7 +511,7 @@ export class AuthManager {
         try {
             wsClient.registerNewUser(user);
             Logger.info('Register attempt', 'AuthManager', { username, email });
-            this.authState = AuthState.LOGGED_IN;
+            // Keep the state as GUEST until registration confirmation
         } catch (error) {
             Logger.error('Error sending registration request', 'AuthManager', error);
             this.authState = AuthState.LOGGED_FAILED;

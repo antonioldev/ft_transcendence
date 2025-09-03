@@ -14,19 +14,6 @@ class UIManager {
     }
 
     // ========================================
-    // STYLE APPLICATION UTILITIES
-    // ========================================
-    private applyStyles(element: HTMLElement, styles: Record<string, any>): void {
-        Object.assign(element.style, styles);
-    }
-
-    private applyStylesToAll(selector: string, styles: Record<string, any>): void {
-        document.querySelectorAll(selector).forEach((element) => {
-            this.applyStyles(element as HTMLElement, styles);
-        });
-    }
-
-    // ========================================
     // INITIALIZATION
     // ========================================
     // initializeStyles(): void {
@@ -109,15 +96,50 @@ class UIManager {
     // SCREEN & LAYOUT MANAGEMENT
     // ========================================
     showScreen(screenId: string): void {
-        this.applyStylesToAll('.screen', { display: 'none' });
+        
+        // Hide all main screens/overlays
+        const screensToHide = [
+            'main-menu',
+            'login-modal', 
+            'register-modal',
+            'game-mode-overlay',
+            'player-setup-overlay',
+            'game-3d',
+            'stats-dashboard'
+        ];
+        
+        screensToHide.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.style.display = 'none';
+            }
+        });
+        
         const screen = document.getElementById(screenId);
         if (screen) {
-            screen.style.display = screenId === 'main-menu' ? 'block' : 'flex';
+            const displayValue = screenId === 'main-menu' ? 'block' : 'flex';
+            console.log(`Setting display to: ${displayValue}`);
+            screen.style.display = displayValue;
+        } else {
+            console.error(`Screen element not found: ${screenId}`);
         }
     }
 
     showSetupForm(formType: string): void {
-        this.applyStylesToAll('.setup-form', { display: 'none' });
+        // Hide all setup forms
+        const setupForms = [
+            'solo-setup',
+            'two-players-setup', 
+            'tournament-setup'
+        ];
+        
+        setupForms.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.style.display = 'none';
+            }
+        });
+        
         const targetForm = document.getElementById(`${formType}-setup`);
         if (targetForm) {
             targetForm.style.display = 'block';
