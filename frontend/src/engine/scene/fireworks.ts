@@ -1,4 +1,6 @@
 import { ParticleSystem, Texture, Color4, Vector3, Scene} from "@babylonjs/core";
+import { Animation} from "@babylonjs/core/Animations/animation";
+import { AdvancedDynamicTexture, Image} from "@babylonjs/gui";
 
 interface FireworkDetails {
     bursts: number;
@@ -16,7 +18,7 @@ interface FireworkDetails {
     power: { min: number; max: number };
     gravityY: number;
     blendMode?: number;
-    colors: Array<{ c1: Color4; c2: Color4 }>;
+    colors: Array<{ c: Color4; }>;
   };
   stopAfterMs: number;
   disposeDelayMs: number;
@@ -42,11 +44,11 @@ export const FINAL_FIREWORKS: FireworkDetails = {
     gravityY: -9.81,
     blendMode: ParticleSystem.BLENDMODE_ONEONE,
     colors: [
-      { c1: new Color4(1, 0.8, 0.2, 1), c2: new Color4(1, 0.8, 0.2, 1) },
-      { c1: new Color4(0.2, 1, 0.3, 1), c2: new Color4(0.2, 1, 0.3, 1) },
-      { c1: new Color4(0.3, 0.5, 1, 1), c2: new Color4(0.3, 0.5, 1, 1) },
-      { c1: new Color4(1, 0.3, 0.8, 1), c2: new Color4(1, 0.3, 0.8, 1) },
-      { c1: new Color4(0.8, 0.2, 1, 1), c2: new Color4(0.8, 0.2, 1, 1) },
+      { c: new Color4(1, 0.8, 0.2, 1) },
+      { c: new Color4(0.2, 1, 0.3, 1) },
+      { c: new Color4(0.3, 0.5, 1, 1) },
+      { c: new Color4(1, 0.3, 0.8, 1) },
+      { c: new Color4(0.8, 0.2, 1, 1) },
     ],
   },
   stopAfterMs: 2000,
@@ -72,13 +74,15 @@ export const PARTIAL_FIREWORKS: FireworkDetails = {
     power: { min: 4, max: 8 },
     gravityY: -6.0,
     blendMode: ParticleSystem.BLENDMODE_ONEONE,
-    colors: [
-      { c1: new Color4(1.0, 0.92, 0.5, 1.0), c2: new Color4(1.0, 1.0, 1.0, 1.0) },
-    ],
+    colors: [{ c: new Color4(1.0, 0.92, 0.5, 1.0) }],
   },
   stopAfterMs: 1200,
   disposeDelayMs: 2000,
 };
+
+const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
+const randomFromArray = <T>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
+const createDelayedAction = (action: () => void, delay: number) => setTimeout(action, delay);
 
 function chooseColorPair(profile: FireworkDetails) {
     const colors = profile.particle.colors;
@@ -97,8 +101,8 @@ function spawnOneExplosion(scene: Scene, pos: Vector3, profile: FireworkDetails)
     ps.emitter = pos;
 
     const pair = chooseColorPair(profile);
-    ps.color1 = pair.c1;
-    ps.color2 = pair.c2;
+    ps.color1 = pair.c;
+    ps.color2 = pair.c;
     ps.colorDead = new Color4(0, 0, 0, 0);
 
     ps.minSize = p.size.min;
@@ -120,15 +124,11 @@ function spawnOneExplosion(scene: Scene, pos: Vector3, profile: FireworkDetails)
     }, profile.stopAfterMs);
 }
 
-function rand(min: number, max: number): number {
-    return Math.random() * (max - min) + min;
-}
-
 function spawnBurstsForCamera(scene: Scene, camera: any, profile: FireworkDetails): void {
   for (let i = 0; i < profile.bursts; i++) {
-    const dist   = rand(profile.distance.min, profile.distance.max);
+    const dist = randomInRange(profile.distance.min, profile.distance.max);
     const spread = profile.spread;
-    const lift   = rand(profile.liftY.min, profile.liftY.max);
+    const lift = randomInRange(profile.liftY.min, profile.liftY.max);
 
     const forward = camera.getForwardRay ? camera.getForwardRay().direction : new Vector3(0, 0, 1);
     const x = camera.position.x + forward.x * dist + (Math.random() - 0.5) * spread;
@@ -136,8 +136,8 @@ function spawnBurstsForCamera(scene: Scene, camera: any, profile: FireworkDetail
     const z = camera.position.z + forward.z * dist + (Math.random() - 0.5) * spread;
     const pos = new Vector3(x, y, z);
 
-    const delay = rand(profile.delay.min, profile.delay.max);
-    setTimeout(() => spawnOneExplosion(scene, pos, profile), i * delay);
+    const delay = randomInRange(profile.delay.min, profile.delay.max);
+    createDelayedAction(() => spawnOneExplosion(scene, pos, profile), i * delay);
   }
 }
 
@@ -160,4 +160,101 @@ export function spawnFireworksInFrontOfCameras(
   cameras.forEach((cam) => spawnBurstsForCamera(scene, cam, profile));
 }
 
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+
+    export interface SparkleDetails {
+      count: number; //
+      duration: number;
+      size: { min: number; max: number };
+      colors: string[];
+      spread: { x: number; y: number };
+      zIndex?: number;
+    }
+
+    export const PARTIAL_GUI_SPARKLES: SparkleDetails = {
+      count: 48,
+      duration: 3000,
+      size: { min: 5, max: 40 },
+      colors: [
+        "#FFD700", // Gold
+        "#FFF8DC", // Cornsilk  
+        "#FFFFE0", // Light yellow
+        "#F0E68C", // Khaki
+        "#FFFFFF"  // White
+      ],
+      spread: { x: 80, y: 60 }
+    };
+
+    function createSparkleElement(config: SparkleDetails): Image {
+      const sparkle = new Image("sparkle", "assets/textures/particle/flare_transparent.png");
+      sparkle.stretch = Image.STRETCH_UNIFORM;
+
+      const size = randomInRange(config.size.min, config.size.max);
+      sparkle.widthInPixels = size;
+      sparkle.heightInPixels = size;
+
+      sparkle.color = randomFromArray(config.colors);
+
+      sparkle.left = `${randomInRange(-config.spread.x / 2, config.spread.x / 2)}%`;
+      sparkle.top = `${randomInRange(-config.spread.y / 2, config.spread.y / 2)}%`;
+
+      sparkle.alpha = 0;
+      sparkle.scaleX = 0;
+      sparkle.scaleY = 0;
+
+      sparkle.zIndex = Math.floor(randomInRange(7, 9));
+
+      return sparkle;
+    }
+
+
+    function animateSparkle(sparkle: Image, animationManager: any, delay: number, duration: number): void {
+      createDelayedAction(() => {
+        sparkle.animations = [
+          animationManager.createFloat("alpha", 0, 1, 8, false, animationManager.Motion?.ease.quadOut()),
+          animationManager.createFloat("scaleX", 0, 1, 8, false, animationManager.Motion?.ease.quadOut()),
+          animationManager.createFloat("scaleY", 0, 1, 8, false, animationManager.Motion?.ease.quadOut()),
+        ];
+
+        animationManager.play(sparkle, 8, false).then(() => {
+          const LOOP_CYCLE = Animation.ANIMATIONLOOPMODE_CYCLE;
+          sparkle.animations = [
+            animationManager.createFloat("alpha", 1, 0.3, 20, true, animationManager.Motion?.ease.sine(), LOOP_CYCLE),
+          ];
+          animationManager.play(sparkle, 20, true);
+
+          createDelayedAction(() => {
+            sparkle.animations = [
+              animationManager.createFloat("alpha", sparkle.alpha, 0, 12, false, animationManager.Motion?.ease.quadOut()),
+              animationManager.createFloat("scaleX", sparkle.scaleX, 0, 12, false, animationManager.Motion?.ease.quadOut()),
+              animationManager.createFloat("scaleY", sparkle.scaleY, 0, 12, false, animationManager.Motion?.ease.quadOut()),
+            ];
+            animationManager.play(sparkle, 12, false).then(() => {
+              sparkle.dispose();
+            });
+          }, Math.max(0, duration - 500));
+        });
+      }, delay);
+    }
+
+
+    // Public API - Add this function to your fireworks.ts
+    export function spawnGUISparkles(
+      advancedTexture: AdvancedDynamicTexture, 
+      animationManager: any
+    ): void {
+        const config = PARTIAL_GUI_SPARKLES;
+        for (let i = 0; i < config.count; i++) {
+        const sparkle = createSparkleElement(config);
+        advancedTexture.addControl(sparkle);
+        
+        // Stagger the sparkles
+        const delay = Math.random() * 800;
+        animateSparkle(sparkle, animationManager, delay, config.duration);
+        }
+    }
 

@@ -3,29 +3,33 @@ import { PlayerInfo, InputConfig } from '../shared/types.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
 import { EL } from '../ui/elements.js';
 import { authManager } from '../core/AuthManager.js';
-import { Logger } from '../utils/LogManager.js'
 
 // Complete configuration for starting a game
 export interface GameConfig {
     canvasId: string;
     viewMode: ViewMode;
     gameMode: GameMode;
+    isLocalMultiplayer: boolean;
+    isTournament:boolean;
     players: PlayerInfo[];
     controls: InputConfig;
 }
 
-// Factory for creating game configurations
+// Class for creating a complete game configuration
 export class GameConfigFactory {
-    // Creates a complete game configuration
     static createConfig(
         viewMode: ViewMode, 
         gameMode: GameMode, 
         players: PlayerInfo[]
     ): GameConfig {
+        const isLocalMultiplayer = ( gameMode === GameMode.TWO_PLAYER_LOCAL ||  gameMode === GameMode.TOURNAMENT_LOCAL );
+        const isTournament = ( gameMode === GameMode.TOURNAMENT_REMOTE ||  gameMode === GameMode.TOURNAMENT_LOCAL );
         return {
             canvasId: EL.GAME.CANVAS_3D,
             viewMode,
             gameMode,
+            isLocalMultiplayer,
+            isTournament,
             players,
             controls: viewMode === ViewMode.MODE_2D ? GAME_CONFIG.input2D : GAME_CONFIG.input3D
         };
@@ -67,7 +71,6 @@ export class GameConfigFactory {
             }
 
             default: {
-                Logger.warn('Unexpected game mode:', 'GameConfig');
                 return [{ id: 'Player 1', name: 'Player 1', isGuest: true }];
             }
         }
@@ -102,4 +105,13 @@ export class GameConfigFactory {
             isGuest: false
         }];
     }
+
+    static createWithAuthCheck(viewMode: ViewMode, gameMode: GameMode): GameConfig {
+        const players = authManager.isUserAuthenticated()
+            ? this.getAuthenticatedPlayer()
+            : this.getPlayersFromUI(gameMode);
+
+        return this.createConfig(viewMode, gameMode, players);
+    }
+
 }

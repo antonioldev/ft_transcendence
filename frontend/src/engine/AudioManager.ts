@@ -1,8 +1,11 @@
 import { Scene, Sound } from "@babylonjs/core";
 import { Logger } from '../utils/LogManager.js';
 
+/**
+ * Manages audio playback for the game, including background music, sound effects,
+ * volume control, and dynamic adjustments based on game events.
+ */
 export class AudioManager {
-    private scene: Scene | null = null;
     private gameMusic: Sound | null = null;
     private isInitialized: boolean = false;
     private basePlaybackRate: number = 1.0;
@@ -10,20 +13,24 @@ export class AudioManager {
     private maxRally: number = 50;
     private currentRally: number = 1;
 
+    private muted = false;
+    private volumes = {
+        music: 0.5,
+        countdown: 0.6,
+        paddle: 0.6,
+        score: 0.7,
+    };
+
     // Sound effects
     private countdownSound: Sound | null = null;
     private paddleHitSound: Sound | null = null;
     private scoreSound: Sound | null = null;
 
-    constructor(scene: Scene) {
-        this.scene = scene;
-        
+    constructor(private scene: Scene) {
     }
 
     async initialize(): Promise<void> {
         try {
-            if (!this.scene)
-                Logger.error('Scene required', 'BabylonAudioManager');
             this.gameMusic = new Sound(
                 "gameMusic",
                 "/assets/audio/bg/retro2.mp3",
@@ -32,7 +39,7 @@ export class AudioManager {
                 {
                     loop: true,
                     autoplay: false,
-                    volume: 0.5,
+                    volume: this.volumes.music,
                     playbackRate: this.basePlaybackRate
                 }
             );
@@ -45,7 +52,7 @@ export class AudioManager {
                 {
                     loop: false,
                     autoplay: false,
-                    volume: 0.6,
+                    volume: this.volumes.paddle,
                     playbackRate: this.basePlaybackRate
                 }
             );
@@ -58,7 +65,7 @@ export class AudioManager {
                 {
                     loop: false,
                     autoplay: false,
-                    volume: 0.6,
+                    volume: this.volumes.countdown,
                     playbackRate: this.basePlaybackRate
                 }
             );
@@ -71,21 +78,20 @@ export class AudioManager {
                 {
                     loop: false,
                     autoplay: false,
-                    volume: 0.7,
+                    volume: this.volumes.score,
                     playbackRate: this.basePlaybackRate
                 }
             );
 
             this.isInitialized = true;
         } catch (error) {
-            Logger.error('Error initializing Babylon audio', 'BabylonAudioManager', error);
+            Logger.errorAndThrow('Error initializing Babylon audio', 'BabylonAudioManager', error);
         }
     }
 
     // Start playing the game music
     startGameMusic(): void {
         if (!this.gameMusic || !this.isInitialized) {
-            Logger.warn('Game music not ready', 'BabylonAudioManager');
             return;
         }
 
@@ -93,7 +99,7 @@ export class AudioManager {
             if (this.gameMusic.isPlaying !== true )
                 this.gameMusic.play();
         } catch (error) {
-            Logger.error('Error starting game music', 'BabylonAudioManager', error);
+            Logger.errorAndThrow('Error starting game music', 'BabylonAudioManager', error);
         }
     }
 
@@ -146,9 +152,31 @@ export class AudioManager {
         this.countdownSound?.stop();
     }
 
-    dispose(): void {
-        Logger.info('Disposing audio manager...', 'BabylonAudioManager');
+    isMuted(): boolean {
+        return this.muted;
+    }
 
+    setMuted(m: boolean): void {
+        this.muted = m;
+        this.applyVolumes();
+    }
+
+    toggleMute(): boolean {
+        this.muted = !this.muted;
+        this.applyVolumes();
+        return this.muted;
+    }
+
+    private applyVolumes(): void {
+        const base = this.muted ? 0 : 1;
+
+        this.gameMusic?.setVolume(base * this.volumes.music);
+        this.countdownSound?.setVolume(base * this.volumes.countdown);
+        this.paddleHitSound?.setVolume(base * this.volumes.paddle);
+        this.scoreSound?.setVolume(base * this.volumes.score);
+    }
+
+    dispose(): void {
         try {
             this.gameMusic?.dispose();
             this.gameMusic = null;
@@ -162,10 +190,9 @@ export class AudioManager {
             this.scoreSound?.dispose();
             this.scoreSound = null;
 
-            this.scene = null;
             this.isInitialized = false;
 
-            Logger.info('Audio manager disposed successfully', 'BabylonAudioManager');
+            Logger.debug('Class disposed', 'BabylonAudioManager');
         } catch (error) {
             Logger.error('Error disposing audio manager', 'BabylonAudioManager', error);
         }

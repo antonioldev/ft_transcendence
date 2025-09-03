@@ -1,21 +1,23 @@
-import { AdvancedDynamicTexture, Control, Rectangle, TextBlock, Grid} from "@babylonjs/gui";
-import { Scene, KeyboardEventTypes, Animation, SineEase } from "@babylonjs/core";
+import { AdvancedDynamicTexture, Control, Rectangle, TextBlock, Grid, Image} from "@babylonjs/gui";
+import { Scene, KeyboardEventTypes} from "@babylonjs/core";
 import { Logger } from '../utils/LogManager.js';
 import { GameConfig } from './GameConfig.js';
 import { GameMode, ViewMode } from '../shared/constants.js';
 import { getCurrentTranslation } from '../translations/translations.js';
-import { spawnFireworksInFrontOfCameras, FINAL_FIREWORKS, PARTIAL_FIREWORKS } from './scene/fireworks.js';
+import { spawnFireworksInFrontOfCameras, FINAL_FIREWORKS, spawnGUISparkles } from './scene/fireworks.js';
 import { TextBlockOptions } from './utils.js';
+import { AnimationManager, Motion } from "./AnimationManager.js";
+import { AudioManager } from "./AudioManager.js";
 
 /**
- * Manages all GUI elements for the game including HUD, scores, FPS display, rally and animations
+ * Manages all GUI elements for the game
  */
 export class GUIManager {
     private readonly H_CENTER = Control.HORIZONTAL_ALIGNMENT_CENTER;
     private readonly V_CENTER = Control.VERTICAL_ALIGNMENT_CENTER;
     private readonly V_BOTTOM = Control.VERTICAL_ALIGNMENT_BOTTOM;
     private advancedTexture: AdvancedDynamicTexture | null = null;
-    isInitialized: boolean = false;
+    private isInitialized: boolean = false;
     private hudGrid!: Grid;
     private fpsText!: TextBlock;
     private score1Text!: TextBlock;
@@ -30,7 +32,6 @@ export class GUIManager {
     private endGameOverlay!: Grid;
     private endGameWinnerText!: TextBlock;
     private partialEndGameOverlay!: Rectangle;
-    private partialTransitionFill!: Rectangle;
     private partialWinnerLabel!: TextBlock;
     private partialWinnerName!: TextBlock;
     private continueText!: TextBlock;
@@ -40,19 +41,13 @@ export class GUIManager {
     private pauseTitle!: TextBlock;
     private pauseInstruction!: TextBlock;
     private pauseHint!: TextBlock;
+    private muteIcon?: Image;
+    private toggleMuteCallback?: () => boolean;
 
 
-
-    // Initialize and create all GUI elements
-    createGUI(scene: Scene, config: GameConfig): void {
-        if (this.isInitialized) {
-            Logger.warn('GUI already initialized, skipping creation', 'GUIManager');
-            return;
-        }
-
+    constructor(private scene: Scene, config: GameConfig, private animationManager: AnimationManager, audioManager: AudioManager) {
         try {
-            // Create the main GUI texture
-            this.advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI("UI", true, scene);
+            this.advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI("UI", true, this.scene);
             this.advancedTexture!.layer!.layerMask = 0x20000000;
 
             this.createHUD(config);
@@ -61,18 +56,13 @@ export class GUIManager {
             this.createCountdownDisplay();
             this.createPartialEndGameOverlay();
             this.createEndGameOverlay();
+            this.setToggleMuteCallback(() => audioManager.toggleMute());
 
             this.isInitialized = true;
-
         } catch (error) {
             Logger.error('Error creating GUI', 'GUIManager', error);
             throw error;
         }
-    }
-
-    setPauseVisible(visible: boolean): void {
-        if (!this.pauseOverlay) return;
-        this.pauseOverlay.isVisible = visible;
     }
 
     private createHUD(config: GameConfig): void {
@@ -139,29 +129,19 @@ export class GUIManager {
 
         this.rallyText = this.createTextBlock("rallyText", { text: "Rally", fontSize: 48 });
         this.rally = this.createTextBlock("rallyValue", { text: "0", fontSize: 56, verticalAlignment: this.V_BOTTOM });
-        this.rally.transformCenterY = 1;
-        this.rally.scaleX = 1; this.rally.scaleY = 1;
 
         rallyCell.addControl(this.rallyText, 0, 0);
         rallyCell.addControl(this.rally,     1, 0);
         this.hudGrid.addControl(rallyCell, 0, 5);
 
-        this.rally.transformCenterY = 1;
-        this.rally.scaleX = 1;
-        this.rally.scaleY = 1;
-
-        const animationScaleX = this.createAnimation("scaleX", 1, 1.3);
-        const animationScaleY = this.createAnimation("scaleY", 1, 1.3);
-        this.rally.animations = [animationScaleX, animationScaleY];
-
+        this.rally.transformCenterX = 0.5;
+        this.rally.transformCenterY = 0.5;
     }
 
     private createPlayerControls(config: GameConfig, player: number): TextBlock {
         const pControls = this.createTextBlock(`PlayerControls_p${player}`, {
             text: this.getControlsText(config.viewMode, player),
-            lineSpacing: "10px",
-            color: "rgba(0, 0, 0, 0)",
-            fontSize: 30
+            lineSpacing: "10px", color: "rgba(0, 0, 0, 0.55)", fontSize: 30
         });
         pControls.name = `PlayerControls_p${player}`;
         return pControls;
@@ -171,23 +151,22 @@ export class GUIManager {
         if (!this.advancedTexture) return;
 
         const t = getCurrentTranslation();
-        this.pauseOverlay = this.createRect("pauseOverlay", "100%", 11, this.V_CENTER ,"rgba(2, 2, 2, 0.74)");
+        this.pauseOverlay = this.createRect("pauseOverlay", "100%", 11, this.V_CENTER ,"rgba(2, 2, 2, 0.98)");
+        this.pauseOverlay.color = "rgba(255, 255, 255, 1)";
         this.pauseOverlay.isVisible = false;
         this.advancedTexture.addControl(this.pauseOverlay);
 
-        this.pauseGrid = this.createGrid("pauseGrid", "20%");
+        this.pauseGrid = this.createGrid("pauseGrid", "50%");
 
         this.pauseGrid.addRowDefinition(0.5, false);
-        this.pauseGrid.addRowDefinition(0.3, false);
         this.pauseGrid.addRowDefinition(0.2, false);
+        this.pauseGrid.addRowDefinition(0.1, false);
+        this.pauseGrid.addRowDefinition(0.1, false);
         this.pauseOverlay.addControl(this.pauseGrid);
 
-        this.pauseTitle = this.createTextBlock("pauseTitle",{
-            text: t.gamePaused,
-            fontWeight: "bold",
-            fontSize: 36,
-        });
+        this.pauseTitle = this.createTextBlock("pauseTitle",{ text: t.gamePaused, fontWeight: "bold", fontSize: 42, });
         this.pauseGrid.addControl(this.pauseTitle, 0, 0);
+
 
         this.pauseInstruction = this.createTextBlock("pauseInstruction",{ text: t.exitGame, });
         this.pauseGrid.addControl(this.pauseInstruction, 1, 0);
@@ -195,6 +174,18 @@ export class GUIManager {
         this.pauseHint = this.createTextBlock("pauseHint", { text: t.pauseControls, });
         this.pauseGrid.addControl(this.pauseHint, 2, 0);
 
+        this.muteIcon = new Image("muteIcon", "assets/icons/sound_on.png");
+        this.muteIcon.stretch = Image.STRETCH_UNIFORM;
+        this.muteIcon.paddingTop = "16px";
+        this.muteIcon.onPointerClickObservable.add(() => {
+            this.animateMuteIcon();
+            if (this.toggleMuteCallback) {
+                    const isMuted = this.toggleMuteCallback();
+                    if (this.muteIcon)
+                        this.muteIcon.source = isMuted ? "assets/icons/sound_off.png" : "assets/icons/sound_on.png";
+                }
+        });
+        this.pauseGrid.addControl(this.muteIcon, 3, 0);
     }
 
     private createViewModeElements(config: GameConfig): void {
@@ -202,9 +193,7 @@ export class GUIManager {
             (config.gameMode === GameMode.TWO_PLAYER_LOCAL || config.gameMode === GameMode.TOURNAMENT_LOCAL)) {
             const dividerLine = this.createRect("divider", "100%", 6, this.V_CENTER, "#000000ff")
             dividerLine.widthInPixels = 5;
-
             this.advancedTexture!.addControl(dividerLine);
-            Logger.info('Split screen divider created', 'GUIManager');
         }
     }
 
@@ -219,101 +208,99 @@ export class GUIManager {
     }
 
     private createPartialEndGameOverlay(): void {
-        this.partialEndGameOverlay = this.createRect("partialWinnerLayer", "100%", 7);
+        this.partialEndGameOverlay = this.createRect("partialWinnerLayer", "100%", 8, this.V_BOTTOM, "rgba(0, 0, 0, 1)");
+        this.partialEndGameOverlay.background = "rgba(0, 0, 0, 1)";
         this.partialEndGameOverlay.isVisible = false;
         this.advancedTexture!.addControl(this.partialEndGameOverlay);
-
-        this.partialTransitionFill = this.createRect("partialTransitionFill", "100%", 8, this.V_BOTTOM, "#000000ff");
-        this.partialTransitionFill.alpha = 0;
-        this.partialEndGameOverlay.addControl(this.partialTransitionFill);
 
         const centerColumn = this.createGrid("winnerGrid", "100%");
         centerColumn.zIndex = 9;
 
-        centerColumn.addRowDefinition(0.3);
-        centerColumn.addRowDefinition(0.5);
+        centerColumn.addRowDefinition(0.2);
+        centerColumn.addRowDefinition(0.6);
         centerColumn.addRowDefinition(0.2);
         this.partialEndGameOverlay.addControl(centerColumn);
 
         const t = getCurrentTranslation();
         this.partialWinnerLabel = this.createTextBlock("winnerLabel", {
-            text: t.winner,
-            outlineWidth: 2,
-            outlineColor: "#000000",
-            fontSize: 48,
-            zIndex: 10,
+            text: t.winner, outlineWidth: 2, fontSize: 80, zIndex: 10, alpha: 0
         });
-        this.partialWinnerLabel.isVisible =  false;
         centerColumn.addControl(this.partialWinnerLabel, 0, 0);
 
         this.partialWinnerName = this.createTextBlock("winnerName", {
-            text: "",
-            color: "#FFD700",
-            outlineWidth: 2,
-            outlineColor: "#ffffffee",
-            fontSize: 100,
-            fontWeight: "bold",
-            zIndex: 10,
-            alpha: 0,
+            text: "", color: "rgb(255, 215, 0)", outlineWidth: 2, outlineColor: "rgb(255, 255, 255)",
+            fontSize: 110, fontWeight: "bold", zIndex: 10, alpha: 0, applyGlowEffects: true
         });
-        this.partialWinnerName.isVisible =  false;
         centerColumn.addControl(this.partialWinnerName, 1, 0);
 
         this.continueText = this.createTextBlock("continue_text", {
-            text: t.continue,
-            fontSize: 25,
-            color: "#FFD700",
-            outlineWidth: 2,
-            outlineColor: "#ffffffee",
-            zIndex: 10,
+            text: t.continue, color: "rgb(255, 255, 255)", outlineWidth: 2, outlineColor: "rgb(255, 215, 0)", zIndex: 10,
         });
-        this.continueText.isVisible =  false;
         centerColumn.addControl(this.continueText, 2, 0);
     }
+
     private createEndGameOverlay(): void {
         this.endGameOverlay = this.createGrid("endGameOverlay", "20%", this.V_BOTTOM);
         this.endGameOverlay.background = "rgba(0, 0, 0, 0.9)";
         this.endGameOverlay.isVisible = false;
         this.endGameOverlay.addColumnDefinition(1.0);
 
+        // this.endGameWinnerText = this.createTextBlock("endGameWinnerText", {
+        //     fontSize: 72, color: "#rgb(255, 215, 0)", applyRichEffects: true
+        // });
         this.endGameWinnerText = this.createTextBlock("endGameWinnerText", {
-            fontSize: 72,
-            color: "#FFD700",
-            applyRichEffects: true
+            fontSize: 72, applyRichEffects: true
         });
         this.endGameOverlay.addControl(this.endGameWinnerText, 0, 0);
         this.advancedTexture!.addControl(this.endGameOverlay);
     }
 
+    setPauseVisible(visible: boolean): void {
+        if (!this.isReady || !this.animationManager) return;
 
-    //API to update the GUI
-    showCountdown(show: boolean, count?: number): void {
-        if (!show) {
-            this.countdownContainer.isVisible = false;
-            this.countdownText.animations = [];
-        } else if (count !== undefined) {
-            this.countdownText.text = count.toString();
-            this.countdownContainer.isVisible = true;
-            this.countdownText.scaleX = 1;
-            this.countdownText.scaleY = 1;
+        if (visible) {
+            this.pauseOverlay.isVisible = true;
+            this.pauseOverlay.alpha = 0;
+            this.pauseOverlay.thickness = 0;
 
-            const animationScaleX = this.createAnimation("scaleX", 1, 2);
-            const animationScaleY = this.createAnimation("scaleY", 1, 2);
-            this.countdownText.animations = [animationScaleX, animationScaleY];
-            
-            if (this.advancedTexture && this.advancedTexture.getScene) {
-                const scene = this.advancedTexture.getScene();
-                scene?.beginAnimation(this.countdownText, 0, 60, false);
-            }
+            const frames = Motion.F.base;
+            this.pauseOverlay.animations = [
+            this.animationManager.createFloat("alpha", 0, 1, frames, false, Motion.ease.quadOut()),
+            this.animationManager.createFloat("thickness", 0, 4, frames, false, Motion.ease.quadOut()),
+            ];
+            this.animationManager.play(this.pauseOverlay, frames, false);
+        } else {
+            const frames = Motion.F.fast;
+            this.pauseOverlay.animations = [
+            this.animationManager.createFloat("alpha", 1, 0, frames, false, Motion.ease.quadOut()),
+            this.animationManager.createFloat("thickness", 4, 0, frames, false, Motion.ease.quadOut()),
+            ];
+            this.animationManager.play(this.pauseOverlay, frames, false).then(() => {
+            this.pauseOverlay.isVisible = false;
+            this.pauseOverlay.alpha = 0;
+            this.pauseOverlay.thickness = 0;
+            });
         }
+    }
+    showCountdown(show: boolean, count?: number): void {
+        if (!this.isReady) return;
+        this.countdownContainer.isVisible = show;
+
+        if (show && count !== undefined) {
+            this.countdownText.text = count.toString();
+            this.animationManager?.pulse(this.countdownText, Motion.F.xSlow);
+            return;
+        }
+        this.countdownText.animations = [];
     }
 
     updateFPS(fps: number): void {
-        if (this.fpsText)
-            this.fpsText.text = `FPS: ${Math.round(fps)}`;
+        if (!this.isReady) return;
+        this.fpsText.text = `FPS: ${Math.round(fps)}`;
     }
 
     updateRally(rally: number): void {
+        if (!this.isReady) return;
         if (this.rally && (this.previousRally < rally) || rally === 1) {
             this.rally.text = `${Math.round(rally)}`;
 
@@ -324,108 +311,96 @@ export class GUIManager {
             const b = Math.round(255 * (1 - intensity));
             this.rally.color = `rgb(${r}, ${g}, ${b})`;
 
-            const scene = this.advancedTexture!.getScene();
-            scene?.beginAnimation(this.rally, 0, 60, false);
+            if (rally > 0 && rally % 5 === 0)
+                this.animationManager?.rotatePulse(this.rally, 1, Motion.F.slow);
+            else
+                this.animationManager?.pop(this.rally, Motion.F.base, 1.4);
         }
         this.previousRally = rally;
     }
 
     updateScores(leftScore: number, rightScore: number): void {
-        if (this.score1Text && this.score2Text) {
-            this.score1Text.text = leftScore.toString();
-            this.score2Text.text = rightScore.toString();
-        }
+        if (!this.isReady) return;
+        const oldLeft = parseInt(this.score1Text.text);
+        const oldRight = parseInt(this.score2Text.text);
+
+        this.score1Text.text = leftScore.toString();
+        this.score2Text.text = rightScore.toString();
+
+        if (leftScore > oldLeft)
+            this.animationManager?.pop(this.score1Text, Motion.F.fast, 0.9);
+        else if (rightScore > oldRight)
+            this.animationManager?.pop(this.score2Text, Motion.F.fast, 0.9);
     }
 
     updatePlayerNames(player1Name: string, player2Name: string): void {
+        if (!this.isReady) return;
         this.player1Label.text = player1Name;
         this.player2Label.text = player2Name;
+        this.hudGrid.isVisible = true;
     }
 
     async showWinner(winner: string): Promise<void> {
-        if (!this.endGameOverlay || !this.endGameWinnerText)
-            return;
-
-        if (this.hudGrid)
-            this.hudGrid.isVisible = false;
+        if (!this.isReady) return;
+        this.hudGrid.isVisible = false;
         this.endGameWinnerText.text = `🏆 ${winner} WINS! 🏆`;
+        this.endGameWinnerText.color = "rgba(255, 255, 255, 1)";
         this.endGameOverlay.isVisible = true;
-        const scene = this.advancedTexture!.getScene();
-        const cams = scene?.activeCameras?.length ? scene.activeCameras : scene?.activeCamera;
-        spawnFireworksInFrontOfCameras(scene!, FINAL_FIREWORKS, cams);
+        this.animationManager?.pop(this.endGameWinnerText, Motion.F.fast, 0.9);
+        const scene = this.scene;
+        const cams = scene.activeCameras?.length ? scene.activeCameras : scene.activeCamera;
+        spawnFireworksInFrontOfCameras(scene, FINAL_FIREWORKS, cams);
         await new Promise(resolve => setTimeout(resolve, 5000));
 
-        if (this.hudGrid)
-            this.hudGrid.isVisible = true;
-        if (this.endGameOverlay)
-            this.endGameOverlay.isVisible = false;
+        this.hudGrid.isVisible = true;
+        this.endGameOverlay.isVisible = false;
     }
 
     async animateBackground(show: boolean): Promise<void> {
-        if (!this.advancedTexture || !this.partialTransitionFill || !this.partialEndGameOverlay) return;
-
-        const scene  = this.advancedTexture.getScene();
-        const frames = 15;
-
+        if (!this.isReady) return;
         if (show) {
             this.partialEndGameOverlay.isVisible = true;
             this.hudGrid.isVisible = false;
+            await this.animationManager?.fadeIn(this.partialEndGameOverlay, Motion.F.slow);
+        } else {
+            await this.animationManager?.fadeOut(this.partialEndGameOverlay, Motion.F.fast);
+            this.partialEndGameOverlay.isVisible = false;
+            this.hudGrid.isVisible = true;
         }
-
-        const current = this.partialTransitionFill.alpha ?? 0;
-        const end = show ? 0.50 : 0.0;
-
-        const alpha = this.createAnimation("alpha", current, end, frames, false);
-        this.partialTransitionFill.animations = [alpha];
-
-        scene?.beginAnimation(this.partialTransitionFill, 0, frames, false, 1, () => {
-            if (!show) {
-                this.partialEndGameOverlay.isVisible = false;
-                this.hudGrid.isVisible = true;
-            }
-        });
-
     }
 
     async showPartialWinner(winner: string): Promise<void> {
-        if (!this.advancedTexture) return;
+        if (!this.isReady || !this.advancedTexture) return;
 
-        const scene = this.advancedTexture.getScene();
-        const totalFrames = 180;
-
-        this.partialWinnerName.text  = winner;
+        // const scene = this.scene;
+        this.partialWinnerName.text = winner;
+        this.partialEndGameOverlay.isVisible = true;
         this.partialWinnerLabel.isVisible = true;
         this.partialWinnerName.isVisible = true;
-        this.partialWinnerName.alpha = 0;
-        this.partialWinnerName.transformCenterY = 1;
-        this.partialWinnerName.scaleX = 1;
-        this.partialWinnerName.scaleY = 1;
-
-        this.partialEndGameOverlay.isVisible = true;
         this.partialEndGameOverlay.isPointerBlocker = true;
 
-        const fadeIn = this.createAnimation("alpha", 0.5, 1);
-        const animationScaleX = this.createAnimation("scaleX", 1, 1.1);
-        const animationScaleY = this.createAnimation("scaleY", 1, 1.1);
+        spawnGUISparkles(this.advancedTexture, this.animationManager);
 
-        this.partialWinnerName.animations = [fadeIn, animationScaleX, animationScaleY];
+        await this.animationManager?.slideInY(this.partialWinnerLabel, -200, Motion.F.base);
+        await new Promise(r => setTimeout(r, 60));
+        await this.animationManager?.slideInY(this.partialWinnerName, 50, Motion.F.slow);
+        this.animationManager?.breathe(this.partialWinnerName, Motion.F.breath);
 
-        const cams = scene?.activeCameras?.length ? scene.activeCameras : scene?.activeCamera;
-        spawnFireworksInFrontOfCameras(scene!, PARTIAL_FIREWORKS, cams);
-        scene?.beginAnimation(this.partialWinnerName!, 0, 60, true, 1);
-        await new Promise(r => setTimeout(r, totalFrames));
+        // const cams = scene.activeCameras?.length ? scene.activeCameras : scene.activeCamera;
+        // spawnFireworksInFrontOfCameras(scene, PARTIAL_FIREWORKS, cams);
 
+        await new Promise(r => setTimeout(r, 180));
     }
 
     async waitForSpaceToContinue(ms: number): Promise<void> {
-        if (!this.advancedTexture) return;
-        const scene = this.advancedTexture.getScene();
+        if (!this.isReady || !this.advancedTexture) return;
+        const scene = this.scene;
         await new Promise<void>(res => setTimeout(res, ms));
-        if (this.continueText)
-            this.continueText.isVisible = true;
+        this.continueText.isVisible = true;
+        this.animationManager?.twinkle(this.continueText, Motion.F.slow);
 
         return new Promise<void>((resolve) => {
-            const sub = scene?.onKeyboardObservable.add((kbInfo: any) => {
+            const sub = scene.onKeyboardObservable.add((kbInfo: any) => {
                 if (kbInfo.type === KeyboardEventTypes.KEYDOWN) {
                     const e = kbInfo.event as KeyboardEvent;
                     if (e.code === "Space" || e.key === " ") {
@@ -441,19 +416,23 @@ export class GUIManager {
     }
 
     async hidePartialWinner(): Promise<void> {
-        if (!this.partialEndGameOverlay) return;
-        const scene = this.advancedTexture!.getScene();
-        const totalFrames = 60;
+        if (!this.isReady) return;
+        await Promise.all([
+            this.animationManager?.slideOutY(this.partialWinnerLabel, -50, Motion.F.fast),
+            this.animationManager?.slideOutY(this.partialWinnerName, 50, Motion.F.fast)
+        ]);
 
-        const fadeOut = this.createAnimation("alpha", 1, 0, 60, false);
-        this.partialWinnerName.animations = [fadeOut];
-        scene?.beginAnimation(this.partialWinnerName!, 0, totalFrames, false, 1);
         this.partialEndGameOverlay.isPointerBlocker = false;
         this.partialEndGameOverlay.isVisible = false;
     }
 
+    private async animateMuteIcon(): Promise<void> {
+        if (!this.isReady || !this.muteIcon) return;
+        await this.animationManager?.pop(this.muteIcon, Motion.F.xFast, 0.9);
+    }
+
     //Helper functions to create Gui objects
-    createGrid(name: string, h: string, verticalAlign?: number): Grid {
+    private createGrid(name: string, h: string, verticalAlign?: number): Grid {
         const grid = new Grid(name);
         grid.width = "100%";
         grid.height = h;
@@ -462,7 +441,7 @@ export class GUIManager {
         return grid;
     }
 
-    createRect(name: string, h: string, zIndex:number, verticalAlign?: number, background?: string): Rectangle {
+    private createRect(name: string, h: string, zIndex:number, verticalAlign?: number, background?: string): Rectangle {
         const r = new Rectangle(name);
         r.width = "100%";
         r.height = h;
@@ -495,26 +474,30 @@ export class GUIManager {
         if (options.lineSpacing) textBlock.lineSpacing = options.lineSpacing;
         if (options.resizeToFit !== undefined) textBlock.resizeToFit = options.resizeToFit;
 
-        // Apply rich text effects if requested
-        if (options.applyRichEffects) {
-            textBlock.shadowOffsetX = 3;
-            textBlock.shadowOffsetY = 3;
-            textBlock.shadowBlur = 8;
-            textBlock.shadowColor = "rgba(255, 107, 107, 0.5)";
-            textBlock.fontWeight = "bold";
-            textBlock.outlineWidth = options.outlineWidth || 2;
-            textBlock.outlineColor = options.outlineColor || "black";
+        if (options.applyGlowEffects) {
+            textBlock.shadowBlur = 20;
+            textBlock.shadowColor = "rgba(255, 215, 0, 0.8)";
         }
 
+        if (options.applyRichEffects) {
+            textBlock.shadowOffsetX = 1;
+            textBlock.shadowOffsetY = 1;
+            textBlock.shadowBlur = 8;
+            textBlock.shadowColor = "rgba(255, 217, 0, 0.80)";
+            textBlock.fontWeight = "bold";
+            textBlock.outlineWidth = options.outlineWidth || 2;
+            textBlock.outlineColor = options.outlineColor || "rgba(0, 0, 0, 0.66)";
+        }
         return textBlock;
     }
 
     updateControlVisibility(player1: boolean, player2: boolean): void {
+        if (!this.isReady) return;
         const p1 = this.advancedTexture?.getControlByName("PlayerControls_p1") as TextBlock | null;
         const p2 = this.advancedTexture?.getControlByName("PlayerControls_p2") as TextBlock | null;
 
-        if (p1) p1.color = player1 ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0)";
-        if (p2) p2.color = player2 ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0)";
+        if (p1) p1.color = player1 ? "rgba(255, 255, 255, 0.7)" : "rgba(0, 0, 0, 0)";
+        if (p2) p2.color = player2 ? "rgba(255, 255, 255, 0.7)" : "rgba(0, 0, 0, 0)";
 
     }
     private getControlsText(viewMode: ViewMode, player: number): string {
@@ -527,33 +510,21 @@ export class GUIManager {
             return player === 1 ? move + "\nP1: A / D" : move + "\nP2: ← / →";
     }
 
-    private createAnimation(property: string, from: number, end: number, frames: number = 60, pingPong: boolean = true): Animation {
+    // Callbacks
+    setToggleMuteCallback(callback: () => boolean): void {
+        if (!this.isReady) return;
+        this.toggleMuteCallback = callback;
+    }
 
-        const fps: number = 60;
-        const anim = Animation.CreateAnimation(
-            property, Animation.ANIMATIONTYPE_FLOAT, fps, new SineEase());
-        anim.loopMode = Animation.ANIMATIONLOOPMODE_CYCLE;
-
-        if (pingPong) {
-            const mid = Math.floor(frames / 2);
-            anim.setKeys([
-            { frame: 0,      value: from },
-            { frame: mid,    value: end },
-            { frame: frames, value: from },
-            ]);
-        } else {
-            anim.setKeys([
-            { frame: 0,      value: from },
-            { frame: frames, value: end },
-            ]);
-        }
-        return anim;
+    // Check if gui is initialised
+    isReady(): boolean {
+        return this.isInitialized;
     }
 
     // Clean up all GUI resources
     dispose(): void {
-        if (!this.isInitialized) return;
-
+        if (!this.isReady()) return;
+        
         try {
             this.fpsText.dispose();
             this.score1Text.dispose();
@@ -571,11 +542,18 @@ export class GUIManager {
             this.partialWinnerLabel.dispose();
             this.partialWinnerName.dispose();
             this.continueText.dispose();
+            this.muteIcon?.dispose()
+            this.pauseHint.dispose();
+            this.pauseInstruction.dispose();
+            this.pauseTitle.dispose();
+            this.pauseGrid.dispose();
+            this.pauseOverlay.dispose();
 
             this.advancedTexture?.dispose();
             this.advancedTexture = null;
 
             this.isInitialized = false;
+            Logger.debug('Class disposed', 'GUIManager');
         } catch (error) {
             Logger.error('Error disposing GUI', 'GUIManager', error);
         }

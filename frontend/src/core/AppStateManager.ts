@@ -17,9 +17,9 @@ export class AppStateManager {
     private static instance: AppStateManager;
     
     static getInstance(): AppStateManager {
-        if (!AppStateManager.instance) {
+        if (!AppStateManager.instance)
             AppStateManager.instance = new AppStateManager();
-        }
+
         return AppStateManager.instance;
     }
     
@@ -32,16 +32,16 @@ export class AppStateManager {
     private setupEventListeners(): void {
         // Listen for browser back/forward button clicks
         window.addEventListener('popstate', (event) => {
-            if (Game.isInGame()) {
-                Game.pause();
+            const g = Game.getCurrentInstance();
+            if (g && g.isInGame()) {
+                g.pause();
                 return;
-            } else if (Game.isPaused()) {
-                Game.requestExitToMenu();
+            } else if (g && g.isPaused()) {
+                g.requestExitToMenu();
                 return;
             }
 
             const state = event.state?.screen || AppState.MAIN_MENU;
-            Logger.info(`Browser BACK navigation to: ${state}`, 'AppStateManager');
             this.navigateTo(state, false); // false = don't push to history
         });
 
@@ -79,7 +79,7 @@ export class AppStateManager {
                 this.showScreen(EL.SCREENS.STATS_DASHBOARD, { hideOverlayss: true });
                 break;
             default:
-                Logger.warn(`Unknown state: ${state}, redirecting to main menu`, 'HistoryManager');
+                Logger.error(`Unknown state: ${state}, redirecting to main menu`, 'HistoryManager');
                 this.navigateTo(AppState.MAIN_MENU);
                 break;
         }
@@ -113,11 +113,9 @@ export class AppStateManager {
 
     async startGameWithMode(viewMode: ViewMode, gameMode: GameMode, aiDifficulty: number): Promise<void> {
         try {
-            Logger.info(`Starting game: ${gameMode} in ${ViewMode[viewMode]} mode`, 'AppStateManager');
-
             uiManager.showAuthButtons();
             this.navigateTo(AppState.GAME_3D, false);
-            await Game.createAndStart(viewMode, gameMode, aiDifficulty);
+            await Game.create(viewMode, gameMode, aiDifficulty);
 
         } catch (error) {
             Logger.error('Error starting game', 'AppStateManager', error);

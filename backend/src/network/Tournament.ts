@@ -41,6 +41,7 @@ abstract class AbstractTournament extends AbstractGameSession{
 	client_match_map?: Map<string, Match>;	// Maps client id to match, used for easy insertion from client input
 	rounds: Map<number, Match[]> = new Map();	// Maps rounds to match[], used for easy traversal to run games
 	num_rounds: number;
+	tournamentWinner?: Player;
 
 	constructor(mode: GameMode, game_id: string, capacity: number) {
 		super(mode, game_id);
@@ -167,10 +168,7 @@ export class TournamentLocal extends AbstractTournament {
 		}
 	
 		if (matches.length === 1) /* if final match */ {
-			this.broadcast({ 
-				type: MessageType.SESSION_ENDED,
-				winner: matches[0].winner?.name,
-			});
+			this.tournamentWinner = matches[0].winner;
 		}
 	}
 
@@ -179,7 +177,10 @@ export class TournamentLocal extends AbstractTournament {
 
 		this.running = false;
 		this.current_match?.game?.stop();
-		this.broadcast({ type: MessageType.SESSION_ENDED });
+		this.broadcast({
+			type: MessageType.SESSION_ENDED,
+			...(this.tournamentWinner?.name && { winner: this.tournamentWinner.name }),
+		});
 	}
 
 	handlePlayerQuit(): void {

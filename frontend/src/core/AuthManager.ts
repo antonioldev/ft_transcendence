@@ -277,9 +277,9 @@ export class AuthManager {
                 uiManager.clearForm(this.loginFields);
                 appStateManager.navigateTo(AppState.MAIN_MENU);
                 uiManager.showUserInfo(this.currentUser.username);
-                Logger.info(text ?? 'Login ok', 'AuthManager');
+                Logger.debug(text ?? 'Login ok', 'AuthManager');
             } catch (e) {
-                Logger.error('Binder call failed', 'AuthManager', e);
+                Logger.errorAndThrow('Binder call failed', 'AuthManager', e);
                 alert('Login succeeded but could not finalize session. Please retry.');
             }
         });
@@ -301,12 +301,9 @@ export class AuthManager {
             }
         });
 
-        Logger.info('Login attempt', 'AuthManager', { username });
         try {
             wsClient.loginUser(user);
-            Logger.info('Login attempt', 'AuthManager', { username });
         } catch (error) {
-            Logger.error('Error sending login request', 'AuthManager', error);
             this.authState = AuthState.LOGGED_FAILED;
             alert('Loggin failed due to connection error.');  
         }
@@ -383,10 +380,9 @@ export class AuthManager {
         // Apptempt to register new user
         try {
             wsClient.registerNewUser(user);
-            Logger.info('Register attempt', 'AuthManager', { username, email });
             this.authState = AuthState.LOGGED_IN;
         } catch (error) {
-            Logger.error('Error sending registration request', 'AuthManager', error);
+            Logger.errorAndThrow('Error sending registration request', 'AuthManager', error);
             this.authState = AuthState.LOGGED_FAILED;
             uiManager.clearForm(this.registrationFields);
             alert('Registration failed due to connection error.');  
@@ -495,8 +491,7 @@ export class AuthManager {
         this.authState = AuthState.GUEST;
         this.currentUser = null;
         uiManager.showAuthButtons();
-        appStateManager.navigateTo(AppState.MAIN_MENU);;
-        Logger.info('Logged out - now in guest mode', 'AuthManager');
+        appStateManager.navigateTo(AppState.MAIN_MENU);
     }
 
     // Checks the current authentication state and updates UI accordingly. Should be called after page loads or state changes to ensure UI consistency.

@@ -49,16 +49,15 @@ export class WebSocketClient {
             clearTimeout(timeout);
             this.connectionStatus = ConnectionStatus.CONNECTED;
             this.notifyStatus(ConnectionStatus.CONNECTED);
-            Logger.info('Connected to game server', 'WebSocketClient');
             this.triggerCallback(WebSocketEvent.CONNECTION);	
-	    };
+        };
 
         this.ws.onmessage = (event) => {
             try {
                 const message: ServerMessage = JSON.parse(event.data);
                 this.handleMessage(message);
             } catch (error) {
-                Logger.error('Error parsing server message', 'WebSocketClient', error);
+                Logger.errorAndThrow('Error parsing server message', 'WebSocketClient', error);
             }
         };
 
@@ -114,7 +113,6 @@ export class WebSocketClient {
                 this.triggerCallback(WebSocketEvent.SIDE_ASSIGNMENT, message);
                 break;
             case MessageType.WELCOME:
-                Logger.info('Server says', 'WebSocketClient', message.message);
                 break;
             case MessageType.COUNTDOWN:
                 this.triggerCallback(WebSocketEvent.COUNTDOWN, message);
@@ -123,27 +121,21 @@ export class WebSocketClient {
                 this.triggerCallback(WebSocketEvent.ERROR, message.message);
                 break;
             case MessageType.SUCCESS_LOGIN:
-                Logger.info('Login success', 'WebSocketClient', message.message);
                 this.triggerCallback(WebSocketEvent.LOGIN_SUCCESS, message.message || "✅ Login success");
                 break;
             case MessageType.SUCCESS_REGISTRATION:
-                Logger.info('Registration success', 'WebSocketClient', message.message);
                 this.triggerCallback(WebSocketEvent.REGISTRATION_SUCCESS, message.message || "✅ Registration success");
                 break;
             case MessageType.LOGIN_FAILURE:
-                Logger.warn('Login failed', 'WebSocketClient', message.message);
                 this.triggerCallback(WebSocketEvent.LOGIN_FAILURE, message.message || "🚫 Login failed: ID/Password not matching");
                 break;
             case MessageType.USER_NOTEXIST:
-                Logger.warn('Login failed', 'WebSocketClient', message.message);
                 this.triggerCallback(WebSocketEvent.LOGIN_FAILURE, message.message || "User doesn't exist");
                 break;
             case MessageType.USER_EXIST:
-                Logger.warn('Registration failed', 'WebSocketClient', message.message);
                 this.triggerCallback(WebSocketEvent.REGISTRATION_FAILURE, message.message || "🚫 Registration failed: user exist");
                 break;
             case MessageType.USERNAME_TAKEN:
-                Logger.warn('Registration failed', 'WebSocketClient', message.message);
                 this.triggerCallback(WebSocketEvent.REGISTRATION_FAILURE, message.message || "Username is already registered");
                 break;
             case MessageType.SEND_USER_STATS:
@@ -153,7 +145,7 @@ export class WebSocketClient {
                 this.triggerCallback(WebSocketEvent.GAME_HISTORY, message.gameHistory);
                 break;
             default:
-                Logger.warn(`Unhandled message type: ${message.type}`, 'WebSocketClient');
+                Logger.errorAndThrow(`Unhandled message type: ${message.type}`, 'WebSocketClient');
                 break;
         }
     }
@@ -192,7 +184,7 @@ export class WebSocketClient {
 
     private sendMessage(type: MessageType, data: any = {}): void {
         if (!this.isConnected()) {
-            Logger.error('WebSocket is not connected. Cannot send message.', 'WebSocketClient');
+            Logger.errorAndThrow('WebSocket is not connected. Cannot send message.', 'WebSocketClient');
             return;
         }
     
@@ -201,7 +193,7 @@ export class WebSocketClient {
         try {
             this.ws!.send(JSON.stringify(message));
         } catch (error) {
-            Logger.error(`Error sending message of type ${type}`, 'WebSocketClient', error);
+            Logger.errorAndThrow(`Error sending message of type ${type}`, 'WebSocketClient', error);
         }
     }
 
@@ -210,7 +202,6 @@ export class WebSocketClient {
     // ========================================
 
     registerNewUser(registrationInfo: RegisterUser): void {
-        Logger.debug('In registration user', 'WebSocketClient');
         if (this.isConnected()) {
             const message: ClientMessage = {
                 type: MessageType.REGISTER_USER,
@@ -221,7 +212,6 @@ export class WebSocketClient {
     }
 
     loginUser(loginInfo: LoginUser): void {
-        Logger.debug('In login user', 'WebSocketClient');
         if (this.isConnected()) {
             const message: ClientMessage = {
                 type: MessageType.LOGIN_USER,
@@ -232,7 +222,6 @@ export class WebSocketClient {
     }
 
     logoutUser(): void {
-        Logger.debug('In logout user', 'WebSocketClient');
         if (this.isConnected()) {
             const message: ClientMessage = {
                 type: MessageType.LOGOUT_USER,
@@ -246,7 +235,6 @@ export class WebSocketClient {
     // ========================================
 
     requestUserStats(username: string): void {
-        Logger.debug('IN requestUserStats', 'WebSocketClient');
         if (this.isConnected()) {
             const message: ClientMessage = {
                 type: MessageType.REQUEST_USER_STATS,
@@ -257,7 +245,6 @@ export class WebSocketClient {
     }
 
     requestUserGameHistory(username: string): void {
-        Logger.debug('IN requestUserGameHistory', 'WebSocketClient');
         if (this.isConnected()) {
             const message: ClientMessage = {
                 type: MessageType.REQUEST_GAME_HISTORY,
@@ -281,7 +268,7 @@ export class WebSocketClient {
             try {
                 callback(data);
             } catch (error) {
-                Logger.error(`Error triggering callback for event ${event}`, 'WebSocketClient', error);
+                Logger.errorAndThrow(`Error triggering callback for event ${event}`, 'WebSocketClient', error);
             }
         }
     }

@@ -1,6 +1,5 @@
 import { ViewMode } from '../../shared/constants.js';
 import { TextureSet, TEXTURE_SCALING, MAP_OBJECT_TYPE } from './sceneAssets.js';
-import { Logger } from '../../utils/LogManager.js';
 import { Color3, Scene, StandardMaterial, Texture} from "@babylonjs/core";
 
 function setTextureScale(textureScale: any, texture: Texture) {
@@ -62,7 +61,6 @@ export function createMaterial(
             }
 
         } catch (error) {
-            Logger.warn('Error creating textured material, using color fallback', 'materialFactory');
             // Textures will be null if they fail, use color from config file
             material.diffuseColor = color;
         }
