@@ -4,7 +4,10 @@ FROM node:alpine AS builder
 
 WORKDIR /app
 
+# Copy package files
 COPY package*.json package-lock.json ./
+
+# Install dependencies
 RUN npm install
 
 # Pass GOOGLE_CLIENT_ID as a build argument

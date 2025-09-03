@@ -180,6 +180,8 @@ export class AuthManager {
         // Login form validation
         const loginUsername = document.getElementById('login-username');
         const loginPassword = document.getElementById('login-password');
+        // const loginSubmit = document.getElementById(EL.BUTTONS.LOGIN_SUBMIT);
+        // const registerSubmit = document.getElementById(EL.BUTTONS.REGISTER_SUBMIT);
 
         loginUsername?.addEventListener('blur', () => {
             const value = (loginUsername as HTMLInputElement).value.trim();
@@ -254,19 +256,19 @@ export class AuthManager {
             }
         });
 
-        // Also handle form submit events for Enter key
-        const loginForm = loginSubmit?.closest('form');
-        const registerForm = registerSubmit?.closest('form');
+        // // Also handle form submit events for Enter key
+        // const loginForm = loginSubmit?.closest('form');
+        // const registerForm = registerSubmit?.closest('form');
 
-        loginForm?.addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.handleLoginSubmit();
-        });
+        // loginForm?.addEventListener('submit', (e) => {
+        //     e.preventDefault();
+        //     this.handleLoginSubmit();
+        // });
 
-        registerForm?.addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.handleRegisterSubmit();
-        });
+        // registerForm?.addEventListener('submit', (e) => {
+        //     e.preventDefault();
+        //     this.handleRegisterSubmit();
+        // });
     }
 
 	// ========================================
@@ -275,6 +277,7 @@ export class AuthManager {
 
 	private async restoreSessionOnBoot(): Promise<void> {
 		try {
+            console.log('Attempting to restore session');
 			// 1) Try classic cookie session
 			const res = await fetch('/api/auth/session/me', {
 				method: 'GET',
@@ -285,6 +288,7 @@ export class AuthManager {
 			if (res.ok) {
 				const data = await res.json(); // expected: { ok: true, user: {...} }
 				if (data?.ok && data.user?.username) {
+                    console.log('Session restored successfully via cookie');
 					this.authState = AuthState.LOGGED_IN;
 					this.currentUser = { username: data.user.username };
 					uiManager.showUserInfo(this.currentUser.username);
@@ -294,41 +298,60 @@ export class AuthManager {
 				}
 			}
 
-			// 2) Fallback: try Google restore if you kept the Google token
-			const googleIdToken = localStorage.getItem('google_id_token'); // set this on Google login success
-				if (googleIdToken) {
-				// Hit your Google restore endpoint that verifies the Google token
-				// and SETS the same 'sid' cookie as classic login
-				const gRes = await fetch('/api/auth/google/restore', {
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
-					credentials: 'include', // <-- must include so cookie gets set
-					body: JSON.stringify({ token: googleIdToken }),
-				});
+            console.log('Cookie session not found, trying Google restore');
 
-				if (gRes.ok) {
-					// After cookie set, ask the unified "who am I" (classic) again
-					const res2 = await fetch('/api/auth/session/me', {
-					method: 'GET',
-					credentials: 'include',
-					cache: 'no-store',
-					});
-					if (res2.ok) {
-					const data2 = await res2.json();
-					if (data2?.ok && data2.user?.username) {
-						this.authState = AuthState.LOGGED_IN;
-						this.currentUser = { username: data2.user.username };
-						uiManager.showUserInfo(this.currentUser.username);
-						appStateManager.navigateTo(AppState.MAIN_MENU);
-						WebSocketClient.getInstance();
-					}
-					}
-				}
-			}
-		} catch (e) {
-			console.error("Error in restoring session using cookie");
-		}
-	}
+            // 2) Fallback: try Google restore if you kept the Google token
+            const googleIdToken = localStorage.getItem('google_id_token'); // set this on Google login success
+            if (googleIdToken) {
+                console.log('Found Google token, attempting restore');
+                // Hit your Google restore endpoint that verifies the Google token
+                // and SETS the same 'sid' cookie as classic login
+                const gRes = await fetch('/api/auth/google/restore', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include', // <-- must include so cookie gets set
+                    body: JSON.stringify({ token: googleIdToken }),
+                });
+
+                if (gRes.ok) {
+                    console.log('Google restore successful, fetching user data');
+
+                    // After cookie set, ask the unified "who am I" (classic) again
+                    const res2 = await fetch('/api/auth/session/me', {
+                    method: 'GET',
+                    credentials: 'include',
+                    cache: 'no-store',
+                    });
+                    if (res2.ok) {
+                        const data2 = await res2.json();
+                        if (data2?.ok && data2.user?.username) {
+                            console.log('Session fully restored via Google');
+                            this.authState = AuthState.LOGGED_IN;
+                            this.currentUser = { username: data2.user.username };
+                            uiManager.showUserInfo(this.currentUser.username);
+                            appStateManager.navigateTo(AppState.MAIN_MENU);
+                            WebSocketClient.getInstance();
+                            return;
+                        }
+                    }
+                } else {
+                console.log('Google restore failed, token may be expired');
+                // Remove invalid token
+                localStorage.removeItem('google_id_token');
+                }
+            } else {
+                console.log('No Google token found in local storage');
+            }
+
+            console.log('No valid session found, remaining in guest mode');
+            this.authState = AuthState.GUEST;
+            this.currentUser = null;
+        } catch (e) {
+            console.log('Session restore failed (expected on first visit):');
+            this.authState = AuthState.GUEST;
+            this.currentUser = null;
+        }
+    }
 
     // Handles the login form submission process. Validates input fields, processes authentication, and updates UI state.
     private handleLoginSubmit(): void {
@@ -490,42 +513,32 @@ export class AuthManager {
         // Clear previous errors
         this.clearValidationErrors(['register-username', 'register-email', 'register-password', 'register-confirm-password']);
         
-        let hasErrors = false;
-
-        // Validate username
         if (!username) {
             this.showFieldError('register-username', t.errorEnterUsername);
-            hasErrors = true;
+            return;
         }
 
         // Validate email
         if (!email) {
             this.showFieldError('register-email', t.errorEnterEmail);
-            hasErrors = true;
+            return;
         } else if (!this.isValidEmail(email)) {
             this.showFieldError('register-email', t.errorEnterValidEmail);
-            hasErrors = true;
+            return;
         }
 
         // Validate password
         if (!password) {
             this.showFieldError('register-password', t.errorEnterPassword);
-            hasErrors = true;
+            return;
         } else if (password.length < 6) {
             this.showFieldError('register-password', t.errorPasswordMinLength);
-            hasErrors = true;
+            return;
         }
 
-        // Validate confirm password
-        if (!confirmPassword) {
-            this.showFieldError('register-confirm-password', t.errorConfirmPassword);
-            hasErrors = true;
-        } else if (password !== confirmPassword) {
-            this.showFieldError('register-confirm-password', t.errorPasswordsDoNotMatch);
-            hasErrors = true;
-        }
-
-        if (hasErrors) {
+        if (password !== confirmPassword) {
+            alert(t.passwordsDoNotMatch);
+            uiManager.clearForm(this.registrationFields);
             return;
         }
 
@@ -599,31 +612,26 @@ export class AuthManager {
 			body: JSON.stringify({ token: googleResponse.credential })
 		});
 
-		if (!authRes.ok) {
-			const err = await authRes.json().catch(() => ({}));
-			throw new Error(`Backend authentication failed: ${err.message || err.error || authRes.statusText}`);
-		}
+                if (!authRes.ok) {
+                    const errorData = await authRes.json();
+                    throw new Error(`Backend authentication failed: ${errorData.message || errorData.error || 'Unknown error'}`);
+                }
 
-		// 2) Immediately restore the session from the cookie
-		const sessionRes = await fetch('/api/auth/session', {
-			method: 'GET',
-			credentials: 'include'					   // ⬅️ send the cookie back
-		});
+                // Parses the response to get the session token from your application
+                const { sessionToken } = await authRes.json();
+                console.log("Backend responded with session token:", sessionToken);
 
-		if (!sessionRes.ok) {
-			throw new Error('Session restore failed');
-		}
-
-		const { authenticated, user } = await sessionRes.json();
-		if (!authenticated || !user) {
-			throw new Error('Not authenticated after Google login');
-		}
-
-		// 3) Update your state/UI
-		this.currentUser = { username: user.username };
-		this.authState = AuthState.LOGGED_IN;
-		uiManager.showUserInfo(this.currentUser.username);
-		appStateManager.navigateTo(AppState.MAIN_MENU);
+                // TODO: Store the sessionToken
+                
+                // Decodes the session token and updates the current user and authentication state
+                const decodedToken = JSON.parse(atob(sessionToken.split('.')[1]));
+                this.currentUser = { username: decodedToken.user.username };
+                this.authState = AuthState.LOGGED_IN;
+                
+                // Updates the UI to show user information and navigates to game mode selection
+                uiManager.showUserInfo(this.currentUser.username);
+                // uiManager.hideOverlays('login-modal');
+                appStateManager.navigateTo(AppState.GAME_MODE);
 
 		} catch (error) {
 			console.error("Backend communication failed:", error);
