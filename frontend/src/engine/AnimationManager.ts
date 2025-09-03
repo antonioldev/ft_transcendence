@@ -129,9 +129,13 @@ export class AnimationManager {
     return this.play(target, frames, true);
     }
 
-    rotateOnce(target: Control, turns = 1, frames = Motion.F.slow) {
+    rotatePulse(target: Control, turns = 1, frames = Motion.F.slow, pulseScale = 1.6) {
         const to = Math.PI * 2 * turns;
-        target.animations = [ this.createFloat("rotation", 0, to, frames, false, Motion.ease.quadInOut()) ];
+        target.animations = [
+            this.createFloat("rotation", 0, to, frames, false, Motion.ease.quadInOut()),
+            this.createFloat("scaleX", 1, pulseScale, frames, true, Motion.ease.quadInOut()),
+            this.createFloat("scaleY", 1, pulseScale, frames, true, Motion.ease.quadInOut())
+        ];
         return this.play(target, frames, false);
     }
 

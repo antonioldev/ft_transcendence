@@ -17,7 +17,7 @@ export class GUIManager {
     private readonly V_CENTER = Control.VERTICAL_ALIGNMENT_CENTER;
     private readonly V_BOTTOM = Control.VERTICAL_ALIGNMENT_BOTTOM;
     private advancedTexture: AdvancedDynamicTexture | null = null;
-    isInitialized: boolean = false;
+    private isInitialized: boolean = false;
     private hudGrid!: Grid;
     private fpsText!: TextBlock;
     private score1Text!: TextBlock;
@@ -32,7 +32,6 @@ export class GUIManager {
     private endGameOverlay!: Grid;
     private endGameWinnerText!: TextBlock;
     private partialEndGameOverlay!: Rectangle;
-    private partialTransitionFill!: Rectangle;
     private partialWinnerLabel!: TextBlock;
     private partialWinnerName!: TextBlock;
     private continueText!: TextBlock;
@@ -130,18 +129,13 @@ export class GUIManager {
 
         this.rallyText = this.createTextBlock("rallyText", { text: "Rally", fontSize: 48 });
         this.rally = this.createTextBlock("rallyValue", { text: "0", fontSize: 56, verticalAlignment: this.V_BOTTOM });
-        this.rally.transformCenterY = 1;
-        this.rally.scaleX = 1; this.rally.scaleY = 1;
 
         rallyCell.addControl(this.rallyText, 0, 0);
         rallyCell.addControl(this.rally,     1, 0);
         this.hudGrid.addControl(rallyCell, 0, 5);
 
-        // this.rally.transformCenterY = 1;
         this.rally.transformCenterX = 0.5;
         this.rally.transformCenterY = 0.5;
-        this.rally.scaleX = 1;
-        this.rally.scaleY = 1;
     }
 
     private createPlayerControls(config: GameConfig, player: number): TextBlock {
@@ -214,31 +208,27 @@ export class GUIManager {
     }
 
     private createPartialEndGameOverlay(): void {
-        this.partialEndGameOverlay = this.createRect("partialWinnerLayer", "100%", 7);
+        this.partialEndGameOverlay = this.createRect("partialWinnerLayer", "100%", 8, this.V_BOTTOM, "#000000");
         this.partialEndGameOverlay.isVisible = false;
         this.advancedTexture!.addControl(this.partialEndGameOverlay);
-
-        this.partialTransitionFill = this.createRect("partialTransitionFill", "100%", 8, this.V_BOTTOM, "#000000ff");
-        this.partialTransitionFill.alpha = 0;
-        this.partialEndGameOverlay.addControl(this.partialTransitionFill);
 
         const centerColumn = this.createGrid("winnerGrid", "100%");
         centerColumn.zIndex = 9;
 
-        centerColumn.addRowDefinition(0.3);
-        centerColumn.addRowDefinition(0.5);
+        centerColumn.addRowDefinition(0.2);
+        centerColumn.addRowDefinition(0.6);
         centerColumn.addRowDefinition(0.2);
         this.partialEndGameOverlay.addControl(centerColumn);
 
         const t = getCurrentTranslation();
         this.partialWinnerLabel = this.createTextBlock("winnerLabel", {
-            text: t.winner, outlineWidth: 2, fontSize: 48, zIndex: 10,
+            text: t.winner, outlineWidth: 2, fontSize: 64, zIndex: 10, alpha: 0
         });
         centerColumn.addControl(this.partialWinnerLabel, 0, 0);
 
         this.partialWinnerName = this.createTextBlock("winnerName", {
             text: "", color: "#FFD700", outlineWidth: 2, outlineColor: "#ffffffee",
-            fontSize: 100, fontWeight: "bold", zIndex: 10, alpha: 0,
+            fontSize: 100, fontWeight: "bold", zIndex: 10, alpha: 0
         });
         centerColumn.addControl(this.partialWinnerName, 1, 0);
 
@@ -317,12 +307,10 @@ export class GUIManager {
             const b = Math.round(255 * (1 - intensity));
             this.rally.color = `rgb(${r}, ${g}, ${b})`;
 
-            if (rally > 0 && rally % 5 === 0) {
-                this.animationManager?.rotateOnce(this.rally, 1, Motion.F.base);
-                this.animationManager?.pop(this.rally, Motion.F.fast, 1.5);
-                } else {
-                this.animationManager?.pop(this.rally, Motion.F.base, 1.5);
-                }
+            if (rally > 0 && rally % 5 === 0)
+                this.animationManager?.rotatePulse(this.rally, 1, Motion.F.slow);
+            else
+                this.animationManager?.pop(this.rally, Motion.F.base, 1.4);
         }
         this.previousRally = rally;
     }
@@ -368,9 +356,9 @@ export class GUIManager {
         if (show) {
             this.partialEndGameOverlay.isVisible = true;
             this.hudGrid.isVisible = false;
-            await this.animationManager?.fadeIn(this.partialTransitionFill, Motion.F.slow);
+            await this.animationManager?.fadeIn(this.partialEndGameOverlay, Motion.F.slow);
         } else {
-            await this.animationManager?.fadeOut(this.partialTransitionFill, Motion.F.fast);
+            await this.animationManager?.fadeOut(this.partialEndGameOverlay, Motion.F.fast);
             this.partialEndGameOverlay.isVisible = false;
             this.hudGrid.isVisible = true;
         }
@@ -382,8 +370,6 @@ export class GUIManager {
         const scene = this.scene;
         this.partialWinnerName.text = winner;
         this.partialEndGameOverlay.isVisible = true;
-        // this.partialWinnerLabel.isVisible = true;
-        // this.partialWinnerName.isVisible = true;
         this.partialEndGameOverlay.isPointerBlocker = true;
 
         await this.animationManager?.slideInY(this.partialWinnerLabel, -200, Motion.F.base);
@@ -522,7 +508,7 @@ export class GUIManager {
 
     // Clean up all GUI resources
     dispose(): void {
-        if (!this.isInitialized) return;
+        if (!this.isReady()) return;
         
         try {
             this.fpsText.dispose();

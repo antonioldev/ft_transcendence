@@ -84,7 +84,7 @@ export class RenderManager {
     }
 
     private updateFPSDisplay(deltaTime: number): void {
-        if (this.guiManager && this.guiManager.isInitialized) {
+        if (this.guiManager && this.guiManager.isReady()) {
             const fps = 1000 / deltaTime;
             this.guiManager.updateFPS(fps);
         }
