@@ -4,7 +4,7 @@ import { Logger } from '../utils/LogManager.js';
 import { GameConfig } from './GameConfig.js';
 import { GameMode, ViewMode } from '../shared/constants.js';
 import { getCurrentTranslation } from '../translations/translations.js';
-import { spawnFireworksInFrontOfCameras, FINAL_FIREWORKS, PARTIAL_FIREWORKS } from './scene/fireworks.js';
+import { spawnFireworksInFrontOfCameras, FINAL_FIREWORKS, PARTIAL_FIREWORKS, spawnGUISparkles } from './scene/fireworks.js';
 import { TextBlockOptions } from './utils.js';
 import { AnimationManager, Motion } from "./AnimationManager.js";
 import { AudioManager } from "./AudioManager.js";
@@ -370,7 +370,11 @@ export class GUIManager {
         const scene = this.scene;
         this.partialWinnerName.text = winner;
         this.partialEndGameOverlay.isVisible = true;
+        this.partialWinnerLabel.isVisible = true;
+        this.partialWinnerName.isVisible = true;
         this.partialEndGameOverlay.isPointerBlocker = true;
+
+        spawnGUISparkles(this.advancedTexture, this.animationManager);
 
         await this.animationManager?.slideInY(this.partialWinnerLabel, -200, Motion.F.base);
         await this.animationManager?.slideInY(this.partialWinnerName, 50, Motion.F.slow);

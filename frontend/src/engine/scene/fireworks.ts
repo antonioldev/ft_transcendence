@@ -1,4 +1,6 @@
 import { ParticleSystem, Texture, Color4, Vector3, Scene} from "@babylonjs/core";
+import { Animation} from "@babylonjs/core/Animations/animation";
+import { AdvancedDynamicTexture, Image} from "@babylonjs/gui";
 
 interface FireworkDetails {
     bursts: number;
@@ -160,4 +162,109 @@ export function spawnFireworksInFrontOfCameras(
   cameras.forEach((cam) => spawnBurstsForCamera(scene, cam, profile));
 }
 
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+
+    export interface SparkleDetails {
+      count: number;
+      duration: number;
+      size: { min: number; max: number };
+      colors: string[];
+      spread: { x: number; y: number };
+      zIndex?: number;
+    }
+
+    export const PARTIAL_GUI_SPARKLES: SparkleDetails = {
+      count: 24,
+      duration: 2000,
+      size: { min: 10, max: 40 },
+      colors: [
+        "#FFD700", // Gold
+        "#FFF8DC", // Cornsilk  
+        "#FFFFE0", // Light yellow
+        "#F0E68C", // Khaki
+        "#FFFFFF"  // White
+      ],
+      spread: { x: 80, y: 60 }
+    };
+
+    const pick = <T>(arr: T[]) => arr[(Math.random() * arr.length) | 0];
+
+    function createSparkleElement(texture: AdvancedDynamicTexture, config: SparkleDetails): Image {
+      const sparkle = new Image("sparkle", "assets/textures/particle/flare_transparent.png");
+      sparkle.stretch = Image.STRETCH_UNIFORM;
+
+      const size = rand(config.size.min, config.size.max);
+      sparkle.widthInPixels = size;
+      sparkle.heightInPixels = size;
+
+      // If tinting the image doesn't work in your setup, switch to Ellipse with background color.
+      sparkle.color = pick(config.colors);
+
+      // offsets from center, in %
+      sparkle.left = `${rand(-config.spread.x / 2, config.spread.x / 2)}%`;
+      sparkle.top  = `${rand(-config.spread.y / 2, config.spread.y / 2)}%`;
+
+      sparkle.alpha = 0;
+      sparkle.scaleX = 0;
+      sparkle.scaleY = 0;
+
+      // Assign a random zIndex between 9 and 12
+      sparkle.zIndex = Math.floor(rand(9, 13));
+
+      return sparkle;
+    }
+
+
+    function animateSparkle(sparkle: Image, animationManager: any, delay: number, duration: number): void {
+      setTimeout(() => {
+        // in
+        sparkle.animations = [
+          animationManager.createFloat("alpha", 0, 1, 8, false, animationManager.Motion?.ease.quadOut()),
+          animationManager.createFloat("scaleX", 0, 1, 8, false, animationManager.Motion?.ease.quadOut()),
+          animationManager.createFloat("scaleY", 0, 1, 8, false, animationManager.Motion?.ease.quadOut()),
+        ];
+
+        animationManager.play(sparkle, 8, false).then(() => {
+          // twinkle (cycle)
+          const LOOP_CYCLE = Animation.ANIMATIONLOOPMODE_CYCLE;
+          sparkle.animations = [
+            animationManager.createFloat("alpha", 1, 0.3, 20, true, animationManager.Motion?.ease.sine(), LOOP_CYCLE),
+          ];
+          animationManager.play(sparkle, 20, true);
+
+          // out near the end
+          setTimeout(() => {
+            sparkle.animations = [
+              animationManager.createFloat("alpha", sparkle.alpha, 0, 12, false, animationManager.Motion?.ease.quadOut()),
+              animationManager.createFloat("scaleX", sparkle.scaleX, 0, 12, false, animationManager.Motion?.ease.quadOut()),
+              animationManager.createFloat("scaleY", sparkle.scaleY, 0, 12, false, animationManager.Motion?.ease.quadOut()),
+            ];
+            animationManager.play(sparkle, 12, false).then(() => {
+              sparkle.dispose();
+            });
+          }, Math.max(0, duration - 500));
+        });
+      }, delay);
+    }
+
+
+    // Public API - Add this function to your fireworks.ts
+    export function spawnGUISparkles(
+      advancedTexture: AdvancedDynamicTexture, 
+      animationManager: any
+    ): void {
+      const config = PARTIAL_GUI_SPARKLES;
+      for (let i = 0; i < config.count; i++) {
+        const sparkle = createSparkleElement(advancedTexture, config);
+        advancedTexture.addControl(sparkle);
+        
+        // Stagger the sparkles
+        const delay = Math.random() * 800;
+        animateSparkle(sparkle, animationManager, delay, config.duration);
+      }
+}
 
