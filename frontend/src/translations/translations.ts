@@ -8,7 +8,7 @@ import { EL, requireElementById } from '../ui/elements.js';
 import { TranslationKey } from './Translation.js';
 
 export let currentLang = 0;
-export const langs: string[] = ['🇬🇧 English', '🇮🇹   Italiano', '🇫🇷  Français', '🇧🇷  Brasileiro', '🇷🇺    Русский'];
+export const langs: string[] = ['🇬🇧 English', '🇮🇹 Italiano', '🇫🇷 Français', '🇧🇷 Brasileiro', '🇷🇺 Русский'];
 
 const allTranslations = [english, italian, french, portuguese, russian];
 
@@ -122,7 +122,7 @@ export function updateLanguageDisplay(): void {
     tournamentBtn.textContent = t.tournamentMode;
 
     const modeBack = requireElementById(EL.BUTTONS.MODE_BACK);
-    modeBack.textContent = t.backToMain;
+    modeBack.textContent = t.back;
 
     const tournamentOnlineBtn = requireElementById(EL.GAME_MODES.TOURNAMENT_ONLINE);
     tournamentOnlineBtn.textContent = t.tournamentOnline;
