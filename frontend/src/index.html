@@ -5,8 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ft_transcendence</title>
     <link rel="icon" href="/assets/images/42_favicon.ico" type="image/x-icon">
-    <!-- <link rel="stylesheet" href="/styles/input.css"> --> <!-- FASE DE DESENVOLVIMENTO -> DELETE!!!! -->
-    <link href="/output.css" rel="stylesheet">
+    
+    <!-- DEVELOPMENT: CSS with hot reload -->
+    <link rel="stylesheet" href="/styles/output.css"> <!-- DEVELOPMENT -->
+    <!-- PRODUCTION: Compiled CSS -->
+    <!-- <link href="/output.css" rel="stylesheet"> --> <!-- PRODUCTION -->
+    
     <link href="https://fonts.googleapis.com/css2?family=Tiny5&display=swap" rel="stylesheet">
     <script src="https://cdn.babylonjs.com/babylon.js"></script>
     <script src="https://cdn.babylonjs.com/gui/babylon.gui.min.js"></script>
@@ -582,7 +586,9 @@
         </div>
     </div>
 
+    <!-- DEVELOPMENT: Use .ts for hot reload -->
     <script type="module" src="./core/main.ts"></script>
-     <!-- <script type="module" src="./core/main.js"></script> --> <!-- FASE DE DESENVOLVIMENTO -> DELETE!!!! -->
+    <!-- PRODUCTION: Use compiled .js -->
+    <!-- <script type="module" src="./core/main.js"></script> -->
 </body>
 </html>
