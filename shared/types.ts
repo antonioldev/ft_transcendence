@@ -43,6 +43,7 @@ export interface ClientMessage {
     username?: string;
     aiDifficulty?: number,
     powerup_type?: Powerup,
+    slot?: 0 | 1 | 2,
 }
 
 // Represents a message sent from the server to the client

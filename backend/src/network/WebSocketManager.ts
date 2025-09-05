@@ -325,7 +325,7 @@ export class WebSocketManager {
     } 
 
     private activatePowerup(client: Client, data: ClientMessage) {
-        if (!data.powerup_type || !data.side) {
+        if (!data.powerup_type || !data.slot || !data.side) {
             console.error("Error: cannot activate powerup, missing data");
             return ;
         }
@@ -339,7 +339,7 @@ export class WebSocketManager {
             console.error("Error: cannot activate powerup, game does not exist");
             return ;
         }
-        game.activate_powerup(data.powerup_type, data.side);
+        game.activate_powerup(data.powerup_type, data.slot, data.side);
     }
 
    /**

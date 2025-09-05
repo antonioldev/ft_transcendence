@@ -208,8 +208,8 @@ export class Game {
 		this.winner = (this.players[LEFT_PADDLE].client?.id === quitter_id) ? this.players[RIGHT_PADDLE] : this.players[LEFT_PADDLE];
 	}
 
-	activate_powerup(type: Powerup, side: number) {
-		if (this.paddles[side].powerup != type) {
+	activate_powerup(type: Powerup, slot: number, side: number) {
+		if (this.paddles[side].powerups[slot] != type) {
 			console.log(`Cannot actvivate powerup "${type}" as player lacks this ability`);
 			return ;
 		}
@@ -229,14 +229,14 @@ export class Game {
 				this.paddles[side].rect.width = GAME_CONFIG.increasedPaddleWidth;
 				break ;
 		}
-		
+
 		this._broadcast({
 			type: MessageType.POWERUP_ACTIVATED,
 			powerup_type: type,
 			side: side,
 		})
 
-		this.paddles[side].powerup = undefined;
+		this.paddles[side].powerups[slot] = null;
 		setTimeout(() => this.deactivate_powerup(type, side), GAME_CONFIG.powerupDuration)
 	}
 
@@ -257,11 +257,11 @@ export class Game {
 				this.paddles[side].rect.width = GAME_CONFIG.paddleWidth;
 				break ;
 		}
+		
 		this._broadcast({
 			type: MessageType.POWERUP_DEACTIVATED,
 			powerup_type: type,
 			side: side,
 		})
 	}
-
 }

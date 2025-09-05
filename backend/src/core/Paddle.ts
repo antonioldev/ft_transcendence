@@ -10,7 +10,7 @@ export class Paddle {
 	rect: Rect;
 	oldRect: Rect;
 	speed: number = GAME_CONFIG.paddleSpeed;
-	powerup?: Powerup = Powerup.GROW_PADDLE; // default value for testing only
+	powerups: (Powerup | null)[] = [Powerup.GROW_PADDLE, Powerup.INCREASE_PADDLE_SPEED, Powerup.SHRINK_OPPONENT]; // default value for testing only
 
 	constructor(side: number) {
 		this.side = side;
