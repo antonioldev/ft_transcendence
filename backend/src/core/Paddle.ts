@@ -2,6 +2,7 @@ import { Rect } from './utils.js';
 import { Ball } from './Ball.js'
 import { GAME_CONFIG, getBallStartPosition, getPlayerLeftPosition, 
          getPlayerRightPosition, LEFT_PADDLE, RIGHT_PADDLE, getPlayerBoundaries } from '../shared/gameConfig.js';
+import { Powerup } from '../shared/constants.js';
 
 export class Paddle {
 	side: number;
@@ -9,6 +10,7 @@ export class Paddle {
 	rect: Rect;
 	oldRect: Rect;
 	speed: number = GAME_CONFIG.paddleSpeed;
+	powerup?: Powerup = Powerup.GROW_PADDLE; // default value for testing only
 
 	constructor(side: number) {
 		this.side = side;

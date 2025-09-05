@@ -209,8 +209,12 @@ export class Game {
 	}
 
 	activate_powerup(type: Powerup, side: number) {
+		if (this.paddles[side].powerup != type) {
+			console.log(`Cannot actvivate powerup "${type}" as player lacks this ability`);
+			return ;
+		}
 		const other_side = side === LEFT_PADDLE ? RIGHT_PADDLE : LEFT_PADDLE;
-
+		
 		switch (type) {
 			case Powerup.SLOW_OPPONENT:
 				this.paddles[other_side].speed = GAME_CONFIG.decreasedPaddleSpeed;
@@ -225,11 +229,14 @@ export class Game {
 				this.paddles[side].rect.width = GAME_CONFIG.increasedPaddleWidth;
 				break ;
 		}
+		
 		this._broadcast({
 			type: MessageType.POWERUP_ACTIVATED,
 			powerup_type: type,
 			side: side,
 		})
+
+		this.paddles[side].powerup = undefined;
 		setTimeout(() => this.deactivate_powerup(type, side), GAME_CONFIG.powerupDuration)
 	}
 
