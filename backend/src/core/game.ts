@@ -119,17 +119,6 @@ export class Game {
 		}
 	}
 
-	assign_sides() {
-		if (!this.players[LEFT_PADDLE] || !this.players[RIGHT_PADDLE]) {
-			console.error("Error assigning sides: player(s) undefined")
-			return ;
-		}
-		this._broadcast({
-			type: MessageType.SIDE_ASSIGNMENT,
-			left: this.players[LEFT_PADDLE].name,
-			right: this.players[RIGHT_PADDLE].name,
-		});
-	}
 	async send_countdown(): Promise<void> {
 		for (let countdown = GAME_CONFIG.startDelay; countdown >= 0; countdown--) {
 			console.log(`Sending countdown: ${countdown}`);
@@ -156,7 +145,6 @@ export class Game {
 			this.stop();
 			return (this.winner);
 		}
-		this.assign_sides();
 		await this.send_countdown();
 		// run game loop, updating and broadcasting state to clients until win
 		while (this.running) {

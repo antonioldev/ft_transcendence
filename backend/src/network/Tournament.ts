@@ -112,6 +112,13 @@ abstract class AbstractTournament extends AbstractGameSession{
 				this.client_match_map?.set(player_left.client.id, match);
 				this.client_match_map?.set(player_right.client.id, match);
 			}
+			
+			this.broadcast({
+				type: MessageType.MATCH_ASSIGNMENT,
+				match_index: i,
+				left: player_left.name,
+				right: player_right.name,
+			})
 		}
 	}
 
@@ -120,8 +127,8 @@ abstract class AbstractTournament extends AbstractGameSession{
 		this.running = true;
 
 		this.add_CPUs();
-		this._match_players();
 		await this.waitForPlayersReady();
+		this._match_players();
 		
 		for (let current_round = 1; current_round <= this.num_rounds; current_round++) {
 			const matches = this.rounds.get(current_round);

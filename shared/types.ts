@@ -41,7 +41,7 @@ export interface ClientMessage {
     side?: number; // Player side (optional)
     direction?: Direction; // Movement direction (optional)
     username?: string;
-    aiDifficulty?: number
+    aiDifficulty?: number,
 }
 
 // Represents a message sent from the server to the client
@@ -49,7 +49,6 @@ export interface ServerMessage {
     type: MessageType; // Type of message
     AuthState?: AuthState;
     state?: GameStateData; // Current game state (optional)
-    side?: number; // Player side (optional)
     message?: string; // Additional message (optional)
     stats?: UserStats;
     countdown?: number;
@@ -58,7 +57,8 @@ export interface ServerMessage {
     left?: string; // name of player on the left
     right?: string; // name of player on the right
     username?: string;
-    sid?: string
+    sid?: string,
+    match_index?: number,
 }
 
 // Player information for game sessions
