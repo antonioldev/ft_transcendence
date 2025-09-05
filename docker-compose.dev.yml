@@ -1,0 +1,31 @@
+services:
+## FRONTEND DEV CONTAINER
+  frontend-dev:
+    container_name: transcendence-frontend-dev
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend/src:/app/src:cached
+      - ./shared:/app/src/shared:ro
+    environment:
+      - NODE_ENV=development
+    command: npm run dev
+
+## BACKEND CONTAINER
+  backend:
+    container_name: transcendence-backend
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    expose:
+      - "3000"
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./backend/src/database:/app/database
+    env_file:
+      - .env
+    command: npm start

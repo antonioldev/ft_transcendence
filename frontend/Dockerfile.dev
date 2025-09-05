@@ -1,0 +1,24 @@
+FROM node:alpine
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm install
+
+# Install concurrently globally
+RUN npm install -g concurrently
+
+# Copy source code
+COPY . .
+
+# Create output directory for CSS
+RUN mkdir -p src/styles
+
+# Expose port for Vite dev server
+EXPOSE 5173
+
+# Start development server
+CMD ["npm", "run", "dev"]

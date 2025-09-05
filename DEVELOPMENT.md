@@ -9,7 +9,7 @@ make dev
 This command will:
 - Build and start only the backend in Docker
 - Start the frontend in development mode with hot reload
-- Frontend will be served at: https://localhost:8443
+- Frontend will be served at: http://localhost:5173 (HTTP for development)
 
 ### Option 2: Manual
 ```bash
@@ -56,16 +56,59 @@ In the `frontend/src/index.html` file:
 
 ## Development environment features
 
-- ✅ Hot reload for TypeScript
-- ✅ Hot reload for CSS/TailwindCSS
-- ✅ Hot reload for HTML
-- ✅ Real-time TypeScript compilation
-- ✅ TailwindCSS watch mode
-- ✅ Vite dev server with HTTPS
+- Hot reload for HTML, TypeScript and CSS/TailwindCSS
+- Real-time TypeScript compilation
+- TailwindCSS watch mode
+- Vite dev server with HTTP (port 5173)
+- Docker-based backend development
+
+## Port Configuration
+
+### Development Mode (HTTP)
+- **Frontend**: `http://localhost:5173` (Vite dev server)
+- **Backend**: `http://localhost:3000` (Docker container)
+
+### Production Mode (HTTPS)
+- **Frontend**: `https://localhost:8443` (Docker with SSL)
+- **Backend**: `https://localhost:3000` (Docker container)
 
 ## Important notes
 
-- The development frontend runs at `https://localhost:8443`
+- The development frontend runs at `http://localhost:5173` (HTTP for faster development)
+- When switching back to production, it is necessary to update the port configuration:
+  - In `frontend/vite.config.js`, change ports from 5173 to 8443
 - The backend continues running in Docker on the configured port
 - Changes in TypeScript, CSS and HTML files are reflected instantly
 - To return to production, use `make build` and `make start`
+
+## Switching Between Modes
+
+### From Development to Production:
+1. Update `frontend/vite.config.js`:
+   ```javascript
+   server: {
+     host: '0.0.0.0',
+     port: 8443,  // Changed from 5173
+     hmr: {
+       host: 'localhost',
+       port: 8443  // Changed from 5173
+     }
+   }
+   ```
+2. Comment/uncomment lines in `frontend/src/index.html` as shown above
+3. Run `make build` and `make start`
+
+### From Production to Development:
+1. Update `frontend/vite.config.js`:
+   ```javascript
+   server: {
+     host: '0.0.0.0',
+     port: 5173,  // Changed from 8443
+     hmr: {
+       host: 'localhost',
+       port: 5173  // Changed from 5173
+     }
+   }
+   ```
+2. Comment/uncomment lines in `frontend/src/index.html` as shown above
+3. Run `make dev`

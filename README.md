@@ -83,6 +83,7 @@ ft_transcendence/
 - **Babylon.js**: 3D graphics engine for immersive mode
 - **TypeScript**: Type-safe client-side development
 - **Native WebSocket**: Real-time communication with backend
+- **Tailwind**: Framework CSS for styling
 
 ## Development
 
@@ -102,7 +103,7 @@ ft_transcendence/
    make run		 ----> I'm using docker-compose. need to check if it's ok
 
 3. **Access the game**
-   - Open your browser and navigate to: `http://localhost:8080`
+   - Open your browser and navigate to: `http://localhost:8443`
    - The backend WebSocket server runs on: `ws://localhost:3000`
 
 ### Available Make Commands
