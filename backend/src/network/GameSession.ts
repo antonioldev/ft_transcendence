@@ -70,6 +70,12 @@ export abstract class AbstractGameSession {
 	add_player(player: Player) {
 		if (this.players.length < this.player_capacity) {
 			this.players.push(player);
+			if (this.mode === GameMode.TOURNAMENT_REMOTE) {
+				this.broadcast({
+					type: MessageType.PLAYER_JOINED,
+					username: player.name,
+				})
+			}
 		}
 	}
 

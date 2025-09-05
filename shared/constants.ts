@@ -18,6 +18,7 @@ export enum MessageType {
     PARTIAL_WINNER_ANIMATION_DONE,  // CLIENT -> SERVER: Client notify the animation is completed, ready for new game
     WELCOME,             // SERVER -> CLIENT: Welcome message on connection
     PLAYER_READY,       // CLIENT -> SERVER: Client loaded babylon and is waiting for server
+    PLAYER_JOINED,      // used when a player joins an online tournament to display on load screen
     REGISTER_USER,         // New User want to register --> going to create a new row in db
     LOGIN_USER,            // User want to connect to their account --> calling function for validate info
     LOGOUT_USER,
