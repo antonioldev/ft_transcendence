@@ -34,8 +34,11 @@ export enum MessageType {
     SEND_GAME_HISTORY,
     REQUEST_USER_PROFILE,    // Type for back to frontend comm
     UPDATE_USER_PROFILE,     // Request to update user information 
-    COUNTDOWN,               // Used to send ountdown timer before game starts
-    MATCH_ASSIGNMENT,
+    COUNTDOWN,               // Used to send countdown timer before game starts
+    MATCH_ASSIGNMENT,        // Used to send tournament match assignment to all clients
+    ACTIVATE_POWERUP,        // Activates a specified powerup
+    POWERUP_ACTIVATED,
+    POWERUP_DEACTIVATED,
 }
 
 export enum WebSocketEvent {
@@ -64,6 +67,13 @@ export enum GameMode {
     TWO_PLAYER_REMOTE = 'online-mode',          // Two players over the network
 	TOURNAMENT_LOCAL = 'tournament-mode',       // Tournament mode, all player same page
     TOURNAMENT_REMOTE = 'tournament-online-mode'// Tournament mode, over the network
+}
+
+export enum Powerup {
+    SLOW_OPPONENT,
+    SHRINK_OPPONENT,
+    INCREASE_PADDLE_SPEED,
+    GROW_PADDLE,
 }
 
 // Directions for player movement

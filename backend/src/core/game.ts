@@ -2,7 +2,7 @@ import { Ball } from './Ball.js';
 import { Paddle, CPUBot } from './Paddle.js';
 import { Clock } from './utils.js';
 import { GAME_CONFIG, CPUDifficultyMap, LEFT_PADDLE, RIGHT_PADDLE } from '../shared/gameConfig.js';
-import { GameMode, MessageType} from '../shared/constants.js';
+import { GameMode, MessageType, Powerup} from '../shared/constants.js';
 import { PlayerInput, GameStateData, ServerMessage } from '../shared/types.js';
 import { Client, Player} from '../models/Client.js'
 import { saveGameResult } from '../data/validation.js';
@@ -41,7 +41,6 @@ export class Game {
 			}
 		}
 	}
-
 
 	// private isBot(paddle: Paddle): paddle is Paddle & { update: (dt: number) => void } {
 	// 	return typeof (paddle as any).update === 'function';
@@ -208,4 +207,54 @@ export class Game {
 		
 		this.winner = (this.players[LEFT_PADDLE].client?.id === quitter_id) ? this.players[RIGHT_PADDLE] : this.players[LEFT_PADDLE];
 	}
+
+	activate_powerup(type: Powerup, side: number) {
+		const other_side = side === LEFT_PADDLE ? RIGHT_PADDLE : LEFT_PADDLE;
+
+		switch (type) {
+			case Powerup.SLOW_OPPONENT:
+				this.paddles[other_side].speed = GAME_CONFIG.decreasedPaddleSpeed;
+				break ;
+			case Powerup.SHRINK_OPPONENT:
+				this.paddles[other_side].rect.width = GAME_CONFIG.decreasedPaddleWidth;
+				break ;			
+			case Powerup.INCREASE_PADDLE_SPEED:
+				this.paddles[side].speed = GAME_CONFIG.increasedPaddleSpeed;
+				break ;
+    		case Powerup.GROW_PADDLE:
+				this.paddles[side].rect.width = GAME_CONFIG.increasedPaddleWidth;
+				break ;
+		}
+		this._broadcast({
+			type: MessageType.POWERUP_ACTIVATED,
+			powerup_type: type,
+			side: side,
+		})
+		setTimeout(() => this.deactivate_powerup(type, side), GAME_CONFIG.powerupDuration)
+	}
+
+	deactivate_powerup(type: Powerup, side: number) {
+		const other_side = side === LEFT_PADDLE ? RIGHT_PADDLE : LEFT_PADDLE;
+
+		switch (type) {
+			case Powerup.SLOW_OPPONENT:
+				this.paddles[other_side].speed = GAME_CONFIG.paddleSpeed;
+				break ;
+			case Powerup.SHRINK_OPPONENT:
+				this.paddles[other_side].rect.width = GAME_CONFIG.paddleWidth;
+				break ;			
+			case Powerup.INCREASE_PADDLE_SPEED:
+				this.paddles[side].speed = GAME_CONFIG.paddleSpeed;
+				break ;
+    		case Powerup.GROW_PADDLE:
+				this.paddles[side].rect.width = GAME_CONFIG.paddleWidth;
+				break ;
+		}
+		this._broadcast({
+			type: MessageType.POWERUP_DEACTIVATED,
+			powerup_type: type,
+			side: side,
+		})
+	}
+
 }

@@ -142,6 +142,9 @@ export class WebSocketManager {
                 case MessageType.PARTIAL_WINNER_ANIMATION_DONE:
                     this.handlePlayerReadyAfterGame(client);
                     break;
+                case MessageType.ACTIVATE_POWERUP:
+                    this.activatePowerup(client, data);
+                    break;
                 case MessageType.QUIT_GAME:
                     this.handleQuitGame(client);
                     break;
@@ -320,6 +323,24 @@ export class WebSocketManager {
         gameManager.removeClientFromGames(client);
         this.clients.delete(client.id);
     } 
+
+    private activatePowerup(client: Client, data: ClientMessage) {
+        if (!data.powerup_type || !data.side) {
+            console.error("Error: cannot activate powerup, missing data");
+            return ;
+        }
+        const gameSession = gameManager.findClientGame(client);
+        if (!gameSession) {
+            console.error("Error: cannot activate powerup, game does not exist");
+            return ;
+        }
+        const game = gameSession.findGame(client.id);
+        if (!game) {
+            console.error("Error: cannot activate powerup, game does not exist");
+            return ;
+        }
+        game.activate_powerup(data.powerup_type, data.side);
+    }
 
    /**
      * Handles the disconnection of a client, removing them from games and cleaning up resources.

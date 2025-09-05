@@ -25,6 +25,13 @@ export const GAME_CONFIG = {
     paddleOffsetFromEdge: 2, // Distance from the edge of the field
     paddleSpeed: 15, // Speed of the paddle
     
+    // Powerup settings
+    increasedPaddleWidth: 5, // Width of the paddle when GROW_PADDLE activated
+    decreasedPaddleWidth: 1.5, // Width of the paddle when SHRINK_PADDLE activated
+    increasedPaddleSpeed: 20, // Speed of the paddle when INCREASE_PADDLE_SPEED activated
+    decreasedPaddleSpeed: 10, // Speed of the paddle when SLOW_PADDLE activated
+    powerupDuration: 7,       // time elapsed before powerup is deactivated
+
     // Camera settings (mainly for frontend)
     camera2DHeight: 25, // Camera height in 2D mode
     camera3DHeight: 3, // Camera height in 3D mode

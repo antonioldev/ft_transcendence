@@ -1,4 +1,4 @@
-import { MessageType, GameMode, Direction, GameState, AuthState} from './constants.js';
+import { MessageType, GameMode, Direction, GameState, AuthState, Powerup} from './constants.js';
 
 // ============================== SHARED TYPES  ==============================
 
@@ -42,6 +42,7 @@ export interface ClientMessage {
     direction?: Direction; // Movement direction (optional)
     username?: string;
     aiDifficulty?: number,
+    powerup_type?: Powerup,
 }
 
 // Represents a message sent from the server to the client
@@ -54,11 +55,13 @@ export interface ServerMessage {
     countdown?: number;
     gameHistory?: GameHistoryEntry[];
     winner?: string; // sent on end Game to display who won
-    left?: string; // name of player on the left
-    right?: string; // name of player on the right
+    left?: string; // used to assign name of player on the left
+    right?: string; // used to assign name of player on the right
     username?: string;
     sid?: string,
     match_index?: number,
+    powerup_type?: Powerup,
+    side?: number; // Player side (optional)
 }
 
 // Player information for game sessions
