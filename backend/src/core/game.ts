@@ -39,6 +39,11 @@ export class Game {
 				const noiseFactor =  CPUDifficultyMap[player.difficulty];
 				this.paddles[side] = new CPUBot(side, this.ball, noiseFactor);
 			}
+			this._broadcast({
+				type: MessageType.POWERUP_ASSIGNMENT,
+				side: side,
+				powerups: this.paddles[side].powerups,
+			})
 		}
 	}
 
@@ -232,7 +237,7 @@ export class Game {
 
 		this._broadcast({
 			type: MessageType.POWERUP_ACTIVATED,
-			powerup_type: type,
+			powerup: type,
 			side: side,
 		})
 
@@ -257,10 +262,10 @@ export class Game {
 				this.paddles[side].rect.width = GAME_CONFIG.paddleWidth;
 				break ;
 		}
-		
+
 		this._broadcast({
 			type: MessageType.POWERUP_DEACTIVATED,
-			powerup_type: type,
+			powerup: type,
 			side: side,
 		})
 	}

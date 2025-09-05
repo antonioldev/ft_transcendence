@@ -38,6 +38,7 @@ export enum MessageType {
     COUNTDOWN,               // Used to send countdown timer before game starts
     MATCH_ASSIGNMENT,        // Used to send tournament match assignment to all clients
     ACTIVATE_POWERUP,        // Activates a specified powerup
+    POWERUP_ASSIGNMENT,
     POWERUP_ACTIVATED,
     POWERUP_DEACTIVATED,
 }
