@@ -67,6 +67,13 @@ abstract class AbstractTournament extends AbstractGameSession{
 		return (round_count);
 	}
 
+	private _randomize_players() {
+		for (let i = this.players.length - 1; i > 0; i--) { 
+			const j = Math.floor(Math.random() * (i + 1)); 
+			[this.players[i], this.players[j]] = [this.players[j], this.players[i]]; 
+		} 
+	}
+
 	// creates the tournament tree structure and assigns each match to the rounds map
 	private _create_match_tree(current_match: Match) {
 		this.rounds.get(current_match.round)?.push(current_match);
@@ -85,7 +92,7 @@ abstract class AbstractTournament extends AbstractGameSession{
 
 	// assigns players to the matches in round_1
 	private _match_players(): void {
-		// TODO: randomize start order ??
+		this._randomize_players();
 
 		const round_one = this.rounds.get(1);
 		if (!round_one) {

@@ -191,38 +191,6 @@ export class OneOffGame extends AbstractGameSession{
 		});
 	}
 	
-	// pause(): boolean {
-	// 	if (!this.running || !this.game) {
-	// 		console.log(`Game ${this.id} is not running, cannot pause`);
-	// 		return false;
-	// 	}
-	// 	if (this.game.paused) {
-	// 		console.log(`Game ${this.id} is already paused`);
-	// 		return false;
-	// 	}
-
-	// 	this.game.pause();
-	// 	return true;
-	// }
-
-	// resume(): boolean {
-	// 	if (!this.running || !this.game) {
-	// 		console.log(`Game ${this.id} is not running, cannot resume`);
-	// 		return false;
-	// 	}
-	// 	if (!this.game.paused) {
-	// 		console.log(`Game ${this.id} is not paused`);
-	// 		return false;
-	// 	}
-
-	// 	this.game.resume();
-	// 	return true;
-	// }
-
-	// enqueue(input: PlayerInput): void  {
-	// 	this.game?.enqueue(input);
-	// }
-	
 	handlePlayerQuit(quitter_id: string): void {
 		if (this.game && this.mode == GameMode.TWO_PLAYER_REMOTE) {
 			this.game.setOtherPlayerWinner(quitter_id);
