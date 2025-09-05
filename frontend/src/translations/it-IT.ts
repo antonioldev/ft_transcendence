@@ -59,5 +59,7 @@ export const italian: Translation = {
     hard: ' (Difficile)',
     impossible: ' (Impossibile)',
     winner: 'Vincitore della partita',
-    continue: 'Premi SPAZIO per continuare'
+    continue: 'Premi SPAZIO per continuare',
+    tournamentTitle: 'Classifica del Torneo',
+    escToClose: 'Premere ESC per chiudere'
 };

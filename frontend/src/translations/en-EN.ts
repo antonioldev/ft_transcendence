@@ -59,5 +59,7 @@ export const english: Translation = {
     hard: ' (Hard)',
     impossible: ' (Impossible)',
     winner: 'Winner',
-    continue: 'Press SPACE to continue'
+    continue: 'Press SPACE to continue',
+    tournamentTitle: 'Bracket',
+    escToClose: 'Press ESC to close'
 };

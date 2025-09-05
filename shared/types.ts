@@ -59,6 +59,8 @@ export interface ServerMessage {
     username?: string;
     sid?: string,
     match_index?: number,
+    match_total?: number,
+    round_index?: number
 }
 
 // Player information for game sessions
