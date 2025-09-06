@@ -124,6 +124,24 @@ export class AnimationManager {
         return this.play(target, frames, false);
     }
 
+    slideInX(target: Control, fromPx = -400, frames = Motion.F.base) {
+        target.leftInPixels = fromPx;
+        target.alpha = 0;
+        target.animations = [
+            this.createFloat("leftInPixels", fromPx, 0, frames, false, Motion.ease.quadOut()),
+            this.createFloat("alpha", 0, 1, frames, false, Motion.ease.quadOut()),
+        ];
+        return this.play(target, frames, false);
+    }
+
+    slideOutX(target: Control, toPx = 400, frames = Motion.F.fast) {
+        target.animations = [
+            this.createFloat("leftInPixels", 0, toPx, frames, false, Motion.ease.quadOut()),
+            this.createFloat("alpha", 1, 0, frames, false, Motion.ease.quadOut()),
+        ];
+        return this.play(target, frames, false);
+    }
+
     twinkle(target: Control, frames = Motion.F.slow) {
     target.animations = [ this.createFloat("alpha", 1, 0.6, frames, true, Motion.ease.sine(), Animation.ANIMATIONLOOPMODE_CYCLE) ];
     return this.play(target, frames, true);
