@@ -112,15 +112,34 @@ abstract class AbstractTournament extends AbstractGameSession{
 				this.client_match_map?.set(player_left.client.id, match);
 				this.client_match_map?.set(player_right.client.id, match);
 			}
-			
-			this.broadcast({
-				type: MessageType.MATCH_ASSIGNMENT,
-				match_index: i,
-				left: player_left.name,
-				right: player_right.name,
-			})
+
+			// this.broadcast({
+			// 	type: MessageType.MATCH_ASSIGNMENT,
+			// 	round_index: 1,
+			// 	match_index: i,
+			// 	left: player_left.name,
+			// 	right: player_right.name,
+			// })
 		}
 	}
+
+	private broadcastRoundSchedule(roundIndex: number): void {
+		const matches = this.rounds.get(roundIndex);
+		if (!matches || matches.length === 0) return;
+
+		matches.forEach((m, i) => {
+			this.broadcast({
+			type: MessageType.MATCH_ASSIGNMENT,
+			round_index: roundIndex,
+			match_index: i,
+			match_total: matches.length,
+			left:  m.players[0]?.name ?? "TBD",
+			right: m.players[1]?.name ?? "TBD",
+			});
+		});
+	}
+				
+	
 
 	async start(): Promise<void> {
 		if (this.running || this.players.length != this.player_capacity) return ;
@@ -133,7 +152,7 @@ abstract class AbstractTournament extends AbstractGameSession{
 		for (let current_round = 1; current_round <= this.num_rounds; current_round++) {
 			const matches = this.rounds.get(current_round);
 			if (!matches) return ; // maybe throw err
-			
+			this.broadcastRoundSchedule(current_round);
 			await this.run(matches);
 		}
 	}

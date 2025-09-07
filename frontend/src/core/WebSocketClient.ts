@@ -144,6 +144,9 @@ export class WebSocketClient {
             case MessageType.SEND_GAME_HISTORY:
                 this.triggerCallback(WebSocketEvent.GAME_HISTORY, message.gameHistory);
                 break;
+            case MessageType.MATCH_ASSIGNMENT:
+                this.triggerCallback(WebSocketEvent.MATCH_ASSIGNMENT, message);
+                break;
             default:
                 Logger.errorAndThrow(`Unhandled message type: ${message.type}`, 'WebSocketClient');
                 break;

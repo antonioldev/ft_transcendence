@@ -4,7 +4,6 @@ import { MessageType, GameMode, AiDifficulty } from '../shared/constants.js';
 import { PlayerInput, ServerMessage } from '../shared/types.js';
 import { Match } from './Tournament.js';
 import { gameManager } from '../models/gameManager.js';
-import { LEFT_PADDLE, RIGHT_PADDLE } from '../shared/gameConfig.js';
 
 export abstract class AbstractGameSession {
 	mode: GameMode;
@@ -180,7 +179,6 @@ export class OneOffGame extends AbstractGameSession{
 		
 		this.add_CPUs(); // add any CPU's if necessary
 		await this.waitForPlayersReady();
-		this.assign_sides();
 		
 		this.game = new Game(this.players, this.broadcast.bind(this))
 		await this.game.run();
@@ -196,18 +194,6 @@ export class OneOffGame extends AbstractGameSession{
 		this.broadcast({ 
 			type: MessageType.SESSION_ENDED,
 			...(this.game.winner?.name && { winner: this.game.winner.name })
-		});
-	}
-
-	assign_sides() {
-		if (!this.players[LEFT_PADDLE] || !this.players[RIGHT_PADDLE]) {
-			console.error("Error assigning sides: player(s) undefined")
-			return ;
-		}
-		this.broadcast({
-			type: MessageType.SIDE_ASSIGNMENT,
-			left: this.players[LEFT_PADDLE].name,
-			right: this.players[RIGHT_PADDLE].name,
 		});
 	}
 	

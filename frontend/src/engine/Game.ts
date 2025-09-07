@@ -167,6 +167,7 @@ export class Game {
         webSocketClient.registerCallback(WebSocketEvent.GAME_ENDED, (message: any) => { this.onServerEndedGame(message.winner); });
         webSocketClient.registerCallback(WebSocketEvent.SESSION_ENDED, (message: any) => { this.onServerEndedSession(message.winner); });
         webSocketClient.registerCallback(WebSocketEvent.SIDE_ASSIGNMENT, (message: any) => { this.handlePlayerAssignment(message.left, message.right); });
+        webSocketClient.registerCallback(WebSocketEvent.MATCH_ASSIGNMENT, (message: any) => { this.handleTournamentGames(message); })
         webSocketClient.registerCallback(WebSocketEvent.COUNTDOWN, (message: any) => { this.handleCountdown(message.countdown);  })
     }
 
@@ -361,8 +362,25 @@ export class Game {
         this.guiManager?.updatePlayerNames(leftPlayerName, rightPlayerName);
         this.assignPlayerSide(leftPlayerName, 0);
         this.assignPlayerSide(rightPlayerName, 1);
+
         this.renderManager?.updateActiveCameras(this.config.viewMode, this.controlledSides, this.config.isLocalMultiplayer);
         this.guiManager?.updateControlVisibility(this.controlledSides.includes(0), this.controlledSides.includes(1));
+    }
+
+
+    private handleTournamentGames(message: any): void {
+        // console.error("ROUND number: " + message.round_index);
+        // console.error("Match number: " + message.match_index);
+        // console.error("Total: " + message.match_total);
+        // console.error(message.left);
+        // console.error(message.right);
+        this.guiManager?.insertMatch(
+            message.round_index,
+            message.match_index,
+            message.left ?? null,
+            message.right ?? null,
+            message.match_total ?? undefined
+        );
     }
 
     private updateInput(): void {

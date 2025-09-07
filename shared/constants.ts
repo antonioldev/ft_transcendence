@@ -59,7 +59,8 @@ export enum WebSocketEvent {
     REGISTRATION_SUCCESS = 'REGISTRATION_SUCCESS',
     REGISTRATION_FAILURE = 'REGISTRATION_FAILURE',
     USER_STATS = 'USER_STATS',
-    GAME_HISTORY = 'GAME_HISTORY'
+    GAME_HISTORY = 'GAME_HISTORY',
+    MATCH_ASSIGNMENT = 'match_assignment'
 }
 
 // Different game modes available

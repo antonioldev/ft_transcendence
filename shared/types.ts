@@ -61,6 +61,8 @@ export interface ServerMessage {
     username?: string;
     sid?: string,
     match_index?: number,
+    match_total?: number,
+    round_index?: number
     powerup?: Powerup,
     powerups?: (Powerup | null)[],
     side?: number; // Player side (optional)
