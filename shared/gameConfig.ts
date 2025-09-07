@@ -30,7 +30,7 @@ export const GAME_CONFIG = {
     decreasedPaddleWidth: 1.5, // Width of the paddle when SHRINK_PADDLE activated
     increasedPaddleSpeed: 20, // Speed of the paddle when INCREASE_PADDLE_SPEED activated
     decreasedPaddleSpeed: 10, // Speed of the paddle when SLOW_PADDLE activated
-    powerupDuration: 7,       // time elapsed before powerup is deactivated
+    powerupDuration: 5000,       // time elapsed before powerup is deactivated
 
     // Camera settings (mainly for frontend)
     camera2DHeight: 25, // Camera height in 2D mode

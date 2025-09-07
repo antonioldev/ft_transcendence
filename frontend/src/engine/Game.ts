@@ -569,6 +569,7 @@ export class Game {
                     break;
             }
         } else {
+            console.error("back");
             switch (message.powerup) {
                 case Powerup.SHRINK_OPPONENT:
                     if (message.side === 0)
