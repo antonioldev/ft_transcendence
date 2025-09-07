@@ -39,10 +39,13 @@ export class Paddle {
 	}
 
 	assign_random_powerups() {
-		const num_powerups = Object.keys(Powerup).length / 2;
 		for (let i = 0; i < 3; i++) {
-			this.powerups[i] = Math.floor(Math.random() * num_powerups);
+			this.powerups[i] = Powerup.GROW_PADDLE;
 		}
+		// const num_powerups = Object.keys(Powerup).length / 2;
+		// for (let i = 0; i < 3; i++) {
+		// 	this.powerups[i] = Math.floor(Math.random() * num_powerups);
+		// }
 	}
 }
 

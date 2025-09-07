@@ -189,6 +189,32 @@ export class AnimationManager {
         return anim;
     }
 
+    scaleWidth(
+        target: any,
+        from: number,
+        to: number,
+        frames = Motion.F.fast,
+        ease: EasingFunction = Motion.ease.quadOut()
+    ): Promise<void> {
+        // Create a custom animation for width scaling
+        const anim = new Animation(
+            "widthAnimation",
+            "scaling.x",
+            Motion.fps,
+            Animation.ANIMATIONTYPE_FLOAT,
+            Animation.ANIMATIONLOOPMODE_CONSTANT
+        );
+        
+        anim.setEasingFunction(ease);
+        anim.setKeys([
+            { frame: 0, value: from },
+            { frame: frames, value: to }
+        ]);
+        
+        target.animations = [anim];
+        return this.play(target, frames, false);
+    }
+
     
 
 }

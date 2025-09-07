@@ -325,10 +325,16 @@ export class WebSocketManager {
     } 
 
     private activatePowerup(client: Client, data: ClientMessage) {
-        if (!data.powerup_type || !data.slot || !data.side) {
+        if (data.powerup_type === undefined || data.powerup_type === null || 
+            data.slot === undefined || data.slot === null || 
+            data.side === undefined || data.side === null) {
             console.error("Error: cannot activate powerup, missing data");
-            return ;
+            return;
         }
+        // if (!data.powerup_type || !data.slot || !data.side) {
+        //     console.error("Error: cannot activate powerup, missing data");
+        //     return ;
+        // }
         const gameSession = gameManager.findClientGame(client);
         if (!gameSession) {
             console.error("Error: cannot activate powerup, game does not exist");

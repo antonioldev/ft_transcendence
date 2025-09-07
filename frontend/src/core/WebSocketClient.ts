@@ -1,5 +1,5 @@
 import { Logger } from '../utils/LogManager.js';
-import { ConnectionStatus, MessageType, GameMode, Direction, WebSocketEvent } from '../shared/constants.js'
+import { ConnectionStatus, MessageType, GameMode, Direction, WebSocketEvent, Powerup } from '../shared/constants.js'
 import { ClientMessage, ServerMessage, PlayerInfo, RegisterUser, LoginUser } from '../shared/types.js'
 
 /**
@@ -147,6 +147,15 @@ export class WebSocketClient {
             case MessageType.MATCH_ASSIGNMENT:
                 this.triggerCallback(WebSocketEvent.MATCH_ASSIGNMENT, message);
                 break;
+            case MessageType.POWERUP_ASSIGNMENT:
+                this.triggerCallback(WebSocketEvent.POWERUP_ASSIGNMENT, message); 
+                break;
+            case MessageType.POWERUP_ACTIVATED:
+                this.triggerCallback(WebSocketEvent.POWERUP_ACTIVATED, message); 
+                break;
+            case MessageType.POWERUP_DEACTIVATED:
+                this.triggerCallback(WebSocketEvent.POWERUP_DEACTIVATED, message); 
+                break;
             default:
                 Logger.errorAndThrow(`Unhandled message type: ${message.type}`, 'WebSocketClient');
                 break;
@@ -183,6 +192,11 @@ export class WebSocketClient {
 
     notifyGameAnimationDone(): void {
         this.sendMessage(MessageType.PARTIAL_WINNER_ANIMATION_DONE)
+    }
+
+    sendPowerupActivationRequest(powerup_type: Powerup, side: number, slot: number): void {
+        console.error(powerup_type +" "+ side +" "+ slot);
+        this.sendMessage(MessageType.ACTIVATE_POWERUP, {powerup_type, slot, side});
     }
 
     private sendMessage(type: MessageType, data: any = {}): void {

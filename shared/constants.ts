@@ -60,7 +60,10 @@ export enum WebSocketEvent {
     REGISTRATION_FAILURE = 'REGISTRATION_FAILURE',
     USER_STATS = 'USER_STATS',
     GAME_HISTORY = 'GAME_HISTORY',
-    MATCH_ASSIGNMENT = 'match_assignment'
+    MATCH_ASSIGNMENT = 'match_assignment',
+    POWERUP_ASSIGNMENT = 'powerup_assignment',
+    POWERUP_ACTIVATED = 'powerup_activated',
+    POWERUP_DEACTIVATED = 'powerup_deactivated'
 }
 
 // Different game modes available

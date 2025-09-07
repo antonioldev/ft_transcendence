@@ -129,13 +129,13 @@ export function createWalls(scene: any, name: string, mode: ViewMode, texture?: 
 export function createPlayer(scene: any, name: string, position: any, size: Size, color: any, mode: ViewMode, texture?: TextureSet): any {
     
     // Capsule - Creation of the object
-    const player = MeshBuilder.CreateCapsule(name, {radius: size.z / 2, height: size.x, tessellation: 16 }, scene);
-    player.rotation.z = Math.PI / 2;
-    player.position = position;
+    // const player = MeshBuilder.CreateCapsule(name, {radius: size.z / 2, height: size.x, tessellation: 16 }, scene);
+    // player.rotation.z = Math.PI / 2;
+    
 
     // or box
-    // const player = BABYLON.MeshBuilder.CreateBox(name, {width: size.x, height: size.y, depth: size.z}, scene);
-    
+    const player = MeshBuilder.CreateBox(name, {width: size.x, height: size.y, depth: size.z}, scene);
+    player.position = position;
     // Creation of material
     const playerScale = getStandardTextureScale(size.x, size.z, MAP_OBJECT_TYPE.PLAYER);
     player.material = createMaterial(scene, name + "Material", color, mode, texture, playerScale);

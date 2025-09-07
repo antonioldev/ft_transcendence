@@ -246,10 +246,10 @@ export class Game {
 				this.paddles[side].rect.width = GAME_CONFIG.increasedPaddleWidth;
 				break ;
 		}
-
 		this._broadcast({
 			type: MessageType.POWERUP_ACTIVATED,
 			powerup: type,
+			slot: slot,
 			side: side,
 		})
 

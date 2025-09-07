@@ -65,6 +65,7 @@ export interface ServerMessage {
     round_index?: number
     powerup?: Powerup,
     powerups?: (Powerup | null)[],
+    slot?: number,
     side?: number; // Player side (optional)
 }
 
