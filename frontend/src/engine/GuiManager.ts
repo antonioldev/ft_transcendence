@@ -9,6 +9,11 @@ import { TextBlockOptions } from './utils.js';
 import { AnimationManager, Motion } from "./AnimationManager.js";
 import { AudioManager } from "./AudioManager.js";
 
+interface Match {
+    left: string | null;
+    right: string | null;
+}
+
 /**
  * Manages all GUI elements for the game
  */
@@ -50,8 +55,7 @@ export class GUIManager {
     private isTournament = false;
     private bracketOverlay!: Rectangle;
     private bracketText: TextBlock | null = null;
-    private bracketRoundTotals = new Map<number, number>(); // round -> match_total
-    private bracketStore = new Map<number, Map<number, { left: string | null; right: string | null }>>();
+    private rounds: Match[][] = [];
 
     constructor(private scene: Scene, config: GameConfig, private animationManager: AnimationManager, audioManager: AudioManager) {
         try {
@@ -202,10 +206,12 @@ export class GUIManager {
 
         const t = getCurrentTranslation();
         this.bracketOverlay = this.createRect("bracketOverlay", "80%", 20, this.V_CENTER, "rgba(2, 2, 2, 0.98)");
-        this.bracketOverlay.width = "50%"
+        this.bracketOverlay.horizontalAlignment = this.H_LEFT;
+        this.bracketOverlay.width = "48%"
         this.bracketOverlay.isVisible = false;
         this.bracketOverlay.isPointerBlocker = true;
         this.advancedTexture.addControl(this.bracketOverlay);
+        
         const bracketGrid = this.createGrid("bracketGrid", "100%");
         bracketGrid.addRowDefinition(40, true);
         bracketGrid.addRowDefinition(1, false);
@@ -598,8 +604,8 @@ export class GUIManager {
 
             this.bracketText?.dispose();
             this.bracketText = null;
-            this.bracketRoundTotals.clear();
-            this.bracketStore.clear();
+            // this.bracketRoundTotals.clear();
+            // this.bracketStore.clear();
 
             this.advancedTexture?.dispose();
             this.advancedTexture = null;
@@ -611,6 +617,8 @@ export class GUIManager {
         }
     }
 
+///////////////////////////////////////////////////////////////////////////////////////// second ------------
+
     insertMatch(
         roundIndex: number,
         matchIndex: number,
@@ -618,106 +626,126 @@ export class GUIManager {
         right: string | null,
         matchTotal?: number
     ): void {
-        if (roundIndex === 1 && this.bracketStore.size === 0 && matchTotal !== undefined)
-            this.initializeTournamentStructure(matchTotal);
+        if (roundIndex === 1 && this.rounds.length === 0 && matchTotal !== undefined)
+            this.initializeTournament(matchTotal);
 
-        // Regular match insertion logic
-        if (matchTotal !== undefined && matchTotal > 0)
-            this.bracketRoundTotals.set(roundIndex, matchTotal);
+        this.ensureRound(roundIndex, matchTotal);
 
-        let roundMap = this.bracketStore.get(roundIndex);
-        if (!roundMap) {
-            roundMap = new Map();
-            this.bracketStore.set(roundIndex, roundMap);
-        }
-
-        const prev = roundMap.get(matchIndex) ?? { left: null, right: null };
-        roundMap.set(matchIndex, {
-            left: left ?? prev.left,
-            right: right ?? prev.right
-        });
+        const round = this.rounds[roundIndex - 1];
+        if (!round[matchIndex])
+            round[matchIndex] = { left: null, right: null };
+        
+        const match = round[matchIndex];
+        match.left = left ?? match.left;
+        match.right = right ?? match.right;
 
         this.renderBracket();
     }
 
-    private initializeTournamentStructure(round1Matches: number): void {
-        let currentMatches = round1Matches;
-        let roundIndex = 2;
+    private initializeTournament(round1Matches: number): void {
+        this.rounds = [];
+        let matchCount = round1Matches;
 
-        while (currentMatches > 1) {
-            currentMatches = Math.ceil(currentMatches / 2);
-            this.bracketRoundTotals.set(roundIndex, currentMatches);
+        while (matchCount >= 1) {
+            this.rounds.push(Array(matchCount).fill(null).map(() => ({ 
+                left: matchCount === round1Matches ? null : "tbd", 
+                right: matchCount === round1Matches ? null : "tbd" 
+            })));
             
-            const roundMap = new Map<number, { left: string | null; right: string | null }>();
-            for (let i = 0; i < currentMatches; i++)
-                roundMap.set(i, { left: "wait", right: "wait" });
+            if (matchCount === 1) break;
+            matchCount = Math.ceil(matchCount / 2);
+        }
+    }
 
-            this.bracketStore.set(roundIndex, roundMap);
-            roundIndex++;
+    private ensureRound(roundIndex: number, matchTotal?: number): void {
+        const arrayIndex = roundIndex - 1;
+        
+        // Extend rounds array if needed
+        while (this.rounds.length <= arrayIndex) {
+            this.rounds.push([]);
+        }
+        
+        // Set round size if provided
+        if (matchTotal !== undefined && matchTotal > 0) {
+            const round = this.rounds[arrayIndex];
+            while (round.length < matchTotal) {
+                round.push({ left: "tbd", right: "tbd" });
+            }
         }
     }
 
     private renderBracket(): void {
         if (!this.bracketText) return;
+        
+        this.bracketText.text = this.rounds.length === 0 ? "—" : this.buildBracketText();
+    }
 
-        const rounds = Array.from(this.bracketStore.keys()).sort((a, b) => a - b);
-        if (rounds.length === 0) {
-            this.bracketText.text = "—";
-            return;
-        }
-
+    private buildBracketText(): string {
         const colWidth = 10;
-        const colGap = " ";
-        const columns: string[][] = [];
+        const spacing = 2;
+        
+        // Build each round as a column of text
+        const columns = this.rounds.map((round, roundIndex) => ({
+            lines: this.buildRoundLines(round, roundIndex, colWidth),
+            width: colWidth + spacing
+        }));
 
-        for (const roundIndex of rounds) {
-            const matchesMap = this.bracketStore.get(roundIndex)!;
-            const total = this.bracketRoundTotals.get(roundIndex) ?? 0; // Server always sends this
-            const col: string[] = [];
+        return this.joinColumns(columns);
+    }
 
-            for (let i = 0; i < total; i++) {
-                const m = matchesMap.get(i);
-                const left = m?.left ?? "wait";
-                const right = m?.right ?? "wait";
-
-                const ri = rounds.indexOf(roundIndex);
-                const gapRows = Math.max(1, (1 << ri) * 2 - 1);
-
-                col.push(`${this.pad(left, colWidth)} ┐`);
-                for (let g = 0; g < gapRows; g++) {
-                    const glyph = g === Math.floor(gapRows / 2) ? "├" : "│";
-                    col.push(`${" ".repeat(colWidth)} ${glyph}`);
-                }
-                col.push(`${this.pad(right, colWidth)} ┘`);
-                col.push("");
-            }
-            columns.push(col);
-        }
-
-        // Center columns vertically
-        const maxHeight = Math.max(...columns.map(c => c.length));
-        for (const col of columns) {
-            const padTop = Math.floor((maxHeight - col.length) / 2);
-            const padBottom = maxHeight - col.length - padTop;
-            for (let i = 0; i < padTop; i++) col.unshift("");
-            for (let i = 0; i < padBottom; i++) col.push("");
-        }
-
-        // Merge columns
+    private buildRoundLines(round: Match[], roundIndex: number, colWidth: number): string[] {
         const lines: string[] = [];
-        for (let row = 0; row < maxHeight; row++) {
-            const parts = columns.map(col => (col[row] || "").padEnd(colWidth + 2, " "));
-            lines.push(parts.join(colGap));
-        }
+        const verticalSpacing = Math.pow(2, roundIndex + 1) - 1;
 
-        this.bracketText.text = lines.join("\n");
+        round.forEach((match, matchIndex) => {
+            const left = this.pad(match.left ?? " tbd", colWidth);
+            const right = this.pad(match.right ?? " tbd", colWidth);
+            
+            // Add match bracket
+            lines.push(`${left} ┐`);
+            
+            // Add vertical connectors
+            const midPoint = Math.floor(verticalSpacing / 2);
+            for (let i = 0; i < verticalSpacing; i++) {
+                const connector = i === midPoint ? "├" : "│";
+                lines.push(`${" ".repeat(colWidth)} ${connector}`);
+            }
+            
+            lines.push(`${right} ┘`);
+            
+            // Add spacing between matches (except last)
+            if (matchIndex < round.length - 1) {
+                lines.push("");
+            }
+        });
+
+        return lines;
     }
 
-
-    private pad(s: string, width: number): string {
-        if (s.length >= width) return s.slice(0, width);
-            return s + " ".repeat(width - s.length);
+    private joinColumns(columns: { lines: string[], width: number }[]): string {
+        // Find max height and center all columns
+        const maxHeight = Math.max(...columns.map(col => col.lines.length));
+        
+        return Array.from({ length: maxHeight }, (_, row) =>
+            columns.map(col => {
+                const line = this.getCenteredLine(col.lines, row, maxHeight);
+                return line.padEnd(col.width);
+            }).join("").trimEnd()
+        ).join("\n");
     }
+
+    private getCenteredLine(lines: string[], row: number, maxHeight: number): string {
+        const startRow = Math.floor((maxHeight - lines.length) / 2);
+        const lineIndex = row - startRow;
+        return (lineIndex >= 0 && lineIndex < lines.length) ? lines[lineIndex] : "";
+    }
+
+    private pad(text: string, width: number): string {
+        return text.length >= width 
+            ? text.slice(0, width)
+            : text.padEnd(width);
+    }
+///////////////////////////////////////////////////////////////////////////////////////// second ------------
 
     private showBracketOverlay(show: boolean): void {
         if (!this.bracketOverlay || !this.animationManager) return;
@@ -725,6 +753,7 @@ export class GUIManager {
             this.bracketOverlay.isVisible = true;
 
             this.bracketOverlay.horizontalAlignment = this.H_RIGHT;
+            this.bracketOverlay.paddingRight = "5px"
             this.bracketOverlay.leftInPixels = 400;
             this.pauseGrid.width = "50%";
             this.pauseGrid.horizontalAlignment = this.H_LEFT;
@@ -738,16 +767,6 @@ export class GUIManager {
         });
         }
     }
-
-    // private hideBracketOverlay(): void {
-    //     if (!this.bracketOverlay || !this.animationManager) return;
-
-    //     this.animationManager.slideOutX(this.bracketOverlay, 400, Motion.F.xFast).then(() => {
-    //         this.bracketOverlay.isVisible = false;
-    //         this.pauseGrid.width = "100%";
-    //         this.pauseGrid.horizontalAlignment = this.H_CENTER;
-    //     });
-    // }
 
 }
 
