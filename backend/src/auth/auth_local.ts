@@ -42,7 +42,7 @@ export default async function sessionBindRoutes(fastify: FastifyInstance) {
 			reply.setCookie(COOKIE_NAME, sid, {
 				httpOnly: true,   // Not accessible from client JS
 				secure: true,     // Only sent over HTTPS
-				sameSite: 'lax',  // Helps mitigate CSRF
+				sameSite: 'strict',  // Helps mitigate CSRF
 				path: '/',
 				maxAge: COOKIE_MAX_AGE,
 			});

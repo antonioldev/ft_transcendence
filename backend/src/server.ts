@@ -10,12 +10,17 @@ import { registerDatabaseFunctions } from './data/database.js';
 import { registerNewUser } from './data/validation.js';
 import { authRoutes } from './auth/auth_google.js';
 import sessionBindRoutes from "./auth/auth_local.js"
+import { readFileSync } from 'fs';
 
 dotenv.config();
 
 const fastify = Fastify({
     logger: config.debug === 'yes' ? true : false,
     trustProxy: true,
+    https: {                                     
+      key:  readFileSync('/certs/backend.key'),
+      cert: readFileSync('/certs/backend.crt'),
+    },
 });
 
 fastify.register(cookie, {
@@ -32,7 +37,6 @@ await seedDefaultUsers();
 
 
 async function seedDefaultUsers() {
-  // pick simple starter passwords; your registerUser should pepper+argon2-hash before insert
   await registerNewUser('Player1', 'player1@example.com', 'Password1!' );
   await registerNewUser('Player2', 'player2@example.com', 'Password2!' );
   await registerNewUser('Player3', 'player3@example.com', 'Password3!' );
@@ -47,7 +51,10 @@ await fastify.register(fastifyJwt, {
 
 // Enable CORS for the frontend application
 await fastify.register(fastifyCors, {
-    origin: "https://localhost",
+    origin: [
+      'https://localhost:8443',
+      'https://127.0.0.1:8443',
+    ],
     methods: ['GET', 'POST', 'OPTIONS'],
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization'],
@@ -70,8 +77,23 @@ await fastify.register(import('@fastify/websocket'), {
 	}
 });
 
-// add the connection to the database
+// Enforce the connection only with the https and correct domaine name (localhost + IP only)
+fastify.addHook('preHandler', (req, reply, done) => {
+  if (req.protocol !== 'https') {
+    return reply.code(403).send({ error: 'HTTPS required' });
+  }
 
+  if (req.method !== 'GET' && req.headers.origin) {
+    const allowed = new Set([
+      'https://localhost:8443',
+      'https://127.0.0.1:8443',
+    ]);
+    if (!allowed.has(req.headers.origin)) {
+      return reply.code(403).send({ error: 'Forbidden: bad origin' });
+    }
+  }
+  done();
+});
 
 // Setup WebSocket routes using the webSocketManager
 await webSocketManager.setupRoutes(fastify);
@@ -84,7 +106,6 @@ const start = async (): Promise<void> => {
     try {
         await fastify.listen({ 
             port: config.server.port,
-            // host: config.server.host
             host: '0.0.0.0' 
         });
         console.log(`Pong server ready`);

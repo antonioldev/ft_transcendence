@@ -32,10 +32,9 @@ export class WebSocketClient {
     private connect(): void {
         this.connectionStatus = ConnectionStatus.CONNECTING;
         this.notifyStatus(ConnectionStatus.CONNECTING);
-        const WS_URL = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws';
+        const WS_URL = 'wss://' + location.host + '/ws';
 
         this.ws = new WebSocket(WS_URL);
-        // this.ws = new WebSocket('wss://localhost:3000/ws'); // TODO make it a variable
 
         const timeout = setTimeout(() => {
             if (this.connectionStatus === ConnectionStatus.CONNECTING) {

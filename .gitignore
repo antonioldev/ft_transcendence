@@ -6,6 +6,9 @@ backend/src/shared
 frontend/src/shared
 .swp
 
+# certs
+.certs/
+
 # sqlite file that containt dabatase of the game
 backend/src/database/transcendence.sqlite
 

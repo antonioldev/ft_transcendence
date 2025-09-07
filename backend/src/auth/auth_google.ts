@@ -38,7 +38,7 @@ export async function authRoutes(fastify: FastifyInstance) {
 			const COOKIE_OPTS = {
 				httpOnly: true,
 				secure: true,
-				sameSite: 'lax' as const,
+				sameSite: 'strict' as const,
 				path: '/',
 				maxAge: COOKIE_MAX_AGE,
 			};

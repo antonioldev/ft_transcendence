@@ -2,6 +2,8 @@ NAME = transcendence
 FRONTEND_DIR = ./frontend
 BACKEND_DIR = ./backend
 VOLUME = ./backend/src/database/transcendence.sqlite
+BACKEND_DNS = transcendance-backend
+SITE_HOSTS = localhost,127.0.0.1
 
 #################################################################################
 ############################## PEPPER GENERATION ################################
@@ -28,10 +30,14 @@ cookie-env:
 
 secret-env: pepper-env cookie-env
 
+certs:
+	@echo "Generating internal CA + certs (BACKEND_DNS=$${BACKEND_DNS}, SITE_HOSTS=$${SITE_HOSTS})"
+	@BACKEND_DNS=$${BACKEND_DNS} SITE_HOSTS=$${SITE_HOSTS} bash make_certs.sh
+
 #################################################################################
 #################################     MAIN      #################################
 
-run: build start
+run: certs build start
 
 start:
 	docker-compose up -d
@@ -132,4 +138,5 @@ update: update-deps fclean up-build
         logs logs-frontend logs-backend \
         clean fclean re restart \
         ps update update-deps \
-		pepper-env
+		pepper-env \
+		certs
