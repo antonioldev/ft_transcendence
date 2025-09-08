@@ -5,6 +5,7 @@ import { QuadraticEase, EasingFunction } from "@babylonjs/core/Animations/easing
 import { Vector3 } from "@babylonjs/core/Maths/math.vector";
 import type { Control } from "@babylonjs/gui/2D/controls/control";
 import { getCamera2DPosition, getCamera3DPlayer1Position, getCamera3DPlayer2Position,} from './utils.js';
+import { GAME_CONFIG } from "../shared/gameConfig.js";
 
 type FloatProp =
   | "alpha"
@@ -190,16 +191,21 @@ export class AnimationManager {
     }
 
     scaleWidth(
-        target: any,
-        from: number,
-        to: number,
-        frames = Motion.F.fast,
-        ease: EasingFunction = Motion.ease.quadOut()
+    target: any,
+    from: number,  // Actual size value
+    to: number,    // Actual size value
+    frames = Motion.F.fast,
+    ease: EasingFunction = Motion.ease.quadOut()
     ): Promise<void> {
-        // Create a custom animation for width scaling
+        // Calculate scale factors based on the standard paddle width
+        const baseWidth = GAME_CONFIG.paddleWidth;
+        const fromScale = from / baseWidth;
+        const toScale = to / baseWidth;
+        
+        // Create animation for x-axis scaling (corrected from my previous suggestion)
         const anim = new Animation(
             "widthAnimation",
-            "scaling.x",
+            "scaling.y",
             Motion.fps,
             Animation.ANIMATIONTYPE_FLOAT,
             Animation.ANIMATIONLOOPMODE_CONSTANT
@@ -207,15 +213,13 @@ export class AnimationManager {
         
         anim.setEasingFunction(ease);
         anim.setKeys([
-            { frame: 0, value: from },
-            { frame: frames, value: to }
+            { frame: 0, value: fromScale },
+            { frame: frames, value: toScale }
         ]);
         
         target.animations = [anim];
         return this.play(target, frames, false);
     }
-
-    
 
 }
 

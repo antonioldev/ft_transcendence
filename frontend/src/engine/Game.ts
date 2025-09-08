@@ -166,7 +166,7 @@ export class Game {
                 // LEFT player (side 0): slots 0,1,2
                 case 'c': this.requestActivatePowerUp(0, 0); break;
                 case 'v': this.requestActivatePowerUp(0, 1); break;
-                case 'b ': this.requestActivatePowerUp(0, 2); break;
+                case 'b': this.requestActivatePowerUp(0, 2); break;
 
                 // RIGHT player (side 1): slots 0,1,2
                 case 'i': this.requestActivatePowerUp(1, 0); break;
@@ -536,7 +536,7 @@ export class Game {
             return;
 
         console.error("[PowerUp Activation] Sending powerup activation request:", { powerup, index, side });
-        webSocketClient.sendPowerupActivationRequest(powerup, index, side);
+        webSocketClient.sendPowerupActivationRequest(powerup, side, index);
     }
 
     private togglePowerUp(message: any, toActive: boolean): void {
@@ -545,10 +545,11 @@ export class Game {
         console.warn(`[PowerUp Toggle] ${toActive ? 'Activating' : 'Deactivating'} power-up:`, message);
 
         const med = GAME_CONFIG.paddleWidth;
-        const sml = GAME_CONFIG.increasedPaddleWidth;
-        const lrg = GAME_CONFIG.decreasedPaddleWidth
+        const lrg = GAME_CONFIG.increasedPaddleWidth;
+        const sml = GAME_CONFIG.decreasedPaddleWidth
         
         if (toActive) {
+            console.error("active");
             if (message.side === 0)
                 this.playerLeftPowerUps[message.slot] = null;
             else
