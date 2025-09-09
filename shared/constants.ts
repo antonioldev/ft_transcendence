@@ -82,6 +82,12 @@ export enum Powerup {
     GROW_PADDLE,
 }
 
+export enum SizePaddle {
+    NORMAL,
+    SMALL,
+    LARGE
+}
+
 // Directions for player movement
 export enum Direction {
     LEFT = -1,              // Move left

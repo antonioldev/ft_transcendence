@@ -16,7 +16,7 @@ import { getPlayerBoundaries } from '../shared/gameConfig.js';
 import { appStateManager } from '../core/AppStateManager.js';
 import { GameConfigFactory } from './GameConfig.js';
 import { AudioManager } from './AudioManager.js';
-import { Powerup, PowerUpAction } from "../shared/constants.js";
+import { Powerup, PowerUpAction, SizePaddle } from "../shared/constants.js";
 
 /**
  * The Game class serves as the core of the game engine, managing the initialization,
@@ -38,8 +38,10 @@ export class Game {
     private audioManager: AudioManager | null =null;
     private deviceSourceManager: DeviceSourceManager | null = null;
     private gameLoopObserver: any = null;
-    private boundaries = getPlayerBoundaries();
+    private boundaries = getPlayerBoundaries(SizePaddle);
     private controlledSides: number[] = [];
+    private leftPaddleSize: SizePaddle = SizePaddle.NORMAL;
+    private rightPaddleSize: SizePaddle = SizePaddle.NORMAL;
     private playerLeftScore: number = 0;
     private playerRightScore: number = 0;
     private playerPowerUps: Map<number, (Powerup | null)[]> = new Map();
@@ -328,10 +330,14 @@ export class Game {
         this.playerRightScore = 0;
 
         if (this.gameObjects) {
-            if (this.gameObjects.players.left)
+            if (this.gameObjects.players.left) {
                 this.gameObjects.players.left.position.x = 0;
-            if (this.gameObjects.players.right)
+                this.gameObjects.players.left.scaling.x = GAME_CONFIG.paddleWidth;
+            }
+            if (this.gameObjects.players.right) {
                 this.gameObjects.players.right.position.x = 0;
+                this.gameObjects.players.right.scaling.x = GAME_CONFIG.paddleWidth;
+            }
             if (this.gameObjects.ball) {
                 this.gameObjects.ball.position.x = 0;
                 this.gameObjects.ball.position.z = 0;
@@ -418,10 +424,15 @@ export class Game {
     private handlePlayerInput(keyboardSource: any, player: any, controls: PlayerControls, side: number): void {
         if (!(this.controlledSides.includes(side))) return;
 
+        // Get boundaries based on current paddle size
+        const boundaries = side === 0 
+            ? getPlayerBoundaries(this.leftPaddleSize)
+            : getPlayerBoundaries(this.rightPaddleSize);
+
         let direction = Direction.STOP;
-        if ((keyboardSource.getInput(controls.left) === 1) && (player.position.x > this.boundaries.left)) 
+        if ((keyboardSource.getInput(controls.left) === 1) && (player.position.x > boundaries.left)) 
             direction = Direction.LEFT;
-        else if ((keyboardSource.getInput(controls.right) === 1) && (player.position.x < this.boundaries.right))
+        else if ((keyboardSource.getInput(controls.right) === 1) && (player.position.x < boundaries.right))
             direction = Direction.RIGHT;
 
         if (direction !== Direction.STOP)
@@ -544,6 +555,52 @@ export class Game {
         webSocketClient.sendPowerupActivationRequest(powerup, side, index);
     }
 
+    // private togglePowerUp(message: any, toActive: boolean): void {
+    //     if (!message) return;
+
+    //     console.warn(`[PowerUp Toggle] ${toActive ? 'Activating' : 'Deactivating'} power-up:`, message);
+
+    //     const side = message.side;
+    //     const slot = message.slot;
+
+    //     const med = GAME_CONFIG.paddleWidth;
+    //     const lrg = GAME_CONFIG.increasedPaddleWidth;
+    //     const sml = GAME_CONFIG.decreasedPaddleWidth;
+        
+    //     if (toActive) {
+    //         switch (message.powerup) {
+    //             case Powerup.SHRINK_OPPONENT:
+    //                 if (side === 0)
+    //                     this.animationManager?.scaleWidth(this.gameObjects?.players.right, med, sml)
+    //                 else
+    //                     this.animationManager?.scaleWidth(this.gameObjects?.players.left, med, sml)
+    //                 break;
+    //             case Powerup.GROW_PADDLE:
+    //                 if (side === 0)
+    //                     this.animationManager?.scaleWidth(this.gameObjects?.players.left, med, lrg)
+    //                 else
+    //                     this.animationManager?.scaleWidth(this.gameObjects?.players.right, med, lrg)
+    //                 break;
+    //         }
+    //         this.guiManager?.updatePowerUpSlot(side, slot, null, PowerUpAction.ACTIVATED);
+    //     } else {
+    //         switch (message.powerup) {
+    //             case Powerup.SHRINK_OPPONENT:
+    //                 if (side === 0)
+    //                     this.animationManager?.scaleWidth(this.gameObjects?.players.right, sml, med)
+    //                 else
+    //                     this.animationManager?.scaleWidth(this.gameObjects?.players.left, sml, med)
+    //                 break;
+    //             case Powerup.GROW_PADDLE:
+    //                 if (side === 0)
+    //                     this.animationManager?.scaleWidth(this.gameObjects?.players.left, lrg, med)
+    //                 else
+    //                     this.animationManager?.scaleWidth(this.gameObjects?.players.right, lrg, med)
+    //                 break;
+    //         }
+    //         this.guiManager?.updatePowerUpSlot(side, slot, null, PowerUpAction.DEACTIVATED);
+    //     }
+    // }
     private togglePowerUp(message: any, toActive: boolean): void {
         if (!message) return;
 
@@ -559,35 +616,48 @@ export class Game {
         if (toActive) {
             switch (message.powerup) {
                 case Powerup.SHRINK_OPPONENT:
-                    if (side === 0)
-                        this.animationManager?.scaleWidth(this.gameObjects?.players.right, med, sml)
-                    else
-                        this.animationManager?.scaleWidth(this.gameObjects?.players.left, med, sml)
+                    if (side === 0) {
+                        this.animationManager?.scaleWidth(this.gameObjects?.players.right, med, sml);
+                        this.rightPaddleSize = SizePaddle.SMALL;
+                    } else {
+                        this.animationManager?.scaleWidth(this.gameObjects?.players.left, med, sml);
+                        this.leftPaddleSize = SizePaddle.SMALL;
+                    }
                     break;
                 case Powerup.GROW_PADDLE:
-                    if (side === 0)
-                        this.animationManager?.scaleWidth(this.gameObjects?.players.left, med, lrg)
-                    else
-                        this.animationManager?.scaleWidth(this.gameObjects?.players.right, med, lrg)
+                    if (side === 0) {
+                        this.animationManager?.scaleWidth(this.gameObjects?.players.left, med, lrg);
+                        this.leftPaddleSize = SizePaddle.LARGE;
+                    } else {
+                        this.animationManager?.scaleWidth(this.gameObjects?.players.right, med, lrg);
+                        this.rightPaddleSize = SizePaddle.LARGE;
+                    }
                     break;
             }
             this.guiManager?.updatePowerUpSlot(side, slot, null, PowerUpAction.ACTIVATED);
         } else {
             switch (message.powerup) {
                 case Powerup.SHRINK_OPPONENT:
-                    if (side === 0)
-                        this.animationManager?.scaleWidth(this.gameObjects?.players.right, sml, med)
-                    else
-                        this.animationManager?.scaleWidth(this.gameObjects?.players.left, sml, med)
+                    if (side === 0) {
+                        this.animationManager?.scaleWidth(this.gameObjects?.players.right, sml, med);
+                        this.rightPaddleSize = SizePaddle.NORMAL;
+                    } else {
+                        this.animationManager?.scaleWidth(this.gameObjects?.players.left, sml, med);
+                        this.leftPaddleSize = SizePaddle.NORMAL;
+                    }
                     break;
                 case Powerup.GROW_PADDLE:
-                    if (side === 0)
-                        this.animationManager?.scaleWidth(this.gameObjects?.players.left, lrg, med)
-                    else
-                        this.animationManager?.scaleWidth(this.gameObjects?.players.right, lrg, med)
+                    if (side === 0) {
+                        this.animationManager?.scaleWidth(this.gameObjects?.players.left, lrg, med);
+                        this.leftPaddleSize = SizePaddle.NORMAL;
+                    } else {
+                        this.animationManager?.scaleWidth(this.gameObjects?.players.right, lrg, med);
+                        this.rightPaddleSize = SizePaddle.NORMAL;
+                    }
                     break;
             }
             this.guiManager?.updatePowerUpSlot(side, slot, null, PowerUpAction.DEACTIVATED);
         }
     }
+
 }

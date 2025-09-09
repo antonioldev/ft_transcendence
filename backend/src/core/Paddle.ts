@@ -2,7 +2,7 @@ import { Rect } from './utils.js';
 import { Ball } from './Ball.js'
 import { GAME_CONFIG, getBallStartPosition, getPlayerLeftPosition, 
          getPlayerRightPosition, LEFT_PADDLE, RIGHT_PADDLE, getPlayerBoundaries } from '../shared/gameConfig.js';
-import { Powerup } from '../shared/constants.js';
+import { Powerup, SizePaddle } from '../shared/constants.js';
 
 export class Paddle {
 	side: number;
@@ -30,8 +30,8 @@ export class Paddle {
 	move(dt: number, dx: number): void {
 		const deltaSeconds = dt / 1000; 		// convert milliseconds to seconds
 		const _deltaMove = this.speed * deltaSeconds * dx;
-		if (this.rect.x + _deltaMove > getPlayerBoundaries().left &&
-			this.rect.x + _deltaMove < getPlayerBoundaries().right)
+		if (this.rect.x + _deltaMove > getPlayerBoundaries(SizePaddle.NORMAL).left &&
+			this.rect.x + _deltaMove < getPlayerBoundaries(SizePaddle.NORMAL).right)
 			this.rect.x += _deltaMove;
 	}
 
@@ -50,7 +50,7 @@ export class Paddle {
 export class CPUBot extends Paddle {
 	private _view_timer = 0;
 	private _target_x   = getBallStartPosition().x;
-	private _boundaries = getPlayerBoundaries();
+	private _boundaries = getPlayerBoundaries(SizePaddle.NORMAL);
 
 	constructor(
 		side: number,

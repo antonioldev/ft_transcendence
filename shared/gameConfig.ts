@@ -2,7 +2,7 @@
 // Shared game configuration between frontend and backend
 
 import { Position, Size } from './types.js';
-import { AiDifficulty } from './constants.js';
+import { AiDifficulty, SizePaddle } from './constants.js';
 
 const fieldWidth = 20; // Width of the game field
 const fieldHeight = 40; // Height of the game field
@@ -122,14 +122,29 @@ export function getPlayerRightPosition(): Position {
     };
 }
 
-const PLAYER_BOUNDARIES = {
-    left: -(GAME_CONFIG.fieldWidth / 2 - GAME_CONFIG.wallThickness - GAME_CONFIG.paddleWidth / 2 - 0.2),
-    right: GAME_CONFIG.fieldWidth / 2 - GAME_CONFIG.wallThickness - GAME_CONFIG.paddleWidth / 2 - 0.2
-};
+export const PLAYER_BOUNDARIES = {
+    normal: {
+        left: -(GAME_CONFIG.fieldWidth / 2 - GAME_CONFIG.wallThickness - GAME_CONFIG.paddleWidth / 2 - 0.2),
+        right: GAME_CONFIG.fieldWidth / 2 - GAME_CONFIG.wallThickness - GAME_CONFIG.paddleWidth / 2 - 0.2
+    },
+    small: {
+        left: -(GAME_CONFIG.fieldWidth / 2 - GAME_CONFIG.wallThickness - GAME_CONFIG.decreasedPaddleWidth / 2 - 0.2),
+        right: GAME_CONFIG.fieldWidth / 2 - GAME_CONFIG.wallThickness - GAME_CONFIG.decreasedPaddleWidth / 2 - 0.2
+    },
+    large: {
+        left: -(GAME_CONFIG.fieldWidth / 2 - GAME_CONFIG.wallThickness - GAME_CONFIG.increasedPaddleWidth / 2 - 0.2),
+        right: GAME_CONFIG.fieldWidth / 2 - GAME_CONFIG.wallThickness - GAME_CONFIG.increasedPaddleWidth / 2 - 0.2
+    }
+} as const;
 
 // Get the boundaries within which the paddle can move
-export function getPlayerBoundaries() {
-    return PLAYER_BOUNDARIES;
+export function getPlayerBoundaries(size: SizePaddle) {
+    switch (size) {
+        case SizePaddle.NORMAL: return PLAYER_BOUNDARIES.normal;
+        case SizePaddle.SMALL: return PLAYER_BOUNDARIES.small;
+        case SizePaddle.LARGE: return PLAYER_BOUNDARIES.large;
+        default: return PLAYER_BOUNDARIES.normal;
+    }
 }
 
 // Get the initial position of the ball
