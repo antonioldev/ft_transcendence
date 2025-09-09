@@ -30,9 +30,9 @@ export abstract class AbstractGameSession {
 		let deleted_clients: (Client)[] = [];
 		for (const client of targets) {
 			try {
-				client.websocket.send(JSON.stringify(message));
+				client?.websocket.send(JSON.stringify(message));
 			}
-			catch { 
+			catch {
 				deleted_clients.push(client);
 			}
 		}
@@ -58,7 +58,7 @@ export abstract class AbstractGameSession {
 		const index = this.clients.indexOf(client);
 		if (index !== -1) {
 			this.clients.splice(index, 1);
-			// this.readyClients.delete(client.id); // WILL CHANGE AFTER
+			this.readyClients.delete(client.id); // WILL CHANGE AFTER
 			this.full = false;
 		}
 		if (this.clients.length === 0) {
@@ -69,12 +69,6 @@ export abstract class AbstractGameSession {
 	add_player(player: Player) {
 		if (this.players.length < this.player_capacity) {
 			this.players.push(player);
-			if (this.mode === GameMode.TOURNAMENT_REMOTE) {
-				this.broadcast({
-					type: MessageType.PLAYER_JOINED,
-					username: player.name,
-				})
-			}
 		}
 	}
 

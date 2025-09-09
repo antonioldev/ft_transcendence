@@ -199,6 +199,15 @@ export class Game {
 		if (!this.running) return ;
 
 		this.running = false;
+		this.save_game(gameId);
+		this._broadcast({
+			type: MessageType.GAME_ENDED,
+			...(this.winner && { winner: this.winner.name }) // optionally send winner if exists
+		});
+		console.log("game ended: broadcasting game end");
+	}
+
+	save_game(gameId?: string) {
 		console.log(`Game id in async stop of game.ts: ${gameId}`);
 		if (gameId && this.players[LEFT_PADDLE].client?.id != this.players[RIGHT_PADDLE].client?.id) {
 			const player1_score = this.paddles[LEFT_PADDLE].score;
@@ -207,31 +216,24 @@ export class Game {
 			const player2_username = this.players[RIGHT_PADDLE].name;
 			const endTime = Date.now();
 			console.log(`TO VERIFY ==> player1_name: ${player1_username}, player2_name: ${player2_username} // client1_name: ${this.players[LEFT_PADDLE].client?.username}, client2_name: ${this.players[RIGHT_PADDLE].client?.username}`)
-			// saveGameResult(gameId, player1_username, player2_username, player1_score, player2_score, endTime) // add check for error
+			saveGameResult(gameId, player1_username, player2_username, player1_score, player2_score, endTime) // add check for error
 		}
-		
-		this._broadcast({
-			type: MessageType.GAME_ENDED,
-			...(this.winner && { winner: this.winner.name }) // optionally send winner if exists
-		});
-
-		console.log("game ended: broadcasting game end");
 	}
 	
 	// If someone quits a remote game, the opposing player wins
 	setOtherPlayerWinner(quitter_id: string) {
 		if (!this.players[LEFT_PADDLE].client || !this.players[RIGHT_PADDLE].client) return ;
 		
-		this.winner = (this.players[LEFT_PADDLE].client?.id === quitter_id) ? this.players[RIGHT_PADDLE] : this.players[LEFT_PADDLE];
+		this.winner = (this.players[LEFT_PADDLE].client.id === quitter_id) ? this.players[RIGHT_PADDLE] : this.players[LEFT_PADDLE];
 	}
 
-	activate_powerup(type: Powerup, side: number, slot: number) {
-		if (this.paddles[side].powerups[slot] != type) {
-			console.log(`Cannot actvivate powerup "${type}" as player lacks this ability`);
+	activate_powerup(powerup: Powerup, side: number, slot: number) {
+		if (this.paddles[side].powerups[slot] != powerup) {
+			console.log(`Cannot actvivate powerup "${powerup}" as player lacks this ability`);
 			return ;
 		}
 		const other_side = side === LEFT_PADDLE ? RIGHT_PADDLE : LEFT_PADDLE;
-		switch (type) {
+		switch (powerup) {
 			case Powerup.SLOW_OPPONENT:
 				this.paddles[other_side].speed = GAME_CONFIG.decreasedPaddleSpeed;
 				break ;
@@ -247,18 +249,18 @@ export class Game {
 		}
 		this._broadcast({
 			type: MessageType.POWERUP_ACTIVATED,
-			powerup: type,
+			powerup: powerup,
 			side: side,
 			slot: slot
 		})
 
 		this.paddles[side].powerups[slot] = null;
-		setTimeout(() => this.deactivate_powerup(type, side), GAME_CONFIG.powerupDuration)
+		setTimeout(() => this.deactivate_powerup(powerup, side), GAME_CONFIG.powerupDuration)
 	}
 
-	deactivate_powerup(type: Powerup, side: number) {
+	deactivate_powerup(powerup: Powerup, side: number) {
 		const other_side = side === LEFT_PADDLE ? RIGHT_PADDLE : LEFT_PADDLE;
-		switch (type) {
+		switch (powerup) {
 			case Powerup.SLOW_OPPONENT:
 				this.paddles[other_side].speed = GAME_CONFIG.paddleSpeed;
 				break ;
@@ -275,7 +277,7 @@ export class Game {
 
 		this._broadcast({
 			type: MessageType.POWERUP_DEACTIVATED,
-			powerup: type,
+			powerup: powerup,
 			side: side,
 		})
 	}
