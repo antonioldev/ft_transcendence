@@ -18,7 +18,6 @@ export class Game {
 	winner!: Player;
 	paddles: (Paddle | CPUBot)[] = [new Paddle(LEFT_PADDLE), new Paddle(RIGHT_PADDLE)];
 	ball!: Ball;
-	// Callback function to broadcast the game state
 	private _broadcast: (message: ServerMessage, clients?: Client[]) => void;
 
 	constructor(players: Player[], broadcast_callback: (message: ServerMessage, clients?: Client[]) => void) {
@@ -229,9 +228,14 @@ export class Game {
 
 	activate_powerup(powerup: Powerup, side: number, slot: number) {
 		if (this.paddles[side].powerups[slot] != powerup) {
-			console.log(`Cannot actvivate powerup "${powerup}" as player lacks this ability`);
+			console.log(`Cannot activate powerup "${powerup}": player lacks this ability`);
 			return ;
 		}
+		if (this.paddles[side].active_powerups.includes(powerup)) {
+			console.log(`Cannot activate powerup "${powerup}": already active`);
+			return ;
+		}
+
 		const other_side = side === LEFT_PADDLE ? RIGHT_PADDLE : LEFT_PADDLE;
 		switch (powerup) {
 			case Powerup.SLOW_OPPONENT:
@@ -246,6 +250,9 @@ export class Game {
     		case Powerup.GROW_PADDLE:
 				this.paddles[side].rect.width = GAME_CONFIG.increasedPaddleWidth;
 				break ;
+			default:
+				console.error(`Error: cannot activate unknown Powerup "${powerup}`);
+				return ;
 		}
 		this._broadcast({
 			type: MessageType.POWERUP_ACTIVATED,
@@ -253,7 +260,8 @@ export class Game {
 			side: side,
 			slot: slot
 		})
-
+		
+		this.paddles[side].active_powerups.push(powerup);
 		this.paddles[side].powerups[slot] = null;
 		setTimeout(() => this.deactivate_powerup(powerup, side), GAME_CONFIG.powerupDuration)
 	}
@@ -273,6 +281,11 @@ export class Game {
     		case Powerup.GROW_PADDLE:
 				this.paddles[side].rect.width = GAME_CONFIG.paddleWidth;
 				break ;
+		}
+		// remove powerup from active_powerups list
+		const index = this.paddles[side].active_powerups.indexOf(powerup);
+		if (index !== -1) {
+			this.paddles[side].active_powerups.splice(index, 1);
 		}
 
 		this._broadcast({
