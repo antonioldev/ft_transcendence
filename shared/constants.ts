@@ -153,3 +153,9 @@ export enum UserManagement {
     REQUEST_USER_PROFILE,    // Type for back to frontend comm
     UPDATE_USER_PROFILE     // Request to update user information 
 }
+
+export enum PowerUpAction {
+    CREATED = "created",
+    ACTIVATED = "activated", 
+    DEACTIVATED = "deactivated"
+}

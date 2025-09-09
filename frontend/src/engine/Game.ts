@@ -16,7 +16,7 @@ import { getPlayerBoundaries } from '../shared/gameConfig.js';
 import { appStateManager } from '../core/AppStateManager.js';
 import { GameConfigFactory } from './GameConfig.js';
 import { AudioManager } from './AudioManager.js';
-import { Powerup } from "../shared/constants.js";
+import { Powerup, PowerUpAction } from "../shared/constants.js";
 
 /**
  * The Game class serves as the core of the game engine, managing the initialization,
@@ -42,8 +42,7 @@ export class Game {
     private controlledSides: number[] = [];
     private playerLeftScore: number = 0;
     private playerRightScore: number = 0;
-    private playerLeftPowerUps: (Powerup | null)[] = [null, null, null];
-    private playerRightPowerUps: (Powerup | null)[] = [null, null, null];
+    private playerPowerUps: Map<number, (Powerup | null)[]> = new Map();
 
 // ====================            STATIC METHODS             ====================
     static getCurrentInstance(): Game | null {
@@ -77,6 +76,8 @@ export class Game {
                 }
                 this.canvas.focus();
             }
+            this.playerPowerUps.set(0, [null, null, null]);
+            this.playerPowerUps.set(1, [null, null, null]);
         } catch (error) {
             Logger.errorAndThrow('Error creating game managers', 'Game', error);
         }
@@ -517,23 +518,28 @@ export class Game {
     private getPowerup(message: any): void {
         if (!message || !Array.isArray(message.powerups))
             console.warn("[PowerUps] invalid message", message);
+        
         const ids: number[] = message.powerups;
+        const side = message.side;
 
-        if (message.side === 0)
-            this.playerLeftPowerUps = ids.map(id => id as Powerup);
-        else if (message.side === 1)
-            this.playerRightPowerUps = ids.map(id => id as Powerup);
-        else
-            console.warn("[PowerUps] unknown side", message.side);
+        if (side !== 0 && side !== 1) {
+            console.warn("[PowerUps] unknown side", side);
+            return;
+        }
+
+        this.playerPowerUps.set(side, ids.map(id => id as Powerup));
+
+        ids.forEach((powerup, index) => {
+            this.guiManager?.updatePowerUpSlot(side, index, powerup as Powerup, PowerUpAction.CREATED);
+        });
     }
 
     private requestActivatePowerUp(side: number, index: number): void {
-        if (!this.controlledSides.includes(side))
-            return;
-        const powerUps = side === 0 ? this.playerLeftPowerUps : this.playerRightPowerUps;
+        const powerUps = this.playerPowerUps.get(side);
+        if (!powerUps) return;
+        
         const powerup = powerUps[index];
-        if (powerup === null || powerup === undefined)
-            return;
+        if (powerup === null || powerup === undefined) return;
 
         console.error("[PowerUp Activation] Sending powerup activation request:", { powerup, index, side });
         webSocketClient.sendPowerupActivationRequest(powerup, side, index);
@@ -544,48 +550,48 @@ export class Game {
 
         console.warn(`[PowerUp Toggle] ${toActive ? 'Activating' : 'Deactivating'} power-up:`, message);
 
+        const side = message.side;
+        const slot = message.slot;
+        // const powerUps = this.playerPowerUps.get(side);
+
         const med = GAME_CONFIG.paddleWidth;
         const lrg = GAME_CONFIG.increasedPaddleWidth;
-        const sml = GAME_CONFIG.decreasedPaddleWidth
+        const sml = GAME_CONFIG.decreasedPaddleWidth;
         
         if (toActive) {
             console.error("active");
-            if (message.side === 0)
-                this.playerLeftPowerUps[message.slot] = null;
-            else
-                this.playerRightPowerUps[message.slot] = null;
-
             switch (message.powerup) {
                 case Powerup.SHRINK_OPPONENT:
-                    if (message.side === 0)
+                    if (side === 0)
                         this.animationManager?.scaleWidth(this.gameObjects?.players.right, med, sml)
                     else
                         this.animationManager?.scaleWidth(this.gameObjects?.players.left, med, sml)
                     break;
                 case Powerup.GROW_PADDLE:
-                    if (message.side === 0)
+                    if (side === 0)
                         this.animationManager?.scaleWidth(this.gameObjects?.players.left, med, lrg)
                     else
                         this.animationManager?.scaleWidth(this.gameObjects?.players.right, med, lrg)
                     break;
             }
+            this.guiManager?.updatePowerUpSlot(side, slot, null, PowerUpAction.ACTIVATED);
         } else {
             console.error("back");
             switch (message.powerup) {
                 case Powerup.SHRINK_OPPONENT:
-                    if (message.side === 0)
+                    if (side === 0)
                         this.animationManager?.scaleWidth(this.gameObjects?.players.right, sml, med)
                     else
                         this.animationManager?.scaleWidth(this.gameObjects?.players.left, sml, med)
                     break;
                 case Powerup.GROW_PADDLE:
-                    // Reset own paddle to normal width
-                    if (message.side === 0)
+                    if (side === 0)
                         this.animationManager?.scaleWidth(this.gameObjects?.players.left, lrg, med)
                     else
                         this.animationManager?.scaleWidth(this.gameObjects?.players.right, lrg, med)
                     break;
             }
+            this.guiManager?.updatePowerUpSlot(side, slot, null, PowerUpAction.DEACTIVATED);
         }
     }
 }

@@ -2,7 +2,7 @@ import { AdvancedDynamicTexture, Control, Rectangle, TextBlock, Grid, Image, Scr
 import { Scene, KeyboardEventTypes} from "@babylonjs/core";
 import { Logger } from '../utils/LogManager.js';
 import { GameConfig } from './GameConfig.js';
-import { GameMode, ViewMode } from '../shared/constants.js';
+import { GameMode, ViewMode, Powerup, PowerUpAction } from '../shared/constants.js';
 import { getCurrentTranslation } from '../translations/translations.js';
 import { spawnFireworksInFrontOfCameras, FINAL_FIREWORKS, spawnGUISparkles } from './scene/fireworks.js';
 import { TextBlockOptions } from './utils.js';
@@ -59,6 +59,17 @@ export class GUIManager {
     private bracketScroll?: ScrollViewer;
     private bracketGrid?: Grid;
 
+    private powerUpSlotP1?: Rectangle;
+    private powerUpSlotP2?: Rectangle;
+    private powerUpCellsP1: Array<{root: Rectangle; icon?: Image; cooldown?: Rectangle}> = [];
+    private powerUpCellsP2: Array<{root: Rectangle; icon?: Image; cooldown?: Rectangle}> = [];
+
+    private POWERUP_ICON: Record<number, string> = {
+        [Powerup.SLOW_OPPONENT]:       "assets/icons/powerup/slow.png",
+        [Powerup.SHRINK_OPPONENT]:     "assets/icons/powerup/smaller.png",
+        [Powerup.INCREASE_PADDLE_SPEED]:"assets/icons/powerup/fast.png",
+        [Powerup.GROW_PADDLE]:         "assets/icons/powerup/larger.png",
+    };
 
     constructor(private scene: Scene, config: GameConfig, private animationManager: AnimationManager, audioManager: AudioManager) {
         try {
@@ -67,6 +78,7 @@ export class GUIManager {
             this.isTournament = config.isTournament;
 
             this.createHUD(config);
+            this.createPowerUpSlots();
             this.createPauseOverlay();
             this.createBracketOverlay();
             this.createViewModeElements(config);
@@ -153,6 +165,79 @@ export class GUIManager {
 
         this.rally.transformCenterX = 0.5;
         this.rally.transformCenterY = 0.5;
+    }
+
+    private createPowerUpSlots(): void {
+        if (!this.advancedTexture) return;
+
+        this.powerUpSlotP1 = this.createPowerUpSlot("powerUpSlotP1", this.H_LEFT);
+        this.advancedTexture.addControl(this.powerUpSlotP1);
+
+        this.powerUpSlotP2 = this.createPowerUpSlot("powerUpSlotP2", this.H_RIGHT);
+        this.advancedTexture.addControl(this.powerUpSlotP2);
+
+        this.initializePowerUpCells();
+    }
+
+    private createPowerUpSlot(name: string, horizontalAlignment: number): Rectangle {
+        const slot = this.createRect(
+            name, "280px", 5, Control.VERTICAL_ALIGNMENT_TOP, "rgba(0, 0, 0, 0.5)");
+        
+        slot.width = "90px";
+        slot.horizontalAlignment = horizontalAlignment;
+        // slot.top = "25px";
+        slot.cornerRadius = 10;
+        slot.thickness = 2;
+        slot.color = "rgba(255, 255, 255, 0.3)";
+        slot.isVisible = false;
+        
+        return slot;
+    }
+
+    private initializePowerUpCells(): void {
+        for (let i = 0; i < 3; i++) {
+            const cell = this.createPowerUpCell(i);
+            this.powerUpCellsP1.push(cell);
+            this.powerUpSlotP1!.addControl(cell.root);
+        }
+
+        for (let i = 0; i < 3; i++) {
+            const cell = this.createPowerUpCell(i);
+            this.powerUpCellsP2.push(cell);
+            this.powerUpSlotP2!.addControl(cell.root);
+        }
+    }
+
+    private createPowerUpCell(index: number): {root: Rectangle; icon?: Image; cooldown?: Rectangle} {
+        const cell = this.createRect(
+            `powerUpCell_${index}`,
+            "80px",
+            6,
+            Control.VERTICAL_ALIGNMENT_CENTER,
+            "rgba(255, 255, 255, 0.2)"
+        );
+
+        cell.width = "80px";
+        cell.top = `${index * 85}px`;
+        cell.cornerRadius = 8;
+        cell.thickness = 1;
+        cell.color = "rgba(255, 255, 255, 0.5)";
+        cell.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
+
+        const cooldown = this.createRect(
+            `powerUpCooldown_${index}`,
+            "100%",
+            7,
+            Control.VERTICAL_ALIGNMENT_CENTER,
+            "rgba(0, 0, 0, 0.7)"
+        );
+        cooldown.isVisible = false;
+        cell.addControl(cooldown);
+        
+        return {
+            root: cell,
+            cooldown: cooldown
+        };
     }
 
     private createPlayerControls(config: GameConfig, player: number): TextBlock {
@@ -593,7 +678,8 @@ export class GUIManager {
 
         if (p1) p1.color = player1 ? "rgba(255, 255, 255, 0.7)" : "rgba(0, 0, 0, 0)";
         if (p2) p2.color = player2 ? "rgba(255, 255, 255, 0.7)" : "rgba(0, 0, 0, 0)";
-
+        if (player1 && this.powerUpSlotP1) this.powerUpSlotP1.isVisible = true;
+        if (player2 && this.powerUpSlotP2) this.powerUpSlotP2.isVisible = true;
     }
     private getControlsText(viewMode: ViewMode, player: number): string {
         const t = getCurrentTranslation();
@@ -647,6 +733,21 @@ export class GUIManager {
             this.bracketOverlay?.dispose();
             this.bracketScroll?.dispose();
             this.bracketGrid?.dispose();
+
+            this.powerUpSlotP1?.dispose();
+            this.powerUpSlotP2?.dispose();
+            this.powerUpCellsP1.forEach(cell => {
+                cell.root.dispose();
+                cell.icon?.dispose();
+                cell.cooldown?.dispose();
+            });
+            this.powerUpCellsP2.forEach(cell => {
+                cell.root.dispose();
+                cell.icon?.dispose();
+                cell.cooldown?.dispose();
+            });
+            this.powerUpCellsP1 = [];
+            this.powerUpCellsP2 = [];
 
             this.advancedTexture?.dispose();
             this.advancedTexture = null;
@@ -763,6 +864,57 @@ export class GUIManager {
             this.pauseGrid.width = "100%";
             this.pauseGrid.horizontalAlignment = this.H_CENTER;
         });
+        }
+    }
+
+    updatePowerUpSlot(player: number, slotIndex: number, powerUpType: Powerup | null, action: PowerUpAction): void {
+        if (!this.isReady) return;
+        
+        const cells = player === 0 ? this.powerUpCellsP1 : this.powerUpCellsP2;
+        
+        if (slotIndex >= 0 && slotIndex < cells.length) {
+            const cell = cells[slotIndex];
+            
+            switch (action) {
+                case PowerUpAction.CREATED:
+                    // Handle power-up creation (existing logic)
+                    if (powerUpType !== null && this.POWERUP_ICON[powerUpType]) {
+                        if (!cell.icon) {
+                            cell.icon = new Image(`powerUpIcon_${player}_${slotIndex}`, this.POWERUP_ICON[powerUpType]);
+                            cell.icon.stretch = Image.STRETCH_UNIFORM;
+                            // cell.icon.width = "70%";
+                            // cell.icon.height = "70%";
+                            cell.icon.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
+                            cell.icon.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
+                            cell.root.addControl(cell.icon);
+                        } else {
+                            cell.icon.source = this.POWERUP_ICON[powerUpType];
+                        }
+                        cell.icon.isVisible = true;
+                        cell.root.background = "rgba(100, 100, 255, 0.4)";
+                    }
+                    break;
+                    
+                case PowerUpAction.ACTIVATED:
+                    // Handle activation - pulse animation
+                    if (cell.icon) {
+                        this.animationManager?.pulse(cell.root, Motion.F.slow);
+                    }
+                    // Clear the slot
+                    if (cell.icon) cell.icon.isVisible = false;
+                    cell.root.background = "rgba(255, 255, 255, 0.25)";
+                    break;
+                    
+                case PowerUpAction.DEACTIVATED:
+                    // Handle deactivation - fade out and darken
+                    if (cell.icon) {
+                        this.animationManager?.fadeOut(cell.icon, Motion.F.fast).then(() => {
+                            cell.icon!.alpha = 0.3;
+                        });
+                    }
+                    cell.root.background = "rgba(255, 255, 255, 0.25)";
+                    break;
+            }
         }
     }
 
