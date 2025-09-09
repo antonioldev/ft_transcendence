@@ -13,1066 +13,1066 @@ import { AudioManager } from "./AudioManager.js";
  * Manages all GUI elements for the game
  */
 export class GUIManager {
-    private readonly H_CENTER = Control.HORIZONTAL_ALIGNMENT_CENTER;
-    private readonly H_LEFT = Control.HORIZONTAL_ALIGNMENT_LEFT;
-    private readonly H_RIGHT = Control.HORIZONTAL_ALIGNMENT_RIGHT;
-    private readonly V_CENTER = Control.VERTICAL_ALIGNMENT_CENTER;
-    private readonly V_BOTTOM = Control.VERTICAL_ALIGNMENT_BOTTOM;
-    private advancedTexture: AdvancedDynamicTexture | null = null;
-    private isInitialized: boolean = false;
-    private hudGrid!: Grid;
-    private fpsText!: TextBlock;
-    private score1Text!: TextBlock;
-    private score2Text!: TextBlock;
-    private player1Label!: TextBlock;
-    private player2Label!: TextBlock;
-    private rallyText!: TextBlock;
-    private rally!: TextBlock;
-    private previousRally: number = 1;
-    private countdownText!: TextBlock;
-    private countdownContainer!: Rectangle;
-    private endGameOverlay!: Grid;
-    private endGameWinnerText!: TextBlock;
-    private partialEndGameOverlay!: Rectangle;
-    private partialWinnerLabel!: TextBlock;
-    private partialWinnerName!: TextBlock;
-    private continueText!: TextBlock;
-
-    private pauseOverlay!: Rectangle;
-    private pauseGrid!: Grid;
-    private pauseTitle!: TextBlock;
-    private pauseInstruction!: TextBlock;
-    private pauseHint!: TextBlock;
-    private muteIcon?: Image;
-    private toggleMuteCallback?: () => boolean;
-
-
-    private isTournament = false;
-    private isBrackerGridCreated = false;
-    private playerTotal = 0;
-    private bracketOverlay?: Rectangle;
-    private bracketScroll?: ScrollViewer;
-    private bracketGrid?: Grid;
-
-    private powerUpSlotP1?: Rectangle;
-    private powerUpSlotP2?: Rectangle;
-    private powerUpCellsP1: Array<{root: Rectangle; icon?: Image; letter?: TextBlock}> = [];
-    private powerUpCellsP2: Array<{root: Rectangle; icon?: Image; letter?: TextBlock}> = [];
-
-    private POWERUP_ICON: Record<number, string> = {
-        [Powerup.SLOW_OPPONENT]:       "assets/icons/powerup/slow.png",
-        [Powerup.SHRINK_OPPONENT]:     "assets/icons/powerup/smaller.png",
-        [Powerup.INCREASE_PADDLE_SPEED]:"assets/icons/powerup/fast.png",
-        [Powerup.GROW_PADDLE]:         "assets/icons/powerup/larger.png",
-    };
-
-    constructor(private scene: Scene, config: GameConfig, private animationManager: AnimationManager, audioManager: AudioManager) {
-        try {
-            this.advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI("UI", true, this.scene);
-            this.advancedTexture!.layer!.layerMask = 0x20000000;
-            this.isTournament = config.isTournament;
-
-            this.createHUD(config);
-            this.createPowerUpSlots();
-            this.createPauseOverlay();
-            this.createBracketOverlay();
-            this.createViewModeElements(config);
-            this.createCountdownDisplay();
-            this.createPartialEndGameOverlay();
-            this.createEndGameOverlay();
-            this.setToggleMuteCallback(() => audioManager.toggleMute());
-
-            this.isInitialized = true;
-        } catch (error) {
-            Logger.error('Error creating GUI', 'GUIManager', error);
-            throw error;
-        }
-    }
-
-    private createHUD(config: GameConfig): void {
-        this.hudGrid = this.createGrid("hudGrid", "20%", this.V_BOTTOM);
-        this.hudGrid.background = "rgba(0, 0, 0, 0.55)"
-        this.hudGrid.zIndex = 8;
-
-        this.hudGrid.addColumnDefinition(0.10, false); // FPS
-        this.hudGrid.addColumnDefinition(0.15, false); // P1 instructions
-        this.hudGrid.addColumnDefinition(0.25, false); // P1 score
-        this.hudGrid.addColumnDefinition(0.25, false); // P2 score
-        this.hudGrid.addColumnDefinition(0.15, false); // P2 instructions
-        this.hudGrid.addColumnDefinition(0.10, false); // Rally
-
-        this.advancedTexture!.addControl(this.hudGrid);
-
-        // FPS (col 0)
-        this.fpsText = this.createTextBlock("fpsText", { text: "FPS: 0", fontSize: 18 });
-        this.hudGrid.addControl(this.fpsText, 0, 0);
-
-        // P1 controls (col 1)
-        this.hudGrid.addControl(this.createPlayerControls(config, 1), 0, 1);
-
-        // P1 score+label (col 2)
-        const p1Cell = new Grid();
-        p1Cell.addRowDefinition(1, false);
-        p1Cell.addRowDefinition(1, false);
-        p1Cell.addColumnDefinition(1, false);
-
-        this.player1Label = this.createTextBlock("player1Label", {
-        text: "Player 1", fontSize: 48, applyRichEffects: true
-        });
-        this.score1Text = this.createTextBlock("score1Text", {
-        text: "0", fontSize: 56, verticalAlignment: this.V_BOTTOM, applyRichEffects: true
-        });
-        p1Cell.addControl(this.player1Label, 0, 0);
-        p1Cell.addControl(this.score1Text,  1, 0);
-        this.hudGrid.addControl(p1Cell, 0, 2);
-
-        // P2 score+label (col 3)
-        const p2Cell = new Grid();
-        p2Cell.addRowDefinition(1, false);
-        p2Cell.addRowDefinition(1, false);
-        p2Cell.addColumnDefinition(1, false);
-
-        this.player2Label = this.createTextBlock("player2Label", {
-        text: "Player 2", fontSize: 48, applyRichEffects: true
-        });
-        this.score2Text = this.createTextBlock("score2Text", {
-        text: "0", fontSize: 56, verticalAlignment: this.V_BOTTOM, applyRichEffects: true
-        });
-        p2Cell.addControl(this.player2Label, 0, 0);
-        p2Cell.addControl(this.score2Text,  1, 0);
-        this.hudGrid.addControl(p2Cell, 0, 3);
-
-        // P2 controls (col 4)
-        this.hudGrid.addControl(this.createPlayerControls(config, 2), 0, 4);
-
-        // Rally (col 5)
-        const rallyCell = new Grid();
-        rallyCell.addRowDefinition(1, false);
-        rallyCell.addRowDefinition(1, false);
-        rallyCell.addColumnDefinition(1, false);
-
-        this.rallyText = this.createTextBlock("rallyText", { text: "Rally", fontSize: 48 });
-        this.rally = this.createTextBlock("rallyValue", { text: "0", fontSize: 56, verticalAlignment: this.V_BOTTOM });
-
-        rallyCell.addControl(this.rallyText, 0, 0);
-        rallyCell.addControl(this.rally,     1, 0);
-        this.hudGrid.addControl(rallyCell, 0, 5);
-
-        this.rally.transformCenterX = 0.5;
-        this.rally.transformCenterY = 0.5;
-    }
-
-    private createPowerUpSlots(): void {
-        if (!this.advancedTexture) return;
-
-        this.powerUpSlotP1 = this.createPowerUpSlot("powerUpSlotP1", this.H_LEFT);
-        this.advancedTexture.addControl(this.powerUpSlotP1);
-
-        this.powerUpSlotP2 = this.createPowerUpSlot("powerUpSlotP2", this.H_RIGHT);
-        this.advancedTexture.addControl(this.powerUpSlotP2);
-
-        this.initializePowerUpCells();
-    }
-
-    private createPowerUpSlot(name: string, horizontalAlignment: number): Rectangle {
-        const slot = this.createRect(
-            name, "280px", 5, Control.VERTICAL_ALIGNMENT_TOP, "rgba(0, 0, 0, 1)");
-        
-        slot.width = "110px";
-        slot.horizontalAlignment = horizontalAlignment;
-        slot.isVisible = false;
-        
-        return slot;
-    }
-
-    private initializePowerUpCells(): void {
-        for (let i = 0; i < 3; i++) {
-            const cell = this.createPowerUpCell(i, 0); // Player 1
-            this.powerUpCellsP1.push(cell);
-            this.powerUpSlotP1!.addControl(cell.root);
-        }
-
-        for (let i = 0; i < 3; i++) {
-            const cell = this.createPowerUpCell(i, 1); // Player 2
-            this.powerUpCellsP2.push(cell);
-            this.powerUpSlotP2!.addControl(cell.root);
-        }
-    }
-
-    private createPowerUpCell(index: number, player: number): {root: Rectangle; icon?: Image; letter?: TextBlock} {
-        const cell = this.createRect(
-            `powerUpCell_${player}_${index}`,
-            "80px",
-            6,
-            Control.VERTICAL_ALIGNMENT_TOP,
-            "rgba(0, 0, 0, 1)"
-        );
-
-        cell.width = "100px";
-        cell.top = `${index * 90}px`;
-        cell.cornerRadius = 8;
-        cell.thickness = 1;
-        cell.color = "rgba(255, 255, 255, 0.5)";
-        cell.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
-
-        // Create icon
-        const icon = new Image(`powerUpIcon_${player}_${index}`, "");
-        icon.stretch = Image.STRETCH_UNIFORM;
-        icon.width = "75px";
-        icon.height = "75px";
-        icon.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
-        icon.isVisible = false;
-
-        // Create letter text
-        const letterKeys = player === 0 ? ['C', 'V', 'B'] : ['I', 'O', 'P'];
-        const letter = this.createTextBlock(`powerUpLetter_${player}_${index}`, {
-            text: letterKeys[index],
-            fontSize: 20,
-            fontWeight: "bold",
-            color: "white",
-            horizontalAlignment: Control.HORIZONTAL_ALIGNMENT_LEFT,
-            verticalAlignment: Control.VERTICAL_ALIGNMENT_CENTER
-        });
-
-        if (player === 0) {
-            icon.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
-            letter.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_RIGHT;
-            letter.left = 80;
-        } else {
-            letter.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
-            letter.leftInPixels = 5;
-            icon.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_RIGHT;
-        }
-
-        cell.addControl(icon);
-        cell.addControl(letter);
-
-        return {
-            root: cell,
-            icon: icon,
-            letter: letter,
-        };
-    }
-
-    private createPlayerControls(config: GameConfig, player: number): TextBlock {
-        const pControls = this.createTextBlock(`PlayerControls_p${player}`, {
-            text: this.getControlsText(config.viewMode, player),
-            lineSpacing: "10px", color: "rgba(0, 0, 0, 0.55)", fontSize: 30
-        });
-        return pControls;
-    }
-
-    private createPauseOverlay(): void {
-        if (!this.advancedTexture) return;
-
-        const t = getCurrentTranslation();
-        this.pauseOverlay = this.createRect("pauseOverlay", "100%", 11, this.V_CENTER ,"rgba(2, 2, 2, 0.98)");
-        this.pauseOverlay.color = "rgba(255, 255, 255, 1)";
-        this.pauseOverlay.isVisible = false;
-        this.advancedTexture.addControl(this.pauseOverlay);
-
-        this.pauseGrid = this.createGrid("pauseGrid", "50%");
-
-        this.pauseGrid.addRowDefinition(0.5, false);
-        this.pauseGrid.addRowDefinition(0.2, false);
-        this.pauseGrid.addRowDefinition(0.1, false);
-        this.pauseGrid.addRowDefinition(0.1, false);
-        this.pauseOverlay.addControl(this.pauseGrid);
-
-        this.pauseTitle = this.createTextBlock("pauseTitle",{ text: t.gamePaused, fontWeight: "bold", fontSize: 42, });
-        this.pauseGrid.addControl(this.pauseTitle, 0, 0);
-
-        this.pauseInstruction = this.createTextBlock("pauseInstruction",{ text: t.exitGame, });
-        this.pauseGrid.addControl(this.pauseInstruction, 1, 0);
-
-        this.pauseHint = this.createTextBlock("pauseHint", { text: t.pauseControls, });
-        this.pauseGrid.addControl(this.pauseHint, 2, 0);
-
-        this.muteIcon = new Image("muteIcon", "assets/icons/sound_on.png");
-        this.muteIcon.stretch = Image.STRETCH_UNIFORM;
-        this.muteIcon.paddingTop = "16px";
-        this.muteIcon.onPointerClickObservable.add(() => {
-            this.animateMuteIcon();
-            if (this.toggleMuteCallback) {
-                    const isMuted = this.toggleMuteCallback();
-                    if (this.muteIcon)
-                        this.muteIcon.source = isMuted ? "assets/icons/sound_off.png" : "assets/icons/sound_on.png";
-                }
-        });
-        this.pauseGrid.addControl(this.muteIcon, 3, 0);
-    }
-
-    private createBracketOverlay(): void {
-        if (!this.advancedTexture) return;
-
-        const t = getCurrentTranslation();
-
-        // 1) Overlay (inset children so the border is visible)
-        this.bracketOverlay = this.createRect(
-            "bracketOverlay",
-            "80%", 20, this.V_CENTER,
-            "rgba(2, 2, 2, 0.98)"
-        );
-        this.bracketOverlay.horizontalAlignment = this.H_RIGHT;
-        this.bracketOverlay.adaptWidthToChildren = true; // auto-fit to children
-        this.bracketOverlay.width = "55%";
-        this.bracketOverlay.cornerRadius = 12;
-        this.bracketOverlay.isVisible = false;
-        this.bracketOverlay.isPointerBlocker = true;
-
-        this.bracketOverlay.paddingLeft = "8px";
-        this.bracketOverlay.paddingTop = "8px";
-        this.bracketOverlay.paddingRight = `${this.bracketOverlay.thickness + 8}px`;
-        this.bracketOverlay.paddingBottom = "8px";
-
-        this.advancedTexture.addControl(this.bracketOverlay);
-
-        const container = new Grid("bracketContainer");
-        container.addRowDefinition(0.2, false);
-        container.addRowDefinition(0.8, false);
-        container.addColumnDefinition(1, false);
-        container.width = "100%";
-        container.height = "100%";
-        this.bracketOverlay.addControl(container);
-
-        const headerGrid = new Grid("headerGrid");
-        headerGrid.addColumnDefinition(70, true); // icon col
-        headerGrid.addColumnDefinition(1, false); // title col
-        headerGrid.height = "80px";
-
-        const bracketIcon = new Image("bracketIcon", "assets/icons/tournament.png");
-        bracketIcon.width = "68px";
-        bracketIcon.height = "68px";
-        bracketIcon.horizontalAlignment = this.H_LEFT;
-        headerGrid.addControl(bracketIcon, 0, 0);
-
-        const bracketTitle = this.createTextBlock("bracketTitle", {
-            text: t.tournamentTitle,
-            applyGlowEffects: true,
-            fontSize: 36,
-            horizontalAlignment: this.H_LEFT
-        });
-        headerGrid.addControl(bracketTitle, 0, 1);
-
-        container.addControl(headerGrid, 0, 0);
-
-        this.bracketScroll = new ScrollViewer("bracketScroll");
-        this.bracketScroll.width = "100%";
-        this.bracketScroll.height = "100%";
-        this.bracketScroll.thickness = 0;
-        this.bracketScroll.barSize = 8;
-        this.bracketScroll.background = "transparent";
-        this.bracketScroll.wheelPrecision = 20;
-        this.bracketScroll.verticalBar.isVisible = false;
-        this.bracketScroll.horizontalBar.isVisible = true; // we want horizontal
-        container.addControl(this.bracketScroll, 1, 0);
-
-        const contentWrap = new StackPanel("bracketContentWrap");
-        contentWrap.isVertical = false;
-        contentWrap.height = "100%";
-        contentWrap.width = "800px";
-        this.bracketScroll.addControl(contentWrap);
-
-        this.bracketGrid = this.createGrid("bracketGrid", "100%");
-        this.bracketGrid.addRowDefinition(1, false);
-        this.bracketGrid.height = "100%";
-        contentWrap.addControl(this.bracketGrid);
-    }
-
-    private createViewModeElements(config: GameConfig): void {
-        if (config.viewMode === ViewMode.MODE_3D && 
-            (config.gameMode === GameMode.TWO_PLAYER_LOCAL || config.gameMode === GameMode.TOURNAMENT_LOCAL)) {
-            const dividerLine = this.createRect("divider", "100%", 6, this.V_CENTER, "#000000ff")
-            dividerLine.widthInPixels = 5;
-            this.advancedTexture!.addControl(dividerLine);
-        }
-    }
-
-    private createCountdownDisplay(): void {
-        this.countdownContainer = this.createRect("countdownContainer", "100%", 10);
-        this.countdownContainer.thickness = 0;
-        this.countdownContainer.isVisible = false;
-
-        this.countdownText = this.createTextBlock("5", { fontSize: 72, applyRichEffects: true });
-        this.countdownContainer.addControl(this.countdownText);
-        this.advancedTexture!.addControl(this.countdownContainer);
-    }
-
-    private createPartialEndGameOverlay(): void {
-        this.partialEndGameOverlay = this.createRect("partialWinnerLayer", "100%", 8, this.V_BOTTOM, "rgba(0, 0, 0, 1)");
-        this.partialEndGameOverlay.background = "rgba(0, 0, 0, 1)";
-        this.partialEndGameOverlay.isVisible = false;
-        this.advancedTexture!.addControl(this.partialEndGameOverlay);
-
-        const centerColumn = this.createGrid("winnerGrid", "100%");
-        centerColumn.zIndex = 9;
-
-        centerColumn.addRowDefinition(0.2);
-        centerColumn.addRowDefinition(0.6);
-        centerColumn.addRowDefinition(0.2);
-        this.partialEndGameOverlay.addControl(centerColumn);
-
-        const t = getCurrentTranslation();
-        this.partialWinnerLabel = this.createTextBlock("winnerLabel", {
-            text: t.winner, outlineWidth: 2, fontSize: 80, zIndex: 10, alpha: 0
-        });
-        centerColumn.addControl(this.partialWinnerLabel, 0, 0);
-
-        this.partialWinnerName = this.createTextBlock("winnerName", {
-            text: "", color: "rgb(255, 215, 0)", outlineWidth: 2, outlineColor: "rgb(255, 255, 255)",
-            fontSize: 110, fontWeight: "bold", zIndex: 10, alpha: 0, applyGlowEffects: true
-        });
-        centerColumn.addControl(this.partialWinnerName, 1, 0);
-
-        this.continueText = this.createTextBlock("continue_text", {
-            text: t.continue, color: "rgb(255, 255, 255)", outlineWidth: 2, outlineColor: "rgb(255, 215, 0)", zIndex: 10,
-        });
-        centerColumn.addControl(this.continueText, 2, 0);
-    }
-
-    private createEndGameOverlay(): void {
-        this.endGameOverlay = this.createGrid("endGameOverlay", "20%", this.V_BOTTOM);
-        this.endGameOverlay.background = "rgba(0, 0, 0, 0.9)";
-        this.endGameOverlay.isVisible = false;
-        this.endGameOverlay.addColumnDefinition(1.0);
-
-        this.endGameWinnerText = this.createTextBlock("endGameWinnerText", {
-            fontSize: 72, applyRichEffects: true
-        });
-        this.endGameOverlay.addControl(this.endGameWinnerText, 0, 0);
-        this.advancedTexture!.addControl(this.endGameOverlay);
-    }
-
-    setPauseVisible(visible: boolean): void {
-        if (!this.isReady || !this.animationManager) return;
-
-        if (visible) {
-            this.pauseOverlay.isVisible = true;
-            this.pauseOverlay.alpha = 0;
-            this.pauseOverlay.thickness = 0;
-
-            const frames = Motion.F.base;
-            this.pauseOverlay.animations = [
-            this.animationManager.createFloat("alpha", 0, 1, frames, false, Motion.ease.quadOut()),
-            this.animationManager.createFloat("thickness", 0, 4, frames, false, Motion.ease.quadOut()),
-            ];
-            this.animationManager.play(this.pauseOverlay, frames, false);
-            this.showBracketOverlay(true);
-        } else {
-            const frames = Motion.F.fast;
-            this.pauseOverlay.animations = [
-            this.animationManager.createFloat("alpha", 1, 0, frames, false, Motion.ease.quadOut()),
-            this.animationManager.createFloat("thickness", 4, 0, frames, false, Motion.ease.quadOut()),
-            ];
-            this.showBracketOverlay(false);
-            this.animationManager.play(this.pauseOverlay, frames, false).then(() => {
-            this.pauseOverlay.isVisible = false;
-            this.pauseOverlay.alpha = 0;
-            this.pauseOverlay.thickness = 0;
-            });
-        }
-    }
-    showCountdown(show: boolean, count?: number): void {
-        if (!this.isReady) return;
-        this.countdownContainer.isVisible = show;
-
-        if (show && count !== undefined) {
-            this.countdownText.text = count.toString();
-            this.animationManager?.pulse(this.countdownText, Motion.F.xSlow);
-            return;
-        }
-        this.countdownText.animations = [];
-    }
-
-    updateFPS(fps: number): void {
-        if (!this.isReady) return;
-        this.fpsText.text = `FPS: ${Math.round(fps)}`;
-    }
-
-    updateRally(rally: number): boolean {
-        if (!this.isReady) return false;
-        if (this.rally && ((this.previousRally < rally) || (rally === 1 && this.previousRally > rally))) {
-            this.rally.text = `${Math.round(rally)}`;
-
-            const maxRally = 10;
-            const intensity = Math.min(rally / maxRally, 1);
-            const r = 255;
-            const g = Math.round(255 * (1 - intensity));
-            const b = Math.round(255 * (1 - intensity));
-            this.rally.color = `rgb(${r}, ${g}, ${b})`;
-
-            if (rally > 0 && rally % 5 === 0)
-                this.animationManager?.rotatePulse(this.rally, 1, Motion.F.slow);
-            else
-                this.animationManager?.pop(this.rally, Motion.F.base, 1.4);
-            this.previousRally = rally;
-            return true;
-        }
-        this.previousRally = rally;
-        return false;
-    }
-
-    updateScores(leftScore: number, rightScore: number): void {
-        if (!this.isReady) return;
-        const oldLeft = parseInt(this.score1Text.text);
-        const oldRight = parseInt(this.score2Text.text);
-
-        this.score1Text.text = leftScore.toString();
-        this.score2Text.text = rightScore.toString();
-
-        if (leftScore > oldLeft)
-            this.animationManager?.pop(this.score1Text, Motion.F.fast, 0.9);
-        else if (rightScore > oldRight)
-            this.animationManager?.pop(this.score2Text, Motion.F.fast, 0.9);
-    }
-
-    updatePlayerNames(player1Name: string, player2Name: string): void {
-        if (!this.isReady) return;
-        this.player1Label.text = player1Name;
-        this.player2Label.text = player2Name;
-        this.hudGrid.isVisible = true;
-    }
-
-    async showWinner(winner: string): Promise<void> {
-        if (!this.isReady) return;
-        this.hudGrid.isVisible = false;
-        this.endGameWinnerText.text = `🏆 ${winner} WINS! 🏆`;
-        this.endGameWinnerText.color = "rgba(255, 255, 255, 1)";
-        this.endGameOverlay.isVisible = true;
-        this.animationManager?.pop(this.endGameWinnerText, Motion.F.fast, 0.9);
-        const scene = this.scene;
-        const cams = scene.activeCameras?.length ? scene.activeCameras : scene.activeCamera;
-        spawnFireworksInFrontOfCameras(scene, FINAL_FIREWORKS, cams);
-        await new Promise(resolve => setTimeout(resolve, 5000));
-
-        this.hudGrid.isVisible = true;
-        this.endGameOverlay.isVisible = false;
-    }
-
-    async animateBackground(show: boolean): Promise<void> {
-        if (!this.isReady) return;
-        if (show) {
-            this.partialEndGameOverlay.isVisible = true;
-            this.hudGrid.isVisible = false;
-            await this.animationManager?.fadeIn(this.partialEndGameOverlay, Motion.F.slow);
-        } else {
-            await this.animationManager?.fadeOut(this.partialEndGameOverlay, Motion.F.fast);
-            this.partialEndGameOverlay.isVisible = false;
-            this.hudGrid.isVisible = true;
-        }
-    }
-
-    async showPartialWinner(winner: string): Promise<void> {
-        if (!this.isReady || !this.advancedTexture) return;
-
-        this.partialWinnerName.text = winner;
-        this.partialEndGameOverlay.isVisible = true;
-        this.partialWinnerLabel.isVisible = true;
-        this.partialWinnerName.isVisible = true;
-        if (this.powerUpSlotP1) this.powerUpSlotP1.isVisible = false;
-        if (this.powerUpSlotP2) this.powerUpSlotP2.isVisible = false;
-        
-        this.partialEndGameOverlay.isPointerBlocker = true;
-
-        spawnGUISparkles(this.advancedTexture, this.animationManager);
-
-        await this.animationManager?.slideInY(this.partialWinnerLabel, -200, Motion.F.base);
-        await new Promise(r => setTimeout(r, 60));
-        await this.animationManager?.slideInY(this.partialWinnerName, 50, Motion.F.slow);
-        this.animationManager?.breathe(this.partialWinnerName, Motion.F.breath);
-
-        await new Promise(r => setTimeout(r, 180));
-    }
-
-    async waitForSpaceToContinue(ms: number): Promise<void> {
-        if (!this.isReady || !this.advancedTexture) return;
-        const scene = this.scene;
-        await new Promise<void>(res => setTimeout(res, ms));
-        this.continueText.isVisible = true;
-        this.animationManager?.twinkle(this.continueText, Motion.F.slow);
-
-        return new Promise<void>((resolve) => {
-            const sub = scene.onKeyboardObservable.add((kbInfo: any) => {
-                if (kbInfo.type === KeyboardEventTypes.KEYDOWN) {
-                    const e = kbInfo.event as KeyboardEvent;
-                    if (e.code === "Space" || e.key === " ") {
-                        scene.onKeyboardObservable.remove(sub);
-                        this.continueText.isVisible = false;
-                        this.partialWinnerLabel.isVisible = false;
-                        this.partialWinnerName.isVisible = false;
-                        resolve();
-                    }
-                }
-            }) ?? null;
-        });
-    }
-
-    async hidePartialWinner(): Promise<void> {
-        if (!this.isReady) return;
-        await Promise.all([
-            this.animationManager?.slideOutY(this.partialWinnerLabel, -50, Motion.F.fast),
-            this.animationManager?.slideOutY(this.partialWinnerName, 50, Motion.F.fast)
-        ]);
-
-        this.partialEndGameOverlay.isPointerBlocker = false;
-        this.partialEndGameOverlay.isVisible = false;
-        if (this.powerUpSlotP1) this.powerUpSlotP1.isVisible = true;
-        if (this.powerUpSlotP2) this.powerUpSlotP2.isVisible = true;
-    }
-
-    private async animateMuteIcon(): Promise<void> {
-        if (!this.isReady || !this.muteIcon) return;
-        await this.animationManager?.pop(this.muteIcon, Motion.F.xFast, 0.9);
-    }
-
-    //Helper functions to create Gui objects
-    private createGrid(name: string, h: string, verticalAlign?: number): Grid {
-        const grid = new Grid(name);
-        grid.width = "100%";
-        grid.height = h;
-        grid.horizontalAlignment = this.H_CENTER;
-        grid.verticalAlignment = verticalAlign || this.V_CENTER;
-        return grid;
-    }
-
-    private createRect(name: string, h: string, zIndex:number, verticalAlign?: number, background?: string): Rectangle {
-        const r = new Rectangle(name);
-        r.width = "100%";
-        r.height = h;
-        r.horizontalAlignment = this.H_CENTER;
-        r.verticalAlignment = verticalAlign ?? this.V_CENTER;
-        r.thickness = 0;
-        r.isPointerBlocker = true;
-        r.zIndex = zIndex;
-        if (background !== undefined) r.background = background;
-        return r;
-    }
-
-    private createTextBlock(name: string, options: TextBlockOptions = {}): TextBlock {
-        const textBlock = new TextBlock(name);
-
-        textBlock.fontFamily = 'Poppins, Arial, sans-serif';
-        textBlock.text = options.text || name;
-        textBlock.fontSize = options.fontSize || 24;
-        textBlock.color = options.color || "#FFFFFF";
-        textBlock.fontWeight = options.fontWeight || "normal";
-        textBlock.width = options.width || "100%";
-        textBlock.alpha = 1;
-
-        if (options.resizeToFit)
-            textBlock.height = "auto";
-        else
-            textBlock.height = options.height || "100%";
-
-
-        textBlock.textHorizontalAlignment = options.horizontalAlignment ?? this.H_CENTER;
-        textBlock.textVerticalAlignment = options.verticalAlignment ?? this.V_CENTER;
-
-        if (options.alpha !== undefined) textBlock.alpha = options.alpha;
-
-        if (options.lineSpacing) textBlock.lineSpacing = options.lineSpacing;
-        if (options.resizeToFit !== undefined) textBlock.resizeToFit = options.resizeToFit;
-
-        if (options.applyGlowEffects) {
-            textBlock.shadowBlur = 20;
-            textBlock.fontWeight = "bold";
-            textBlock.shadowColor = "rgba(255, 215, 0, 0.8)";
-        }
-
-        if (options.applyRichEffects) {
-            textBlock.shadowOffsetX = 1;
-            textBlock.shadowOffsetY = 1;
-            textBlock.shadowBlur = 8;
-            textBlock.shadowColor = "rgba(255, 217, 0, 0.80)";
-            textBlock.fontWeight = "bold";
-            textBlock.outlineWidth = options.outlineWidth || 2;
-            textBlock.outlineColor = options.outlineColor || "rgba(0, 0, 0, 0.66)";
-        }
-        return textBlock;
-    }
-
-    updateControlVisibility(player1: boolean, player2: boolean): void {
-        if (!this.isReady) return;
-        const p1 = this.advancedTexture?.getControlByName("PlayerControls_p1") as TextBlock | null;
-        const p2 = this.advancedTexture?.getControlByName("PlayerControls_p2") as TextBlock | null;
-
-        if (p1) p1.color = player1 ? "rgba(255, 255, 255, 0.7)" : "rgba(0, 0, 0, 0)";
-        if (p2) p2.color = player2 ? "rgba(255, 255, 255, 0.7)" : "rgba(0, 0, 0, 0)";
-        if (player1 && this.powerUpSlotP1) this.powerUpSlotP1.isVisible = true;
-        if (player2 && this.powerUpSlotP2) this.powerUpSlotP2.isVisible = true;
-    }
-    private getControlsText(viewMode: ViewMode, player: number): string {
-        const t = getCurrentTranslation();
-        const move = t.controls;
-        
-        if (viewMode === ViewMode.MODE_2D)
-            return player === 1 ? move + "\nP1: W / S" : move + "\nP2: ↑ / ↓";
-        else
-            return player === 1 ? move + "\nP1: A / D" : move + "\nP2: ← / →";
-    }
-
-    // Callbacks
-    setToggleMuteCallback(callback: () => boolean): void {
-        if (!this.isReady) return;
-        this.toggleMuteCallback = callback;
-    }
-
-    // Check if gui is initialised
-    isReady(): boolean {
-        return this.isInitialized;
-    }
-
-    // Clean up all GUI resources
-    dispose(): void {
-        if (!this.isReady()) return;
-        
-        try {
-            this.fpsText.dispose();
-            this.score1Text.dispose();
-            this.score2Text.dispose();
-            this.countdownText.dispose();
-            this.countdownContainer.dispose();
-            this.player1Label.dispose();
-            this.player2Label.dispose();
-            this.rallyText.dispose();
-            this.rally.dispose();
-            this.endGameWinnerText.dispose();
-            this.endGameOverlay.dispose();
-            this.hudGrid.dispose();
-            this.partialEndGameOverlay.dispose();
-            this.partialWinnerLabel.dispose();
-            this.partialWinnerName.dispose();
-            this.continueText.dispose();
-            this.muteIcon?.dispose()
-            this.pauseHint.dispose();
-            this.pauseInstruction.dispose();
-            this.pauseTitle.dispose();
-            this.pauseGrid.dispose();
-            this.pauseOverlay.dispose();
-
-            this.bracketOverlay?.dispose();
-            this.bracketScroll?.dispose();
-            this.bracketGrid?.dispose();
-
-            this.powerUpSlotP1?.dispose();
-            this.powerUpSlotP2?.dispose();
-            this.powerUpCellsP1.forEach(cell => {
-                cell.root.dispose();
-                cell.icon?.dispose();
-                cell.letter?.dispose();
-            });
-            this.powerUpCellsP2.forEach(cell => {
-                cell.root.dispose();
-                cell.icon?.dispose();
-                cell.letter?.dispose();
-            });
-            this.powerUpCellsP1 = [];
-            this.powerUpCellsP2 = [];
-
-            this.advancedTexture?.dispose();
-            this.advancedTexture = null;
-
-            this.isInitialized = false;
-            Logger.debug('Class disposed', 'GUIManager');
-        } catch (error) {
-            Logger.error('Error disposing GUI', 'GUIManager', error);
-        }
-    }
-
-    insertMatch(
-    roundIndex: number,
-    matchIndex: number,
-    left: string | null,
-    right: string | null,
-    matchTotal?: number
-    ): void {
-        if (!this.bracketGrid) return;
-        if (!this.isBrackerGridCreated && matchTotal !== undefined)
-            this.initializeGriBracket(matchTotal);
-
-        const colPanel = this.bracketGrid.getChildByName(`bracketCol_${roundIndex - 1}`) as StackPanel;
-        if (!colPanel) return;
-
-        const leftSlot = matchIndex * 2;
-        const rightSlot = matchIndex * 2 + 1;
-
-        const leftId  = `bracketCell_${roundIndex}_${leftSlot}`;
-        const rightId = `bracketCell_${roundIndex}_${rightSlot}`;
-
-        const leftTb  = this.advancedTexture?.getControlByName(leftId)  as TextBlock;
-        const rightTb = this.advancedTexture?.getControlByName(rightId) as TextBlock;
-
-        if (left !== null && leftTb !== null)
-            leftTb.text = left;
-        if (right !== null && rightTb !== null)
-            rightTb.text = right;
-    }
-
-    private initializeGriBracket(matchTotal: number): void {
-        this.playerTotal = matchTotal * 2;
-        const rounds = Math.ceil(Math.log2(this.playerTotal));
-        const totalColumns = rounds + 1;
-
-        for (let col = 0; col < totalColumns; col++) {
-            this.bracketGrid?.addColumnDefinition(160, true);
-
-            const colPanel = new StackPanel(`bracketCol_${col}`);
-            colPanel.isVertical = true;
-            colPanel.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
-            colPanel.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
-            colPanel.widthInPixels = 160;
-            colPanel.clipChildren = false;
-            this.bracketGrid?.addControl(colPanel, 1, col);
-
-            const slots = this.playerTotal / Math.pow(2, col);
-
-            for (let i = 0; i < slots; i++) {
-                const cellName = `bracketCell_${col + 1}_${i}`;
-
-                const cellRect = new Rectangle(`${cellName}_rect`);
-                cellRect.widthInPixels = 150;
-
-                const cellHeight = 30 * Math.pow(2, col);
-                cellRect.height = `${cellHeight}px`;
-
-                cellRect.paddingTop = "5px";
-                cellRect.paddingBottom = "5px";
-                cellRect.paddingLeft = "6px";
-                cellRect.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
-                cellRect.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
-                cellRect.clipChildren = false;
-
-                colPanel.addControl(cellRect);
-
-                const tb = this.createTextBlock(cellName, {
-                    text: col === rounds ? "🏆" : "tbd",
-                    color: "white",
-                    height: "100%",
-                    resizeToFit: true,
-                    fontSize: col === rounds ? 48 : 16
-                });
-                tb.textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
-                tb.textVerticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
-                cellRect.addControl(tb);
-
-                // if (col < totalColumns - 1)
-                    // this.addPNGConnectorAsChild(cellRect, col, i);
-            }
-
-        }
-        
-        this.isBrackerGridCreated = true;
-    }
-
-    private showBracketOverlay(show: boolean): void {
-        if (!this.bracketOverlay || !this.animationManager) return;
-        if (show && this.isTournament) {
-            this.bracketOverlay.isVisible = true;
-
-            this.bracketOverlay.horizontalAlignment = this.H_RIGHT;
-            this.bracketOverlay.paddingRight = "5px"
-            this.bracketOverlay.leftInPixels = 400;
-            this.pauseGrid.width = "50%";
-            this.pauseGrid.horizontalAlignment = this.H_LEFT;
-
-            this.animationManager.slideInX(this.bracketOverlay, 400, Motion.F.base);
-        } else {
-            this.animationManager.slideOutX(this.bracketOverlay, 400, Motion.F.xFast).then(() => {
-            this.bracketOverlay!.isVisible = false;
-            this.pauseGrid.width = "100%";
-            this.pauseGrid.horizontalAlignment = this.H_CENTER;
-        });
-        }
-    }
-
-    updatePowerUpSlot(player: number, slotIndex: number, powerUpType: Powerup | null, action: PowerUpAction): void {
-        if (!this.isReady) return;
-        
-        const cells = player === 0 ? this.powerUpCellsP1 : this.powerUpCellsP2;
-        
-        if (slotIndex >= 0 && slotIndex < cells.length) {
-            const cell = cells[slotIndex];
-            const direction = player === 0 ? -100 : 100;
-
-            switch (action) {
-                case PowerUpAction.CREATED:
-                    this.scene.stopAnimation(cell.root);
-                    cell.root.scaleX = 1;
-                    cell.root.scaleY = 1;
-                    cell.root.alpha = 0;
-                    cell.root.color = "rgba(255, 255, 255, 0.5)";
-                    cell.root.background = "rgba(0, 0, 0, 1)";
-                    if (powerUpType !== null && this.POWERUP_ICON[powerUpType]) {
-                        if (!cell.icon) {
-                            cell.icon = new Image(`powerUpIcon_${player}_${slotIndex}`, this.POWERUP_ICON[powerUpType]);
-                            cell.icon.stretch = Image.STRETCH_UNIFORM;
-                            cell.icon.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
-                            cell.icon.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
-                            cell.root.addControl(cell.icon);
-                        } else {
-                            cell.icon.source = this.POWERUP_ICON[powerUpType];
-                        }
-                        cell.icon.alpha = 1;
-                        cell.icon.isVisible = true;
-
-                        const delay = slotIndex * 100;              
-                        setTimeout(() => {
-                            this.animationManager.slideInX(cell.root, direction, Motion.F.slow)
-                                .then(() => this.animationManager.pop(cell.root, Motion.F.fast, 1.1));
-                        }, delay);}
-                    break;
-                    
-                case PowerUpAction.ACTIVATED:
-                    if (cell.icon) {
-                        cell.root.color = "rgba(255, 0, 0, 1)";
-                        this.animationManager?.twinkle(cell.root, Motion.F.fast);
-                    }
-                    break;
-                    
-                case PowerUpAction.DEACTIVATED:
-                    this.scene.stopAnimation(cell.root);
-                    cell.root.scaleX = 1;
-                    cell.root.scaleY = 1;
-                    cell.root.color = "rgba(255, 255, 255, 0.5)";
-                    cell.root.background = "rgba(255, 255, 255, 0.25)";
-                    
-                    if (cell.icon)
-                        this.animationManager.fadeOut(cell.icon, Motion.F.fast).then(() => {
-                            cell.icon!.alpha = 0.3;
-                        });
-                    break;
-            }
-        }
-    }
+	private readonly H_CENTER = Control.HORIZONTAL_ALIGNMENT_CENTER;
+	private readonly H_LEFT = Control.HORIZONTAL_ALIGNMENT_LEFT;
+	private readonly H_RIGHT = Control.HORIZONTAL_ALIGNMENT_RIGHT;
+	private readonly V_CENTER = Control.VERTICAL_ALIGNMENT_CENTER;
+	private readonly V_BOTTOM = Control.VERTICAL_ALIGNMENT_BOTTOM;
+	private advancedTexture: AdvancedDynamicTexture | null = null;
+	private isInitialized: boolean = false;
+	private hudGrid!: Grid;
+	private fpsText!: TextBlock;
+	private score1Text!: TextBlock;
+	private score2Text!: TextBlock;
+	private player1Label!: TextBlock;
+	private player2Label!: TextBlock;
+	private rallyText!: TextBlock;
+	private rally!: TextBlock;
+	private previousRally: number = 1;
+	private countdownText!: TextBlock;
+	private countdownContainer!: Rectangle;
+	private endGameOverlay!: Grid;
+	private endGameWinnerText!: TextBlock;
+	private partialEndGameOverlay!: Rectangle;
+	private partialWinnerLabel!: TextBlock;
+	private partialWinnerName!: TextBlock;
+	private continueText!: TextBlock;
+
+	private pauseOverlay!: Rectangle;
+	private pauseGrid!: Grid;
+	private pauseTitle!: TextBlock;
+	private pauseInstruction!: TextBlock;
+	private pauseHint!: TextBlock;
+	private muteIcon?: Image;
+	private toggleMuteCallback?: () => boolean;
+
+
+	private isTournament = false;
+	private isBrackerGridCreated = false;
+	private playerTotal = 0;
+	private bracketOverlay?: Rectangle;
+	private bracketScroll?: ScrollViewer;
+	private bracketGrid?: Grid;
+
+	private powerUpSlotP1?: Rectangle;
+	private powerUpSlotP2?: Rectangle;
+	private powerUpCellsP1: Array<{root: Rectangle; icon?: Image; letter?: TextBlock}> = [];
+	private powerUpCellsP2: Array<{root: Rectangle; icon?: Image; letter?: TextBlock}> = [];
+
+	private POWERUP_ICON: Record<number, string> = {
+		[Powerup.SLOW_OPPONENT]:	   "assets/icons/powerup/slow.png",
+		[Powerup.SHRINK_OPPONENT]:	 "assets/icons/powerup/smaller.png",
+		[Powerup.INCREASE_PADDLE_SPEED]:"assets/icons/powerup/fast.png",
+		[Powerup.GROW_PADDLE]:		 "assets/icons/powerup/larger.png",
+	};
+
+	constructor(private scene: Scene, config: GameConfig, private animationManager: AnimationManager, audioManager: AudioManager) {
+		try {
+			this.advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI("UI", true, this.scene);
+			this.advancedTexture!.layer!.layerMask = 0x20000000;
+			this.isTournament = config.isTournament;
+
+			this.createHUD(config);
+			this.createPowerUpSlots();
+			this.createPauseOverlay();
+			this.createBracketOverlay();
+			this.createViewModeElements(config);
+			this.createCountdownDisplay();
+			this.createPartialEndGameOverlay();
+			this.createEndGameOverlay();
+			this.setToggleMuteCallback(() => audioManager.toggleMute());
+
+			this.isInitialized = true;
+		} catch (error) {
+			Logger.error('Error creating GUI', 'GUIManager', error);
+			throw error;
+		}
+	}
+
+	private createHUD(config: GameConfig): void {
+		this.hudGrid = this.createGrid("hudGrid", "20%", this.V_BOTTOM);
+		this.hudGrid.background = "rgba(0, 0, 0, 0.55)"
+		this.hudGrid.zIndex = 8;
+
+		this.hudGrid.addColumnDefinition(0.10, false); // FPS
+		this.hudGrid.addColumnDefinition(0.15, false); // P1 instructions
+		this.hudGrid.addColumnDefinition(0.25, false); // P1 score
+		this.hudGrid.addColumnDefinition(0.25, false); // P2 score
+		this.hudGrid.addColumnDefinition(0.15, false); // P2 instructions
+		this.hudGrid.addColumnDefinition(0.10, false); // Rally
+
+		this.advancedTexture!.addControl(this.hudGrid);
+
+		// FPS (col 0)
+		this.fpsText = this.createTextBlock("fpsText", { text: "FPS: 0", fontSize: 18 });
+		this.hudGrid.addControl(this.fpsText, 0, 0);
+
+		// P1 controls (col 1)
+		this.hudGrid.addControl(this.createPlayerControls(config, 1), 0, 1);
+
+		// P1 score+label (col 2)
+		const p1Cell = new Grid();
+		p1Cell.addRowDefinition(1, false);
+		p1Cell.addRowDefinition(1, false);
+		p1Cell.addColumnDefinition(1, false);
+
+		this.player1Label = this.createTextBlock("player1Label", {
+		text: "Player 1", fontSize: 48, applyRichEffects: true
+		});
+		this.score1Text = this.createTextBlock("score1Text", {
+		text: "0", fontSize: 56, verticalAlignment: this.V_BOTTOM, applyRichEffects: true
+		});
+		p1Cell.addControl(this.player1Label, 0, 0);
+		p1Cell.addControl(this.score1Text,  1, 0);
+		this.hudGrid.addControl(p1Cell, 0, 2);
+
+		// P2 score+label (col 3)
+		const p2Cell = new Grid();
+		p2Cell.addRowDefinition(1, false);
+		p2Cell.addRowDefinition(1, false);
+		p2Cell.addColumnDefinition(1, false);
+
+		this.player2Label = this.createTextBlock("player2Label", {
+		text: "Player 2", fontSize: 48, applyRichEffects: true
+		});
+		this.score2Text = this.createTextBlock("score2Text", {
+		text: "0", fontSize: 56, verticalAlignment: this.V_BOTTOM, applyRichEffects: true
+		});
+		p2Cell.addControl(this.player2Label, 0, 0);
+		p2Cell.addControl(this.score2Text,  1, 0);
+		this.hudGrid.addControl(p2Cell, 0, 3);
+
+		// P2 controls (col 4)
+		this.hudGrid.addControl(this.createPlayerControls(config, 2), 0, 4);
+
+		// Rally (col 5)
+		const rallyCell = new Grid();
+		rallyCell.addRowDefinition(1, false);
+		rallyCell.addRowDefinition(1, false);
+		rallyCell.addColumnDefinition(1, false);
+
+		this.rallyText = this.createTextBlock("rallyText", { text: "Rally", fontSize: 48 });
+		this.rally = this.createTextBlock("rallyValue", { text: "0", fontSize: 56, verticalAlignment: this.V_BOTTOM });
+
+		rallyCell.addControl(this.rallyText, 0, 0);
+		rallyCell.addControl(this.rally,	 1, 0);
+		this.hudGrid.addControl(rallyCell, 0, 5);
+
+		this.rally.transformCenterX = 0.5;
+		this.rally.transformCenterY = 0.5;
+	}
+
+	private createPowerUpSlots(): void {
+		if (!this.advancedTexture) return;
+
+		this.powerUpSlotP1 = this.createPowerUpSlot("powerUpSlotP1", this.H_LEFT);
+		this.advancedTexture.addControl(this.powerUpSlotP1);
+
+		this.powerUpSlotP2 = this.createPowerUpSlot("powerUpSlotP2", this.H_RIGHT);
+		this.advancedTexture.addControl(this.powerUpSlotP2);
+
+		this.initializePowerUpCells();
+	}
+
+	private createPowerUpSlot(name: string, horizontalAlignment: number): Rectangle {
+		const slot = this.createRect(
+			name, "280px", 5, Control.VERTICAL_ALIGNMENT_TOP, "rgba(0, 0, 0, 1)");
+		
+		slot.width = "110px";
+		slot.horizontalAlignment = horizontalAlignment;
+		slot.isVisible = false;
+		
+		return slot;
+	}
+
+	private initializePowerUpCells(): void {
+		for (let i = 0; i < 3; i++) {
+			const cell = this.createPowerUpCell(i, 0); // Player 1
+			this.powerUpCellsP1.push(cell);
+			this.powerUpSlotP1!.addControl(cell.root);
+		}
+
+		for (let i = 0; i < 3; i++) {
+			const cell = this.createPowerUpCell(i, 1); // Player 2
+			this.powerUpCellsP2.push(cell);
+			this.powerUpSlotP2!.addControl(cell.root);
+		}
+	}
+
+	private createPowerUpCell(index: number, player: number): {root: Rectangle; icon?: Image; letter?: TextBlock} {
+		const cell = this.createRect(
+			`powerUpCell_${player}_${index}`,
+			"80px",
+			6,
+			Control.VERTICAL_ALIGNMENT_TOP,
+			"rgba(0, 0, 0, 1)"
+		);
+
+		cell.width = "100px";
+		cell.top = `${index * 90}px`;
+		cell.cornerRadius = 8;
+		cell.thickness = 1;
+		cell.color = "rgba(255, 255, 255, 0.5)";
+		cell.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
+
+		// Create icon
+		const icon = new Image(`powerUpIcon_${player}_${index}`, "");
+		icon.stretch = Image.STRETCH_UNIFORM;
+		icon.width = "75px";
+		icon.height = "75px";
+		icon.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
+		icon.isVisible = false;
+
+		// Create letter text
+		const letterKeys = player === 0 ? ['C', 'V', 'B'] : ['I', 'O', 'P'];
+		const letter = this.createTextBlock(`powerUpLetter_${player}_${index}`, {
+			text: letterKeys[index],
+			fontSize: 20,
+			fontWeight: "bold",
+			color: "white",
+			horizontalAlignment: Control.HORIZONTAL_ALIGNMENT_LEFT,
+			verticalAlignment: Control.VERTICAL_ALIGNMENT_CENTER
+		});
+
+		if (player === 0) {
+			icon.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
+			letter.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_RIGHT;
+			letter.left = 80;
+		} else {
+			letter.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
+			letter.leftInPixels = 5;
+			icon.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_RIGHT;
+		}
+
+		cell.addControl(icon);
+		cell.addControl(letter);
+
+		return {
+			root: cell,
+			icon: icon,
+			letter: letter,
+		};
+	}
+
+	private createPlayerControls(config: GameConfig, player: number): TextBlock {
+		const pControls = this.createTextBlock(`PlayerControls_p${player}`, {
+			text: this.getControlsText(config.viewMode, player),
+			lineSpacing: "10px", color: "rgba(0, 0, 0, 0.55)", fontSize: 30
+		});
+		return pControls;
+	}
+
+	private createPauseOverlay(): void {
+		if (!this.advancedTexture) return;
+
+		const t = getCurrentTranslation();
+		this.pauseOverlay = this.createRect("pauseOverlay", "100%", 11, this.V_CENTER ,"rgba(2, 2, 2, 0.98)");
+		this.pauseOverlay.color = "rgba(255, 255, 255, 1)";
+		this.pauseOverlay.isVisible = false;
+		this.advancedTexture.addControl(this.pauseOverlay);
+
+		this.pauseGrid = this.createGrid("pauseGrid", "50%");
+
+		this.pauseGrid.addRowDefinition(0.5, false);
+		this.pauseGrid.addRowDefinition(0.2, false);
+		this.pauseGrid.addRowDefinition(0.1, false);
+		this.pauseGrid.addRowDefinition(0.1, false);
+		this.pauseOverlay.addControl(this.pauseGrid);
+
+		this.pauseTitle = this.createTextBlock("pauseTitle",{ text: t.gamePaused, fontWeight: "bold", fontSize: 42, });
+		this.pauseGrid.addControl(this.pauseTitle, 0, 0);
+
+		this.pauseInstruction = this.createTextBlock("pauseInstruction",{ text: t.exitGame, });
+		this.pauseGrid.addControl(this.pauseInstruction, 1, 0);
+
+		this.pauseHint = this.createTextBlock("pauseHint", { text: t.pauseControls, });
+		this.pauseGrid.addControl(this.pauseHint, 2, 0);
+
+		this.muteIcon = new Image("muteIcon", "assets/icons/sound_on.png");
+		this.muteIcon.stretch = Image.STRETCH_UNIFORM;
+		this.muteIcon.paddingTop = "16px";
+		this.muteIcon.onPointerClickObservable.add(() => {
+			this.animateMuteIcon();
+			if (this.toggleMuteCallback) {
+					const isMuted = this.toggleMuteCallback();
+					if (this.muteIcon)
+						this.muteIcon.source = isMuted ? "assets/icons/sound_off.png" : "assets/icons/sound_on.png";
+				}
+		});
+		this.pauseGrid.addControl(this.muteIcon, 3, 0);
+	}
+
+	private createBracketOverlay(): void {
+		if (!this.advancedTexture) return;
+
+		const t = getCurrentTranslation();
+
+		// 1) Overlay (inset children so the border is visible)
+		this.bracketOverlay = this.createRect(
+			"bracketOverlay",
+			"80%", 20, this.V_CENTER,
+			"rgba(2, 2, 2, 0.98)"
+		);
+		this.bracketOverlay.horizontalAlignment = this.H_RIGHT;
+		this.bracketOverlay.adaptWidthToChildren = true; // auto-fit to children
+		this.bracketOverlay.width = "55%";
+		this.bracketOverlay.cornerRadius = 12;
+		this.bracketOverlay.isVisible = false;
+		this.bracketOverlay.isPointerBlocker = true;
+
+		this.bracketOverlay.paddingLeft = "8px";
+		this.bracketOverlay.paddingTop = "8px";
+		this.bracketOverlay.paddingRight = `${this.bracketOverlay.thickness + 8}px`;
+		this.bracketOverlay.paddingBottom = "8px";
+
+		this.advancedTexture.addControl(this.bracketOverlay);
+
+		const container = new Grid("bracketContainer");
+		container.addRowDefinition(0.2, false);
+		container.addRowDefinition(0.8, false);
+		container.addColumnDefinition(1, false);
+		container.width = "100%";
+		container.height = "100%";
+		this.bracketOverlay.addControl(container);
+
+		const headerGrid = new Grid("headerGrid");
+		headerGrid.addColumnDefinition(70, true); // icon col
+		headerGrid.addColumnDefinition(1, false); // title col
+		headerGrid.height = "80px";
+
+		const bracketIcon = new Image("bracketIcon", "assets/icons/tournament.png");
+		bracketIcon.width = "68px";
+		bracketIcon.height = "68px";
+		bracketIcon.horizontalAlignment = this.H_LEFT;
+		headerGrid.addControl(bracketIcon, 0, 0);
+
+		const bracketTitle = this.createTextBlock("bracketTitle", {
+			text: t.tournamentTitle,
+			applyGlowEffects: true,
+			fontSize: 36,
+			horizontalAlignment: this.H_LEFT
+		});
+		headerGrid.addControl(bracketTitle, 0, 1);
+
+		container.addControl(headerGrid, 0, 0);
+
+		this.bracketScroll = new ScrollViewer("bracketScroll");
+		this.bracketScroll.width = "100%";
+		this.bracketScroll.height = "100%";
+		this.bracketScroll.thickness = 0;
+		this.bracketScroll.barSize = 8;
+		this.bracketScroll.background = "transparent";
+		this.bracketScroll.wheelPrecision = 20;
+		this.bracketScroll.verticalBar.isVisible = false;
+		this.bracketScroll.horizontalBar.isVisible = true; // we want horizontal
+		container.addControl(this.bracketScroll, 1, 0);
+
+		const contentWrap = new StackPanel("bracketContentWrap");
+		contentWrap.isVertical = false;
+		contentWrap.height = "100%";
+		contentWrap.width = "800px";
+		this.bracketScroll.addControl(contentWrap);
+
+		this.bracketGrid = this.createGrid("bracketGrid", "100%");
+		this.bracketGrid.addRowDefinition(1, false);
+		this.bracketGrid.height = "100%";
+		contentWrap.addControl(this.bracketGrid);
+	}
+
+	private createViewModeElements(config: GameConfig): void {
+		if (config.viewMode === ViewMode.MODE_3D && 
+			(config.gameMode === GameMode.TWO_PLAYER_LOCAL || config.gameMode === GameMode.TOURNAMENT_LOCAL)) {
+			const dividerLine = this.createRect("divider", "100%", 6, this.V_CENTER, "#000000ff")
+			dividerLine.widthInPixels = 5;
+			this.advancedTexture!.addControl(dividerLine);
+		}
+	}
+
+	private createCountdownDisplay(): void {
+		this.countdownContainer = this.createRect("countdownContainer", "100%", 10);
+		this.countdownContainer.thickness = 0;
+		this.countdownContainer.isVisible = false;
+
+		this.countdownText = this.createTextBlock("5", { fontSize: 72, applyRichEffects: true });
+		this.countdownContainer.addControl(this.countdownText);
+		this.advancedTexture!.addControl(this.countdownContainer);
+	}
+
+	private createPartialEndGameOverlay(): void {
+		this.partialEndGameOverlay = this.createRect("partialWinnerLayer", "100%", 8, this.V_BOTTOM, "rgba(0, 0, 0, 1)");
+		this.partialEndGameOverlay.background = "rgba(0, 0, 0, 1)";
+		this.partialEndGameOverlay.isVisible = false;
+		this.advancedTexture!.addControl(this.partialEndGameOverlay);
+
+		const centerColumn = this.createGrid("winnerGrid", "100%");
+		centerColumn.zIndex = 9;
+
+		centerColumn.addRowDefinition(0.2);
+		centerColumn.addRowDefinition(0.6);
+		centerColumn.addRowDefinition(0.2);
+		this.partialEndGameOverlay.addControl(centerColumn);
+
+		const t = getCurrentTranslation();
+		this.partialWinnerLabel = this.createTextBlock("winnerLabel", {
+			text: t.winner, outlineWidth: 2, fontSize: 80, zIndex: 10, alpha: 0
+		});
+		centerColumn.addControl(this.partialWinnerLabel, 0, 0);
+
+		this.partialWinnerName = this.createTextBlock("winnerName", {
+			text: "", color: "rgb(255, 215, 0)", outlineWidth: 2, outlineColor: "rgb(255, 255, 255)",
+			fontSize: 110, fontWeight: "bold", zIndex: 10, alpha: 0, applyGlowEffects: true
+		});
+		centerColumn.addControl(this.partialWinnerName, 1, 0);
+
+		this.continueText = this.createTextBlock("continue_text", {
+			text: t.continue, color: "rgb(255, 255, 255)", outlineWidth: 2, outlineColor: "rgb(255, 215, 0)", zIndex: 10,
+		});
+		centerColumn.addControl(this.continueText, 2, 0);
+	}
+
+	private createEndGameOverlay(): void {
+		this.endGameOverlay = this.createGrid("endGameOverlay", "20%", this.V_BOTTOM);
+		this.endGameOverlay.background = "rgba(0, 0, 0, 0.9)";
+		this.endGameOverlay.isVisible = false;
+		this.endGameOverlay.addColumnDefinition(1.0);
+
+		this.endGameWinnerText = this.createTextBlock("endGameWinnerText", {
+			fontSize: 72, applyRichEffects: true
+		});
+		this.endGameOverlay.addControl(this.endGameWinnerText, 0, 0);
+		this.advancedTexture!.addControl(this.endGameOverlay);
+	}
+
+	setPauseVisible(visible: boolean): void {
+		if (!this.isReady || !this.animationManager) return;
+
+		if (visible) {
+			this.pauseOverlay.isVisible = true;
+			this.pauseOverlay.alpha = 0;
+			this.pauseOverlay.thickness = 0;
+
+			const frames = Motion.F.base;
+			this.pauseOverlay.animations = [
+			this.animationManager.createFloat("alpha", 0, 1, frames, false, Motion.ease.quadOut()),
+			this.animationManager.createFloat("thickness", 0, 4, frames, false, Motion.ease.quadOut()),
+			];
+			this.animationManager.play(this.pauseOverlay, frames, false);
+			this.showBracketOverlay(true);
+		} else {
+			const frames = Motion.F.fast;
+			this.pauseOverlay.animations = [
+			this.animationManager.createFloat("alpha", 1, 0, frames, false, Motion.ease.quadOut()),
+			this.animationManager.createFloat("thickness", 4, 0, frames, false, Motion.ease.quadOut()),
+			];
+			this.showBracketOverlay(false);
+			this.animationManager.play(this.pauseOverlay, frames, false).then(() => {
+			this.pauseOverlay.isVisible = false;
+			this.pauseOverlay.alpha = 0;
+			this.pauseOverlay.thickness = 0;
+			});
+		}
+	}
+	showCountdown(show: boolean, count?: number): void {
+		if (!this.isReady) return;
+		this.countdownContainer.isVisible = show;
+
+		if (show && count !== undefined) {
+			this.countdownText.text = count.toString();
+			this.animationManager?.pulse(this.countdownText, Motion.F.xSlow);
+			return;
+		}
+		this.countdownText.animations = [];
+	}
+
+	updateFPS(fps: number): void {
+		if (!this.isReady) return;
+		this.fpsText.text = `FPS: ${Math.round(fps)}`;
+	}
+
+	updateRally(rally: number): boolean {
+		if (!this.isReady) return false;
+		if (this.rally && ((this.previousRally < rally) || (rally === 1 && this.previousRally > rally))) {
+			this.rally.text = `${Math.round(rally)}`;
+
+			const maxRally = 10;
+			const intensity = Math.min(rally / maxRally, 1);
+			const r = 255;
+			const g = Math.round(255 * (1 - intensity));
+			const b = Math.round(255 * (1 - intensity));
+			this.rally.color = `rgb(${r}, ${g}, ${b})`;
+
+			if (rally > 0 && rally % 5 === 0)
+				this.animationManager?.rotatePulse(this.rally, 1, Motion.F.slow);
+			else
+				this.animationManager?.pop(this.rally, Motion.F.base, 1.4);
+			this.previousRally = rally;
+			return true;
+		}
+		this.previousRally = rally;
+		return false;
+	}
+
+	updateScores(leftScore: number, rightScore: number): void {
+		if (!this.isReady) return;
+		const oldLeft = parseInt(this.score1Text.text);
+		const oldRight = parseInt(this.score2Text.text);
+
+		this.score1Text.text = leftScore.toString();
+		this.score2Text.text = rightScore.toString();
+
+		if (leftScore > oldLeft)
+			this.animationManager?.pop(this.score1Text, Motion.F.fast, 0.9);
+		else if (rightScore > oldRight)
+			this.animationManager?.pop(this.score2Text, Motion.F.fast, 0.9);
+	}
+
+	updatePlayerNames(player1Name: string, player2Name: string): void {
+		if (!this.isReady) return;
+		this.player1Label.text = player1Name;
+		this.player2Label.text = player2Name;
+		this.hudGrid.isVisible = true;
+	}
+
+	async showWinner(winner: string): Promise<void> {
+		if (!this.isReady) return;
+		this.hudGrid.isVisible = false;
+		this.endGameWinnerText.text = `🏆 ${winner} WINS! 🏆`;
+		this.endGameWinnerText.color = "rgba(255, 255, 255, 1)";
+		this.endGameOverlay.isVisible = true;
+		this.animationManager?.pop(this.endGameWinnerText, Motion.F.fast, 0.9);
+		const scene = this.scene;
+		const cams = scene.activeCameras?.length ? scene.activeCameras : scene.activeCamera;
+		spawnFireworksInFrontOfCameras(scene, FINAL_FIREWORKS, cams);
+		await new Promise(resolve => setTimeout(resolve, 5000));
+
+		this.hudGrid.isVisible = true;
+		this.endGameOverlay.isVisible = false;
+	}
+
+	async animateBackground(show: boolean): Promise<void> {
+		if (!this.isReady) return;
+		if (show) {
+			this.partialEndGameOverlay.isVisible = true;
+			this.hudGrid.isVisible = false;
+			await this.animationManager?.fadeIn(this.partialEndGameOverlay, Motion.F.slow);
+		} else {
+			await this.animationManager?.fadeOut(this.partialEndGameOverlay, Motion.F.fast);
+			this.partialEndGameOverlay.isVisible = false;
+			this.hudGrid.isVisible = true;
+		}
+	}
+
+	async showPartialWinner(winner: string): Promise<void> {
+		if (!this.isReady || !this.advancedTexture) return;
+
+		this.partialWinnerName.text = winner;
+		this.partialEndGameOverlay.isVisible = true;
+		this.partialWinnerLabel.isVisible = true;
+		this.partialWinnerName.isVisible = true;
+		if (this.powerUpSlotP1) this.powerUpSlotP1.isVisible = false;
+		if (this.powerUpSlotP2) this.powerUpSlotP2.isVisible = false;
+		
+		this.partialEndGameOverlay.isPointerBlocker = true;
+
+		spawnGUISparkles(this.advancedTexture, this.animationManager);
+
+		await this.animationManager?.slideInY(this.partialWinnerLabel, -200, Motion.F.base);
+		await new Promise(r => setTimeout(r, 60));
+		await this.animationManager?.slideInY(this.partialWinnerName, 50, Motion.F.slow);
+		this.animationManager?.breathe(this.partialWinnerName, Motion.F.breath);
+
+		await new Promise(r => setTimeout(r, 180));
+	}
+
+	async waitForSpaceToContinue(ms: number): Promise<void> {
+		if (!this.isReady || !this.advancedTexture) return;
+		const scene = this.scene;
+		await new Promise<void>(res => setTimeout(res, ms));
+		this.continueText.isVisible = true;
+		this.animationManager?.twinkle(this.continueText, Motion.F.slow);
+
+		return new Promise<void>((resolve) => {
+			const sub = scene.onKeyboardObservable.add((kbInfo: any) => {
+				if (kbInfo.type === KeyboardEventTypes.KEYDOWN) {
+					const e = kbInfo.event as KeyboardEvent;
+					if (e.code === "Space" || e.key === " ") {
+						scene.onKeyboardObservable.remove(sub);
+						this.continueText.isVisible = false;
+						this.partialWinnerLabel.isVisible = false;
+						this.partialWinnerName.isVisible = false;
+						resolve();
+					}
+				}
+			}) ?? null;
+		});
+	}
+
+	async hidePartialWinner(): Promise<void> {
+		if (!this.isReady) return;
+		await Promise.all([
+			this.animationManager?.slideOutY(this.partialWinnerLabel, -50, Motion.F.fast),
+			this.animationManager?.slideOutY(this.partialWinnerName, 50, Motion.F.fast)
+		]);
+
+		this.partialEndGameOverlay.isPointerBlocker = false;
+		this.partialEndGameOverlay.isVisible = false;
+		if (this.powerUpSlotP1) this.powerUpSlotP1.isVisible = true;
+		if (this.powerUpSlotP2) this.powerUpSlotP2.isVisible = true;
+	}
+
+	private async animateMuteIcon(): Promise<void> {
+		if (!this.isReady || !this.muteIcon) return;
+		await this.animationManager?.pop(this.muteIcon, Motion.F.xFast, 0.9);
+	}
+
+	//Helper functions to create Gui objects
+	private createGrid(name: string, h: string, verticalAlign?: number): Grid {
+		const grid = new Grid(name);
+		grid.width = "100%";
+		grid.height = h;
+		grid.horizontalAlignment = this.H_CENTER;
+		grid.verticalAlignment = verticalAlign || this.V_CENTER;
+		return grid;
+	}
+
+	private createRect(name: string, h: string, zIndex:number, verticalAlign?: number, background?: string): Rectangle {
+		const r = new Rectangle(name);
+		r.width = "100%";
+		r.height = h;
+		r.horizontalAlignment = this.H_CENTER;
+		r.verticalAlignment = verticalAlign ?? this.V_CENTER;
+		r.thickness = 0;
+		r.isPointerBlocker = true;
+		r.zIndex = zIndex;
+		if (background !== undefined) r.background = background;
+		return r;
+	}
+
+	private createTextBlock(name: string, options: TextBlockOptions = {}): TextBlock {
+		const textBlock = new TextBlock(name);
+
+		textBlock.fontFamily = 'Poppins, Arial, sans-serif';
+		textBlock.text = options.text || name;
+		textBlock.fontSize = options.fontSize || 24;
+		textBlock.color = options.color || "#FFFFFF";
+		textBlock.fontWeight = options.fontWeight || "normal";
+		textBlock.width = options.width || "100%";
+		textBlock.alpha = 1;
+
+		if (options.resizeToFit)
+			textBlock.height = "auto";
+		else
+			textBlock.height = options.height || "100%";
+
+
+		textBlock.textHorizontalAlignment = options.horizontalAlignment ?? this.H_CENTER;
+		textBlock.textVerticalAlignment = options.verticalAlignment ?? this.V_CENTER;
+
+		if (options.alpha !== undefined) textBlock.alpha = options.alpha;
+
+		if (options.lineSpacing) textBlock.lineSpacing = options.lineSpacing;
+		if (options.resizeToFit !== undefined) textBlock.resizeToFit = options.resizeToFit;
+
+		if (options.applyGlowEffects) {
+			textBlock.shadowBlur = 20;
+			textBlock.fontWeight = "bold";
+			textBlock.shadowColor = "rgba(255, 215, 0, 0.8)";
+		}
+
+		if (options.applyRichEffects) {
+			textBlock.shadowOffsetX = 1;
+			textBlock.shadowOffsetY = 1;
+			textBlock.shadowBlur = 8;
+			textBlock.shadowColor = "rgba(255, 217, 0, 0.80)";
+			textBlock.fontWeight = "bold";
+			textBlock.outlineWidth = options.outlineWidth || 2;
+			textBlock.outlineColor = options.outlineColor || "rgba(0, 0, 0, 0.66)";
+		}
+		return textBlock;
+	}
+
+	updateControlVisibility(player1: boolean, player2: boolean): void {
+		if (!this.isReady) return;
+		const p1 = this.advancedTexture?.getControlByName("PlayerControls_p1") as TextBlock | null;
+		const p2 = this.advancedTexture?.getControlByName("PlayerControls_p2") as TextBlock | null;
+
+		if (p1) p1.color = player1 ? "rgba(255, 255, 255, 0.7)" : "rgba(0, 0, 0, 0)";
+		if (p2) p2.color = player2 ? "rgba(255, 255, 255, 0.7)" : "rgba(0, 0, 0, 0)";
+		if (player1 && this.powerUpSlotP1) this.powerUpSlotP1.isVisible = true;
+		if (player2 && this.powerUpSlotP2) this.powerUpSlotP2.isVisible = true;
+	}
+	private getControlsText(viewMode: ViewMode, player: number): string {
+		const t = getCurrentTranslation();
+		const move = t.controls;
+		
+		if (viewMode === ViewMode.MODE_2D)
+			return player === 1 ? move + "\nP1: W / S" : move + "\nP2: ↑ / ↓";
+		else
+			return player === 1 ? move + "\nP1: A / D" : move + "\nP2: ← / →";
+	}
+
+	// Callbacks
+	setToggleMuteCallback(callback: () => boolean): void {
+		if (!this.isReady) return;
+		this.toggleMuteCallback = callback;
+	}
+
+	// Check if gui is initialised
+	isReady(): boolean {
+		return this.isInitialized;
+	}
+
+	// Clean up all GUI resources
+	dispose(): void {
+		if (!this.isReady()) return;
+		
+		try {
+			this.fpsText.dispose();
+			this.score1Text.dispose();
+			this.score2Text.dispose();
+			this.countdownText.dispose();
+			this.countdownContainer.dispose();
+			this.player1Label.dispose();
+			this.player2Label.dispose();
+			this.rallyText.dispose();
+			this.rally.dispose();
+			this.endGameWinnerText.dispose();
+			this.endGameOverlay.dispose();
+			this.hudGrid.dispose();
+			this.partialEndGameOverlay.dispose();
+			this.partialWinnerLabel.dispose();
+			this.partialWinnerName.dispose();
+			this.continueText.dispose();
+			this.muteIcon?.dispose()
+			this.pauseHint.dispose();
+			this.pauseInstruction.dispose();
+			this.pauseTitle.dispose();
+			this.pauseGrid.dispose();
+			this.pauseOverlay.dispose();
+
+			this.bracketOverlay?.dispose();
+			this.bracketScroll?.dispose();
+			this.bracketGrid?.dispose();
+
+			this.powerUpSlotP1?.dispose();
+			this.powerUpSlotP2?.dispose();
+			this.powerUpCellsP1.forEach(cell => {
+				cell.root.dispose();
+				cell.icon?.dispose();
+				cell.letter?.dispose();
+			});
+			this.powerUpCellsP2.forEach(cell => {
+				cell.root.dispose();
+				cell.icon?.dispose();
+				cell.letter?.dispose();
+			});
+			this.powerUpCellsP1 = [];
+			this.powerUpCellsP2 = [];
+
+			this.advancedTexture?.dispose();
+			this.advancedTexture = null;
+
+			this.isInitialized = false;
+			Logger.debug('Class disposed', 'GUIManager');
+		} catch (error) {
+			Logger.error('Error disposing GUI', 'GUIManager', error);
+		}
+	}
+
+	insertMatch(
+	roundIndex: number,
+	matchIndex: number,
+	left: string | null,
+	right: string | null,
+	matchTotal?: number
+	): void {
+		if (!this.bracketGrid) return;
+		if (!this.isBrackerGridCreated && matchTotal !== undefined)
+			this.initializeGriBracket(matchTotal);
+
+		const colPanel = this.bracketGrid.getChildByName(`bracketCol_${roundIndex - 1}`) as StackPanel;
+		if (!colPanel) return;
+
+		const leftSlot = matchIndex * 2;
+		const rightSlot = matchIndex * 2 + 1;
+
+		const leftId  = `bracketCell_${roundIndex}_${leftSlot}`;
+		const rightId = `bracketCell_${roundIndex}_${rightSlot}`;
+
+		const leftTb  = this.advancedTexture?.getControlByName(leftId)  as TextBlock;
+		const rightTb = this.advancedTexture?.getControlByName(rightId) as TextBlock;
+
+		if (left !== null && leftTb !== null)
+			leftTb.text = left;
+		if (right !== null && rightTb !== null)
+			rightTb.text = right;
+	}
+
+	private initializeGriBracket(matchTotal: number): void {
+		this.playerTotal = matchTotal * 2;
+		const rounds = Math.ceil(Math.log2(this.playerTotal));
+		const totalColumns = rounds + 1;
+
+		for (let col = 0; col < totalColumns; col++) {
+			this.bracketGrid?.addColumnDefinition(160, true);
+
+			const colPanel = new StackPanel(`bracketCol_${col}`);
+			colPanel.isVertical = true;
+			colPanel.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
+			colPanel.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
+			colPanel.widthInPixels = 160;
+			colPanel.clipChildren = false;
+			this.bracketGrid?.addControl(colPanel, 1, col);
+
+			const slots = this.playerTotal / Math.pow(2, col);
+
+			for (let i = 0; i < slots; i++) {
+				const cellName = `bracketCell_${col + 1}_${i}`;
+
+				const cellRect = new Rectangle(`${cellName}_rect`);
+				cellRect.widthInPixels = 150;
+
+				const cellHeight = 30 * Math.pow(2, col);
+				cellRect.height = `${cellHeight}px`;
+
+				cellRect.paddingTop = "5px";
+				cellRect.paddingBottom = "5px";
+				cellRect.paddingLeft = "6px";
+				cellRect.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
+				cellRect.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
+				cellRect.clipChildren = false;
+
+				colPanel.addControl(cellRect);
+
+				const tb = this.createTextBlock(cellName, {
+					text: col === rounds ? "🏆" : "tbd",
+					color: "white",
+					height: "100%",
+					resizeToFit: true,
+					fontSize: col === rounds ? 48 : 16
+				});
+				tb.textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
+				tb.textVerticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
+				cellRect.addControl(tb);
+
+				// if (col < totalColumns - 1)
+					// this.addPNGConnectorAsChild(cellRect, col, i);
+			}
+
+		}
+		
+		this.isBrackerGridCreated = true;
+	}
+
+	private showBracketOverlay(show: boolean): void {
+		if (!this.bracketOverlay || !this.animationManager) return;
+		if (show && this.isTournament) {
+			this.bracketOverlay.isVisible = true;
+
+			this.bracketOverlay.horizontalAlignment = this.H_RIGHT;
+			this.bracketOverlay.paddingRight = "5px"
+			this.bracketOverlay.leftInPixels = 400;
+			this.pauseGrid.width = "50%";
+			this.pauseGrid.horizontalAlignment = this.H_LEFT;
+
+			this.animationManager.slideInX(this.bracketOverlay, 400, Motion.F.base);
+		} else {
+			this.animationManager.slideOutX(this.bracketOverlay, 400, Motion.F.xFast).then(() => {
+			this.bracketOverlay!.isVisible = false;
+			this.pauseGrid.width = "100%";
+			this.pauseGrid.horizontalAlignment = this.H_CENTER;
+		});
+		}
+	}
+
+	updatePowerUpSlot(player: number, slotIndex: number, powerUpType: Powerup | null, action: PowerUpAction): void {
+		if (!this.isReady) return;
+		
+		const cells = player === 0 ? this.powerUpCellsP1 : this.powerUpCellsP2;
+		
+		if (slotIndex >= 0 && slotIndex < cells.length) {
+			const cell = cells[slotIndex];
+			const direction = player === 0 ? -100 : 100;
+
+			switch (action) {
+				case PowerUpAction.CREATED:
+					this.scene.stopAnimation(cell.root);
+					cell.root.scaleX = 1;
+					cell.root.scaleY = 1;
+					cell.root.alpha = 0;
+					cell.root.color = "rgba(255, 255, 255, 0.5)";
+					cell.root.background = "rgba(0, 0, 0, 1)";
+					if (powerUpType !== null && this.POWERUP_ICON[powerUpType]) {
+						if (!cell.icon) {
+							cell.icon = new Image(`powerUpIcon_${player}_${slotIndex}`, this.POWERUP_ICON[powerUpType]);
+							cell.icon.stretch = Image.STRETCH_UNIFORM;
+							cell.icon.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
+							cell.icon.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
+							cell.root.addControl(cell.icon);
+						} else {
+							cell.icon.source = this.POWERUP_ICON[powerUpType];
+						}
+						cell.icon.alpha = 1;
+						cell.icon.isVisible = true;
+
+						const delay = slotIndex * 100;			  
+						setTimeout(() => {
+							this.animationManager.slideInX(cell.root, direction, Motion.F.slow)
+								.then(() => this.animationManager.pop(cell.root, Motion.F.fast, 1.1));
+						}, delay);}
+					break;
+					
+				case PowerUpAction.ACTIVATED:
+					if (cell.icon) {
+						cell.root.color = "rgba(255, 0, 0, 1)";
+						this.animationManager?.twinkle(cell.root, Motion.F.fast);
+					}
+					break;
+					
+				case PowerUpAction.DEACTIVATED:
+					this.scene.stopAnimation(cell.root);
+					cell.root.scaleX = 1;
+					cell.root.scaleY = 1;
+					cell.root.color = "rgba(255, 255, 255, 0.5)";
+					cell.root.background = "rgba(255, 255, 255, 0.25)";
+					
+					if (cell.icon)
+						this.animationManager.fadeOut(cell.icon, Motion.F.fast).then(() => {
+							cell.icon!.alpha = 0.3;
+						});
+					break;
+			}
+		}
+	}
 
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////// second ------------
 
-    // insertMatch(
-    //     roundIndex: number,
-    //     matchIndex: number,
-    //     left: string | null,
-    //     right: string | null,
-    //     matchTotal?: number
-    // ): void {
-    //     if (roundIndex === 1 && this.rounds.length === 0 && matchTotal !== undefined)
-    //         this.initializeTournament(matchTotal);
+	// insertMatch(
+	//	 roundIndex: number,
+	//	 matchIndex: number,
+	//	 left: string | null,
+	//	 right: string | null,
+	//	 matchTotal?: number
+	// ): void {
+	//	 if (roundIndex === 1 && this.rounds.length === 0 && matchTotal !== undefined)
+	//		 this.initializeTournament(matchTotal);
 
-    //     this.ensureRound(roundIndex, matchTotal);
+	//	 this.ensureRound(roundIndex, matchTotal);
 
-    //     const round = this.rounds[roundIndex - 1];
-    //     if (!round[matchIndex])
-    //         round[matchIndex] = { left: null, right: null };
-        
-    //     const match = round[matchIndex];
-    //     match.left = left ?? match.left;
-    //     match.right = right ?? match.right;
+	//	 const round = this.rounds[roundIndex - 1];
+	//	 if (!round[matchIndex])
+	//		 round[matchIndex] = { left: null, right: null };
+		
+	//	 const match = round[matchIndex];
+	//	 match.left = left ?? match.left;
+	//	 match.right = right ?? match.right;
 
-    //     this.renderBracket();
-    // }
+	//	 this.renderBracket();
+	// }
 
-    // private initializeTournament(round1Matches: number): void {
-    //     this.rounds = [];
-    //     let matchCount = round1Matches;
+	// private initializeTournament(round1Matches: number): void {
+	//	 this.rounds = [];
+	//	 let matchCount = round1Matches;
 
-    //     while (matchCount >= 1) {
-    //         this.rounds.push(Array(matchCount).fill(null).map(() => ({ 
-    //             left: matchCount === round1Matches ? null : "tbd", 
-    //             right: matchCount === round1Matches ? null : "tbd" 
-    //         })));
-            
-    //         if (matchCount === 1) break;
-    //         matchCount = Math.ceil(matchCount / 2);
-    //     }
-    // }
+	//	 while (matchCount >= 1) {
+	//		 this.rounds.push(Array(matchCount).fill(null).map(() => ({ 
+	//			 left: matchCount === round1Matches ? null : "tbd", 
+	//			 right: matchCount === round1Matches ? null : "tbd" 
+	//		 })));
+			
+	//		 if (matchCount === 1) break;
+	//		 matchCount = Math.ceil(matchCount / 2);
+	//	 }
+	// }
 
-    // private ensureRound(roundIndex: number, matchTotal?: number): void {
-    //     const arrayIndex = roundIndex - 1;
-        
-    //     // Extend rounds array if needed
-    //     while (this.rounds.length <= arrayIndex) {
-    //         this.rounds.push([]);
-    //     }
-        
-    //     // Set round size if provided
-    //     if (matchTotal !== undefined && matchTotal > 0) {
-    //         const round = this.rounds[arrayIndex];
-    //         while (round.length < matchTotal) {
-    //             round.push({ left: "tbd", right: "tbd" });
-    //         }
-    //     }
-    // }
+	// private ensureRound(roundIndex: number, matchTotal?: number): void {
+	//	 const arrayIndex = roundIndex - 1;
+		
+	//	 // Extend rounds array if needed
+	//	 while (this.rounds.length <= arrayIndex) {
+	//		 this.rounds.push([]);
+	//	 }
+		
+	//	 // Set round size if provided
+	//	 if (matchTotal !== undefined && matchTotal > 0) {
+	//		 const round = this.rounds[arrayIndex];
+	//		 while (round.length < matchTotal) {
+	//			 round.push({ left: "tbd", right: "tbd" });
+	//		 }
+	//	 }
+	// }
 
-    // private renderBracket(): void {
-    //     if (!this.bracketText) return;
-        
-    //     this.bracketText.text = this.rounds.length === 0 ? "—" : this.buildBracketText();
-    // }
+	// private renderBracket(): void {
+	//	 if (!this.bracketText) return;
+		
+	//	 this.bracketText.text = this.rounds.length === 0 ? "—" : this.buildBracketText();
+	// }
 
-    // private buildBracketText(): string {
-    //     const colWidth = 10;
-    //     const spacing = 2;
-        
-    //     // Build each round as a column of text
-    //     const columns = this.rounds.map((round, roundIndex) => ({
-    //         lines: this.buildRoundLines(round, roundIndex, colWidth),
-    //         width: colWidth + spacing
-    //     }));
+	// private buildBracketText(): string {
+	//	 const colWidth = 10;
+	//	 const spacing = 2;
+		
+	//	 // Build each round as a column of text
+	//	 const columns = this.rounds.map((round, roundIndex) => ({
+	//		 lines: this.buildRoundLines(round, roundIndex, colWidth),
+	//		 width: colWidth + spacing
+	//	 }));
 
-    //     return this.joinColumns(columns);
-    // }
+	//	 return this.joinColumns(columns);
+	// }
 
-    // private buildRoundLines(round: Match[], roundIndex: number, colWidth: number): string[] {
-    //     const lines: string[] = [];
-    //     const verticalSpacing = Math.pow(2, roundIndex + 1) - 1;
+	// private buildRoundLines(round: Match[], roundIndex: number, colWidth: number): string[] {
+	//	 const lines: string[] = [];
+	//	 const verticalSpacing = Math.pow(2, roundIndex + 1) - 1;
 
-    //     round.forEach((match, matchIndex) => {
-    //         const left = this.pad(match.left ?? " tbd", colWidth);
-    //         const right = this.pad(match.right ?? " tbd", colWidth);
-            
-    //         // Add match bracket
-    //         lines.push(`${left} ┐`);
-            
-    //         // Add vertical connectors
-    //         const midPoint = Math.floor(verticalSpacing / 2);
-    //         for (let i = 0; i < verticalSpacing; i++) {
-    //             const connector = i === midPoint ? "├" : "│";
-    //             lines.push(`${" ".repeat(colWidth)} ${connector}`);
-    //         }
-            
-    //         lines.push(`${right} ┘`);
-            
-    //         // Add spacing between matches (except last)
-    //         if (matchIndex < round.length - 1) {
-    //             lines.push("");
-    //         }
-    //     });
+	//	 round.forEach((match, matchIndex) => {
+	//		 const left = this.pad(match.left ?? " tbd", colWidth);
+	//		 const right = this.pad(match.right ?? " tbd", colWidth);
+			
+	//		 // Add match bracket
+	//		 lines.push(`${left} ┐`);
+			
+	//		 // Add vertical connectors
+	//		 const midPoint = Math.floor(verticalSpacing / 2);
+	//		 for (let i = 0; i < verticalSpacing; i++) {
+	//			 const connector = i === midPoint ? "├" : "│";
+	//			 lines.push(`${" ".repeat(colWidth)} ${connector}`);
+	//		 }
+			
+	//		 lines.push(`${right} ┘`);
+			
+	//		 // Add spacing between matches (except last)
+	//		 if (matchIndex < round.length - 1) {
+	//			 lines.push("");
+	//		 }
+	//	 });
 
-    //     return lines;
-    // }
+	//	 return lines;
+	// }
 
-    // private joinColumns(columns: { lines: string[], width: number }[]): string {
-    //     // Find max height and center all columns
-    //     const maxHeight = Math.max(...columns.map(col => col.lines.length));
-        
-    //     return Array.from({ length: maxHeight }, (_, row) =>
-    //         columns.map(col => {
-    //             const line = this.getCenteredLine(col.lines, row, maxHeight);
-    //             return line.padEnd(col.width);
-    //         }).join("").trimEnd()
-    //     ).join("\n");
-    // }
+	// private joinColumns(columns: { lines: string[], width: number }[]): string {
+	//	 // Find max height and center all columns
+	//	 const maxHeight = Math.max(...columns.map(col => col.lines.length));
+		
+	//	 return Array.from({ length: maxHeight }, (_, row) =>
+	//		 columns.map(col => {
+	//			 const line = this.getCenteredLine(col.lines, row, maxHeight);
+	//			 return line.padEnd(col.width);
+	//		 }).join("").trimEnd()
+	//	 ).join("\n");
+	// }
 
-    // private getCenteredLine(lines: string[], row: number, maxHeight: number): string {
-    //     const startRow = Math.floor((maxHeight - lines.length) / 2);
-    //     const lineIndex = row - startRow;
-    //     return (lineIndex >= 0 && lineIndex < lines.length) ? lines[lineIndex] : "";
-    // }
+	// private getCenteredLine(lines: string[], row: number, maxHeight: number): string {
+	//	 const startRow = Math.floor((maxHeight - lines.length) / 2);
+	//	 const lineIndex = row - startRow;
+	//	 return (lineIndex >= 0 && lineIndex < lines.length) ? lines[lineIndex] : "";
+	// }
 
-    // private pad(text: string, width: number): string {
-    //     return text.length >= width 
-    //         ? text.slice(0, width)
-    //         : text.padEnd(width);
-    // }
+	// private pad(text: string, width: number): string {
+	//	 return text.length >= width 
+	//		 ? text.slice(0, width)
+	//		 : text.padEnd(width);
+	// }
 
