@@ -9,11 +9,6 @@ import { TextBlockOptions } from './utils.js';
 import { AnimationManager, Motion } from "./AnimationManager.js";
 import { AudioManager } from "./AudioManager.js";
 
-// interface Match {
-//     left: string | null;
-//     right: string | null;
-// }
-
 /**
  * Manages all GUI elements for the game
  */
@@ -61,8 +56,8 @@ export class GUIManager {
 
     private powerUpSlotP1?: Rectangle;
     private powerUpSlotP2?: Rectangle;
-    private powerUpCellsP1: Array<{root: Rectangle; icon?: Image; cooldown?: Rectangle}> = [];
-    private powerUpCellsP2: Array<{root: Rectangle; icon?: Image; cooldown?: Rectangle}> = [];
+    private powerUpCellsP1: Array<{root: Rectangle; icon?: Image; letter?: TextBlock}> = [];
+    private powerUpCellsP2: Array<{root: Rectangle; icon?: Image; letter?: TextBlock}> = [];
 
     private POWERUP_ICON: Record<number, string> = {
         [Powerup.SLOW_OPPONENT]:       "assets/icons/powerup/slow.png",
@@ -181,14 +176,10 @@ export class GUIManager {
 
     private createPowerUpSlot(name: string, horizontalAlignment: number): Rectangle {
         const slot = this.createRect(
-            name, "280px", 5, Control.VERTICAL_ALIGNMENT_TOP, "rgba(0, 0, 0, 0.5)");
+            name, "280px", 5, Control.VERTICAL_ALIGNMENT_TOP, "rgba(0, 0, 0, 1)");
         
-        slot.width = "90px";
+        slot.width = "110px";
         slot.horizontalAlignment = horizontalAlignment;
-        // slot.top = "25px";
-        slot.cornerRadius = 10;
-        slot.thickness = 2;
-        slot.color = "rgba(255, 255, 255, 0.3)";
         slot.isVisible = false;
         
         return slot;
@@ -196,47 +187,70 @@ export class GUIManager {
 
     private initializePowerUpCells(): void {
         for (let i = 0; i < 3; i++) {
-            const cell = this.createPowerUpCell(i);
+            const cell = this.createPowerUpCell(i, 0); // Player 1
             this.powerUpCellsP1.push(cell);
             this.powerUpSlotP1!.addControl(cell.root);
         }
 
         for (let i = 0; i < 3; i++) {
-            const cell = this.createPowerUpCell(i);
+            const cell = this.createPowerUpCell(i, 1); // Player 2
             this.powerUpCellsP2.push(cell);
             this.powerUpSlotP2!.addControl(cell.root);
         }
     }
 
-    private createPowerUpCell(index: number): {root: Rectangle; icon?: Image; cooldown?: Rectangle} {
+    private createPowerUpCell(index: number, player: number): {root: Rectangle; icon?: Image; letter?: TextBlock} {
         const cell = this.createRect(
-            `powerUpCell_${index}`,
+            `powerUpCell_${player}_${index}`,
             "80px",
             6,
-            Control.VERTICAL_ALIGNMENT_CENTER,
-            "rgba(255, 255, 255, 0.2)"
+            Control.VERTICAL_ALIGNMENT_TOP,
+            "rgba(0, 0, 0, 1)"
         );
 
-        cell.width = "80px";
-        cell.top = `${index * 85}px`;
+        cell.width = "100px";
+        cell.top = `${index * 90}px`;
         cell.cornerRadius = 8;
         cell.thickness = 1;
         cell.color = "rgba(255, 255, 255, 0.5)";
         cell.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
 
-        const cooldown = this.createRect(
-            `powerUpCooldown_${index}`,
-            "100%",
-            7,
-            Control.VERTICAL_ALIGNMENT_CENTER,
-            "rgba(0, 0, 0, 0.7)"
-        );
-        cooldown.isVisible = false;
-        cell.addControl(cooldown);
-        
+        // Create icon
+        const icon = new Image(`powerUpIcon_${player}_${index}`, "");
+        icon.stretch = Image.STRETCH_UNIFORM;
+        icon.width = "75px";
+        icon.height = "75px";
+        icon.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
+        icon.isVisible = false;
+
+        // Create letter text
+        const letterKeys = player === 0 ? ['C', 'V', 'B'] : ['I', 'O', 'P'];
+        const letter = this.createTextBlock(`powerUpLetter_${player}_${index}`, {
+            text: letterKeys[index],
+            fontSize: 20,
+            fontWeight: "bold",
+            color: "white",
+            horizontalAlignment: Control.HORIZONTAL_ALIGNMENT_LEFT,
+            verticalAlignment: Control.VERTICAL_ALIGNMENT_CENTER
+        });
+
+        if (player === 0) {
+            icon.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
+            letter.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_RIGHT;
+            letter.left = 80;
+        } else {
+            letter.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
+            letter.leftInPixels = 5;
+            icon.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_RIGHT;
+        }
+
+        cell.addControl(icon);
+        cell.addControl(letter);
+
         return {
             root: cell,
-            cooldown: cooldown
+            icon: icon,
+            letter: letter,
         };
     }
 
@@ -364,8 +378,6 @@ export class GUIManager {
         this.bracketGrid.height = "100%";
         contentWrap.addControl(this.bracketGrid);
     }
-
-
 
     private createViewModeElements(config: GameConfig): void {
         if (config.viewMode === ViewMode.MODE_3D && 
@@ -739,12 +751,12 @@ export class GUIManager {
             this.powerUpCellsP1.forEach(cell => {
                 cell.root.dispose();
                 cell.icon?.dispose();
-                cell.cooldown?.dispose();
+                cell.letter?.dispose();
             });
             this.powerUpCellsP2.forEach(cell => {
                 cell.root.dispose();
                 cell.icon?.dispose();
-                cell.cooldown?.dispose();
+                cell.letter?.dispose();
             });
             this.powerUpCellsP1 = [];
             this.powerUpCellsP2 = [];
@@ -844,8 +856,6 @@ export class GUIManager {
         this.isBrackerGridCreated = true;
     }
 
-
-
     private showBracketOverlay(show: boolean): void {
         if (!this.bracketOverlay || !this.animationManager) return;
         if (show && this.isTournament) {
@@ -874,16 +884,19 @@ export class GUIManager {
         
         if (slotIndex >= 0 && slotIndex < cells.length) {
             const cell = cells[slotIndex];
-            
+            const direction = player === 0 ? -100 : 100;
+
             switch (action) {
                 case PowerUpAction.CREATED:
-                    // Handle power-up creation (existing logic)
+                    this.scene.stopAnimation(cell.root);
+                    cell.root.scaleX = 1;
+                    cell.root.scaleY = 1;
+                    cell.root.color = "rgba(255, 255, 255, 0.5)";
+                    cell.root.background = "rgba(0, 0, 0, 1)";
                     if (powerUpType !== null && this.POWERUP_ICON[powerUpType]) {
                         if (!cell.icon) {
                             cell.icon = new Image(`powerUpIcon_${player}_${slotIndex}`, this.POWERUP_ICON[powerUpType]);
                             cell.icon.stretch = Image.STRETCH_UNIFORM;
-                            // cell.icon.width = "70%";
-                            // cell.icon.height = "70%";
                             cell.icon.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
                             cell.icon.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
                             cell.root.addControl(cell.icon);
@@ -891,28 +904,32 @@ export class GUIManager {
                             cell.icon.source = this.POWERUP_ICON[powerUpType];
                         }
                         cell.icon.isVisible = true;
-                        cell.root.background = "rgba(100, 100, 255, 0.4)";
-                    }
+
+                        const delay = slotIndex * 100;              
+                        setTimeout(() => {
+                            this.animationManager.slideInX(cell.root, direction, Motion.F.slow)
+                                .then(() => this.animationManager.pop(cell.root, Motion.F.fast, 1.1));
+                        }, delay);}
                     break;
                     
                 case PowerUpAction.ACTIVATED:
-                    // Handle activation - pulse animation
                     if (cell.icon) {
-                        this.animationManager?.pulse(cell.root, Motion.F.slow);
+                        cell.root.color = "rgba(255, 0, 0, 1)";
+                        this.animationManager?.twinkle(cell.root, Motion.F.fast);
                     }
-                    // Clear the slot
-                    if (cell.icon) cell.icon.isVisible = false;
-                    cell.root.background = "rgba(255, 255, 255, 0.25)";
                     break;
                     
                 case PowerUpAction.DEACTIVATED:
-                    // Handle deactivation - fade out and darken
-                    if (cell.icon) {
-                        this.animationManager?.fadeOut(cell.icon, Motion.F.fast).then(() => {
+                    this.scene.stopAnimation(cell.root);
+                    cell.root.scaleX = 1;
+                    cell.root.scaleY = 1;
+                    cell.root.color = "rgba(255, 255, 255, 0.5)";
+                    cell.root.background = "rgba(255, 255, 255, 0.25)";
+                    
+                    if (cell.icon)
+                        this.animationManager.fadeOut(cell.icon, Motion.F.fast).then(() => {
                             cell.icon!.alpha = 0.3;
                         });
-                    }
-                    cell.root.background = "rgba(255, 255, 255, 0.25)";
                     break;
             }
         }

@@ -51,17 +51,17 @@ export class AnimationManager {
         const anim = Animation.CreateAnimation(property, Animation.ANIMATIONTYPE_FLOAT, Motion.fps, ease);
         anim.loopMode = loopMode;
         if (pingPong) {
-        const mid = Math.floor(frames / 2);
-        anim.setKeys([
-            { frame: 0, value: from },
-            { frame: mid, value: to },
-            { frame: frames, value: from }
-        ]);
+            const mid = Math.floor(frames / 2);
+            anim.setKeys([
+                { frame: 0, value: from },
+                { frame: mid, value: to },
+                { frame: frames, value: from }
+            ]);
         } else {
-        anim.setKeys([
-            { frame: 0, value: from },
-            { frame: frames, value: to }
-        ]);
+            anim.setKeys([
+                { frame: 0, value: from },
+                { frame: frames, value: to }
+            ]);
         }
         return anim;
     }
@@ -144,8 +144,8 @@ export class AnimationManager {
     }
 
     twinkle(target: Control, frames = Motion.F.slow) {
-    target.animations = [ this.createFloat("alpha", 1, 0.6, frames, true, Motion.ease.sine(), Animation.ANIMATIONLOOPMODE_CYCLE) ];
-    return this.play(target, frames, true);
+        target.animations = [ this.createFloat("alpha", 1, 0.6, frames, true, Motion.ease.sine(), Animation.ANIMATIONLOOPMODE_CYCLE) ];
+        return this.play(target, frames, true);
     }
 
     rotatePulse(target: Control, turns = 1, frames = Motion.F.slow, pulseScale = 1.6) {
@@ -154,6 +154,15 @@ export class AnimationManager {
             this.createFloat("rotation", 0, to, frames, false, Motion.ease.quadInOut()),
             this.createFloat("scaleX", 1, pulseScale, frames, true, Motion.ease.quadInOut()),
             this.createFloat("scaleY", 1, pulseScale, frames, true, Motion.ease.quadInOut())
+        ];
+        return this.play(target, frames, false);
+    }
+
+    flipX(target: Control, frames = Motion.F.base): Promise<void> {
+        const originalScaleY = target.scaleY;
+        target.animations = [
+            this.createFloat("scaleY", originalScaleY, 0, frames / 2, false, Motion.ease.quadOut()),
+            this.createFloat("scaleY", 0, originalScaleY, frames / 2, false, Motion.ease.quadOut())
         ];
         return this.play(target, frames, false);
     }
@@ -192,17 +201,15 @@ export class AnimationManager {
 
     scaleWidth(
     target: any,
-    from: number,  // Actual size value
-    to: number,    // Actual size value
+    from: number,
+    to: number,
     frames = Motion.F.fast,
     ease: EasingFunction = Motion.ease.quadOut()
     ): Promise<void> {
-        // Calculate scale factors based on the standard paddle width
         const baseWidth = GAME_CONFIG.paddleWidth;
         const fromScale = from / baseWidth;
         const toScale = to / baseWidth;
         
-        // Create animation for x-axis scaling (corrected from my previous suggestion)
         const anim = new Animation(
             "widthAnimation",
             "scaling.y",

@@ -253,10 +253,10 @@ export class Game {
 		})
 
 		this.paddles[side].powerups[slot] = null;
-		setTimeout(() => this.deactivate_powerup(type, side), GAME_CONFIG.powerupDuration)
+		setTimeout(() => this.deactivate_powerup(type, side, slot), GAME_CONFIG.powerupDuration)
 	}
 
-	deactivate_powerup(type: Powerup, side: number) {
+	deactivate_powerup(type: Powerup, side: number, slot: number) {
 		const other_side = side === LEFT_PADDLE ? RIGHT_PADDLE : LEFT_PADDLE;
 		switch (type) {
 			case Powerup.SLOW_OPPONENT:
@@ -277,6 +277,7 @@ export class Game {
 			type: MessageType.POWERUP_DEACTIVATED,
 			powerup: type,
 			side: side,
+			slot: slot
 		})
 	}
 }
