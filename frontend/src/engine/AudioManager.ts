@@ -25,6 +25,7 @@ export class AudioManager {
     private countdownSound: Sound | null = null;
     private paddleHitSound: Sound | null = null;
     private scoreSound: Sound | null = null;
+    private powerup: Sound | null = null;
 
     constructor(private scene: Scene) {
     }
@@ -73,6 +74,20 @@ export class AudioManager {
             this.scoreSound = new Sound(
                 "score",
                 "/assets/audio/score.mp3",
+                this.scene,
+                null,
+                {
+                    loop: false,
+                    autoplay: false,
+                    volume: this.volumes.score,
+                    playbackRate: this.basePlaybackRate
+                }
+            );
+
+            
+            this.powerup = new Sound(
+                "score",
+                "/assets/audio/powerup.mp3",
                 this.scene,
                 null,
                 {
@@ -148,6 +163,10 @@ export class AudioManager {
         this.countdownSound?.play();
     }
 
+    playPowerup(): void {
+        this.powerup?.play();
+    }
+
     stopCountdown(): void {
         this.countdownSound?.stop();
     }
@@ -189,6 +208,9 @@ export class AudioManager {
 
             this.scoreSound?.dispose();
             this.scoreSound = null;
+
+            this.powerup?.dispose();
+            this.powerup = null;
 
             this.isInitialized = false;
 

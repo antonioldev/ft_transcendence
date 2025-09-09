@@ -489,9 +489,9 @@ export class GUIManager {
         this.fpsText.text = `FPS: ${Math.round(fps)}`;
     }
 
-    updateRally(rally: number): void {
-        if (!this.isReady) return;
-        if (this.rally && (this.previousRally < rally) || rally === 1) {
+    updateRally(rally: number): boolean {
+        if (!this.isReady) return false;
+        if (this.rally && ((this.previousRally < rally) || (rally === 1 && this.previousRally > rally))) {
             this.rally.text = `${Math.round(rally)}`;
 
             const maxRally = 10;
@@ -505,8 +505,11 @@ export class GUIManager {
                 this.animationManager?.rotatePulse(this.rally, 1, Motion.F.slow);
             else
                 this.animationManager?.pop(this.rally, Motion.F.base, 1.4);
+            this.previousRally = rally;
+            return true;
         }
         this.previousRally = rally;
+        return false;
     }
 
     updateScores(leftScore: number, rightScore: number): void {
@@ -566,6 +569,9 @@ export class GUIManager {
         this.partialEndGameOverlay.isVisible = true;
         this.partialWinnerLabel.isVisible = true;
         this.partialWinnerName.isVisible = true;
+        if (this.powerUpSlotP1) this.powerUpSlotP1.isVisible = false;
+        if (this.powerUpSlotP2) this.powerUpSlotP2.isVisible = false;
+        
         this.partialEndGameOverlay.isPointerBlocker = true;
 
         spawnGUISparkles(this.advancedTexture, this.animationManager);
@@ -610,6 +616,8 @@ export class GUIManager {
 
         this.partialEndGameOverlay.isPointerBlocker = false;
         this.partialEndGameOverlay.isVisible = false;
+        if (this.powerUpSlotP1) this.powerUpSlotP1.isVisible = true;
+        if (this.powerUpSlotP2) this.powerUpSlotP2.isVisible = true;
     }
 
     private async animateMuteIcon(): Promise<void> {
@@ -891,6 +899,7 @@ export class GUIManager {
                     this.scene.stopAnimation(cell.root);
                     cell.root.scaleX = 1;
                     cell.root.scaleY = 1;
+                    cell.root.alpha = 0;
                     cell.root.color = "rgba(255, 255, 255, 0.5)";
                     cell.root.background = "rgba(0, 0, 0, 1)";
                     if (powerUpType !== null && this.POWERUP_ICON[powerUpType]) {

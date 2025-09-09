@@ -356,7 +356,8 @@ export class Game {
             this.gameObjects.ball.rotation.x += 0.1;
             this.gameObjects.ball.rotation.y += 0.05;
 
-            this.guiManager?.updateRally(state.ball.current_rally);
+            if(this.guiManager?.updateRally(state.ball.current_rally))
+                this.audioManager?.playPaddleHit();
             this.audioManager?.updateMusicSpeed(state.ball.current_rally);
 
             if (this.playerLeftScore < state.paddleLeft.score) {
@@ -552,7 +553,6 @@ export class Game {
 
         const side = message.side;
         const slot = message.slot;
-        // const powerUps = this.playerPowerUps.get(side);
 
         const med = GAME_CONFIG.paddleWidth;
         const lrg = GAME_CONFIG.increasedPaddleWidth;
