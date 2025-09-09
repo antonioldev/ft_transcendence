@@ -5,9 +5,10 @@ import { GameConfig } from './GameConfig.js';
 import { GameMode, ViewMode, Powerup, PowerUpAction } from '../shared/constants.js';
 import { getCurrentTranslation } from '../translations/translations.js';
 import { spawnFireworksInFrontOfCameras, FINAL_FIREWORKS, spawnGUISparkles } from './scene/fireworks.js';
-import { TextBlockOptions } from './utils.js';
 import { AnimationManager, Motion } from "./AnimationManager.js";
 import { AudioManager } from "./AudioManager.js";
+import { HUD_STYLES, POWER_UP_STYLES, PAUSE_MENU_STYLES, COUNTDOWN_STYLES, 
+	VIEW_MODE_STYLES, PARTIAL_END_GAME_STYLES, END_GAME_STYLES, BRACKET_STYLES } from "./GuiStyle.js";
 
 /**
  * Manages all GUI elements for the game
@@ -16,8 +17,7 @@ export class GUIManager {
 	private readonly H_CENTER = Control.HORIZONTAL_ALIGNMENT_CENTER;
 	private readonly H_LEFT = Control.HORIZONTAL_ALIGNMENT_LEFT;
 	private readonly H_RIGHT = Control.HORIZONTAL_ALIGNMENT_RIGHT;
-	private readonly V_CENTER = Control.VERTICAL_ALIGNMENT_CENTER;
-	private readonly V_BOTTOM = Control.VERTICAL_ALIGNMENT_BOTTOM;
+
 	private advancedTexture: AdvancedDynamicTexture | null = null;
 	private isInitialized: boolean = false;
 	private hudGrid!: Grid;
@@ -47,9 +47,9 @@ export class GUIManager {
 	private toggleMuteCallback?: () => boolean;
 
 
-	private isTournament = false;
-	private isBrackerGridCreated = false;
-	private playerTotal = 0;
+	private isTournament: boolean = false;
+	private isBrackerGridCreated: boolean = false;
+	private playerTotal: number = 0;
 	private bracketOverlay?: Rectangle;
 	private bracketScroll?: ScrollViewer;
 	private bracketGrid?: Grid;
@@ -76,8 +76,8 @@ export class GUIManager {
 			this.createPowerUpSlots();
 			this.createPauseOverlay();
 			this.createBracketOverlay();
-			this.createViewModeElements(config);
-			this.createCountdownDisplay();
+			this.createViewModeDivider(config);
+			this.createCountdownOverlay();
 			this.createPartialEndGameOverlay();
 			this.createEndGameOverlay();
 			this.setToggleMuteCallback(() => audioManager.toggleMute());
@@ -90,107 +90,81 @@ export class GUIManager {
 	}
 
 	private createHUD(config: GameConfig): void {
-		this.hudGrid = this.createGrid("hudGrid", "20%", this.V_BOTTOM);
-		this.hudGrid.background = "rgba(0, 0, 0, 0.55)"
-		this.hudGrid.zIndex = 8;
+	this.hudGrid = this.createGrid("hudGrid", HUD_STYLES.hudGrid);
+	this.advancedTexture!.addControl(this.hudGrid);
 
-		this.hudGrid.addColumnDefinition(0.10, false); // FPS
-		this.hudGrid.addColumnDefinition(0.15, false); // P1 instructions
-		this.hudGrid.addColumnDefinition(0.25, false); // P1 score
-		this.hudGrid.addColumnDefinition(0.25, false); // P2 score
-		this.hudGrid.addColumnDefinition(0.15, false); // P2 instructions
-		this.hudGrid.addColumnDefinition(0.10, false); // Rally
+	this.hudGrid.addColumnDefinition(HUD_STYLES.gridColumns.fps, false);
+	this.hudGrid.addColumnDefinition(HUD_STYLES.gridColumns.p1Controls, false);
+	this.hudGrid.addColumnDefinition(HUD_STYLES.gridColumns.p1Score, false);
+	this.hudGrid.addColumnDefinition(HUD_STYLES.gridColumns.p2Score, false);
+	this.hudGrid.addColumnDefinition(HUD_STYLES.gridColumns.p2Controls, false);
+	this.hudGrid.addColumnDefinition(HUD_STYLES.gridColumns.rally, false);
 
-		this.advancedTexture!.addControl(this.hudGrid);
+	this.fpsText =  this.createTextBlock("fpsText", HUD_STYLES.fpsText, "FPS: 0");
+	this.hudGrid.addControl(this.fpsText, 0, 0);
 
-		// FPS (col 0)
-		this.fpsText = this.createTextBlock("fpsText", { text: "FPS: 0", fontSize: 18 });
-		this.hudGrid.addControl(this.fpsText, 0, 0);
+	const p1Controls =  this.createTextBlock("PlayerControls_p1", HUD_STYLES.playerControlsP1, this.getControlsText(config.viewMode, 1));
+	this.hudGrid.addControl(p1Controls, 0, 1);
 
-		// P1 controls (col 1)
-		this.hudGrid.addControl(this.createPlayerControls(config, 1), 0, 1);
+	const p1Cell = new Grid();
+	p1Cell.addRowDefinition(1, false);
+	p1Cell.addRowDefinition(1, false);
+	p1Cell.addColumnDefinition(1, false);
 
-		// P1 score+label (col 2)
-		const p1Cell = new Grid();
-		p1Cell.addRowDefinition(1, false);
-		p1Cell.addRowDefinition(1, false);
-		p1Cell.addColumnDefinition(1, false);
+	this.player1Label = this.createTextBlock("player1Label", HUD_STYLES.player1Label, "Player 1");
+	this.score1Text =  this.createTextBlock("score1Text", HUD_STYLES.score1Text, "0");
+	
+	p1Cell.addControl(this.player1Label, 0, 0);
+	p1Cell.addControl(this.score1Text, 1, 0);
+	this.hudGrid.addControl(p1Cell, 0, 2);
 
-		this.player1Label = this.createTextBlock("player1Label", {
-		text: "Player 1", fontSize: 48, applyRichEffects: true
-		});
-		this.score1Text = this.createTextBlock("score1Text", {
-		text: "0", fontSize: 56, verticalAlignment: this.V_BOTTOM, applyRichEffects: true
-		});
-		p1Cell.addControl(this.player1Label, 0, 0);
-		p1Cell.addControl(this.score1Text,  1, 0);
-		this.hudGrid.addControl(p1Cell, 0, 2);
+	const p2Cell = new Grid();
+	p2Cell.addRowDefinition(1, false);
+	p2Cell.addRowDefinition(1, false);
+	p2Cell.addColumnDefinition(1, false);
 
-		// P2 score+label (col 3)
-		const p2Cell = new Grid();
-		p2Cell.addRowDefinition(1, false);
-		p2Cell.addRowDefinition(1, false);
-		p2Cell.addColumnDefinition(1, false);
+	this.player2Label =  this.createTextBlock("player2Label", HUD_STYLES.player2Label, "Player 2");
+	this.score2Text =  this.createTextBlock("score2Text", HUD_STYLES.score2Text, "0");
+	
+	p2Cell.addControl(this.player2Label, 0, 0);
+	p2Cell.addControl(this.score2Text, 1, 0);
+	this.hudGrid.addControl(p2Cell, 0, 3);
 
-		this.player2Label = this.createTextBlock("player2Label", {
-		text: "Player 2", fontSize: 48, applyRichEffects: true
-		});
-		this.score2Text = this.createTextBlock("score2Text", {
-		text: "0", fontSize: 56, verticalAlignment: this.V_BOTTOM, applyRichEffects: true
-		});
-		p2Cell.addControl(this.player2Label, 0, 0);
-		p2Cell.addControl(this.score2Text,  1, 0);
-		this.hudGrid.addControl(p2Cell, 0, 3);
+	const p2Controls =  this.createTextBlock("PlayerControls_p2", HUD_STYLES.playerControlsP2, this.getControlsText(config.viewMode, 2));
+	this.hudGrid.addControl(p2Controls, 0, 4);
 
-		// P2 controls (col 4)
-		this.hudGrid.addControl(this.createPlayerControls(config, 2), 0, 4);
+	const rallyCell = new Grid();
+	rallyCell.addRowDefinition(1, false);
+	rallyCell.addRowDefinition(1, false);
+	rallyCell.addColumnDefinition(1, false);
 
-		// Rally (col 5)
-		const rallyCell = new Grid();
-		rallyCell.addRowDefinition(1, false);
-		rallyCell.addRowDefinition(1, false);
-		rallyCell.addColumnDefinition(1, false);
+	this.rallyText =  this.createTextBlock("rallyText", HUD_STYLES.rallyText, "Rally");
+	this.rally =  this.createTextBlock("rallyValue", HUD_STYLES.rallyValue, "0");
+	
+	rallyCell.addControl(this.rallyText, 0, 0);
+	rallyCell.addControl(this.rally, 1, 0);
+	this.hudGrid.addControl(rallyCell, 0, 5);
 
-		this.rallyText = this.createTextBlock("rallyText", { text: "Rally", fontSize: 48 });
-		this.rally = this.createTextBlock("rallyValue", { text: "0", fontSize: 56, verticalAlignment: this.V_BOTTOM });
-
-		rallyCell.addControl(this.rallyText, 0, 0);
-		rallyCell.addControl(this.rally,	 1, 0);
-		this.hudGrid.addControl(rallyCell, 0, 5);
-
-		this.rally.transformCenterX = 0.5;
-		this.rally.transformCenterY = 0.5;
-	}
+	this.rally.transformCenterX = 0.5;
+	this.rally.transformCenterY = 0.5;
+}
 
 	private createPowerUpSlots(): void {
 		if (!this.advancedTexture) return;
 
-		this.powerUpSlotP1 = this.createPowerUpSlot("powerUpSlotP1", this.H_LEFT);
+		this.powerUpSlotP1 = this.createRect("powerUpSlotP1", POWER_UP_STYLES.powerUpSlot);
+		this.powerUpSlotP1.horizontalAlignment = this.H_LEFT;
 		this.advancedTexture.addControl(this.powerUpSlotP1);
 
-		this.powerUpSlotP2 = this.createPowerUpSlot("powerUpSlotP2", this.H_RIGHT);
-		this.advancedTexture.addControl(this.powerUpSlotP2);
-
-		this.initializePowerUpCells();
-	}
-
-	private createPowerUpSlot(name: string, horizontalAlignment: number): Rectangle {
-		const slot = this.createRect(
-			name, "280px", 5, Control.VERTICAL_ALIGNMENT_TOP, "rgba(0, 0, 0, 1)");
-		
-		slot.width = "110px";
-		slot.horizontalAlignment = horizontalAlignment;
-		slot.isVisible = false;
-		
-		return slot;
-	}
-
-	private initializePowerUpCells(): void {
 		for (let i = 0; i < 3; i++) {
 			const cell = this.createPowerUpCell(i, 0); // Player 1
 			this.powerUpCellsP1.push(cell);
 			this.powerUpSlotP1!.addControl(cell.root);
 		}
+
+		this.powerUpSlotP2 = this.createRect("powerUpSlotP2", POWER_UP_STYLES.powerUpSlot);
+		this.powerUpSlotP2.horizontalAlignment = this.H_RIGHT;
+		this.advancedTexture.addControl(this.powerUpSlotP2);
 
 		for (let i = 0; i < 3; i++) {
 			const cell = this.createPowerUpCell(i, 1); // Player 2
@@ -200,104 +174,68 @@ export class GUIManager {
 	}
 
 	private createPowerUpCell(index: number, player: number): {root: Rectangle; icon?: Image; letter?: TextBlock} {
-		const cell = this.createRect(
-			`powerUpCell_${player}_${index}`,
-			"80px",
-			6,
-			Control.VERTICAL_ALIGNMENT_TOP,
-			"rgba(0, 0, 0, 1)"
-		);
+	const cell = this.createRect(`powerUpCell_${player}_${index}`, POWER_UP_STYLES.powerUpCell);
+	cell.top = `${index * 90}px`;
 
-		cell.width = "100px";
-		cell.top = `${index * 90}px`;
-		cell.cornerRadius = 8;
-		cell.thickness = 1;
-		cell.color = "rgba(255, 255, 255, 0.5)";
-		cell.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
+	const icon = this.createImage(`powerUpIcon_${player}_${index}`, POWER_UP_STYLES.powerUpIcon, "");
 
-		// Create icon
-		const icon = new Image(`powerUpIcon_${player}_${index}`, "");
-		icon.stretch = Image.STRETCH_UNIFORM;
-		icon.width = "75px";
-		icon.height = "75px";
-		icon.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
-		icon.isVisible = false;
+	const letterKeys = player === 0 ? ['C', 'V', 'B'] : ['I', 'O', 'P'];
+	const letter = this.createTextBlock( `powerUpLetter_${player}_${index}`, POWER_UP_STYLES.powerUpLetter, letterKeys[index]);
 
-		// Create letter text
-		const letterKeys = player === 0 ? ['C', 'V', 'B'] : ['I', 'O', 'P'];
-		const letter = this.createTextBlock(`powerUpLetter_${player}_${index}`, {
-			text: letterKeys[index],
-			fontSize: 20,
-			fontWeight: "bold",
-			color: "white",
-			horizontalAlignment: Control.HORIZONTAL_ALIGNMENT_LEFT,
-			verticalAlignment: Control.VERTICAL_ALIGNMENT_CENTER
-		});
-
-		if (player === 0) {
+	// Position the letter correctly
+	if (player === 0) {
 			icon.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
 			letter.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_RIGHT;
-			letter.left = 80;
+			letter.left = "80px";
 		} else {
 			letter.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
-			letter.leftInPixels = 5;
+			letter.left = "5px";
 			icon.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_RIGHT;
 		}
 
-		cell.addControl(icon);
-		cell.addControl(letter);
+	cell.addControl(icon);
+	cell.addControl(letter);
 
-		return {
-			root: cell,
-			icon: icon,
-			letter: letter,
-		};
-	}
-
-	private createPlayerControls(config: GameConfig, player: number): TextBlock {
-		const pControls = this.createTextBlock(`PlayerControls_p${player}`, {
-			text: this.getControlsText(config.viewMode, player),
-			lineSpacing: "10px", color: "rgba(0, 0, 0, 0.55)", fontSize: 30
-		});
-		return pControls;
-	}
+	return {
+		root: cell,
+		icon: icon,
+		letter: letter,
+	};
+}
 
 	private createPauseOverlay(): void {
 		if (!this.advancedTexture) return;
 
 		const t = getCurrentTranslation();
-		this.pauseOverlay = this.createRect("pauseOverlay", "100%", 11, this.V_CENTER ,"rgba(2, 2, 2, 0.98)");
-		this.pauseOverlay.color = "rgba(255, 255, 255, 1)";
-		this.pauseOverlay.isVisible = false;
+
+		this.pauseOverlay = this.createRect("pauseOverlay", PAUSE_MENU_STYLES.pauseOverlay);
 		this.advancedTexture.addControl(this.pauseOverlay);
 
-		this.pauseGrid = this.createGrid("pauseGrid", "50%");
-
-		this.pauseGrid.addRowDefinition(0.5, false);
-		this.pauseGrid.addRowDefinition(0.2, false);
-		this.pauseGrid.addRowDefinition(0.1, false);
-		this.pauseGrid.addRowDefinition(0.1, false);
+		this.pauseGrid = this.createGrid("pauseGrid", PAUSE_MENU_STYLES.pauseGrid);
 		this.pauseOverlay.addControl(this.pauseGrid);
 
-		this.pauseTitle = this.createTextBlock("pauseTitle",{ text: t.gamePaused, fontWeight: "bold", fontSize: 42, });
+		this.pauseGrid.addRowDefinition(PAUSE_MENU_STYLES.gridRows.title, false);
+		this.pauseGrid.addRowDefinition(PAUSE_MENU_STYLES.gridRows.instruction, false);
+		this.pauseGrid.addRowDefinition(PAUSE_MENU_STYLES.gridRows.hint, false);
+		this.pauseGrid.addRowDefinition(PAUSE_MENU_STYLES.gridRows.muteIcon, false);
+
+		this.pauseTitle = this.createTextBlock( "pauseTitle", PAUSE_MENU_STYLES.pauseTitle, t.gamePaused);
 		this.pauseGrid.addControl(this.pauseTitle, 0, 0);
 
-		this.pauseInstruction = this.createTextBlock("pauseInstruction",{ text: t.exitGame, });
+		this.pauseInstruction = this.createTextBlock( "pauseInstruction", PAUSE_MENU_STYLES.pauseInstruction, t.exitGame);
 		this.pauseGrid.addControl(this.pauseInstruction, 1, 0);
 
-		this.pauseHint = this.createTextBlock("pauseHint", { text: t.pauseControls, });
+		this.pauseHint = this.createTextBlock( "pauseHint", PAUSE_MENU_STYLES.pauseHint, t.pauseControls);
 		this.pauseGrid.addControl(this.pauseHint, 2, 0);
 
-		this.muteIcon = new Image("muteIcon", "assets/icons/sound_on.png");
-		this.muteIcon.stretch = Image.STRETCH_UNIFORM;
-		this.muteIcon.paddingTop = "16px";
+		this.muteIcon = this.createImage( "muteIcon", PAUSE_MENU_STYLES.muteIcon, "assets/icons/sound_on.png");
 		this.muteIcon.onPointerClickObservable.add(() => {
 			this.animateMuteIcon();
 			if (this.toggleMuteCallback) {
-					const isMuted = this.toggleMuteCallback();
-					if (this.muteIcon)
-						this.muteIcon.source = isMuted ? "assets/icons/sound_off.png" : "assets/icons/sound_on.png";
-				}
+				const isMuted = this.toggleMuteCallback();
+				if (this.muteIcon)
+					this.muteIcon.source = isMuted ? "assets/icons/sound_off.png" : "assets/icons/sound_on.png";
+			}
 		});
 		this.pauseGrid.addControl(this.muteIcon, 3, 0);
 	}
@@ -307,141 +245,133 @@ export class GUIManager {
 
 		const t = getCurrentTranslation();
 
-		// 1) Overlay (inset children so the border is visible)
-		this.bracketOverlay = this.createRect(
-			"bracketOverlay",
-			"80%", 20, this.V_CENTER,
-			"rgba(2, 2, 2, 0.98)"
-		);
-		this.bracketOverlay.horizontalAlignment = this.H_RIGHT;
-		this.bracketOverlay.adaptWidthToChildren = true; // auto-fit to children
-		this.bracketOverlay.width = "55%";
-		this.bracketOverlay.cornerRadius = 12;
-		this.bracketOverlay.isVisible = false;
-		this.bracketOverlay.isPointerBlocker = true;
-
-		this.bracketOverlay.paddingLeft = "8px";
-		this.bracketOverlay.paddingTop = "8px";
+		this.bracketOverlay = this.createRect("bracketOverlay", BRACKET_STYLES.bracketOverlay);
 		this.bracketOverlay.paddingRight = `${this.bracketOverlay.thickness + 8}px`;
-		this.bracketOverlay.paddingBottom = "8px";
-
 		this.advancedTexture.addControl(this.bracketOverlay);
 
-		const container = new Grid("bracketContainer");
-		container.addRowDefinition(0.2, false);
-		container.addRowDefinition(0.8, false);
+		const container = this.createGrid("bracketContainer", BRACKET_STYLES.bracketContainer);
+		container.addRowDefinition(BRACKET_STYLES.containerRows.header, false);
+		container.addRowDefinition(BRACKET_STYLES.containerRows.content, false);
 		container.addColumnDefinition(1, false);
-		container.width = "100%";
-		container.height = "100%";
 		this.bracketOverlay.addControl(container);
 
-		const headerGrid = new Grid("headerGrid");
-		headerGrid.addColumnDefinition(70, true); // icon col
-		headerGrid.addColumnDefinition(1, false); // title col
-		headerGrid.height = "80px";
+		const headerGrid = this.createGrid("headerGrid", BRACKET_STYLES.headerGrid);
+		headerGrid.addColumnDefinition(BRACKET_STYLES.gridColumns.icon, true);
+		headerGrid.addColumnDefinition(BRACKET_STYLES.gridColumns.title, false);
 
-		const bracketIcon = new Image("bracketIcon", "assets/icons/tournament.png");
-		bracketIcon.width = "68px";
-		bracketIcon.height = "68px";
-		bracketIcon.horizontalAlignment = this.H_LEFT;
+		const bracketIcon = this.createImage("bracketIcon", BRACKET_STYLES.bracketIcon, "assets/icons/tournament.png");
 		headerGrid.addControl(bracketIcon, 0, 0);
 
-		const bracketTitle = this.createTextBlock("bracketTitle", {
-			text: t.tournamentTitle,
-			applyGlowEffects: true,
-			fontSize: 36,
-			horizontalAlignment: this.H_LEFT
-		});
+		const bracketTitle = this.createTextBlock("bracketTitle", BRACKET_STYLES.bracketTitle, t.tournamentTitle);
 		headerGrid.addControl(bracketTitle, 0, 1);
 
 		container.addControl(headerGrid, 0, 0);
 
 		this.bracketScroll = new ScrollViewer("bracketScroll");
-		this.bracketScroll.width = "100%";
-		this.bracketScroll.height = "100%";
-		this.bracketScroll.thickness = 0;
-		this.bracketScroll.barSize = 8;
-		this.bracketScroll.background = "transparent";
-		this.bracketScroll.wheelPrecision = 20;
+		this.applyStyles(this.bracketScroll, BRACKET_STYLES.bracketScroll);
 		this.bracketScroll.verticalBar.isVisible = false;
-		this.bracketScroll.horizontalBar.isVisible = true; // we want horizontal
+		this.bracketScroll.horizontalBar.isVisible = true;
 		container.addControl(this.bracketScroll, 1, 0);
 
-		const contentWrap = new StackPanel("bracketContentWrap");
-		contentWrap.isVertical = false;
-		contentWrap.height = "100%";
-		contentWrap.width = "800px";
+		const contentWrap = this.createStackPanel("bracketContentWrap", BRACKET_STYLES.contentWrap);
 		this.bracketScroll.addControl(contentWrap);
 
-		this.bracketGrid = this.createGrid("bracketGrid", "100%");
+		this.bracketGrid = this.createGrid("bracketGrid", BRACKET_STYLES.bracketGrid);
 		this.bracketGrid.addRowDefinition(1, false);
-		this.bracketGrid.height = "100%";
 		contentWrap.addControl(this.bracketGrid);
 	}
 
-	private createViewModeElements(config: GameConfig): void {
+	private createViewModeDivider(config: GameConfig): void {
 		if (config.viewMode === ViewMode.MODE_3D && 
 			(config.gameMode === GameMode.TWO_PLAYER_LOCAL || config.gameMode === GameMode.TOURNAMENT_LOCAL)) {
-			const dividerLine = this.createRect("divider", "100%", 6, this.V_CENTER, "#000000ff")
-			dividerLine.widthInPixels = 5;
+			const dividerLine = this.createRect("divider", VIEW_MODE_STYLES.dividerLine);
 			this.advancedTexture!.addControl(dividerLine);
 		}
 	}
 
-	private createCountdownDisplay(): void {
-		this.countdownContainer = this.createRect("countdownContainer", "100%", 10);
-		this.countdownContainer.thickness = 0;
-		this.countdownContainer.isVisible = false;
+	private createCountdownOverlay(): void {
+		this.countdownContainer = this.createRect("countdownContainer", COUNTDOWN_STYLES.countdownContainer);
 
-		this.countdownText = this.createTextBlock("5", { fontSize: 72, applyRichEffects: true });
+		this.countdownText = this.createTextBlock("5", COUNTDOWN_STYLES.countdownText, "5");
+
 		this.countdownContainer.addControl(this.countdownText);
 		this.advancedTexture!.addControl(this.countdownContainer);
 	}
 
 	private createPartialEndGameOverlay(): void {
-		this.partialEndGameOverlay = this.createRect("partialWinnerLayer", "100%", 8, this.V_BOTTOM, "rgba(0, 0, 0, 1)");
-		this.partialEndGameOverlay.background = "rgba(0, 0, 0, 1)";
-		this.partialEndGameOverlay.isVisible = false;
+		const t = getCurrentTranslation();
+
+		this.partialEndGameOverlay = this.createRect("partialWinnerLayer", PARTIAL_END_GAME_STYLES.partialEndGameOverlay);
 		this.advancedTexture!.addControl(this.partialEndGameOverlay);
 
-		const centerColumn = this.createGrid("winnerGrid", "100%");
-		centerColumn.zIndex = 9;
-
-		centerColumn.addRowDefinition(0.2);
-		centerColumn.addRowDefinition(0.6);
-		centerColumn.addRowDefinition(0.2);
+		const centerColumn = this.createGrid("winnerGrid", PARTIAL_END_GAME_STYLES.winnerGrid);
 		this.partialEndGameOverlay.addControl(centerColumn);
 
-		const t = getCurrentTranslation();
-		this.partialWinnerLabel = this.createTextBlock("winnerLabel", {
-			text: t.winner, outlineWidth: 2, fontSize: 80, zIndex: 10, alpha: 0
-		});
+		centerColumn.addRowDefinition(PARTIAL_END_GAME_STYLES.gridRows.label);
+		centerColumn.addRowDefinition(PARTIAL_END_GAME_STYLES.gridRows.name);
+		centerColumn.addRowDefinition(PARTIAL_END_GAME_STYLES.gridRows.continue);
+
+		this.partialWinnerLabel = this.createTextBlock( "winnerLabel", PARTIAL_END_GAME_STYLES.partialWinnerLabel, t.winner);
 		centerColumn.addControl(this.partialWinnerLabel, 0, 0);
 
-		this.partialWinnerName = this.createTextBlock("winnerName", {
-			text: "", color: "rgb(255, 215, 0)", outlineWidth: 2, outlineColor: "rgb(255, 255, 255)",
-			fontSize: 110, fontWeight: "bold", zIndex: 10, alpha: 0, applyGlowEffects: true
-		});
+		this.partialWinnerName = this.createTextBlock( "winnerName", PARTIAL_END_GAME_STYLES.partialWinnerName, "");
 		centerColumn.addControl(this.partialWinnerName, 1, 0);
 
-		this.continueText = this.createTextBlock("continue_text", {
-			text: t.continue, color: "rgb(255, 255, 255)", outlineWidth: 2, outlineColor: "rgb(255, 215, 0)", zIndex: 10,
-		});
+		this.continueText = this.createTextBlock( "continue_text", PARTIAL_END_GAME_STYLES.continueText, t.continue );
 		centerColumn.addControl(this.continueText, 2, 0);
 	}
 
 	private createEndGameOverlay(): void {
-		this.endGameOverlay = this.createGrid("endGameOverlay", "20%", this.V_BOTTOM);
-		this.endGameOverlay.background = "rgba(0, 0, 0, 0.9)";
-		this.endGameOverlay.isVisible = false;
+		// Create end game overlay with styles
+		this.endGameOverlay = this.createGrid("endGameOverlay", END_GAME_STYLES.endGameOverlay);
 		this.endGameOverlay.addColumnDefinition(1.0);
 
-		this.endGameWinnerText = this.createTextBlock("endGameWinnerText", {
-			fontSize: 72, applyRichEffects: true
-		});
+		// Create winner text with styles
+		this.endGameWinnerText = this.createTextBlock( "endGameWinnerText", END_GAME_STYLES.endGameWinnerText, "");
 		this.endGameOverlay.addControl(this.endGameWinnerText, 0, 0);
 		this.advancedTexture!.addControl(this.endGameOverlay);
 	}
+
+	//Helper functions to create Gui objects
+	private applyStyles(control: any, styles: any): void {
+		Object.entries(styles).forEach(([key, value]) => {
+			if (value !== undefined && key in control) {
+				(control as any)[key] = value;
+			}
+		});
+	}
+
+	private createRect(name: string, styles: any): Rectangle {
+		const rect = new Rectangle(name);
+		this.applyStyles(rect, styles);
+		return rect;
+	}
+
+	private  createTextBlock(name: string, styles: any, text?: string): TextBlock {
+		const textBlock = new TextBlock(name, text);
+		this.applyStyles(textBlock, styles);
+		return textBlock;
+	}
+
+	private createGrid(name: string, styles: any): Grid {
+		const grid = new Grid(name);
+		this.applyStyles(grid, styles);
+		return grid;
+	}
+
+	private createImage(name: string, styles: any, source?: string): Image {
+		const image = new Image(name, source);
+		this.applyStyles(image, styles);
+		return image;
+	}
+
+	private createStackPanel(name: string, styles: any): StackPanel {
+		const stackPanel = new StackPanel(name);
+		this.applyStyles(stackPanel, styles);
+		return stackPanel;
+	}
+
+	// SETTER
 
 	setPauseVisible(visible: boolean): void {
 		if (!this.isReady || !this.animationManager) return;
@@ -625,72 +555,6 @@ export class GUIManager {
 		await this.animationManager?.pop(this.muteIcon, Motion.F.xFast, 0.9);
 	}
 
-	//Helper functions to create Gui objects
-	private createGrid(name: string, h: string, verticalAlign?: number): Grid {
-		const grid = new Grid(name);
-		grid.width = "100%";
-		grid.height = h;
-		grid.horizontalAlignment = this.H_CENTER;
-		grid.verticalAlignment = verticalAlign || this.V_CENTER;
-		return grid;
-	}
-
-	private createRect(name: string, h: string, zIndex:number, verticalAlign?: number, background?: string): Rectangle {
-		const r = new Rectangle(name);
-		r.width = "100%";
-		r.height = h;
-		r.horizontalAlignment = this.H_CENTER;
-		r.verticalAlignment = verticalAlign ?? this.V_CENTER;
-		r.thickness = 0;
-		r.isPointerBlocker = true;
-		r.zIndex = zIndex;
-		if (background !== undefined) r.background = background;
-		return r;
-	}
-
-	private createTextBlock(name: string, options: TextBlockOptions = {}): TextBlock {
-		const textBlock = new TextBlock(name);
-
-		textBlock.fontFamily = 'Poppins, Arial, sans-serif';
-		textBlock.text = options.text || name;
-		textBlock.fontSize = options.fontSize || 24;
-		textBlock.color = options.color || "#FFFFFF";
-		textBlock.fontWeight = options.fontWeight || "normal";
-		textBlock.width = options.width || "100%";
-		textBlock.alpha = 1;
-
-		if (options.resizeToFit)
-			textBlock.height = "auto";
-		else
-			textBlock.height = options.height || "100%";
-
-
-		textBlock.textHorizontalAlignment = options.horizontalAlignment ?? this.H_CENTER;
-		textBlock.textVerticalAlignment = options.verticalAlignment ?? this.V_CENTER;
-
-		if (options.alpha !== undefined) textBlock.alpha = options.alpha;
-
-		if (options.lineSpacing) textBlock.lineSpacing = options.lineSpacing;
-		if (options.resizeToFit !== undefined) textBlock.resizeToFit = options.resizeToFit;
-
-		if (options.applyGlowEffects) {
-			textBlock.shadowBlur = 20;
-			textBlock.fontWeight = "bold";
-			textBlock.shadowColor = "rgba(255, 215, 0, 0.8)";
-		}
-
-		if (options.applyRichEffects) {
-			textBlock.shadowOffsetX = 1;
-			textBlock.shadowOffsetY = 1;
-			textBlock.shadowBlur = 8;
-			textBlock.shadowColor = "rgba(255, 217, 0, 0.80)";
-			textBlock.fontWeight = "bold";
-			textBlock.outlineWidth = options.outlineWidth || 2;
-			textBlock.outlineColor = options.outlineColor || "rgba(0, 0, 0, 0.66)";
-		}
-		return textBlock;
-	}
-
 	updateControlVisibility(player1: boolean, player2: boolean): void {
 		if (!this.isReady) return;
 		const p1 = this.advancedTexture?.getControlByName("PlayerControls_p1") as TextBlock | null;
@@ -816,51 +680,22 @@ export class GUIManager {
 		for (let col = 0; col < totalColumns; col++) {
 			this.bracketGrid?.addColumnDefinition(160, true);
 
-			const colPanel = new StackPanel(`bracketCol_${col}`);
-			colPanel.isVertical = true;
-			colPanel.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
-			colPanel.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
-			colPanel.widthInPixels = 160;
-			colPanel.clipChildren = false;
+			const colPanel = this.createStackPanel(`bracketCol_${col}`, BRACKET_STYLES.bracketColPanel);
 			this.bracketGrid?.addControl(colPanel, 1, col);
 
 			const slots = this.playerTotal / Math.pow(2, col);
-
 			for (let i = 0; i < slots; i++) {
 				const cellName = `bracketCell_${col + 1}_${i}`;
-
-				const cellRect = new Rectangle(`${cellName}_rect`);
-				cellRect.widthInPixels = 150;
-
 				const cellHeight = 30 * Math.pow(2, col);
+				const cellRect = this.createRect(`${cellName}_rect`, BRACKET_STYLES.bracketCellRect);
 				cellRect.height = `${cellHeight}px`;
-
-				cellRect.paddingTop = "5px";
-				cellRect.paddingBottom = "5px";
-				cellRect.paddingLeft = "6px";
-				cellRect.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
-				cellRect.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
-				cellRect.clipChildren = false;
-
 				colPanel.addControl(cellRect);
-
-				const tb = this.createTextBlock(cellName, {
-					text: col === rounds ? "🏆" : "tbd",
-					color: "white",
-					height: "100%",
-					resizeToFit: true,
-					fontSize: col === rounds ? 48 : 16
-				});
-				tb.textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
-				tb.textVerticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
+				const tb = this.createTextBlock( cellName, BRACKET_STYLES.bracketCellText, "");
+				tb.fontSize = col === rounds ? 48 : 16;
+				tb.text = col === rounds ? "🏆" : "tbd";
 				cellRect.addControl(tb);
-
-				// if (col < totalColumns - 1)
-					// this.addPNGConnectorAsChild(cellRect, col, i);
 			}
-
 		}
-		
 		this.isBrackerGridCreated = true;
 	}
 
@@ -944,6 +779,7 @@ export class GUIManager {
 			}
 		}
 	}
+
 
 }
 

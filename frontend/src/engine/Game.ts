@@ -354,11 +354,11 @@ export class Game {
 		if (this.gameObjects) {
 			if (this.gameObjects.players.left) {
 				this.gameObjects.players.left.position.x = 0;
-				this.gameObjects.players.left.scaling.x = GAME_CONFIG.paddleWidth;
+				this.gameObjects.players.left.scaling.x = 1;
 			}
 			if (this.gameObjects.players.right) {
 				this.gameObjects.players.right.position.x = 0;
-				this.gameObjects.players.right.scaling.x = GAME_CONFIG.paddleWidth;
+				this.gameObjects.players.right.scaling.x = 1;
 			}
 			if (this.gameObjects.ball) {
 				this.gameObjects.ball.position.x = 0;
