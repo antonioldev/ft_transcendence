@@ -38,13 +38,14 @@ export class Game {
     private audioManager: AudioManager | null =null;
     private deviceSourceManager: DeviceSourceManager | null = null;
     private gameLoopObserver: any = null;
-    private boundaries = getPlayerBoundaries(SizePaddle);
+    // private boundaries = getPlayerBoundaries(SizePaddle);
     private controlledSides: number[] = [];
     private leftPaddleSize: SizePaddle = SizePaddle.NORMAL;
     private rightPaddleSize: SizePaddle = SizePaddle.NORMAL;
     private playerLeftScore: number = 0;
     private playerRightScore: number = 0;
     private playerPowerUps: Map<number, (Powerup | null)[]> = new Map();
+    private active_powerups: Map<number, Powerup | null> = new Map();
 
 // ====================            STATIC METHODS             ====================
     static getCurrentInstance(): Game | null {
@@ -80,6 +81,8 @@ export class Game {
             }
             this.playerPowerUps.set(0, [null, null, null]);
             this.playerPowerUps.set(1, [null, null, null]);
+            this.active_powerups.set(0, null);
+            this.active_powerups.set(1, null);
         } catch (error) {
             Logger.errorAndThrow('Error creating game managers', 'Game', error);
         }
@@ -328,6 +331,10 @@ export class Game {
 
         this.playerLeftScore = 0;
         this.playerRightScore = 0;
+        this.leftPaddleSize = SizePaddle.NORMAL;
+        this.rightPaddleSize = SizePaddle.NORMAL;
+        this.active_powerups.set(0, null);
+        this.active_powerups.set(1, null);
 
         if (this.gameObjects) {
             if (this.gameObjects.players.left) {
@@ -552,55 +559,12 @@ export class Game {
         const powerup = powerUps[index];
         if (powerup === null || powerup === undefined) return;
 
+        const currentlyActive = this.active_powerups.get(side);
+        if (currentlyActive === powerup) return;
+
         webSocketClient.sendPowerupActivationRequest(powerup, side, index);
     }
 
-    // private togglePowerUp(message: any, toActive: boolean): void {
-    //     if (!message) return;
-
-    //     console.warn(`[PowerUp Toggle] ${toActive ? 'Activating' : 'Deactivating'} power-up:`, message);
-
-    //     const side = message.side;
-    //     const slot = message.slot;
-
-    //     const med = GAME_CONFIG.paddleWidth;
-    //     const lrg = GAME_CONFIG.increasedPaddleWidth;
-    //     const sml = GAME_CONFIG.decreasedPaddleWidth;
-        
-    //     if (toActive) {
-    //         switch (message.powerup) {
-    //             case Powerup.SHRINK_OPPONENT:
-    //                 if (side === 0)
-    //                     this.animationManager?.scaleWidth(this.gameObjects?.players.right, med, sml)
-    //                 else
-    //                     this.animationManager?.scaleWidth(this.gameObjects?.players.left, med, sml)
-    //                 break;
-    //             case Powerup.GROW_PADDLE:
-    //                 if (side === 0)
-    //                     this.animationManager?.scaleWidth(this.gameObjects?.players.left, med, lrg)
-    //                 else
-    //                     this.animationManager?.scaleWidth(this.gameObjects?.players.right, med, lrg)
-    //                 break;
-    //         }
-    //         this.guiManager?.updatePowerUpSlot(side, slot, null, PowerUpAction.ACTIVATED);
-    //     } else {
-    //         switch (message.powerup) {
-    //             case Powerup.SHRINK_OPPONENT:
-    //                 if (side === 0)
-    //                     this.animationManager?.scaleWidth(this.gameObjects?.players.right, sml, med)
-    //                 else
-    //                     this.animationManager?.scaleWidth(this.gameObjects?.players.left, sml, med)
-    //                 break;
-    //             case Powerup.GROW_PADDLE:
-    //                 if (side === 0)
-    //                     this.animationManager?.scaleWidth(this.gameObjects?.players.left, lrg, med)
-    //                 else
-    //                     this.animationManager?.scaleWidth(this.gameObjects?.players.right, lrg, med)
-    //                 break;
-    //         }
-    //         this.guiManager?.updatePowerUpSlot(side, slot, null, PowerUpAction.DEACTIVATED);
-    //     }
-    // }
     private togglePowerUp(message: any, toActive: boolean): void {
         if (!message) return;
 
@@ -608,12 +572,14 @@ export class Game {
 
         const side = message.side;
         const slot = message.slot;
+        const powerup = message.powerup;
 
         const med = GAME_CONFIG.paddleWidth;
         const lrg = GAME_CONFIG.increasedPaddleWidth;
         const sml = GAME_CONFIG.decreasedPaddleWidth;
         
         if (toActive) {
+            this.active_powerups.set(side, powerup);
             switch (message.powerup) {
                 case Powerup.SHRINK_OPPONENT:
                     if (side === 0) {
@@ -636,6 +602,7 @@ export class Game {
             }
             this.guiManager?.updatePowerUpSlot(side, slot, null, PowerUpAction.ACTIVATED);
         } else {
+            this.active_powerups.set(side, null);
             switch (message.powerup) {
                 case Powerup.SHRINK_OPPONENT:
                     if (side === 0) {
