@@ -912,6 +912,7 @@ export class GUIManager {
                         } else {
                             cell.icon.source = this.POWERUP_ICON[powerUpType];
                         }
+                        cell.icon.alpha = 1;
                         cell.icon.isVisible = true;
 
                         const delay = slotIndex * 100;              

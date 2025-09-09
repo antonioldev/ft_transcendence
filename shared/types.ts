@@ -67,6 +67,7 @@ export interface ServerMessage {
     powerups?: (Powerup | null)[],
     slot?: number,
     side?: number; // Player side (optional)
+    lobby?: string[];
 }
 
 // Player information for game sessions

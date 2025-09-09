@@ -231,10 +231,35 @@ export class TournamentLocal extends AbstractTournament {
 
 export class TournamentRemote extends AbstractTournament {
 	client_match_map: Map<string, Match> = new Map();	// Maps client id to match, used for easy insertion from client input
-	
+
 	constructor(mode: GameMode, game_id: string, capacity: number) {
 		super(mode, game_id, capacity);
 		this.client_capacity = capacity;
+	}
+
+	add_player(player: Player) {
+		if (this.players.length < this.player_capacity) {
+			this.players.push(player);
+			this.broadcast({
+				type: MessageType.TOURNAMENT_LOBBY,
+				lobby: this.players.map(player => player.name)
+			});
+		}
+	}
+
+	remove_player(player: Player) {
+		const index = this.players.indexOf(player);
+		if (index !== -1) {
+			this.players.splice(index, 1);
+			this.full = false;
+			this.broadcast({
+				type: MessageType.TOURNAMENT_LOBBY,
+				lobby: this.players.map(player => player.name)
+			});
+		}
+		if (this.players.length === 0) {
+			this.stop();
+		}
 	}
 
 	// runs all matches in a given round in parallel

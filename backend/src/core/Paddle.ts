@@ -11,6 +11,7 @@ export class Paddle {
 	oldRect: Rect;
 	speed: number = GAME_CONFIG.paddleSpeed;
 	powerups: (Powerup | null)[] = [];
+	active_powerups: Powerup[] = [];
 
 	constructor(side: number) {
 		this.side = side;
@@ -39,13 +40,10 @@ export class Paddle {
 	}
 
 	assign_random_powerups() {
+		const num_powerups = Object.keys(Powerup).length / 2;
 		for (let i = 0; i < 3; i++) {
-			this.powerups[i] = Powerup.GROW_PADDLE;
+			this.powerups[i] = Math.floor(Math.random() * num_powerups);
 		}
-		// const num_powerups = Object.keys(Powerup).length / 2;
-		// for (let i = 0; i < 3; i++) {
-		// 	this.powerups[i] = Math.floor(Math.random() * num_powerups);
-		// }
 	}
 }
 

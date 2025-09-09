@@ -457,7 +457,6 @@ export class Game {
             Logger.error('Error during request exit', 'Game', error);
             this.stopGameLoop();
             this.dispose();
-            console.error("request EXIT");
             this.resetToMenu();
         }
     }
@@ -542,7 +541,6 @@ export class Game {
         const powerup = powerUps[index];
         if (powerup === null || powerup === undefined) return;
 
-        console.error("[PowerUp Activation] Sending powerup activation request:", { powerup, index, side });
         webSocketClient.sendPowerupActivationRequest(powerup, side, index);
     }
 
@@ -559,7 +557,6 @@ export class Game {
         const sml = GAME_CONFIG.decreasedPaddleWidth;
         
         if (toActive) {
-            console.error("active");
             switch (message.powerup) {
                 case Powerup.SHRINK_OPPONENT:
                     if (side === 0)
@@ -576,7 +573,6 @@ export class Game {
             }
             this.guiManager?.updatePowerUpSlot(side, slot, null, PowerUpAction.ACTIVATED);
         } else {
-            console.error("back");
             switch (message.powerup) {
                 case Powerup.SHRINK_OPPONENT:
                     if (side === 0)
