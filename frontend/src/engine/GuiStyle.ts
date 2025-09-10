@@ -148,7 +148,7 @@ export const POWER_UP_STYLES = {
     powerUpSlot: {
         width: "110px",
         height: "280px",
-        background: COLORS.BLACK,
+        background: COLORS.TRANSPARENT,
         verticalAlignment: V_TOP,
         thickness: 0,
         isVisible: false

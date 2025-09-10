@@ -1,4 +1,4 @@
-import { AdvancedDynamicTexture, Control, Rectangle, TextBlock, Grid, Image, ScrollViewer, StackPanel} from "@babylonjs/gui";
+import { AdvancedDynamicTexture, Control, Rectangle, TextBlock, Grid, Image, ScrollViewer, StackPanel, MultiLine} from "@babylonjs/gui";
 import { Scene, KeyboardEventTypes} from "@babylonjs/core";
 import { Logger } from '../utils/LogManager.js';
 import { GameConfig } from './GameConfig.js';
@@ -686,7 +686,7 @@ export class GUIManager {
 			const slots = this.playerTotal / Math.pow(2, col);
 			for (let i = 0; i < slots; i++) {
 				const cellName = `bracketCell_${col + 1}_${i}`;
-				const cellHeight = 30 * Math.pow(2, col);
+				const cellHeight = 50 * Math.pow(2, col);
 				const cellRect = this.createRect(`${cellName}_rect`, BRACKET_STYLES.bracketCellRect);
 				cellRect.height = `${cellHeight}px`;
 				colPanel.addControl(cellRect);
@@ -695,8 +695,68 @@ export class GUIManager {
 				tb.text = col === rounds ? "🏆" : "tbd";
 				cellRect.addControl(tb);
 			}
+			this.wireRound(col);
 		}
 		this.isBrackerGridCreated = true;
+	}
+
+	private createAnchorPoint(parentControl: Control, position: 'left' | 'right'): Control {
+		const anchor = new Control(`anchor_${parentControl.name}_${position}`);
+		anchor.widthInPixels = 1;
+		anchor.heightInPixels = 1;
+		anchor.isVisible = false;
+		anchor.isPointerBlocker = false;
+		
+		// Position the anchor at the edge of the parent control
+		if (position === 'right') {
+			anchor.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_RIGHT;
+		} else {
+			anchor.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
+		}
+		anchor.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
+		
+		// Add the anchor to the same parent as the control
+		parentControl.parent?.addControl(anchor);
+		
+		return anchor;
+	}
+
+	private addConnector(src: Control, dst: Control, color = "#BBB", width = 2): MultiLine {
+		const line = new MultiLine(`conn_${src.name}_${dst.name}`);
+		line.lineWidth = width;
+		line.color = color;
+		line.alpha = 0.9;
+		line.isPointerBlocker = false;
+		
+		const srcRightAnchor = this.createAnchorPoint(src, 'right');
+		const dstLeftAnchor = this.createAnchorPoint(dst, 'left');
+		
+		line.add(srcRightAnchor);
+		line.add(dstLeftAnchor);
+		
+		this.bracketOverlay?.addControl(line);
+		line.zIndex = 5;
+		return line;
+	}
+	
+	
+	private wireRound(roundIndex: number): void {
+		const slotsInThisRound = this.playerTotal / Math.pow(2, roundIndex - 1);
+		const nextRoundMatches = Math.ceil(slotsInThisRound / 2);
+
+		for (let match = 0; match < nextRoundMatches; match++) {
+			const leftIdx  = match * 2;
+			const rightIdx = match * 2 + 1;
+
+			const left  = this.advancedTexture?.getControlByName(`bracketCell_${roundIndex}_${leftIdx}`)  as Control | null;
+			const right = this.advancedTexture?.getControlByName(`bracketCell_${roundIndex}_${rightIdx}`) as Control | null;
+			const next  = this.advancedTexture?.getControlByName(`bracketCell_${roundIndex + 1}_${match}`) as Control | null;
+
+			if (!left || !right || !next) continue;
+
+			this.addConnector(left,  next);
+			this.addConnector(right, next);
+		}
 	}
 
 	private showBracketOverlay(show: boolean): void {
