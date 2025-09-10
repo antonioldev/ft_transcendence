@@ -149,11 +149,11 @@ abstract class AbstractTournament extends AbstractGameSession{
 		await this.waitForPlayersReady();
 		this._match_players();
 		
+		this.broadcastRoundSchedule(1);
 		for (let current_round = 1; current_round <= this.num_rounds; current_round++) {
 			const matches = this.rounds.get(current_round);
 			if (!matches) return ; // maybe throw err
-			this.broadcastRoundSchedule(current_round);
-			await this.run(matches);
+			await this.run(matches, current_round);
 		}
 	}
 
@@ -174,7 +174,7 @@ abstract class AbstractTournament extends AbstractGameSession{
 		match.game.stop();
 	}
 
-	abstract run(matches: Match[]): Promise<void>;
+	abstract run(matches: Match[], current_round: number): Promise<void>;
 	abstract findMatch(client_id?: string): Match | undefined;
 }
 
@@ -187,13 +187,18 @@ export class TournamentLocal extends AbstractTournament {
 	}
 
 	// runs each game in a round one by one and awaits each game before starting the next
-	async run(matches: Match[]): Promise<void> {
+	async run(matches: Match[], current_round: number): Promise<void> {
 		for (const match of matches) {
 			if (!this.running) return ;
 			
 			this.current_match = match;
 			match.game = new Game(match.players, this.broadcast.bind(this));
 			match.winner = await match.game.run();
+			this.broadcast({
+				type: MessageType.MATCH_WINNER,
+				winner: match.winner.name,
+				round: current_round
+			});
 
 			this.readyClients.clear();
 			await this.waitForPlayersReady();
@@ -263,7 +268,7 @@ export class TournamentRemote extends AbstractTournament {
 	}
 
 	// runs all matches in a given round in parallel
-	async run(matches: Match[]): Promise<void> {
+	async run(matches: Match[], current_round: number): Promise<void> {
 		let winner_promises: Promise<Player>[] = [];
 
 		// run each match in parallel and await [] of match promises
@@ -277,19 +282,22 @@ export class TournamentRemote extends AbstractTournament {
 
 			match.game = new Game(match.players, (message) => this.broadcast(message, match.clients));
 			let winner_promise: Promise<Player> = match.game.run();
+			winner_promise.then((winner) => {
+				this.broadcast({
+					type: MessageType.MATCH_WINNER,
+					winner: winner.name,
+					round: current_round
+				});
+
+				match.next?.add_player(winner);
+				if (winner && winner.client && winner.client.id && match.next) {
+					this.client_match_map.set(winner?.client?.id, match.next);
+				}
+			})
+
 			winner_promises.push(winner_promise);
 		}
 		const winners = await Promise.all(winner_promises);
-
-		// promote winners once all promises are resolved
-		for (let i = 0; i < winners.length; i++) {
-			const match = matches[i];
-			const winner: Player = winners[i];
-			match.next?.add_player(winner);
-			if (winner && winner.client && winner.client.id && match.next) {
-				this.client_match_map.set(winner?.client?.id, match.next);
-			}
-		}
 	}
 
 	stop() {
