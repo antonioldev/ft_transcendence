@@ -259,6 +259,8 @@ export class Game {
 	}
 
 	deactivate(powerup: Powerup, side: number, slot: number) {
+		if (!this.paddles[side].active_powerups[slot]) return ;
+		
 		const caller = this.paddles[side];
 		const opponent = this.paddles[side === LEFT_PADDLE ? RIGHT_PADDLE : LEFT_PADDLE];
 		
@@ -276,14 +278,14 @@ export class Game {
 				caller.rect.width = GAME_CONFIG.paddleWidth;
 				break ;
 		}
-		this.paddles[side].active_powerups[slot] = null;
-
+		
 		this._broadcast({
 			type: MessageType.POWERUP_DEACTIVATED,
 			powerup: powerup,
 			side: side,
 			slot: slot
 		})
+		this.paddles[side].active_powerups[slot] = null;
 	}
 
 	speed_up(side: number) {
@@ -295,13 +297,9 @@ export class Game {
 		}
 		else if (caller.speed === GAME_CONFIG.decreasedPaddleSpeed) { 
 			// opponents powerup has been countered
-			caller.speed = GAME_CONFIG.paddleSpeed;
-			this._broadcast({
-				type: MessageType.POWERUP_DEACTIVATED,
-				powerup: Powerup.SLOW_OPPONENT,
-				side: side === LEFT_PADDLE ? RIGHT_PADDLE : LEFT_PADDLE,
-				slot: opponent.active_powerups.indexOf(Powerup.SLOW_OPPONENT)
-			})
+			const opponent_slot = opponent.active_powerups.indexOf(Powerup.SLOW_OPPONENT);
+			const opponent_side = side === LEFT_PADDLE ? RIGHT_PADDLE : LEFT_PADDLE;
+			this.deactivate(Powerup.SLOW_OPPONENT, opponent_side, opponent_slot)
 		}
 	}
 
@@ -312,13 +310,9 @@ export class Game {
 			opponent.speed = GAME_CONFIG.decreasedPaddleSpeed;
 		}
 		else if (opponent.speed === GAME_CONFIG.increasedPaddleSpeed) {
-			opponent.speed = GAME_CONFIG.paddleSpeed;
-			this._broadcast({
-				type: MessageType.POWERUP_DEACTIVATED,
-				powerup: Powerup.INCREASE_PADDLE_SPEED,
-				side: side === LEFT_PADDLE ? RIGHT_PADDLE : LEFT_PADDLE,
-				slot: opponent.active_powerups.indexOf(Powerup.INCREASE_PADDLE_SPEED)
-			})
+			const opponent_slot = opponent.active_powerups.indexOf(Powerup.INCREASE_PADDLE_SPEED);
+			const opponent_side = side === LEFT_PADDLE ? RIGHT_PADDLE : LEFT_PADDLE;
+			this.deactivate(Powerup.INCREASE_PADDLE_SPEED, opponent_side, opponent_slot)
 		}
 	}
 
@@ -330,13 +324,9 @@ export class Game {
 			caller.rect.width = GAME_CONFIG.increasedPaddleWidth;
 		}
 		else if (caller.rect.width === GAME_CONFIG.decreasedPaddleWidth) {
-			caller.rect.width = GAME_CONFIG.paddleWidth;
-			this._broadcast({
-				type: MessageType.POWERUP_DEACTIVATED,
-				powerup: Powerup.SHRINK_OPPONENT,
-				side: side === LEFT_PADDLE ? RIGHT_PADDLE : LEFT_PADDLE,
-				slot: opponent.active_powerups.indexOf(Powerup.SHRINK_OPPONENT)
-			})
+			const opponent_slot = opponent.active_powerups.indexOf(Powerup.SHRINK_OPPONENT);
+			const opponent_side = side === LEFT_PADDLE ? RIGHT_PADDLE : LEFT_PADDLE;
+			this.deactivate(Powerup.SHRINK_OPPONENT, opponent_side, opponent_slot)
 		}
 	}
 
@@ -347,13 +337,9 @@ export class Game {
 			opponent.rect.width = GAME_CONFIG.decreasedPaddleWidth;
 		}
 		else if (opponent.rect.width === GAME_CONFIG.increasedPaddleWidth) {
-			opponent.rect.width = GAME_CONFIG.paddleWidth;
-			this._broadcast({
-				type: MessageType.POWERUP_DEACTIVATED,
-				powerup: Powerup.GROW_PADDLE,
-				side: side === LEFT_PADDLE ? RIGHT_PADDLE : LEFT_PADDLE,
-				slot: opponent.active_powerups.indexOf(Powerup.GROW_PADDLE)
-			})
+			const opponent_slot = opponent.active_powerups.indexOf(Powerup.GROW_PADDLE);
+			const opponent_side = side === LEFT_PADDLE ? RIGHT_PADDLE : LEFT_PADDLE;
+			this.deactivate(Powerup.GROW_PADDLE, opponent_side, opponent_slot)
 		}
 	}
 }

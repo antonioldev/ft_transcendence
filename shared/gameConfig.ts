@@ -28,8 +28,8 @@ export const GAME_CONFIG = {
 	// Powerup settings
 	increasedPaddleWidth: 4.5, // Width of the paddle when GROW_PADDLE activated
 	decreasedPaddleWidth: 1.5, // Width of the paddle when SHRINK_PADDLE activated
-	increasedPaddleSpeed: 20, // Speed of the paddle when INCREASE_PADDLE_SPEED activated
-	decreasedPaddleSpeed: 10, // Speed of the paddle when SLOW_PADDLE activated
+	increasedPaddleSpeed: 22, // Speed of the paddle when INCREASE_PADDLE_SPEED activated
+	decreasedPaddleSpeed: 7, // Speed of the paddle when SLOW_PADDLE activated
 	powerupDuration: 5000,	   // time elapsed before powerup is deactivated
 
 	// Camera settings (mainly for frontend)
