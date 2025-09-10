@@ -49,6 +49,8 @@ export class GUIManager {
 	private lobbyOverlay?: Rectangle;
 	private lobbyListPanel?: StackPanel;
 	private lobbyCountText?: TextBlock;
+	private lobbyDotsTimer?: number;
+	private lobbySubtitle?: TextBlock;
 
 	private isTournament: boolean = false;
 	private isBrackerGridCreated: boolean = false;
@@ -156,23 +158,26 @@ export class GUIManager {
 	private createLobbyOverlay(): void {
 		if (!this.advancedTexture) return;
 
+		const t = getCurrentTranslation();
 		this.lobbyOverlay = this.createRect("lobbyOverlay", LOBBY_STYLES.overlay);
 		this.advancedTexture.addControl(this.lobbyOverlay);
 		
+		
 		const mainGrid = new Grid("lobbyMainGrid");
 		mainGrid.addRowDefinition(0.15, false); // Title row
-		mainGrid.addRowDefinition(0.1, false);  // Subtitle row
-		mainGrid.addRowDefinition(0.05, false); // Count row
-		mainGrid.addRowDefinition(0.7, false);  // Scroll row
+		mainGrid.addRowDefinition(0.15, false);  // Subtitle row
+		mainGrid.addRowDefinition(0.1, false); // Count row
+		mainGrid.addRowDefinition(0.6, false);  // Scroll row
 		mainGrid.width = "100%";
 		mainGrid.height = "100%";
 		this.lobbyOverlay.addControl(mainGrid);
 
-		const title = this.createTextBlock("lobbyTitle", LOBBY_STYLES.title, LOBBY_STYLES.title.text);
+		const title = this.createTextBlock("lobbyTitle", LOBBY_STYLES.title, t.tournamentOnline);
 		mainGrid.addControl(title, 0, 0);
 
-		const subtitle = this.createTextBlock("lobbySubtitle", LOBBY_STYLES.subtitle, LOBBY_STYLES.subtitle.text);
+		const subtitle = this.createTextBlock("lobbySubtitle", LOBBY_STYLES.subtitle, t.waiting);
 		mainGrid.addControl(subtitle, 1, 0);
+		this.lobbySubtitle = subtitle;
 
 		this.lobbyCountText = this.createTextBlock("lobbyCount", LOBBY_STYLES.count, "");
 		mainGrid.addControl(this.lobbyCountText, 2, 0);
@@ -589,31 +594,69 @@ export class GUIManager {
 
 	showLobby(players: string[]): void {
 		if (!this.advancedTexture) return;
-		
+		const t = getCurrentTranslation();
 		if (this.lobbyOverlay && this.lobbyOverlay.isVisible === false) {
 			this.lobbyOverlay!.isVisible = true;
 			this.animationManager?.fadeIn(this.lobbyOverlay!);
 		}
 
+		if (!this.lobbySubtitle) return;
+  			this.startLobbyDots();
+
 		if (!this.lobbyListPanel || !this.lobbyCountText) return;
 		const children = [...this.lobbyListPanel.children];
 		children.forEach(c => this.lobbyListPanel!.removeControl(c));
 
-		players.forEach((name, i) => {
-			const row = this.createRect(`lobbyRow_${i}`, LOBBY_STYLES.rowRect);
-			const tb = this.createTextBlock(`lobbyRowText_${i}`, LOBBY_STYLES.rowText);
-			tb.text = name;
-			row.addControl(tb);
-			this.lobbyListPanel!.addControl(row);
-		});
+		for (let i = 0; i < players.length; i += 2) {
+			const rowContainer = new Grid();
+			rowContainer.addColumnDefinition(0.5, false);
+			rowContainer.addColumnDefinition(0.5, false);
+			rowContainer.width = "100%";
+			rowContainer.height = "34px";
+			
+			const leftRow = this.createRect(`lobbyRow_${i}`, LOBBY_STYLES.rowRect);
+			const leftTb = this.createTextBlock(`lobbyRowText_${i}`, LOBBY_STYLES.rowText, players[i]);
+			leftRow.addControl(leftTb);
+			rowContainer.addControl(leftRow, 0, 0);
+			setTimeout(() => this.animationManager.fadeIn(leftTb), (i * 120));
 
-		this.lobbyCountText.text = `Players joined: ${players.length}`;
+			if (players[i + 1] !== undefined) {
+				const rightRow = this.createRect(`lobbyRow_${i+1}`, LOBBY_STYLES.rowRect);
+				const rightTb = this.createTextBlock(`lobbyRowText_${i+1}`, LOBBY_STYLES.rowText, players[i + 1]);
+				rightTb.textHorizontalAlignment = this.H_LEFT;
+				rightRow.addControl(rightTb);
+				rowContainer.addControl(rightRow, 0, 1);
+				setTimeout(() => this.animationManager.fadeIn(rightTb), ((i + 1) * 120));
+			}
+			
+			this.lobbyListPanel!.addControl(rowContainer);
+		}
+		this.lobbyCountText.text = `${t.countPlayer}: ${players.length}`;
+	}
+
+	private startLobbyDots(): void {
+		if (!this.lobbySubtitle) return;
+		this.stopLobbyDots();
+		const base = this.lobbySubtitle.text?.replace(/\.*$/, "") || ""; // strip trailing dots once
+		let step = 0;
+		this.lobbyDotsTimer = window.setInterval(() => {
+			step = (step + 1) % 4; // 0..3
+			this.lobbySubtitle!.text = base + ".".repeat(step);
+		}, 500);
+		}
+
+	private stopLobbyDots(): void {
+		if (this.lobbyDotsTimer) {
+			clearInterval(this.lobbyDotsTimer);
+			this.lobbyDotsTimer = undefined;
+		}
 	}
 
 	hideLobby(): void {
 		if (!this.lobbyOverlay) return;
 		this.animationManager?.fadeOut(this.lobbyOverlay!);
 		this.lobbyOverlay!.isVisible = false;
+		this.stopLobbyDots();
 	}
 
 	updateControlVisibility(player1: boolean, player2: boolean): void {

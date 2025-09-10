@@ -55,6 +55,7 @@ export interface Translation {
 	play: string;
 	loading: string;
 	waiting: string;
+	countPlayer: string;
 	controls: string;
 	easy: string;
 	medium: string;

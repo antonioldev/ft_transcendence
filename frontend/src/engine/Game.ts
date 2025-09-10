@@ -139,20 +139,20 @@ export class Game {
 			this.isInitialized = true;
 			webSocketClient.sendPlayerReady();
 			uiManager.setLoadingScreenVisible(false);
-			this.updateTournamentLobby(["player0"]);
-let counter = 1;
-const names: string[] = [];
+// 			this.updateTournamentLobby(["player0"]);
+// let counter = 1;
+// const names: string[] = [];
 
-const intervalId = setInterval(() => {
-	names.push(`Player${counter}`);
-	this.updateTournamentLobby({ lobby: [...names] });
-	counter++;
+// const intervalId = setInterval(() => {
+// names.push(`Player${counter}`);
+// this.updateTournamentLobby({ lobby: [...names] });
+// counter++;
 
-	// Stop after, say, 8 players
-	if (counter > 8) {
-		clearInterval(intervalId);
-	}
-}, 3000);
+// // Stop after, say, 8 players
+// if (counter > 16) {
+// 	clearInterval(intervalId);
+// }
+// }, 3000);
 			// if (this.config.gameMode === GameMode.TWO_PLAYER_REMOTE || this.config.gameMode === GameMode.TOURNAMENT_REMOTE)
 			// 	uiManager.updateLoadingText();
 		} catch (error) {
@@ -665,7 +665,6 @@ const intervalId = setInterval(() => {
 	private updateTournamentLobby(message: any): void {
 		
 		const names: string[] = message.lobby ?? ["test1"];
-		console.error('Tournament lobby names:', names);
 		this.guiManager?.showLobby(names);
 		uiManager.setLoadingScreenVisible(false);
 	}
