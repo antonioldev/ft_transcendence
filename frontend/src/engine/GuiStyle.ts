@@ -6,27 +6,43 @@ const H_RIGHT = Control.HORIZONTAL_ALIGNMENT_RIGHT;
 const V_TOP = Control.VERTICAL_ALIGNMENT_TOP;
 const V_CENTER = Control.VERTICAL_ALIGNMENT_CENTER;
 const V_BOTTOM = Control.VERTICAL_ALIGNMENT_BOTTOM;
+const FONT_FAMILY = 'Poppins, Arial, sans-serif';
+
+// Color constants
+const COLORS = {
+    WHITE: "rgba(255, 255, 255, 1)",
+    BLACK: "rgba(0, 0, 0, 1)",
+    TRANSPARENT_BLACK_55: "rgba(0, 0, 0, 0.55)",
+    TRANSPARENT_BLACK_66: "rgba(0, 0, 0, 0.66)",
+    TRANSPARENT_BLACK_90: "rgba(0, 0, 0, 0.9)",
+    TRANSPARENT_BLACK_98: "rgba(2, 2, 2, 0.98)",
+    TRANSPARENT_WHITE_50: "rgba(255, 255, 255, 0.5)",
+    GOLD: "rgba(255, 215, 0, 1)",
+    GOLD_SHADOW: "rgba(255, 217, 0, 0.80)",
+    GOLD_GLOW: "rgba(255, 215, 0, 0.8)",
+    TRANSPARENT: "transparent"
+} as const;
 
 export const HUD_STYLES = {
     hudGrid: {
         width: "100%",
         height: "20%",
-        background: "rgba(0, 0, 0, 0.55)",
+        background: COLORS.TRANSPARENT_BLACK_55,
         verticalAlignment: V_BOTTOM,
         zIndex: 8
     },
 
     fpsText: {
-        fontFamily: 'Poppins, Arial, sans-serif',
-        color: "#FFFFFF",
+        fontFamily: FONT_FAMILY,
+        color: COLORS.WHITE,
         textHorizontalAlignment: H_CENTER,
         textVerticalAlignment: V_CENTER,
         fontSize: 18
     },
 
     player1Label: {
-        fontFamily: 'Poppins, Arial, sans-serif',
-        color: "#FFFFFF",
+        fontFamily: FONT_FAMILY,
+        color: COLORS.WHITE,
         textHorizontalAlignment: H_CENTER,
         textVerticalAlignment: V_CENTER,
         fontSize: 48,
@@ -34,14 +50,14 @@ export const HUD_STYLES = {
         shadowOffsetX: 1,
         shadowOffsetY: 1,
         shadowBlur: 8,
-        shadowColor: "rgba(255, 217, 0, 0.80)",
+        shadowColor: COLORS.GOLD_SHADOW,
         outlineWidth: 2,
-        outlineColor: "rgba(0, 0, 0, 0.66)"
+        outlineColor: COLORS.TRANSPARENT_BLACK_66
     },
 
     player2Label: {
-        fontFamily: 'Poppins, Arial, sans-serif',
-        color: "#FFFFFF",
+        fontFamily: FONT_FAMILY,
+        color: COLORS.WHITE,
         textHorizontalAlignment: H_CENTER,
         textVerticalAlignment: V_CENTER,
         fontSize: 48,
@@ -49,14 +65,14 @@ export const HUD_STYLES = {
         shadowOffsetX: 1,
         shadowOffsetY: 1,
         shadowBlur: 8,
-        shadowColor: "rgba(255, 217, 0, 0.80)",
+        shadowColor: COLORS.GOLD_SHADOW,
         outlineWidth: 2,
-        outlineColor: "rgba(0, 0, 0, 0.66)"
+        outlineColor: COLORS.TRANSPARENT_BLACK_66
     },
 
     score1Text: {
-        fontFamily: 'Poppins, Arial, sans-serif',
-        color: "#FFFFFF",
+        fontFamily: FONT_FAMILY,
+        color: COLORS.WHITE,
         textHorizontalAlignment: H_CENTER,
         textVerticalAlignment: V_BOTTOM,
         fontSize: 56,
@@ -64,14 +80,14 @@ export const HUD_STYLES = {
         shadowOffsetX: 1,
         shadowOffsetY: 1,
         shadowBlur: 8,
-        shadowColor: "rgba(255, 217, 0, 0.80)",
+        shadowColor: COLORS.GOLD_SHADOW,
         outlineWidth: 2,
-        outlineColor: "rgba(0, 0, 0, 0.66)"
+        outlineColor: COLORS.TRANSPARENT_BLACK_66
     },
 
     score2Text: {
-        fontFamily: 'Poppins, Arial, sans-serif',
-        color: "#FFFFFF",
+        fontFamily: FONT_FAMILY,
+        color: COLORS.WHITE,
         textHorizontalAlignment: H_CENTER,
         textVerticalAlignment: V_BOTTOM,
         fontSize: 56,
@@ -79,30 +95,30 @@ export const HUD_STYLES = {
         shadowOffsetX: 1,
         shadowOffsetY: 1,
         shadowBlur: 8,
-        shadowColor: "rgba(255, 217, 0, 0.80)",
+        shadowColor: COLORS.GOLD_SHADOW,
         outlineWidth: 2,
-        outlineColor: "rgba(0, 0, 0, 0.66)"
+        outlineColor: COLORS.TRANSPARENT_BLACK_66
     },
 
     rallyText: {
-        fontFamily: 'Poppins, Arial, sans-serif',
-        color: "#FFFFFF",
+        fontFamily: FONT_FAMILY,
+        color: COLORS.WHITE,
         textHorizontalAlignment: H_CENTER,
         textVerticalAlignment: V_CENTER,
         fontSize: 48
     },
 
     rallyValue: {
-        fontFamily: 'Poppins, Arial, sans-serif',
-        color: "#FFFFFF",
+        fontFamily: FONT_FAMILY,
+        color: COLORS.WHITE,
         textHorizontalAlignment: H_CENTER,
         textVerticalAlignment: V_BOTTOM,
         fontSize: 56
     },
 
     playerControlsP1: {
-        fontFamily: 'Poppins, Arial, sans-serif',
-        color: "rgba(0, 0, 0, 0.55)",
+        fontFamily: FONT_FAMILY,
+        color: COLORS.TRANSPARENT_BLACK_55,
         textHorizontalAlignment: H_CENTER,
         textVerticalAlignment: V_CENTER,
         fontSize: 30,
@@ -110,8 +126,8 @@ export const HUD_STYLES = {
     },
 
     playerControlsP2: {
-        fontFamily: 'Poppins, Arial, sans-serif',
-        color: "rgba(0, 0, 0, 0.55)",
+        fontFamily: FONT_FAMILY,
+        color: COLORS.TRANSPARENT_BLACK_55,
         textHorizontalAlignment: H_CENTER,
         textVerticalAlignment: V_CENTER,
         fontSize: 30,
@@ -132,7 +148,7 @@ export const POWER_UP_STYLES = {
     powerUpSlot: {
         width: "110px",
         height: "280px",
-        background: "rgba(0, 0, 0, 1)",
+        background: COLORS.BLACK,
         verticalAlignment: V_TOP,
         thickness: 0,
         isVisible: false
@@ -141,8 +157,8 @@ export const POWER_UP_STYLES = {
     powerUpCell: {
         width: "100px",
         height: "80px",
-        background: "rgba(0, 0, 0, 1)",
-        color: "rgba(255, 255, 255, 0.5)",
+        background: COLORS.BLACK,
+        color: COLORS.TRANSPARENT_WHITE_50,
         thickness: 1,
         cornerRadius: 8,
         horizontalAlignment: H_LEFT,
@@ -162,7 +178,7 @@ export const POWER_UP_STYLES = {
         width: "100%",
         fontSize: 20,
         fontWeight: "bold",
-        color: "rgba(255, 255, 255, 1)",
+        color: COLORS.WHITE,
         verticalAlignment: V_CENTER,
         textHorizontalAlignment: H_LEFT
     }
@@ -172,10 +188,10 @@ export const PAUSE_MENU_STYLES = {
     pauseOverlay: {
         width: "100%",
         height: "100%",
-        background: "rgba(2, 2, 2, 0.98)",
+        background: COLORS.TRANSPARENT_BLACK_98,
         verticalAlignment: V_CENTER,
         zIndex: 11,
-        color: "rgba(255, 255, 255, 1)",
+        color: COLORS.WHITE,
         isVisible: false
     },
 
@@ -187,8 +203,8 @@ export const PAUSE_MENU_STYLES = {
     },
 
     pauseTitle: {
-        fontFamily: 'Poppins, Arial, sans-serif',
-        color: "#FFFFFF",
+        fontFamily: FONT_FAMILY,
+        color: COLORS.WHITE,
         textHorizontalAlignment: H_CENTER,
         textVerticalAlignment: V_CENTER,
         fontSize: 42,
@@ -196,16 +212,16 @@ export const PAUSE_MENU_STYLES = {
     },
 
     pauseInstruction: {
-        fontFamily: 'Poppins, Arial, sans-serif',
-        color: "#FFFFFF",
+        fontFamily: FONT_FAMILY,
+        color: COLORS.WHITE,
         fontSize: 24,
         textHorizontalAlignment: H_CENTER,
         textVerticalAlignment: V_CENTER
     },
 
     pauseHint: {
-        fontFamily: 'Poppins, Arial, sans-serif',
-        color: "#FFFFFF",
+        fontFamily: FONT_FAMILY,
+        color: COLORS.WHITE,
         fontSize: 20,
         textHorizontalAlignment: H_CENTER,
         textVerticalAlignment: V_CENTER
@@ -236,18 +252,18 @@ export const COUNTDOWN_STYLES = {
     },
 
     countdownText: {
-        fontFamily: 'Poppins, Arial, sans-serif',
-        color: "#FFFFFF",
+        fontFamily: FONT_FAMILY,
+        color: COLORS.WHITE,
         textHorizontalAlignment: H_CENTER,
         textVerticalAlignment: V_CENTER,
         fontSize: 72,
         shadowOffsetX: 1,
         shadowOffsetY: 1,
         shadowBlur: 8,
-        shadowColor: "rgba(255, 217, 0, 0.80)",
+        shadowColor: COLORS.GOLD_SHADOW,
         fontWeight: "bold",
         outlineWidth: 2,
-        outlineColor: "rgba(0, 0, 0, 0.66)"
+        outlineColor: COLORS.TRANSPARENT_BLACK_66
     }
 } as const;
 
@@ -255,7 +271,7 @@ export const VIEW_MODE_STYLES = {
     dividerLine: {
         width: "5px",
         height: "100%",
-        background: "#000000ff",
+        background: COLORS.BLACK,
         horizontalAlignment: H_CENTER,
         verticalAlignment: V_CENTER,
         zIndex: 6,
@@ -267,7 +283,7 @@ export const PARTIAL_END_GAME_STYLES = {
     partialEndGameOverlay: {
         width: "100%",
         height: "100%",
-        background: "rgba(0, 0, 0, 1)",
+        background: COLORS.BLACK,
         verticalAlignment: V_BOTTOM,
         zIndex: 8,
         isVisible: false
@@ -288,8 +304,8 @@ export const PARTIAL_END_GAME_STYLES = {
     },
 
     partialWinnerLabel: {
-        fontFamily: 'Poppins, Arial, sans-serif',
-        color: "#FFFFFF",
+        fontFamily: FONT_FAMILY,
+        color: COLORS.WHITE,
         textHorizontalAlignment: H_CENTER,
         textVerticalAlignment: V_CENTER,
         fontSize: 80,
@@ -299,27 +315,27 @@ export const PARTIAL_END_GAME_STYLES = {
     },
 
     partialWinnerName: {
-        fontFamily: 'Poppins, Arial, sans-serif',
-        color: "rgb(255, 215, 0)",
+        fontFamily: FONT_FAMILY,
+        color: COLORS.GOLD,
         textHorizontalAlignment: H_CENTER,
         textVerticalAlignment: V_CENTER,
         fontSize: 110,
         fontWeight: "bold",
         outlineWidth: 2,
-        outlineColor: "rgb(255, 255, 255)",
+        outlineColor: COLORS.WHITE,
         zIndex: 10,
         alpha: 0,
         shadowBlur: 20,
-        shadowColor: "rgba(255, 215, 0, 0.8)"
+        shadowColor: COLORS.GOLD_GLOW
     },
 
     continueText: {
-        fontFamily: 'Poppins, Arial, sans-serif',
-        color: "rgb(255, 255, 255)",
+        fontFamily: FONT_FAMILY,
+        color: COLORS.WHITE,
         textHorizontalAlignment: H_CENTER,
         textVerticalAlignment: V_CENTER,
         outlineWidth: 2,
-        outlineColor: "rgb(255, 215, 0)",
+        outlineColor: COLORS.GOLD,
         zIndex: 10
     }
 } as const;
@@ -328,25 +344,25 @@ export const END_GAME_STYLES = {
     endGameOverlay: {
         width: "100%",
         height: "20%",
-        background: "rgba(0, 0, 0, 0.9)",
+        background: COLORS.TRANSPARENT_BLACK_90,
         verticalAlignment: V_BOTTOM,
         isVisible: false,
         horizontalAlignment: H_CENTER
     },
 
     endGameWinnerText: {
-        fontFamily: 'Poppins, Arial, sans-serif',
-        color: "#FFFFFF",
+        fontFamily: FONT_FAMILY,
+        color: COLORS.WHITE,
         textHorizontalAlignment: H_CENTER,
         textVerticalAlignment: V_CENTER,
         fontSize: 72,
         shadowOffsetX: 1,
         shadowOffsetY: 1,
         shadowBlur: 8,
-        shadowColor: "rgba(255, 217, 0, 0.80)",
+        shadowColor: COLORS.GOLD_SHADOW,
         fontWeight: "bold",
         outlineWidth: 2,
-        outlineColor: "rgba(0, 0, 0, 0.66)"
+        outlineColor: COLORS.TRANSPARENT_BLACK_66
     }
 } as const;
 
@@ -354,7 +370,7 @@ export const BRACKET_STYLES = {
     bracketOverlay: {
         width: "55%",
         height: "80%",
-        background: "rgba(2, 2, 2, 0.98)",
+        background: COLORS.TRANSPARENT_BLACK_98,
         horizontalAlignment: H_RIGHT,
         verticalAlignment: V_CENTER,
         cornerRadius: 12,
@@ -382,14 +398,14 @@ export const BRACKET_STYLES = {
     },
 
     bracketTitle: {
-        fontFamily: 'Poppins, Arial, sans-serif',
-        color: "#FFFFFF",
+        fontFamily: FONT_FAMILY,
+        color: COLORS.WHITE,
         textHorizontalAlignment: H_LEFT,
         textVerticalAlignment: V_CENTER,
         fontSize: 36,
         shadowBlur: 20,
         fontWeight: "bold",
-        shadowColor: "rgba(255, 215, 0, 0.8)"
+        shadowColor: COLORS.GOLD_GLOW
     },
 
     bracketScroll: {
@@ -441,8 +457,8 @@ export const BRACKET_STYLES = {
     },
 
     bracketCellText: {
-        fontFamily: 'Poppins, Arial, sans-serif',
-        color: "white",
+        fontFamily: FONT_FAMILY,
+        color: COLORS.WHITE,
         height: "100%",
         resizeToFit: true,
         textHorizontalAlignment: Control.HORIZONTAL_ALIGNMENT_LEFT,
