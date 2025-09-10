@@ -8,7 +8,7 @@ import { spawnFireworksInFrontOfCameras, FINAL_FIREWORKS, spawnGUISparkles } fro
 import { AnimationManager, Motion } from "./AnimationManager.js";
 import { AudioManager } from "./AudioManager.js";
 import { HUD_STYLES, POWER_UP_STYLES, PAUSE_MENU_STYLES, COUNTDOWN_STYLES, LOBBY_STYLES,
-	VIEW_MODE_STYLES, PARTIAL_END_GAME_STYLES, END_GAME_STYLES, BRACKET_STYLES } from "./GuiStyle.js";
+	VIEW_MODE_STYLES, PARTIAL_END_GAME_STYLES, END_GAME_STYLES, BRACKET_STYLES, COLORS } from "./GuiStyle.js";
 
 /**
  * Manages all GUI elements for the game
@@ -747,12 +747,53 @@ export class GUIManager {
 		}
 	}
 
+	updateMatch(winner: string, round_index: number, match_index: number): void {
+		if (!this.advancedTexture) return;
+		if (!this.bracketGrid) return;
+
+		const leftSlot = match_index * 2;
+		const rightSlot = match_index * 2 + 1;
+
+		const leftId = `bracketCell_${round_index}_${leftSlot}`;
+		const rightId = `bracketCell_${round_index}_${rightSlot}`;
+		const nextId = `bracketCell_${round_index + 1}_${match_index}`;
+
+		const leftTb = this.advancedTexture.getControlByName(leftId) as TextBlock;
+		const rightTb = this.advancedTexture.getControlByName(rightId) as TextBlock;
+		const leftRect = this.advancedTexture.getControlByName(`${leftId}_rect`) as Rectangle;
+		const rightRect = this.advancedTexture.getControlByName(`${rightId}_rect`) as Rectangle;
+		const nextTb   = this.advancedTexture.getControlByName(nextId) as TextBlock;
+
+		if (!leftTb || !rightTb || !leftRect || !rightRect) return;
+
+		const isLeftWinner  = leftTb.text  === winner;
+		const isRightWinner = rightTb.text === winner;
+
+
+		if (isLeftWinner) {
+			rightTb.text = "❌ " + rightTb.text;
+			this.applyStyles(leftRect, BRACKET_STYLES.winnerCell);
+			this.applyStyles(leftTb, BRACKET_STYLES.winnerText);
+			this.applyStyles(rightRect, BRACKET_STYLES.loserCell);
+			this.applyStyles(rightTb, BRACKET_STYLES.loserText);
+			
+		} else if (isRightWinner) {
+			leftTb.text = "❌ " + leftTb.text;
+			this.applyStyles(rightRect, BRACKET_STYLES.winnerCell);
+			this.applyStyles(rightTb, BRACKET_STYLES.winnerText);
+			this.applyStyles(leftRect, BRACKET_STYLES.loserCell);
+			this.applyStyles(leftTb, BRACKET_STYLES.loserText);
+		}
+		if (nextTb)
+			nextTb.text = winner;
+	}
+
 	insertMatch(
-	roundIndex: number,
-	matchIndex: number,
-	left: string | null,
-	right: string | null,
-	matchTotal?: number
+		roundIndex: number,
+		matchIndex: number,
+		left: string | null,
+		right: string | null,
+		matchTotal?: number
 	): void {
 		if (!this.bracketGrid) return;
 		if (!this.isBrackerGridCreated && matchTotal !== undefined)
@@ -782,7 +823,7 @@ export class GUIManager {
 		const totalColumns = rounds + 1;
 
 		for (let col = 0; col < totalColumns; col++) {
-			this.bracketGrid?.addColumnDefinition(160, true);
+			this.bracketGrid?.addColumnDefinition(220, true);
 
 			const colPanel = this.createStackPanel(`bracketCol_${col}`, BRACKET_STYLES.bracketColPanel);
 			this.bracketGrid?.addControl(colPanel, 1, col);

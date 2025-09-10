@@ -223,6 +223,7 @@ export class Game {
 		webSocketClient.registerCallback(WebSocketEvent.SESSION_ENDED, (message: any) => { this.onServerEndedSession(message.winner); });
 		webSocketClient.registerCallback(WebSocketEvent.SIDE_ASSIGNMENT, (message: any) => { this.handlePlayerAssignment(message.left, message.right); });
 		webSocketClient.registerCallback(WebSocketEvent.MATCH_ASSIGNMENT, (message: any) => { this.handleTournamentGames(message); });
+		webSocketClient.registerCallback(WebSocketEvent.MATCH_WINNER, (message: any) => { this.handleTournamentSingleGame(message); });
 		webSocketClient.registerCallback(WebSocketEvent.COUNTDOWN, (message: any) => { this.handleCountdown(message.countdown); });
 		webSocketClient.registerCallback(WebSocketEvent.POWERUP_ASSIGNMENT, (message: any) => { this.getPowerup(message); });
 		webSocketClient.registerCallback(WebSocketEvent.POWERUP_ACTIVATED, (message: any) => { this.togglePowerUp(message, true); });
@@ -439,6 +440,7 @@ export class Game {
 
 
 	private handleTournamentGames(message: any): void {
+		console.error(message.match_index);
 		this.guiManager?.insertMatch(
 			message.round_index,
 			message.match_index,
@@ -446,6 +448,15 @@ export class Game {
 			message.right ?? null,
 			message.match_total ?? undefined
 		);
+	}
+
+	private handleTournamentSingleGame(message: any): void {
+		console.error(message.winner + " " + message.round_index + " " + message.match_index);
+		this.guiManager?.updateMatch(
+			message.winner,
+			message.round_index,
+			message.match_index
+		)
 	}
 
 	private updateInput(): void {

@@ -226,15 +226,11 @@ export class Game {
 		this.winner = (this.players[LEFT_PADDLE].client.id === quitter_id) ? this.players[RIGHT_PADDLE] : this.players[LEFT_PADDLE];
 	}
 
-<<<<<<< HEAD
-	activate_powerup(powerup: Powerup, side: number, slot: number) {
-=======
+
 	// POWERUPS
 
 	activate(side: number, slot: number) {
 		const powerup = this.paddles[side].powerups[slot];
->>>>>>> 609245276d2a82b93fd20145001443dfca2aec2e
-
 		switch (powerup) {
 			case Powerup.SLOW_OPPONENT:
 				this.slow_down(side)

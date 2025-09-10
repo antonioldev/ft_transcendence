@@ -62,10 +62,12 @@ export enum WebSocketEvent {
 	USER_STATS = 'USER_STATS',
 	GAME_HISTORY = 'GAME_HISTORY',
 	MATCH_ASSIGNMENT = 'match_assignment',
+	MATCH_WINNER = 'match_winner',
 	POWERUP_ASSIGNMENT = 'powerup_assignment',
 	POWERUP_ACTIVATED = 'powerup_activated',
 	POWERUP_DEACTIVATED = 'powerup_deactivated',
 	TOURNAMENT_LOBBY = 'tournament_lobby'
+	
 }
 
 // Different game modes available

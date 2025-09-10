@@ -147,6 +147,9 @@ export class WebSocketClient {
             case MessageType.MATCH_ASSIGNMENT:
                 this.triggerCallback(WebSocketEvent.MATCH_ASSIGNMENT, message);
                 break;
+            case MessageType.MATCH_WINNER:
+                this.triggerCallback(WebSocketEvent.MATCH_WINNER, message);
+                break;
             case MessageType.POWERUP_ASSIGNMENT:
                 this.triggerCallback(WebSocketEvent.POWERUP_ASSIGNMENT, message); 
                 break;

@@ -9,7 +9,7 @@ const V_BOTTOM = Control.VERTICAL_ALIGNMENT_BOTTOM;
 const FONT_FAMILY = 'Poppins, Arial, sans-serif';
 
 // Color constants
-const COLORS = {
+export const COLORS = {
     WHITE: "rgba(255, 255, 255, 1)",
     BLACK: "rgba(0, 0, 0, 1)",
     TRANSPARENT_BLACK_55: "rgba(0, 0, 0, 0.55)",
@@ -20,7 +20,12 @@ const COLORS = {
     GOLD: "rgba(255, 215, 0, 1)",
     GOLD_SHADOW: "rgba(255, 217, 0, 0.80)",
     GOLD_GLOW: "rgba(255, 215, 0, 0.8)",
-    TRANSPARENT: "transparent"
+    TRANSPARENT: "transparent",
+    WINNER_GREEN: "#22C55E",
+    WINNER_GREEN_LIGHT: "rgba(34, 197, 94, 0.2)",
+    LOSER_GRAY: "#999999",
+    LOSER_GRAY_DARK: "rgba(0, 0, 0, 0.4)",
+    LOSER_BORDER: "rgba(128, 128, 128, 0.5)",
 } as const;
 
 export const HUD_STYLES = {
@@ -245,7 +250,7 @@ export const LOBBY_STYLES = {
     width: "100%",
     height: "100%",
     color: COLORS.WHITE,
-    background: "rgba(0,0,0,0.92)",
+    background: COLORS.TRANSPARENT_BLACK_90,
     horizontalAlignment: H_CENTER,
     verticalAlignment: V_CENTER,
     zIndex: 50,
@@ -265,7 +270,6 @@ export const LOBBY_STYLES = {
   subtitle: {
     fontSize: 32,
     color: "#AAB",
-    // height: "36px",
     fontWeight: "bold",
     width: "30%",
     textHorizontalAlignment: H_LEFT,
@@ -274,7 +278,6 @@ export const LOBBY_STYLES = {
     text: "",
     fontSize: 26,
     color: "#8A8",
-    // height: "30px",
     textHorizontalAlignment: H_CENTER,
   },
   lobbyList: {
@@ -522,5 +525,34 @@ export const BRACKET_STYLES = {
         resizeToFit: true,
         textHorizontalAlignment: H_LEFT,
         textVerticalAlignment: V_CENTER
+    },
+
+     winnerCell: {
+        background: COLORS.WINNER_GREEN_LIGHT,
+        thickness: 2,
+        color: COLORS.WINNER_GREEN
+    },
+    
+    winnerText: {
+        fontWeight: "bold",
+        fontSize: "18px",
+        color: COLORS.WHITE,
+        outlineWidth: 2,
+        outlineColor: COLORS.BLACK,
+        shadowOffsetX: 2,
+        shadowOffsetY: 2,
+        shadowBlur: 4,
+        shadowColor: COLORS.TRANSPARENT_BLACK_66
+    },
+    
+    loserCell: {
+        background: COLORS.LOSER_GRAY_DARK,
+        thickness: 1,
+        color: COLORS.LOSER_BORDER
+    },
+    
+    loserText: {
+        alpha: 0.6,
+        color: COLORS.LOSER_GRAY
     }
 } as const;
