@@ -129,12 +129,12 @@ abstract class AbstractTournament extends AbstractGameSession{
 
 		matches.forEach((m, i) => {
 			this.broadcast({
-			type: MessageType.MATCH_ASSIGNMENT,
-			round_index: roundIndex,
-			match_index: i,
-			match_total: matches.length,
-			left:  m.players[0]?.name ?? "TBD",
-			right: m.players[1]?.name ?? "TBD",
+				type: MessageType.MATCH_ASSIGNMENT,
+				round_index: roundIndex,
+				match_index: i,
+				match_total: matches.length,
+				left:  m.players[0]?.name ?? "TBD",
+				right: m.players[1]?.name ?? "TBD",
 			});
 		});
 	}
@@ -188,6 +188,7 @@ export class TournamentLocal extends AbstractTournament {
 
 	// runs each game in a round one by one and awaits each game before starting the next
 	async run(matches: Match[], current_round: number): Promise<void> {
+		let index = 0;
 		for (const match of matches) {
 			if (!this.running) return ;
 			
@@ -197,7 +198,8 @@ export class TournamentLocal extends AbstractTournament {
 			this.broadcast({
 				type: MessageType.MATCH_WINNER,
 				winner: match.winner.name,
-				round: current_round
+				round_index: current_round,
+				match_index: index,
 			});
 
 			this.readyClients.clear();
@@ -272,6 +274,7 @@ export class TournamentRemote extends AbstractTournament {
 		let winner_promises: Promise<Player>[] = [];
 
 		// run each match in parallel and await [] of match promises
+		let index = 0;
 		for (const match of matches) {
 			if (!this.running) return ;
 
@@ -286,7 +289,9 @@ export class TournamentRemote extends AbstractTournament {
 				this.broadcast({
 					type: MessageType.MATCH_WINNER,
 					winner: winner.name,
-					round: current_round
+					round_index: current_round,
+					match_index: index,
+
 				});
 
 				match.next?.add_player(winner);
@@ -296,6 +301,7 @@ export class TournamentRemote extends AbstractTournament {
 			})
 
 			winner_promises.push(winner_promise);
+			index++;
 		}
 		const winners = await Promise.all(winner_promises);
 	}

@@ -68,7 +68,6 @@ export interface ServerMessage {
 	slot?: number,
 	side?: number; // Player side (optional)
 	lobby?: string[];
-	round?: number;
 }
 
 // Player information for game sessions
