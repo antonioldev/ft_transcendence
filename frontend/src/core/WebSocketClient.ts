@@ -156,6 +156,9 @@ export class WebSocketClient {
             case MessageType.POWERUP_DEACTIVATED:
                 this.triggerCallback(WebSocketEvent.POWERUP_DEACTIVATED, message); 
                 break;
+            case MessageType.TOURNAMENT_LOBBY:
+                this.triggerCallback(WebSocketEvent.TOURNAMENT_LOBBY, message); 
+                break;
             default:
                 Logger.errorAndThrow(`Unhandled message type: ${message.type}`, 'WebSocketClient');
                 break;

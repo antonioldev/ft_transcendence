@@ -63,7 +63,8 @@ export enum WebSocketEvent {
 	MATCH_ASSIGNMENT = 'match_assignment',
 	POWERUP_ASSIGNMENT = 'powerup_assignment',
 	POWERUP_ACTIVATED = 'powerup_activated',
-	POWERUP_DEACTIVATED = 'powerup_deactivated'
+	POWERUP_DEACTIVATED = 'powerup_deactivated',
+	TOURNAMENT_LOBBY = 'tournament_lobby'
 }
 
 // Different game modes available

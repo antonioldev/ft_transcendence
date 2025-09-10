@@ -138,8 +138,23 @@ export class Game {
 			this.connectComponents();
 			this.isInitialized = true;
 			webSocketClient.sendPlayerReady();
-			if (this.config.gameMode === GameMode.TWO_PLAYER_REMOTE || this.config.gameMode === GameMode.TOURNAMENT_REMOTE)
-				uiManager.updateLoadingText();
+			uiManager.setLoadingScreenVisible(false);
+			this.updateTournamentLobby(["player0"]);
+let counter = 1;
+const names: string[] = [];
+
+const intervalId = setInterval(() => {
+	names.push(`Player${counter}`);
+	this.updateTournamentLobby({ lobby: [...names] });
+	counter++;
+
+	// Stop after, say, 8 players
+	if (counter > 8) {
+		clearInterval(intervalId);
+	}
+}, 3000);
+			// if (this.config.gameMode === GameMode.TWO_PLAYER_REMOTE || this.config.gameMode === GameMode.TOURNAMENT_REMOTE)
+			// 	uiManager.updateLoadingText();
 		} catch (error) {
 			await this.dispose();
 			Logger.errorAndThrow('Error initializing game', 'Game', error);
@@ -212,6 +227,7 @@ export class Game {
 		webSocketClient.registerCallback(WebSocketEvent.POWERUP_ASSIGNMENT, (message: any) => { this.getPowerup(message); });
 		webSocketClient.registerCallback(WebSocketEvent.POWERUP_ACTIVATED, (message: any) => { this.togglePowerUp(message, true); });
 		webSocketClient.registerCallback(WebSocketEvent.POWERUP_DEACTIVATED, (message: any) => { this.togglePowerUp(message, false); });
+		webSocketClient.registerCallback(WebSocketEvent.TOURNAMENT_LOBBY, (message: any) => {this.updateTournamentLobby(message); });
 	}
 
 	async connect(aiDifficulty: number): Promise<void> {
@@ -236,6 +252,7 @@ export class Game {
 			Logger.errorAndThrow('Server sent SIGNAL without countdown parameter', 'Game');
 
 		uiManager.setLoadingScreenVisible(false);
+		this.guiManager?.hideLobby()
 
 		if (this.currentState === GameState.MATCH_ENDED)
 			this.resetForNextMatch();
@@ -325,6 +342,7 @@ export class Game {
 			if (!this.isInitialized || this.currentState !== GameState.PLAYING) return;
 			try {
 				uiManager.setLoadingScreenVisible(false);
+				this.guiManager?.hideLobby()
 				this.updateInput();
 				if (this.config.viewMode === ViewMode.MODE_3D)
 					this.renderManager?.update3DCameras();
@@ -577,6 +595,8 @@ export class Game {
 		const currentlyActive = this.active_powerups.get(side);
 		if (currentlyActive === powerup) return;
 
+		console.error("send");
+
 		webSocketClient.sendPowerupActivationRequest(powerup, side, index);
 	}
 
@@ -642,4 +662,11 @@ export class Game {
 		}
 	}
 
+	private updateTournamentLobby(message: any): void {
+		
+		const names: string[] = message.lobby ?? ["test1"];
+		console.error('Tournament lobby names:', names);
+		this.guiManager?.showLobby(names);
+		uiManager.setLoadingScreenVisible(false);
+	}
 }

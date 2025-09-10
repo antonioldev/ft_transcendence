@@ -240,6 +240,70 @@ export const PAUSE_MENU_STYLES = {
     }
 } as const;
 
+export const LOBBY_STYLES = {
+  overlay: {
+    width: "100%",
+    height: "100%",
+    color: COLORS.WHITE,
+    background: "rgba(0,0,0,0.92)",
+    horizontalAlignment: H_CENTER,
+    verticalAlignment: V_CENTER,
+    // paddingLeft: "16px",
+    // paddingRight: "16px",
+    // paddingTop: "12px",
+    // paddingBottom: "12px",
+    zIndex: 50,
+    isVisible: false
+  },
+  title: {
+    text: "Tournament Lobby",
+    fontSize: 28,
+    color: "white",
+    height: "40px",
+    textHorizontalAlignment: H_CENTER,
+  },
+  subtitle: {
+    text: "Waiting for other players…",
+    fontSize: 16,
+    color: "#AAB",
+    height: "26px",
+    textHorizontalAlignment: H_CENTER,
+  },
+  count: {
+    text: "",
+    fontSize: 14,
+    color: "#8A8",
+    height: "22px",
+    textHorizontalAlignment: H_CENTER,
+  },
+  lobbyList: {
+    isVertical: true,
+    width: "100%",
+    spacing: 6,
+    adaptHeightToChildren: true
+  },
+//   scroll: {
+//     width: "100%",
+//     height: "80%",
+//     thickness: 0,
+//     barSize: 8,
+//   },
+  rowRect: {
+    height: "34px",
+    width: "100%",
+    thickness: 0,
+    background: "rgba(255,255,255,0.04)",
+    cornerRadius: 6,
+    paddingLeft: "10px",
+  },
+  rowText: {
+    text: "",
+    fontSize: 16,
+    color: "white",
+    textHorizontalAlignment: H_CENTER,
+  },
+};
+
 export const COUNTDOWN_STYLES = {
     countdownContainer: {
         width: "100%",
@@ -435,8 +499,8 @@ export const BRACKET_STYLES = {
 
     bracketColPanel: {
         isVertical: true,
-        horizontalAlignment: Control.HORIZONTAL_ALIGNMENT_LEFT,
-        verticalAlignment: Control.VERTICAL_ALIGNMENT_CENTER,
+        horizontalAlignment: H_LEFT,
+        verticalAlignment: V_CENTER,
         widthInPixels: 160,
         clipChildren: false
     },
@@ -446,8 +510,8 @@ export const BRACKET_STYLES = {
         paddingTop: "5px",
         paddingBottom: "5px",
         paddingLeft: "6px",
-        horizontalAlignment: Control.HORIZONTAL_ALIGNMENT_CENTER,
-        verticalAlignment: Control.VERTICAL_ALIGNMENT_CENTER,
+        horizontalAlignment: H_CENTER,
+        verticalAlignment: V_CENTER,
         clipChildren: false
     },
 
@@ -461,7 +525,7 @@ export const BRACKET_STYLES = {
         color: COLORS.WHITE,
         height: "100%",
         resizeToFit: true,
-        textHorizontalAlignment: Control.HORIZONTAL_ALIGNMENT_LEFT,
-        textVerticalAlignment: Control.VERTICAL_ALIGNMENT_CENTER
+        textHorizontalAlignment: H_LEFT,
+        textVerticalAlignment: V_CENTER
     }
 } as const;

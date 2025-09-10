@@ -7,7 +7,7 @@ import { getCurrentTranslation } from '../translations/translations.js';
 import { spawnFireworksInFrontOfCameras, FINAL_FIREWORKS, spawnGUISparkles } from './scene/fireworks.js';
 import { AnimationManager, Motion } from "./AnimationManager.js";
 import { AudioManager } from "./AudioManager.js";
-import { HUD_STYLES, POWER_UP_STYLES, PAUSE_MENU_STYLES, COUNTDOWN_STYLES, 
+import { HUD_STYLES, POWER_UP_STYLES, PAUSE_MENU_STYLES, COUNTDOWN_STYLES, LOBBY_STYLES,
 	VIEW_MODE_STYLES, PARTIAL_END_GAME_STYLES, END_GAME_STYLES, BRACKET_STYLES } from "./GuiStyle.js";
 
 /**
@@ -46,6 +46,9 @@ export class GUIManager {
 	private muteIcon?: Image;
 	private toggleMuteCallback?: () => boolean;
 
+	private lobbyOverlay?: Rectangle;
+	private lobbyListPanel?: StackPanel;
+	private lobbyCountText?: TextBlock;
 
 	private isTournament: boolean = false;
 	private isBrackerGridCreated: boolean = false;
@@ -73,6 +76,7 @@ export class GUIManager {
 			this.isTournament = config.isTournament;
 
 			this.createHUD(config);
+			this.createLobbyOverlay();
 			this.createPowerUpSlots();
 			this.createPauseOverlay();
 			this.createBracketOverlay();
@@ -147,7 +151,35 @@ export class GUIManager {
 
 	this.rally.transformCenterX = 0.5;
 	this.rally.transformCenterY = 0.5;
-}
+	}
+
+	private createLobbyOverlay(): void {
+		if (!this.advancedTexture) return;
+
+		this.lobbyOverlay = this.createRect("lobbyOverlay", LOBBY_STYLES.overlay);
+		this.advancedTexture.addControl(this.lobbyOverlay);
+		
+		const mainGrid = new Grid("lobbyMainGrid");
+		mainGrid.addRowDefinition(0.15, false); // Title row
+		mainGrid.addRowDefinition(0.1, false);  // Subtitle row
+		mainGrid.addRowDefinition(0.05, false); // Count row
+		mainGrid.addRowDefinition(0.7, false);  // Scroll row
+		mainGrid.width = "100%";
+		mainGrid.height = "100%";
+		this.lobbyOverlay.addControl(mainGrid);
+
+		const title = this.createTextBlock("lobbyTitle", LOBBY_STYLES.title, LOBBY_STYLES.title.text);
+		mainGrid.addControl(title, 0, 0);
+
+		const subtitle = this.createTextBlock("lobbySubtitle", LOBBY_STYLES.subtitle, LOBBY_STYLES.subtitle.text);
+		mainGrid.addControl(subtitle, 1, 0);
+
+		this.lobbyCountText = this.createTextBlock("lobbyCount", LOBBY_STYLES.count, "");
+		mainGrid.addControl(this.lobbyCountText, 2, 0);
+
+		this.lobbyListPanel = this.createStackPanel("lobbyList", LOBBY_STYLES.lobbyList);
+		mainGrid.addControl(this.lobbyListPanel, 3, 0);
+	}
 
 	private createPowerUpSlots(): void {
 		if (!this.advancedTexture) return;
@@ -555,6 +587,35 @@ export class GUIManager {
 		await this.animationManager?.pop(this.muteIcon, Motion.F.xFast, 0.9);
 	}
 
+	showLobby(players: string[]): void {
+		if (!this.advancedTexture) return;
+		
+		if (this.lobbyOverlay && this.lobbyOverlay.isVisible === false) {
+			this.lobbyOverlay!.isVisible = true;
+			this.animationManager?.fadeIn(this.lobbyOverlay!);
+		}
+
+		if (!this.lobbyListPanel || !this.lobbyCountText) return;
+		const children = [...this.lobbyListPanel.children];
+		children.forEach(c => this.lobbyListPanel!.removeControl(c));
+
+		players.forEach((name, i) => {
+			const row = this.createRect(`lobbyRow_${i}`, LOBBY_STYLES.rowRect);
+			const tb = this.createTextBlock(`lobbyRowText_${i}`, LOBBY_STYLES.rowText);
+			tb.text = name;
+			row.addControl(tb);
+			this.lobbyListPanel!.addControl(row);
+		});
+
+		this.lobbyCountText.text = `Players joined: ${players.length}`;
+	}
+
+	hideLobby(): void {
+		if (!this.lobbyOverlay) return;
+		this.animationManager?.fadeOut(this.lobbyOverlay!);
+		this.lobbyOverlay!.isVisible = false;
+	}
+
 	updateControlVisibility(player1: boolean, player2: boolean): void {
 		if (!this.isReady) return;
 		const p1 = this.advancedTexture?.getControlByName("PlayerControls_p1") as TextBlock | null;
@@ -842,133 +903,3 @@ export class GUIManager {
 
 
 }
-
-///////////////////////////////////////////////////////////////////////////////////////// second ------------
-
-	// insertMatch(
-	//	 roundIndex: number,
-	//	 matchIndex: number,
-	//	 left: string | null,
-	//	 right: string | null,
-	//	 matchTotal?: number
-	// ): void {
-	//	 if (roundIndex === 1 && this.rounds.length === 0 && matchTotal !== undefined)
-	//		 this.initializeTournament(matchTotal);
-
-	//	 this.ensureRound(roundIndex, matchTotal);
-
-	//	 const round = this.rounds[roundIndex - 1];
-	//	 if (!round[matchIndex])
-	//		 round[matchIndex] = { left: null, right: null };
-		
-	//	 const match = round[matchIndex];
-	//	 match.left = left ?? match.left;
-	//	 match.right = right ?? match.right;
-
-	//	 this.renderBracket();
-	// }
-
-	// private initializeTournament(round1Matches: number): void {
-	//	 this.rounds = [];
-	//	 let matchCount = round1Matches;
-
-	//	 while (matchCount >= 1) {
-	//		 this.rounds.push(Array(matchCount).fill(null).map(() => ({ 
-	//			 left: matchCount === round1Matches ? null : "tbd", 
-	//			 right: matchCount === round1Matches ? null : "tbd" 
-	//		 })));
-			
-	//		 if (matchCount === 1) break;
-	//		 matchCount = Math.ceil(matchCount / 2);
-	//	 }
-	// }
-
-	// private ensureRound(roundIndex: number, matchTotal?: number): void {
-	//	 const arrayIndex = roundIndex - 1;
-		
-	//	 // Extend rounds array if needed
-	//	 while (this.rounds.length <= arrayIndex) {
-	//		 this.rounds.push([]);
-	//	 }
-		
-	//	 // Set round size if provided
-	//	 if (matchTotal !== undefined && matchTotal > 0) {
-	//		 const round = this.rounds[arrayIndex];
-	//		 while (round.length < matchTotal) {
-	//			 round.push({ left: "tbd", right: "tbd" });
-	//		 }
-	//	 }
-	// }
-
-	// private renderBracket(): void {
-	//	 if (!this.bracketText) return;
-		
-	//	 this.bracketText.text = this.rounds.length === 0 ? "—" : this.buildBracketText();
-	// }
-
-	// private buildBracketText(): string {
-	//	 const colWidth = 10;
-	//	 const spacing = 2;
-		
-	//	 // Build each round as a column of text
-	//	 const columns = this.rounds.map((round, roundIndex) => ({
-	//		 lines: this.buildRoundLines(round, roundIndex, colWidth),
-	//		 width: colWidth + spacing
-	//	 }));
-
-	//	 return this.joinColumns(columns);
-	// }
-
-	// private buildRoundLines(round: Match[], roundIndex: number, colWidth: number): string[] {
-	//	 const lines: string[] = [];
-	//	 const verticalSpacing = Math.pow(2, roundIndex + 1) - 1;
-
-	//	 round.forEach((match, matchIndex) => {
-	//		 const left = this.pad(match.left ?? " tbd", colWidth);
-	//		 const right = this.pad(match.right ?? " tbd", colWidth);
-			
-	//		 // Add match bracket
-	//		 lines.push(`${left} ┐`);
-			
-	//		 // Add vertical connectors
-	//		 const midPoint = Math.floor(verticalSpacing / 2);
-	//		 for (let i = 0; i < verticalSpacing; i++) {
-	//			 const connector = i === midPoint ? "├" : "│";
-	//			 lines.push(`${" ".repeat(colWidth)} ${connector}`);
-	//		 }
-			
-	//		 lines.push(`${right} ┘`);
-			
-	//		 // Add spacing between matches (except last)
-	//		 if (matchIndex < round.length - 1) {
-	//			 lines.push("");
-	//		 }
-	//	 });
-
-	//	 return lines;
-	// }
-
-	// private joinColumns(columns: { lines: string[], width: number }[]): string {
-	//	 // Find max height and center all columns
-	//	 const maxHeight = Math.max(...columns.map(col => col.lines.length));
-		
-	//	 return Array.from({ length: maxHeight }, (_, row) =>
-	//		 columns.map(col => {
-	//			 const line = this.getCenteredLine(col.lines, row, maxHeight);
-	//			 return line.padEnd(col.width);
-	//		 }).join("").trimEnd()
-	//	 ).join("\n");
-	// }
-
-	// private getCenteredLine(lines: string[], row: number, maxHeight: number): string {
-	//	 const startRow = Math.floor((maxHeight - lines.length) / 2);
-	//	 const lineIndex = row - startRow;
-	//	 return (lineIndex >= 0 && lineIndex < lines.length) ? lines[lineIndex] : "";
-	// }
-
-	// private pad(text: string, width: number): string {
-	//	 return text.length >= width 
-	//		 ? text.slice(0, width)
-	//		 : text.padEnd(width);
-	// }
-
