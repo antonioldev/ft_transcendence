@@ -226,29 +226,21 @@ export class Game {
 		this.winner = (this.players[LEFT_PADDLE].client.id === quitter_id) ? this.players[RIGHT_PADDLE] : this.players[LEFT_PADDLE];
 	}
 
-	activate_powerup(powerup: Powerup, side: number, slot: number) {
-		if (this.paddles[side].powerups[slot] != powerup) {
-			console.log(`Cannot activate powerup "${powerup}": player lacks this ability`);
-			return ;
-		}
-		if (this.paddles[side].active_powerups.includes(powerup)) {
-			console.log(`Cannot activate powerup "${powerup}": already active`);
-			return ;
-		}
+	// POWERUPS
 
-		const other_side = side === LEFT_PADDLE ? RIGHT_PADDLE : LEFT_PADDLE;
+	activate(powerup: Powerup, side: number, slot: number) {
 		switch (powerup) {
 			case Powerup.SLOW_OPPONENT:
-				this.paddles[other_side].speed = GAME_CONFIG.decreasedPaddleSpeed;
+				this.slow_down(side)
 				break ;
 			case Powerup.SHRINK_OPPONENT:
-				this.paddles[other_side].rect.width = GAME_CONFIG.decreasedPaddleWidth;
+				this.shrink(side);
 				break ;			
 			case Powerup.INCREASE_PADDLE_SPEED:
-				this.paddles[side].speed = GAME_CONFIG.increasedPaddleSpeed;
+				this.speed_up(side);
 				break ;
     		case Powerup.GROW_PADDLE:
-				this.paddles[side].rect.width = GAME_CONFIG.increasedPaddleWidth;
+				this.grow(side);
 				break ;
 			default:
 				console.error(`Error: cannot activate unknown Powerup "${powerup}`);
@@ -261,32 +253,30 @@ export class Game {
 			slot: slot
 		})
 		
-		this.paddles[side].active_powerups.push(powerup);
 		this.paddles[side].powerups[slot] = null;
-		setTimeout(() => this.deactivate_powerup(powerup, side, slot), GAME_CONFIG.powerupDuration)
+		this.paddles[side].active_powerups[slot] = powerup;
+		setTimeout(() => this.deactivate(powerup, side, slot), GAME_CONFIG.powerupDuration)
 	}
 
-	deactivate_powerup(powerup: Powerup, side: number, slot: number) {
-		const other_side = side === LEFT_PADDLE ? RIGHT_PADDLE : LEFT_PADDLE;
+	deactivate(powerup: Powerup, side: number, slot: number) {
+		const caller = this.paddles[side];
+		const opponent = this.paddles[side === LEFT_PADDLE ? RIGHT_PADDLE : LEFT_PADDLE];
+		
 		switch (powerup) {
 			case Powerup.SLOW_OPPONENT:
-				this.paddles[other_side].speed = GAME_CONFIG.paddleSpeed;
+				opponent.speed = GAME_CONFIG.paddleSpeed;
 				break ;
 			case Powerup.SHRINK_OPPONENT:
-				this.paddles[other_side].rect.width = GAME_CONFIG.paddleWidth;
-				break ;			
+				opponent.rect.width = GAME_CONFIG.paddleWidth;
+				break ;
 			case Powerup.INCREASE_PADDLE_SPEED:
-				this.paddles[side].speed = GAME_CONFIG.paddleSpeed;
+				caller.speed = GAME_CONFIG.paddleSpeed;
 				break ;
     		case Powerup.GROW_PADDLE:
-				this.paddles[side].rect.width = GAME_CONFIG.paddleWidth;
+				caller.rect.width = GAME_CONFIG.paddleWidth;
 				break ;
 		}
-		// remove powerup from active_powerups list
-		const index = this.paddles[side].active_powerups.indexOf(powerup);
-		if (index !== -1) {
-			this.paddles[side].active_powerups.splice(index, 1);
-		}
+		this.paddles[side].active_powerups[slot] = null;
 
 		this._broadcast({
 			type: MessageType.POWERUP_DEACTIVATED,
@@ -294,5 +284,76 @@ export class Game {
 			side: side,
 			slot: slot
 		})
+	}
+
+	speed_up(side: number) {
+		const caller = this.paddles[side];
+		const opponent = this.paddles[side === LEFT_PADDLE ? RIGHT_PADDLE : LEFT_PADDLE];
+		
+		if (caller.speed === GAME_CONFIG.paddleSpeed) {
+			caller.speed = GAME_CONFIG.increasedPaddleSpeed;
+		}
+		else if (caller.speed === GAME_CONFIG.decreasedPaddleSpeed) { 
+			// opponents powerup has been countered
+			caller.speed = GAME_CONFIG.paddleSpeed;
+			this._broadcast({
+				type: MessageType.POWERUP_DEACTIVATED,
+				powerup: Powerup.SLOW_OPPONENT,
+				side: side === LEFT_PADDLE ? RIGHT_PADDLE : LEFT_PADDLE,
+				slot: opponent.active_powerups.indexOf(Powerup.SLOW_OPPONENT)
+			})
+		}
+	}
+
+	slow_down(side: number) {
+		const opponent = this.paddles[side === LEFT_PADDLE ? RIGHT_PADDLE : LEFT_PADDLE];
+		
+		if (opponent.speed === GAME_CONFIG.paddleSpeed) {
+			opponent.speed = GAME_CONFIG.decreasedPaddleSpeed;
+		}
+		else if (opponent.speed === GAME_CONFIG.increasedPaddleSpeed) {
+			opponent.speed = GAME_CONFIG.paddleSpeed;
+			this._broadcast({
+				type: MessageType.POWERUP_DEACTIVATED,
+				powerup: Powerup.INCREASE_PADDLE_SPEED,
+				side: side === LEFT_PADDLE ? RIGHT_PADDLE : LEFT_PADDLE,
+				slot: opponent.active_powerups.indexOf(Powerup.INCREASE_PADDLE_SPEED)
+			})
+		}
+	}
+
+	grow(side: number) {
+		const caller = this.paddles[side];
+		const opponent = this.paddles[side === LEFT_PADDLE ? RIGHT_PADDLE : LEFT_PADDLE];
+		
+		if (caller.rect.width === GAME_CONFIG.paddleWidth) {
+			caller.rect.width = GAME_CONFIG.increasedPaddleWidth;
+		}
+		else if (caller.rect.width === GAME_CONFIG.decreasedPaddleWidth) {
+			caller.rect.width = GAME_CONFIG.paddleWidth;
+			this._broadcast({
+				type: MessageType.POWERUP_DEACTIVATED,
+				powerup: Powerup.SHRINK_OPPONENT,
+				side: side === LEFT_PADDLE ? RIGHT_PADDLE : LEFT_PADDLE,
+				slot: opponent.active_powerups.indexOf(Powerup.SHRINK_OPPONENT)
+			})
+		}
+	}
+
+	shrink(side: number) {
+		const opponent = this.paddles[side === LEFT_PADDLE ? RIGHT_PADDLE : LEFT_PADDLE];
+		
+		if (opponent.rect.width === GAME_CONFIG.paddleWidth) {
+			opponent.rect.width = GAME_CONFIG.decreasedPaddleWidth;
+		}
+		else if (opponent.rect.width === GAME_CONFIG.increasedPaddleWidth) {
+			opponent.rect.width = GAME_CONFIG.paddleWidth;
+			this._broadcast({
+				type: MessageType.POWERUP_DEACTIVATED,
+				powerup: Powerup.GROW_PADDLE,
+				side: side === LEFT_PADDLE ? RIGHT_PADDLE : LEFT_PADDLE,
+				slot: opponent.active_powerups.indexOf(Powerup.GROW_PADDLE)
+			})
+		}
 	}
 }
