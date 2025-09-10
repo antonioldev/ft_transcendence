@@ -11,7 +11,7 @@ export class Paddle {
 	oldRect: Rect;
 	speed: number = GAME_CONFIG.paddleSpeed;
 	powerups: (Powerup | null)[] = [];
-	active_powerups: Powerup[] = [];
+	active_powerups: (Powerup | null)[] = [null, null, null];
 
 	constructor(side: number) {
 		this.side = side;
