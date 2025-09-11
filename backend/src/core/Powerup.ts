@@ -67,8 +67,8 @@ export class PowerupManager {
 				timeout = this.grow(slot.side);
 				break ;
 			case PowerupType.FREEZE:
-				timeout = GAME_CONFIG.ballDelay;
-				this.ball.pause(timeout);
+				timeout = GAME_CONFIG.freezeDuration;
+				this.ball.isPaused = true;
 				break ;
 			default:
 				console.error(`Error: cannot activate unknown Powerup "${slot.type}`);
@@ -107,7 +107,7 @@ export class PowerupManager {
 				this.paddles[slot.side].rect.width = GAME_CONFIG.paddleWidth;
 				break ;
 			case PowerupType.FREEZE:
-				// reset handled internally by ball
+				this.ball.isPaused = false;
 				break ;
 			default:
 				console.error(`Error: cannot deactivate unknown Powerup "${slot.type}`);

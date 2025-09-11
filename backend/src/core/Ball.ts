@@ -67,7 +67,7 @@ export class Ball {
             
             this.speed *= GAME_CONFIG.ballSpeedIncrease;
             this.current_rally += 1;
-            
+
             // Collision with sides of paddle
             if (direction === CollisionDirection.HORIZONTAL) { 
                 if (this.rect.right >= paddle.rect.left && this.oldRect.right <= paddle.oldRect.left) {
@@ -124,11 +124,6 @@ export class Ball {
         this.direction = this.randomDirection();
         this.speed = GAME_CONFIG.ballInitialSpeed;
         this.current_rally = 1;
-    }
-
-    pause(timeout: number) {
-        this.isPaused = true;
-        setTimeout(() => { this.isPaused = false }, timeout);
     }
 
     // Updates the ball's state, including movement, collisions, and scoring.

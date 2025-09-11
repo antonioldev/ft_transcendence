@@ -32,6 +32,7 @@ export const GAME_CONFIG = {
 	increasedPaddleSpeed: 22, // Speed of the paddle when INCREASE_PADDLE_SPEED activated
 	decreasedPaddleSpeed: 7, // Speed of the paddle when SLOW_PADDLE activated
 	powerupDuration: 5000,	   // time elapsed before powerup is deactivated
+	freezeDuration: 1500.0, // duration of ball freeze 
 
 	// Camera settings (mainly for frontend)
 	camera2DHeight: 25, // Camera height in 2D mode
@@ -76,7 +77,6 @@ export const GAME_CONFIG = {
 	
 	// Timing
 	startDelay: 4.0, // Delay before the game starts
-	ballDelay: 1.0, // Delay before the ball starts between rounds
 	maxJoinWaitTime: 30.0, // Max time the server will wait for remote players to join before starting with CPU's
 
 } as const;
