@@ -399,7 +399,7 @@ export class Game {
 			}
 		}
 
-		this.guiManager?.updateScores(0, 0);
+		this.guiManager?.hud.updateScores(0, 0);
 	}
 
 // ====================			GAME STATE UPDATES	   ====================
@@ -417,7 +417,7 @@ export class Game {
 			this.gameObjects.ball.rotation.x += 0.1;
 			this.gameObjects.ball.rotation.y += 0.05;
 
-			if(this.guiManager?.updateRally(state.ball.current_rally))
+			if(this.guiManager?.hud.updateRally(state.ball.current_rally))
 				this.audioManager?.playPaddleHit();
 			this.audioManager?.updateMusicSpeed(state.ball.current_rally);
 
@@ -429,7 +429,7 @@ export class Game {
 				this.playerRightScore = state.paddleRight.score
 				this.audioManager?.playScore();
 			}
-			this.guiManager?.updateScores(state.paddleLeft.score, state.paddleRight.score);
+			this.guiManager?.hud.updateScores(state.paddleLeft.score, state.paddleRight.score);
 
 		} catch (error) {
 			Logger.errorAndThrow('Error updating game objects', 'Game', error);
@@ -444,7 +444,7 @@ export class Game {
 	}
 
 	private handlePlayerAssignment(leftPlayerName: string, rightPlayerName: string): void {
-		this.guiManager?.updatePlayerNames(leftPlayerName, rightPlayerName);
+		this.guiManager?.hud.updatePlayerNames(leftPlayerName, rightPlayerName);
 		this.assignPlayerSide(leftPlayerName, 0);
 		this.assignPlayerSide(rightPlayerName, 1);
 
@@ -455,7 +455,7 @@ export class Game {
 
 	private handleTournamentGames(message: any): void {
 		console.error(message.match_index);
-		this.guiManager?.insertMatch(
+		this.guiManager?.matchTree.insert(
 			message.round_index,
 			message.match_index,
 			message.left ?? null,
@@ -466,7 +466,7 @@ export class Game {
 
 	private handleTournamentSingleGame(message: any): void {
 		console.error(message.winner + " " + message.round_index + " " + message.match_index);
-		this.guiManager?.updateMatch(
+		this.guiManager?.matchTree.update(
 			message.winner,
 			message.round_index,
 			message.match_index

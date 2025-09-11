@@ -11,6 +11,8 @@ import { HUD_STYLES, POWER_UP_STYLES, PAUSE_MENU_STYLES, COUNTDOWN_STYLES, LOBBY
 	VIEW_MODE_STYLES, PARTIAL_END_GAME_STYLES, END_GAME_STYLES, BRACKET_STYLES } from "./GuiStyle.js";
 import { Countdown } from "./Countdown.js";
 import { PowerUp } from "./PowerUp.js";
+import { MatchTree } from "./MatchTree.js"
+import { Hud } from "./Hud.js";
 
 /**
  * Manages all GUI elements for the game
@@ -22,17 +24,12 @@ export class GUIManager {
 
 	private adt: AdvancedDynamicTexture | null = null;
 	private isInitialized: boolean = false;
-	private hudGrid!: Grid;
-	private fpsText!: TextBlock;
-	private score1Text!: TextBlock;
-	private score2Text!: TextBlock;
-	private player1Label!: TextBlock;
-	private player2Label!: TextBlock;
-	private rallyText!: TextBlock;
-	private rally!: TextBlock;
-	private previousRally: number = 1;
+	
+
 	private endGameOverlay!: Grid;
 	private endGameWinnerText!: TextBlock;
+	
+	
 	private partialEndGameOverlay!: Rectangle;
 	private partialWinnerLabel!: TextBlock;
 	private partialWinnerName!: TextBlock;
@@ -53,25 +50,12 @@ export class GUIManager {
 	private lobbySubtitle?: TextBlock;
 
 	private isTournament: boolean = false;
-	private isBrackerGridCreated: boolean = false;
-	private playerTotal: number = 0;
-	private bracketOverlay?: Rectangle;
-	private bracketScroll?: ScrollViewer;
-	private bracketGrid?: Grid;
 
-	// private powerUpSlotP1?: Rectangle;
-	// private powerUpSlotP2?: Rectangle;
-	// private powerUpCellsP1: Array<{root: Rectangle; icon?: Image; letter?: TextBlock}> = [];
-	// private powerUpCellsP2: Array<{root: Rectangle; icon?: Image; letter?: TextBlock}> = [];
-	// private POWERUP_ICON: Record<number, string> = {
-	// 	[Powerup.SLOW_OPPONENT]:	   "assets/icons/powerup/slow.png",
-	// 	[Powerup.SHRINK_OPPONENT]:	 "assets/icons/powerup/smaller.png",
-	// 	[Powerup.INCREASE_PADDLE_SPEED]:"assets/icons/powerup/fast.png",
-	// 	[Powerup.GROW_PADDLE]:		 "assets/icons/powerup/larger.png",
-	// };
 
 	countdown!: Countdown;
 	powerUp!: PowerUp;
+	matchTree!: MatchTree;
+	hud!: Hud;
 
 	
 
@@ -83,13 +67,13 @@ export class GUIManager {
 
 			this.countdown = new Countdown(this.adt, this.animationManager);
 			this.powerUp = new PowerUp(this.adt, this.animationManager);
+			this.matchTree = new MatchTree(this.adt, this.animationManager);
+			this.hud = new Hud(this.adt, this.animationManager,config);
 
 
-			this.createHUD(config);
+			// this.createHUD(config);
 			this.createLobbyOverlay();
-			// this.createPowerUpSlots();
 			this.createPauseOverlay();
-			this.createBracketOverlay();
 			this.createViewModeDivider(config);
 			this.createPartialEndGameOverlay();
 			this.createEndGameOverlay();
@@ -102,65 +86,65 @@ export class GUIManager {
 		}
 	}
 
-	private createHUD(config: GameConfig): void {
-	this.hudGrid = this.createGrid("hudGrid", HUD_STYLES.hudGrid);
-	this.adt!.addControl(this.hudGrid);
+	// private createHUD(config: GameConfig): void {
+	// this.hudGrid = this.createGrid("hudGrid", HUD_STYLES.hudGrid);
+	// this.adt!.addControl(this.hudGrid);
 
-	this.hudGrid.addColumnDefinition(HUD_STYLES.gridColumns.fps, false);
-	this.hudGrid.addColumnDefinition(HUD_STYLES.gridColumns.p1Controls, false);
-	this.hudGrid.addColumnDefinition(HUD_STYLES.gridColumns.p1Score, false);
-	this.hudGrid.addColumnDefinition(HUD_STYLES.gridColumns.p2Score, false);
-	this.hudGrid.addColumnDefinition(HUD_STYLES.gridColumns.p2Controls, false);
-	this.hudGrid.addColumnDefinition(HUD_STYLES.gridColumns.rally, false);
+	// this.hudGrid.addColumnDefinition(HUD_STYLES.gridColumns.fps, false);
+	// this.hudGrid.addColumnDefinition(HUD_STYLES.gridColumns.p1Controls, false);
+	// this.hudGrid.addColumnDefinition(HUD_STYLES.gridColumns.p1Score, false);
+	// this.hudGrid.addColumnDefinition(HUD_STYLES.gridColumns.p2Score, false);
+	// this.hudGrid.addColumnDefinition(HUD_STYLES.gridColumns.p2Controls, false);
+	// this.hudGrid.addColumnDefinition(HUD_STYLES.gridColumns.rally, false);
 
-	this.fpsText =  this.createTextBlock("fpsText", HUD_STYLES.fpsText, "FPS: 0");
-	this.hudGrid.addControl(this.fpsText, 0, 0);
+	// this.fpsText =  this.createTextBlock("fpsText", HUD_STYLES.fpsText, "FPS: 0");
+	// this.hudGrid.addControl(this.fpsText, 0, 0);
 
-	const p1Controls =  this.createTextBlock("PlayerControls_p1", HUD_STYLES.playerControlsP1, this.getControlsText(config.viewMode, 1));
-	this.hudGrid.addControl(p1Controls, 0, 1);
+	// const p1Controls =  this.createTextBlock("PlayerControls_p1", HUD_STYLES.playerControlsP1, this.getControlsText(config.viewMode, 1));
+	// this.hudGrid.addControl(p1Controls, 0, 1);
 
-	const p1Cell = new Grid();
-	p1Cell.addRowDefinition(1, false);
-	p1Cell.addRowDefinition(1, false);
-	p1Cell.addColumnDefinition(1, false);
+	// const p1Cell = new Grid();
+	// p1Cell.addRowDefinition(1, false);
+	// p1Cell.addRowDefinition(1, false);
+	// p1Cell.addColumnDefinition(1, false);
 
-	this.player1Label = this.createTextBlock("player1Label", HUD_STYLES.player1Label, "Player 1");
-	this.score1Text =  this.createTextBlock("score1Text", HUD_STYLES.score1Text, "0");
+	// this.player1Label = this.createTextBlock("player1Label", HUD_STYLES.player1Label, "Player 1");
+	// this.score1Text =  this.createTextBlock("score1Text", HUD_STYLES.score1Text, "0");
 	
-	p1Cell.addControl(this.player1Label, 0, 0);
-	p1Cell.addControl(this.score1Text, 1, 0);
-	this.hudGrid.addControl(p1Cell, 0, 2);
+	// p1Cell.addControl(this.player1Label, 0, 0);
+	// p1Cell.addControl(this.score1Text, 1, 0);
+	// this.hudGrid.addControl(p1Cell, 0, 2);
 
-	const p2Cell = new Grid();
-	p2Cell.addRowDefinition(1, false);
-	p2Cell.addRowDefinition(1, false);
-	p2Cell.addColumnDefinition(1, false);
+	// const p2Cell = new Grid();
+	// p2Cell.addRowDefinition(1, false);
+	// p2Cell.addRowDefinition(1, false);
+	// p2Cell.addColumnDefinition(1, false);
 
-	this.player2Label =  this.createTextBlock("player2Label", HUD_STYLES.player2Label, "Player 2");
-	this.score2Text =  this.createTextBlock("score2Text", HUD_STYLES.score2Text, "0");
+	// this.player2Label =  this.createTextBlock("player2Label", HUD_STYLES.player2Label, "Player 2");
+	// this.score2Text =  this.createTextBlock("score2Text", HUD_STYLES.score2Text, "0");
 	
-	p2Cell.addControl(this.player2Label, 0, 0);
-	p2Cell.addControl(this.score2Text, 1, 0);
-	this.hudGrid.addControl(p2Cell, 0, 3);
+	// p2Cell.addControl(this.player2Label, 0, 0);
+	// p2Cell.addControl(this.score2Text, 1, 0);
+	// this.hudGrid.addControl(p2Cell, 0, 3);
 
-	const p2Controls =  this.createTextBlock("PlayerControls_p2", HUD_STYLES.playerControlsP2, this.getControlsText(config.viewMode, 2));
-	this.hudGrid.addControl(p2Controls, 0, 4);
+	// const p2Controls =  this.createTextBlock("PlayerControls_p2", HUD_STYLES.playerControlsP2, this.getControlsText(config.viewMode, 2));
+	// this.hudGrid.addControl(p2Controls, 0, 4);
 
-	const rallyCell = new Grid();
-	rallyCell.addRowDefinition(1, false);
-	rallyCell.addRowDefinition(1, false);
-	rallyCell.addColumnDefinition(1, false);
+	// const rallyCell = new Grid();
+	// rallyCell.addRowDefinition(1, false);
+	// rallyCell.addRowDefinition(1, false);
+	// rallyCell.addColumnDefinition(1, false);
 
-	this.rallyText =  this.createTextBlock("rallyText", HUD_STYLES.rallyText, "Rally");
-	this.rally =  this.createTextBlock("rallyValue", HUD_STYLES.rallyValue, "0");
+	// this.rallyText =  this.createTextBlock("rallyText", HUD_STYLES.rallyText, "Rally");
+	// this.rally =  this.createTextBlock("rallyValue", HUD_STYLES.rallyValue, "0");
 	
-	rallyCell.addControl(this.rallyText, 0, 0);
-	rallyCell.addControl(this.rally, 1, 0);
-	this.hudGrid.addControl(rallyCell, 0, 5);
+	// rallyCell.addControl(this.rallyText, 0, 0);
+	// rallyCell.addControl(this.rally, 1, 0);
+	// this.hudGrid.addControl(rallyCell, 0, 5);
 
-	this.rally.transformCenterX = 0.5;
-	this.rally.transformCenterY = 0.5;
-	}
+	// this.rally.transformCenterX = 0.5;
+	// this.rally.transformCenterY = 0.5;
+	// }
 
 	private createLobbyOverlay(): void {
 		if (!this.adt) return;
@@ -193,59 +177,6 @@ export class GUIManager {
 		mainGrid.addControl(this.lobbyListPanel, 3, 0);
 	}
 
-	// private createPowerUpSlots(): void {
-	// 	if (!this.adt) return;
-
-	// 	this.powerUpSlotP1 = this.createRect("powerUpSlotP1", POWER_UP_STYLES.powerUpSlot);
-	// 	this.powerUpSlotP1.horizontalAlignment = this.H_LEFT;
-	// 	this.adt.addControl(this.powerUpSlotP1);
-
-	// 	for (let i = 0; i < 3; i++) {
-	// 		const cell = this.createPowerUpCell(i, 0); // Player 1
-	// 		this.powerUpCellsP1.push(cell);
-	// 		this.powerUpSlotP1!.addControl(cell.root);
-	// 	}
-
-	// 	this.powerUpSlotP2 = this.createRect("powerUpSlotP2", POWER_UP_STYLES.powerUpSlot);
-	// 	this.powerUpSlotP2.horizontalAlignment = this.H_RIGHT;
-	// 	this.adt.addControl(this.powerUpSlotP2);
-
-	// 	for (let i = 0; i < 3; i++) {
-	// 		const cell = this.createPowerUpCell(i, 1); // Player 2
-	// 		this.powerUpCellsP2.push(cell);
-	// 		this.powerUpSlotP2!.addControl(cell.root);
-	// 	}
-	// }
-
-// 	private createPowerUpCell(index: number, player: number): {root: Rectangle; icon?: Image; letter?: TextBlock} {
-// 	const cell = this.createRect(`powerUpCell_${player}_${index}`, POWER_UP_STYLES.powerUpCell);
-// 	cell.top = `${index * 90}px`;
-
-// 	const icon = this.createImage(`powerUpIcon_${player}_${index}`, POWER_UP_STYLES.powerUpIcon, "");
-
-// 	const letterKeys = player === 0 ? ['C', 'V', 'B'] : ['I', 'O', 'P'];
-// 	const letter = this.createTextBlock( `powerUpLetter_${player}_${index}`, POWER_UP_STYLES.powerUpLetter, letterKeys[index]);
-
-// 	// Position the letter correctly
-// 	if (player === 0) {
-// 			icon.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
-// 			letter.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_RIGHT;
-// 			letter.left = "80px";
-// 		} else {
-// 			letter.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
-// 			letter.left = "5px";
-// 			icon.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_RIGHT;
-// 		}
-
-// 	cell.addControl(icon);
-// 	cell.addControl(letter);
-
-// 	return {
-// 		root: cell,
-// 		icon: icon,
-// 		letter: letter,
-// 	};
-// }
 
 	private createPauseOverlay(): void {
 		if (!this.adt) return;
@@ -284,46 +215,46 @@ export class GUIManager {
 		this.pauseGrid.addControl(this.muteIcon, 3, 0);
 	}
 
-	private createBracketOverlay(): void {
-		if (!this.adt) return;
+	// private createBracketOverlay(): void {
+	// 	if (!this.adt) return;
 
-		const t = getCurrentTranslation();
+	// 	const t = getCurrentTranslation();
 
-		this.bracketOverlay = this.createRect("bracketOverlay", BRACKET_STYLES.bracketOverlay);
-		this.bracketOverlay.paddingRight = `${this.bracketOverlay.thickness + 8}px`;
-		this.adt.addControl(this.bracketOverlay);
+	// 	this.bracketOverlay = this.createRect("bracketOverlay", BRACKET_STYLES.bracketOverlay);
+	// 	this.bracketOverlay.paddingRight = `${this.bracketOverlay.thickness + 8}px`;
+	// 	this.adt.addControl(this.bracketOverlay);
 
-		const container = this.createGrid("bracketContainer", BRACKET_STYLES.bracketContainer);
-		container.addRowDefinition(BRACKET_STYLES.containerRows.header, false);
-		container.addRowDefinition(BRACKET_STYLES.containerRows.content, false);
-		container.addColumnDefinition(1, false);
-		this.bracketOverlay.addControl(container);
+	// 	const container = this.createGrid("bracketContainer", BRACKET_STYLES.bracketContainer);
+	// 	container.addRowDefinition(BRACKET_STYLES.containerRows.header, false);
+	// 	container.addRowDefinition(BRACKET_STYLES.containerRows.content, false);
+	// 	container.addColumnDefinition(1, false);
+	// 	this.bracketOverlay.addControl(container);
 
-		const headerGrid = this.createGrid("headerGrid", BRACKET_STYLES.headerGrid);
-		headerGrid.addColumnDefinition(BRACKET_STYLES.gridColumns.icon, true);
-		headerGrid.addColumnDefinition(BRACKET_STYLES.gridColumns.title, false);
+	// 	const headerGrid = this.createGrid("headerGrid", BRACKET_STYLES.headerGrid);
+	// 	headerGrid.addColumnDefinition(BRACKET_STYLES.gridColumns.icon, true);
+	// 	headerGrid.addColumnDefinition(BRACKET_STYLES.gridColumns.title, false);
 
-		const bracketIcon = this.createImage("bracketIcon", BRACKET_STYLES.bracketIcon, "assets/icons/tournament.png");
-		headerGrid.addControl(bracketIcon, 0, 0);
+	// 	const bracketIcon = this.createImage("bracketIcon", BRACKET_STYLES.bracketIcon, "assets/icons/tournament.png");
+	// 	headerGrid.addControl(bracketIcon, 0, 0);
 
-		const bracketTitle = this.createTextBlock("bracketTitle", BRACKET_STYLES.bracketTitle, t.tournamentTitle);
-		headerGrid.addControl(bracketTitle, 0, 1);
+	// 	const bracketTitle = this.createTextBlock("bracketTitle", BRACKET_STYLES.bracketTitle, t.tournamentTitle);
+	// 	headerGrid.addControl(bracketTitle, 0, 1);
 
-		container.addControl(headerGrid, 0, 0);
+	// 	container.addControl(headerGrid, 0, 0);
 
-		this.bracketScroll = new ScrollViewer("bracketScroll");
-		this.applyStyles(this.bracketScroll, BRACKET_STYLES.bracketScroll);
-		this.bracketScroll.verticalBar.isVisible = false;
-		this.bracketScroll.horizontalBar.isVisible = true;
-		container.addControl(this.bracketScroll, 1, 0);
+	// 	this.bracketScroll = new ScrollViewer("bracketScroll");
+	// 	this.applyStyles(this.bracketScroll, BRACKET_STYLES.bracketScroll);
+	// 	this.bracketScroll.verticalBar.isVisible = false;
+	// 	this.bracketScroll.horizontalBar.isVisible = true;
+	// 	container.addControl(this.bracketScroll, 1, 0);
 
-		const contentWrap = this.createStackPanel("bracketContentWrap", BRACKET_STYLES.contentWrap);
-		this.bracketScroll.addControl(contentWrap);
+	// 	const contentWrap = this.createStackPanel("bracketContentWrap", BRACKET_STYLES.contentWrap);
+	// 	this.bracketScroll.addControl(contentWrap);
 
-		this.bracketGrid = this.createGrid("bracketGrid", BRACKET_STYLES.bracketGrid);
-		this.bracketGrid.addRowDefinition(1, false);
-		contentWrap.addControl(this.bracketGrid);
-	}
+	// 	this.bracketGrid = this.createGrid("bracketGrid", BRACKET_STYLES.bracketGrid);
+	// 	this.bracketGrid.addRowDefinition(1, false);
+	// 	contentWrap.addControl(this.bracketGrid);
+	// }
 
 	private createViewModeDivider(config: GameConfig): void {
 		if (config.viewMode === ViewMode.MODE_3D && 
@@ -447,58 +378,11 @@ export class GUIManager {
 		}
 	}
 
-	updateFPS(fps: number): void {
-		if (!this.isReady) return;
-		this.fpsText.text = `FPS: ${Math.round(fps)}`;
-	}
-
-	updateRally(rally: number): boolean {
-		if (!this.isReady) return false;
-		if (this.rally && ((this.previousRally < rally) || (rally === 1 && this.previousRally > rally))) {
-			this.rally.text = `${Math.round(rally)}`;
-
-			const maxRally = 10;
-			const intensity = Math.min(rally / maxRally, 1);
-			const r = 255;
-			const g = Math.round(255 * (1 - intensity));
-			const b = Math.round(255 * (1 - intensity));
-			this.rally.color = `rgb(${r}, ${g}, ${b})`;
-
-			if (rally > 0 && rally % 5 === 0)
-				this.animationManager?.rotatePulse(this.rally, 1, Motion.F.slow);
-			else
-				this.animationManager?.pop(this.rally, Motion.F.base, 1.4);
-			this.previousRally = rally;
-			return true;
-		}
-		this.previousRally = rally;
-		return false;
-	}
-
-	updateScores(leftScore: number, rightScore: number): void {
-		if (!this.isReady) return;
-		const oldLeft = parseInt(this.score1Text.text);
-		const oldRight = parseInt(this.score2Text.text);
-
-		this.score1Text.text = leftScore.toString();
-		this.score2Text.text = rightScore.toString();
-
-		if (leftScore > oldLeft)
-			this.animationManager?.pop(this.score1Text, Motion.F.fast, 0.9);
-		else if (rightScore > oldRight)
-			this.animationManager?.pop(this.score2Text, Motion.F.fast, 0.9);
-	}
-
-	updatePlayerNames(player1Name: string, player2Name: string): void {
-		if (!this.isReady) return;
-		this.player1Label.text = player1Name;
-		this.player2Label.text = player2Name;
-		this.hudGrid.isVisible = true;
-	}
+	
 
 	async showWinner(winner: string): Promise<void> {
 		if (!this.isReady) return;
-		this.hudGrid.isVisible = false;
+		this.hud.show(false);
 		this.endGameWinnerText.text = `🏆 ${winner} WINS! 🏆`;
 		this.endGameWinnerText.color = "rgba(255, 255, 255, 1)";
 		this.endGameOverlay.isVisible = true;
@@ -508,7 +392,8 @@ export class GUIManager {
 		spawnFireworksInFrontOfCameras(scene, FINAL_FIREWORKS, cams);
 		await new Promise(resolve => setTimeout(resolve, 5000));
 
-		this.hudGrid.isVisible = true;
+
+		this.hud.show(true);
 		this.endGameOverlay.isVisible = false;
 	}
 
@@ -516,12 +401,12 @@ export class GUIManager {
 		if (!this.isReady) return;
 		if (show) {
 			this.partialEndGameOverlay.isVisible = true;
-			this.hudGrid.isVisible = false;
+			this.hud.show(false);
 			await this.animationManager?.fadeIn(this.partialEndGameOverlay, Motion.F.slow);
 		} else {
 			await this.animationManager?.fadeOut(this.partialEndGameOverlay, Motion.F.fast);
 			this.partialEndGameOverlay.isVisible = false;
-			this.hudGrid.isVisible = true;
+			this.hud.show(true);
 		}
 	}
 
@@ -663,15 +548,7 @@ export class GUIManager {
 		if (player1) this.powerUp.showIndividually(1, true);
 		if (player2) this.powerUp.showIndividually(2, true);
 	}
-	private getControlsText(viewMode: ViewMode, player: number): string {
-		const t = getCurrentTranslation();
-		const move = t.controls;
-		
-		if (viewMode === ViewMode.MODE_2D)
-			return player === 1 ? move + "\nP1: W / S" : move + "\nP2: ↑ / ↓";
-		else
-			return player === 1 ? move + "\nP1: A / D" : move + "\nP2: ← / →";
-	}
+	
 
 	// Callbacks
 	setToggleMuteCallback(callback: () => boolean): void {
@@ -689,18 +566,8 @@ export class GUIManager {
 		if (!this.isReady()) return;
 		
 		try {
-			this.fpsText.dispose();
-			this.score1Text.dispose();
-			this.score2Text.dispose();
-			// this.countdownText.dispose();
-			// this.countdownContainer.dispose();
-			this.player1Label.dispose();
-			this.player2Label.dispose();
-			this.rallyText.dispose();
-			this.rally.dispose();
 			this.endGameWinnerText.dispose();
 			this.endGameOverlay.dispose();
-			this.hudGrid.dispose();
 			this.partialEndGameOverlay.dispose();
 			this.partialWinnerLabel.dispose();
 			this.partialWinnerName.dispose();
@@ -712,25 +579,6 @@ export class GUIManager {
 			this.pauseGrid.dispose();
 			this.pauseOverlay.dispose();
 
-			this.bracketOverlay?.dispose();
-			this.bracketScroll?.dispose();
-			this.bracketGrid?.dispose();
-
-			// this.powerUpSlotP1?.dispose();
-			// this.powerUpSlotP2?.dispose();
-			// this.powerUpCellsP1.forEach(cell => {
-			// 	cell.root.dispose();
-			// 	cell.icon?.dispose();
-			// 	cell.letter?.dispose();
-			// });
-			// this.powerUpCellsP2.forEach(cell => {
-			// 	cell.root.dispose();
-			// 	cell.icon?.dispose();
-			// 	cell.letter?.dispose();
-			// });
-			// this.powerUpCellsP1 = [];
-			// this.powerUpCellsP2 = [];
-
 			this.adt?.dispose();
 			this.adt = null;
 
@@ -741,181 +589,16 @@ export class GUIManager {
 		}
 	}
 
-	updateMatch(winner: string, round_index: number, match_index: number): void {
-		if (!this.adt) return;
-		if (!this.bracketGrid) return;
-
-		const leftSlot = match_index * 2;
-		const rightSlot = match_index * 2 + 1;
-
-		const leftId = `bracketCell_${round_index}_${leftSlot}`;
-		const rightId = `bracketCell_${round_index}_${rightSlot}`;
-		const nextId = `bracketCell_${round_index + 1}_${match_index}`;
-
-		const leftTb = this.adt.getControlByName(leftId) as TextBlock;
-		const rightTb = this.adt.getControlByName(rightId) as TextBlock;
-		const leftRect = this.adt.getControlByName(`${leftId}_rect`) as Rectangle;
-		const rightRect = this.adt.getControlByName(`${rightId}_rect`) as Rectangle;
-		const nextTb   = this.adt.getControlByName(nextId) as TextBlock;
-
-		if (!leftTb || !rightTb || !leftRect || !rightRect) return;
-
-		const isLeftWinner  = leftTb.text  === winner;
-		const isRightWinner = rightTb.text === winner;
-
-
-		if (isLeftWinner) {
-			rightTb.text = "❌ " + rightTb.text;
-			this.applyStyles(leftRect, BRACKET_STYLES.winnerCell);
-			this.applyStyles(leftTb, BRACKET_STYLES.winnerText);
-			this.applyStyles(rightRect, BRACKET_STYLES.loserCell);
-			this.applyStyles(rightTb, BRACKET_STYLES.loserText);
-			
-		} else if (isRightWinner) {
-			leftTb.text = "❌ " + leftTb.text;
-			this.applyStyles(rightRect, BRACKET_STYLES.winnerCell);
-			this.applyStyles(rightTb, BRACKET_STYLES.winnerText);
-			this.applyStyles(leftRect, BRACKET_STYLES.loserCell);
-			this.applyStyles(leftTb, BRACKET_STYLES.loserText);
-		}
-		if (nextTb)
-			nextTb.text = winner;
-	}
-
-	insertMatch(
-		roundIndex: number,
-		matchIndex: number,
-		left: string | null,
-		right: string | null,
-		matchTotal?: number
-	): void {
-		if (!this.bracketGrid) return;
-		if (!this.isBrackerGridCreated && matchTotal !== undefined)
-			this.initializeGriBracket(matchTotal);
-
-		const colPanel = this.bracketGrid.getChildByName(`bracketCol_${roundIndex - 1}`) as StackPanel;
-		if (!colPanel) return;
-
-		const leftSlot = matchIndex * 2;
-		const rightSlot = matchIndex * 2 + 1;
-
-		const leftId  = `bracketCell_${roundIndex}_${leftSlot}`;
-		const rightId = `bracketCell_${roundIndex}_${rightSlot}`;
-
-		const leftTb  = this.adt?.getControlByName(leftId)  as TextBlock;
-		const rightTb = this.adt?.getControlByName(rightId) as TextBlock;
-
-		if (left !== null && leftTb !== null)
-			leftTb.text = left;
-		if (right !== null && rightTb !== null)
-			rightTb.text = right;
-	}
-
-	private initializeGriBracket(matchTotal: number): void {
-		this.playerTotal = matchTotal * 2;
-		const rounds = Math.ceil(Math.log2(this.playerTotal));
-		const totalColumns = rounds + 1;
-
-		for (let col = 0; col < totalColumns; col++) {
-			this.bracketGrid?.addColumnDefinition(220, true);
-
-			const colPanel = this.createStackPanel(`bracketCol_${col}`, BRACKET_STYLES.bracketColPanel);
-			this.bracketGrid?.addControl(colPanel, 1, col);
-
-			const slots = this.playerTotal / Math.pow(2, col);
-			for (let i = 0; i < slots; i++) {
-				const cellName = `bracketCell_${col + 1}_${i}`;
-				const cellHeight = 50 * Math.pow(2, col);
-				const cellRect = this.createRect(`${cellName}_rect`, BRACKET_STYLES.bracketCellRect);
-				cellRect.height = `${cellHeight}px`;
-				colPanel.addControl(cellRect);
-				const tb = this.createTextBlock( cellName, BRACKET_STYLES.bracketCellText, "");
-				tb.fontSize = col === rounds ? 48 : 16;
-				tb.text = col === rounds ? "🏆" : "tbd";
-				cellRect.addControl(tb);
-			}
-			this.wireRound(col);
-		}
-		this.isBrackerGridCreated = true;
-	}
-
-	private createAnchorPoint(parentControl: Control, position: 'left' | 'right'): Control {
-		const anchor = new Control(`anchor_${parentControl.name}_${position}`);
-		anchor.widthInPixels = 1;
-		anchor.heightInPixels = 1;
-		anchor.isVisible = false;
-		anchor.isPointerBlocker = false;
-		
-		// Position the anchor at the edge of the parent control
-		if (position === 'right') {
-			anchor.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_RIGHT;
-		} else {
-			anchor.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
-		}
-		anchor.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
-		
-		// Add the anchor to the same parent as the control
-		parentControl.parent?.addControl(anchor);
-		
-		return anchor;
-	}
-
-	private addConnector(src: Control, dst: Control, color = "#BBB", width = 2): MultiLine {
-		const line = new MultiLine(`conn_${src.name}_${dst.name}`);
-		line.lineWidth = width;
-		line.color = color;
-		line.alpha = 0.9;
-		line.isPointerBlocker = false;
-		
-		const srcRightAnchor = this.createAnchorPoint(src, 'right');
-		const dstLeftAnchor = this.createAnchorPoint(dst, 'left');
-		
-		line.add(srcRightAnchor);
-		line.add(dstLeftAnchor);
-		
-		this.bracketOverlay?.addControl(line);
-		line.zIndex = 5;
-		return line;
-	}
-
-	
-	private wireRound(roundIndex: number): void {
-		const slotsInThisRound = this.playerTotal / Math.pow(2, roundIndex - 1);
-		const nextRoundMatches = Math.ceil(slotsInThisRound / 2);
-
-		for (let match = 0; match < nextRoundMatches; match++) {
-			const leftIdx  = match * 2;
-			const rightIdx = match * 2 + 1;
-
-			const left  = this.adt?.getControlByName(`bracketCell_${roundIndex}_${leftIdx}`)  as Control | null;
-			const right = this.adt?.getControlByName(`bracketCell_${roundIndex}_${rightIdx}`) as Control | null;
-			const next  = this.adt?.getControlByName(`bracketCell_${roundIndex + 1}_${match}`) as Control | null;
-
-			if (!left || !right || !next) continue;
-
-			this.addConnector(left,  next);
-			this.addConnector(right, next);
-		}
-	}
-
 	private showBracketOverlay(show: boolean): void {
-		if (!this.bracketOverlay || !this.animationManager) return;
+		if (!this.animationManager) return;
 		if (show && this.isTournament) {
-			this.bracketOverlay.isVisible = true;
-
-			this.bracketOverlay.horizontalAlignment = this.H_RIGHT;
-			this.bracketOverlay.paddingRight = "5px"
-			this.bracketOverlay.leftInPixels = 400;
 			this.pauseGrid.width = "50%";
 			this.pauseGrid.horizontalAlignment = this.H_LEFT;
-
-			this.animationManager.slideInX(this.bracketOverlay, 400, Motion.F.base);
+			this.matchTree.show(show);
 		} else {
-			this.animationManager.slideOutX(this.bracketOverlay, 400, Motion.F.xFast).then(() => {
-			this.bracketOverlay!.isVisible = false;
+			this.matchTree.show(show);
 			this.pauseGrid.width = "100%";
 			this.pauseGrid.horizontalAlignment = this.H_CENTER;
-		});
 		}
 	}
 
