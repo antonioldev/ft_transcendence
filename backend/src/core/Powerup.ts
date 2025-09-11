@@ -1,7 +1,7 @@
 import { Ball } from './Ball.js';
 import { Paddle} from './Paddle.js';
 import { LEFT_PADDLE, RIGHT_PADDLE, GAME_CONFIG } from '../shared/gameConfig.js';
-import { PowerupType, MessageType} from '../shared/constants.js';
+import { PowerupType, MessageType, SizePaddle} from '../shared/constants.js';
 import { Client } from '../models/Client.js'
 import { ServerMessage } from '../shared/types.js';
 
@@ -95,6 +95,7 @@ export class PowerupManager {
 				break ;
 			case PowerupType.SHRINK_OPPONENT:
 				this.paddles[opponent_side].rect.width = GAME_CONFIG.paddleWidth;
+				this.paddles[opponent_side].size = SizePaddle.NORMAL;
 				break ;	
 			case PowerupType.INVERT_OPPONENT:
 				this.paddles[opponent_side].is_inverted = false;
@@ -104,6 +105,7 @@ export class PowerupManager {
 				break ;
 			case PowerupType.GROW_PADDLE:
 				this.paddles[slot.side].rect.width = GAME_CONFIG.paddleWidth;
+				this.paddles[slot.side].size = SizePaddle.NORMAL;
 				break ;
 			case PowerupType.FREEZE:
 				this.ball.isPaused = false;
@@ -173,6 +175,7 @@ export class PowerupManager {
 		
 		if (caller.rect.width === GAME_CONFIG.paddleWidth) {
 			caller.rect.width = GAME_CONFIG.increasedPaddleWidth;
+			caller.size = SizePaddle.LARGE;
 		}
 		else if (caller.rect.width === GAME_CONFIG.decreasedPaddleWidth) {
 			const opponent_slot = this.find_active_powerup(PowerupType.SHRINK_OPPONENT, opponent_side);
@@ -189,6 +192,7 @@ export class PowerupManager {
 		
 		if (opponent.rect.width === GAME_CONFIG.paddleWidth) {
 			opponent.rect.width = GAME_CONFIG.decreasedPaddleWidth;
+			opponent.size = SizePaddle.SMALL;
 		}
 		else if (opponent.rect.width === GAME_CONFIG.increasedPaddleWidth) {
 			const opponent_slot = this.find_active_powerup(PowerupType.GROW_PADDLE, opponent_side);
