@@ -10,6 +10,7 @@ import { AudioManager } from "../AudioManager.js";
 import { HUD_STYLES, POWER_UP_STYLES, PAUSE_MENU_STYLES, COUNTDOWN_STYLES, LOBBY_STYLES,
 	VIEW_MODE_STYLES, PARTIAL_END_GAME_STYLES, END_GAME_STYLES, BRACKET_STYLES } from "./GuiStyle.js";
 import { Countdown } from "./Countdown.js";
+import { PowerUp } from "./PowerUp.js";
 
 /**
  * Manages all GUI elements for the game
@@ -30,8 +31,6 @@ export class GUIManager {
 	private rallyText!: TextBlock;
 	private rally!: TextBlock;
 	private previousRally: number = 1;
-	// private countdownText!: TextBlock;
-	// private countdownContainer!: Rectangle;
 	private endGameOverlay!: Grid;
 	private endGameWinnerText!: TextBlock;
 	private partialEndGameOverlay!: Rectangle;
@@ -60,19 +59,21 @@ export class GUIManager {
 	private bracketScroll?: ScrollViewer;
 	private bracketGrid?: Grid;
 
-	private powerUpSlotP1?: Rectangle;
-	private powerUpSlotP2?: Rectangle;
-	private powerUpCellsP1: Array<{root: Rectangle; icon?: Image; letter?: TextBlock}> = [];
-	private powerUpCellsP2: Array<{root: Rectangle; icon?: Image; letter?: TextBlock}> = [];
+	// private powerUpSlotP1?: Rectangle;
+	// private powerUpSlotP2?: Rectangle;
+	// private powerUpCellsP1: Array<{root: Rectangle; icon?: Image; letter?: TextBlock}> = [];
+	// private powerUpCellsP2: Array<{root: Rectangle; icon?: Image; letter?: TextBlock}> = [];
+	// private POWERUP_ICON: Record<number, string> = {
+	// 	[Powerup.SLOW_OPPONENT]:	   "assets/icons/powerup/slow.png",
+	// 	[Powerup.SHRINK_OPPONENT]:	 "assets/icons/powerup/smaller.png",
+	// 	[Powerup.INCREASE_PADDLE_SPEED]:"assets/icons/powerup/fast.png",
+	// 	[Powerup.GROW_PADDLE]:		 "assets/icons/powerup/larger.png",
+	// };
 
-	private countdown!: Countdown;
+	countdown!: Countdown;
+	powerUp!: PowerUp;
 
-	private POWERUP_ICON: Record<number, string> = {
-		[Powerup.SLOW_OPPONENT]:	   "assets/icons/powerup/slow.png",
-		[Powerup.SHRINK_OPPONENT]:	 "assets/icons/powerup/smaller.png",
-		[Powerup.INCREASE_PADDLE_SPEED]:"assets/icons/powerup/fast.png",
-		[Powerup.GROW_PADDLE]:		 "assets/icons/powerup/larger.png",
-	};
+	
 
 	constructor(private scene: Scene, config: GameConfig, private animationManager: AnimationManager, audioManager: AudioManager) {
 		try {
@@ -81,13 +82,15 @@ export class GUIManager {
 			this.isTournament = config.isTournament;
 
 			this.countdown = new Countdown(this.adt, this.animationManager);
+			this.powerUp = new PowerUp(this.adt, this.animationManager);
+
+
 			this.createHUD(config);
 			this.createLobbyOverlay();
-			this.createPowerUpSlots();
+			// this.createPowerUpSlots();
 			this.createPauseOverlay();
 			this.createBracketOverlay();
 			this.createViewModeDivider(config);
-			// this.createCountdownOverlay();
 			this.createPartialEndGameOverlay();
 			this.createEndGameOverlay();
 			this.setToggleMuteCallback(() => audioManager.toggleMute());
@@ -190,59 +193,59 @@ export class GUIManager {
 		mainGrid.addControl(this.lobbyListPanel, 3, 0);
 	}
 
-	private createPowerUpSlots(): void {
-		if (!this.adt) return;
+	// private createPowerUpSlots(): void {
+	// 	if (!this.adt) return;
 
-		this.powerUpSlotP1 = this.createRect("powerUpSlotP1", POWER_UP_STYLES.powerUpSlot);
-		this.powerUpSlotP1.horizontalAlignment = this.H_LEFT;
-		this.adt.addControl(this.powerUpSlotP1);
+	// 	this.powerUpSlotP1 = this.createRect("powerUpSlotP1", POWER_UP_STYLES.powerUpSlot);
+	// 	this.powerUpSlotP1.horizontalAlignment = this.H_LEFT;
+	// 	this.adt.addControl(this.powerUpSlotP1);
 
-		for (let i = 0; i < 3; i++) {
-			const cell = this.createPowerUpCell(i, 0); // Player 1
-			this.powerUpCellsP1.push(cell);
-			this.powerUpSlotP1!.addControl(cell.root);
-		}
+	// 	for (let i = 0; i < 3; i++) {
+	// 		const cell = this.createPowerUpCell(i, 0); // Player 1
+	// 		this.powerUpCellsP1.push(cell);
+	// 		this.powerUpSlotP1!.addControl(cell.root);
+	// 	}
 
-		this.powerUpSlotP2 = this.createRect("powerUpSlotP2", POWER_UP_STYLES.powerUpSlot);
-		this.powerUpSlotP2.horizontalAlignment = this.H_RIGHT;
-		this.adt.addControl(this.powerUpSlotP2);
+	// 	this.powerUpSlotP2 = this.createRect("powerUpSlotP2", POWER_UP_STYLES.powerUpSlot);
+	// 	this.powerUpSlotP2.horizontalAlignment = this.H_RIGHT;
+	// 	this.adt.addControl(this.powerUpSlotP2);
 
-		for (let i = 0; i < 3; i++) {
-			const cell = this.createPowerUpCell(i, 1); // Player 2
-			this.powerUpCellsP2.push(cell);
-			this.powerUpSlotP2!.addControl(cell.root);
-		}
-	}
+	// 	for (let i = 0; i < 3; i++) {
+	// 		const cell = this.createPowerUpCell(i, 1); // Player 2
+	// 		this.powerUpCellsP2.push(cell);
+	// 		this.powerUpSlotP2!.addControl(cell.root);
+	// 	}
+	// }
 
-	private createPowerUpCell(index: number, player: number): {root: Rectangle; icon?: Image; letter?: TextBlock} {
-	const cell = this.createRect(`powerUpCell_${player}_${index}`, POWER_UP_STYLES.powerUpCell);
-	cell.top = `${index * 90}px`;
+// 	private createPowerUpCell(index: number, player: number): {root: Rectangle; icon?: Image; letter?: TextBlock} {
+// 	const cell = this.createRect(`powerUpCell_${player}_${index}`, POWER_UP_STYLES.powerUpCell);
+// 	cell.top = `${index * 90}px`;
 
-	const icon = this.createImage(`powerUpIcon_${player}_${index}`, POWER_UP_STYLES.powerUpIcon, "");
+// 	const icon = this.createImage(`powerUpIcon_${player}_${index}`, POWER_UP_STYLES.powerUpIcon, "");
 
-	const letterKeys = player === 0 ? ['C', 'V', 'B'] : ['I', 'O', 'P'];
-	const letter = this.createTextBlock( `powerUpLetter_${player}_${index}`, POWER_UP_STYLES.powerUpLetter, letterKeys[index]);
+// 	const letterKeys = player === 0 ? ['C', 'V', 'B'] : ['I', 'O', 'P'];
+// 	const letter = this.createTextBlock( `powerUpLetter_${player}_${index}`, POWER_UP_STYLES.powerUpLetter, letterKeys[index]);
 
-	// Position the letter correctly
-	if (player === 0) {
-			icon.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
-			letter.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_RIGHT;
-			letter.left = "80px";
-		} else {
-			letter.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
-			letter.left = "5px";
-			icon.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_RIGHT;
-		}
+// 	// Position the letter correctly
+// 	if (player === 0) {
+// 			icon.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
+// 			letter.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_RIGHT;
+// 			letter.left = "80px";
+// 		} else {
+// 			letter.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
+// 			letter.left = "5px";
+// 			icon.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_RIGHT;
+// 		}
 
-	cell.addControl(icon);
-	cell.addControl(letter);
+// 	cell.addControl(icon);
+// 	cell.addControl(letter);
 
-	return {
-		root: cell,
-		icon: icon,
-		letter: letter,
-	};
-}
+// 	return {
+// 		root: cell,
+// 		icon: icon,
+// 		letter: letter,
+// 	};
+// }
 
 	private createPauseOverlay(): void {
 		if (!this.adt) return;
@@ -443,17 +446,6 @@ export class GUIManager {
 			});
 		}
 	}
-	showCountdown(show: boolean, count?: number): void {
-		if (!this.isReady) return;
-		this.countdown.set(show, count);
-
-		// if (show && count !== undefined) {
-		// 	this.countdownText.text = count.toString();
-		// 	this.animationManager?.pulse(this.countdownText, Motion.F.xSlow);
-		// 	return;
-		// }
-		// this.countdownText.animations = [];
-	}
 
 	updateFPS(fps: number): void {
 		if (!this.isReady) return;
@@ -540,8 +532,7 @@ export class GUIManager {
 		this.partialEndGameOverlay.isVisible = true;
 		this.partialWinnerLabel.isVisible = true;
 		this.partialWinnerName.isVisible = true;
-		if (this.powerUpSlotP1) this.powerUpSlotP1.isVisible = false;
-		if (this.powerUpSlotP2) this.powerUpSlotP2.isVisible = false;
+		this.powerUp.show(false);
 		
 		this.partialEndGameOverlay.isPointerBlocker = true;
 
@@ -587,8 +578,7 @@ export class GUIManager {
 
 		this.partialEndGameOverlay.isPointerBlocker = false;
 		this.partialEndGameOverlay.isVisible = false;
-		if (this.powerUpSlotP1) this.powerUpSlotP1.isVisible = true;
-		if (this.powerUpSlotP2) this.powerUpSlotP2.isVisible = true;
+		this.powerUp.show(true);
 	}
 
 	private async animateMuteIcon(): Promise<void> {
@@ -670,8 +660,8 @@ export class GUIManager {
 
 		if (p1) p1.color = player1 ? "rgba(255, 255, 255, 0.7)" : "rgba(0, 0, 0, 0)";
 		if (p2) p2.color = player2 ? "rgba(255, 255, 255, 0.7)" : "rgba(0, 0, 0, 0)";
-		if (player1 && this.powerUpSlotP1) this.powerUpSlotP1.isVisible = true;
-		if (player2 && this.powerUpSlotP2) this.powerUpSlotP2.isVisible = true;
+		if (player1) this.powerUp.showIndividually(1, true);
+		if (player2) this.powerUp.showIndividually(2, true);
 	}
 	private getControlsText(viewMode: ViewMode, player: number): string {
 		const t = getCurrentTranslation();
@@ -726,20 +716,20 @@ export class GUIManager {
 			this.bracketScroll?.dispose();
 			this.bracketGrid?.dispose();
 
-			this.powerUpSlotP1?.dispose();
-			this.powerUpSlotP2?.dispose();
-			this.powerUpCellsP1.forEach(cell => {
-				cell.root.dispose();
-				cell.icon?.dispose();
-				cell.letter?.dispose();
-			});
-			this.powerUpCellsP2.forEach(cell => {
-				cell.root.dispose();
-				cell.icon?.dispose();
-				cell.letter?.dispose();
-			});
-			this.powerUpCellsP1 = [];
-			this.powerUpCellsP2 = [];
+			// this.powerUpSlotP1?.dispose();
+			// this.powerUpSlotP2?.dispose();
+			// this.powerUpCellsP1.forEach(cell => {
+			// 	cell.root.dispose();
+			// 	cell.icon?.dispose();
+			// 	cell.letter?.dispose();
+			// });
+			// this.powerUpCellsP2.forEach(cell => {
+			// 	cell.root.dispose();
+			// 	cell.icon?.dispose();
+			// 	cell.letter?.dispose();
+			// });
+			// this.powerUpCellsP1 = [];
+			// this.powerUpCellsP2 = [];
 
 			this.adt?.dispose();
 			this.adt = null;
@@ -926,66 +916,6 @@ export class GUIManager {
 			this.pauseGrid.width = "100%";
 			this.pauseGrid.horizontalAlignment = this.H_CENTER;
 		});
-		}
-	}
-
-	updatePowerUpSlot(player: number, slotIndex: number, powerUpType: Powerup | null, action: PowerUpAction): void {
-		if (!this.isReady) return;
-		
-		const cells = player === 0 ? this.powerUpCellsP1 : this.powerUpCellsP2;
-		
-		if (slotIndex >= 0 && slotIndex < cells.length) {
-			const cell = cells[slotIndex];
-			const direction = player === 0 ? -100 : 100;
-
-			switch (action) {
-				case PowerUpAction.CREATED:
-					this.scene.stopAnimation(cell.root);
-					cell.root.scaleX = 1;
-					cell.root.scaleY = 1;
-					cell.root.alpha = 0;
-					cell.root.color = "rgba(255, 255, 255, 0.5)";
-					cell.root.background = "rgba(0, 0, 0, 1)";
-					if (powerUpType !== null && this.POWERUP_ICON[powerUpType]) {
-						if (!cell.icon) {
-							cell.icon = new Image(`powerUpIcon_${player}_${slotIndex}`, this.POWERUP_ICON[powerUpType]);
-							cell.icon.stretch = Image.STRETCH_UNIFORM;
-							cell.icon.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
-							cell.icon.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
-							cell.root.addControl(cell.icon);
-						} else {
-							cell.icon.source = this.POWERUP_ICON[powerUpType];
-						}
-						cell.icon.alpha = 1;
-						cell.icon.isVisible = true;
-
-						const delay = slotIndex * 100;			  
-						setTimeout(() => {
-							this.animationManager.slideInX(cell.root, direction, Motion.F.slow)
-								.then(() => this.animationManager.pop(cell.root, Motion.F.fast, 1.1));
-						}, delay);}
-					break;
-					
-				case PowerUpAction.ACTIVATED:
-					if (cell.icon) {
-						cell.root.color = "rgba(255, 0, 0, 1)";
-						this.animationManager?.twinkle(cell.root, Motion.F.fast);
-					}
-					break;
-					
-				case PowerUpAction.DEACTIVATED:
-					this.scene.stopAnimation(cell.root);
-					cell.root.scaleX = 1;
-					cell.root.scaleY = 1;
-					cell.root.color = "rgba(255, 255, 255, 0.5)";
-					cell.root.background = "rgba(255, 255, 255, 0.25)";
-					
-					if (cell.icon)
-						this.animationManager.fadeOut(cell.icon, Motion.F.fast).then(() => {
-							cell.icon!.alpha = 0.3;
-						});
-					break;
-			}
 		}
 	}
 

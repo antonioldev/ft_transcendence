@@ -1,11 +1,11 @@
 import { Control, Image, StackPanel, Grid, TextBlock, Rectangle } from "@babylonjs/gui";
 
-const H_LEFT = Control.HORIZONTAL_ALIGNMENT_LEFT;
-const H_CENTER = Control.HORIZONTAL_ALIGNMENT_CENTER;
-const H_RIGHT = Control.HORIZONTAL_ALIGNMENT_RIGHT;
-const V_TOP = Control.VERTICAL_ALIGNMENT_TOP;
-const V_CENTER = Control.VERTICAL_ALIGNMENT_CENTER;
-const V_BOTTOM = Control.VERTICAL_ALIGNMENT_BOTTOM;
+export const H_LEFT = Control.HORIZONTAL_ALIGNMENT_LEFT;
+export const H_CENTER = Control.HORIZONTAL_ALIGNMENT_CENTER;
+export const H_RIGHT = Control.HORIZONTAL_ALIGNMENT_RIGHT;
+export const V_TOP = Control.VERTICAL_ALIGNMENT_TOP;
+export const V_CENTER = Control.VERTICAL_ALIGNMENT_CENTER;
+export const V_BOTTOM = Control.VERTICAL_ALIGNMENT_BOTTOM;
 const FONT_FAMILY = 'Poppins, Arial, sans-serif';
 
 // Color constants

@@ -1,44 +1,19 @@
-import { AdvancedDynamicTexture, Control, Rectangle, TextBlock, Grid, Image, ScrollViewer, StackPanel, MultiLine} from "@babylonjs/gui";
-import { Scene, KeyboardEventTypes} from "@babylonjs/core";
-import { Logger } from '../../utils/LogManager.js';
-import { GameConfig } from '../GameConfig.js';
-import { GameMode, ViewMode, Powerup, PowerUpAction } from '../../shared/constants.js';
-import { getCurrentTranslation } from '../../translations/translations.js';
-import { spawnFireworksInFrontOfCameras, FINAL_FIREWORKS, spawnGUISparkles } from '../scene/fireworks.js';
+import { AdvancedDynamicTexture, Rectangle, TextBlock} from "@babylonjs/gui";
 import { AnimationManager, Motion } from "../AnimationManager.js";
-import { AudioManager } from "../AudioManager.js";
-import {
-  COLORS,
-  LOADING_STYLE,
-  HUD_STYLES,
-  POWER_UP_STYLES,
-  PAUSE_MENU_STYLES,
-  LOBBY_STYLES,
-  COUNTDOWN_STYLES,
-  VIEW_MODE_STYLES,
-  PARTIAL_END_GAME_STYLES,
-  END_GAME_STYLES,
-  BRACKET_STYLES,
-  applyStyles,
-  createRect,
-  createTextBlock,
-  createGrid,
-  createImage,
-  createStackPanel
-} from "./GuiStyle.js";
+import { COUNTDOWN_STYLES, createRect, createTextBlock,} from "./GuiStyle.js";
 
 
 export class Countdown {
 	private countdownText!: TextBlock;
 	private countdownContainer!: Rectangle;
 
-	constructor(private advancedTexture: AdvancedDynamicTexture, private animationManager: AnimationManager) {
+	constructor(private adt: AdvancedDynamicTexture, private animationManager: AnimationManager) {
 		this.countdownContainer = createRect("countdownContainer", COUNTDOWN_STYLES.countdownContainer);
 
 		this.countdownText = createTextBlock("5", COUNTDOWN_STYLES.countdownText, "5");
 
 		this.countdownContainer.addControl(this.countdownText);
-		this.advancedTexture!.addControl(this.countdownContainer);
+		this.adt!.addControl(this.countdownContainer);
 
 	}
 

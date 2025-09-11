@@ -279,14 +279,14 @@ export class Game {
 			);
 		}
 		else if (countdown > 0 && GAME_CONFIG.startDelay - 1) {
-			this.guiManager?.showCountdown(true, countdown);
+			this.guiManager?.countdown.set(true, countdown);
 			this.audioManager?.playCountdown();
 		}
 		else {
 			this.audioManager?.stopCountdown();
 			this.audioManager?.startGameMusic();
 			this.renderManager?.stopCameraAnimation();
-			this.guiManager?.showCountdown(false);
+			this.guiManager?.countdown.set(false);
 			await this.guiManager?.animateBackground(false);
 			this.start();
 		}
@@ -609,7 +609,7 @@ export class Game {
 		this.playerPowerUps.set(side, ids.map(id => id as Powerup));
 
 		ids.forEach((powerup, index) => {
-			this.guiManager?.updatePowerUpSlot(side, index, powerup as Powerup, PowerUpAction.CREATED);
+			this.guiManager?.powerUp.update(side, index, powerup as Powerup, PowerUpAction.CREATED);
 		});
 	}
 
@@ -663,7 +663,7 @@ export class Game {
 					}
 					break;
 			}
-			this.guiManager?.updatePowerUpSlot(side, slot, null, PowerUpAction.ACTIVATED);
+			this.guiManager?.powerUp.update(side, slot, null, PowerUpAction.ACTIVATED);
 		} else {
 			this.active_powerups.set(side, null);
 			switch (message.powerup) {
@@ -686,7 +686,7 @@ export class Game {
 					}
 					break;
 			}
-			this.guiManager?.updatePowerUpSlot(side, slot, null, PowerUpAction.DEACTIVATED);
+			this.guiManager?.powerUp.update(side, slot, null, PowerUpAction.DEACTIVATED);
 		}
 	}
 
