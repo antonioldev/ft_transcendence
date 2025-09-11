@@ -16,7 +16,7 @@ import { getPlayerBoundaries } from '../shared/gameConfig.js';
 import { appStateManager } from '../core/AppStateManager.js';
 import { GameConfigFactory } from './GameConfig.js';
 import { AudioManager } from './AudioManager.js';
-import { Powerup, PowerUpAction, SizePaddle } from "../shared/constants.js";
+import { PowerupType, PowerUpAction, SizePaddle } from "../shared/constants.js";
 
 enum PlayerSide {
 	LEFT = 0,
@@ -26,8 +26,8 @@ enum PlayerSide {
 interface PlayerState {
 	paddleSize: SizePaddle;
 	score: number;
-	powerUps: (Powerup | null)[];
-	activePowerup: Powerup | null;
+	powerUps: (PowerupType | null)[];
+	activePowerup: PowerupType | null;
 }
 
 /**
@@ -59,8 +59,8 @@ export class Game {
 	private playerRightScore: number = 0;
 	private playerSize: Map<PlayerSide, SizePaddle> = new Map;
 	private playerScore: Map<PlayerSide, Number> = new Map;
-	private playerPowerUps: Map<PlayerSide, (Powerup | null)[]> = new Map();
-	private active_powerups: Map<PlayerSide, Powerup | null> = new Map();
+	private playerPowerUps: Map<PlayerSide, (PowerupType | null)[]> = new Map();
+	private active_powerups: Map<PlayerSide, PowerupType | null> = new Map();
 
 // ====================			STATIC METHODS			 ====================
 	static getCurrentInstance(): Game | null {
@@ -589,7 +589,7 @@ export class Game {
 			return;
 		}
 
-		this.playerPowerUps.set(side, ids.map(id => id as Powerup));
+		this.playerPowerUps.set(side, ids.map(id => id as PowerupType));
 
 		ids.forEach((powerup, index) => {
 			this.guiManager?.updatePowerUpSlot(side, index, powerup as Powerup, PowerUpAction.CREATED);
@@ -627,7 +627,7 @@ export class Game {
 		if (toActive) {
 			this.active_powerups.set(side, powerup);
 			switch (message.powerup) {
-				case Powerup.SHRINK_OPPONENT:
+				case PowerupType.SHRINK_OPPONENT:
 					if (side === 0) {
 						this.animationManager?.scaleWidth(this.gameObjects?.players.right, med, sml);
 						this.rightPaddleSize = SizePaddle.SMALL;
@@ -636,7 +636,7 @@ export class Game {
 						this.leftPaddleSize = SizePaddle.SMALL;
 					}
 					break;
-				case Powerup.GROW_PADDLE:
+				case PowerupType.GROW_PADDLE:
 					if (side === 0) {
 						this.animationManager?.scaleWidth(this.gameObjects?.players.left, med, lrg);
 						this.leftPaddleSize = SizePaddle.LARGE;
@@ -650,7 +650,7 @@ export class Game {
 		} else {
 			this.active_powerups.set(side, null);
 			switch (message.powerup) {
-				case Powerup.SHRINK_OPPONENT:
+				case PowerupType.SHRINK_OPPONENT:
 					if (side === 0) {
 						this.animationManager?.scaleWidth(this.gameObjects?.players.right, sml, med);
 						this.rightPaddleSize = SizePaddle.NORMAL;
@@ -659,7 +659,7 @@ export class Game {
 						this.leftPaddleSize = SizePaddle.NORMAL;
 					}
 					break;
-				case Powerup.GROW_PADDLE:
+				case PowerupType.GROW_PADDLE:
 					if (side === 0) {
 						this.animationManager?.scaleWidth(this.gameObjects?.players.left, lrg, med);
 						this.leftPaddleSize = SizePaddle.NORMAL;

@@ -2,7 +2,7 @@ import { Rect } from './utils.js';
 import { Ball } from './Ball.js'
 import { GAME_CONFIG, getBallStartPosition, getPlayerLeftPosition, 
          getPlayerRightPosition, LEFT_PADDLE, RIGHT_PADDLE, getPlayerBoundaries } from '../shared/gameConfig.js';
-import { Powerup, SizePaddle } from '../shared/constants.js';
+import { SizePaddle } from '../shared/constants.js';
 
 export class Paddle {
 	side: number;
@@ -10,8 +10,6 @@ export class Paddle {
 	rect: Rect;
 	oldRect: Rect;
 	speed: number = GAME_CONFIG.paddleSpeed;
-	powerups: (Powerup | null)[] = [];
-	active_powerups: (Powerup | null)[] = [null, null, null];
 
 	constructor(side: number) {
 		this.side = side;
@@ -24,7 +22,6 @@ export class Paddle {
 			GAME_CONFIG.paddleDepth
 		);
 		this.oldRect = this.rect.instance();
-		this.assign_random_powerups();
 	}
 
 	move(dt: number, dx: number): void {
@@ -37,13 +34,6 @@ export class Paddle {
 
 	cacheRect() {
 		this.oldRect.copy(this.rect);
-	}
-
-	assign_random_powerups() {
-		const num_powerups = Object.keys(Powerup).length / 2;
-		for (let i = 0; i < 3; i++) {
-			this.powerups[i] = Math.floor(Math.random() * num_powerups);
-		}
 	}
 }
 

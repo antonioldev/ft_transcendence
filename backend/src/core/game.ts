@@ -2,10 +2,11 @@ import { Ball } from './Ball.js';
 import { Paddle, CPUBot } from './Paddle.js';
 import { Clock } from './utils.js';
 import { GAME_CONFIG, CPUDifficultyMap, LEFT_PADDLE, RIGHT_PADDLE } from '../shared/gameConfig.js';
-import { GameMode, MessageType, Powerup} from '../shared/constants.js';
+import { MessageType} from '../shared/constants.js';
 import { PlayerInput, GameStateData, ServerMessage } from '../shared/types.js';
 import { Client, Player} from '../models/Client.js'
 import { saveGameResult } from '../data/validation.js';
+import { PowerupManager, Slot } from './Powerup.js';
 
 // The Game class runs the core game logic for all game modes.
 export class Game {
@@ -19,12 +20,14 @@ export class Game {
 	paddles: (Paddle | CPUBot)[] = [new Paddle(LEFT_PADDLE), new Paddle(RIGHT_PADDLE)];
 	ball!: Ball;
 	private _broadcast: (message: ServerMessage, clients?: Client[]) => void;
+	powerup_manager: PowerupManager;
 
 	constructor(players: Player[], broadcast_callback: (message: ServerMessage, clients?: Client[]) => void) {
 		// Initialize game properties
 		this.clock = new Clock();
 		this._broadcast = broadcast_callback;
 		this.players = players;
+		this.powerup_manager = new PowerupManager(this.paddles, this.ball, this._broadcast)
 		this._init();
 	}
 
@@ -41,7 +44,7 @@ export class Game {
 			this._broadcast({
 				type: MessageType.POWERUP_ASSIGNMENT,
 				side: side,
-				powerups: this.paddles[side].powerups,
+				powerups: this.powerup_manager.players[side].map(slot => slot.type),
 			})
 		}
 	}
@@ -226,128 +229,8 @@ export class Game {
 		this.winner = (this.players[LEFT_PADDLE].client.id === quitter_id) ? this.players[RIGHT_PADDLE] : this.players[LEFT_PADDLE];
 	}
 
-
-	// POWERUPS
-
-	activate(side: number, slot: number) {
-		const powerup = this.paddles[side].powerups[slot];
-		switch (powerup) {
-			case Powerup.SLOW_OPPONENT:
-				this.slow_down(side)
-				break ;
-			case Powerup.SHRINK_OPPONENT:
-				this.shrink(side);
-				break ;			
-			case Powerup.INCREASE_PADDLE_SPEED:
-				this.speed_up(side);
-				break ;
-    		case Powerup.GROW_PADDLE:
-				this.grow(side);
-				break ;
-			default:
-				console.error(`Error: cannot activate unknown Powerup "${powerup}`);
-				return ;
-		}
-		this._broadcast({
-			type: MessageType.POWERUP_ACTIVATED,
-			powerup: powerup,
-			side: side,
-			slot: slot
-		})
-		
-		this.paddles[side].active_powerups[slot] = this.paddles[side].powerups[slot];
-		this.paddles[side].powerups[slot] = null;
-		setTimeout(() => this.deactivate(side, slot), GAME_CONFIG.powerupDuration)
-	}
-
-	deactivate(side: number, slot: number) {
-		const powerup = this.paddles[side].powerups[slot];
-		if (powerup === null) return ;
-		
-		const caller = this.paddles[side];
-		const opponent = this.paddles[side === LEFT_PADDLE ? RIGHT_PADDLE : LEFT_PADDLE];
-		
-		switch (powerup) {
-			case Powerup.SLOW_OPPONENT:
-				opponent.speed = GAME_CONFIG.paddleSpeed;
-				break ;
-			case Powerup.SHRINK_OPPONENT:
-				opponent.rect.width = GAME_CONFIG.paddleWidth;
-				break ;
-			case Powerup.INCREASE_PADDLE_SPEED:
-				caller.speed = GAME_CONFIG.paddleSpeed;
-				break ;
-    		case Powerup.GROW_PADDLE:
-				caller.rect.width = GAME_CONFIG.paddleWidth;
-				break ;
-		}
-		
-		this._broadcast({
-			type: MessageType.POWERUP_DEACTIVATED,
-			powerup: powerup,
-			side: side,
-			slot: slot
-		})
-		this.paddles[side].active_powerups[slot] = null;
-	}
-
-	speed_up(side: number) {
-		const caller = this.paddles[side];
-		const opponent = this.paddles[side === LEFT_PADDLE ? RIGHT_PADDLE : LEFT_PADDLE];
-		
-		if (caller.speed === GAME_CONFIG.paddleSpeed) {
-			caller.speed = GAME_CONFIG.increasedPaddleSpeed;
-		}
-		else if (caller.speed === GAME_CONFIG.decreasedPaddleSpeed) { 
-			// opponents powerup has been countered
-			const opponent_slot = opponent.active_powerups.indexOf(Powerup.SLOW_OPPONENT);
-			console.log("SLOT = " + opponent_slot);
-			const opponent_side = side === LEFT_PADDLE ? RIGHT_PADDLE : LEFT_PADDLE;
-			this.deactivate(opponent_side, opponent_slot)
-		}
-	}
-
-	slow_down(side: number) {
-		const opponent = this.paddles[side === LEFT_PADDLE ? RIGHT_PADDLE : LEFT_PADDLE];
-		
-		if (opponent.speed === GAME_CONFIG.paddleSpeed) {
-			opponent.speed = GAME_CONFIG.decreasedPaddleSpeed;
-		}
-		else if (opponent.speed === GAME_CONFIG.increasedPaddleSpeed) {
-			
-			const opponent_slot = opponent.active_powerups.indexOf(Powerup.INCREASE_PADDLE_SPEED);
-			console.log("SLOT = " + opponent_slot);
-			const opponent_side = side === LEFT_PADDLE ? RIGHT_PADDLE : LEFT_PADDLE;
-			this.deactivate(opponent_side, opponent_slot)
-		}
-	}
-
-	grow(side: number) {
-		const caller = this.paddles[side];
-		const opponent = this.paddles[side === LEFT_PADDLE ? RIGHT_PADDLE : LEFT_PADDLE];
-		
-		if (caller.rect.width === GAME_CONFIG.paddleWidth) {
-			caller.rect.width = GAME_CONFIG.increasedPaddleWidth;
-		}
-		else if (caller.rect.width === GAME_CONFIG.decreasedPaddleWidth) {
-			const opponent_slot = opponent.active_powerups.indexOf(Powerup.SHRINK_OPPONENT);
-			console.log("SLOT = " + opponent_slot);
-			const opponent_side = side === LEFT_PADDLE ? RIGHT_PADDLE : LEFT_PADDLE;
-			this.deactivate(opponent_side, opponent_slot)
-		}
-	}
-
-	shrink(side: number) {
-		const opponent = this.paddles[side === LEFT_PADDLE ? RIGHT_PADDLE : LEFT_PADDLE];
-		
-		if (opponent.rect.width === GAME_CONFIG.paddleWidth) {
-			opponent.rect.width = GAME_CONFIG.decreasedPaddleWidth;
-		}
-		else if (opponent.rect.width === GAME_CONFIG.increasedPaddleWidth) {
-			const opponent_slot = opponent.active_powerups.indexOf(Powerup.GROW_PADDLE);
-			console.log("SLOT = " + opponent_slot);
-			const opponent_side = side === LEFT_PADDLE ? RIGHT_PADDLE : LEFT_PADDLE;
-			this.deactivate(opponent_side, opponent_slot)
-		}
+	activate(side: number, slot_index: number) {
+		const slot: Slot = this.powerup_manager.players[side][slot_index];
+		this.powerup_manager.activate(slot);
 	}
 }

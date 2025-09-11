@@ -26,6 +26,7 @@ export const GAME_CONFIG = {
 	paddleSpeed: 15, // Speed of the paddle
 	
 	// Powerup settings
+	slot_count: 3,				// number of powerup slots each player has
 	increasedPaddleWidth: 4.5, // Width of the paddle when GROW_PADDLE activated
 	decreasedPaddleWidth: 1.5, // Width of the paddle when SHRINK_PADDLE activated
 	increasedPaddleSpeed: 22, // Speed of the paddle when INCREASE_PADDLE_SPEED activated

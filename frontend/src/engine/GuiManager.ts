@@ -2,7 +2,7 @@ import { AdvancedDynamicTexture, Control, Rectangle, TextBlock, Grid, Image, Scr
 import { Scene, KeyboardEventTypes} from "@babylonjs/core";
 import { Logger } from '../utils/LogManager.js';
 import { GameConfig } from './GameConfig.js';
-import { GameMode, ViewMode, Powerup, PowerUpAction } from '../shared/constants.js';
+import { GameMode, ViewMode, PowerupType, PowerUpAction } from '../shared/constants.js';
 import { getCurrentTranslation } from '../translations/translations.js';
 import { spawnFireworksInFrontOfCameras, FINAL_FIREWORKS, spawnGUISparkles } from './scene/fireworks.js';
 import { AnimationManager, Motion } from "./AnimationManager.js";
@@ -65,10 +65,10 @@ export class GUIManager {
 	private powerUpCellsP2: Array<{root: Rectangle; icon?: Image; letter?: TextBlock}> = [];
 
 	private POWERUP_ICON: Record<number, string> = {
-		[Powerup.SLOW_OPPONENT]:	   "assets/icons/powerup/slow.png",
-		[Powerup.SHRINK_OPPONENT]:	 "assets/icons/powerup/smaller.png",
-		[Powerup.INCREASE_PADDLE_SPEED]:"assets/icons/powerup/fast.png",
-		[Powerup.GROW_PADDLE]:		 "assets/icons/powerup/larger.png",
+		[PowerupType.SLOW_OPPONENT]:	   "assets/icons/powerup/slow.png",
+		[PowerupType.SHRINK_OPPONENT]:	 "assets/icons/powerup/smaller.png",
+		[PowerupType.INCREASE_PADDLE_SPEED]:"assets/icons/powerup/fast.png",
+		[PowerupType.GROW_PADDLE]:		 "assets/icons/powerup/larger.png",
 	};
 
 	constructor(private scene: Scene, config: GameConfig, private animationManager: AnimationManager, audioManager: AudioManager) {
@@ -925,7 +925,7 @@ export class GUIManager {
 		}
 	}
 
-	updatePowerUpSlot(player: number, slotIndex: number, powerUpType: Powerup | null, action: PowerUpAction): void {
+	updatePowerUpSlot(player: number, slotIndex: number, powerUpType: PowerupType | null, action: PowerUpAction): void {
 		if (!this.isReady) return;
 		
 		const cells = player === 0 ? this.powerUpCellsP1 : this.powerUpCellsP2;
