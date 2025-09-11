@@ -278,32 +278,35 @@ export class TournamentRemote extends AbstractTournament {
 		for (const match of matches) {
 			if (!this.running) return ;
 
-			console.log(`Match id in the tournament: ${match.id}, for P1:${match.players[0].name}, P2: ${match.players[1].name}`);
-			registerNewGame(match.id, match.players[0].name, 1);
-			addPlayer2(match.id, match.players[1].name);
-			// match.game = new Game(match.players, (message) => this.broadcast(message, match.clients), match.id);
-
+			this.register_database(match);
 			match.game = new Game(match.players, (message) => this.broadcast(message, match.clients));
+			
 			let winner_promise: Promise<Player> = match.game.run();
-			winner_promise.then((winner) => {
-				this.broadcast({
-					type: MessageType.MATCH_WINNER,
-					winner: winner?.name,
-					round_index: current_round,
-					match_index: index,
-
-				});
-
-				match.next?.add_player(winner);
-				if (winner && winner.client && winner.client.id && match.next) {
-					this.client_match_map.set(winner?.client?.id, match.next);
-				}
-			})
-
+			winner_promise.then((winner) => this.assign_winner(match, winner, index));
 			winner_promises.push(winner_promise);
 			index++;
 		}
-		const winners = await Promise.all(winner_promises);
+		await Promise.all(winner_promises);
+	}
+
+	register_database(match: Match) {
+		console.log(`Match id in the tournament: ${match.id}, for P1:${match.players[0].name}, P2: ${match.players[1].name}`);
+		registerNewGame(match.id, match.players[0].name, 1);
+		addPlayer2(match.id, match.players[1].name);
+	}
+
+	assign_winner(match: Match, winner: Player, match_index: number) {
+			match.next?.add_player(winner);
+			if (winner && winner.client && winner.client.id && match.next) {
+				this.client_match_map.set(winner.client.id, match.next);
+			}
+
+			this.broadcast({
+				type: MessageType.MATCH_WINNER,
+				winner: winner?.name,
+				round_index: match.round,
+				match_index: match_index,
+			});
 	}
 
 	stop() {
