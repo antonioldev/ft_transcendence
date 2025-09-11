@@ -1,5 +1,5 @@
 import { AdvancedDynamicTexture, Control, Rectangle, TextBlock, Image} from "@babylonjs/gui";
-import { Powerup, PowerUpAction } from '../../shared/constants.js';
+import { PowerupType, PowerUpAction } from '../../shared/constants.js';
 import { AnimationManager, Motion } from "../AnimationManager.js";
 import { H_RIGHT, H_LEFT, POWER_UP_STYLES, createRect, createTextBlock, createImage} from "./GuiStyle.js";
 
@@ -9,10 +9,12 @@ export class PowerUp {
 	private powerUpCellsP1: Array<{root: Rectangle; icon?: Image; letter?: TextBlock}> = [];
 	private powerUpCellsP2: Array<{root: Rectangle; icon?: Image; letter?: TextBlock}> = [];
 	private POWERUP_ICON: Record<number, string> = {
-		[Powerup.SLOW_OPPONENT]:	   "assets/icons/powerup/slow.png",
-		[Powerup.SHRINK_OPPONENT]:	 "assets/icons/powerup/smaller.png",
-		[Powerup.INCREASE_PADDLE_SPEED]:"assets/icons/powerup/fast.png",
-		[Powerup.GROW_PADDLE]:		 "assets/icons/powerup/larger.png",
+		[PowerupType.SLOW_OPPONENT]:	   "assets/icons/powerup/slow.png",
+		[PowerupType.SHRINK_OPPONENT]:	 "assets/icons/powerup/smaller.png",
+		[PowerupType.INCREASE_PADDLE_SPEED]:"assets/icons/powerup/fast.png",
+		[PowerupType.GROW_PADDLE]:		 "assets/icons/powerup/larger.png",
+		[PowerupType.INVERT_OPPONENT]:	"assets/icons/powerup/invert.png",
+		[PowerupType.FREEZE]:			"assets/icons/powerup/stop.png"
 	};
 
 	constructor(private adt: AdvancedDynamicTexture, private animationManager: AnimationManager) {
@@ -79,7 +81,7 @@ export class PowerUp {
 			this.powerUpSlotP2.isVisible = show;
 	}
 
-	update(player: number, slotIndex: number, powerUpType: Powerup | null, action: PowerUpAction): void {
+	update(player: number, slotIndex: number, powerUpType: PowerupType | null, action: PowerUpAction): void {
 		const scene = this.adt.getScene();
 		const cells = player === 0 ? this.powerUpCellsP1 : this.powerUpCellsP2;
 		

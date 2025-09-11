@@ -197,7 +197,7 @@ export class TournamentLocal extends AbstractTournament {
 			match.winner = await match.game.run();
 			this.broadcast({
 				type: MessageType.MATCH_WINNER,
-				winner: match.winner.name,
+				winner: match.winner?.name,
 				round_index: current_round,
 				match_index: index,
 			});
@@ -288,7 +288,7 @@ export class TournamentRemote extends AbstractTournament {
 			winner_promise.then((winner) => {
 				this.broadcast({
 					type: MessageType.MATCH_WINNER,
-					winner: winner.name,
+					winner: winner?.name,
 					round_index: current_round,
 					match_index: index,
 

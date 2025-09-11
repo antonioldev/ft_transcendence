@@ -16,7 +16,7 @@ import { getPlayerBoundaries } from '../shared/gameConfig.js';
 import { appStateManager } from '../core/AppStateManager.js';
 import { GameConfigFactory } from './GameConfig.js';
 import { AudioManager } from './AudioManager.js';
-import { Powerup, PowerUpAction, SizePaddle } from "../shared/constants.js";
+import { PowerupType, PowerUpAction, SizePaddle } from "../shared/constants.js";
 // import { LoadingGui } from "./gui/LoadingGui.js";
 
 enum PlayerSide {
@@ -27,8 +27,8 @@ enum PlayerSide {
 interface PlayerState {
 	paddleSize: SizePaddle;
 	score: number;
-	powerUps: (Powerup | null)[];
-	activePowerup: Powerup | null;
+	powerUps: (PowerupType | null)[];
+	activePowerup: PowerupType | null;
 }
 
 /**
@@ -59,10 +59,11 @@ export class Game {
 	private rightPaddleSize: SizePaddle = SizePaddle.NORMAL;
 	private playerLeftScore: number = 0;
 	private playerRightScore: number = 0;
+	private playerInverted: Map<PlayerSide, boolean> = new Map;
 	private playerSize: Map<PlayerSide, SizePaddle> = new Map;
 	private playerScore: Map<PlayerSide, Number> = new Map;
-	private playerPowerUps: Map<PlayerSide, (Powerup | null)[]> = new Map();
-	private active_powerups: Map<PlayerSide, Powerup | null> = new Map();
+	private playerPowerUps: Map<PlayerSide, (PowerupType | null)[]> = new Map();
+	private active_powerups: Map<PlayerSide, PowerupType | null> = new Map();
 
 // ====================			STATIC METHODS			 ====================
 	static getCurrentInstance(): Game | null {
@@ -100,6 +101,8 @@ export class Game {
 			this.playerPowerUps.set(1, [null, null, null]);
 			this.active_powerups.set(0, null);
 			this.active_powerups.set(1, null);
+			this.playerInverted.set(0, false);
+			this.playerInverted.set(1, false);
 		} catch (error) {
 			Logger.errorAndThrow('Error creating game managers', 'Game', error);
 		}
@@ -454,7 +457,6 @@ export class Game {
 
 
 	private handleTournamentGames(message: any): void {
-		console.error(message.match_index);
 		this.guiManager?.matchTree.insert(
 			message.round_index,
 			message.match_index,
@@ -465,7 +467,6 @@ export class Game {
 	}
 
 	private handleTournamentSingleGame(message: any): void {
-		console.error(message.winner + " " + message.round_index + " " + message.match_index);
 		this.guiManager?.matchTree.update(
 			message.winner,
 			message.round_index,
@@ -486,23 +487,54 @@ export class Game {
 		}
 	}
 
-	private handlePlayerInput(keyboardSource: any, player: any, controls: PlayerControls, side: number): void {
-		if (!(this.controlledSides.includes(side))) return;
+	// private handlePlayerInput(keyboardSource: any, player: any, controls: PlayerControls, side: number): void {
+	// 	if (!(this.controlledSides.includes(side))) return;
 
-		// Get boundaries based on current paddle size
-		const boundaries = side === 0 
+	// 	// Get boundaries based on current paddle size
+	// 	let boundaries = side === 0 
+	// 		? getPlayerBoundaries(this.leftPaddleSize)
+	// 		: getPlayerBoundaries(this.rightPaddleSize);
+
+	// 	let direction = Direction.STOP;
+	// 	if (this.playerInverted.get(side) === true) {
+	// 		if ((keyboardSource.getInput(controls.left) === 1) && (player.position.x < boundaries.right)) 
+	// 			direction = Direction.RIGHT;
+	// 		else if ((keyboardSource.getInput(controls.right) === 1) && (player.position.x > boundaries.left))
+	// 			direction = Direction.LEFT;
+	// 	} else {
+	// 		if ((keyboardSource.getInput(controls.left) === 1) && (player.position.x > boundaries.left)) 
+	// 			direction = Direction.LEFT;
+	// 		else if ((keyboardSource.getInput(controls.right) === 1) && (player.position.x < boundaries.right))
+	// 			direction = Direction.RIGHT;
+	// 	}
+
+	// 	if (direction !== Direction.STOP)
+	// 		webSocketClient.sendPlayerInput(side, direction);
+	// }
+	private handlePlayerInput( keyboardSource: any, player: any, controls: PlayerControls, side: 0 | 1): void {
+		if (!this.controlledSides.includes(side)) return;
+		const bounds = side === 0
 			? getPlayerBoundaries(this.leftPaddleSize)
 			: getPlayerBoundaries(this.rightPaddleSize);
-
-		let direction = Direction.STOP;
-		if ((keyboardSource.getInput(controls.left) === 1) && (player.position.x > boundaries.left)) 
-			direction = Direction.LEFT;
-		else if ((keyboardSource.getInput(controls.right) === 1) && (player.position.x < boundaries.right))
-			direction = Direction.RIGHT;
-
-		if (direction !== Direction.STOP)
-			webSocketClient.sendPlayerInput(side, direction);
-	}
+		
+		let input: Direction = Direction.STOP;
+		if (keyboardSource.getInput(controls.left) === 1)
+			input = Direction.LEFT;
+		else if (keyboardSource.getInput(controls.right) === 1)
+			input = Direction.RIGHT;
+		if (input === Direction.STOP) return;
+		
+		const inverted = this.playerInverted.get(side) === true;
+		const effective =
+			inverted
+			? (input === Direction.LEFT ? Direction.RIGHT : Direction.LEFT)
+			: input;
+		
+		if (effective === Direction.LEFT && player.position.x <= bounds.left) return;
+		if (effective === Direction.RIGHT && player.position.x >= bounds.right) return;
+		
+		webSocketClient.sendPlayerInput(side, input);
+		}
 
 // ====================			GAME STATE			   ====================
 	isInGame(): boolean {
@@ -601,15 +633,13 @@ export class Game {
 		const ids: number[] = message.powerups;
 		const side = message.side;
 
-		if (side !== 0 && side !== 1) {
-			console.warn("[PowerUps] unknown side", side);
+		if (side !== 0 && side !== 1)
 			return;
-		}
 
-		this.playerPowerUps.set(side, ids.map(id => id as Powerup));
+		this.playerPowerUps.set(side, ids.map(id => id as PowerupType));
 
 		ids.forEach((powerup, index) => {
-			this.guiManager?.powerUp.update(side, index, powerup as Powerup, PowerUpAction.CREATED);
+			this.guiManager?.powerUp.update(side, index, powerup as PowerupType, PowerUpAction.CREATED);
 		});
 	}
 
@@ -622,8 +652,6 @@ export class Game {
 
 		const currentlyActive = this.active_powerups.get(side);
 		if (currentlyActive === powerup) return;
-
-		console.error("send");
 
 		webSocketClient.sendPowerupActivationRequest(powerup, side, index);
 	}
@@ -644,7 +672,7 @@ export class Game {
 		if (toActive) {
 			this.active_powerups.set(side, powerup);
 			switch (message.powerup) {
-				case Powerup.SHRINK_OPPONENT:
+				case PowerupType.SHRINK_OPPONENT:
 					if (side === 0) {
 						this.animationManager?.scaleWidth(this.gameObjects?.players.right, med, sml);
 						this.rightPaddleSize = SizePaddle.SMALL;
@@ -653,7 +681,7 @@ export class Game {
 						this.leftPaddleSize = SizePaddle.SMALL;
 					}
 					break;
-				case Powerup.GROW_PADDLE:
+				case PowerupType.GROW_PADDLE:
 					if (side === 0) {
 						this.animationManager?.scaleWidth(this.gameObjects?.players.left, med, lrg);
 						this.leftPaddleSize = SizePaddle.LARGE;
@@ -662,12 +690,19 @@ export class Game {
 						this.rightPaddleSize = SizePaddle.LARGE;
 					}
 					break;
+				case PowerupType.INVERT_OPPONENT:
+					if (side === 0)
+						this.playerInverted.set(1, true);
+					else
+						this.playerInverted.set(0, true);
+					break;
+
 			}
 			this.guiManager?.powerUp.update(side, slot, null, PowerUpAction.ACTIVATED);
 		} else {
 			this.active_powerups.set(side, null);
 			switch (message.powerup) {
-				case Powerup.SHRINK_OPPONENT:
+				case PowerupType.SHRINK_OPPONENT:
 					if (side === 0) {
 						this.animationManager?.scaleWidth(this.gameObjects?.players.right, sml, med);
 						this.rightPaddleSize = SizePaddle.NORMAL;
@@ -676,7 +711,7 @@ export class Game {
 						this.leftPaddleSize = SizePaddle.NORMAL;
 					}
 					break;
-				case Powerup.GROW_PADDLE:
+				case PowerupType.GROW_PADDLE:
 					if (side === 0) {
 						this.animationManager?.scaleWidth(this.gameObjects?.players.left, lrg, med);
 						this.leftPaddleSize = SizePaddle.NORMAL;
@@ -684,6 +719,12 @@ export class Game {
 						this.animationManager?.scaleWidth(this.gameObjects?.players.right, lrg, med);
 						this.rightPaddleSize = SizePaddle.NORMAL;
 					}
+					break;
+				case PowerupType.INVERT_OPPONENT:
+					if (side === 0)
+						this.playerInverted.set(1, false);
+					else
+						this.playerInverted.set(0, false);
 					break;
 			}
 			this.guiManager?.powerUp.update(side, slot, null, PowerUpAction.DEACTIVATED);

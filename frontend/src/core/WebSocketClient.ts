@@ -1,5 +1,5 @@
 import { Logger } from '../utils/LogManager.js';
-import { ConnectionStatus, MessageType, GameMode, Direction, WebSocketEvent, Powerup } from '../shared/constants.js'
+import { ConnectionStatus, MessageType, GameMode, Direction, WebSocketEvent, PowerupType } from '../shared/constants.js'
 import { ClientMessage, ServerMessage, PlayerInfo, RegisterUser, LoginUser } from '../shared/types.js'
 
 /**
@@ -200,7 +200,7 @@ export class WebSocketClient {
         this.sendMessage(MessageType.PARTIAL_WINNER_ANIMATION_DONE)
     }
 
-    sendPowerupActivationRequest(powerup_type: Powerup, side: number, slot: number,): void {
+    sendPowerupActivationRequest(powerup_type: Poweruptype, side: number, slot: number,): void {
         console.error(powerup_type +" "+ side +" "+ slot);
         this.sendMessage(MessageType.ACTIVATE_POWERUP, {powerup_type, slot, side});
     }
