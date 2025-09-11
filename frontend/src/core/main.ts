@@ -15,34 +15,34 @@ import { DashboardManager } from './DashboardManager.js';
 // const memoryDetector = new MemoryLeakDetector();
 
 function loadPage(): void {
-    // Initialize classes
-    uiManager.initializeStyles();
-    AppStateManager.initialize();
-    AuthManager.initialize();
-    MenuFlowManager.initialize();
-    DashboardManager.initialize();
+	// Initialize classes
+	uiManager.initializeStyles();
+	AppStateManager.initialize();
+	AuthManager.initialize();
+	MenuFlowManager.initialize();
+	DashboardManager.initialize();
 
-    // Setup language system
-    updateLanguageDisplay();
-    setupLanguageListeners();
+	// Setup language system
+	updateLanguageDisplay();
+	setupLanguageListeners();
 
-    // memoryDetector.startMonitoring(); // Logs memory usage (only google) 
+	// memoryDetector.startMonitoring(); // Logs memory usage (only google) 
 
-    // Setup WebSocket monitoring
-    webSocketClient.registerCallback(WebSocketEvent.STATUS_CHANGE, (status: ConnectionStatus) => {
-        uiManager.updateConnectionStatus(status);
-    });
+	// Setup WebSocket monitoring
+	webSocketClient.registerCallback(WebSocketEvent.STATUS_CHANGE, (status: ConnectionStatus) => {
+		uiManager.updateConnectionStatus(status);
+	});
 }
 
 /**
  * Sets up language navigation button listeners.
  */
 function setupLanguageListeners() {
-    const backBtn = requireElementById(EL.BUTTONS.BACK);
-    const forwardBtn = requireElementById(EL.BUTTONS.FORWARD);
+	const backBtn = requireElementById(EL.BUTTONS.BACK);
+	const forwardBtn = requireElementById(EL.BUTTONS.FORWARD);
 
-    backBtn.addEventListener('click', previousLanguage);
-    forwardBtn.addEventListener('click', nextLanguage);
+	backBtn.addEventListener('click', previousLanguage);
+	forwardBtn.addEventListener('click', nextLanguage);
 }
 
 // Initialize the application

@@ -147,6 +147,9 @@ export class WebSocketClient {
             case MessageType.MATCH_ASSIGNMENT:
                 this.triggerCallback(WebSocketEvent.MATCH_ASSIGNMENT, message);
                 break;
+            case MessageType.MATCH_WINNER:
+                this.triggerCallback(WebSocketEvent.MATCH_WINNER, message);
+                break;
             case MessageType.POWERUP_ASSIGNMENT:
                 this.triggerCallback(WebSocketEvent.POWERUP_ASSIGNMENT, message); 
                 break;
@@ -155,6 +158,9 @@ export class WebSocketClient {
                 break;
             case MessageType.POWERUP_DEACTIVATED:
                 this.triggerCallback(WebSocketEvent.POWERUP_DEACTIVATED, message); 
+                break;
+            case MessageType.TOURNAMENT_LOBBY:
+                this.triggerCallback(WebSocketEvent.TOURNAMENT_LOBBY, message); 
                 break;
             default:
                 Logger.errorAndThrow(`Unhandled message type: ${message.type}`, 'WebSocketClient');

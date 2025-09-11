@@ -6,195 +6,217 @@ import { Logger } from '../utils/LogManager.js';
  * volume control, and dynamic adjustments based on game events.
  */
 export class AudioManager {
-    private gameMusic: Sound | null = null;
-    private isInitialized: boolean = false;
-    private basePlaybackRate: number = 1.0;
-    private maxPlaybackRate: number = 1.8;
-    private maxRally: number = 50;
-    private currentRally: number = 1;
+	private gameMusic: Sound | null = null;
+	private isInitialized: boolean = false;
+	private basePlaybackRate: number = 1.0;
+	private maxPlaybackRate: number = 1.8;
+	private maxRally: number = 50;
+	private currentRally: number = 1;
 
-    private muted = false;
-    private volumes = {
-        music: 0.5,
-        countdown: 0.6,
-        paddle: 0.6,
-        score: 0.7,
-    };
+	private muted = false;
+	private volumes = {
+		music: 0.5,
+		countdown: 0.6,
+		paddle: 0.6,
+		score: 0.7,
+	};
 
-    // Sound effects
-    private countdownSound: Sound | null = null;
-    private paddleHitSound: Sound | null = null;
-    private scoreSound: Sound | null = null;
+	// Sound effects
+	private countdownSound: Sound | null = null;
+	private paddleHitSound: Sound | null = null;
+	private scoreSound: Sound | null = null;
+	private powerup: Sound | null = null;
 
-    constructor(private scene: Scene) {
-    }
+	constructor(private scene: Scene) {
+	}
 
-    async initialize(): Promise<void> {
-        try {
-            this.gameMusic = new Sound(
-                "gameMusic",
-                "/assets/audio/bg/retro2.mp3",
-                this.scene,
-                null,
-                {
-                    loop: true,
-                    autoplay: false,
-                    volume: this.volumes.music,
-                    playbackRate: this.basePlaybackRate
-                }
-            );
+	async initialize(): Promise<void> {
+		try {
+			this.gameMusic = new Sound(
+				"gameMusic",
+				"/assets/audio/bg/retro2.mp3",
+				this.scene,
+				null,
+				{
+					loop: true,
+					autoplay: false,
+					volume: this.volumes.music,
+					playbackRate: this.basePlaybackRate
+				}
+			);
 
-            this.paddleHitSound = new Sound(
-                "paddleHit",
-                "/assets/audio/hit.mp3",
-                this.scene,
-                null,
-                {
-                    loop: false,
-                    autoplay: false,
-                    volume: this.volumes.paddle,
-                    playbackRate: this.basePlaybackRate
-                }
-            );
+			this.paddleHitSound = new Sound(
+				"paddleHit",
+				"/assets/audio/hit.mp3",
+				this.scene,
+				null,
+				{
+					loop: false,
+					autoplay: false,
+					volume: this.volumes.paddle,
+					playbackRate: this.basePlaybackRate
+				}
+			);
 
-            this.countdownSound = new Sound(
-                "countdown",
-                "/assets/audio/countdown.mp3",
-                this.scene,
-                null,
-                {
-                    loop: false,
-                    autoplay: false,
-                    volume: this.volumes.countdown,
-                    playbackRate: this.basePlaybackRate
-                }
-            );
+			this.countdownSound = new Sound(
+				"countdown",
+				"/assets/audio/countdown.mp3",
+				this.scene,
+				null,
+				{
+					loop: false,
+					autoplay: false,
+					volume: this.volumes.countdown,
+					playbackRate: this.basePlaybackRate
+				}
+			);
 
-            this.scoreSound = new Sound(
-                "score",
-                "/assets/audio/score.mp3",
-                this.scene,
-                null,
-                {
-                    loop: false,
-                    autoplay: false,
-                    volume: this.volumes.score,
-                    playbackRate: this.basePlaybackRate
-                }
-            );
+			this.scoreSound = new Sound(
+				"score",
+				"/assets/audio/score.mp3",
+				this.scene,
+				null,
+				{
+					loop: false,
+					autoplay: false,
+					volume: this.volumes.score,
+					playbackRate: this.basePlaybackRate
+				}
+			);
 
-            this.isInitialized = true;
-        } catch (error) {
-            Logger.errorAndThrow('Error initializing Babylon audio', 'BabylonAudioManager', error);
-        }
-    }
+			
+			this.powerup = new Sound(
+				"score",
+				"/assets/audio/powerup.mp3",
+				this.scene,
+				null,
+				{
+					loop: false,
+					autoplay: false,
+					volume: this.volumes.score,
+					playbackRate: this.basePlaybackRate
+				}
+			);
 
-    // Start playing the game music
-    startGameMusic(): void {
-        if (!this.gameMusic || !this.isInitialized) {
-            return;
-        }
+			this.isInitialized = true;
+		} catch (error) {
+			Logger.errorAndThrow('Error initializing Babylon audio', 'BabylonAudioManager', error);
+		}
+	}
 
-        try {
-            if (this.gameMusic.isPlaying !== true )
-                this.gameMusic.play();
-        } catch (error) {
-            Logger.errorAndThrow('Error starting game music', 'BabylonAudioManager', error);
-        }
-    }
+	// Start playing the game music
+	startGameMusic(): void {
+		if (!this.gameMusic || !this.isInitialized) {
+			return;
+		}
 
-    // Stop the game music
-    stopGameMusic(): void {
-        this.gameMusic?.stop();
-    }
+		try {
+			if (this.gameMusic.isPlaying !== true )
+				this.gameMusic.play();
+		} catch (error) {
+			Logger.errorAndThrow('Error starting game music', 'BabylonAudioManager', error);
+		}
+	}
 
-    // Pause the game music
-    pauseGameMusic(): void {
-        this.gameMusic?.pause();
-    }
+	// Stop the game music
+	stopGameMusic(): void {
+		this.gameMusic?.stop();
+	}
 
-    // Resume the game music
-    resumeGameMusic(): void {
-        this.gameMusic?.play();
-    }
+	// Pause the game music
+	pauseGameMusic(): void {
+		this.gameMusic?.pause();
+	}
 
-    // Update music speed based on rally count with gentler curve and pinch effect
-    updateMusicSpeed(rallyCount: number): void {
-        if (!this.gameMusic || !this.isInitialized) return;
+	// Resume the game music
+	resumeGameMusic(): void {
+		this.gameMusic?.play();
+	}
 
-        if (rallyCount === this.currentRally) return;
-        this.playPaddleHit();
-        this.currentRally = rallyCount;
+	// Update music speed based on rally count with gentler curve and pinch effect
+	updateMusicSpeed(rallyCount: number): void {
+		if (!this.gameMusic || !this.isInitialized) return;
 
-        const speedCurve = Math.min(rallyCount / this.maxRally, 1.0);
-        const newPlaybackRate = this.basePlaybackRate + 
-            (speedCurve * (this.maxPlaybackRate - this.basePlaybackRate));
+		if (rallyCount === this.currentRally) return;
+		this.playPaddleHit();
+		this.currentRally = rallyCount;
 
-        this.gameMusic.setPlaybackRate(newPlaybackRate);
-    }
+		const speedCurve = Math.min(rallyCount / this.maxRally, 1.0);
+		const newPlaybackRate = this.basePlaybackRate + 
+			(speedCurve * (this.maxPlaybackRate - this.basePlaybackRate));
 
-    // Sound effects methods
+		this.gameMusic.setPlaybackRate(newPlaybackRate);
+	}
 
-    playPaddleHit(): void {
-        this.paddleHitSound?.play();
-    }
+	// Sound effects methods
 
-    playScore(): void {
-        this.scoreSound?.play();
-    }
+	playPaddleHit(): void {
+		this.paddleHitSound?.play();
+	}
 
-    playCountdown(): void {
-        this.countdownSound?.stop();
-        this.countdownSound?.play();
-    }
+	playScore(): void {
+		this.scoreSound?.play();
+	}
 
-    stopCountdown(): void {
-        this.countdownSound?.stop();
-    }
+	playCountdown(): void {
+		this.countdownSound?.stop();
+		this.countdownSound?.play();
+	}
 
-    isMuted(): boolean {
-        return this.muted;
-    }
+	playPowerup(): void {
+		this.powerup?.play();
+	}
 
-    setMuted(m: boolean): void {
-        this.muted = m;
-        this.applyVolumes();
-    }
+	stopCountdown(): void {
+		this.countdownSound?.stop();
+	}
 
-    toggleMute(): boolean {
-        this.muted = !this.muted;
-        this.applyVolumes();
-        return this.muted;
-    }
+	isMuted(): boolean {
+		return this.muted;
+	}
 
-    private applyVolumes(): void {
-        const base = this.muted ? 0 : 1;
+	setMuted(m: boolean): void {
+		this.muted = m;
+		this.applyVolumes();
+	}
 
-        this.gameMusic?.setVolume(base * this.volumes.music);
-        this.countdownSound?.setVolume(base * this.volumes.countdown);
-        this.paddleHitSound?.setVolume(base * this.volumes.paddle);
-        this.scoreSound?.setVolume(base * this.volumes.score);
-    }
+	toggleMute(): boolean {
+		this.muted = !this.muted;
+		this.applyVolumes();
+		return this.muted;
+	}
 
-    dispose(): void {
-        try {
-            this.gameMusic?.dispose();
-            this.gameMusic = null;
+	private applyVolumes(): void {
+		const base = this.muted ? 0 : 1;
 
-            this.paddleHitSound?.dispose();
-            this.paddleHitSound = null;
+		this.gameMusic?.setVolume(base * this.volumes.music);
+		this.countdownSound?.setVolume(base * this.volumes.countdown);
+		this.paddleHitSound?.setVolume(base * this.volumes.paddle);
+		this.scoreSound?.setVolume(base * this.volumes.score);
+	}
 
-            this.countdownSound?.dispose();
-            this.countdownSound = null;
+	dispose(): void {
+		try {
+			this.gameMusic?.dispose();
+			this.gameMusic = null;
 
-            this.scoreSound?.dispose();
-            this.scoreSound = null;
+			this.paddleHitSound?.dispose();
+			this.paddleHitSound = null;
 
-            this.isInitialized = false;
+			this.countdownSound?.dispose();
+			this.countdownSound = null;
 
-            Logger.debug('Class disposed', 'BabylonAudioManager');
-        } catch (error) {
-            Logger.error('Error disposing audio manager', 'BabylonAudioManager', error);
-        }
-    }
+			this.scoreSound?.dispose();
+			this.scoreSound = null;
+
+			this.powerup?.dispose();
+			this.powerup = null;
+
+			this.isInitialized = false;
+
+			Logger.debug('Class disposed', 'BabylonAudioManager');
+		} catch (error) {
+			Logger.error('Error disposing audio manager', 'BabylonAudioManager', error);
+		}
+	}
 }
