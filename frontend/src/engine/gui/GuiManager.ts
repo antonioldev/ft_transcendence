@@ -1,12 +1,12 @@
 import { AdvancedDynamicTexture, Control, Rectangle, TextBlock, Grid, Image, ScrollViewer, StackPanel, MultiLine} from "@babylonjs/gui";
 import { Scene, KeyboardEventTypes} from "@babylonjs/core";
-import { Logger } from '../utils/LogManager.js';
-import { GameConfig } from './GameConfig.js';
-import { GameMode, ViewMode, Powerup, PowerUpAction } from '../shared/constants.js';
-import { getCurrentTranslation } from '../translations/translations.js';
-import { spawnFireworksInFrontOfCameras, FINAL_FIREWORKS, spawnGUISparkles } from './scene/fireworks.js';
-import { AnimationManager, Motion } from "./AnimationManager.js";
-import { AudioManager } from "./AudioManager.js";
+import { Logger } from '../../utils/LogManager.js';
+import { GameConfig } from '../GameConfig.js';
+import { GameMode, ViewMode, Powerup, PowerUpAction } from '../../shared/constants.js';
+import { getCurrentTranslation } from '../../translations/translations.js';
+import { spawnFireworksInFrontOfCameras, FINAL_FIREWORKS, spawnGUISparkles } from '../scene/fireworks.js';
+import { AnimationManager, Motion } from "../AnimationManager.js";
+import { AudioManager } from "../AudioManager.js";
 import { HUD_STYLES, POWER_UP_STYLES, PAUSE_MENU_STYLES, COUNTDOWN_STYLES, LOBBY_STYLES,
 	VIEW_MODE_STYLES, PARTIAL_END_GAME_STYLES, END_GAME_STYLES, BRACKET_STYLES, COLORS } from "./GuiStyle.js";
 
@@ -883,7 +883,7 @@ export class GUIManager {
 		line.zIndex = 5;
 		return line;
 	}
-	
+
 	
 	private wireRound(roundIndex: number): void {
 		const slotsInThisRound = this.playerTotal / Math.pow(2, roundIndex - 1);

@@ -7,7 +7,7 @@ import { GAME_CONFIG } from '../shared/gameConfig.js';
 import { GameState, ViewMode, WebSocketEvent, AppState } from '../shared/constants.js';
 import { Logger } from '../utils/LogManager.js';
 import { uiManager } from '../ui/UIManager.js';
-import { GUIManager } from './GuiManager.js';
+import { GUIManager } from './gui/GuiManager.js';
 import { AnimationManager } from "./AnimationManager.js";
 import { RenderManager } from './RenderManager.js';
 import { GameMode, Direction } from '../shared/constants.js';
@@ -17,6 +17,7 @@ import { appStateManager } from '../core/AppStateManager.js';
 import { GameConfigFactory } from './GameConfig.js';
 import { AudioManager } from './AudioManager.js';
 import { Powerup, PowerUpAction, SizePaddle } from "../shared/constants.js";
+// import { LoadingGui } from "./gui/LoadingGui.js";
 
 enum PlayerSide {
 	LEFT = 0,
@@ -45,6 +46,7 @@ export class Game {
 	private canvas: HTMLCanvasElement | null = null;
 	private gameObjects: GameObjects | null = null;
 	private animationManager: AnimationManager | null = null;
+	// private loadingGui: LoadingGui | null = null;
 	private guiManager: GUIManager | null = null;
 	private renderManager: RenderManager | null = null;
 	private audioManager: AudioManager | null =null;
@@ -116,6 +118,11 @@ export class Game {
 
 			this.engine = await this.initializeBabylonEngine();
 			this.scene = await this.createScene();
+			// this.renderManager = new RenderManager(this.engine, this.scene);
+			// this.renderManager?.startRendering();
+
+			// this.loadingGui = new LoadingGui(this.scene);
+			// this.loadingGui.show();
 
 			this.deviceSourceManager = new DeviceSourceManager(this.scene.getEngine());
 
@@ -128,6 +135,10 @@ export class Game {
 				? await buildScene2D(this.scene, this.config.gameMode, this.config.viewMode, (progress: number) => uiManager.updateLoadingProgress(progress))
 				: await buildScene3D(this.scene, this.config.gameMode, this.config.viewMode, (progress: number) => uiManager.updateLoadingProgress(progress));
 
+			// this.gameObjects = this.config.viewMode === ViewMode.MODE_2D
+			// 	? await buildScene2D(this.scene, this.config.gameMode, this.config.viewMode, (progress: number) => this.loadingGui?.setProgress(progress))
+			// 	: await buildScene3D(this.scene, this.config.gameMode, this.config.viewMode, (progress: number) => this.loadingGui?.setProgress(progress));
+
 
 			this.guiManager = new GUIManager(this.scene, this.config, this.animationManager, this.audioManager);
 
@@ -139,6 +150,7 @@ export class Game {
 			this.isInitialized = true;
 			webSocketClient.sendPlayerReady();
 			uiManager.setLoadingScreenVisible(false);
+			// this.loadingGui.hide();
 // 			this.updateTournamentLobby(["player0"]);
 // let counter = 1;
 // const names: string[] = [];
@@ -252,6 +264,7 @@ export class Game {
 		if (countdown === undefined || countdown === null)
 			Logger.errorAndThrow('Server sent SIGNAL without countdown parameter', 'Game');
 
+		// this.loadingGui?.hide();
 		uiManager.setLoadingScreenVisible(false);
 		this.guiManager?.hideLobby()
 
@@ -342,6 +355,7 @@ export class Game {
 		this.gameLoopObserver = setInterval(() => {
 			if (!this.isInitialized || this.currentState !== GameState.PLAYING) return;
 			try {
+				// this.loadingGui?.hide();
 				uiManager.setLoadingScreenVisible(false);
 				this.guiManager?.hideLobby()
 				this.updateInput();
@@ -544,6 +558,9 @@ export class Game {
 
 			this.guiManager?.dispose();
 			this.guiManager = null;
+
+			// this.loadingGui?.dispose();
+			// this.loadingGui = null;
 
 			uiManager.setLoadingScreenVisible(false);
 
