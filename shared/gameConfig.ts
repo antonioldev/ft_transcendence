@@ -2,7 +2,7 @@
 // Shared game configuration between frontend and backend
 
 import { Position, Size } from './types.js';
-import { AiDifficulty, SizePaddle } from './constants.js';
+import { AiDifficulty } from './constants.js';
 
 const fieldWidth = 20; // Width of the game field
 const fieldHeight = 40; // Height of the game field
@@ -139,11 +139,11 @@ export const PLAYER_BOUNDARIES = {
 } as const;
 
 // Get the boundaries within which the paddle can move
-export function getPlayerBoundaries(size: SizePaddle) {
-	switch (size) {
-		case SizePaddle.NORMAL: return PLAYER_BOUNDARIES.normal;
-		case SizePaddle.SMALL: return PLAYER_BOUNDARIES.small;
-		case SizePaddle.LARGE: return PLAYER_BOUNDARIES.large;
+export function getPlayerBoundaries(paddleWidth: number) {
+	switch (paddleWidth) {
+		case GAME_CONFIG.paddleWidth: return PLAYER_BOUNDARIES.normal;
+		case GAME_CONFIG.decreasedPaddleWidth: return PLAYER_BOUNDARIES.small;
+		case GAME_CONFIG.increasedPaddleWidth: return PLAYER_BOUNDARIES.large;
 		default: return PLAYER_BOUNDARIES.normal;
 	}
 }

@@ -2,7 +2,6 @@ import { Rect } from './utils.js';
 import { Ball } from './Ball.js'
 import { GAME_CONFIG, getBallStartPosition, getPlayerLeftPosition, 
          getPlayerRightPosition, LEFT_PADDLE, RIGHT_PADDLE, getPlayerBoundaries } from '../shared/gameConfig.js';
-import { SizePaddle } from '../shared/constants.js';
 import { Size } from '../shared/types.js';
 
 export class Paddle {
@@ -12,7 +11,6 @@ export class Paddle {
 	oldRect: Rect;
 	speed: number = GAME_CONFIG.paddleSpeed;
 	is_inverted: boolean = false;
-	size: SizePaddle = SizePaddle.NORMAL;
 
 	constructor(side: number) {
 		this.side = side;
@@ -33,8 +31,8 @@ export class Paddle {
 		if (this.is_inverted) {
 			_deltaMove *= -1;
 		}
-		if (this.rect.x + _deltaMove > getPlayerBoundaries(this.size).left &&
-			this.rect.x + _deltaMove < getPlayerBoundaries(this.size).right) {
+		if (this.rect.x + _deltaMove > getPlayerBoundaries(this.rect.width).left &&
+			this.rect.x + _deltaMove < getPlayerBoundaries(this.rect.width).right) {
 			this.rect.x += _deltaMove;
 		}
 	}
@@ -47,7 +45,7 @@ export class Paddle {
 export class CPUBot extends Paddle {
 	private _view_timer = 0;
 	private _target_x   = getBallStartPosition().x;
-	private _boundaries = getPlayerBoundaries(SizePaddle.NORMAL);
+	private _boundaries = getPlayerBoundaries(GAME_CONFIG.paddleWidth);
 
 	constructor(
 		side: number,

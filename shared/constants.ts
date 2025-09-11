@@ -88,12 +88,6 @@ export enum PowerupType {
 	FREEZE,
 }
 
-export enum SizePaddle {
-	NORMAL,
-	SMALL,
-	LARGE
-}
-
 // Directions for player movement
 export enum Direction {
 	LEFT = -1,			  // Move left
