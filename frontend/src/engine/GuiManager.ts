@@ -72,10 +72,10 @@ export class GUIManager {
 		if (!this.isReady) return;
 		if (show) {
 			this.hud.show(false);
-			await this.endGame.fadeBackground(show);
+			await this.endGame.fadeBackground(true);
 		} else {
 			await this.endGame.fadeBackground(false);
-			this.hud.show(show);
+			this.hud.show(true);
 		}
 	}
 
