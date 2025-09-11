@@ -1,11 +1,11 @@
-import { Control, Image } from "@babylonjs/gui";
+import { Control, Image, StackPanel, Grid, TextBlock, Rectangle } from "@babylonjs/gui";
 
-const H_LEFT = Control.HORIZONTAL_ALIGNMENT_LEFT;
-const H_CENTER = Control.HORIZONTAL_ALIGNMENT_CENTER;
-const H_RIGHT = Control.HORIZONTAL_ALIGNMENT_RIGHT;
-const V_TOP = Control.VERTICAL_ALIGNMENT_TOP;
-const V_CENTER = Control.VERTICAL_ALIGNMENT_CENTER;
-const V_BOTTOM = Control.VERTICAL_ALIGNMENT_BOTTOM;
+export const H_LEFT = Control.HORIZONTAL_ALIGNMENT_LEFT;
+export const H_CENTER = Control.HORIZONTAL_ALIGNMENT_CENTER;
+export const H_RIGHT = Control.HORIZONTAL_ALIGNMENT_RIGHT;
+export const V_TOP = Control.VERTICAL_ALIGNMENT_TOP;
+export const V_CENTER = Control.VERTICAL_ALIGNMENT_CENTER;
+export const V_BOTTOM = Control.VERTICAL_ALIGNMENT_BOTTOM;
 const FONT_FAMILY = 'Poppins, Arial, sans-serif';
 
 // Color constants
@@ -26,6 +26,48 @@ export const COLORS = {
     LOSER_GRAY: "#999999",
     LOSER_GRAY_DARK: "rgba(0, 0, 0, 0.4)",
     LOSER_BORDER: "rgba(128, 128, 128, 0.5)",
+} as const;
+
+
+export const LOADING_STYLE = {
+    overlay: {
+        width: "100%",
+        height: "100%",
+        thickness: 1,
+        verticalAlignment: V_CENTER,
+        horizontalAlignment: H_CENTER,
+        zIndex: 20
+    },
+
+    title: {
+        text: "Loading",
+        fontSize: 56,
+        color:" #FFFFFF",
+        top: "-50px"
+    },
+
+    bar: {
+        width: "40%",
+        height: "12px",
+        thickness: 0,
+        background: "rgba(255,255,255,0.15)",
+        cornerRadius: 4
+    },
+
+    fill: {
+        height: "100%",
+        width: "0%",
+        thickness: 0,
+        background: "#22C55E",
+        horizontalAlignment: H_LEFT,
+        // left: 0
+    },
+
+    percentege: {
+        fontSize: 18,
+        color: "#FFFFFF",
+        top: "24px"
+    }
 } as const;
 
 export const HUD_STYLES = {
@@ -201,8 +243,8 @@ export const PAUSE_MENU_STYLES = {
     },
 
     pauseGrid: {
-        width: "50%",
-        height: "100%",
+        width: "100%", //changes
+        height: "60%",
         horizontalAlignment: H_CENTER,
         verticalAlignment: V_CENTER
     },
@@ -556,3 +598,41 @@ export const BRACKET_STYLES = {
         color: COLORS.LOSER_GRAY
     }
 } as const;
+
+export function applyStyles(control: any, styles: any): void {
+    Object.entries(styles).forEach(([key, value]) => {
+        if (value !== undefined && key in control) {
+            (control as any)[key] = value;
+        }
+    });
+}
+
+export function  createRect(name: string, styles: any): Rectangle {
+    const rect = new Rectangle(name);
+    applyStyles(rect, styles);
+    return rect;
+}
+
+export function   createTextBlock(name: string, styles: any, text?: string): TextBlock {
+    const textBlock = new TextBlock(name, text);
+    applyStyles(textBlock, styles);
+    return textBlock;
+}
+
+export function  createGrid(name: string, styles: any): Grid {
+    const grid = new Grid(name);
+    applyStyles(grid, styles);
+    return grid;
+}
+
+export function  createImage(name: string, styles: any, source?: string): Image {
+    const image = new Image(name, source);
+    applyStyles(image, styles);
+    return image;
+}
+
+export function  createStackPanel(name: string, styles: any): StackPanel {
+    const stackPanel = new StackPanel(name);
+    applyStyles(stackPanel, styles);
+    return stackPanel;
+}
