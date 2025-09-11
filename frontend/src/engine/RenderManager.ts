@@ -1,6 +1,6 @@
 import { Engine, Scene, Vector3} from "@babylonjs/core";
 import { Logger } from '../utils/LogManager.js';
-import { GUIManager } from './gui/GuiManager.js';
+import { GUIManager } from './GuiManager.js';
 import { ViewMode } from '../shared/constants.js';
 import { AnimationManager } from "./AnimationManager.js";
 import { GameObjects } from "../shared/types.js";

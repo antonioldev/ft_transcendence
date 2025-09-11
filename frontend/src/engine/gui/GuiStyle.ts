@@ -243,8 +243,8 @@ export const PAUSE_MENU_STYLES = {
     },
 
     pauseGrid: {
-        width: "50%",
-        height: "100%",
+        width: "100%", //changes
+        height: "60%",
         horizontalAlignment: H_CENTER,
         verticalAlignment: V_CENTER
     },

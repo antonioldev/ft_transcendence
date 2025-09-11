@@ -7,7 +7,7 @@ import { GAME_CONFIG } from '../shared/gameConfig.js';
 import { GameState, ViewMode, WebSocketEvent, AppState } from '../shared/constants.js';
 import { Logger } from '../utils/LogManager.js';
 import { uiManager } from '../ui/UIManager.js';
-import { GUIManager } from './gui/GuiManager.js';
+import { GUIManager } from './GuiManager.js';
 import { AnimationManager } from "./AnimationManager.js";
 import { RenderManager } from './RenderManager.js';
 import { GameMode, Direction } from '../shared/constants.js';
@@ -266,7 +266,7 @@ export class Game {
 
 		// this.loadingGui?.hide();
 		uiManager.setLoadingScreenVisible(false);
-		this.guiManager?.hideLobby()
+		this.guiManager?.lobby.hide()
 
 		if (this.currentState === GameState.MATCH_ENDED)
 			this.resetForNextMatch();
@@ -321,7 +321,7 @@ export class Game {
 		this.guiManager?.setPauseVisible(false);
 		await this.guiManager?.animateBackground(true);
 		await this.guiManager?.showPartialWinner(winner);
-		await this.guiManager?.waitForSpaceToContinue(2000);
+		await this.guiManager?.endGame.waitForSpaceToContinue(2000);
 		await this.guiManager?.hidePartialWinner();
 		webSocketClient.notifyGameAnimationDone();
 		this.audioManager?.stopGameMusic();
@@ -357,7 +357,7 @@ export class Game {
 			try {
 				// this.loadingGui?.hide();
 				uiManager.setLoadingScreenVisible(false);
-				this.guiManager?.hideLobby()
+				this.guiManager?.lobby.hide()
 				this.updateInput();
 				if (this.config.viewMode === ViewMode.MODE_3D)
 					this.renderManager?.update3DCameras();
@@ -693,7 +693,7 @@ export class Game {
 	private updateTournamentLobby(message: any): void {
 		
 		const names: string[] = message.lobby ?? ["test1"];
-		this.guiManager?.showLobby(names);
+		this.guiManager?.lobby.show(names);
 		uiManager.setLoadingScreenVisible(false);
 	}
 }

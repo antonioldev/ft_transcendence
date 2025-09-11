@@ -9,6 +9,7 @@ export class MatchTree {
 	private bracketScroll!: ScrollViewer;
 	private bracketGrid!: Grid;
 	private isCreated: boolean = false;
+	
 
 	constructor(private adt: AdvancedDynamicTexture, private animationManager: AnimationManager) {
 
