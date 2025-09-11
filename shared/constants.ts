@@ -82,8 +82,10 @@ export enum GameMode {
 export enum PowerupType {
 	SLOW_OPPONENT,
 	SHRINK_OPPONENT,
+	INVERT_OPPONENT,
 	INCREASE_PADDLE_SPEED,
 	GROW_PADDLE,
+	FREEZE,
 }
 
 export enum SizePaddle {

@@ -11,7 +11,7 @@ export class Ball {
     speed = GAME_CONFIG.ballInitialSpeed; // Initial speed of the ball.
     speedModifier = 0; // Speed modifier based on game state (e.g., delay).
     paddles: (Paddle)[]; // Array of players (paddles) in the game.
-    startTime: number; // Timestamp when the ball was initialized or reset.
+    freezeTime: number; // Timestamp when the ball was initialized or reset.
     updateScore: (side: number, score: number) => void; // Callback to update the score.
     current_rally = 1; 
 
@@ -22,7 +22,7 @@ export class Ball {
         this.oldRect = this.rect.instance();
         this.paddles = paddles;
         this.updateScore = updateScoreCallback;
-        this.startTime = performance.now();
+        this.freezeTime = performance.now();
         this.direction = this.randomDirection();
     }
 
@@ -123,15 +123,21 @@ export class Ball {
         this.rect.x = ballPos.x;
         this.rect.z = ballPos.z;
         this.direction = this.randomDirection();
-        this.startTime = performance.now();
+        this.freezeTime = performance.now();
         this.speed = GAME_CONFIG.ballInitialSpeed;
         this.current_rally = 1;
     }
 
     // Delays the ball's movement until the start delay has elapsed.
     private delayTimer(): void {
-        const elapsed = (performance.now() - this.startTime);
+        const elapsed = (performance.now() - this.freezeTime);
         this.speedModifier = elapsed >= GAME_CONFIG.ballDelay ? 1 : 0;
+    }
+
+    freeze(): number {
+        this.speedModifier = 0;
+        this.freezeTime = performance.now();
+        return (GAME_CONFIG.ballDelay);
     }
 
     // Updates the ball's state, including movement, collisions, and scoring.

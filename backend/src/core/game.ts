@@ -231,6 +231,7 @@ export class Game {
 
 	activate(side: number, slot_index: number) {
 		const slot: Slot = this.powerup_manager.players[side][slot_index];
+		if (slot.is_spent) return ;
 		this.powerup_manager.activate(slot);
 	}
 }

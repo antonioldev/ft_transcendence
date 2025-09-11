@@ -10,6 +10,7 @@ export class Paddle {
 	rect: Rect;
 	oldRect: Rect;
 	speed: number = GAME_CONFIG.paddleSpeed;
+	is_inverted: boolean = false;
 
 	constructor(side: number) {
 		this.side = side;
@@ -26,10 +27,11 @@ export class Paddle {
 
 	move(dt: number, dx: number): void {
 		const deltaSeconds = dt / 1000; 		// convert milliseconds to seconds
-		const _deltaMove = this.speed * deltaSeconds * dx;
-		if (this.rect.x + _deltaMove > getPlayerBoundaries(SizePaddle.NORMAL).left &&
-			this.rect.x + _deltaMove < getPlayerBoundaries(SizePaddle.NORMAL).right)
-			this.rect.x += _deltaMove;
+		let _deltaMove = this.speed * deltaSeconds * dx;
+		if (this.is_inverted) {
+			_deltaMove *= -1;
+		}
+		this.rect.x += _deltaMove;
 	}
 
 	cacheRect() {

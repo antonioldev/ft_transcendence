@@ -1,8 +1,8 @@
 import { Ball } from './Ball.js';
-import { Paddle, CPUBot } from './Paddle.js';
+import { Paddle} from './Paddle.js';
 import { LEFT_PADDLE, RIGHT_PADDLE, GAME_CONFIG } from '../shared/gameConfig.js';
-import { GameMode,  PowerupType, MessageType} from '../shared/constants.js';
-import { Client, Player} from '../models/Client.js'
+import { PowerupType, MessageType} from '../shared/constants.js';
+import { Client } from '../models/Client.js'
 import { ServerMessage } from '../shared/types.js';
 
 export class Slot {
@@ -16,10 +16,6 @@ export class Slot {
 		this.type = type;
 		this.side = side;
 		this.index = index;
-	}
-
-	deactivate() {
-
 	}
 }
 
@@ -48,6 +44,8 @@ export class PowerupManager {
 	}
 
 	activate(slot: Slot) {
+		if (slot.is_active || slot.is_spent) return ;
+		
 		const opponent_side: number = slot.side === LEFT_PADDLE ? RIGHT_PADDLE : LEFT_PADDLE;
 		let timeout: number  = GAME_CONFIG.powerupDuration;
 
@@ -57,12 +55,18 @@ export class PowerupManager {
 				break ;
 			case PowerupType.SHRINK_OPPONENT:
 				timeout = this.shrink(opponent_side);
-				break ;			
+				break ;
+			case PowerupType.INVERT_OPPONENT:
+				this.paddles[opponent_side].is_inverted = true;
+				break ;				
 			case PowerupType.INCREASE_PADDLE_SPEED:
 				timeout = this.speed_up(slot.side);
 				break ;
 			case PowerupType.GROW_PADDLE:
 				timeout = this.grow(slot.side);
+				break ;
+			case PowerupType.FREEZE:
+				timeout = this.ball.freeze();
 				break ;
 			default:
 				console.error(`Error: cannot activate unknown Powerup "${slot.type}`);
@@ -90,12 +94,18 @@ export class PowerupManager {
 				break ;
 			case PowerupType.SHRINK_OPPONENT:
 				this.paddles[opponent_side].rect.width = GAME_CONFIG.paddleWidth;
+				break ;	
+			case PowerupType.INVERT_OPPONENT:
+				this.paddles[opponent_side].is_inverted = false;
 				break ;			
 			case PowerupType.INCREASE_PADDLE_SPEED:
 				this.paddles[slot.side].speed = GAME_CONFIG.paddleSpeed;
 				break ;
 			case PowerupType.GROW_PADDLE:
 				this.paddles[slot.side].rect.width = GAME_CONFIG.paddleWidth;
+				break ;
+			case PowerupType.FREEZE:
+				// reset handled internally by ball
 				break ;
 			default:
 				console.error(`Error: cannot deactivate unknown Powerup "${slot.type}`);
