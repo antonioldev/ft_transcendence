@@ -18,7 +18,7 @@ export class Game {
 	players: Player[]
 	winner!: Player;
 	paddles: (Paddle | CPUBot)[] = [new Paddle(LEFT_PADDLE), new Paddle(RIGHT_PADDLE)];
-	ball!: Ball;
+	ball: Ball;
 	private _broadcast: (message: ServerMessage, clients?: Client[]) => void;
 	powerup_manager: PowerupManager;
 
@@ -27,14 +27,12 @@ export class Game {
 		this.clock = new Clock();
 		this._broadcast = broadcast_callback;
 		this.players = players;
+		this.ball = new Ball(this.paddles, this._update_score.bind(this));
 		this.powerup_manager = new PowerupManager(this.paddles, this.ball, this._broadcast)
 		this._init();
 	}
 
-	// Initialize the ball and players
 	private _init() {
-		this.ball = new Ball(this.paddles, this._update_score.bind(this));
-
 		for (const side of [LEFT_PADDLE, RIGHT_PADDLE]) {
 			const player: Player = this.players[side];
 			if (player.name === "CPU" && player.difficulty !== undefined) {
