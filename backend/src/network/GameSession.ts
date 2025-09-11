@@ -77,9 +77,9 @@ export abstract class AbstractGameSession {
 			this.players.push(new Player(`CPU_${i}`, "CPU", undefined, this.ai_difficulty));
 		}
 
-		// if (this.mode === GameMode.TWO_PLAYER_REMOTE) {
-		// 	this.mode = GameMode.SINGLE_PLAYER
-		// }
+		if (this.mode === GameMode.TWO_PLAYER_REMOTE) {
+			this.mode = GameMode.SINGLE_PLAYER
+		}
 
 		this.client_capacity = this.clients.length;
     }

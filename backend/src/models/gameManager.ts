@@ -25,15 +25,17 @@ class GameManager extends EventEmitter {
     createGame(mode: GameMode, client: Client, capacity?: number): string {
         const gameId = `game_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         // Create a new game in DB with 1st player as client only if the game is remote
-        if (mode === GameMode.TWO_PLAYER_REMOTE)
+        if (mode === GameMode.TWO_PLAYER_REMOTE) {
             registerNewGame(gameId, client.username, 0);
-        else if (mode === GameMode.TOURNAMENT_REMOTE)
+        }
+        else if (mode === GameMode.TOURNAMENT_REMOTE) {
             registerNewGame(gameId, client.username, 1);
+        }
 
         // Create new gamesession and add the client
         let gameSession: AbstractGameSession;
         if (mode === GameMode.TOURNAMENT_LOCAL) {
-            gameSession = new TournamentLocal(mode, gameId, capacity ?? 4);
+            gameSession = new TournamentLocal(mode, gameId, capacity ?? 4); // maybe handle undefined capacity better ??
         }
         else if (mode === GameMode.TOURNAMENT_REMOTE) {
             gameSession = new TournamentRemote(mode, gameId, capacity ?? 4);

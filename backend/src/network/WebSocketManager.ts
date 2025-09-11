@@ -1,10 +1,12 @@
 import { FastifyInstance } from 'fastify';
 import { gameManager } from '../models/gameManager.js';
 import { Client, Player } from '../models/Client.js';
-import { MessageType, AuthCode } from '../shared/constants.js';
+import { MessageType, AuthCode, GameMode } from '../shared/constants.js';
 import { ClientMessage, ServerMessage, PlayerInput} from '../shared/types.js';
 import * as db from "../data/validation.js";
 import { getUserBySession, getSessionByUsername } from '../data/validation.js';
+import { Game } from '../core/game.js';
+import { error } from 'console';
 
 /**
  * Manages WebSocket connections, client interactions, and game-related messaging.
@@ -173,19 +175,18 @@ export class WebSocketManager {
      */
     private handleJoinGame(socket: any, client: Client, data: ClientMessage, setCurrentGameId: (gameId: string) => void) {
         if (!data.gameMode) {
-            this.send(socket, {
-                type: MessageType.ERROR,
-                message: 'Game mode required'
-            }); 
-            return;
+            throw new Error(`Game mode missing`);
         }
         try {
-            const gameId = gameManager.findOrCreateGame(data.gameMode, client, data.capacity?);
+            const gameId = gameManager.findOrCreateGame(data.gameMode, client, data.capacity ?? undefined);
             const gameSession = gameManager.getGame(gameId);
-            if (!gameSession) return ;
-            
+            if (!gameSession) {
+                throw new Error(`client "${client}" unable to join game "${gameId}": game does not exist`);
+            }
+            if (gameSession.running) {
+                throw new Error(`client "${client}" unable to join game "${gameId}": game already running`);
+            }
             if (data.aiDifficulty !== undefined) {
-                console.log("AI difficulty = " + data.aiDifficulty);
                 gameSession.set_ai_difficulty(data.aiDifficulty);
             }
             setCurrentGameId(gameId);
@@ -194,14 +195,14 @@ export class WebSocketManager {
             for (const player of data.players ?? []) {
                 gameSession.add_player(new Player(player.id, player.name, client));
             }
-            if (gameSession.full && !gameSession.running) {
+            if ((gameSession.full /*&& !gameSession.running*/) || gameSession.mode === GameMode.TOURNAMENT_LOCAL) {
                 gameManager.runGame(gameSession, client.id);
             }
         } catch (error) {
             console.error('❌ Error joining game:', error);
             this.send(socket, {
                 type: MessageType.ERROR,
-                message: 'Failed to join game'
+                message: 'Failed to join game',
             });
         }
     }
