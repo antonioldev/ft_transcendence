@@ -4,6 +4,7 @@ import { LEFT_PADDLE, RIGHT_PADDLE, GAME_CONFIG } from '../shared/gameConfig.js'
 import { PowerupType, MessageType} from '../shared/constants.js';
 import { Client } from '../models/Client.js'
 import { ServerMessage } from '../shared/types.js';
+import { time } from 'console';
 
 export class Slot {
 	type: PowerupType;
@@ -66,7 +67,8 @@ export class PowerupManager {
 				timeout = this.grow(slot.side);
 				break ;
 			case PowerupType.FREEZE:
-				timeout = this.ball.pause();
+				timeout = GAME_CONFIG.ballDelay;
+				this.ball.pause(timeout);
 				break ;
 			default:
 				console.error(`Error: cannot activate unknown Powerup "${slot.type}`);
