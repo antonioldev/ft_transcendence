@@ -22,7 +22,7 @@ class GameManager extends EventEmitter {
      * @param client - The client initiating the game.
      * @returns The unique ID of the created game session.
      */
-    createGame(mode: GameMode, client: Client): string {
+    createGame(mode: GameMode, client: Client, capacity?: number): string {
         const gameId = `game_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         // Create a new game in DB with 1st player as client only if the game is remote
         if (mode === GameMode.TWO_PLAYER_REMOTE)
@@ -33,10 +33,10 @@ class GameManager extends EventEmitter {
         // Create new gamesession and add the client
         let gameSession: AbstractGameSession;
         if (mode === GameMode.TOURNAMENT_LOCAL) {
-            gameSession = new TournamentLocal(mode, gameId, 4); // TEMP HARDCODED TO 4 PLAYERS
+            gameSession = new TournamentLocal(mode, gameId, capacity ?? 4);
         }
         else if (mode === GameMode.TOURNAMENT_REMOTE) {
-            gameSession = new TournamentRemote(mode, gameId, 4); // TEMP HARDCODED TO 4 PLAYERS
+            gameSession = new TournamentRemote(mode, gameId, capacity ?? 4);
         }
         else {
             gameSession = new OneOffGame(mode, gameId);
@@ -79,10 +79,10 @@ class GameManager extends EventEmitter {
      * @returns The unique ID of the found or created game session.
      */
 
-    findOrCreateGame(mode: GameMode, client: Client): string {
+    findOrCreateGame(mode: GameMode, client: Client, capacity?: number): string {
         //For local games, just create game
         if (mode === GameMode.SINGLE_PLAYER || mode === GameMode.TWO_PLAYER_LOCAL|| mode === GameMode.TOURNAMENT_LOCAL) {
-            return this.createGame(mode, client);
+            return this.createGame(mode, client, capacity);
         }
         else /* Remote games*/ {
             // Try to find waiting game or create new one

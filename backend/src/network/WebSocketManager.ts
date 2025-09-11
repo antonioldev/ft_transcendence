@@ -180,7 +180,7 @@ export class WebSocketManager {
             return;
         }
         try {
-            const gameId = gameManager.findOrCreateGame(data.gameMode, client);
+            const gameId = gameManager.findOrCreateGame(data.gameMode, client, data.capacity?);
             const gameSession = gameManager.getGame(gameId);
             if (!gameSession) return ;
             
