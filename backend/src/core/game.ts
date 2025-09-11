@@ -227,10 +227,6 @@ export class Game {
 	}
 
 	activate_powerup(powerup: Powerup, side: number, slot: number) {
-		if (this.paddles[side].powerups[slot] != powerup) {
-			console.log(`Cannot activate powerup "${powerup}": player lacks this ability`);
-			return ;
-		}
 		if (this.paddles[side].active_powerups.includes(powerup)) {
 			console.log(`Cannot activate powerup "${powerup}": already active`);
 			return ;
