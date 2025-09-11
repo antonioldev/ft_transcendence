@@ -4,7 +4,6 @@ import { LEFT_PADDLE, RIGHT_PADDLE, GAME_CONFIG } from '../shared/gameConfig.js'
 import { PowerupType, MessageType} from '../shared/constants.js';
 import { Client } from '../models/Client.js'
 import { ServerMessage } from '../shared/types.js';
-import { time } from 'console';
 
 export class Slot {
 	type: PowerupType;
@@ -23,7 +22,7 @@ export class Slot {
 export class PowerupManager {
 	left_slots: Slot[] = [];
 	right_slots: Slot[] = [];
-	players = [this.left_slots, this.right_slots];
+	slots = [this.left_slots, this.right_slots];
 	paddles: Paddle[];
 	ball: Ball;
 	private _broadcast: (message: ServerMessage, clients?: Client[]) => void;
@@ -32,10 +31,10 @@ export class PowerupManager {
 		this.paddles = paddles;
 		this.ball = ball;
 		this._broadcast = broadcast_callback;
-		this.init_powerups();
+		this._init_powerups();
 	}
 
-	init_powerups() {
+	_init_powerups() {
 		// generates 3 random powerups in each player's slots
 		const num_powerups = Object.keys(PowerupType).length / 2;
 		for (let i = 0; i < GAME_CONFIG.slot_count; i++) {
@@ -126,7 +125,7 @@ export class PowerupManager {
 	}
 
 	find_active_powerup(type: PowerupType, side: number) {
-		for (const slot of this.players[side]) {
+		for (const slot of this.slots[side]) {
 			if (slot.type === type && slot.is_active) {
 				return (slot);
 			}

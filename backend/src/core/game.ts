@@ -42,7 +42,7 @@ export class Game {
 			this._broadcast({
 				type: MessageType.POWERUP_ASSIGNMENT,
 				side: side,
-				powerups: this.powerup_manager.players[side].map(slot => slot.type),
+				powerups: this.powerup_manager.slots[side].map(slot => slot.type),
 			})
 		}
 	}
@@ -228,8 +228,7 @@ export class Game {
 	}
 
 	activate(side: number, slot_index: number) {
-		const slot: Slot = this.powerup_manager.players[side][slot_index];
-		if (slot.is_spent) return ;
+		const slot: Slot = this.powerup_manager.slots[side][slot_index];
 		this.powerup_manager.activate(slot);
 	}
 }

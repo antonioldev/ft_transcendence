@@ -341,9 +341,6 @@ export class WebSocketManager {
             console.error("Error: cannot activate powerup, game does not exist");
             return ;
         }
-        console.log("type = " + data.powerup_type);
-        console.log("side = " + data.side);
-        console.log("slot = " + data.slot);
         game.activate(data.side, data.slot);
     }
 

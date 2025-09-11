@@ -83,9 +83,9 @@ export const GAME_CONFIG = {
 
 	// CPU Difficulty: we pass this directly as the noise factor to regualate the CPU ability
 export const CPUDifficultyMap: Record<AiDifficulty, number> = {
-	[AiDifficulty.EASY]: 3,
-	[AiDifficulty.MEDIUM]: 2,
-	[AiDifficulty.HARD]: 1.5,
+	[AiDifficulty.EASY]: 1.5,
+	[AiDifficulty.MEDIUM]: 1,
+	[AiDifficulty.HARD]: 0.5,
 	[AiDifficulty.IMPOSSIBLE]: 0,
 }
 
