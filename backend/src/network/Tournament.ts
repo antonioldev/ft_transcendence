@@ -16,6 +16,7 @@ export class Match {
 	readyClients: Set<string> = new Set(); // New, keep track of clients that finish loading
 	game!: Game;
 	winner?: Player;
+	is_final: Boolean = false;
 
 	left?: Match;
 	right?: Match;
@@ -48,7 +49,10 @@ abstract class AbstractTournament extends AbstractGameSession{
 		this.player_capacity = capacity;
 		this.num_rounds = this._get_num_rounds(this.player_capacity);
 		this._create_rounds_map();
-		this._create_match_tree(new Match(this.num_rounds));
+
+		let final = new Match(this.num_rounds);
+		final.is_final = true;
+		this._create_match_tree(final);
 	}
 
 	private _create_rounds_map() {
@@ -112,14 +116,6 @@ abstract class AbstractTournament extends AbstractGameSession{
 				this.client_match_map?.set(player_left.client.id, match);
 				this.client_match_map?.set(player_right.client.id, match);
 			}
-
-			// this.broadcast({
-			// 	type: MessageType.MATCH_ASSIGNMENT,
-			// 	round_index: 1,
-			// 	match_index: i,
-			// 	left: player_left.name,
-			// 	right: player_right.name,
-			// })
 		}
 	}
 
@@ -153,7 +149,7 @@ abstract class AbstractTournament extends AbstractGameSession{
 		for (let current_round = 1; current_round <= this.num_rounds; current_round++) {
 			const matches = this.rounds.get(current_round);
 			if (!matches) return ; // maybe throw err
-			await this.run(matches, current_round);
+			await this.run(matches);
 		}
 	}
 
@@ -174,7 +170,7 @@ abstract class AbstractTournament extends AbstractGameSession{
 		match.game.stop();
 	}
 
-	abstract run(matches: Match[], current_round: number): Promise<void>;
+	abstract run(matches: Match[]): Promise<void>;
 	abstract findMatch(client_id?: string): Match | undefined;
 }
 
@@ -187,7 +183,7 @@ export class TournamentLocal extends AbstractTournament {
 	}
 
 	// runs each game in a round one by one and awaits each game before starting the next
-	async run(matches: Match[], current_round: number): Promise<void> {
+	async run(matches: Match[]): Promise<void> {
 		let index = 0;
 		for (const match of matches) {
 			if (!this.running) return ;
@@ -195,20 +191,21 @@ export class TournamentLocal extends AbstractTournament {
 			this.current_match = match;
 			match.game = new Game(match.players, this.broadcast.bind(this));
 			match.winner = await match.game.run();
+			match.next?.add_player(match.winner);
+			if (match.is_final) {
+				this.tournamentWinner = match.winner;
+			}
+
 			this.broadcast({
 				type: MessageType.MATCH_WINNER,
 				winner: match.winner?.name,
-				round_index: current_round,
+				round_index: match.round,
 				match_index: index,
 			});
 
 			this.readyClients.clear();
 			await this.waitForPlayersReady();
-			match.next?.add_player(match.winner);
-		}
-	
-		if (matches.length === 1) /* if final match */ {
-			this.tournamentWinner = matches[0].winner;
+			index++;
 		}
 	}
 
@@ -270,40 +267,42 @@ export class TournamentRemote extends AbstractTournament {
 	}
 
 	// runs all matches in a given round in parallel
-	async run(matches: Match[], current_round: number): Promise<void> {
-		let winner_promises: Promise<Player>[] = [];
+	async run(matches: Match[]): Promise<void> {
+		let round_winners: Promise<Player>[] = [];
 
 		// run each match in parallel and await [] of match promises
 		let index = 0;
 		for (const match of matches) {
 			if (!this.running) return ;
 
-			console.log(`Match id in the tournament: ${match.id}, for P1:${match.players[0].name}, P2: ${match.players[1].name}`);
-			registerNewGame(match.id, match.players[0].name, 1);
-			addPlayer2(match.id, match.players[1].name);
-			// match.game = new Game(match.players, (message) => this.broadcast(message, match.clients), match.id);
-
+			this.register_database(match);
 			match.game = new Game(match.players, (message) => this.broadcast(message, match.clients));
+
 			let winner_promise: Promise<Player> = match.game.run();
-			winner_promise.then((winner) => {
-				this.broadcast({
-					type: MessageType.MATCH_WINNER,
-					winner: winner?.name,
-					round_index: current_round,
-					match_index: index,
-
-				});
-
-				match.next?.add_player(winner);
-				if (winner && winner.client && winner.client.id && match.next) {
-					this.client_match_map.set(winner?.client?.id, match.next);
-				}
-			})
-
-			winner_promises.push(winner_promise);
+			winner_promise.then((winner) => this.assign_winner(match, winner, index));
+			round_winners.push(winner_promise);
 			index++;
 		}
-		const winners = await Promise.all(winner_promises);
+		await Promise.all(round_winners);
+	}
+
+	register_database(match: Match) {
+		console.log(`Match id in the tournament: ${match.id}, for P1:${match.players[0].name}, P2: ${match.players[1].name}`);
+		registerNewGame(match.id, match.players[0].name, 1);
+		addPlayer2(match.id, match.players[1].name);
+	}
+
+	assign_winner(match: Match, winner: Player, match_index: number) {
+			match.next?.add_player(winner);
+			if (winner && winner.client && winner.client.id && match.next) {
+				this.client_match_map.set(winner.client.id, match.next);
+			}
+			this.broadcast({
+				type: MessageType.MATCH_WINNER,
+				winner: winner?.name,
+				round_index: match.round,
+				match_index: match_index,
+			});
 	}
 
 	stop() {
@@ -313,7 +312,6 @@ export class TournamentRemote extends AbstractTournament {
 		for (const match of this.client_match_map.values()) {
 			match.game.stop(this.id);
 		}
-		
 		this.broadcast({ type: MessageType.SESSION_ENDED });
 	}
 

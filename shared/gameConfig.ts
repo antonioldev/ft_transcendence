@@ -62,7 +62,7 @@ export const GAME_CONFIG = {
 	},
 
 	// Game mechanics
-	scoreToWin: 1,		  // Points needed to win
+	scoreToWin: 3,		  // Points needed to win
 	
 	// Input mappings
 	input2D: {

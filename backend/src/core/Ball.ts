@@ -9,9 +9,9 @@ export class Ball {
     oldRect: Rect; // Previous position and size of the ball.
     direction: [number, number]; // Direction vector of the ball's movement.
     speed = GAME_CONFIG.ballInitialSpeed; // Initial speed of the ball.
-    speedModifier = 0; // Speed modifier based on game state (e.g., delay).
     paddles: (Paddle)[]; // Array of players (paddles) in the game.
-    freezeTime: number; // Timestamp when the ball was initialized or reset.
+    pauseTime: number; // Timestamp when the ball was initialized or reset.
+    isPaused: Boolean = true;
     updateScore: (side: number, score: number) => void; // Callback to update the score.
     current_rally = 1; 
 
@@ -22,7 +22,7 @@ export class Ball {
         this.oldRect = this.rect.instance();
         this.paddles = paddles;
         this.updateScore = updateScoreCallback;
-        this.freezeTime = performance.now();
+        this.pauseTime = performance.now();
         this.direction = this.randomDirection();
     }
 
@@ -40,9 +40,11 @@ export class Ball {
     // Moves the ball based on its direction, speed, and elapsed time.
     move(dt: number): void {
         const deltaSeconds = dt / 1000;
-        this.rect.x += this.direction[0] * this.speed * deltaSeconds * this.speedModifier;
+        if (this.isPaused) return ;
+
+        this.rect.x += this.direction[0] * this.speed * deltaSeconds;
         this.collision(CollisionDirection.HORIZONTAL);
-        this.rect.z += this.direction[1] * this.speed * deltaSeconds * this.speedModifier;
+        this.rect.z += this.direction[1] * this.speed * deltaSeconds;
         this.collision(CollisionDirection.FRONT);
     }
 
@@ -96,6 +98,8 @@ export class Ball {
 
     // Handles collisions with walls and detects goals to update the score.
     wallCollision(): void {
+        if (this.isPaused) return ;
+
         // Wall collisions (left/right walls)
         if (this.rect.left <= GAME_CONFIG.wallBounds.minX) {
             this.rect.left = GAME_CONFIG.wallBounds.minX;
@@ -119,29 +123,30 @@ export class Ball {
 
     // Resets the ball to its initial position and direction.
     reset(): void {
+        this.pause()
         const ballPos = getBallStartPosition();
         this.rect.x = ballPos.x;
         this.rect.z = ballPos.z;
         this.direction = this.randomDirection();
-        this.freezeTime = performance.now();
         this.speed = GAME_CONFIG.ballInitialSpeed;
         this.current_rally = 1;
     }
 
     // Delays the ball's movement until the start delay has elapsed.
     private delayTimer(): void {
-        const elapsed = (performance.now() - this.freezeTime);
-        this.speedModifier = elapsed >= GAME_CONFIG.ballDelay ? 1 : 0;
+        const elapsed = performance.now() - this.pauseTime;
+        this.isPaused = elapsed >= (GAME_CONFIG.ballDelay * 1000) ? false : true;
     }
 
-    freeze(): number {
-        this.speedModifier = 0;
-        this.freezeTime = performance.now();
+    pause(): number {
+        this.isPaused = true;
+        this.pauseTime = performance.now();
         return (GAME_CONFIG.ballDelay);
     }
 
     // Updates the ball's state, including movement, collisions, and scoring.
     update(dt: number): void {
+        console.log(this.isPaused);
         this.oldRect.copy(this.rect);
         this.delayTimer();
         this.move(dt);
