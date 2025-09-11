@@ -195,7 +195,7 @@ export class TournamentLocal extends AbstractTournament {
 			if (match.is_final) {
 				this.tournamentWinner = match.winner;
 			}
-			
+
 			this.broadcast({
 				type: MessageType.MATCH_WINNER,
 				winner: match.winner?.name,
@@ -297,7 +297,6 @@ export class TournamentRemote extends AbstractTournament {
 			if (winner && winner.client && winner.client.id && match.next) {
 				this.client_match_map.set(winner.client.id, match.next);
 			}
-
 			this.broadcast({
 				type: MessageType.MATCH_WINNER,
 				winner: winner?.name,
@@ -313,7 +312,6 @@ export class TournamentRemote extends AbstractTournament {
 		for (const match of this.client_match_map.values()) {
 			match.game.stop(this.id);
 		}
-		
 		this.broadcast({ type: MessageType.SESSION_ENDED });
 	}
 

@@ -66,7 +66,7 @@ export class PowerupManager {
 				timeout = this.grow(slot.side);
 				break ;
 			case PowerupType.FREEZE:
-				timeout = this.ball.freeze();
+				timeout = this.ball.pause();
 				break ;
 			default:
 				console.error(`Error: cannot activate unknown Powerup "${slot.type}`);
