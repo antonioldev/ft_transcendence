@@ -8,7 +8,8 @@ import { spawnFireworksInFrontOfCameras, FINAL_FIREWORKS, spawnGUISparkles } fro
 import { AnimationManager, Motion } from "../AnimationManager.js";
 import { AudioManager } from "../AudioManager.js";
 import { HUD_STYLES, POWER_UP_STYLES, PAUSE_MENU_STYLES, COUNTDOWN_STYLES, LOBBY_STYLES,
-	VIEW_MODE_STYLES, PARTIAL_END_GAME_STYLES, END_GAME_STYLES, BRACKET_STYLES, COLORS } from "./GuiStyle.js";
+	VIEW_MODE_STYLES, PARTIAL_END_GAME_STYLES, END_GAME_STYLES, BRACKET_STYLES } from "./GuiStyle.js";
+import { Countdown } from "./Countdown.js";
 
 /**
  * Manages all GUI elements for the game
@@ -18,7 +19,7 @@ export class GUIManager {
 	private readonly H_LEFT = Control.HORIZONTAL_ALIGNMENT_LEFT;
 	private readonly H_RIGHT = Control.HORIZONTAL_ALIGNMENT_RIGHT;
 
-	private advancedTexture: AdvancedDynamicTexture | null = null;
+	private adt: AdvancedDynamicTexture | null = null;
 	private isInitialized: boolean = false;
 	private hudGrid!: Grid;
 	private fpsText!: TextBlock;
@@ -29,8 +30,8 @@ export class GUIManager {
 	private rallyText!: TextBlock;
 	private rally!: TextBlock;
 	private previousRally: number = 1;
-	private countdownText!: TextBlock;
-	private countdownContainer!: Rectangle;
+	// private countdownText!: TextBlock;
+	// private countdownContainer!: Rectangle;
 	private endGameOverlay!: Grid;
 	private endGameWinnerText!: TextBlock;
 	private partialEndGameOverlay!: Rectangle;
@@ -64,6 +65,8 @@ export class GUIManager {
 	private powerUpCellsP1: Array<{root: Rectangle; icon?: Image; letter?: TextBlock}> = [];
 	private powerUpCellsP2: Array<{root: Rectangle; icon?: Image; letter?: TextBlock}> = [];
 
+	private countdown!: Countdown;
+
 	private POWERUP_ICON: Record<number, string> = {
 		[Powerup.SLOW_OPPONENT]:	   "assets/icons/powerup/slow.png",
 		[Powerup.SHRINK_OPPONENT]:	 "assets/icons/powerup/smaller.png",
@@ -73,17 +76,18 @@ export class GUIManager {
 
 	constructor(private scene: Scene, config: GameConfig, private animationManager: AnimationManager, audioManager: AudioManager) {
 		try {
-			this.advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI("UI", true, this.scene);
-			this.advancedTexture!.layer!.layerMask = 0x20000000;
+			this.adt = AdvancedDynamicTexture.CreateFullscreenUI("UI", true, this.scene);
+			this.adt!.layer!.layerMask = 0x20000000;
 			this.isTournament = config.isTournament;
 
+			this.countdown = new Countdown(this.adt, this.animationManager);
 			this.createHUD(config);
 			this.createLobbyOverlay();
 			this.createPowerUpSlots();
 			this.createPauseOverlay();
 			this.createBracketOverlay();
 			this.createViewModeDivider(config);
-			this.createCountdownOverlay();
+			// this.createCountdownOverlay();
 			this.createPartialEndGameOverlay();
 			this.createEndGameOverlay();
 			this.setToggleMuteCallback(() => audioManager.toggleMute());
@@ -97,7 +101,7 @@ export class GUIManager {
 
 	private createHUD(config: GameConfig): void {
 	this.hudGrid = this.createGrid("hudGrid", HUD_STYLES.hudGrid);
-	this.advancedTexture!.addControl(this.hudGrid);
+	this.adt!.addControl(this.hudGrid);
 
 	this.hudGrid.addColumnDefinition(HUD_STYLES.gridColumns.fps, false);
 	this.hudGrid.addColumnDefinition(HUD_STYLES.gridColumns.p1Controls, false);
@@ -156,11 +160,11 @@ export class GUIManager {
 	}
 
 	private createLobbyOverlay(): void {
-		if (!this.advancedTexture) return;
+		if (!this.adt) return;
 
 		const t = getCurrentTranslation();
 		this.lobbyOverlay = this.createRect("lobbyOverlay", LOBBY_STYLES.overlay);
-		this.advancedTexture.addControl(this.lobbyOverlay);
+		this.adt.addControl(this.lobbyOverlay);
 		
 		
 		const mainGrid = new Grid("lobbyMainGrid");
@@ -187,11 +191,11 @@ export class GUIManager {
 	}
 
 	private createPowerUpSlots(): void {
-		if (!this.advancedTexture) return;
+		if (!this.adt) return;
 
 		this.powerUpSlotP1 = this.createRect("powerUpSlotP1", POWER_UP_STYLES.powerUpSlot);
 		this.powerUpSlotP1.horizontalAlignment = this.H_LEFT;
-		this.advancedTexture.addControl(this.powerUpSlotP1);
+		this.adt.addControl(this.powerUpSlotP1);
 
 		for (let i = 0; i < 3; i++) {
 			const cell = this.createPowerUpCell(i, 0); // Player 1
@@ -201,7 +205,7 @@ export class GUIManager {
 
 		this.powerUpSlotP2 = this.createRect("powerUpSlotP2", POWER_UP_STYLES.powerUpSlot);
 		this.powerUpSlotP2.horizontalAlignment = this.H_RIGHT;
-		this.advancedTexture.addControl(this.powerUpSlotP2);
+		this.adt.addControl(this.powerUpSlotP2);
 
 		for (let i = 0; i < 3; i++) {
 			const cell = this.createPowerUpCell(i, 1); // Player 2
@@ -241,12 +245,12 @@ export class GUIManager {
 }
 
 	private createPauseOverlay(): void {
-		if (!this.advancedTexture) return;
+		if (!this.adt) return;
 
 		const t = getCurrentTranslation();
 
 		this.pauseOverlay = this.createRect("pauseOverlay", PAUSE_MENU_STYLES.pauseOverlay);
-		this.advancedTexture.addControl(this.pauseOverlay);
+		this.adt.addControl(this.pauseOverlay);
 
 		this.pauseGrid = this.createGrid("pauseGrid", PAUSE_MENU_STYLES.pauseGrid);
 		this.pauseOverlay.addControl(this.pauseGrid);
@@ -278,13 +282,13 @@ export class GUIManager {
 	}
 
 	private createBracketOverlay(): void {
-		if (!this.advancedTexture) return;
+		if (!this.adt) return;
 
 		const t = getCurrentTranslation();
 
 		this.bracketOverlay = this.createRect("bracketOverlay", BRACKET_STYLES.bracketOverlay);
 		this.bracketOverlay.paddingRight = `${this.bracketOverlay.thickness + 8}px`;
-		this.advancedTexture.addControl(this.bracketOverlay);
+		this.adt.addControl(this.bracketOverlay);
 
 		const container = this.createGrid("bracketContainer", BRACKET_STYLES.bracketContainer);
 		container.addRowDefinition(BRACKET_STYLES.containerRows.header, false);
@@ -322,24 +326,24 @@ export class GUIManager {
 		if (config.viewMode === ViewMode.MODE_3D && 
 			(config.gameMode === GameMode.TWO_PLAYER_LOCAL || config.gameMode === GameMode.TOURNAMENT_LOCAL)) {
 			const dividerLine = this.createRect("divider", VIEW_MODE_STYLES.dividerLine);
-			this.advancedTexture!.addControl(dividerLine);
+			this.adt!.addControl(dividerLine);
 		}
 	}
 
-	private createCountdownOverlay(): void {
-		this.countdownContainer = this.createRect("countdownContainer", COUNTDOWN_STYLES.countdownContainer);
+	// private createCountdownOverlay(): void {
+	// 	this.countdownContainer = this.createRect("countdownContainer", COUNTDOWN_STYLES.countdownContainer);
 
-		this.countdownText = this.createTextBlock("5", COUNTDOWN_STYLES.countdownText, "5");
+	// 	this.countdownText = this.createTextBlock("5", COUNTDOWN_STYLES.countdownText, "5");
 
-		this.countdownContainer.addControl(this.countdownText);
-		this.advancedTexture!.addControl(this.countdownContainer);
-	}
+	// 	this.countdownContainer.addControl(this.countdownText);
+	// 	this.adt!.addControl(this.countdownContainer);
+	// }
 
 	private createPartialEndGameOverlay(): void {
 		const t = getCurrentTranslation();
 
 		this.partialEndGameOverlay = this.createRect("partialWinnerLayer", PARTIAL_END_GAME_STYLES.partialEndGameOverlay);
-		this.advancedTexture!.addControl(this.partialEndGameOverlay);
+		this.adt!.addControl(this.partialEndGameOverlay);
 
 		const centerColumn = this.createGrid("winnerGrid", PARTIAL_END_GAME_STYLES.winnerGrid);
 		this.partialEndGameOverlay.addControl(centerColumn);
@@ -366,7 +370,7 @@ export class GUIManager {
 		// Create winner text with styles
 		this.endGameWinnerText = this.createTextBlock( "endGameWinnerText", END_GAME_STYLES.endGameWinnerText, "");
 		this.endGameOverlay.addControl(this.endGameWinnerText, 0, 0);
-		this.advancedTexture!.addControl(this.endGameOverlay);
+		this.adt!.addControl(this.endGameOverlay);
 	}
 
 	//Helper functions to create Gui objects
@@ -441,14 +445,14 @@ export class GUIManager {
 	}
 	showCountdown(show: boolean, count?: number): void {
 		if (!this.isReady) return;
-		this.countdownContainer.isVisible = show;
+		this.countdown.set(show, count);
 
-		if (show && count !== undefined) {
-			this.countdownText.text = count.toString();
-			this.animationManager?.pulse(this.countdownText, Motion.F.xSlow);
-			return;
-		}
-		this.countdownText.animations = [];
+		// if (show && count !== undefined) {
+		// 	this.countdownText.text = count.toString();
+		// 	this.animationManager?.pulse(this.countdownText, Motion.F.xSlow);
+		// 	return;
+		// }
+		// this.countdownText.animations = [];
 	}
 
 	updateFPS(fps: number): void {
@@ -530,7 +534,7 @@ export class GUIManager {
 	}
 
 	async showPartialWinner(winner: string): Promise<void> {
-		if (!this.isReady || !this.advancedTexture) return;
+		if (!this.isReady || !this.adt) return;
 
 		this.partialWinnerName.text = winner;
 		this.partialEndGameOverlay.isVisible = true;
@@ -541,7 +545,7 @@ export class GUIManager {
 		
 		this.partialEndGameOverlay.isPointerBlocker = true;
 
-		spawnGUISparkles(this.advancedTexture, this.animationManager);
+		spawnGUISparkles(this.adt, this.animationManager);
 
 		await this.animationManager?.slideInY(this.partialWinnerLabel, -200, Motion.F.base);
 		await new Promise(r => setTimeout(r, 60));
@@ -552,7 +556,7 @@ export class GUIManager {
 	}
 
 	async waitForSpaceToContinue(ms: number): Promise<void> {
-		if (!this.isReady || !this.advancedTexture) return;
+		if (!this.isReady || !this.adt) return;
 		const scene = this.scene;
 		await new Promise<void>(res => setTimeout(res, ms));
 		this.continueText.isVisible = true;
@@ -593,7 +597,7 @@ export class GUIManager {
 	}
 
 	showLobby(players: string[]): void {
-		if (!this.advancedTexture) return;
+		if (!this.adt) return;
 		const t = getCurrentTranslation();
 		if (this.lobbyOverlay && this.lobbyOverlay.isVisible === false) {
 			this.lobbyOverlay!.isVisible = true;
@@ -661,8 +665,8 @@ export class GUIManager {
 
 	updateControlVisibility(player1: boolean, player2: boolean): void {
 		if (!this.isReady) return;
-		const p1 = this.advancedTexture?.getControlByName("PlayerControls_p1") as TextBlock | null;
-		const p2 = this.advancedTexture?.getControlByName("PlayerControls_p2") as TextBlock | null;
+		const p1 = this.adt?.getControlByName("PlayerControls_p1") as TextBlock | null;
+		const p2 = this.adt?.getControlByName("PlayerControls_p2") as TextBlock | null;
 
 		if (p1) p1.color = player1 ? "rgba(255, 255, 255, 0.7)" : "rgba(0, 0, 0, 0)";
 		if (p2) p2.color = player2 ? "rgba(255, 255, 255, 0.7)" : "rgba(0, 0, 0, 0)";
@@ -698,8 +702,8 @@ export class GUIManager {
 			this.fpsText.dispose();
 			this.score1Text.dispose();
 			this.score2Text.dispose();
-			this.countdownText.dispose();
-			this.countdownContainer.dispose();
+			// this.countdownText.dispose();
+			// this.countdownContainer.dispose();
 			this.player1Label.dispose();
 			this.player2Label.dispose();
 			this.rallyText.dispose();
@@ -737,8 +741,8 @@ export class GUIManager {
 			this.powerUpCellsP1 = [];
 			this.powerUpCellsP2 = [];
 
-			this.advancedTexture?.dispose();
-			this.advancedTexture = null;
+			this.adt?.dispose();
+			this.adt = null;
 
 			this.isInitialized = false;
 			Logger.debug('Class disposed', 'GUIManager');
@@ -748,7 +752,7 @@ export class GUIManager {
 	}
 
 	updateMatch(winner: string, round_index: number, match_index: number): void {
-		if (!this.advancedTexture) return;
+		if (!this.adt) return;
 		if (!this.bracketGrid) return;
 
 		const leftSlot = match_index * 2;
@@ -758,11 +762,11 @@ export class GUIManager {
 		const rightId = `bracketCell_${round_index}_${rightSlot}`;
 		const nextId = `bracketCell_${round_index + 1}_${match_index}`;
 
-		const leftTb = this.advancedTexture.getControlByName(leftId) as TextBlock;
-		const rightTb = this.advancedTexture.getControlByName(rightId) as TextBlock;
-		const leftRect = this.advancedTexture.getControlByName(`${leftId}_rect`) as Rectangle;
-		const rightRect = this.advancedTexture.getControlByName(`${rightId}_rect`) as Rectangle;
-		const nextTb   = this.advancedTexture.getControlByName(nextId) as TextBlock;
+		const leftTb = this.adt.getControlByName(leftId) as TextBlock;
+		const rightTb = this.adt.getControlByName(rightId) as TextBlock;
+		const leftRect = this.adt.getControlByName(`${leftId}_rect`) as Rectangle;
+		const rightRect = this.adt.getControlByName(`${rightId}_rect`) as Rectangle;
+		const nextTb   = this.adt.getControlByName(nextId) as TextBlock;
 
 		if (!leftTb || !rightTb || !leftRect || !rightRect) return;
 
@@ -808,8 +812,8 @@ export class GUIManager {
 		const leftId  = `bracketCell_${roundIndex}_${leftSlot}`;
 		const rightId = `bracketCell_${roundIndex}_${rightSlot}`;
 
-		const leftTb  = this.advancedTexture?.getControlByName(leftId)  as TextBlock;
-		const rightTb = this.advancedTexture?.getControlByName(rightId) as TextBlock;
+		const leftTb  = this.adt?.getControlByName(leftId)  as TextBlock;
+		const rightTb = this.adt?.getControlByName(rightId) as TextBlock;
 
 		if (left !== null && leftTb !== null)
 			leftTb.text = left;
@@ -893,9 +897,9 @@ export class GUIManager {
 			const leftIdx  = match * 2;
 			const rightIdx = match * 2 + 1;
 
-			const left  = this.advancedTexture?.getControlByName(`bracketCell_${roundIndex}_${leftIdx}`)  as Control | null;
-			const right = this.advancedTexture?.getControlByName(`bracketCell_${roundIndex}_${rightIdx}`) as Control | null;
-			const next  = this.advancedTexture?.getControlByName(`bracketCell_${roundIndex + 1}_${match}`) as Control | null;
+			const left  = this.adt?.getControlByName(`bracketCell_${roundIndex}_${leftIdx}`)  as Control | null;
+			const right = this.adt?.getControlByName(`bracketCell_${roundIndex}_${rightIdx}`) as Control | null;
+			const next  = this.adt?.getControlByName(`bracketCell_${roundIndex + 1}_${match}`) as Control | null;
 
 			if (!left || !right || !next) continue;
 
