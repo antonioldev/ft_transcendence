@@ -15,6 +15,7 @@
     <script type="module" src="/env-config.js"></script>
 </head>
 <body class="bg-blue-background h-screen relative px-4 py-4">
+
     <!-- Language selector - Fixed in top right for all screens -->
     <div class="fixed top-4 right-4 z-50 flex items-center gap-2">
         <button type="button" 
@@ -35,17 +36,13 @@
         </button>
     </div>
 
-    <div id="cat-container" class="absolute bottom-4 left-4 w-32 h-32 z-10 cursor-pointer" style="display: none;">
-        <div id="cat-animation" class="w-full h-full bg-cover bg-center" 
-             style="background-image: url('/assets/sprites/Cat-3/Cat-3-Idle.png');">
-        </div>
-</div>  
-
+    
+    
     <!-- Main Menu -->
     <main id="main-menu" class="contents">
         <!-- ft_transcendence in top left -->
         <div class="absolute top-4 left-5 flex items-center gap-2">
-            <div id= "connection-status" class="text-xs text-light-green opacity-80">
+            <div id="connection-status" class="text-xs text-light-green animation-ping opacity-80">
                 <!-- Connection status will be updated by JS -->
             </div>
             <h2 class="text-light-green font-tiny5-regular text-sm sm:text-base md:text-lg">
@@ -55,10 +52,11 @@
         
         <!-- Centered PONG text -->
         <div class="bg-blue-background flex flex-col items-center justify-center h-screen">
-            <h1 id="main-title" class="text-light-green text-center">
-                <span class="font-tiny5-regular text-6xl sm:text-8xl md:text-9xl lg:text-10xl xl:text-[10rem] 2xl:text-[12rem]">
-                    PONG
-                </span>
+            <h1 id="main-title" class="font-tiny5-regular text-light-green text-6xl sm:text-8xl md:text-9xl lg:text-10xl xl:text-[10rem] 2xl:text-[12rem]">
+                <span class="animate-bounce-letter-1">P</span>
+                <span class="animate-bounce-letter-2">O</span>
+                <span class="animate-bounce-letter-3">N</span>
+                <span class="animate-bounce-letter-4">G</span>
             </h1>
         </div>
         
@@ -98,7 +96,7 @@
             </button>
         </nav>
 
-        <!-- Atari image in bottom right -->
+        <!-- Atari image in bottom right
         <img 
             src="/assets/images/atari.png" 
             src="/assets/images/atari.png" 
@@ -106,14 +104,14 @@
             class="absolute bottom-1 right-4 md:bottom-2 md:right-4 lg:bottom-2 lg:right-4 
                    w-48 h-48 sm:w-60 sm:h-60 md:w-72 md:h-72 lg:w-84 lg:h-84 xl:w-96 xl:h-96
                    object-contain opacity-80"
-        />
+        /> -->
     </main>
 
     <!-- Login Page (Hidden) -->
     <div id="login-modal" class="fixed inset-0 bg-blue-background flex items-center justify-center" style="display: none;">
         <!-- ft_transcendence in top left -->
         <div class="absolute top-4 left-5 z-10 flex items-center gap-2">
-            <div id= "connection-status" class="text-xs text-light-green opacity-80">
+            <div id="connection-status" class="text-xs text-light-green opacity-80">
                 <!-- Connection status will be updated by JS -->
             </div>
             <h2 class="text-light-green font-tiny5-regular text-sm sm:text-base md:text-lg">
@@ -595,6 +593,14 @@
             </div>
         </div>
     </div>
+
+    <!-- Dino Animation - Fixed in bottom right for all screens
+    <img id="dino-gif" 
+        src="/assets/images/dino.gif" 
+        alt="Animated Dinosaur" 
+        class="z-40"
+        style="position: absolute !important; bottom: 1rem !important; right: 0rem !important; width: 200px !important; height: 200px !important; transform: scaleX(-1) !important;"
+    /> -->
 
     <!-- DEVELOPMENT: Use .ts for hot reload -->
     <script type="module" src="./core/main.ts"></script>
