@@ -32,7 +32,18 @@ export class WebSocketClient {
     private connect(): void {
         this.connectionStatus = ConnectionStatus.CONNECTING;
         this.notifyStatus(ConnectionStatus.CONNECTING);
-        const WS_URL = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws';
+        
+        // In development, connect directly to backend on port 3000
+        let WS_URL: string;
+        if (location.port === '5173') {
+            // Development mode - connect directly to backend
+            WS_URL = (location.protocol === 'https:' ? 'wss://' : 'ws://') + 'localhost:3000/ws';
+        } else {
+            // Production mode - use nginx proxy
+            WS_URL = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws';
+        }
+        
+        console.log('Connecting to WebSocket:', WS_URL);
 
         this.ws = new WebSocket(WS_URL);
         // this.ws = new WebSocket('wss://localhost:3000/ws'); // TODO make it a variable

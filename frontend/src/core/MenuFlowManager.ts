@@ -107,7 +107,6 @@ export class MenuFlowManager {
         });
 
         const backButton = requireElementById(EL.BUTTONS.MODE_BACK);
-        console.log('Setting up mode back button:', backButton);
         backButton.addEventListener('click', () => {
             this.handleModeBackButton();
         });
