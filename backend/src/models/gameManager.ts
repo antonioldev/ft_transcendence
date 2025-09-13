@@ -100,7 +100,8 @@ class GameManager extends EventEmitter {
 
     async runGame(gameSession: AbstractGameSession, client_id: string): Promise<void> {
         if (gameSession.running) return ;
-
+        
+        console.log(`Game started with ${gameSession.players.length} players`);
         db.updateStartTime(gameSession.id);
         await gameSession.start();
         gameManager.endGame(gameSession, client_id);

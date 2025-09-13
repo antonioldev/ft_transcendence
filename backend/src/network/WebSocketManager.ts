@@ -68,12 +68,9 @@ export class WebSocketManager {
         }
 
         this.clients.set(clientId, client);
-        let currentGameId: string | null = null;
 
         socket.on('message', async (message: string) => {
-            await this.handleMessage(socket, client, message, (gameId) => {
-                currentGameId = gameId;
-            });
+            await this.handleMessage(socket, client, message);
         });
 
         socket.on('close', () => {
@@ -99,18 +96,13 @@ export class WebSocketManager {
      * @param message - The raw message string received.
      * @param setCurrentGameId - Callback to update the current game ID for the client.
      */
-    private async handleMessage(
-        socket: any, 
-        client: Client, 
-        message: string,
-        setCurrentGameId: (gameId: string) => void
-    ): Promise<void> {
+    private async handleMessage(socket: any, client: Client, message: string): Promise<void> {
         try {
             const data: ClientMessage = JSON.parse(message.toString());
             
             switch (data.type) {
                 case MessageType.JOIN_GAME:
-                    this.handleJoinGame(socket, client, data, setCurrentGameId);
+                    this.handleJoinGame(socket, client, data);
                     break;
                 case MessageType.PLAYER_READY:
                     this.handlePlayerReady(client);
@@ -171,7 +163,7 @@ export class WebSocketManager {
      * @param data - The message data containing game mode information.
      * @param setCurrentGameId - Callback to update the current game ID for the client.
      */
-    private handleJoinGame(socket: any, client: Client, data: ClientMessage, setCurrentGameId: (gameId: string) => void) {
+    private handleJoinGame(socket: any, client: Client, data: ClientMessage) {
         if (!data.gameMode) {
             this.send(socket, {
                 type: MessageType.ERROR,
@@ -188,7 +180,6 @@ export class WebSocketManager {
                 console.log("AI difficulty = " + data.aiDifficulty);
                 gameSession.set_ai_difficulty(data.aiDifficulty);
             }
-            setCurrentGameId(gameId);
 
             // add players to gameSession
             for (const player of data.players ?? []) {
@@ -290,7 +281,6 @@ export class WebSocketManager {
             console.warn(`Client ${client.id} not authorized to resume game`);
             return;
         }
-
         gameSession.resume(client.id);
     }
 
