@@ -177,7 +177,6 @@ export class WebSocketManager {
             if (!gameSession) return ;
             
             if (data.aiDifficulty !== undefined) {
-                console.log("AI difficulty = " + data.aiDifficulty);
                 gameSession.set_ai_difficulty(data.aiDifficulty);
             }
 
@@ -235,6 +234,10 @@ export class WebSocketManager {
         const gameSession = gameManager.findClientGame(client);
         if (!gameSession) {
             console.warn(`Client ${client.id} not in any game`);
+            return;
+        }
+        if (!gameSession.canClientControlGame(client)){
+            console.warn(`Client ${client.id} not authorized to control game`);
             return;
         }
 
@@ -297,8 +300,7 @@ export class WebSocketManager {
         
         gameSession.handlePlayerQuit(client.id);
         gameManager.removeClientFromGames(client);
-        // gameManager.endGame(gameSession, client.id); // unecessary as .removeClientFromGames() handles this
-        console.log(`Game ${gameSession.id} ended by client ${client.id}`);
+        console.log(`Game ${gameSession.id} ended by client: ${client.username}:${client.id}`);
     }
 
     /**
@@ -312,6 +314,7 @@ export class WebSocketManager {
         gameSession.stop(); // TODO: temp as wont work for Tournament 
         gameManager.removeClientFromGames(client);
         this.clients.delete(client.id);
+        console.log(`Client disconnected: ${client.username}:${client.id}`);
     } 
 
     private activatePowerup(client: Client, data: ClientMessage) {
@@ -330,6 +333,10 @@ export class WebSocketManager {
         if (!game) {
             console.error("Error: cannot activate powerup, game does not exist");
             return ;
+        }
+        if (!gameSession.canClientControlGame(client)){
+            console.warn(`Client ${client.id} not authorized to control game`);
+            return;
         }
         game.activate(data.side, data.slot);
     }

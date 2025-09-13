@@ -159,13 +159,6 @@ class GameManager extends EventEmitter {
         else {
             this.endGame(gameSession, client.id);
         }
-        
-        // for (const [gameId, game] of this.gameIdMap) {
-        //     game.remove_client(client);
-        //     if (game.clients.length === 0) {
-        //         this.removeGame(gameId);
-        //     }
-        // }
     }
 }
 
