@@ -5,7 +5,6 @@ import { MessageType, AuthCode, GameMode } from '../shared/constants.js';
 import { ClientMessage, ServerMessage, PlayerInput} from '../shared/types.js';
 import * as db from "../data/validation.js";
 import { getUserBySession, getSessionByUsername } from '../data/validation.js';
-import { Game } from '../core/game.js';
 import { error } from 'console';
 
 /**
@@ -174,10 +173,10 @@ export class WebSocketManager {
      * @param setCurrentGameId - Callback to update the current game ID for the client.
      */
     private handleJoinGame(socket: any, client: Client, data: ClientMessage, setCurrentGameId: (gameId: string) => void) {
-        if (!data.gameMode) {
-            throw new Error(`Game mode missing`);
-        }
         try {
+            if (!data.gameMode) {
+                throw new Error(`Game mode missing`);
+            }
             const gameId = gameManager.findOrCreateGame(data.gameMode, client, data.capacity ?? undefined);
             const gameSession = gameManager.getGame(gameId);
             if (!gameSession) {
