@@ -25,9 +25,11 @@ enum PlayerSide {
 }
 
 interface PlayerState {
+	size: number;
 	score: number;
 	powerUps: (PowerupType | null)[];
 	activePowerup: PowerupType | null;
+	inverted: boolean;
 }
 
 /**
@@ -54,15 +56,22 @@ export class Game {
 	private controlledSides: number[] = [];
 
 
-	// private leftPaddleSize: number = GAME_CONFIG.paddleWidth;
-	// private rightPaddleSize: number = GAME_CONFIG.paddleWidth;
-	// private playerLeftScore: number = 0;
-	// private playerRightScore: number = 0;
-	private playerInverted: Map<PlayerSide, boolean> = new Map;
-	private playerSize: Map<PlayerSide, number> = new Map;
-	private playerScore: Map<PlayerSide, number> = new Map;
-	private playerPowerUps: Map<PlayerSide, (PowerupType | null)[]> = new Map();
-	private active_powerups: Map<PlayerSide, PowerupType | null> = new Map();
+	private players: Map<PlayerSide, PlayerState> = new Map([
+        [PlayerSide.LEFT, {
+            size: GAME_CONFIG.paddleWidth,
+            score: 0,
+            powerUps: [null, null, null],
+            activePowerup: null,
+            inverted: false
+        }],
+        [PlayerSide.RIGHT, {
+            size: GAME_CONFIG.paddleWidth,
+            score: 0,
+            powerUps: [null, null, null],
+            activePowerup: null,
+            inverted: false
+        }]
+    ]);
 
 // ====================			STATIC METHODS			 ====================
 	static getCurrentInstance(): Game | null {
@@ -96,16 +105,6 @@ export class Game {
 				}
 				this.canvas.focus();
 			}
-			this.playerPowerUps.set(0, [null, null, null]);
-			this.playerPowerUps.set(1, [null, null, null]);
-			this.active_powerups.set(0, null);
-			this.active_powerups.set(1, null);
-			this.playerInverted.set(0, false);
-			this.playerInverted.set(1, false);
-			this.playerScore.set(0, 0);
-			this.playerScore.set(1, 0);
-			this.playerSize.set(0, GAME_CONFIG.paddleWidth);
-			this.playerSize.set(1, GAME_CONFIG.paddleWidth);
 		} catch (error) {
 			Logger.errorAndThrow('Error creating game managers', 'Game', error);
 		}
@@ -383,13 +382,16 @@ export class Game {
 	private resetForNextMatch(): void {
 		if (!this.isInitialized) return;
 
-		this.playerScore.set(0, 0);
-		this.playerScore.set(1, 0);
-		this.playerSize.set(0, GAME_CONFIG.paddleWidth);
-		this.playerSize.set(1, GAME_CONFIG.paddleWidth);
-		this.active_powerups.set(0, null);
-		this.active_powerups.set(1, null);
-		// TODO call a function
+		this.players.get(PlayerSide.LEFT)!.score = 0;
+        this.players.get(PlayerSide.RIGHT)!.score = 0;
+        this.players.get(PlayerSide.LEFT)!.size = GAME_CONFIG.paddleWidth;
+        this.players.get(PlayerSide.RIGHT)!.size = GAME_CONFIG.paddleWidth;
+        this.players.get(PlayerSide.LEFT)!.activePowerup = null;
+        this.players.get(PlayerSide.RIGHT)!.activePowerup = null;
+		this.players.get(PlayerSide.LEFT)!.inverted = false;
+		this.players.get(PlayerSide.RIGHT)!.inverted = false;
+		this.players.get(PlayerSide.LEFT)!.powerUps = [null, null, null];
+		this.players.get(PlayerSide.RIGHT)!.powerUps = [null, null, null];
 
 		if (this.gameObjects) {
 			if (this.gameObjects.players.left) {
@@ -406,7 +408,10 @@ export class Game {
 			}
 		}
 
-		this.guiManager?.hud.updateScores(0, 0);
+		this.guiManager?.hud.updateScores(
+            this.players.get(PlayerSide.LEFT)!.score,
+            this.players.get(PlayerSide.RIGHT)!.score
+        );
 	}
 
 // ====================			GAME STATE UPDATES	   ====================
@@ -424,19 +429,22 @@ export class Game {
 			this.gameObjects.ball.rotation.x += 0.1;
 			this.gameObjects.ball.rotation.y += 0.05;
 
-			if(this.guiManager?.hud.updateRally(state.ball.current_rally))
+			if (this.guiManager?.hud.updateRally(state.ball.current_rally))
 				this.audioManager?.playPaddleHit();
 			this.audioManager?.updateMusicSpeed(state.ball.current_rally);
 
-			if (this.playerScore.get(0)! < state.paddleLeft.score) {
-                this.playerScore.set(0, state.paddleLeft.score);
+			if (this.players.get(PlayerSide.LEFT)!.score < state.paddleLeft.score) {
+                this.players.get(PlayerSide.LEFT)!.score = state.paddleLeft.score;
                 this.audioManager?.playScore();
             }
-            if (this.playerScore.get(1)! < state.paddleRight.score) {
-                this.playerScore.set(1, state.paddleRight.score);
+            if (this.players.get(PlayerSide.RIGHT)!.score < state.paddleRight.score) {
+                this.players.get(PlayerSide.RIGHT)!.score = state.paddleRight.score;
                 this.audioManager?.playScore();
 			}
-			this.guiManager?.hud.updateScores(state.paddleLeft.score, state.paddleRight.score);
+			this.guiManager?.hud.updateScores(
+                this.players.get(PlayerSide.LEFT)!.score,
+                this.players.get(PlayerSide.RIGHT)!.score
+            );
 
 		} catch (error) {
 			Logger.errorAndThrow('Error updating game objects', 'Game', error);
@@ -491,36 +499,10 @@ export class Game {
 		}
 	}
 
-	// private handlePlayerInput(keyboardSource: any, player: any, controls: PlayerControls, side: number): void {
-	// 	if (!(this.controlledSides.includes(side))) return;
-
-	// 	// Get boundaries based on current paddle size
-	// 	let boundaries = side === 0 
-	// 		? getPlayerBoundaries(this.leftPaddleSize)
-	// 		: getPlayerBoundaries(this.rightPaddleSize);
-
-	// 	let direction = Direction.STOP;
-	// 	if (this.playerInverted.get(side) === true) {
-	// 		if ((keyboardSource.getInput(controls.left) === 1) && (player.position.x < boundaries.right)) 
-	// 			direction = Direction.RIGHT;
-	// 		else if ((keyboardSource.getInput(controls.right) === 1) && (player.position.x > boundaries.left))
-	// 			direction = Direction.LEFT;
-	// 	} else {
-	// 		if ((keyboardSource.getInput(controls.left) === 1) && (player.position.x > boundaries.left)) 
-	// 			direction = Direction.LEFT;
-	// 		else if ((keyboardSource.getInput(controls.right) === 1) && (player.position.x < boundaries.right))
-	// 			direction = Direction.RIGHT;
-	// 	}
-
-	// 	if (direction !== Direction.STOP)
-	// 		webSocketClient.sendPlayerInput(side, direction);
-	// }
-	private handlePlayerInput( keyboardSource: any, player: any, controls: PlayerControls, side: 0 | 1): void {
+	private handlePlayerInput(keyboardSource: any, player: any, controls: PlayerControls, side: PlayerSide): void {
 		if (!this.controlledSides.includes(side)) return;
-		const bounds = side === 0
-			? getPlayerBoundaries(this.playerSize.get(0)!)
-			: getPlayerBoundaries(this.playerSize.get(1)!);
-		
+		const bounds = getPlayerBoundaries(this.players.get(side)!.size);
+
 		let input: Direction = Direction.STOP;
 		if (keyboardSource.getInput(controls.left) === 1)
 			input = Direction.LEFT;
@@ -528,17 +510,17 @@ export class Game {
 			input = Direction.RIGHT;
 		if (input === Direction.STOP) return;
 		
-		const inverted = this.playerInverted.get(side) === true;
+		const inverted = this.players.get(side)!.inverted;
 		const effective =
 			inverted
-			? (input === Direction.LEFT ? Direction.RIGHT : Direction.LEFT)
-			: input;
+				? (input === Direction.LEFT ? Direction.RIGHT : Direction.LEFT)
+				: input;
 		
 		if (effective === Direction.LEFT && player.position.x <= bounds.left) return;
 		if (effective === Direction.RIGHT && player.position.x >= bounds.right) return;
 		
 		webSocketClient.sendPlayerInput(side, input);
-		}
+	}
 
 // ====================			GAME STATE			   ====================
 	isInGame(): boolean {
@@ -631,109 +613,108 @@ export class Game {
 
 // ====================			POWERUP				  ====================
 	private getPowerup(message: any): void {
-		if (!message || !Array.isArray(message.powerups))
-			console.warn("[PowerUps] invalid message", message);
-		
-		const ids: number[] = message.powerups;
-		const side = message.side;
+        if (!message || !Array.isArray(message.powerups))
+            console.warn("[PowerUps] invalid message", message);
 
-		if (side !== 0 && side !== 1)
-			return;
+        const ids: number[] = message.powerups;
+        const side = message.side;
 
-		this.playerPowerUps.set(side, ids.map(id => id as PowerupType));
+        if (side !== PlayerSide.LEFT && side !== PlayerSide.RIGHT)
+            return;
 
-		ids.forEach((powerup, index) => {
-			this.guiManager?.powerUp.update(side, index, powerup as PowerupType, PowerUpAction.CREATED);
-		});
-	}
+        this.players.get(side)!.powerUps = ids.map(id => id as PowerupType);
 
-	private requestActivatePowerUp(side: number, index: number): void {
-		const powerUps = this.playerPowerUps.get(side);
-		if (!powerUps) return;
-		
-		const powerup = powerUps[index];
-		if (powerup === null || powerup === undefined) return;
+        ids.forEach((powerup, index) => {
+            this.guiManager?.powerUp.update(side, index, powerup as PowerupType, PowerUpAction.CREATED);
+        });
+    }
 
-		const currentlyActive = this.active_powerups.get(side);
-		if (currentlyActive === powerup) return;
+    private requestActivatePowerUp(side: PlayerSide, index: number): void {
+        const powerUps = this.players.get(side)!.powerUps;
+        if (!powerUps) return;
 
-		webSocketClient.sendPowerupActivationRequest(powerup, side, index);
-	}
+        const powerup = powerUps[index];
+        if (powerup === null || powerup === undefined) return;
 
-	private togglePowerUp(message: any, toActive: boolean): void {
-		if (!message) return;
+        const currentlyActive = this.players.get(side)!.activePowerup;
+        if (currentlyActive === powerup) return;
 
-		console.warn(`[PowerUp Toggle] ${toActive ? 'Activating' : 'Deactivating'} power-up:`, message);
+        webSocketClient.sendPowerupActivationRequest(powerup, side, index);
+    }
 
-		const side = message.side;
-		const slot = message.slot;
-		const powerup = message.powerup;
+    private togglePowerUp(message: any, toActive: boolean): void {
+        if (!message) return;
 
-		const med = GAME_CONFIG.paddleWidth;
-		const lrg = GAME_CONFIG.increasedPaddleWidth;
-		const sml = GAME_CONFIG.decreasedPaddleWidth;
-		
-		if (toActive) {
-			this.active_powerups.set(side, powerup);
-			switch (message.powerup) {
-				case PowerupType.SHRINK_OPPONENT:
-					if (side === 0) {
-						this.animationManager?.scaleWidth(this.gameObjects?.players.right, med, sml);
-						this.playerSize.set(1, GAME_CONFIG.decreasedPaddleWidth);
-					} else {
-						this.animationManager?.scaleWidth(this.gameObjects?.players.left, med, sml);
-						this.playerSize.set(0, GAME_CONFIG.decreasedPaddleWidth);
-					}
-					break;
-				case PowerupType.GROW_PADDLE:
-					if (side === 0) {
-						this.animationManager?.scaleWidth(this.gameObjects?.players.left, med, lrg);
-						this.playerSize.set(0, GAME_CONFIG.increasedPaddleWidth);
-					} else {
-						this.animationManager?.scaleWidth(this.gameObjects?.players.right, med, lrg);
-						this.playerSize.set(1, GAME_CONFIG.increasedPaddleWidth);
-					}
-					break;
-				case PowerupType.INVERT_OPPONENT:
-					if (side === 0)
-						this.playerInverted.set(1, true);
-					else
-						this.playerInverted.set(0, true);
-					break;
+        console.warn(`[PowerUp Toggle] ${toActive ? 'Activating' : 'Deactivating'} power-up:`, message);
 
-			}
-			this.guiManager?.powerUp.update(side, slot, null, PowerUpAction.ACTIVATED);
-		} else {
-			this.active_powerups.set(side, null);
-			switch (message.powerup) {
-				case PowerupType.SHRINK_OPPONENT:
-					if (side === 0) {
-						this.animationManager?.scaleWidth(this.gameObjects?.players.right, sml, med);
-						this.playerSize.set(1, GAME_CONFIG.paddleWidth);
-					} else {
-						this.animationManager?.scaleWidth(this.gameObjects?.players.left, sml, med);
-						this.playerSize.set(0, GAME_CONFIG.paddleWidth);
-					}
-					break;
-				case PowerupType.GROW_PADDLE:
-					if (side === 0) {
-						this.animationManager?.scaleWidth(this.gameObjects?.players.left, lrg, med);
-						this.playerSize.set(0, GAME_CONFIG.paddleWidth);
-					} else {
-						this.animationManager?.scaleWidth(this.gameObjects?.players.right, lrg, med);
-						this.playerSize.set(1, GAME_CONFIG.paddleWidth);
-					}
-					break;
-				case PowerupType.INVERT_OPPONENT:
-					if (side === 0)
-						this.playerInverted.set(1, false);
-					else
-						this.playerInverted.set(0, false);
-					break;
-			}
-			this.guiManager?.powerUp.update(side, slot, null, PowerUpAction.DEACTIVATED);
-		}
-	}
+        const side = message.side;
+        const slot = message.slot;
+        const powerup = message.powerup;
+
+        const med = GAME_CONFIG.paddleWidth;
+        const lrg = GAME_CONFIG.increasedPaddleWidth;
+        const sml = GAME_CONFIG.decreasedPaddleWidth;
+
+        if (toActive) {
+            this.players.get(side)!.activePowerup = powerup;
+            switch (message.powerup) {
+                case PowerupType.SHRINK_OPPONENT:
+                    if (side === PlayerSide.LEFT) {
+                        this.animationManager?.scaleWidth(this.gameObjects?.players.right, med, sml);
+                        this.players.get(PlayerSide.RIGHT)!.size = GAME_CONFIG.decreasedPaddleWidth;
+                    } else {
+                        this.animationManager?.scaleWidth(this.gameObjects?.players.left, med, sml);
+                        this.players.get(PlayerSide.LEFT)!.size = GAME_CONFIG.decreasedPaddleWidth;
+                    }
+                    break;
+                case PowerupType.GROW_PADDLE:
+                    if (side === PlayerSide.LEFT) {
+                        this.animationManager?.scaleWidth(this.gameObjects?.players.left, med, lrg);
+                        this.players.get(PlayerSide.LEFT)!.size = GAME_CONFIG.increasedPaddleWidth;
+                    } else {
+                        this.animationManager?.scaleWidth(this.gameObjects?.players.right, med, lrg);
+                        this.players.get(PlayerSide.RIGHT)!.size = GAME_CONFIG.increasedPaddleWidth;
+                    }
+                    break;
+                case PowerupType.INVERT_OPPONENT:
+                    if (side === PlayerSide.LEFT)
+                        this.players.get(PlayerSide.RIGHT)!.inverted = true;
+                    else
+                        this.players.get(PlayerSide.LEFT)!.inverted = true;
+                    break;
+            }
+            this.guiManager?.powerUp.update(side, slot, null, PowerUpAction.ACTIVATED);
+        } else {
+            this.players.get(side)!.activePowerup = null;
+            switch (message.powerup) {
+                case PowerupType.SHRINK_OPPONENT:
+                    if (side === PlayerSide.LEFT) {
+                        this.animationManager?.scaleWidth(this.gameObjects?.players.right, sml, med);
+                        this.players.get(PlayerSide.RIGHT)!.size = GAME_CONFIG.paddleWidth;
+                    } else {
+                        this.animationManager?.scaleWidth(this.gameObjects?.players.left, sml, med);
+                        this.players.get(PlayerSide.LEFT)!.size = GAME_CONFIG.paddleWidth;
+                    }
+                    break;
+                case PowerupType.GROW_PADDLE:
+                    if (side === PlayerSide.LEFT) {
+                        this.animationManager?.scaleWidth(this.gameObjects?.players.left, lrg, med);
+                        this.players.get(PlayerSide.LEFT)!.size = GAME_CONFIG.paddleWidth;
+                    } else {
+                        this.animationManager?.scaleWidth(this.gameObjects?.players.right, lrg, med);
+                        this.players.get(PlayerSide.RIGHT)!.size = GAME_CONFIG.paddleWidth;
+                    }
+                    break;
+                case PowerupType.INVERT_OPPONENT:
+                    if (side === PlayerSide.LEFT)
+                        this.players.get(PlayerSide.RIGHT)!.inverted = false;
+                    else
+                        this.players.get(PlayerSide.LEFT)!.inverted = false;
+                    break;
+            }
+            this.guiManager?.powerUp.update(side, slot, null, PowerUpAction.DEACTIVATED);
+        }
+    }
 
 	private updateTournamentLobby(message: any): void {
 		
