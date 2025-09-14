@@ -54,13 +54,13 @@ export class Game {
 	private controlledSides: number[] = [];
 
 
-	private leftPaddleSize: number = GAME_CONFIG.paddleWidth;
-	private rightPaddleSize: number = GAME_CONFIG.paddleWidth;
-	private playerLeftScore: number = 0;
-	private playerRightScore: number = 0;
+	// private leftPaddleSize: number = GAME_CONFIG.paddleWidth;
+	// private rightPaddleSize: number = GAME_CONFIG.paddleWidth;
+	// private playerLeftScore: number = 0;
+	// private playerRightScore: number = 0;
 	private playerInverted: Map<PlayerSide, boolean> = new Map;
-	// private playerSize: Map<PlayerSide, SizePaddle> = new Map;
-	// private playerScore: Map<PlayerSide, Number> = new Map;
+	private playerSize: Map<PlayerSide, number> = new Map;
+	private playerScore: Map<PlayerSide, number> = new Map;
 	private playerPowerUps: Map<PlayerSide, (PowerupType | null)[]> = new Map();
 	private active_powerups: Map<PlayerSide, PowerupType | null> = new Map();
 
@@ -102,6 +102,10 @@ export class Game {
 			this.active_powerups.set(1, null);
 			this.playerInverted.set(0, false);
 			this.playerInverted.set(1, false);
+			this.playerScore.set(0, 0);
+			this.playerScore.set(1, 0);
+			this.playerSize.set(0, GAME_CONFIG.paddleWidth);
+			this.playerSize.set(1, GAME_CONFIG.paddleWidth);
 		} catch (error) {
 			Logger.errorAndThrow('Error creating game managers', 'Game', error);
 		}
@@ -379,12 +383,13 @@ export class Game {
 	private resetForNextMatch(): void {
 		if (!this.isInitialized) return;
 
-		this.playerLeftScore = 0;
-		this.playerRightScore = 0;
-		this.leftPaddleSize = GAME_CONFIG.paddleWidth;
-		this.rightPaddleSize = GAME_CONFIG.paddleWidth;
+		this.playerScore.set(0, 0);
+		this.playerScore.set(1, 0);
+		this.playerSize.set(0, GAME_CONFIG.paddleWidth);
+		this.playerSize.set(1, GAME_CONFIG.paddleWidth);
 		this.active_powerups.set(0, null);
 		this.active_powerups.set(1, null);
+		// TODO call a function
 
 		if (this.gameObjects) {
 			if (this.gameObjects.players.left) {
@@ -423,13 +428,13 @@ export class Game {
 				this.audioManager?.playPaddleHit();
 			this.audioManager?.updateMusicSpeed(state.ball.current_rally);
 
-			if (this.playerLeftScore < state.paddleLeft.score) {
-				this.playerLeftScore = state.paddleLeft.score
-				this.audioManager?.playScore();
-			}
-			if (this.playerRightScore < state.paddleRight.score) {
-				this.playerRightScore = state.paddleRight.score
-				this.audioManager?.playScore();
+			if (this.playerScore.get(0)! < state.paddleLeft.score) {
+                this.playerScore.set(0, state.paddleLeft.score);
+                this.audioManager?.playScore();
+            }
+            if (this.playerScore.get(1)! < state.paddleRight.score) {
+                this.playerScore.set(1, state.paddleRight.score);
+                this.audioManager?.playScore();
 			}
 			this.guiManager?.hud.updateScores(state.paddleLeft.score, state.paddleRight.score);
 
@@ -513,8 +518,8 @@ export class Game {
 	private handlePlayerInput( keyboardSource: any, player: any, controls: PlayerControls, side: 0 | 1): void {
 		if (!this.controlledSides.includes(side)) return;
 		const bounds = side === 0
-			? getPlayerBoundaries(this.leftPaddleSize)
-			: getPlayerBoundaries(this.rightPaddleSize);
+			? getPlayerBoundaries(this.playerSize.get(0)!)
+			: getPlayerBoundaries(this.playerSize.get(1)!);
 		
 		let input: Direction = Direction.STOP;
 		if (keyboardSource.getInput(controls.left) === 1)
@@ -674,19 +679,19 @@ export class Game {
 				case PowerupType.SHRINK_OPPONENT:
 					if (side === 0) {
 						this.animationManager?.scaleWidth(this.gameObjects?.players.right, med, sml);
-						this.rightPaddleSize = GAME_CONFIG.decreasedPaddleWidth;
+						this.playerSize.set(1, GAME_CONFIG.decreasedPaddleWidth);
 					} else {
 						this.animationManager?.scaleWidth(this.gameObjects?.players.left, med, sml);
-						this.leftPaddleSize = GAME_CONFIG.decreasedPaddleWidth;
+						this.playerSize.set(0, GAME_CONFIG.decreasedPaddleWidth);
 					}
 					break;
 				case PowerupType.GROW_PADDLE:
 					if (side === 0) {
 						this.animationManager?.scaleWidth(this.gameObjects?.players.left, med, lrg);
-						this.leftPaddleSize = GAME_CONFIG.increasedPaddleWidth;
+						this.playerSize.set(0, GAME_CONFIG.increasedPaddleWidth);
 					} else {
 						this.animationManager?.scaleWidth(this.gameObjects?.players.right, med, lrg);
-						this.rightPaddleSize = GAME_CONFIG.increasedPaddleWidth;
+						this.playerSize.set(1, GAME_CONFIG.increasedPaddleWidth);
 					}
 					break;
 				case PowerupType.INVERT_OPPONENT:
@@ -704,19 +709,19 @@ export class Game {
 				case PowerupType.SHRINK_OPPONENT:
 					if (side === 0) {
 						this.animationManager?.scaleWidth(this.gameObjects?.players.right, sml, med);
-						this.rightPaddleSize = GAME_CONFIG.paddleWidth;
+						this.playerSize.set(1, GAME_CONFIG.paddleWidth);
 					} else {
 						this.animationManager?.scaleWidth(this.gameObjects?.players.left, sml, med);
-						this.leftPaddleSize = GAME_CONFIG.paddleWidth;
+						this.playerSize.set(0, GAME_CONFIG.paddleWidth);
 					}
 					break;
 				case PowerupType.GROW_PADDLE:
 					if (side === 0) {
 						this.animationManager?.scaleWidth(this.gameObjects?.players.left, lrg, med);
-						this.leftPaddleSize = GAME_CONFIG.paddleWidth;
+						this.playerSize.set(0, GAME_CONFIG.paddleWidth);
 					} else {
 						this.animationManager?.scaleWidth(this.gameObjects?.players.right, lrg, med);
-						this.rightPaddleSize = GAME_CONFIG.paddleWidth;
+						this.playerSize.set(1, GAME_CONFIG.paddleWidth);
 					}
 					break;
 				case PowerupType.INVERT_OPPONENT:
