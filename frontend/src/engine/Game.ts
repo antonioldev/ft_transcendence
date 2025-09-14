@@ -25,6 +25,7 @@ enum PlayerSide {
 }
 
 interface PlayerState {
+	isControlled: boolean;
 	size: number;
 	score: number;
 	powerUps: (PowerupType | null)[];
@@ -53,25 +54,10 @@ export class Game {
 	private audioManager: AudioManager | null =null;
 	private deviceSourceManager: DeviceSourceManager | null = null;
 	private gameLoopObserver: any = null;
-	private controlledSides: number[] = [];
+	// private controlledSides: number[] = [];
 
 
-	private players: Map<PlayerSide, PlayerState> = new Map([
-        [PlayerSide.LEFT, {
-            size: GAME_CONFIG.paddleWidth,
-            score: 0,
-            powerUps: [null, null, null],
-            activePowerup: null,
-            inverted: false
-        }],
-        [PlayerSide.RIGHT, {
-            size: GAME_CONFIG.paddleWidth,
-            score: 0,
-            powerUps: [null, null, null],
-            activePowerup: null,
-            inverted: false
-        }]
-    ]);
+	private players: Map<PlayerSide, PlayerState> = new Map();
 
 // ====================			STATIC METHODS			 ====================
 	static getCurrentInstance(): Game | null {
@@ -104,10 +90,32 @@ export class Game {
 					gl.getExtension('EXT_color_buffer_half_float');
 				}
 				this.canvas.focus();
+				this.resetPlayersData();
 			}
 		} catch (error) {
 			Logger.errorAndThrow('Error creating game managers', 'Game', error);
 		}
+	}
+
+	private resetPlayersData(): void {
+		this.players = new Map([
+			[PlayerSide.LEFT, {
+				isControlled: false,
+				size: GAME_CONFIG.paddleWidth,
+				score: 0,
+				powerUps: [null, null, null],
+				activePowerup: null,
+				inverted: false
+			}],
+			[PlayerSide.RIGHT, {
+				isControlled: false,
+				size: GAME_CONFIG.paddleWidth,
+				score: 0,
+				powerUps: [null, null, null],
+				activePowerup: null,
+				inverted: false
+			}]
+		]);
 	}
 
 // ====================			INITIALIZATION			====================
@@ -276,10 +284,11 @@ export class Game {
 		if (this.currentState === GameState.MATCH_ENDED)
 			this.resetForNextMatch();
 		if (countdown === GAME_CONFIG.startDelay) {
+			const controlledSides = this.getControlledSides();
 			this.renderManager?.startCameraAnimation(
 				this.gameObjects?.cameras, 
 				this.config.viewMode,
-				this.controlledSides,
+				controlledSides,
 				this.config.isLocalMultiplayer
 			);
 		}
@@ -330,7 +339,7 @@ export class Game {
 		await this.guiManager?.hidePartialWinner();
 		webSocketClient.notifyGameAnimationDone();
 		this.audioManager?.stopGameMusic();
-		this.controlledSides = [];
+		// this.controlledSides = [];
 		this.stopGameLoop();
 		this.currentState = GameState.MATCH_ENDED;
 	}
@@ -347,7 +356,7 @@ export class Game {
 
 		this.audioManager?.stopGameMusic();
 		this.renderManager?.stopRendering();
-		this.controlledSides = []
+		// this.controlledSides = []
 		this.stopGameLoop();
 		this.dispose();
 		this.resetToMenu();
@@ -382,16 +391,7 @@ export class Game {
 	private resetForNextMatch(): void {
 		if (!this.isInitialized) return;
 
-		this.players.get(PlayerSide.LEFT)!.score = 0;
-        this.players.get(PlayerSide.RIGHT)!.score = 0;
-        this.players.get(PlayerSide.LEFT)!.size = GAME_CONFIG.paddleWidth;
-        this.players.get(PlayerSide.RIGHT)!.size = GAME_CONFIG.paddleWidth;
-        this.players.get(PlayerSide.LEFT)!.activePowerup = null;
-        this.players.get(PlayerSide.RIGHT)!.activePowerup = null;
-		this.players.get(PlayerSide.LEFT)!.inverted = false;
-		this.players.get(PlayerSide.RIGHT)!.inverted = false;
-		this.players.get(PlayerSide.LEFT)!.powerUps = [null, null, null];
-		this.players.get(PlayerSide.RIGHT)!.powerUps = [null, null, null];
+		this.resetPlayersData();
 
 		if (this.gameObjects) {
 			if (this.gameObjects.players.left) {
@@ -409,9 +409,9 @@ export class Game {
 		}
 
 		this.guiManager?.hud.updateScores(
-            this.players.get(PlayerSide.LEFT)!.score,
-            this.players.get(PlayerSide.RIGHT)!.score
-        );
+			this.players.get(PlayerSide.LEFT)!.score,
+			this.players.get(PlayerSide.RIGHT)!.score
+		);
 	}
 
 // ====================			GAME STATE UPDATES	   ====================
@@ -452,19 +452,41 @@ export class Game {
 	}
 
 // ====================			INPUT HANDLING		   ====================
-	private assignPlayerSide(name: string, side: number): void {
-		const isOurPlayer = this.config.players.some(player => player.name === name);
-		if (isOurPlayer && !this.controlledSides.includes(side))
-			this.controlledSides.push(side);
-	}
+	// private assignPlayerSide(name: string, side: number): void {
+	// 	const isOurPlayer = this.config.players.some(player => player.name === name);
+	// 	if (isOurPlayer && !this.controlledSides.includes(side))
+	// 		this.controlledSides.push(side);
+	// }
 
 	private handlePlayerAssignment(leftPlayerName: string, rightPlayerName: string): void {
 		this.guiManager?.hud.updatePlayerNames(leftPlayerName, rightPlayerName);
-		this.assignPlayerSide(leftPlayerName, 0);
-		this.assignPlayerSide(rightPlayerName, 1);
 
-		this.renderManager?.updateActiveCameras(this.config.viewMode, this.controlledSides, this.config.isLocalMultiplayer);
-		this.guiManager?.updateControlVisibility(this.controlledSides.includes(0), this.controlledSides.includes(1));
+		const leftPlayer = this.players?.get(PlayerSide.LEFT);
+		const rightPlayer = this.players?.get(PlayerSide.RIGHT);
+		
+		if (leftPlayer)
+			leftPlayer.isControlled = this.config.players.some(player => player.name === leftPlayerName);
+
+		if (rightPlayer)
+			rightPlayer.isControlled = this.config.players.some(player => player.name === rightPlayerName);
+
+		// Get controlled sides for camera setup
+		const controlledSides = this.getControlledSides();
+		
+		this.renderManager?.updateActiveCameras(this.config.viewMode, controlledSides, this.config.isLocalMultiplayer);
+		this.guiManager?.updateControlVisibility(
+			leftPlayer?.isControlled || false, 
+			rightPlayer?.isControlled || false
+		);
+	}
+
+	private getControlledSides(): number[] {
+		const controlledSides: number[] = [];
+		if (this.players?.get(PlayerSide.LEFT)?.isControlled) 
+			controlledSides.push(PlayerSide.LEFT);
+		if (this.players?.get(PlayerSide.RIGHT)?.isControlled)
+			controlledSides.push(PlayerSide.RIGHT);
+		return controlledSides;
 	}
 
 
@@ -500,7 +522,8 @@ export class Game {
 	}
 
 	private handlePlayerInput(keyboardSource: any, player: any, controls: PlayerControls, side: PlayerSide): void {
-		if (!this.controlledSides.includes(side)) return;
+		const playerState = this.players?.get(side);
+		if (!playerState?.isControlled) return;
 		const bounds = getPlayerBoundaries(this.players.get(side)!.size);
 
 		let input: Direction = Direction.STOP;
@@ -572,7 +595,8 @@ export class Game {
 			this.deviceSourceManager?.dispose();
 			this.deviceSourceManager = null;
 
-			this.controlledSides = [];
+			// this.controlledSides = [];
+			this.players.clear();
 
 			this.guiManager?.dispose();
 			this.guiManager = null;
