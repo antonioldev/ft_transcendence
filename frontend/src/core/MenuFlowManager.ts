@@ -22,6 +22,8 @@ export class MenuFlowManager {
 	private selectedGameMode: GameMode | null = null;
 	private currentViewModeIndex = 0;
 	private currentAiDifficultyIndex: AiDifficulty = AiDifficulty.EASY;
+	private currentTournamentIndex: number = 4;
+	private currentOnlineTournamentIndex: number = 4;
 
 	static getInstance(): MenuFlowManager {
 		if (!MenuFlowManager.instance)
@@ -45,12 +47,20 @@ export class MenuFlowManager {
 		const backBtn = requireElementById(EL.BUTTONS.DASHBOARD_BACK);
 		const soloDifficultyBack = requireElementById(EL.BUTTONS.SOLO_DIFFICULTY_BACK);
 		const soloDifficultyForward = requireElementById(EL.BUTTONS.SOLO_DIFFICULTY_FORWARD);
+		const tournamentNumberBack = requireElementById(EL.BUTTONS.TOURNAMENT_NUMBER_BACK);
+		const tournamentNumberForward = requireElementById(EL.BUTTONS.TOURNAMENT_NUMBER_FORWARD);
+		const tournamentOnlineNumberBack = requireElementById(EL.BUTTONS.TOURNAMENT_ONLINE_NUMBER_BACK);
+		const tournamentOnlineNumberForward = requireElementById(EL.BUTTONS.TOURNAMENT_ONLINE_NUMBER_FORWARD);
 
 		viewModeBack.addEventListener('click', () => this.previousViewMode());
 		viewModeForward.addEventListener('click', () => this.nextViewMode());
 		backBtn.addEventListener('click', () => { appStateManager.navigateTo(AppState.MAIN_MENU);});
 		soloDifficultyBack.addEventListener('click', () => this.previousAIDifficulty());
 		soloDifficultyForward.addEventListener('click', () => this.nextAIDifficulty());
+		tournamentNumberBack.addEventListener('click', () => this.previousTournamentSize());
+		tournamentNumberForward.addEventListener('click', () => this.nextTournamentSize());
+		tournamentOnlineNumberBack.addEventListener('click', () => this.previousOnlineTournamentSize());
+		tournamentOnlineNumberForward.addEventListener('click', () => this.nextOnlineTournamentSize());
 
 		uiManager.updateAIDifficultyDisplay(this.currentAiDifficultyIndex);
 
@@ -202,6 +212,30 @@ export class MenuFlowManager {
 	private nextAIDifficulty(): void {
 		this.currentAiDifficultyIndex = (this.currentAiDifficultyIndex + 1) % 4;
 		uiManager.updateAIDifficultyDisplay(this.currentAiDifficultyIndex);
+	}
+
+	// ========================================
+	// TOURNAMENT SIZE MANAGEMENT
+	// ========================================
+
+	private previousTournamentSize(): void {
+		this.currentTournamentIndex = this.currentTournamentIndex === 4 ? 16 : this.currentTournamentIndex === 8 ? 4 : 8;
+		uiManager.updateTournamentSizeDisplay(this.currentTournamentIndex);
+	}
+
+	private nextTournamentSize(): void {
+		this.currentTournamentIndex = this.currentTournamentIndex === 4 ? 8 : this.currentTournamentIndex === 8 ? 16 : 4;
+		uiManager.updateTournamentSizeDisplay(this.currentTournamentIndex);
+	}
+
+	private previousOnlineTournamentSize(): void {
+		this.currentOnlineTournamentIndex = this.currentOnlineTournamentIndex === 4 ? 16 : this.currentOnlineTournamentIndex === 8 ? 4 : 8;
+		uiManager.updateOnlineTournamentSizeDisplay(this.currentOnlineTournamentIndex);
+	}
+
+	private nextOnlineTournamentSize(): void {
+		this.currentOnlineTournamentIndex = this.currentOnlineTournamentIndex === 4 ? 8 : this.currentOnlineTournamentIndex === 8 ? 16 : 4;
+		uiManager.updateOnlineTournamentSizeDisplay(this.currentOnlineTournamentIndex);
 	}
 
 	// ========================================

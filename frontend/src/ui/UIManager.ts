@@ -174,6 +174,18 @@ class UIManager {
 		soloButton.textContent = `vs AI${difficulties[currentDifficultyIndex]}`;
 	}
 
+	updateTournamentSizeDisplay(currentTournamentSize: number): void {
+		const tournamentButton = requireElementById(EL.GAME_MODES.TOURNAMENT);
+		const t = getCurrentTranslation();
+		tournamentButton.textContent = `${t.tournamentMode} (${currentTournamentSize}x 𐦂𖨆𐀪𖠋)`;
+	}
+
+	updateOnlineTournamentSizeDisplay(currentOnlineTournamentSize: number): void {
+		const tournamentOnlineButton = requireElementById(EL.GAME_MODES.TOURNAMENT_ONLINE);
+		const t = getCurrentTranslation();
+		tournamentOnlineButton.textContent = `${t.tournamentOnline} (${currentOnlineTournamentSize}x 🧑‍🧑‍🧒‍🧒)`;
+	}
+
 	// ========================================
 	// BUTTON STATE MANAGEMENT
 	// ========================================

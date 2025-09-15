@@ -37,6 +37,11 @@ export const EL = {
 	DASHBOARD_BACK: 'dashboard-back',
 	SOLO_DIFFICULTY_BACK: 'solo-difficulty-back',
 	SOLO_DIFFICULTY_FORWARD: 'solo-difficulty-forward',
+	TOURNAMENT_NUMBER_BACK: 'tournament-number-back',
+	TOURNAMENT_NUMBER_FORWARD: 'tournament-number-forward',
+	TOURNAMENT_ONLINE_NUMBER_BACK: 'tournament-online-number-back',
+	TOURNAMENT_ONLINE_NUMBER_FORWARD: 'tournament-online-number-forward',
+
 
 	// View mode navigation
 	VIEW_MODE_BACK: 'view-mode-back',
