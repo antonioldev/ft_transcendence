@@ -217,11 +217,7 @@ export function findOrCreateGoogleUser(profile: { sub: string; name: string; ema
 /**
  * Create a new game for a player.
  */
-export function registerNewGame(
-	gameId: string,
-	playerUsername: string,
-	tournament: number
-): boolean {
+export function registerNewGame(gameId: string, playerUsername: string, tournament: number): boolean {
 	if (!playerUsername) {
 		console.error('registerNewGame: playerUsername is undefined');
 		return false;

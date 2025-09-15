@@ -1,4 +1,4 @@
-import { Engine, Scene, Color4, DeviceSourceManager, DeviceType,SceneLoader} from "@babylonjs/core";
+import { Engine, Scene, Color4, SceneLoader} from "@babylonjs/core";
 import { GameConfig } from './GameConfig.js';
 import { buildScene2D, buildScene3D } from './scene/sceneBuilder.js';
 import { webSocketClient } from '../core/WebSocketClient.js';
@@ -10,25 +10,15 @@ import { uiManager } from '../ui/UIManager.js';
 import { GUIManager } from './GuiManager.js';
 import { AnimationManager } from "./AnimationManager.js";
 import { RenderManager } from './RenderManager.js';
-import { GameMode, Direction } from '../shared/constants.js';
-import { PlayerControls} from '../shared/types.js';
-import { getPlayerBoundaries } from '../shared/gameConfig.js';
+import { GameMode } from '../shared/constants.js';
 import { appStateManager } from '../core/AppStateManager.js';
 import { GameConfigFactory } from './GameConfig.js';
 import { AudioManager } from './AudioManager.js';
-import { PowerupType, PowerUpAction } from "../shared/constants.js";
-// import { LoadingGui } from "./gui/LoadingGui.js";
+import { PowerupManager } from "./PowerUpManager.js";
+import { PlayerSide, PlayerState, resetPlayersState } from "./utils.js"
+import { KeyboardManager } from "./KeybordManager.js";
 
-enum PlayerSide {
-	LEFT = 0,
-	RIGHT = 1
-}
 
-interface PlayerState {
-	score: number;
-	powerUps: (PowerupType | null)[];
-	activePowerup: PowerupType | null;
-}
 
 /**
  * The Game class serves as the core of the game engine, managing the initialization,
@@ -45,24 +35,13 @@ export class Game {
 	private canvas: HTMLCanvasElement | null = null;
 	private gameObjects: GameObjects | null = null;
 	private animationManager: AnimationManager | null = null;
-	// private loadingGui: LoadingGui | null = null;
 	private guiManager: GUIManager | null = null;
 	private renderManager: RenderManager | null = null;
 	private audioManager: AudioManager | null =null;
-	private deviceSourceManager: DeviceSourceManager | null = null;
+	private powerup: PowerupManager | null = null;
+	private input: KeyboardManager | null = null;
 	private gameLoopObserver: any = null;
-	private controlledSides: number[] = [];
-
-
-	private leftPaddleSize: number = GAME_CONFIG.paddleWidth;
-	private rightPaddleSize: number = GAME_CONFIG.paddleWidth;
-	private playerLeftScore: number = 0;
-	private playerRightScore: number = 0;
-	private playerInverted: Map<PlayerSide, boolean> = new Map;
-	// private playerSize: Map<PlayerSide, SizePaddle> = new Map;
-	// private playerScore: Map<PlayerSide, Number> = new Map;
-	private playerPowerUps: Map<PlayerSide, (PowerupType | null)[]> = new Map();
-	private active_powerups: Map<PlayerSide, PowerupType | null> = new Map();
+	private players: Map<PlayerSide, PlayerState> = new Map();
 
 // ====================			STATIC METHODS			 ====================
 	static getCurrentInstance(): Game | null {
@@ -95,13 +74,8 @@ export class Game {
 					gl.getExtension('EXT_color_buffer_half_float');
 				}
 				this.canvas.focus();
+				this.players = resetPlayersState();
 			}
-			this.playerPowerUps.set(0, [null, null, null]);
-			this.playerPowerUps.set(1, [null, null, null]);
-			this.active_powerups.set(0, null);
-			this.active_powerups.set(1, null);
-			this.playerInverted.set(0, false);
-			this.playerInverted.set(1, false);
 		} catch (error) {
 			Logger.errorAndThrow('Error creating game managers', 'Game', error);
 		}
@@ -110,23 +84,14 @@ export class Game {
 // ====================			INITIALIZATION			====================
 	async initialize(): Promise<void> {
 		if (this.isInitialized) return;
-		
-		this.setupGlobalKeyboardEvents();
-		SceneLoader.ShowLoadingScreen = false;
 
+		SceneLoader.ShowLoadingScreen = false;
 		uiManager.setLoadingScreenVisible(true);
 		try {
 			Logger.info('Initializing game...', 'Game');
 
 			this.engine = await this.initializeBabylonEngine();
 			this.scene = await this.createScene();
-			// this.renderManager = new RenderManager(this.engine, this.scene);
-			// this.renderManager?.startRendering();
-
-			// this.loadingGui = new LoadingGui(this.scene);
-			// this.loadingGui.show();
-
-			this.deviceSourceManager = new DeviceSourceManager(this.scene.getEngine());
 
 			this.animationManager = new AnimationManager(this.scene);
 
@@ -137,13 +102,20 @@ export class Game {
 				? await buildScene2D(this.scene, this.config.gameMode, this.config.viewMode, (progress: number) => uiManager.updateLoadingProgress(progress))
 				: await buildScene3D(this.scene, this.config.gameMode, this.config.viewMode, (progress: number) => uiManager.updateLoadingProgress(progress));
 
-			// this.gameObjects = this.config.viewMode === ViewMode.MODE_2D
-			// 	? await buildScene2D(this.scene, this.config.gameMode, this.config.viewMode, (progress: number) => this.loadingGui?.setProgress(progress))
-			// 	: await buildScene3D(this.scene, this.config.gameMode, this.config.viewMode, (progress: number) => this.loadingGui?.setProgress(progress));
-
-
 			this.guiManager = new GUIManager(this.scene, this.config, this.animationManager, this.audioManager);
 
+			this.powerup = new PowerupManager(this.players, this.animationManager, this.guiManager, this.gameObjects);
+			this.input = new KeyboardManager(this.scene, this.config, this.gameObjects, this.players, this.powerup,
+				{
+					isPlaying: () => this.currentState === GameState.PLAYING,
+					isPaused: () => this.currentState === GameState.PAUSED
+				},
+				{
+					onPause: () => this.pause(),
+					onResume: () => this.resume(),
+					onExitToMenu: () => this.requestExitToMenu()
+				}
+			);
 
 			this.renderManager = new RenderManager(this.engine, this.scene, this.guiManager, this.animationManager, this.gameObjects);
 			this.renderManager?.startRendering();
@@ -152,7 +124,6 @@ export class Game {
 			this.isInitialized = true;
 			webSocketClient.sendPlayerReady();
 			uiManager.setLoadingScreenVisible(false);
-			// this.loadingGui.hide();
 // 			this.updateTournamentLobby(["player0"]);
 // let counter = 1;
 // const names: string[] = [];
@@ -167,8 +138,6 @@ export class Game {
 // 	clearInterval(intervalId);
 // }
 // }, 3000);
-			// if (this.config.gameMode === GameMode.TWO_PLAYER_REMOTE || this.config.gameMode === GameMode.TOURNAMENT_REMOTE)
-			// 	uiManager.updateLoadingText();
 		} catch (error) {
 			await this.dispose();
 			Logger.errorAndThrow('Error initializing game', 'Game', error);
@@ -196,36 +165,6 @@ export class Game {
 		return scene;
 	}
 
-	private setupGlobalKeyboardEvents(): void {
-		document.addEventListener('keydown', (event) => {
-
-			if (event.key === 'Escape' && this.currentState === GameState.PLAYING) {
-				if (this.isInGame()) this.pause();
-				else if (this.isPaused()) this.resume();
-			}
-
-			if (this.isPaused()) {
-				if (event.key === 'Y' || event.key === 'y') this.requestExitToMenu();
-				else if (event.key === 'N' || event.key === 'n' || event.key === 'Escape') this.resume();
-			}
-
-			if (this.currentState !== GameState.PLAYING) return;
-			// if (event.repeat) return;
-			const k = event.key.toLowerCase();
-			switch (k) {
-				// LEFT player (side 0): slots 0,1,2
-				case 'c': this.requestActivatePowerUp(0, 0); break;
-				case 'v': this.requestActivatePowerUp(0, 1); break;
-				case 'b': this.requestActivatePowerUp(0, 2); break;
-
-				// RIGHT player (side 1): slots 0,1,2
-				case 'i': this.requestActivatePowerUp(1, 0); break;
-				case 'o': this.requestActivatePowerUp(1, 1); break;
-				case 'p': this.requestActivatePowerUp(1, 2); break;
-			}
-		});
-	}
-
 	// Connect all components together
 	private connectComponents(): void {
 		webSocketClient.registerCallback(WebSocketEvent.GAME_STATE, (state: GameStateData) => { this.updateGameObjects(state); });
@@ -236,13 +175,13 @@ export class Game {
 		webSocketClient.registerCallback(WebSocketEvent.GAME_ENDED, (message: any) => { this.onServerEndedGame(message.winner); });
 		webSocketClient.registerCallback(WebSocketEvent.SESSION_ENDED, (message: any) => { this.onServerEndedSession(message.winner); });
 		webSocketClient.registerCallback(WebSocketEvent.SIDE_ASSIGNMENT, (message: any) => { this.handlePlayerAssignment(message.left, message.right); });
-		webSocketClient.registerCallback(WebSocketEvent.MATCH_ASSIGNMENT, (message: any) => { this.handleTournamentGames(message); });
-		webSocketClient.registerCallback(WebSocketEvent.MATCH_WINNER, (message: any) => { this.handleTournamentSingleGame(message); });
+		webSocketClient.registerCallback(WebSocketEvent.MATCH_ASSIGNMENT, (message: any) => { this.guiManager?.updateTournamentRound(message); });
+		webSocketClient.registerCallback(WebSocketEvent.MATCH_WINNER, (message: any) => { this.guiManager?.updateTournamentGame(message); });
+		webSocketClient.registerCallback(WebSocketEvent.TOURNAMENT_LOBBY, (message: any) => {this.guiManager?.updateTournamentLobby(message); uiManager.setLoadingScreenVisible(false); });
 		webSocketClient.registerCallback(WebSocketEvent.COUNTDOWN, (message: any) => { this.handleCountdown(message.countdown); });
-		webSocketClient.registerCallback(WebSocketEvent.POWERUP_ASSIGNMENT, (message: any) => { this.getPowerup(message); });
-		webSocketClient.registerCallback(WebSocketEvent.POWERUP_ACTIVATED, (message: any) => { this.togglePowerUp(message, true); });
-		webSocketClient.registerCallback(WebSocketEvent.POWERUP_DEACTIVATED, (message: any) => { this.togglePowerUp(message, false); });
-		webSocketClient.registerCallback(WebSocketEvent.TOURNAMENT_LOBBY, (message: any) => {this.updateTournamentLobby(message); });
+		webSocketClient.registerCallback(WebSocketEvent.POWERUP_ASSIGNMENT, (message: any) => { this.powerup?.assign(message); });
+		webSocketClient.registerCallback(WebSocketEvent.POWERUP_ACTIVATED, (message: any) => { this.powerup?.activate(message); });
+		webSocketClient.registerCallback(WebSocketEvent.POWERUP_DEACTIVATED, (message: any) => { this.powerup?.deactivate(message); });
 	}
 
 	async connect(aiDifficulty: number): Promise<void> {
@@ -255,7 +194,6 @@ export class Game {
 
 		try {
 			this.currentState = GameState.PLAYING;
-			// Start game loop
 			this.startGameLoop();
 		} catch (error) {
 			Logger.errorAndThrow('Error starting game', 'Game', error);
@@ -273,10 +211,11 @@ export class Game {
 		if (this.currentState === GameState.MATCH_ENDED)
 			this.resetForNextMatch();
 		if (countdown === GAME_CONFIG.startDelay) {
+			const controlledSides = this.getControlledSides();
 			this.renderManager?.startCameraAnimation(
 				this.gameObjects?.cameras, 
 				this.config.viewMode,
-				this.controlledSides,
+				controlledSides,
 				this.config.isLocalMultiplayer
 			);
 		}
@@ -297,12 +236,10 @@ export class Game {
 	// Handle server confirming game is paused
 	private onServerPausedGame(): void {
 		if (!this.isInitialized || this.currentState === GameState.PAUSED) return;
-
 		this.currentState = GameState.PAUSED;
 		this.guiManager?.setPauseVisible(true);
 		this.audioManager?.pauseGameMusic();
 		this.stopGameLoop();
-
 	}
 
 	// Handle server confirming game is resumed
@@ -327,7 +264,6 @@ export class Game {
 		await this.guiManager?.hidePartialWinner();
 		webSocketClient.notifyGameAnimationDone();
 		this.audioManager?.stopGameMusic();
-		this.controlledSides = [];
 		this.stopGameLoop();
 		this.currentState = GameState.MATCH_ENDED;
 	}
@@ -344,7 +280,6 @@ export class Game {
 
 		this.audioManager?.stopGameMusic();
 		this.renderManager?.stopRendering();
-		this.controlledSides = []
 		this.stopGameLoop();
 		this.dispose();
 		this.resetToMenu();
@@ -359,8 +294,8 @@ export class Game {
 			try {
 				// this.loadingGui?.hide();
 				uiManager.setLoadingScreenVisible(false);
-				this.guiManager?.lobby.hide()
-				this.updateInput();
+				this.guiManager?.lobby.hide();
+				this.input?.update();
 				if (this.config.viewMode === ViewMode.MODE_3D)
 					this.renderManager?.update3DCameras();
 			} catch (error) {
@@ -379,12 +314,7 @@ export class Game {
 	private resetForNextMatch(): void {
 		if (!this.isInitialized) return;
 
-		this.playerLeftScore = 0;
-		this.playerRightScore = 0;
-		this.leftPaddleSize = GAME_CONFIG.paddleWidth;
-		this.rightPaddleSize = GAME_CONFIG.paddleWidth;
-		this.active_powerups.set(0, null);
-		this.active_powerups.set(1, null);
+		this.players = resetPlayersState();
 
 		if (this.gameObjects) {
 			if (this.gameObjects.players.left) {
@@ -401,7 +331,10 @@ export class Game {
 			}
 		}
 
-		this.guiManager?.hud.updateScores(0, 0);
+		this.guiManager?.hud.updateScores(
+			this.players.get(PlayerSide.LEFT)!.score,
+			this.players.get(PlayerSide.RIGHT)!.score
+		);
 	}
 
 // ====================			GAME STATE UPDATES	   ====================
@@ -419,19 +352,22 @@ export class Game {
 			this.gameObjects.ball.rotation.x += 0.1;
 			this.gameObjects.ball.rotation.y += 0.05;
 
-			if(this.guiManager?.hud.updateRally(state.ball.current_rally))
+			if (this.guiManager?.hud.updateRally(state.ball.current_rally))
 				this.audioManager?.playPaddleHit();
 			this.audioManager?.updateMusicSpeed(state.ball.current_rally);
 
-			if (this.playerLeftScore < state.paddleLeft.score) {
-				this.playerLeftScore = state.paddleLeft.score
+			if (this.players.get(PlayerSide.LEFT)!.score < state.paddleLeft.score) {
+				this.players.get(PlayerSide.LEFT)!.score = state.paddleLeft.score;
 				this.audioManager?.playScore();
 			}
-			if (this.playerRightScore < state.paddleRight.score) {
-				this.playerRightScore = state.paddleRight.score
+			if (this.players.get(PlayerSide.RIGHT)!.score < state.paddleRight.score) {
+				this.players.get(PlayerSide.RIGHT)!.score = state.paddleRight.score;
 				this.audioManager?.playScore();
 			}
-			this.guiManager?.hud.updateScores(state.paddleLeft.score, state.paddleRight.score);
+			this.guiManager?.hud.updateScores(
+				this.players.get(PlayerSide.LEFT)!.score,
+				this.players.get(PlayerSide.RIGHT)!.score
+			);
 
 		} catch (error) {
 			Logger.errorAndThrow('Error updating game objects', 'Game', error);
@@ -439,101 +375,35 @@ export class Game {
 	}
 
 // ====================			INPUT HANDLING		   ====================
-	private assignPlayerSide(name: string, side: number): void {
-		const isOurPlayer = this.config.players.some(player => player.name === name);
-		if (isOurPlayer && !this.controlledSides.includes(side))
-			this.controlledSides.push(side);
-	}
-
 	private handlePlayerAssignment(leftPlayerName: string, rightPlayerName: string): void {
 		this.guiManager?.hud.updatePlayerNames(leftPlayerName, rightPlayerName);
-		this.assignPlayerSide(leftPlayerName, 0);
-		this.assignPlayerSide(rightPlayerName, 1);
 
-		this.renderManager?.updateActiveCameras(this.config.viewMode, this.controlledSides, this.config.isLocalMultiplayer);
-		this.guiManager?.updateControlVisibility(this.controlledSides.includes(0), this.controlledSides.includes(1));
-	}
+		const leftPlayer = this.players?.get(PlayerSide.LEFT);
+		const rightPlayer = this.players?.get(PlayerSide.RIGHT);
+		
+		if (leftPlayer)
+			leftPlayer.isControlled = this.config.players.some(player => player.name === leftPlayerName);
 
+		if (rightPlayer)
+			rightPlayer.isControlled = this.config.players.some(player => player.name === rightPlayerName);
 
-	private handleTournamentGames(message: any): void {
-		this.guiManager?.matchTree.insert(
-			message.round_index,
-			message.match_index,
-			message.left ?? null,
-			message.right ?? null,
-			message.match_total ?? undefined
+		const controlledSides = this.getControlledSides();
+		
+		this.renderManager?.updateActiveCameras(this.config.viewMode, controlledSides, this.config.isLocalMultiplayer);
+		this.guiManager?.updateControlVisibility(
+			leftPlayer?.isControlled || false, 
+			rightPlayer?.isControlled || false
 		);
 	}
 
-	private handleTournamentSingleGame(message: any): void {
-		this.guiManager?.matchTree.update(
-			message.winner,
-			message.round_index,
-			message.match_index
-		)
+	private getControlledSides(): number[] {
+		const controlledSides: number[] = [];
+		if (this.players?.get(PlayerSide.LEFT)?.isControlled) 
+			controlledSides.push(PlayerSide.LEFT);
+		if (this.players?.get(PlayerSide.RIGHT)?.isControlled)
+			controlledSides.push(PlayerSide.RIGHT);
+		return controlledSides;
 	}
-
-	private updateInput(): void {
-		if (!this.isInitialized || !this.deviceSourceManager || !this.gameObjects) return;
-		try {
-			const keyboardSource = this.deviceSourceManager.getDeviceSource(DeviceType.Keyboard);
-			if (keyboardSource) {
-				this.handlePlayerInput(keyboardSource, this.gameObjects.players.left, this.config.controls.playerLeft, 0); // Handle left player (side 0)
-				this.handlePlayerInput(keyboardSource, this.gameObjects.players.right, this.config.controls.playerRight, 1); // Handle right player (side 1)
-			}
-		} catch (error) {
-			Logger.errorAndThrow('Error updating input', 'Game', error);
-		}
-	}
-
-	// private handlePlayerInput(keyboardSource: any, player: any, controls: PlayerControls, side: number): void {
-	// 	if (!(this.controlledSides.includes(side))) return;
-
-	// 	// Get boundaries based on current paddle size
-	// 	let boundaries = side === 0 
-	// 		? getPlayerBoundaries(this.leftPaddleSize)
-	// 		: getPlayerBoundaries(this.rightPaddleSize);
-
-	// 	let direction = Direction.STOP;
-	// 	if (this.playerInverted.get(side) === true) {
-	// 		if ((keyboardSource.getInput(controls.left) === 1) && (player.position.x < boundaries.right)) 
-	// 			direction = Direction.RIGHT;
-	// 		else if ((keyboardSource.getInput(controls.right) === 1) && (player.position.x > boundaries.left))
-	// 			direction = Direction.LEFT;
-	// 	} else {
-	// 		if ((keyboardSource.getInput(controls.left) === 1) && (player.position.x > boundaries.left)) 
-	// 			direction = Direction.LEFT;
-	// 		else if ((keyboardSource.getInput(controls.right) === 1) && (player.position.x < boundaries.right))
-	// 			direction = Direction.RIGHT;
-	// 	}
-
-	// 	if (direction !== Direction.STOP)
-	// 		webSocketClient.sendPlayerInput(side, direction);
-	// }
-	private handlePlayerInput( keyboardSource: any, player: any, controls: PlayerControls, side: 0 | 1): void {
-		if (!this.controlledSides.includes(side)) return;
-		const bounds = side === 0
-			? getPlayerBoundaries(this.leftPaddleSize)
-			: getPlayerBoundaries(this.rightPaddleSize);
-		
-		let input: Direction = Direction.STOP;
-		if (keyboardSource.getInput(controls.left) === 1)
-			input = Direction.LEFT;
-		else if (keyboardSource.getInput(controls.right) === 1)
-			input = Direction.RIGHT;
-		if (input === Direction.STOP) return;
-		
-		const inverted = this.playerInverted.get(side) === true;
-		const effective =
-			inverted
-			? (input === Direction.LEFT ? Direction.RIGHT : Direction.LEFT)
-			: input;
-		
-		if (effective === Direction.LEFT && player.position.x <= bounds.left) return;
-		if (effective === Direction.RIGHT && player.position.x >= bounds.right) return;
-		
-		webSocketClient.sendPlayerInput(side, input);
-		}
 
 // ====================			GAME STATE			   ====================
 	isInGame(): boolean {
@@ -582,16 +452,16 @@ export class Game {
 			this.renderManager?.dispose();
 			this.renderManager = null;
 
-			this.deviceSourceManager?.dispose();
-			this.deviceSourceManager = null;
-
-			this.controlledSides = [];
+			this.players.clear();
 
 			this.guiManager?.dispose();
 			this.guiManager = null;
 
-			// this.loadingGui?.dispose();
-			// this.loadingGui = null;
+			this.input?.dispose();
+			this.input = null;
+
+			this.powerup?.dispose();
+			this.powerup = null;
 
 			uiManager.setLoadingScreenVisible(false);
 
@@ -599,20 +469,17 @@ export class Game {
 			this.audioManager?.dispose();
 			this.audioManager = null;
 
-			if (this.scene) {
-				this.scene.onBeforeRenderObservable?.clear();
-				this.scene.onAfterRenderObservable?.clear();
-				this.scene.dispose();
-				this.scene = null;
-			}
+			this.scene?.onBeforeRenderObservable?.clear();
+			this.scene?.onAfterRenderObservable?.clear();
+			this.scene?.dispose();
+			this.scene = null;
 
 			this.engine?.dispose();
 			this.engine = null;
 
 			if (this.canvas) {
 				const context = this.canvas.getContext('2d');
-				if (context)
-					context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+				context?.clearRect(0, 0, this.canvas.width, this.canvas.height);
 			}
 			this.canvas = null;
 
@@ -622,118 +489,5 @@ export class Game {
 		} catch (error) {
 			Logger.errorAndThrow('Error disposing game', 'Game', error);
 		}
-	}
-
-// ====================			POWERUP				  ====================
-	private getPowerup(message: any): void {
-		if (!message || !Array.isArray(message.powerups))
-			console.warn("[PowerUps] invalid message", message);
-		
-		const ids: number[] = message.powerups;
-		const side = message.side;
-
-		if (side !== 0 && side !== 1)
-			return;
-
-		this.playerPowerUps.set(side, ids.map(id => id as PowerupType));
-
-		ids.forEach((powerup, index) => {
-			this.guiManager?.powerUp.update(side, index, powerup as PowerupType, PowerUpAction.CREATED);
-		});
-	}
-
-	private requestActivatePowerUp(side: number, index: number): void {
-		const powerUps = this.playerPowerUps.get(side);
-		if (!powerUps) return;
-		
-		const powerup = powerUps[index];
-		if (powerup === null || powerup === undefined) return;
-
-		const currentlyActive = this.active_powerups.get(side);
-		if (currentlyActive === powerup) return;
-
-		webSocketClient.sendPowerupActivationRequest(powerup, side, index);
-	}
-
-	private togglePowerUp(message: any, toActive: boolean): void {
-		if (!message) return;
-
-		console.warn(`[PowerUp Toggle] ${toActive ? 'Activating' : 'Deactivating'} power-up:`, message);
-
-		const side = message.side;
-		const slot = message.slot;
-		const powerup = message.powerup;
-
-		const med = GAME_CONFIG.paddleWidth;
-		const lrg = GAME_CONFIG.increasedPaddleWidth;
-		const sml = GAME_CONFIG.decreasedPaddleWidth;
-		
-		if (toActive) {
-			this.active_powerups.set(side, powerup);
-			switch (message.powerup) {
-				case PowerupType.SHRINK_OPPONENT:
-					if (side === 0) {
-						this.animationManager?.scaleWidth(this.gameObjects?.players.right, med, sml);
-						this.rightPaddleSize = GAME_CONFIG.decreasedPaddleWidth;
-					} else {
-						this.animationManager?.scaleWidth(this.gameObjects?.players.left, med, sml);
-						this.leftPaddleSize = GAME_CONFIG.decreasedPaddleWidth;
-					}
-					break;
-				case PowerupType.GROW_PADDLE:
-					if (side === 0) {
-						this.animationManager?.scaleWidth(this.gameObjects?.players.left, med, lrg);
-						this.leftPaddleSize = GAME_CONFIG.increasedPaddleWidth;
-					} else {
-						this.animationManager?.scaleWidth(this.gameObjects?.players.right, med, lrg);
-						this.rightPaddleSize = GAME_CONFIG.increasedPaddleWidth;
-					}
-					break;
-				case PowerupType.INVERT_OPPONENT:
-					if (side === 0)
-						this.playerInverted.set(1, true);
-					else
-						this.playerInverted.set(0, true);
-					break;
-
-			}
-			this.guiManager?.powerUp.update(side, slot, null, PowerUpAction.ACTIVATED);
-		} else {
-			this.active_powerups.set(side, null);
-			switch (message.powerup) {
-				case PowerupType.SHRINK_OPPONENT:
-					if (side === 0) {
-						this.animationManager?.scaleWidth(this.gameObjects?.players.right, sml, med);
-						this.rightPaddleSize = GAME_CONFIG.paddleWidth;
-					} else {
-						this.animationManager?.scaleWidth(this.gameObjects?.players.left, sml, med);
-						this.leftPaddleSize = GAME_CONFIG.paddleWidth;
-					}
-					break;
-				case PowerupType.GROW_PADDLE:
-					if (side === 0) {
-						this.animationManager?.scaleWidth(this.gameObjects?.players.left, lrg, med);
-						this.leftPaddleSize = GAME_CONFIG.paddleWidth;
-					} else {
-						this.animationManager?.scaleWidth(this.gameObjects?.players.right, lrg, med);
-						this.rightPaddleSize = GAME_CONFIG.paddleWidth;
-					}
-					break;
-				case PowerupType.INVERT_OPPONENT:
-					if (side === 0)
-						this.playerInverted.set(1, false);
-					else
-						this.playerInverted.set(0, false);
-					break;
-			}
-			this.guiManager?.powerUp.update(side, slot, null, PowerUpAction.DEACTIVATED);
-		}
-	}
-
-	private updateTournamentLobby(message: any): void {
-		
-		const names: string[] = message.lobby ?? ["test1"];
-		this.guiManager?.lobby.show(names);
-		uiManager.setLoadingScreenVisible(false);
 	}
 }

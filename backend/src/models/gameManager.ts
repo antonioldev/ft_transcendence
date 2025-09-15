@@ -6,7 +6,6 @@ import { registerNewGame, addPlayer2 } from '../data/validation.js';
 import * as db from "../data/validation.js";
 import { GAME_CONFIG } from '../shared/gameConfig.js';
 import { EventEmitter } from 'events';
-import { Cipheriv } from 'crypto';
 
 /**
  * Manages game sessions and player interactions within the game.
@@ -22,7 +21,7 @@ class GameManager extends EventEmitter {
      * @param client - The client initiating the game.
      * @returns The unique ID of the created game session.
      */
-    createGame(mode: GameMode, client: Client, capacity?: number): string {
+    createGame(mode: GameMode, client: Client, capacity?: number): AbstractGameSession {
         const gameId = `game_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         // Create a new game in DB with 1st player as client only if the game is remote
         if (mode === GameMode.TWO_PLAYER_REMOTE) {
@@ -48,31 +47,14 @@ class GameManager extends EventEmitter {
         this.gameIdMap.set(gameId, gameSession);
         this.clientGamesMap.set(client.id, gameSession);
 
-        // if gameSession not full after a period of time then start automatically with CPU's
+        // if gameSession not full after a period of maxJoinWaitTime then start automatically with CPU's
         setTimeout(() => {
-            if (this.gameIdMap.has(gameId)) this.runGame(gameSession, client.id);
+            if (this.gameIdMap.has(gameId)) this.runGame(gameSession);
         }, (GAME_CONFIG.maxJoinWaitTime * 1000));
         
         console.log(`Created ${mode} game: ${gameId}`);
-        return gameId;
+        return gameSession;
     }
-
-    // UNUSED FUNCTION
-    // /**
-    //  * Allows a client to join an existing game session if it is not full.
-    //  * @param gameId - The unique ID of the game session.
-    //  * @param client - The client attempting to join the game.
-    //  * @returns True if the client successfully joined the game, otherwise false.
-    //  */
-    
-    // joinGame(gameId: string, client: Client): boolean {
-    //     const game = this.games.get(gameId);
-    //     if (game && !game.full) {
-    //         game.add_client(client);
-    //         return true;
-    //     }
-    //     return false;
-    // }
 
     /**
      * Finds an available game session for the specified mode or creates a new one.
@@ -80,8 +62,7 @@ class GameManager extends EventEmitter {
      * @param client - The client looking for a game session.
      * @returns The unique ID of the found or created game session.
      */
-
-    findOrCreateGame(mode: GameMode, client: Client, capacity?: number): string {
+    findOrCreateGame(mode: GameMode, client: Client, capacity?: number): AbstractGameSession {
         //For local games, just create game
         if (mode === GameMode.SINGLE_PLAYER || mode === GameMode.TWO_PLAYER_LOCAL|| mode === GameMode.TOURNAMENT_LOCAL) {
             return this.createGame(mode, client, capacity);
@@ -90,24 +71,34 @@ class GameManager extends EventEmitter {
             // Try to find waiting game or create new one
             for (const [gameId, game] of this.gameIdMap) {
                 if (game.mode === mode && !game.full) {
+                    if (mode === GameMode.TOURNAMENT_REMOTE && game.client_capacity !== capacity) continue ;
+
                     game.add_client(client);
                     addPlayer2(gameId, client.username); // add security
-                    return gameId;
+                    return game;
                 }
             }
         }
         // No waiting games, create new one
-        return this.createGame(mode, client);
+        return this.createGame(mode, client, capacity);
     }
 
-    async runGame(gameSession: AbstractGameSession, client_id: string): Promise<void> {
+    async runGame(gameSession: AbstractGameSession): Promise<void> {
         if (gameSession.running) return ;
-        
+        if (gameSession.mode === GameMode.TOURNAMENT_REMOTE && gameSession.players.length < 2) {
+            // wait another 30 seconds for at least 2 players to be in the tournament
+            setTimeout(() => {
+                if (this.gameIdMap.has(gameSession.id)) this.runGame(gameSession);
+            }, (GAME_CONFIG.maxJoinWaitTime * 1000));
+            return ;
+        }
         console.log(`Game started with ${gameSession.players.length} players`);
         db.updateStartTime(gameSession.id);
         await gameSession.start();
-        gameManager.endGame(gameSession, client_id);
+        gameManager.endGame(gameSession);
     }
+
+    
 
     /**
      * Retrieves a game session by its unique ID.
@@ -124,11 +115,6 @@ class GameManager extends EventEmitter {
      * @returns The game object or null if the client is not in a game.
      */
     findClientGame(client: Client): AbstractGameSession | undefined {
-        // for (const gameSession of this.gameIdMap.values()) {
-        //     if (gameSession.clients.includes(client)) {
-        //         return gameSession;
-        //     }
-        // }
         return (this.clientGamesMap.get(client.id));
     }
 
@@ -136,10 +122,12 @@ class GameManager extends EventEmitter {
      * Removes a game session by its unique ID.
      * @param gameId - The unique ID of the game session to be removed.
      */
-    endGame(gameSession: AbstractGameSession, client_id: string): void {
+    endGame(gameSession: AbstractGameSession): void {
         gameSession.stop();
         this.gameIdMap.delete(gameSession.id);
-        this.clientGamesMap.delete(client_id);
+        for (const client of gameSession.clients) {
+            this.clientGamesMap.delete(client.id);
+        }
         console.log(`Removed game: ${gameSession.id}`);
     }
 
@@ -155,11 +143,11 @@ class GameManager extends EventEmitter {
         if (gameSession instanceof TournamentRemote) {
             gameSession.remove_client(client);
             if (gameSession.clients.length === 0) {
-                this.endGame(gameSession, client.id);
+                this.endGame(gameSession);
             }
         }
         else {
-            this.endGame(gameSession, client.id);
+            this.endGame(gameSession);
         }
     }
 }
