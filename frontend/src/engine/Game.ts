@@ -47,11 +47,11 @@ export class Game {
 	static getCurrentInstance(): Game | null {
 		return Game.currentInstance;
 	}
-	static async create(viewMode: ViewMode, gameMode: GameMode, aiDifficulty: number): Promise<void> {
+	static async create(viewMode: ViewMode, gameMode: GameMode, aiDifficulty: number, capacity?: number): Promise<void> {
 		try {
 			const config = GameConfigFactory.createWithAuthCheck(viewMode, gameMode);
 			const game = new Game(config);
-			await game.connect(aiDifficulty);
+			await game.connect(aiDifficulty, capacity);
 			await game.initialize();
 		} catch (error) {
 			Logger.error('Error creating game', 'Game', error);
@@ -184,8 +184,8 @@ export class Game {
 		webSocketClient.registerCallback(WebSocketEvent.POWERUP_DEACTIVATED, (message: any) => { this.powerup?.deactivate(message); });
 	}
 
-	async connect(aiDifficulty: number): Promise<void> {
-		webSocketClient.joinGame(this.config.gameMode, this.config.players, aiDifficulty);
+	async connect(aiDifficulty: number, capacity?: number): Promise<void> {
+		webSocketClient.joinGame(this.config.gameMode, this.config.players, aiDifficulty, capacity);
 	}
 
 // ====================			GAME CONTROL			 ====================

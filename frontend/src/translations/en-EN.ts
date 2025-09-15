@@ -18,6 +18,7 @@ export const english: Translation = {
 	enterPlayer1Name: 'Enter Player 1 name',
 	enterPlayer2Name: 'Enter Player 2 name',
 	onlineInfo: "You'll be matched with another online player",
+	next: "Next Player",
 	startGame: 'Start Game',
 	gamePaused: 'GAME PAUSED',
 	exitGame: 'Exit the game?',

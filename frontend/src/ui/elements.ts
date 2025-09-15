@@ -92,28 +92,34 @@ export const EL = {
   // ========================================
   // PLAYER SETUP FORMS
   // ========================================
-  PLAYER_SETUP: {
-	// Solo player setup
-	PLAYER1_NAME: 'player1-name',
+//   PLAYER_SETUP: {
+// 	// Solo player setup
+// 	PLAYER1_NAME: 'player1-name',
 
-	// Local multiplayer setup
-	PLAYER1_NAME_LOCAL: 'player1-name-local',
-	PLAYER2_NAME_LOCAL: 'player2-name-local',
+// 	// Local multiplayer setup
+// 	PLAYER1_NAME_LOCAL: 'player1-name-local',
+// 	PLAYER2_NAME_LOCAL: 'player2-name-local',
 
-	// Online setup (if needed)
-	PLAYER1_NAME_ONLINE: 'player1-name-online',
+// 	// Online setup (if needed)
+// 	PLAYER1_NAME_ONLINE: 'player1-name-online',
 
-	// Tournament setup
-	PLAYER1_NAME_TOURNAMENT: 'player1-name-tournament',
-	PLAYER2_NAME_TOURNAMENT: 'player2-name-tournament',
-	PLAYER3_NAME_TOURNAMENT: 'player3-name-tournament',
-	PLAYER4_NAME_TOURNAMENT: 'player4-name-tournament',
+// 	// Tournament setup
+// 	PLAYER1_NAME_TOURNAMENT: 'player1-name-tournament',
+// 	PLAYER2_NAME_TOURNAMENT: 'player2-name-tournament',
+// 	PLAYER3_NAME_TOURNAMENT: 'player3-name-tournament',
+// 	PLAYER4_NAME_TOURNAMENT: 'player4-name-tournament',
 
-	// Setup forms
-	SOLO_SETUP: 'solo-setup',
-	TWO_PLAYERS_SETUP: 'two-players-setup',
-	TOURNAMENT_SETUP: 'tournament-setup'
-  },
+// 	// Setup forms
+// 	SOLO_SETUP: 'solo-setup',
+// 	TWO_PLAYERS_SETUP: 'two-players-setup',
+// 	TOURNAMENT_SETUP: 'tournament-setup'
+//   },
+	PLAYER_COLLECTION: {
+		FORM: 'player-setup',
+		LABEL: 'player-label',
+		INPUT: 'player-input',
+		ADD_CPU: 'add-cpu',
+	},
 
   // ========================================
   // UI DISPLAY ELEMENTS
@@ -177,7 +183,8 @@ type ElementIdValues =
   | typeof EL.BUTTONS[keyof typeof EL.BUTTONS]
   | typeof EL.GAME_MODES[keyof typeof EL.GAME_MODES]
   | typeof EL.AUTH[keyof typeof EL.AUTH]
-  | typeof EL.PLAYER_SETUP[keyof typeof EL.PLAYER_SETUP]
+//   | typeof EL.PLAYER_SETUP[keyof typeof EL.PLAYER_SETUP]
+  | typeof EL.PLAYER_COLLECTION[keyof typeof EL.PLAYER_COLLECTION]
   | typeof EL.DISPLAY[keyof typeof EL.DISPLAY]
   | typeof EL.GAME[keyof typeof EL.GAME]
   | typeof EL.CONTAINERS[keyof typeof EL.CONTAINERS]

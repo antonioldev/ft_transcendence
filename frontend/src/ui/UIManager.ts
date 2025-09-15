@@ -108,11 +108,18 @@ class UIManager {
 		}
 	}
 
-	showSetupForm(formType: string): void {
-		this.applyStylesToAll('.setup-form', { display: 'none' });
-		const targetForm = document.getElementById(`${formType}-setup`);
-		if (targetForm) {
-			targetForm.style.display = 'block';
+	// showSetupForm(formType: string): void {
+	// 	this.applyStylesToAll('.setup-form', { display: 'none' });
+	// 	const targetForm = document.getElementById(`${formType}-setup`);
+	// 	if (targetForm) {
+	// 		targetForm.style.display = 'block';
+	// 	}
+	// }
+	showSetupForm(formId: string) {
+		const all = ['player-setup' /* old: 'solo-setup','two-players-setup','tournament-setup' */];
+		for (const id of all) {
+			const form = document.getElementById(id);
+			if (form) form.style.display = (id === formId) ? '' : 'none';
 		}
 	}
 

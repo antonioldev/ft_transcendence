@@ -18,6 +18,7 @@ export const french: Translation = {
 	enterPlayer1Name: 'Entrez le nom du Joueur 1',
 	enterPlayer2Name: 'Entrez le nom du Joueur 2',
 	onlineInfo: 'Vous serez jumelé avec un autre joueur en ligne',
+	next: "Joueur Suivant",
 	startGame: 'Commencer la Partie',
 	gamePaused: 'JEU EN PAUSE',
 	exitGame: 'Quitter le jeu ?',

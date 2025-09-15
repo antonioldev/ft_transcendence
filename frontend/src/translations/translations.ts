@@ -134,48 +134,52 @@ export function updateLanguageDisplay(): void {
 	const setupTitle = requireElementById(EL.DISPLAY.SETUP_TITLE);
 	setupTitle.textContent = t.playerSetup;
 
-	const soloLabel = document.querySelector('#solo-setup label[for="player1-name"]');
-	if (soloLabel) soloLabel.textContent = t.playerName;
+	// const soloLabel = document.querySelector('#solo-setup label[for="player1-name"]');
+	// if (soloLabel) soloLabel.textContent = t.playerName;
 
-	const soloInput = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER1_NAME);
-	soloInput.placeholder = t.enterName;
+	// const soloInput = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER1_NAME);
+	// soloInput.placeholder = t.enterName;
 
-	const localLabel1 = document.querySelector('#two-players-setup label[for="player1-name-local"]');
-	if (localLabel1) localLabel1.textContent = t.player1Name;
+	// const localLabel1 = document.querySelector('#two-players-setup label[for="player1-name-local"]');
+	// if (localLabel1) localLabel1.textContent = t.player1Name;
 
-	const localInput1 = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER1_NAME_LOCAL);
-	localInput1.placeholder = t.enterPlayer1Name;
+	// const localInput1 = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER1_NAME_LOCAL);
+	// localInput1.placeholder = t.enterPlayer1Name;
 
-	const localLabel2 = document.querySelector('#two-players-setup label[for="player2-name-local"]');
-	if (localLabel2) localLabel2.textContent = t.player2Name;
+	// const localLabel2 = document.querySelector('#two-players-setup label[for="player2-name-local"]');
+	// if (localLabel2) localLabel2.textContent = t.player2Name;
 
-	const localInput2 = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER2_NAME_LOCAL);
-	localInput2.placeholder = t.enterPlayer2Name;
+	// const localInput2 = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER2_NAME_LOCAL);
+	// localInput2.placeholder = t.enterPlayer2Name;
 
-	// Tournament labels
-	const tournamentLabel1 = document.querySelector('#tournament-setup label[for="player1-name-tournament"]');
-	if (tournamentLabel1) tournamentLabel1.textContent = t.player1Name;
+	// // Tournament labels
+	// const tournamentLabel1 = document.querySelector('#tournament-setup label[for="player1-name-tournament"]');
+	// if (tournamentLabel1) tournamentLabel1.textContent = t.player1Name;
 
-	const tournamentInput1 = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER1_NAME_TOURNAMENT);
-	tournamentInput1.placeholder = t.enterPlayer1Name;
+	// const tournamentInput1 = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER1_NAME_TOURNAMENT);
+	// tournamentInput1.placeholder = t.enterPlayer1Name;
 
-	const tournamentLabel2 = document.querySelector('#tournament-setup label[for="player2-name-tournament"]');
-	if (tournamentLabel2) tournamentLabel2.textContent = t.player2Name;
+	// const tournamentLabel2 = document.querySelector('#tournament-setup label[for="player2-name-tournament"]');
+	// if (tournamentLabel2) tournamentLabel2.textContent = t.player2Name;
 
-	const tournamentInput2 = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER2_NAME_TOURNAMENT);
-	tournamentInput2.placeholder = t.enterPlayer2Name;
+	// const tournamentInput2 = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER2_NAME_TOURNAMENT);
+	// tournamentInput2.placeholder = t.enterPlayer2Name;
 
-	const tournamentLabel3 = document.querySelector('#tournament-setup label[for="player3-name-tournament"]');
-	if (tournamentLabel3) tournamentLabel3.textContent = "Player 3 Name:";
+	// const tournamentLabel3 = document.querySelector('#tournament-setup label[for="player3-name-tournament"]');
+	// if (tournamentLabel3) tournamentLabel3.textContent = "Player 3 Name:";
 
-	const tournamentInput3 = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER3_NAME_TOURNAMENT);
-	tournamentInput3.placeholder = "Enter Player 3 name";
+	// const tournamentInput3 = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER3_NAME_TOURNAMENT);
+	// tournamentInput3.placeholder = "Enter Player 3 name";
 
-	const tournamentLabel4 = document.querySelector('#tournament-setup label[for="player4-name-tournament"]');
-	if (tournamentLabel4) tournamentLabel4.textContent = "Player 4 Name:";
+	// const tournamentLabel4 = document.querySelector('#tournament-setup label[for="player4-name-tournament"]');
+	// if (tournamentLabel4) tournamentLabel4.textContent = "Player 4 Name:";
 
-	const tournamentInput4 = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER4_NAME_TOURNAMENT);
-	tournamentInput4.placeholder = "Enter Player 4 name";
+	// const tournamentInput4 = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER4_NAME_TOURNAMENT);
+	// tournamentInput4.placeholder = "Enter Player 4 name";
+
+	const playerName = requireElementById<HTMLInputElement>(EL.PLAYER_COLLECTION.INPUT);
+	playerName.placeholder = t.enterName;
+
 
 	const startBtn = requireElementById(EL.BUTTONS.START_GAME);
 	startBtn.textContent = t.startGame;

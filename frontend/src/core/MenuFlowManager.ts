@@ -9,7 +9,6 @@ import { appStateManager } from './AppStateManager.js';
 import { EL, requireElementById} from '../ui/elements.js';
 import { GameConfigFactory } from '../engine/GameConfig.js';
 
-
 /**
  * Manages the selection and initialization of game modes and view modes for the application.
  * 
@@ -24,6 +23,12 @@ export class MenuFlowManager {
 	private currentAiDifficultyIndex: AiDifficulty = AiDifficulty.EASY;
 	private currentTournamentIndex: number = 4;
 	private currentOnlineTournamentIndex: number = 4;
+	
+	// Unified player collection system
+	private isCollectingPlayerNames = false;
+	private playerIndex: number = 0;
+	private playerNames: string[] = [];
+	private maxPlayersNeeded: number = 0;
 
 	static getInstance(): MenuFlowManager {
 		if (!MenuFlowManager.instance)
@@ -71,33 +76,33 @@ export class MenuFlowManager {
 	}
 
 	private setupGameModeButtons(): void {
-		this.setupGameModeHandler(GameMode.SINGLE_PLAYER, 'solo', {
+		this.setupGameModeHandler(GameMode.SINGLE_PLAYER, {
 			requiresAuth: false,
 			requiresSetup: true,
 			availableOfflineOnly: false
 		});
 
-		this.setupGameModeHandler(GameMode.TWO_PLAYER_LOCAL, 'two-players', {
+		this.setupGameModeHandler(GameMode.TWO_PLAYER_LOCAL, {
 			requiresAuth: false,
 			requiresSetup: true,
 			availableOfflineOnly: true,
 			errorMessage: 'Local mode not available for logged-in users'
 		});
 		
-		this.setupGameModeHandler(GameMode.TWO_PLAYER_REMOTE, 'two-players', {
+		this.setupGameModeHandler(GameMode.TWO_PLAYER_REMOTE, {
 			requiresAuth: true,
 			requiresSetup: false,
 			availableOfflineOnly: false
 		});
 		
-		this.setupGameModeHandler(GameMode.TOURNAMENT_LOCAL, 'tournament', {
+		this.setupGameModeHandler(GameMode.TOURNAMENT_LOCAL, {
 			requiresAuth: false,
 			requiresSetup: true,
 			availableOfflineOnly: true,
 			errorMessage: 'Local tournament not available for logged-in users'
 		});
 		
-		this.setupGameModeHandler(GameMode.TOURNAMENT_REMOTE, 'tournament', {
+		this.setupGameModeHandler(GameMode.TOURNAMENT_REMOTE, {
 			requiresAuth: true,
 			requiresSetup: false,
 			availableOfflineOnly: false
@@ -109,15 +114,19 @@ export class MenuFlowManager {
 	
 	private handleModeBackButton(): void {
 		this.selectedGameMode = null;
-		appStateManager.navigateTo(AppState.MAIN_MENU);;
+		appStateManager.navigateTo(AppState.MAIN_MENU);
 	}
 
 	// ========================================
 	// GAME MODE HANDLERS
 	// ========================================
 
-	private setupGameModeHandler(gameMode: GameMode, form: string, config: {
-				requiresAuth: boolean; requiresSetup: boolean; availableOfflineOnly: boolean; errorMessage?: string;}) {
+	private setupGameModeHandler(gameMode: GameMode, config: {
+		requiresAuth: boolean; 
+		requiresSetup: boolean; 
+		availableOfflineOnly: boolean; 
+		errorMessage?: string;
+	}) {
 		const button = requireElementById(gameMode);
 
 		button.addEventListener('click', async () => {
@@ -135,16 +144,164 @@ export class MenuFlowManager {
 			this.selectedGameMode = gameMode;
 
 			if (config.requiresSetup && !authManager.isUserAuthenticated()) {
+				// Start player collection for offline modes
+				this.beginPlayerCollection(gameMode);
 				appStateManager.navigateTo(AppState.PLAYER_SETUP);
-				uiManager.showSetupForm(form);
-				uiManager.clearForm([ EL.PLAYER_SETUP.PLAYER1_NAME, EL.PLAYER_SETUP.PLAYER1_NAME_LOCAL,
-					EL.PLAYER_SETUP.PLAYER2_NAME_LOCAL, EL.PLAYER_SETUP.PLAYER1_NAME_TOURNAMENT,
-					EL.PLAYER_SETUP.PLAYER2_NAME_TOURNAMENT, EL.PLAYER_SETUP.PLAYER3_NAME_TOURNAMENT,
-					EL.PLAYER_SETUP.PLAYER4_NAME_TOURNAMENT]);
-			} else
-				await appStateManager.startGameWithMode(this.selectedViewMode, this.selectedGameMode, this.currentAiDifficultyIndex);
-
+				uiManager.showSetupForm(EL.PLAYER_COLLECTION.FORM);
+			} else {
+				// For authenticated users or modes that don't require setup
+				let capacity: number | undefined = undefined;
+				
+				if (gameMode === GameMode.TOURNAMENT_REMOTE)
+					capacity = this.currentOnlineTournamentIndex;
+				
+				await appStateManager.startGameWithMode(
+					this.selectedViewMode, 
+					this.selectedGameMode, 
+					this.currentAiDifficultyIndex,
+					capacity
+				);
+			}
 		});
+	}
+
+	private beginPlayerCollection(gameMode: GameMode): void {
+		this.isCollectingPlayerNames = true;
+		this.playerIndex = 0;
+		this.playerNames = [];
+		
+		this.maxPlayersNeeded = this.getMaxPlayers(gameMode);
+		
+		this.updatePlayerCollectionUI();
+	}
+
+	private getMaxPlayers(gameMode: GameMode): number {
+		switch (gameMode) {
+			case GameMode.SINGLE_PLAYER: return 1;
+			case GameMode.TWO_PLAYER_LOCAL: return 2;
+			case GameMode.TOURNAMENT_LOCAL: return this.currentTournamentIndex;
+			default: return 1;
+		}
+	}
+
+	private updatePlayerCollectionUI(): void {
+		const currentPlayer = this.playerIndex + 1;
+		const isLastPlayer = currentPlayer >= this.maxPlayersNeeded;
+		const t = getCurrentTranslation();
+		const label = document.getElementById(EL.PLAYER_COLLECTION.LABEL) as HTMLLabelElement;
+		const input = document.getElementById(EL.PLAYER_COLLECTION.INPUT) as HTMLInputElement;
+		const nextButton = document.getElementById(EL.BUTTONS.START_GAME) as HTMLButtonElement;
+		const addCpuButton = document.getElementById(EL.PLAYER_COLLECTION.ADD_CPU) as HTMLButtonElement;
+
+		if (label) label.textContent = `${t.playerName} ${currentPlayer}`;
+		if (nextButton) nextButton.textContent = isLastPlayer ? t.startGame : t.next;
+
+		// Show/hide Add CPU for tournaments only
+		if (this.selectedGameMode === GameMode.TOURNAMENT_LOCAL) {
+			const canAddCpu = this.playerNames.length >= this.getMinPlayersForCpu();
+			if (addCpuButton) {
+				addCpuButton.style.display = 'block';
+				addCpuButton.disabled = !canAddCpu;
+			}
+		} else {
+			if (addCpuButton) addCpuButton.style.display = 'none';
+		}
+
+		// Focus input
+		if (input) {
+			input.value = '';
+			input.focus();
+			input.onkeydown = (e: KeyboardEvent) => {
+				if (e.key === 'Enter') {
+					e.preventDefault();
+					this.handlePlayerNext();
+				}
+			};
+		}
+	}
+
+	private getMinPlayersForCpu(): number {
+		if (this.selectedGameMode !== GameMode.TOURNAMENT_LOCAL) return 0;
+		
+		switch (this.currentTournamentIndex) {
+			case 4: return 3;
+			case 8: return 5;
+			case 16: return 9;
+			default: return Math.floor(this.currentTournamentIndex / 2) + 1;
+		}
+	}
+
+	private handlePlayerNext(): void {
+		const input = document.getElementById(EL.PLAYER_COLLECTION.INPUT) as HTMLInputElement;
+		const name = (input?.value ?? '').trim();
+		
+		if (!name) {
+			input?.focus();
+			return;
+		}
+
+		// Check duplicate
+		if (this.playerNames.includes(name)) {
+			alert('Name already used. Choose different name.');
+			if (input) {
+				input.value = '';
+				input.focus();
+			}
+			return;
+		}
+
+		this.playerNames.push(name);
+		this.playerIndex++;
+
+		if (this.playerIndex >= this.maxPlayersNeeded) {
+			this.finishPlayerCollection();
+			return;
+		}
+
+		this.updatePlayerCollectionUI();
+	}
+
+	private handleAddCpu(): void {
+		if (this.selectedGameMode !== GameMode.TOURNAMENT_LOCAL) return;
+		
+		const minPlayers = this.getMinPlayersForCpu();
+		if (this.playerNames.length < minPlayers) {
+			alert(`Need at least ${minPlayers} players to add CPU.`);
+			return;
+		}
+		
+		// Fill remaining slots with CPU players
+		while (this.playerNames.length < this.maxPlayersNeeded) {
+			this.playerNames.push(`CPU ${this.playerNames.length + 1}`);
+		}
+		
+		this.finishPlayerCollection();
+	}
+
+	private async finishPlayerCollection(): Promise<void> {
+		GameConfigFactory.setPlayers(this.playerNames);
+
+		this.isCollectingPlayerNames = false;
+
+		let capacity: number | undefined = undefined;
+		if (this.selectedGameMode === GameMode.TOURNAMENT_LOCAL) {
+			capacity = this.currentTournamentIndex;
+		}
+
+		await appStateManager.startGameWithMode(
+			this.selectedViewMode,
+			this.selectedGameMode!,
+			this.currentAiDifficultyIndex,
+			capacity
+		);
+	}
+
+	private handlePlayerBack(): void {
+		this.isCollectingPlayerNames = false;
+		this.playerIndex = 0;
+		this.playerNames = [];
+		this.selectedGameMode = null;
+		appStateManager.navigateTo(AppState.GAME_MODE);
 	}
 
 	// ========================================
@@ -154,22 +311,51 @@ export class MenuFlowManager {
 	private setupPlayerSetupListeners(): void {
 		const setupBack = requireElementById(EL.BUTTONS.SETUP_BACK);
 		const startGame = requireElementById(EL.BUTTONS.START_GAME);
+		const addCpu = document.getElementById(EL.PLAYER_COLLECTION.ADD_CPU);
 
 		setupBack.addEventListener('click', () => {
-			this.selectedGameMode = null;
-			appStateManager.navigateTo(AppState.GAME_MODE);
+			if (this.isCollectingPlayerNames) {
+				this.handlePlayerBack();
+			} else {
+				this.selectedGameMode = null;
+				appStateManager.navigateTo(AppState.GAME_MODE);
+			}
 		});
 
 		startGame.addEventListener('click', async () => {
 			if (this.selectedGameMode === null) return;
+
+			if (this.isCollectingPlayerNames) {
+				this.handlePlayerNext();
+				return;
+			}
 
 			if (!GameConfigFactory.validatePlayerSetup(this.selectedGameMode)) {
 				const t = getCurrentTranslation();
 				alert(t.pleaseFilllAllFields);
 				return;
 			}
-			await appStateManager.startGameWithMode(this.selectedViewMode, this.selectedGameMode, this.currentAiDifficultyIndex);
+
+			let capacity: number | undefined = undefined;
+			if (this.selectedGameMode === GameMode.TOURNAMENT_REMOTE) {
+				capacity = this.currentOnlineTournamentIndex;
+			}
+
+			await appStateManager.startGameWithMode(
+				this.selectedViewMode, 
+				this.selectedGameMode, 
+				this.currentAiDifficultyIndex,
+				capacity
+			);
 		});
+
+		if (addCpu) {
+			addCpu.addEventListener('click', () => {
+				if (this.isCollectingPlayerNames && this.selectedGameMode === GameMode.TOURNAMENT_LOCAL) {
+					this.handleAddCpu();
+				}
+			});
+		}
 	}
 
 	private showDashboard(): void {

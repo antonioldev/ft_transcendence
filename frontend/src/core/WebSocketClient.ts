@@ -172,8 +172,8 @@ export class WebSocketClient {
     // GAME COMMUNICATION
     // ========================================
 
-    joinGame(gameMode: GameMode, players: PlayerInfo[], aiDifficulty: number): void {
-        this.sendMessage(MessageType.JOIN_GAME, { gameMode, players, aiDifficulty });
+    joinGame(gameMode: GameMode, players: PlayerInfo[], aiDifficulty: number, capacity?: number): void {
+        this.sendMessage(MessageType.JOIN_GAME, { gameMode, players, aiDifficulty, capacity });
     }
 
     sendPlayerReady(): void {
@@ -206,11 +206,9 @@ export class WebSocketClient {
     }
 
     private sendMessage(type: MessageType, data: any = {}): void {
-        if (!this.isConnected()) {
+        if (!this.isConnected())
             Logger.errorAndThrow('WebSocket is not connected. Cannot send message.', 'WebSocketClient');
-            return;
-        }
-    
+
         const message: ClientMessage = { type, ...data };
     
         try {
