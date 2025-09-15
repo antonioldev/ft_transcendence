@@ -169,13 +169,12 @@ export class WebSocketManager {
             if (!data.gameMode) {
                 throw new Error(`Game mode missing`);
             }
-            const gameId = gameManager.findOrCreateGame(data.gameMode, client, data.capacity ?? undefined);
-            const gameSession = gameManager.getGame(gameId);
+            const gameSession = gameManager.findOrCreateGame(data.gameMode, client, data.capacity ?? undefined);
             if (!gameSession) {
-                throw new Error(`client "${client}" unable to join game "${gameId}": game does not exist`);
+                throw new Error(`client "${client}" unable to join game: game does not exist`);
             }
             if (gameSession.running) {
-                throw new Error(`client "${client}" unable to join game "${gameId}": game already running`);
+                throw new Error(`client "${client}" unable to join game "${gameSession.id}": game already running`);
             }
             if (data.aiDifficulty !== undefined && gameSession.ai_difficulty === undefined) {
                 gameSession.set_ai_difficulty(data.aiDifficulty);

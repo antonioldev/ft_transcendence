@@ -21,7 +21,7 @@ class GameManager extends EventEmitter {
      * @param client - The client initiating the game.
      * @returns The unique ID of the created game session.
      */
-    createGame(mode: GameMode, client: Client, capacity?: number): string {
+    createGame(mode: GameMode, client: Client, capacity?: number): AbstractGameSession {
         const gameId = `game_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         // Create a new game in DB with 1st player as client only if the game is remote
         if (mode === GameMode.TWO_PLAYER_REMOTE) {
@@ -53,7 +53,7 @@ class GameManager extends EventEmitter {
         }, (GAME_CONFIG.maxJoinWaitTime * 1000));
         
         console.log(`Created ${mode} game: ${gameId}`);
-        return gameId;
+        return gameSession;
     }
 
     // UNUSED FUNCTION
@@ -80,7 +80,7 @@ class GameManager extends EventEmitter {
      * @returns The unique ID of the found or created game session.
      */
 
-    findOrCreateGame(mode: GameMode, client: Client, capacity?: number): string {
+    findOrCreateGame(mode: GameMode, client: Client, capacity?: number): AbstractGameSession {
         //For local games, just create game
         if (mode === GameMode.SINGLE_PLAYER || mode === GameMode.TWO_PLAYER_LOCAL|| mode === GameMode.TOURNAMENT_LOCAL) {
             return this.createGame(mode, client, capacity);
@@ -90,9 +90,10 @@ class GameManager extends EventEmitter {
             for (const [gameId, game] of this.gameIdMap) {
                 if (game.mode === mode && !game.full) {
                     if (mode === GameMode.TOURNAMENT_REMOTE && game.client_capacity !== capacity) continue ;
+
                     game.add_client(client);
                     addPlayer2(gameId, client.username); // add security
-                    return gameId;
+                    return game;
                 }
             }
         }
@@ -130,11 +131,6 @@ class GameManager extends EventEmitter {
      * @returns The game object or null if the client is not in a game.
      */
     findClientGame(client: Client): AbstractGameSession | undefined {
-        // for (const gameSession of this.gameIdMap.values()) {
-        //     if (gameSession.clients.includes(client)) {
-        //         return gameSession;
-        //     }
-        // }
         return (this.clientGamesMap.get(client.id));
     }
 
