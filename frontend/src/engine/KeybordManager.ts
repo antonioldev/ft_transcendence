@@ -8,9 +8,8 @@ import { PlayerSide, PlayerState } from "./utils.js";
 import { webSocketClient } from '../core/WebSocketClient.js';
 import { PowerupManager } from "./PowerUpManager.js";
 
-/**
- * Manages all keyboard input handling for the game
- */
+
+// Manages all keyboard input handling for the game
 export class KeyboardManager {
 	private deviceSourceManager: DeviceSourceManager | null = null;
 	private isInitialized: boolean = false;
@@ -60,24 +59,20 @@ export class KeyboardManager {
 	private handleGlobalKeyDown(event: KeyboardEvent): void {
 		const key = event.key.toLowerCase();
 
-		// Handle escape key for pause/resume
 		if (event.key === 'Escape') {
 			this.handleEscapeKey();
 			return;
 		}
 
-		// Handle pause menu navigation
 		if (this.gameState.isPaused()) {
 			this.handlePauseMenuKeys(key, event.key);
 			return;
 		}
 
-		// Handle powerup activation during gameplay
 		if (this.gameState.isPlaying())
 			this.handlePowerupKeys(key);
 	}
 
-	// Handle escape key press for pause/resume functionality
 	private handleEscapeKey(): void {
 		if (this.gameState.isPlaying())
 			this.gameCallbacks.onPause();
@@ -85,7 +80,6 @@ export class KeyboardManager {
 			this.gameCallbacks.onResume();
 	}
 
-	// Handle keyboard input during pause menu
 	private handlePauseMenuKeys(key: string, originalKey: string): void {
 		if (key === 'y') {
 			this.gameCallbacks.onExitToMenu?.();
@@ -94,7 +88,6 @@ export class KeyboardManager {
 		}
 	}
 
-	// Handle powerup activation keys
 	private handlePowerupKeys(key: string): void {
 		if (!this.powerupManager) return;
 
@@ -123,7 +116,6 @@ export class KeyboardManager {
 		}
 	}
 
-	// Update player input based on keyboard state
 	update(): void {
 		if (!this.isInitialized || !this.deviceSourceManager || !this.gameObjects) return;
 

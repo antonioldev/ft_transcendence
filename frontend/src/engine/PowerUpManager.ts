@@ -7,10 +7,7 @@ import { GameObjects } from "../shared/types.js";
 import { webSocketClient } from '../core/WebSocketClient.js';
 import { PlayerSide, PlayerState } from "./utils.js"
 
-/**
- * Manages all powerup-related functionality including assignment, activation,
- * deactivation, and visual/audio effects
- */
+// Manages all powerup-related functionality including assignment, activation, deactivation, and visual/audio effects
 export class PowerupManager {
 	constructor(
 		private players: Map<PlayerSide, PlayerState>,
@@ -135,56 +132,6 @@ export class PowerupManager {
 		this.guiManager?.powerUp.update(side, slot, null, PowerUpAction.DEACTIVATED);
 	}
 
-	// // Apply visual effects for paddle size changes
-	// private applyPaddleSizeEffect(side: PlayerSide, fromSize: number, toSize: number): void {
-	// 	// Use AnimationManager to animate paddle scaling
-	// 	// Update player size state
-	// }
-
-	// // Apply inversion effect
-	// private applyInversionEffect(targetSide: PlayerSide, inverted: boolean): void {
-	// 	// Update player inversion state
-	// }
-
-	// // Handle SHRINK_OPPONENT powerup
-	// private handleShrinkOpponent(activatorSide: PlayerSide, activate: boolean): void {
-	// 	// Determine target player
-	// 	// Apply shrink/restore effect
-	// }
-
-	// // Handle GROW_PADDLE powerup
-	// private handleGrowPaddle(activatorSide: PlayerSide, activate: boolean): void {
-	// 	// Apply grow/restore effect to activator's paddle
-	// }
-
-	// // Handle INVERT_OPPONENT powerup
-	// private handleInvertOpponent(activatorSide: PlayerSide, activate: boolean): void {
-	// 	// Apply inversion to opponent
-	// }
-
-	// // Get current powerup state for a player
-	// getPlayerPowerupState(side: PlayerSide): PlayerPowerupState | undefined {
-	// 	// Return player's current powerup state
-	// }
-
-	// // Check if player has active powerup
-	// hasActivePowerup(side: PlayerSide): boolean {
-	// 	// Return whether player has an active powerup
-	// }
-
-	// // Get player's current paddle size
-	// getPlayerSize(side: PlayerSide): number {
-	// 	// Return current paddle size for player
-	// }
-
-	// // Check if player's controls are inverted
-	// isPlayerInverted(side: PlayerSide): boolean {
-	// 	// Return inversion state for player
-	// }
-
-	// Clean up powerup manager
 	dispose(): void {
-		// Clear all states
-		// Remove any active effects
 	}
 }

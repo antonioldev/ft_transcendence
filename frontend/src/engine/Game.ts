@@ -15,7 +15,6 @@ import { appStateManager } from '../core/AppStateManager.js';
 import { GameConfigFactory } from './GameConfig.js';
 import { AudioManager } from './AudioManager.js';
 import { PowerupManager } from "./PowerUpManager.js";
-// import { LoadingGui } from "./gui/LoadingGui.js";
 import { PlayerSide, PlayerState, resetPlayersState } from "./utils.js"
 import { KeyboardManager } from "./KeybordManager.js";
 
@@ -36,7 +35,6 @@ export class Game {
 	private canvas: HTMLCanvasElement | null = null;
 	private gameObjects: GameObjects | null = null;
 	private animationManager: AnimationManager | null = null;
-	// private loadingGui: LoadingGui | null = null;
 	private guiManager: GUIManager | null = null;
 	private renderManager: RenderManager | null = null;
 	private audioManager: AudioManager | null =null;
@@ -77,7 +75,6 @@ export class Game {
 				}
 				this.canvas.focus();
 				this.players = resetPlayersState();
-				// this.resetPlayersData();
 			}
 		} catch (error) {
 			Logger.errorAndThrow('Error creating game managers', 'Game', error);
@@ -87,21 +84,14 @@ export class Game {
 // ====================			INITIALIZATION			====================
 	async initialize(): Promise<void> {
 		if (this.isInitialized) return;
-		
-		// this.setupGlobalKeyboardEvents();
-		SceneLoader.ShowLoadingScreen = false;
 
+		SceneLoader.ShowLoadingScreen = false;
 		uiManager.setLoadingScreenVisible(true);
 		try {
 			Logger.info('Initializing game...', 'Game');
 
 			this.engine = await this.initializeBabylonEngine();
 			this.scene = await this.createScene();
-			// this.renderManager = new RenderManager(this.engine, this.scene);
-			// this.renderManager?.startRendering();
-
-			// this.loadingGui = new LoadingGui(this.scene);
-			// this.loadingGui.show();
 
 			this.animationManager = new AnimationManager(this.scene);
 
@@ -111,11 +101,6 @@ export class Game {
 			this.gameObjects = this.config.viewMode === ViewMode.MODE_2D
 				? await buildScene2D(this.scene, this.config.gameMode, this.config.viewMode, (progress: number) => uiManager.updateLoadingProgress(progress))
 				: await buildScene3D(this.scene, this.config.gameMode, this.config.viewMode, (progress: number) => uiManager.updateLoadingProgress(progress));
-
-			// this.gameObjects = this.config.viewMode === ViewMode.MODE_2D
-			// 	? await buildScene2D(this.scene, this.config.gameMode, this.config.viewMode, (progress: number) => this.loadingGui?.setProgress(progress))
-			// 	: await buildScene3D(this.scene, this.config.gameMode, this.config.viewMode, (progress: number) => this.loadingGui?.setProgress(progress));
-
 
 			this.guiManager = new GUIManager(this.scene, this.config, this.animationManager, this.audioManager);
 
@@ -139,7 +124,6 @@ export class Game {
 			this.isInitialized = true;
 			webSocketClient.sendPlayerReady();
 			uiManager.setLoadingScreenVisible(false);
-			// this.loadingGui.hide();
 // 			this.updateTournamentLobby(["player0"]);
 // let counter = 1;
 // const names: string[] = [];
@@ -154,8 +138,6 @@ export class Game {
 // 	clearInterval(intervalId);
 // }
 // }, 3000);
-			// if (this.config.gameMode === GameMode.TWO_PLAYER_REMOTE || this.config.gameMode === GameMode.TOURNAMENT_REMOTE)
-			// 	uiManager.updateLoadingText();
 		} catch (error) {
 			await this.dispose();
 			Logger.errorAndThrow('Error initializing game', 'Game', error);
@@ -192,19 +174,14 @@ export class Game {
 		webSocketClient.registerCallback(WebSocketEvent.GAME_RESUMED, () => { this.onServerResumedGame(); });
 		webSocketClient.registerCallback(WebSocketEvent.GAME_ENDED, (message: any) => { this.onServerEndedGame(message.winner); });
 		webSocketClient.registerCallback(WebSocketEvent.SESSION_ENDED, (message: any) => { this.onServerEndedSession(message.winner); });
-
 		webSocketClient.registerCallback(WebSocketEvent.SIDE_ASSIGNMENT, (message: any) => { this.handlePlayerAssignment(message.left, message.right); });
-
 		webSocketClient.registerCallback(WebSocketEvent.MATCH_ASSIGNMENT, (message: any) => { this.guiManager?.updateTournamentRound(message); });
 		webSocketClient.registerCallback(WebSocketEvent.MATCH_WINNER, (message: any) => { this.guiManager?.updateTournamentGame(message); });
 		webSocketClient.registerCallback(WebSocketEvent.TOURNAMENT_LOBBY, (message: any) => {this.guiManager?.updateTournamentLobby(message); uiManager.setLoadingScreenVisible(false); });
-
 		webSocketClient.registerCallback(WebSocketEvent.COUNTDOWN, (message: any) => { this.handleCountdown(message.countdown); });
-		
 		webSocketClient.registerCallback(WebSocketEvent.POWERUP_ASSIGNMENT, (message: any) => { this.powerup?.assign(message); });
 		webSocketClient.registerCallback(WebSocketEvent.POWERUP_ACTIVATED, (message: any) => { this.powerup?.activate(message); });
 		webSocketClient.registerCallback(WebSocketEvent.POWERUP_DEACTIVATED, (message: any) => { this.powerup?.deactivate(message); });
-		
 	}
 
 	async connect(aiDifficulty: number): Promise<void> {
@@ -217,7 +194,6 @@ export class Game {
 
 		try {
 			this.currentState = GameState.PLAYING;
-			// Start game loop
 			this.startGameLoop();
 		} catch (error) {
 			Logger.errorAndThrow('Error starting game', 'Game', error);
@@ -260,12 +236,10 @@ export class Game {
 	// Handle server confirming game is paused
 	private onServerPausedGame(): void {
 		if (!this.isInitialized || this.currentState === GameState.PAUSED) return;
-
 		this.currentState = GameState.PAUSED;
 		this.guiManager?.setPauseVisible(true);
 		this.audioManager?.pauseGameMusic();
 		this.stopGameLoop();
-
 	}
 
 	// Handle server confirming game is resumed
@@ -290,7 +264,6 @@ export class Game {
 		await this.guiManager?.hidePartialWinner();
 		webSocketClient.notifyGameAnimationDone();
 		this.audioManager?.stopGameMusic();
-		// this.controlledSides = [];
 		this.stopGameLoop();
 		this.currentState = GameState.MATCH_ENDED;
 	}
@@ -307,7 +280,6 @@ export class Game {
 
 		this.audioManager?.stopGameMusic();
 		this.renderManager?.stopRendering();
-		// this.controlledSides = []
 		this.stopGameLoop();
 		this.dispose();
 		this.resetToMenu();
@@ -324,7 +296,6 @@ export class Game {
 				uiManager.setLoadingScreenVisible(false);
 				this.guiManager?.lobby.hide();
 				this.input?.update();
-				// this.updateInput();
 				if (this.config.viewMode === ViewMode.MODE_3D)
 					this.renderManager?.update3DCameras();
 			} catch (error) {
@@ -386,17 +357,17 @@ export class Game {
 			this.audioManager?.updateMusicSpeed(state.ball.current_rally);
 
 			if (this.players.get(PlayerSide.LEFT)!.score < state.paddleLeft.score) {
-                this.players.get(PlayerSide.LEFT)!.score = state.paddleLeft.score;
-                this.audioManager?.playScore();
-            }
-            if (this.players.get(PlayerSide.RIGHT)!.score < state.paddleRight.score) {
-                this.players.get(PlayerSide.RIGHT)!.score = state.paddleRight.score;
-                this.audioManager?.playScore();
+				this.players.get(PlayerSide.LEFT)!.score = state.paddleLeft.score;
+				this.audioManager?.playScore();
+			}
+			if (this.players.get(PlayerSide.RIGHT)!.score < state.paddleRight.score) {
+				this.players.get(PlayerSide.RIGHT)!.score = state.paddleRight.score;
+				this.audioManager?.playScore();
 			}
 			this.guiManager?.hud.updateScores(
-                this.players.get(PlayerSide.LEFT)!.score,
-                this.players.get(PlayerSide.RIGHT)!.score
-            );
+				this.players.get(PlayerSide.LEFT)!.score,
+				this.players.get(PlayerSide.RIGHT)!.score
+			);
 
 		} catch (error) {
 			Logger.errorAndThrow('Error updating game objects', 'Game', error);
@@ -416,7 +387,6 @@ export class Game {
 		if (rightPlayer)
 			rightPlayer.isControlled = this.config.players.some(player => player.name === rightPlayerName);
 
-		// Get controlled sides for camera setup
 		const controlledSides = this.getControlledSides();
 		
 		this.renderManager?.updateActiveCameras(this.config.viewMode, controlledSides, this.config.isLocalMultiplayer);
@@ -482,9 +452,6 @@ export class Game {
 			this.renderManager?.dispose();
 			this.renderManager = null;
 
-			// this.deviceSourceManager?.dispose();
-			// this.deviceSourceManager = null;
-
 			this.players.clear();
 
 			this.guiManager?.dispose();
@@ -495,9 +462,6 @@ export class Game {
 
 			this.powerup?.dispose();
 			this.powerup = null;
-
-			// this.loadingGui?.dispose();
-			// this.loadingGui = null;
 
 			uiManager.setLoadingScreenVisible(false);
 

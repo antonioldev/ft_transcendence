@@ -7,6 +7,7 @@ import type { Control } from "@babylonjs/gui/2D/controls/control";
 import { getCamera2DPosition, getCamera3DPlayer1Position, getCamera3DPlayer2Position,} from './utils.js';
 import { GAME_CONFIG } from "../shared/gameConfig.js";
 
+
 type FloatProp =
   | "alpha"
   | "scaleX" | "scaleY"
@@ -158,15 +159,6 @@ export class AnimationManager {
 		return this.play(target, frames, false);
 	}
 
-	flipX(target: Control, frames = Motion.F.base): Promise<void> {
-		const originalScaleY = target.scaleY;
-		target.animations = [
-			this.createFloat("scaleY", originalScaleY, 0, frames / 2, false, Motion.ease.quadOut()),
-			this.createFloat("scaleY", 0, originalScaleY, frames / 2, false, Motion.ease.quadOut())
-		];
-		return this.play(target, frames, false);
-	}
-
 	createCameraMoveAnimation(cameraName: string): Animation {
 		const startPosition = getCamera2DPosition();
 		const endPosition = cameraName === "camera1"
@@ -227,7 +219,6 @@ export class AnimationManager {
 		target.animations = [anim];
 		return this.play(target, frames, false);
 	}
-
 }
 
 
