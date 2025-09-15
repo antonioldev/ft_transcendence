@@ -59,7 +59,6 @@ export class GUIManager {
 		}
 	}
 
-	// SETTER
 	setPauseVisible(visible: boolean): void {
 		if (!this.isReady || !this.animationManager) return;
 

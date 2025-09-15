@@ -17,21 +17,11 @@ import { appStateManager } from '../core/AppStateManager.js';
 import { GameConfigFactory } from './GameConfig.js';
 import { AudioManager } from './AudioManager.js';
 import { PowerupType, PowerUpAction } from "../shared/constants.js";
+import { PowerupManager } from "./PowerUpManager.js";
 // import { LoadingGui } from "./gui/LoadingGui.js";
+import { PlayerSide, PlayerState } from "./utils.js"
 
-enum PlayerSide {
-	LEFT = 0,
-	RIGHT = 1
-}
 
-interface PlayerState {
-	isControlled: boolean;
-	size: number;
-	score: number;
-	powerUps: (PowerupType | null)[];
-	activePowerup: PowerupType | null;
-	inverted: boolean;
-}
 
 /**
  * The Game class serves as the core of the game engine, managing the initialization,
@@ -52,10 +42,9 @@ export class Game {
 	private guiManager: GUIManager | null = null;
 	private renderManager: RenderManager | null = null;
 	private audioManager: AudioManager | null =null;
+	private powerup: PowerupManager | null = null;
 	private deviceSourceManager: DeviceSourceManager | null = null;
 	private gameLoopObserver: any = null;
-	// private controlledSides: number[] = [];
-
 
 	private players: Map<PlayerSide, PlayerState> = new Map();
 
@@ -97,27 +86,6 @@ export class Game {
 		}
 	}
 
-	private resetPlayersData(): void {
-		this.players = new Map([
-			[PlayerSide.LEFT, {
-				isControlled: false,
-				size: GAME_CONFIG.paddleWidth,
-				score: 0,
-				powerUps: [null, null, null],
-				activePowerup: null,
-				inverted: false
-			}],
-			[PlayerSide.RIGHT, {
-				isControlled: false,
-				size: GAME_CONFIG.paddleWidth,
-				score: 0,
-				powerUps: [null, null, null],
-				activePowerup: null,
-				inverted: false
-			}]
-		]);
-	}
-
 // ====================			INITIALIZATION			====================
 	async initialize(): Promise<void> {
 		if (this.isInitialized) return;
@@ -155,6 +123,7 @@ export class Game {
 
 			this.guiManager = new GUIManager(this.scene, this.config, this.animationManager, this.audioManager);
 
+			this.powerup = new PowerupManager(this.players, this.animationManager, this.guiManager, this.gameObjects);
 
 			this.renderManager = new RenderManager(this.engine, this.scene, this.guiManager, this.animationManager, this.gameObjects);
 			this.renderManager?.startRendering();
@@ -214,25 +183,25 @@ export class Game {
 				if (this.isInGame()) this.pause();
 				else if (this.isPaused()) this.resume();
 			}
-
+			const k = event.key.toLowerCase();
 			if (this.isPaused()) {
-				if (event.key === 'Y' || event.key === 'y') this.requestExitToMenu();
-				else if (event.key === 'N' || event.key === 'n' || event.key === 'Escape') this.resume();
+				if (k === 'y') this.requestExitToMenu();
+				else if (k === 'n' || event.key === 'Escape') this.resume();
 			}
 
 			if (this.currentState !== GameState.PLAYING) return;
 			// if (event.repeat) return;
-			const k = event.key.toLowerCase();
+			if (!this.powerup) return;
 			switch (k) {
 				// LEFT player (side 0): slots 0,1,2
-				case 'c': this.requestActivatePowerUp(0, 0); break;
-				case 'v': this.requestActivatePowerUp(0, 1); break;
-				case 'b': this.requestActivatePowerUp(0, 2); break;
+				case 'c': this.powerup.requestActivatePowerup(0, 0); break;
+				case 'v': this.powerup.requestActivatePowerup(0, 1); break;
+				case 'b': this.powerup.requestActivatePowerup(0, 2); break;
 
 				// RIGHT player (side 1): slots 0,1,2
-				case 'i': this.requestActivatePowerUp(1, 0); break;
-				case 'o': this.requestActivatePowerUp(1, 1); break;
-				case 'p': this.requestActivatePowerUp(1, 2); break;
+				case 'i': this.powerup.requestActivatePowerup(1, 0); break;
+				case 'o': this.powerup.requestActivatePowerup(1, 1); break;
+				case 'p': this.powerup.requestActivatePowerup(1, 2); break;
 			}
 		});
 	}
@@ -246,14 +215,19 @@ export class Game {
 		webSocketClient.registerCallback(WebSocketEvent.GAME_RESUMED, () => { this.onServerResumedGame(); });
 		webSocketClient.registerCallback(WebSocketEvent.GAME_ENDED, (message: any) => { this.onServerEndedGame(message.winner); });
 		webSocketClient.registerCallback(WebSocketEvent.SESSION_ENDED, (message: any) => { this.onServerEndedSession(message.winner); });
+
 		webSocketClient.registerCallback(WebSocketEvent.SIDE_ASSIGNMENT, (message: any) => { this.handlePlayerAssignment(message.left, message.right); });
+
 		webSocketClient.registerCallback(WebSocketEvent.MATCH_ASSIGNMENT, (message: any) => { this.handleTournamentGames(message); });
 		webSocketClient.registerCallback(WebSocketEvent.MATCH_WINNER, (message: any) => { this.handleTournamentSingleGame(message); });
-		webSocketClient.registerCallback(WebSocketEvent.COUNTDOWN, (message: any) => { this.handleCountdown(message.countdown); });
-		webSocketClient.registerCallback(WebSocketEvent.POWERUP_ASSIGNMENT, (message: any) => { this.getPowerup(message); });
-		webSocketClient.registerCallback(WebSocketEvent.POWERUP_ACTIVATED, (message: any) => { this.togglePowerUp(message, true); });
-		webSocketClient.registerCallback(WebSocketEvent.POWERUP_DEACTIVATED, (message: any) => { this.togglePowerUp(message, false); });
 		webSocketClient.registerCallback(WebSocketEvent.TOURNAMENT_LOBBY, (message: any) => {this.updateTournamentLobby(message); });
+
+		webSocketClient.registerCallback(WebSocketEvent.COUNTDOWN, (message: any) => { this.handleCountdown(message.countdown); });
+		
+		webSocketClient.registerCallback(WebSocketEvent.POWERUP_ASSIGNMENT, (message: any) => { this.powerup?.assign(message); });
+		webSocketClient.registerCallback(WebSocketEvent.POWERUP_ACTIVATED, (message: any) => { this.powerup?.activate(message); });
+		webSocketClient.registerCallback(WebSocketEvent.POWERUP_DEACTIVATED, (message: any) => { this.powerup?.deactivate(message); });
+		
 	}
 
 	async connect(aiDifficulty: number): Promise<void> {
@@ -371,7 +345,7 @@ export class Game {
 			try {
 				// this.loadingGui?.hide();
 				uiManager.setLoadingScreenVisible(false);
-				this.guiManager?.lobby.hide()
+				this.guiManager?.lobby.hide();
 				this.updateInput();
 				if (this.config.viewMode === ViewMode.MODE_3D)
 					this.renderManager?.update3DCameras();
@@ -414,6 +388,27 @@ export class Game {
 		);
 	}
 
+	private resetPlayersData(): void {
+		this.players = new Map([
+			[PlayerSide.LEFT, {
+				isControlled: false,
+				size: GAME_CONFIG.paddleWidth,
+				score: 0,
+				powerUps: [null, null, null],
+				activePowerup: null,
+				inverted: false
+			}],
+			[PlayerSide.RIGHT, {
+				isControlled: false,
+				size: GAME_CONFIG.paddleWidth,
+				score: 0,
+				powerUps: [null, null, null],
+				activePowerup: null,
+				inverted: false
+			}]
+		]);
+	}
+
 // ====================			GAME STATE UPDATES	   ====================
 	private updateGameObjects(state: GameStateData): void {
 		if (!this.isInitialized || !this.gameObjects) return;
@@ -452,11 +447,6 @@ export class Game {
 	}
 
 // ====================			INPUT HANDLING		   ====================
-	// private assignPlayerSide(name: string, side: number): void {
-	// 	const isOurPlayer = this.config.players.some(player => player.name === name);
-	// 	if (isOurPlayer && !this.controlledSides.includes(side))
-	// 		this.controlledSides.push(side);
-	// }
 
 	private handlePlayerAssignment(leftPlayerName: string, rightPlayerName: string): void {
 		this.guiManager?.hud.updatePlayerNames(leftPlayerName, rightPlayerName);
@@ -595,7 +585,6 @@ export class Game {
 			this.deviceSourceManager?.dispose();
 			this.deviceSourceManager = null;
 
-			// this.controlledSides = [];
 			this.players.clear();
 
 			this.guiManager?.dispose();
@@ -610,20 +599,17 @@ export class Game {
 			this.audioManager?.dispose();
 			this.audioManager = null;
 
-			if (this.scene) {
-				this.scene.onBeforeRenderObservable?.clear();
-				this.scene.onAfterRenderObservable?.clear();
-				this.scene.dispose();
-				this.scene = null;
-			}
+			this.scene?.onBeforeRenderObservable?.clear();
+			this.scene?.onAfterRenderObservable?.clear();
+			this.scene?.dispose();
+			this.scene = null;
 
 			this.engine?.dispose();
 			this.engine = null;
 
 			if (this.canvas) {
 				const context = this.canvas.getContext('2d');
-				if (context)
-					context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+				context?.clearRect(0, 0, this.canvas.width, this.canvas.height);
 			}
 			this.canvas = null;
 
@@ -634,111 +620,6 @@ export class Game {
 			Logger.errorAndThrow('Error disposing game', 'Game', error);
 		}
 	}
-
-// ====================			POWERUP				  ====================
-	private getPowerup(message: any): void {
-        if (!message || !Array.isArray(message.powerups))
-            console.warn("[PowerUps] invalid message", message);
-
-        const ids: number[] = message.powerups;
-        const side = message.side;
-
-        if (side !== PlayerSide.LEFT && side !== PlayerSide.RIGHT)
-            return;
-
-        this.players.get(side)!.powerUps = ids.map(id => id as PowerupType);
-
-        ids.forEach((powerup, index) => {
-            this.guiManager?.powerUp.update(side, index, powerup as PowerupType, PowerUpAction.CREATED);
-        });
-    }
-
-    private requestActivatePowerUp(side: PlayerSide, index: number): void {
-        const powerUps = this.players.get(side)!.powerUps;
-        if (!powerUps) return;
-
-        const powerup = powerUps[index];
-        if (powerup === null || powerup === undefined) return;
-
-        const currentlyActive = this.players.get(side)!.activePowerup;
-        if (currentlyActive === powerup) return;
-
-        webSocketClient.sendPowerupActivationRequest(powerup, side, index);
-    }
-
-    private togglePowerUp(message: any, toActive: boolean): void {
-        if (!message) return;
-
-        console.warn(`[PowerUp Toggle] ${toActive ? 'Activating' : 'Deactivating'} power-up:`, message);
-
-        const side = message.side;
-        const slot = message.slot;
-        const powerup = message.powerup;
-
-        const med = GAME_CONFIG.paddleWidth;
-        const lrg = GAME_CONFIG.increasedPaddleWidth;
-        const sml = GAME_CONFIG.decreasedPaddleWidth;
-
-        if (toActive) {
-            this.players.get(side)!.activePowerup = powerup;
-            switch (message.powerup) {
-                case PowerupType.SHRINK_OPPONENT:
-                    if (side === PlayerSide.LEFT) {
-                        this.animationManager?.scaleWidth(this.gameObjects?.players.right, med, sml);
-                        this.players.get(PlayerSide.RIGHT)!.size = GAME_CONFIG.decreasedPaddleWidth;
-                    } else {
-                        this.animationManager?.scaleWidth(this.gameObjects?.players.left, med, sml);
-                        this.players.get(PlayerSide.LEFT)!.size = GAME_CONFIG.decreasedPaddleWidth;
-                    }
-                    break;
-                case PowerupType.GROW_PADDLE:
-                    if (side === PlayerSide.LEFT) {
-                        this.animationManager?.scaleWidth(this.gameObjects?.players.left, med, lrg);
-                        this.players.get(PlayerSide.LEFT)!.size = GAME_CONFIG.increasedPaddleWidth;
-                    } else {
-                        this.animationManager?.scaleWidth(this.gameObjects?.players.right, med, lrg);
-                        this.players.get(PlayerSide.RIGHT)!.size = GAME_CONFIG.increasedPaddleWidth;
-                    }
-                    break;
-                case PowerupType.INVERT_OPPONENT:
-                    if (side === PlayerSide.LEFT)
-                        this.players.get(PlayerSide.RIGHT)!.inverted = true;
-                    else
-                        this.players.get(PlayerSide.LEFT)!.inverted = true;
-                    break;
-            }
-            this.guiManager?.powerUp.update(side, slot, null, PowerUpAction.ACTIVATED);
-        } else {
-            this.players.get(side)!.activePowerup = null;
-            switch (message.powerup) {
-                case PowerupType.SHRINK_OPPONENT:
-                    if (side === PlayerSide.LEFT) {
-                        this.animationManager?.scaleWidth(this.gameObjects?.players.right, sml, med);
-                        this.players.get(PlayerSide.RIGHT)!.size = GAME_CONFIG.paddleWidth;
-                    } else {
-                        this.animationManager?.scaleWidth(this.gameObjects?.players.left, sml, med);
-                        this.players.get(PlayerSide.LEFT)!.size = GAME_CONFIG.paddleWidth;
-                    }
-                    break;
-                case PowerupType.GROW_PADDLE:
-                    if (side === PlayerSide.LEFT) {
-                        this.animationManager?.scaleWidth(this.gameObjects?.players.left, lrg, med);
-                        this.players.get(PlayerSide.LEFT)!.size = GAME_CONFIG.paddleWidth;
-                    } else {
-                        this.animationManager?.scaleWidth(this.gameObjects?.players.right, lrg, med);
-                        this.players.get(PlayerSide.RIGHT)!.size = GAME_CONFIG.paddleWidth;
-                    }
-                    break;
-                case PowerupType.INVERT_OPPONENT:
-                    if (side === PlayerSide.LEFT)
-                        this.players.get(PlayerSide.RIGHT)!.inverted = false;
-                    else
-                        this.players.get(PlayerSide.LEFT)!.inverted = false;
-                    break;
-            }
-            this.guiManager?.powerUp.update(side, slot, null, PowerUpAction.DEACTIVATED);
-        }
-    }
 
 	private updateTournamentLobby(message: any): void {
 		

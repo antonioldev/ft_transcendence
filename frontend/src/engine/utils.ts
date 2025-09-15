@@ -1,6 +1,7 @@
 import { Color3, Vector3, Viewport } from "@babylonjs/core";
 
 import { GAME_CONFIG } from '../shared/gameConfig.js';
+import { PowerupType } from "../shared/constants.js";
 
 // Colors for Babylon.js (frontend only)
 export const COLORS = {
@@ -74,7 +75,18 @@ export function get3DCamera2Viewport() {
 	return VIEWPORTS.RIGHT_HALF;
 }
 
+export enum PlayerSide {
+	LEFT = 0,
+	RIGHT = 1
+}
 
-
+export interface PlayerState {
+	isControlled: boolean;
+	size: number;
+	score: number;
+	powerUps: (PowerupType | null)[];
+	activePowerup: PowerupType | null;
+	inverted: boolean;
+}
 
 
