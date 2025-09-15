@@ -62,7 +62,7 @@ build-backend:
 
 # DEVELOPMENT: Start complete development environment in Docker
 dev: secret-env build-backend-only
-	docker-compose -f docker-compose.dev.yml up --build
+	docker-compose -f docker-compose.dev.yml up -d --build
 
 # Build only backend for development
 build-backend-only:

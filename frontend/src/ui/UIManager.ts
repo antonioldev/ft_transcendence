@@ -114,7 +114,7 @@ class UIManager {
                 element.style.display = 'none';
             }
         });
-        
+
         const screen = document.getElementById(screenId);
         if (screen) {
             const displayValue = screenId === 'main-menu' ? 'block' : 'flex';

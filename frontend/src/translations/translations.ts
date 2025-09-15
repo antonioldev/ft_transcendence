@@ -50,7 +50,7 @@ export function updateLanguageDisplay(): void {
     // const loginPasswordInput = requireElementById<HTMLInputElement>(EL.AUTH.LOGIN_PASSWORD);
 
     const loginSubmit = requireElementById(EL.BUTTONS.LOGIN_SUBMIT);
-    loginSubmit.textContent = t.login;
+    loginSubmit.textContent = t.loginSubmit;
 
     const loginBack = requireElementById(EL.BUTTONS.LOGIN_BACK);
     loginBack.textContent = t.back;
@@ -90,7 +90,7 @@ export function updateLanguageDisplay(): void {
     registerBack.textContent = t.back;
 
     const showLogin = requireElementById(EL.BUTTONS.SHOW_LOGIN);
-    showLogin.textContent = t.login;
+    showLogin.textContent = t.loginSubmit;
 
     const registerFooter = document.querySelector('#register-modal .modal-footer .info-text');
     if (registerFooter) registerFooter.textContent = t.alreadyHaveAccount;

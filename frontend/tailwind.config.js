@@ -8,6 +8,11 @@ module.exports = {
     extend: {
       fontFamily: {
         'tiny5-regular': ['"Tiny5"', 'sans-serif'],
+        'poppins': ['"Poppins"', 'sans-serif'],
+        'poppins-light': ['"Poppins"', 'sans-serif'],
+        'poppins-medium': ['"Poppins"', 'sans-serif'],
+        'poppins-semibold': ['"Poppins"', 'sans-serif'],
+        'poppins-bold': ['"Poppins"', 'sans-serif'],
       },
       colors: {
         'blue-background': '#143D60',
