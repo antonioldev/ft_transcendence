@@ -81,4 +81,36 @@
       min-width: 260px;
     }
   }
+
+  /* Custom PONG bounce animation */
+  @keyframes bounce-text {
+    0%, 100% {
+      transform: translateY(0);
+      text-shadow: 0 1px 0 #ccc, 0 2px 0 #ccc, 0 3px 0 #ccc, 0 4px 0 #ccc, 0 5px 0 #ccc, 0 6px 0 #ccc, 0 7px 0 #ccc, 0 8px 0 #ccc, 0 9px 0 #ccc, 0 10px 10px rgba(0, 0, 0, 0.1);
+    }
+    50% {
+      transform: translateY(-20px);
+      text-shadow: 0 1px 0 #ccc, 0 2px 0 #ccc, 0 3px 0 #ccc, 0 4px 0 #ccc, 0 5px 0 #ccc, 0 6px 0 #ccc, 0 7px 0 #ccc, 0 8px 0 #ccc, 0 9px 0 #ccc, 0 60px 30px rgba(0, 0, 0, 0.3);
+    }
+  }
+
+  .animate-bounce-letter-1 {
+    display: inline-block;
+    animation: bounce-text 1s ease infinite alternate;
+  }
+
+  .animate-bounce-letter-2 {
+    display: inline-block;
+    animation: bounce-text 1s ease infinite alternate 0.3s;
+  }
+
+  .animate-bounce-letter-3 {
+    display: inline-block;
+    animation: bounce-text 1s ease infinite alternate 0.4s;
+  }
+
+  .animate-bounce-letter-4 {
+    display: inline-block;
+    animation: bounce-text 1s ease infinite alternate 0.5s;
+  }
 }
