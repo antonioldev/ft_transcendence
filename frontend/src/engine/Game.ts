@@ -16,7 +16,7 @@ import { GameConfigFactory } from './GameConfig.js';
 import { AudioManager } from './AudioManager.js';
 import { PowerupManager } from "./PowerUpManager.js";
 // import { LoadingGui } from "./gui/LoadingGui.js";
-import { PlayerSide, PlayerState } from "./utils.js"
+import { PlayerSide, PlayerState, resetPlayersState } from "./utils.js"
 import { KeyboardManager } from "./KeybordManager.js";
 
 
@@ -76,7 +76,8 @@ export class Game {
 					gl.getExtension('EXT_color_buffer_half_float');
 				}
 				this.canvas.focus();
-				this.resetPlayersData();
+				this.players = resetPlayersState();
+				// this.resetPlayersData();
 			}
 		} catch (error) {
 			Logger.errorAndThrow('Error creating game managers', 'Game', error);
@@ -342,7 +343,7 @@ export class Game {
 	private resetForNextMatch(): void {
 		if (!this.isInitialized) return;
 
-		this.resetPlayersData();
+		this.players = resetPlayersState();
 
 		if (this.gameObjects) {
 			if (this.gameObjects.players.left) {
@@ -363,27 +364,6 @@ export class Game {
 			this.players.get(PlayerSide.LEFT)!.score,
 			this.players.get(PlayerSide.RIGHT)!.score
 		);
-	}
-
-	private resetPlayersData(): void {
-		this.players = new Map([
-			[PlayerSide.LEFT, {
-				isControlled: false,
-				size: GAME_CONFIG.paddleWidth,
-				score: 0,
-				powerUps: [null, null, null],
-				activePowerup: null,
-				inverted: false
-			}],
-			[PlayerSide.RIGHT, {
-				isControlled: false,
-				size: GAME_CONFIG.paddleWidth,
-				score: 0,
-				powerUps: [null, null, null],
-				activePowerup: null,
-				inverted: false
-			}]
-		]);
 	}
 
 // ====================			GAME STATE UPDATES	   ====================
