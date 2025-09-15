@@ -134,6 +134,7 @@ export class Game {
 			right: this.players[RIGHT_PADDLE].name,
 		});
 	}
+	
 	async send_countdown(): Promise<void> {
 		for (let countdown = GAME_CONFIG.startDelay; countdown >= 0; countdown--) {
 			console.log(`Sending countdown: ${countdown}`);
