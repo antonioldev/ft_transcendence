@@ -218,9 +218,9 @@ export class Game {
 
 		webSocketClient.registerCallback(WebSocketEvent.SIDE_ASSIGNMENT, (message: any) => { this.handlePlayerAssignment(message.left, message.right); });
 
-		webSocketClient.registerCallback(WebSocketEvent.MATCH_ASSIGNMENT, (message: any) => { this.handleTournamentGames(message); });
-		webSocketClient.registerCallback(WebSocketEvent.MATCH_WINNER, (message: any) => { this.handleTournamentSingleGame(message); });
-		webSocketClient.registerCallback(WebSocketEvent.TOURNAMENT_LOBBY, (message: any) => {this.updateTournamentLobby(message); });
+		webSocketClient.registerCallback(WebSocketEvent.MATCH_ASSIGNMENT, (message: any) => { this.guiManager?.updateTournamentRound(message); });
+		webSocketClient.registerCallback(WebSocketEvent.MATCH_WINNER, (message: any) => { this.guiManager?.updateTournamentGame(message); });
+		webSocketClient.registerCallback(WebSocketEvent.TOURNAMENT_LOBBY, (message: any) => {this.guiManager?.updateTournamentLobby(message); uiManager.setLoadingScreenVisible(false); });
 
 		webSocketClient.registerCallback(WebSocketEvent.COUNTDOWN, (message: any) => { this.handleCountdown(message.countdown); });
 		
@@ -480,23 +480,30 @@ export class Game {
 	}
 
 
-	private handleTournamentGames(message: any): void {
-		this.guiManager?.matchTree.insert(
-			message.round_index,
-			message.match_index,
-			message.left ?? null,
-			message.right ?? null,
-			message.match_total ?? undefined
-		);
-	}
+	// private updateTournamentRound(message: any): void {
+	// 	this.guiManager?.matchTree.insert(
+	// 		message.round_index,
+	// 		message.match_index,
+	// 		message.left ?? null,
+	// 		message.right ?? null,
+	// 		message.match_total ?? undefined
+	// 	);
+	// }
 
-	private handleTournamentSingleGame(message: any): void {
-		this.guiManager?.matchTree.update(
-			message.winner,
-			message.round_index,
-			message.match_index
-		)
-	}
+	// private updateTournamentGame(message: any): void {
+	// 	this.guiManager?.matchTree.update(
+	// 		message.winner,
+	// 		message.round_index,
+	// 		message.match_index
+	// 	)
+	// }
+
+	// private updateTournamentLobby(message: any): void {
+		
+	// 	const names: string[] = message.lobby ?? ["test1"];
+	// 	this.guiManager?.lobby.show(names);
+	// 	uiManager.setLoadingScreenVisible(false);
+	// }
 
 	private updateInput(): void {
 		if (!this.isInitialized || !this.deviceSourceManager || !this.gameObjects) return;
@@ -621,10 +628,4 @@ export class Game {
 		}
 	}
 
-	private updateTournamentLobby(message: any): void {
-		
-		const names: string[] = message.lobby ?? ["test1"];
-		this.guiManager?.lobby.show(names);
-		uiManager.setLoadingScreenVisible(false);
-	}
 }
