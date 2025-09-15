@@ -200,7 +200,7 @@ export class WebSocketClient {
         this.sendMessage(MessageType.PARTIAL_WINNER_ANIMATION_DONE)
     }
 
-    sendPowerupActivationRequest(powerup_type: Poweruptype, side: number, slot: number,): void {
+    sendPowerupActivationRequest(powerup_type: PowerupType, side: number, slot: number,): void {
         console.error(powerup_type +" "+ side +" "+ slot);
         this.sendMessage(MessageType.ACTIVATE_POWERUP, {powerup_type, slot, side});
     }
