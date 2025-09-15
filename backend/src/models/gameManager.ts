@@ -6,8 +6,6 @@ import { registerNewGame, addPlayer2 } from '../data/validation.js';
 import * as db from "../data/validation.js";
 import { GAME_CONFIG } from '../shared/gameConfig.js';
 import { EventEmitter } from 'events';
-import { Cipheriv } from 'crypto';
-import { Game } from '../core/game.js';
 
 /**
  * Manages game sessions and player interactions within the game.
@@ -51,7 +49,7 @@ class GameManager extends EventEmitter {
 
         // if gameSession not full after a period of maxJoinWaitTime then start automatically with CPU's
         setTimeout(() => {
-            if (this.gameIdMap.has(gameId)) this.runGame(gameSession, client.id);
+            if (this.gameIdMap.has(gameId)) this.runGame(gameSession);
         }, (GAME_CONFIG.maxJoinWaitTime * 1000));
         
         console.log(`Created ${mode} game: ${gameId}`);
@@ -102,13 +100,19 @@ class GameManager extends EventEmitter {
         return this.createGame(mode, client, capacity);
     }
 
-    async runGame(gameSession: AbstractGameSession, client_id: string): Promise<void> {
+    async runGame(gameSession: AbstractGameSession): Promise<void> {
         if (gameSession.running) return ;
-        
+        if (gameSession.mode === GameMode.TOURNAMENT_REMOTE && gameSession.players.length < 2) {
+            // wait another 30 seconds for at least 2 players to be in the tournament
+            setTimeout(() => {
+                if (this.gameIdMap.has(gameSession.id)) this.runGame(gameSession);
+            }, (GAME_CONFIG.maxJoinWaitTime * 1000));
+            return ;
+        }
         console.log(`Game started with ${gameSession.players.length} players`);
         db.updateStartTime(gameSession.id);
         await gameSession.start();
-        gameManager.endGame(gameSession, client_id);
+        gameManager.endGame(gameSession);
     }
 
     /**
@@ -138,10 +142,12 @@ class GameManager extends EventEmitter {
      * Removes a game session by its unique ID.
      * @param gameId - The unique ID of the game session to be removed.
      */
-    endGame(gameSession: AbstractGameSession, client_id: string): void {
+    endGame(gameSession: AbstractGameSession): void {
         gameSession.stop();
         this.gameIdMap.delete(gameSession.id);
-        this.clientGamesMap.delete(client_id);
+        for (const client of gameSession.clients) {
+            this.clientGamesMap.delete(client.id);
+        }
         console.log(`Removed game: ${gameSession.id}`);
     }
 
@@ -157,11 +163,11 @@ class GameManager extends EventEmitter {
         if (gameSession instanceof TournamentRemote) {
             gameSession.remove_client(client);
             if (gameSession.clients.length === 0) {
-                this.endGame(gameSession, client.id);
+                this.endGame(gameSession);
             }
         }
         else {
-            this.endGame(gameSession, client.id);
+            this.endGame(gameSession);
         }
     }
 }

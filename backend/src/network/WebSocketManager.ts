@@ -186,7 +186,7 @@ export class WebSocketManager {
                 gameSession.add_player(new Player(player.id, player.name, client));
             }
             if ((gameSession.full /*&& !gameSession.running*/) || gameSession.mode === GameMode.TOURNAMENT_LOCAL) {
-                gameManager.runGame(gameSession, client.id);
+                gameManager.runGame(gameSession);
             }
         } catch (error) {
             console.error('❌ Error joining game:', error);
