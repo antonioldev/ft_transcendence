@@ -1,4 +1,4 @@
-import { Engine, Scene, Color4, DeviceSourceManager, DeviceType,SceneLoader} from "@babylonjs/core";
+import { Engine, Scene, Color4, SceneLoader} from "@babylonjs/core";
 import { GameConfig } from './GameConfig.js';
 import { buildScene2D, buildScene3D } from './scene/sceneBuilder.js';
 import { webSocketClient } from '../core/WebSocketClient.js';
@@ -10,16 +10,14 @@ import { uiManager } from '../ui/UIManager.js';
 import { GUIManager } from './GuiManager.js';
 import { AnimationManager } from "./AnimationManager.js";
 import { RenderManager } from './RenderManager.js';
-import { GameMode, Direction } from '../shared/constants.js';
-import { PlayerControls} from '../shared/types.js';
-import { getPlayerBoundaries } from '../shared/gameConfig.js';
+import { GameMode } from '../shared/constants.js';
 import { appStateManager } from '../core/AppStateManager.js';
 import { GameConfigFactory } from './GameConfig.js';
 import { AudioManager } from './AudioManager.js';
-import { PowerupType, PowerUpAction } from "../shared/constants.js";
 import { PowerupManager } from "./PowerUpManager.js";
 // import { LoadingGui } from "./gui/LoadingGui.js";
 import { PlayerSide, PlayerState } from "./utils.js"
+import { KeyboardManager } from "./KeybordManager.js";
 
 
 
@@ -43,9 +41,8 @@ export class Game {
 	private renderManager: RenderManager | null = null;
 	private audioManager: AudioManager | null =null;
 	private powerup: PowerupManager | null = null;
-	private deviceSourceManager: DeviceSourceManager | null = null;
+	private input: KeyboardManager | null = null;
 	private gameLoopObserver: any = null;
-
 	private players: Map<PlayerSide, PlayerState> = new Map();
 
 // ====================			STATIC METHODS			 ====================
@@ -90,7 +87,7 @@ export class Game {
 	async initialize(): Promise<void> {
 		if (this.isInitialized) return;
 		
-		this.setupGlobalKeyboardEvents();
+		// this.setupGlobalKeyboardEvents();
 		SceneLoader.ShowLoadingScreen = false;
 
 		uiManager.setLoadingScreenVisible(true);
@@ -104,8 +101,6 @@ export class Game {
 
 			// this.loadingGui = new LoadingGui(this.scene);
 			// this.loadingGui.show();
-
-			this.deviceSourceManager = new DeviceSourceManager(this.scene.getEngine());
 
 			this.animationManager = new AnimationManager(this.scene);
 
@@ -124,6 +119,17 @@ export class Game {
 			this.guiManager = new GUIManager(this.scene, this.config, this.animationManager, this.audioManager);
 
 			this.powerup = new PowerupManager(this.players, this.animationManager, this.guiManager, this.gameObjects);
+			this.input = new KeyboardManager(this.scene, this.config, this.gameObjects, this.players, this.powerup,
+				{
+					isPlaying: () => this.currentState === GameState.PLAYING,
+					isPaused: () => this.currentState === GameState.PAUSED
+				},
+				{
+					onPause: () => this.pause(),
+					onResume: () => this.resume(),
+					onExitToMenu: () => this.requestExitToMenu()
+				}
+			);
 
 			this.renderManager = new RenderManager(this.engine, this.scene, this.guiManager, this.animationManager, this.gameObjects);
 			this.renderManager?.startRendering();
@@ -174,36 +180,6 @@ export class Game {
 		scene.createDefaultEnvironment({ createGround: false, createSkybox: false });
 		scene.clearColor = new Color4(0, 0, 0, 1);
 		return scene;
-	}
-
-	private setupGlobalKeyboardEvents(): void {
-		document.addEventListener('keydown', (event) => {
-
-			if (event.key === 'Escape' && this.currentState === GameState.PLAYING) {
-				if (this.isInGame()) this.pause();
-				else if (this.isPaused()) this.resume();
-			}
-			const k = event.key.toLowerCase();
-			if (this.isPaused()) {
-				if (k === 'y') this.requestExitToMenu();
-				else if (k === 'n' || event.key === 'Escape') this.resume();
-			}
-
-			if (this.currentState !== GameState.PLAYING) return;
-			// if (event.repeat) return;
-			if (!this.powerup) return;
-			switch (k) {
-				// LEFT player (side 0): slots 0,1,2
-				case 'c': this.powerup.requestActivatePowerup(0, 0); break;
-				case 'v': this.powerup.requestActivatePowerup(0, 1); break;
-				case 'b': this.powerup.requestActivatePowerup(0, 2); break;
-
-				// RIGHT player (side 1): slots 0,1,2
-				case 'i': this.powerup.requestActivatePowerup(1, 0); break;
-				case 'o': this.powerup.requestActivatePowerup(1, 1); break;
-				case 'p': this.powerup.requestActivatePowerup(1, 2); break;
-			}
-		});
 	}
 
 	// Connect all components together
@@ -346,7 +322,8 @@ export class Game {
 				// this.loadingGui?.hide();
 				uiManager.setLoadingScreenVisible(false);
 				this.guiManager?.lobby.hide();
-				this.updateInput();
+				this.input?.update();
+				// this.updateInput();
 				if (this.config.viewMode === ViewMode.MODE_3D)
 					this.renderManager?.update3DCameras();
 			} catch (error) {
@@ -447,7 +424,6 @@ export class Game {
 	}
 
 // ====================			INPUT HANDLING		   ====================
-
 	private handlePlayerAssignment(leftPlayerName: string, rightPlayerName: string): void {
 		this.guiManager?.hud.updatePlayerNames(leftPlayerName, rightPlayerName);
 
@@ -477,69 +453,6 @@ export class Game {
 		if (this.players?.get(PlayerSide.RIGHT)?.isControlled)
 			controlledSides.push(PlayerSide.RIGHT);
 		return controlledSides;
-	}
-
-
-	// private updateTournamentRound(message: any): void {
-	// 	this.guiManager?.matchTree.insert(
-	// 		message.round_index,
-	// 		message.match_index,
-	// 		message.left ?? null,
-	// 		message.right ?? null,
-	// 		message.match_total ?? undefined
-	// 	);
-	// }
-
-	// private updateTournamentGame(message: any): void {
-	// 	this.guiManager?.matchTree.update(
-	// 		message.winner,
-	// 		message.round_index,
-	// 		message.match_index
-	// 	)
-	// }
-
-	// private updateTournamentLobby(message: any): void {
-		
-	// 	const names: string[] = message.lobby ?? ["test1"];
-	// 	this.guiManager?.lobby.show(names);
-	// 	uiManager.setLoadingScreenVisible(false);
-	// }
-
-	private updateInput(): void {
-		if (!this.isInitialized || !this.deviceSourceManager || !this.gameObjects) return;
-		try {
-			const keyboardSource = this.deviceSourceManager.getDeviceSource(DeviceType.Keyboard);
-			if (keyboardSource) {
-				this.handlePlayerInput(keyboardSource, this.gameObjects.players.left, this.config.controls.playerLeft, 0); // Handle left player (side 0)
-				this.handlePlayerInput(keyboardSource, this.gameObjects.players.right, this.config.controls.playerRight, 1); // Handle right player (side 1)
-			}
-		} catch (error) {
-			Logger.errorAndThrow('Error updating input', 'Game', error);
-		}
-	}
-
-	private handlePlayerInput(keyboardSource: any, player: any, controls: PlayerControls, side: PlayerSide): void {
-		const playerState = this.players?.get(side);
-		if (!playerState?.isControlled) return;
-		const bounds = getPlayerBoundaries(this.players.get(side)!.size);
-
-		let input: Direction = Direction.STOP;
-		if (keyboardSource.getInput(controls.left) === 1)
-			input = Direction.LEFT;
-		else if (keyboardSource.getInput(controls.right) === 1)
-			input = Direction.RIGHT;
-		if (input === Direction.STOP) return;
-		
-		const inverted = this.players.get(side)!.inverted;
-		const effective =
-			inverted
-				? (input === Direction.LEFT ? Direction.RIGHT : Direction.LEFT)
-				: input;
-		
-		if (effective === Direction.LEFT && player.position.x <= bounds.left) return;
-		if (effective === Direction.RIGHT && player.position.x >= bounds.right) return;
-		
-		webSocketClient.sendPlayerInput(side, input);
 	}
 
 // ====================			GAME STATE			   ====================
@@ -589,13 +502,19 @@ export class Game {
 			this.renderManager?.dispose();
 			this.renderManager = null;
 
-			this.deviceSourceManager?.dispose();
-			this.deviceSourceManager = null;
+			// this.deviceSourceManager?.dispose();
+			// this.deviceSourceManager = null;
 
 			this.players.clear();
 
 			this.guiManager?.dispose();
 			this.guiManager = null;
+
+			this.input?.dispose();
+			this.input = null;
+
+			this.powerup?.dispose();
+			this.powerup = null;
 
 			// this.loadingGui?.dispose();
 			// this.loadingGui = null;
@@ -627,5 +546,4 @@ export class Game {
 			Logger.errorAndThrow('Error disposing game', 'Game', error);
 		}
 	}
-
 }

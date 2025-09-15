@@ -5,20 +5,7 @@ import { AnimationManager } from "./AnimationManager.js";
 import { GUIManager } from "./GuiManager.js";
 import { GameObjects } from "../shared/types.js";
 import { webSocketClient } from '../core/WebSocketClient.js';
-
-enum PlayerSide {
-	LEFT = 0,
-	RIGHT = 1
-}
-
-interface PlayerState {
-	isControlled: boolean;
-	size: number;
-	score: number;
-	powerUps: (PowerupType | null)[];
-	activePowerup: PowerupType | null;
-	inverted: boolean;
-}
+import { PlayerSide, PlayerState } from "./utils.js"
 
 /**
  * Manages all powerup-related functionality including assignment, activation,
