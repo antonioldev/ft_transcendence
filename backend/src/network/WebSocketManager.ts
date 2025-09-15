@@ -177,7 +177,7 @@ export class WebSocketManager {
             if (gameSession.running) {
                 throw new Error(`client "${client}" unable to join game "${gameId}": game already running`);
             }
-            if (data.aiDifficulty !== undefined) {
+            if (data.aiDifficulty !== undefined && gameSession.ai_difficulty === undefined) {
                 gameSession.set_ai_difficulty(data.aiDifficulty);
             }
 

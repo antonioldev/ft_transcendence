@@ -7,6 +7,7 @@ import * as db from "../data/validation.js";
 import { GAME_CONFIG } from '../shared/gameConfig.js';
 import { EventEmitter } from 'events';
 import { Cipheriv } from 'crypto';
+import { Game } from '../core/game.js';
 
 /**
  * Manages game sessions and player interactions within the game.
@@ -48,7 +49,7 @@ class GameManager extends EventEmitter {
         this.gameIdMap.set(gameId, gameSession);
         this.clientGamesMap.set(client.id, gameSession);
 
-        // if gameSession not full after a period of time then start automatically with CPU's
+        // if gameSession not full after a period of maxJoinWaitTime then start automatically with CPU's
         setTimeout(() => {
             if (this.gameIdMap.has(gameId)) this.runGame(gameSession, client.id);
         }, (GAME_CONFIG.maxJoinWaitTime * 1000));
@@ -90,6 +91,7 @@ class GameManager extends EventEmitter {
             // Try to find waiting game or create new one
             for (const [gameId, game] of this.gameIdMap) {
                 if (game.mode === mode && !game.full) {
+                    if (mode === GameMode.TOURNAMENT_REMOTE && game.client_capacity !== capacity) continue ;
                     game.add_client(client);
                     addPlayer2(gameId, client.username); // add security
                     return gameId;
@@ -97,7 +99,7 @@ class GameManager extends EventEmitter {
             }
         }
         // No waiting games, create new one
-        return this.createGame(mode, client);
+        return this.createGame(mode, client, capacity);
     }
 
     async runGame(gameSession: AbstractGameSession, client_id: string): Promise<void> {

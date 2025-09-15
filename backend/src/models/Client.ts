@@ -34,7 +34,7 @@ export class Player {
     side: number = 0;         // Which paddle this player controls (LEFT_PADDLE/RIGHT_PADDLE)
     difficulty?: AiDifficulty;    // difficulty of CPU
 
-    constructor(id: string, name: string, client?: Client, difficulty: number = 3) {
+    constructor(id: string, name: string, client?: Client, difficulty: number = AiDifficulty.HARD) {
         this.id = id;
         this.name = name;
         this.client = client;
