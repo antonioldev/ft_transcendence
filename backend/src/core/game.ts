@@ -134,6 +134,7 @@ export class Game {
 			right: this.players[RIGHT_PADDLE].name,
 		});
 	}
+	
 	async send_countdown(): Promise<void> {
 		for (let countdown = GAME_CONFIG.startDelay; countdown >= 0; countdown--) {
 			console.log(`Sending countdown: ${countdown}`);
@@ -230,5 +231,6 @@ export class Game {
 	activate(side: number, slot_index: number) {
 		const slot: Slot = this.powerup_manager.slots[side][slot_index];
 		this.powerup_manager.activate(slot);
+        console.log(`Powerup ${slot.type} activated by ${this.players[side].name}`);
 	}
 }

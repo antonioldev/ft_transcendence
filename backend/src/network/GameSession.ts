@@ -42,6 +42,7 @@ export abstract class AbstractGameSession {
 	}
 
 	set_ai_difficulty(difficulty: AiDifficulty) {
+		console.warn(`AI difficulty set to ${difficulty} for game ${this.id}`);
 		this.ai_difficulty = difficulty;
 	}
 
@@ -68,13 +69,14 @@ export abstract class AbstractGameSession {
 	
 	add_player(player: Player) {
 		if (this.players.length < this.player_capacity) {
+			console.log(`Player ${player.name} added to game ${this.id}`);
 			this.players.push(player);
 		}
 	}
 
 	add_CPUs() {
 		for (let i = 1; this.players.length < this.player_capacity; i++) {
-			this.players.push(new Player(`CPU_${i}`, "CPU", undefined, this.ai_difficulty));
+			this.add_player(new Player(`CPU_${i}`, "CPU", undefined, this.ai_difficulty));
 		}
 
 		if (this.mode === GameMode.TWO_PLAYER_REMOTE) {
@@ -87,6 +89,7 @@ export abstract class AbstractGameSession {
 	remove_player(player: Player) {
 		const index = this.players.indexOf(player);
 		if (index !== -1) {
+			console.log(`Player ${player.name} removed from game ${this.id}`);
 			this.players.splice(index, 1);
 			this.full = false;
 		}
@@ -128,8 +131,8 @@ export abstract class AbstractGameSession {
 			return ;
 		}
 
-		game.resume();
 		console.log(`Game ${this.id} resumed by client ${client_id}`);
+		game.resume();
 	}
 
 	pause(client_id?: string): void {
@@ -143,8 +146,8 @@ export abstract class AbstractGameSession {
 			return ;
 		}
 
-		game.pause();
 		console.log(`Game ${this.id} paused by client ${client_id}`);
+		game.pause();
 	}
 
 	enqueue(input: PlayerInput, client_id?: string): void  {

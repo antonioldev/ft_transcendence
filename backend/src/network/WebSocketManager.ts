@@ -69,12 +69,9 @@ export class WebSocketManager {
         }
 
         this.clients.set(clientId, client);
-        let currentGameId: string | null = null;
 
         socket.on('message', async (message: string) => {
-            await this.handleMessage(socket, client, message, (gameId) => {
-                currentGameId = gameId;
-            });
+            await this.handleMessage(socket, client, message);
         });
 
         socket.on('close', () => {
@@ -100,18 +97,13 @@ export class WebSocketManager {
      * @param message - The raw message string received.
      * @param setCurrentGameId - Callback to update the current game ID for the client.
      */
-    private async handleMessage(
-        socket: any, 
-        client: Client, 
-        message: string,
-        setCurrentGameId: (gameId: string) => void
-    ): Promise<void> {
+    private async handleMessage(socket: any, client: Client, message: string): Promise<void> {
         try {
             const data: ClientMessage = JSON.parse(message.toString());
             
             switch (data.type) {
                 case MessageType.JOIN_GAME:
-                    this.handleJoinGame(socket, client, data, setCurrentGameId);
+                    this.handleJoinGame(socket, client, data);
                     break;
                 case MessageType.PLAYER_READY:
                     this.handlePlayerReady(client);
@@ -172,7 +164,7 @@ export class WebSocketManager {
      * @param data - The message data containing game mode information.
      * @param setCurrentGameId - Callback to update the current game ID for the client.
      */
-    private handleJoinGame(socket: any, client: Client, data: ClientMessage, setCurrentGameId: (gameId: string) => void) {
+    private handleJoinGame(socket: any, client: Client, data: ClientMessage) {
         try {
             if (!data.gameMode) {
                 throw new Error(`Game mode missing`);
@@ -188,7 +180,6 @@ export class WebSocketManager {
             if (data.aiDifficulty !== undefined) {
                 gameSession.set_ai_difficulty(data.aiDifficulty);
             }
-            setCurrentGameId(gameId);
 
             // add players to gameSession
             for (const player of data.players ?? []) {
@@ -246,6 +237,10 @@ export class WebSocketManager {
             console.warn(`Client ${client.id} not in any game`);
             return;
         }
+        if (!gameSession.canClientControlGame(client)){
+            console.warn(`Client ${client.id} not authorized to control game`);
+            return;
+        }
 
         const input: PlayerInput = {
             id: client.id,
@@ -290,7 +285,6 @@ export class WebSocketManager {
             console.warn(`Client ${client.id} not authorized to resume game`);
             return;
         }
-
         gameSession.resume(client.id);
     }
 
@@ -307,8 +301,7 @@ export class WebSocketManager {
         
         gameSession.handlePlayerQuit(client.id);
         gameManager.removeClientFromGames(client);
-        // gameManager.endGame(gameSession, client.id); // unecessary as .removeClientFromGames() handles this
-        console.log(`Game ${gameSession.id} ended by client ${client.id}`);
+        console.log(`Game ${gameSession.id} ended by client: ${client.username}:${client.id}`);
     }
 
     /**
@@ -322,6 +315,7 @@ export class WebSocketManager {
         gameSession.stop(); // TODO: temp as wont work for Tournament 
         gameManager.removeClientFromGames(client);
         this.clients.delete(client.id);
+        console.log(`Client disconnected: ${client.username}:${client.id}`);
     } 
 
     private activatePowerup(client: Client, data: ClientMessage) {
@@ -340,6 +334,10 @@ export class WebSocketManager {
         if (!game) {
             console.error("Error: cannot activate powerup, game does not exist");
             return ;
+        }
+        if (!gameSession.canClientControlGame(client)){
+            console.warn(`Client ${client.id} not authorized to control game`);
+            return;
         }
         game.activate(data.side, data.slot);
     }

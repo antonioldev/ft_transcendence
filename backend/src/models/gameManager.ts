@@ -102,7 +102,8 @@ class GameManager extends EventEmitter {
 
     async runGame(gameSession: AbstractGameSession, client_id: string): Promise<void> {
         if (gameSession.running) return ;
-
+        
+        console.log(`Game started with ${gameSession.players.length} players`);
         db.updateStartTime(gameSession.id);
         await gameSession.start();
         gameManager.endGame(gameSession, client_id);
@@ -160,13 +161,6 @@ class GameManager extends EventEmitter {
         else {
             this.endGame(gameSession, client.id);
         }
-        
-        // for (const [gameId, game] of this.gameIdMap) {
-        //     game.remove_client(client);
-        //     if (game.clients.length === 0) {
-        //         this.removeGame(gameId);
-        //     }
-        // }
     }
 }
 
