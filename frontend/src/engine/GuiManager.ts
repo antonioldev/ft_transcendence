@@ -59,7 +59,6 @@ export class GUIManager {
 		}
 	}
 
-	// SETTER
 	setPauseVisible(visible: boolean): void {
 		if (!this.isReady || !this.animationManager) return;
 
@@ -108,6 +107,31 @@ export class GUIManager {
 		if (p2) p2.color = player2 ? "rgba(255, 255, 255, 0.7)" : "rgba(0, 0, 0, 0)";
 		if (player1) this.powerUp.showIndividually(1, true);
 		if (player2) this.powerUp.showIndividually(2, true);
+	}
+
+	updateTournamentRound(message: any): void {
+		this.matchTree.insert(
+			message.round_index,
+			message.match_index,
+			message.left ?? null,
+			message.right ?? null,
+			message.match_total ?? undefined
+		);
+	}
+
+	updateTournamentGame(message: any): void {
+		this.matchTree.update(
+			message.winner,
+			message.round_index,
+			message.match_index
+		)
+	}
+
+	updateTournamentLobby(message: any): void {
+		
+		const names: string[] = message.lobby ?? ["test1"];
+		this.lobby.show(names);
+		// uiManager.setLoadingScreenVisible(false);
 	}
 	
 	// Check if gui is initialised
