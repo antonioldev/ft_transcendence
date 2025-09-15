@@ -56,30 +56,12 @@ class GameManager extends EventEmitter {
         return gameSession;
     }
 
-    // UNUSED FUNCTION
-    // /**
-    //  * Allows a client to join an existing game session if it is not full.
-    //  * @param gameId - The unique ID of the game session.
-    //  * @param client - The client attempting to join the game.
-    //  * @returns True if the client successfully joined the game, otherwise false.
-    //  */
-    
-    // joinGame(gameId: string, client: Client): boolean {
-    //     const game = this.games.get(gameId);
-    //     if (game && !game.full) {
-    //         game.add_client(client);
-    //         return true;
-    //     }
-    //     return false;
-    // }
-
     /**
      * Finds an available game session for the specified mode or creates a new one.
      * @param mode - The game mode (e.g., SINGLE_PLAYER, MULTIPLAYER).
      * @param client - The client looking for a game session.
      * @returns The unique ID of the found or created game session.
      */
-
     findOrCreateGame(mode: GameMode, client: Client, capacity?: number): AbstractGameSession {
         //For local games, just create game
         if (mode === GameMode.SINGLE_PLAYER || mode === GameMode.TWO_PLAYER_LOCAL|| mode === GameMode.TOURNAMENT_LOCAL) {
@@ -115,6 +97,8 @@ class GameManager extends EventEmitter {
         await gameSession.start();
         gameManager.endGame(gameSession);
     }
+
+    
 
     /**
      * Retrieves a game session by its unique ID.
