@@ -46,6 +46,8 @@ export class CPUBot extends Paddle {
 	private _view_timer = 0;
 	private _target_x   = getBallStartPosition().x;
 	private _boundaries = getPlayerBoundaries(GAME_CONFIG.paddleWidth);
+	private _since = 0;
+	private _fired = false;
 
 	constructor(
 		side: number,
@@ -53,6 +55,7 @@ export class CPUBot extends Paddle {
 		public noiseFactor: number = 1.5, // 0=impossible, 1.5=hard, 2=medium, 3=easy
 		public speed: number = GAME_CONFIG.paddleSpeed,
 		public direction: number = 0,
+		private _trigger?: (side: number, slot: number) => void,
 	) {
 		super(side);
 	}
@@ -99,7 +102,14 @@ export class CPUBot extends Paddle {
 		// set bot difficulty using noise in intercept prediction
 		
 		// refresh once per second
+		this._since += dt;
 		this._view_timer += dt;
+		if (!this._fired && this._since >= 1000) {
+			this._trigger?.(this.side, 0);
+			this._trigger?.(this.side, 1);
+			this._trigger?.(this.side, 2);
+			this._fired = true;
+		}
 		if (this._view_timer >= 1000.0) {
 			const noise = (Math.random() - 0.5) * GAME_CONFIG.paddleWidth * this.noiseFactor;
 			this._target_x = this._ballMovingTowards()

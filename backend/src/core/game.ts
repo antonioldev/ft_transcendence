@@ -37,7 +37,7 @@ export class Game {
 			const player: Player = this.players[side];
 			if (player.name === "CPU" && player.difficulty !== undefined) {
 				const noiseFactor =  CPUDifficultyMap[player.difficulty];
-				this.paddles[side] = new CPUBot(side, this.ball, noiseFactor);
+				this.paddles[side] = new CPUBot(side, this.ball, noiseFactor, GAME_CONFIG.paddleSpeed, 0, (s, slot) => this.activate(s, slot) );
 			}
 			this._broadcast({
 				type: MessageType.POWERUP_ASSIGNMENT,
