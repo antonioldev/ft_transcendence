@@ -127,20 +127,6 @@ export class Game {
 			}
 			webSocketClient.sendPlayerReady();
 			uiManager.setLoadingScreenVisible(false);
-// 			this.updateTournamentLobby(["player0"]);
-// let counter = 1;
-// const names: string[] = [];
-
-// const intervalId = setInterval(() => {
-// names.push(`Player${counter}`);
-// this.updateTournamentLobby({ lobby: [...names] });
-// counter++;
-
-// // Stop after, say, 8 players
-// if (counter > 16) {
-// 	clearInterval(intervalId);
-// }
-// }, 3000);
 		} catch (error) {
 			await this.dispose();
 			Logger.errorAndThrow('Error initializing game', 'Game', error);
@@ -262,10 +248,11 @@ export class Game {
 		if (!this.isInitialized || !this.config.isTournament) return;
 
 		this.guiManager?.setPauseVisible(false);
-		await this.guiManager?.animateBackground(true);
-		await this.guiManager?.showPartialWinner(winner);
-		await this.guiManager?.endGame.waitForSpaceToContinue(2000);
-		await this.guiManager?.hidePartialWinner();
+		await this.guiManager?.showTournamentMatchWinner(winner);
+		// await this.guiManager?.animateBackground(true);
+		// await this.guiManager?.showPartialWinner(winner);
+		// await this.guiManager?.endGame.waitForSpaceToContinue(2000);
+		// await this.guiManager?.hidePartialWinner();
 		webSocketClient.sendPlayerReady();
 		this.audioManager?.stopGameMusic();
 		this.stopGameLoop();

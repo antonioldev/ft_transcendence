@@ -87,7 +87,15 @@ export class GUIManager {
 	async hidePartialWinner(): Promise<void> {
 		if (!this.isReady) return;
 		await this.endGame.hidePartial();
-		this.powerUp.show(true);
+	}
+
+	async showTournamentMatchWinner(winner: string): Promise<void> {
+		if (!this.isReady) return;
+		
+		await this.animateBackground(true);
+		await this.showPartialWinner(winner);
+		await this.endGame.waitForSpaceToContinue(2000);
+		await this.hidePartialWinner();
 	}
 
 	async showWinner(winner: string): Promise<void> {
@@ -128,10 +136,8 @@ export class GUIManager {
 	}
 
 	updateTournamentLobby(message: any): void {
-		
-		const names: string[] = message.lobby ?? ["test1"];
+		const names: string[] = message.lobby ?? [""];
 		this.lobby.show(names);
-		// uiManager.setLoadingScreenVisible(false);
 	}
 	
 	// Check if gui is initialised
