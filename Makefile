@@ -31,7 +31,8 @@ secret-env: pepper-env cookie-env
 #################################################################################
 #################################     MAIN      #################################
 
-run: build start
+run: set-env-ip build start
+	@. ./.env; echo "Server running at https://$${LAN_IP}:8443"
 
 start:
 	docker-compose up -d
@@ -52,6 +53,18 @@ build-backend:
 	@cp -rf shared/* backend/src/shared/
 	@chmod -R a-w backend/src/shared
 	@docker-compose build backend
+
+set-env-ip:
+	@touch .env
+	@IP=$$(hostname -I 2>/dev/null | awk '{print $$1}') || \
+	 IP=$$(ip addr show eth0 2>/dev/null | grep "inet " | awk '{print $$2}' | cut -d/ -f1) || \
+	 IP=127.0.0.1; \
+	\
+	tmp=$$(mktemp 2>/dev/null || echo .env.tmp); \
+	grep -vE '^(LAN_IP)=' .env > "$$tmp" 2>/dev/null || true; \
+	mv "$$tmp" .env; \
+	printf "LAN_IP=%s\n" "$$IP" >> .env; \
+	echo "✅ LAN_IP set to $$IP and written to .env"
 
 #################################################################################
 #################################     LOGS      #################################
@@ -132,4 +145,4 @@ update: update-deps fclean up-build
         logs logs-frontend logs-backend \
         clean fclean re restart \
         ps update update-deps \
-		pepper-env
+		pepper-env set-env-ip print-url

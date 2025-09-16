@@ -35,7 +35,6 @@ export class WebSocketClient {
         const WS_URL = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws';
 
         this.ws = new WebSocket(WS_URL);
-        // this.ws = new WebSocket('wss://localhost:3000/ws'); // TODO make it a variable
 
         const timeout = setTimeout(() => {
             if (this.connectionStatus === ConnectionStatus.CONNECTING) {
@@ -102,7 +101,6 @@ export class WebSocketClient {
                 this.triggerCallback(WebSocketEvent.GAME_RESUMED);
                 break;
             case MessageType.SESSION_ENDED:
-                console.error(`SESSION ENDED RECEIVED: winner = ${message.winner}`);
                 this.triggerCallback(WebSocketEvent.SESSION_ENDED, message);
                 break;
             case MessageType.SIDE_ASSIGNMENT:

@@ -39,6 +39,8 @@ services:
       - ./backend/src/database:/app/database
     env_file:
       - .env
+    environment:
+      LAN_IP: ${LAN_IP}
     command: npm start
     # networks:
       # - app-network
