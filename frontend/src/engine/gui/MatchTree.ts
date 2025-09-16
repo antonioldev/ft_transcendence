@@ -9,6 +9,7 @@ export class MatchTree {
 	private bracketScroll!: ScrollViewer;
 	private bracketGrid!: Grid;
 	private isCreated: boolean = false;
+	private rounds: number = 0;
 	
 
 	constructor(private adt: AdvancedDynamicTexture, private animationManager: AnimationManager) {
@@ -40,7 +41,7 @@ export class MatchTree {
 		this.bracketScroll = new ScrollViewer("bracketScroll");
 		applyStyles(this.bracketScroll, BRACKET_STYLES.bracketScroll);
 		this.bracketScroll.verticalBar.isVisible = false;
-		this.bracketScroll.horizontalBar.isVisible = true;
+		this.bracketScroll.horizontalBar.isVisible = false; // Remove horizontal scrollbar
 		container.addControl(this.bracketScroll, 1, 0);
 
 		const contentWrap = createStackPanel("bracketContentWrap", BRACKET_STYLES.contentWrap);
@@ -131,7 +132,6 @@ export class MatchTree {
 			this.bracketOverlay.paddingRight = "5px"
 			this.bracketOverlay.leftInPixels = 400;
 
-
 			this.animationManager.slideInX(this.bracketOverlay, 400, Motion.F.base);
 		} else {
 			this.animationManager.slideOutX(this.bracketOverlay, 400, Motion.F.xFast).then(() => {
@@ -142,11 +142,14 @@ export class MatchTree {
 
 	private initializeGrid(matchTotal: number): void {
 		this.playerTotal = matchTotal * 2;
-		const rounds = Math.ceil(Math.log2(this.playerTotal));
-		const totalColumns = rounds + 1;
+		this.rounds = Math.ceil(Math.log2(this.playerTotal));
+		const totalColumns = this.rounds + 1;
+
+		// Calculate sizing for all rounds
+		const sizing = this.computeBracketSizing(this.playerTotal);
 
 		for (let col = 0; col < totalColumns; col++) {
-			this.bracketGrid?.addColumnDefinition(220, true);
+			this.bracketGrid?.addColumnDefinition(sizing.colWidth, true);
 
 			const colPanel = createStackPanel(`bracketCol_${col}`, BRACKET_STYLES.bracketColPanel);
 			this.bracketGrid?.addControl(colPanel, 1, col);
@@ -154,15 +157,18 @@ export class MatchTree {
 			const slots = this.playerTotal / Math.pow(2, col);
 			for (let i = 0; i < slots; i++) {
 				const cellName = `bracketCell_${col + 1}_${i}`;
-				const cellHeight = 50 * Math.pow(2, col);
 				const cellRect = createRect(`${cellName}_rect`, BRACKET_STYLES.bracketCellRect);
-				cellRect.height = `${cellHeight}px`;
+				cellRect.height = `${sizing.rowHeight}px`;
 				colPanel.addControl(cellRect);
-				const tb = createTextBlock( cellName, BRACKET_STYLES.bracketCellText, "");
-				tb.fontSize = col === rounds ? 48 : 16;
-				tb.text = col === rounds ? "🏆" : "tbd";
+				
+				const tb = createTextBlock(cellName, BRACKET_STYLES.bracketCellText, "");
+				tb.fontSize = col === this.rounds ? sizing.finalFontSize : sizing.fontPx;
+				tb.text = col === this.rounds ? "🏆" : "tbd";
 				cellRect.addControl(tb);
 			}
+			
+			// Apply consistent spacing to this column
+			this.applySizingToColumn(col, sizing);
 			this.wireRound(col);
 		}
 		this.isCreated = true;
@@ -227,11 +233,76 @@ export class MatchTree {
 		}
 	}
 
+	// --- Updated sizing computation for all rounds ---
+	private computeBracketSizing(playerCount: number) {
+		// Available vertical space
+		const { height: canvasH } = this.adt.getSize();
+		const margin = 48; // Safety margin
+		const available = Math.max(120, canvasH - margin);
+
+		// Calculate total vertical space needed for all rows
+		const totalRows = playerCount; // First round has playerCount rows
+		
+		// Calculate row height to fit all rows
+		const MIN_ROW = 24;
+		const MAX_ROW = 64;
+		const MIN_GAP = 4;
+		const MAX_GAP = 10;
+		
+		// Calculate gap proportional to density
+		const gap = Math.max(MIN_GAP, Math.min(MAX_GAP, Math.floor(available * 0.0025)));
+		
+		// Calculate row height to fit all rows with gaps
+		let rowHeight = Math.floor((available - (totalRows - 1) * gap) / totalRows);
+		rowHeight = Math.max(MIN_ROW, Math.min(MAX_ROW, rowHeight));
+
+		// Font size proportional to row height
+		const fontPx = Math.max(12, Math.min(24, Math.round(rowHeight * 0.45)));
+		const finalFontSize = Math.max(24, Math.min(48, Math.round(rowHeight * 0.9)));
+
+		// Column width based on row height
+		const colWidth = Math.max(140, Math.min(240, Math.round(rowHeight * 4)));
+
+		return { rowHeight, gap, fontPx, finalFontSize, colWidth };
+	}
+
+	// --- Apply sizing to a specific column ---
+	private applySizingToColumn(colIndex: number, sizing: { rowHeight: number; gap: number; fontPx: number; finalFontSize: number; colWidth: number }) {
+		const colPanel = this.adt.getControlByName(`bracketCol_${colIndex}`) as StackPanel | null;
+		if (!colPanel) return;
+
+		// Set column width
+		colPanel.width = `${sizing.colWidth}px`;
+
+		// Apply sizing to each cell in this column
+		for (let i = 0; i < colPanel.children.length; i++) {
+			const rowRect = colPanel.children[i] as Rectangle;
+			if (!(rowRect instanceof Rectangle)) continue;
+
+			rowRect.height = `${sizing.rowHeight}px`;
+			rowRect.paddingTop = "0px";
+			rowRect.paddingBottom = "0px";
+			
+			// Add gap between rows (except for the last one)
+			rowRect.paddingBottom = `${i < colPanel.children.length - 1 ? sizing.gap : 0}px`;
+
+			// Update font size for text in this cell
+			const label = rowRect.children?.find(c => c instanceof TextBlock) as TextBlock | undefined;
+			if (label) {
+				if (colIndex === this.rounds) {
+					label.fontSize = `${sizing.finalFontSize}px`; // Final round (winner)
+				} else {
+					label.fontSize = `${sizing.fontPx}px`; // Regular rounds
+				}
+				label.resizeToFit = true;
+				label.textWrapping = true;
+			}
+		}
+	}
+
 	dispose():void {
 		this.bracketGrid.dispose();
 		this.bracketScroll.dispose()
 		this.bracketOverlay.dispose()
-
 	}
-
 }
