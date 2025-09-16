@@ -19,16 +19,46 @@ export class MenuFlowManager {
 	private static instance: MenuFlowManager;
 	private selectedViewMode: ViewMode = ViewMode.MODE_2D;
 	private selectedGameMode: GameMode | null = null;
-	private currentViewModeIndex = 0;
+	// private currentViewModeIndex = 0;
 	private currentAiDifficultyIndex: AiDifficulty = AiDifficulty.EASY;
 	private currentTournamentIndex: number = 4;
 	private currentOnlineTournamentIndex: number = 4;
-	
-	// Unified player collection system
 	private isCollectingPlayerNames = false;
 	private playerIndex: number = 0;
 	private playerNames: string[] = [];
 	private maxPlayersNeeded: number = 0;
+
+	private readonly gameModeConfigs = {
+		[GameMode.SINGLE_PLAYER]: {
+			requiresAuth: false,
+			requiresSetup: true,
+			availableOfflineOnly: false
+		},
+		[GameMode.TWO_PLAYER_LOCAL]: {
+			requiresAuth: false,
+			requiresSetup: true,
+			availableOfflineOnly: true,
+			errorMessage: 'Local mode not available for logged-in users'
+		},
+		[GameMode.TWO_PLAYER_REMOTE]: {
+			requiresAuth: true,
+			requiresSetup: false,
+			availableOfflineOnly: false
+		},
+		[GameMode.TOURNAMENT_LOCAL]: {
+			requiresAuth: false,
+			requiresSetup: true,
+			availableOfflineOnly: true,
+			errorMessage: 'Local tournament not available for logged-in users'
+		},
+		[GameMode.TOURNAMENT_REMOTE]: {
+			requiresAuth: true,
+			requiresSetup: false,
+			availableOfflineOnly: false
+		}
+	} as const;
+
+	private readonly tournamentSizes = [4, 8, 16] as const;
 
 	static getInstance(): MenuFlowManager {
 		if (!MenuFlowManager.instance)
@@ -46,75 +76,54 @@ export class MenuFlowManager {
 	// ========================================
 
 	private setupEventListeners(): void {
-		// View mode navigation controls
-		const viewModeBack = requireElementById(EL.BUTTONS.VIEW_MODE_BACK);
-		const viewModeForward = requireElementById(EL.BUTTONS.VIEW_MODE_FORWARD);
-		const backBtn = requireElementById(EL.BUTTONS.DASHBOARD_BACK);
-		const soloDifficultyBack = requireElementById(EL.BUTTONS.SOLO_DIFFICULTY_BACK);
-		const soloDifficultyForward = requireElementById(EL.BUTTONS.SOLO_DIFFICULTY_FORWARD);
-		const tournamentNumberBack = requireElementById(EL.BUTTONS.TOURNAMENT_NUMBER_BACK);
-		const tournamentNumberForward = requireElementById(EL.BUTTONS.TOURNAMENT_NUMBER_FORWARD);
-		const tournamentOnlineNumberBack = requireElementById(EL.BUTTONS.TOURNAMENT_ONLINE_NUMBER_BACK);
-		const tournamentOnlineNumberForward = requireElementById(EL.BUTTONS.TOURNAMENT_ONLINE_NUMBER_FORWARD);
-
-		viewModeBack.addEventListener('click', () => this.previousViewMode());
-		viewModeForward.addEventListener('click', () => this.nextViewMode());
-		backBtn.addEventListener('click', () => { appStateManager.navigateTo(AppState.MAIN_MENU);});
-		soloDifficultyBack.addEventListener('click', () => this.previousAIDifficulty());
-		soloDifficultyForward.addEventListener('click', () => this.nextAIDifficulty());
-		tournamentNumberBack.addEventListener('click', () => this.previousTournamentSize());
-		tournamentNumberForward.addEventListener('click', () => this.nextTournamentSize());
-		tournamentOnlineNumberBack.addEventListener('click', () => this.previousOnlineTournamentSize());
-		tournamentOnlineNumberForward.addEventListener('click', () => this.nextOnlineTournamentSize());
-
-		uiManager.updateAIDifficultyDisplay(this.currentAiDifficultyIndex);
-
-		// Game mode selection buttons
+		this.setupNavigationListeners();
 		this.setupGameModeButtons();
 		this.setupPlayerSetupListeners();
+		this.setupPlayerInputHandling();
 		this.showDashboard();
 	}
 
+	private setupNavigationListeners(): void {
+		const elements = {
+			viewModeBack: requireElementById<HTMLButtonElement>(EL.BUTTONS.VIEW_MODE_BACK),
+			viewModeForward: requireElementById<HTMLButtonElement>(EL.BUTTONS.VIEW_MODE_FORWARD),
+			backBtn: requireElementById<HTMLButtonElement>(EL.BUTTONS.DASHBOARD_BACK),
+			soloDifficultyBack: requireElementById<HTMLButtonElement>(EL.BUTTONS.SOLO_DIFFICULTY_BACK),
+			soloDifficultyForward: requireElementById<HTMLButtonElement>(EL.BUTTONS.SOLO_DIFFICULTY_FORWARD),
+			tournamentNumberBack: requireElementById<HTMLButtonElement>(EL.BUTTONS.TOURNAMENT_NUMBER_BACK),
+			tournamentNumberForward: requireElementById<HTMLButtonElement>(EL.BUTTONS.TOURNAMENT_NUMBER_FORWARD),
+			tournamentOnlineNumberBack: requireElementById<HTMLButtonElement>(EL.BUTTONS.TOURNAMENT_ONLINE_NUMBER_BACK),
+			tournamentOnlineNumberForward: requireElementById<HTMLButtonElement>(EL.BUTTONS.TOURNAMENT_ONLINE_NUMBER_FORWARD)
+		};
+		
+		elements.soloDifficultyBack.addEventListener('click', () => this.updateAIDifficulty('previous'));
+		elements.soloDifficultyForward.addEventListener('click', () => this.updateAIDifficulty('next'));
+		elements.viewModeBack.addEventListener('click', () => this.updateViewMode());
+		elements.viewModeForward.addEventListener('click', () => this.updateViewMode());
+		elements.tournamentNumberBack.addEventListener('click', () => this.updateTournamentSize(false, 'previous'));
+		elements.tournamentNumberForward.addEventListener('click', () => this.updateTournamentSize(false, 'next'));
+		elements.tournamentOnlineNumberBack.addEventListener('click', () => this.updateTournamentSize(true, 'previous'));
+		elements.tournamentOnlineNumberForward.addEventListener('click', () => this.updateTournamentSize(true, 'next'));
+
+		uiManager.updateAIDifficultyDisplay(this.currentAiDifficultyIndex);
+	}
+
 	private setupGameModeButtons(): void {
-		this.setupGameModeHandler(GameMode.SINGLE_PLAYER, {
-			requiresAuth: false,
-			requiresSetup: true,
-			availableOfflineOnly: false
+		Object.entries(this.gameModeConfigs).forEach(([gameMode, config]) => {
+			this.setupGameModeHandler(gameMode as GameMode, config);
 		});
 
-		this.setupGameModeHandler(GameMode.TWO_PLAYER_LOCAL, {
-			requiresAuth: false,
-			requiresSetup: true,
-			availableOfflineOnly: true,
-			errorMessage: 'Local mode not available for logged-in users'
-		});
-		
-		this.setupGameModeHandler(GameMode.TWO_PLAYER_REMOTE, {
-			requiresAuth: true,
-			requiresSetup: false,
-			availableOfflineOnly: false
-		});
-		
-		this.setupGameModeHandler(GameMode.TOURNAMENT_LOCAL, {
-			requiresAuth: false,
-			requiresSetup: true,
-			availableOfflineOnly: true,
-			errorMessage: 'Local tournament not available for logged-in users'
-		});
-		
-		this.setupGameModeHandler(GameMode.TOURNAMENT_REMOTE, {
-			requiresAuth: true,
-			requiresSetup: false,
-			availableOfflineOnly: false
-		});
-
-		const backButton = requireElementById(EL.BUTTONS.MODE_BACK);
-		backButton.addEventListener('click', () => this.handleModeBackButton());
+		const backButton = requireElementById<HTMLButtonElement>(EL.BUTTONS.MODE_BACK);
+		backButton.addEventListener('click', () => this.handleBack(AppState.MAIN_MENU));
 	}
 	
-	private handleModeBackButton(): void {
+	private handleBack(target: AppState): void {
+		this.isCollectingPlayerNames = false;
+		// this.playerIndex = 0;
+		// this.playerNames = [];
 		this.selectedGameMode = null;
-		appStateManager.navigateTo(AppState.MAIN_MENU);
+
+		appStateManager.navigateTo(target);
 	}
 
 	// ========================================
@@ -127,7 +136,7 @@ export class MenuFlowManager {
 		availableOfflineOnly: boolean; 
 		errorMessage?: string;
 	}) {
-		const button = requireElementById(gameMode);
+		const button = requireElementById<HTMLButtonElement>(gameMode);
 
 		button.addEventListener('click', async () => {
 			if (config.availableOfflineOnly && authManager.isUserAuthenticated()) {
@@ -144,23 +153,11 @@ export class MenuFlowManager {
 			this.selectedGameMode = gameMode;
 
 			if (config.requiresSetup && !authManager.isUserAuthenticated()) {
-				// Start player collection for offline modes
 				this.beginPlayerCollection(gameMode);
 				appStateManager.navigateTo(AppState.PLAYER_SETUP);
 				uiManager.showSetupForm(EL.PLAYER_COLLECTION.FORM);
 			} else {
-				// For authenticated users or modes that don't require setup
-				let capacity: number | undefined = undefined;
-				
-				if (gameMode === GameMode.TOURNAMENT_REMOTE)
-					capacity = this.currentOnlineTournamentIndex;
-				
-				await appStateManager.startGameWithMode(
-					this.selectedViewMode, 
-					this.selectedGameMode, 
-					this.currentAiDifficultyIndex,
-					capacity
-				);
+				await this.startGameWithCurrentConfig();
 			}
 		});
 	}
@@ -184,55 +181,49 @@ export class MenuFlowManager {
 		}
 	}
 
+	// ========================================
+	// PLAYER COLLECTION MANAGEMENT
+	// ========================================
+
 	private updatePlayerCollectionUI(): void {
 		const currentPlayer = this.playerIndex + 1;
 		const isLastPlayer = currentPlayer >= this.maxPlayersNeeded;
 		const t = getCurrentTranslation();
-		const label = document.getElementById(EL.PLAYER_COLLECTION.LABEL) as HTMLLabelElement;
-		const input = document.getElementById(EL.PLAYER_COLLECTION.INPUT) as HTMLInputElement;
-		const nextButton = document.getElementById(EL.BUTTONS.START_GAME) as HTMLButtonElement;
-		const addCpuButton = document.getElementById(EL.PLAYER_COLLECTION.ADD_CPU) as HTMLButtonElement;
+		const label = requireElementById<HTMLLabelElement>(EL.PLAYER_COLLECTION.LABEL);
+		const input = requireElementById<HTMLInputElement>(EL.PLAYER_COLLECTION.INPUT);
+		const nextButton = requireElementById<HTMLButtonElement>(EL.BUTTONS.START_GAME);
+		const addCpuButton = requireElementById<HTMLButtonElement>(EL.PLAYER_COLLECTION.ADD_CPU);
 
-		if (label) label.textContent = `${t.playerName} ${currentPlayer}`;
-		if (nextButton) nextButton.textContent = isLastPlayer ? t.startGame : t.next;
+		label.textContent = `${t.playerName} ${currentPlayer}`;
+		nextButton.textContent = isLastPlayer ? t.startGame : t.next;
 
-		// Show/hide Add CPU for tournaments only
 		if (this.selectedGameMode === GameMode.TOURNAMENT_LOCAL) {
 			const canAddCpu = this.playerNames.length >= this.getMinPlayersForCpu();
-			if (addCpuButton) {
-				addCpuButton.style.display = 'block';
-				addCpuButton.disabled = !canAddCpu;
-			}
+			addCpuButton.style.display = 'block';
+			addCpuButton.style.opacity = canAddCpu ? '1' : '0.5';
+			addCpuButton.disabled = !canAddCpu;
 		} else {
-			if (addCpuButton) addCpuButton.style.display = 'none';
+			addCpuButton.style.display = 'none';
 		}
 
-		// Focus input
+		input.value = '';
+		input.focus();
+	}
+
+	private setupPlayerInputHandling(): void {
+		const input = requireElementById<HTMLInputElement>(EL.PLAYER_COLLECTION.INPUT);
 		if (input) {
-			input.value = '';
-			input.focus();
 			input.onkeydown = (e: KeyboardEvent) => {
 				if (e.key === 'Enter') {
 					e.preventDefault();
-					this.handlePlayerNext();
+					this.handlePlayerInputSubmission();
 				}
 			};
 		}
 	}
 
-	private getMinPlayersForCpu(): number {
-		if (this.selectedGameMode !== GameMode.TOURNAMENT_LOCAL) return 0;
-		
-		switch (this.currentTournamentIndex) {
-			case 4: return 3;
-			case 8: return 5;
-			case 16: return 9;
-			default: return Math.floor(this.currentTournamentIndex / 2) + 1;
-		}
-	}
-
-	private handlePlayerNext(): void {
-		const input = document.getElementById(EL.PLAYER_COLLECTION.INPUT) as HTMLInputElement;
+	private handlePlayerInputSubmission(): void {
+		const input = requireElementById<HTMLInputElement>(EL.PLAYER_COLLECTION.INPUT);
 		const name = (input?.value ?? '').trim();
 		
 		if (!name) {
@@ -261,47 +252,21 @@ export class MenuFlowManager {
 		this.updatePlayerCollectionUI();
 	}
 
-	private handleAddCpu(): void {
-		if (this.selectedGameMode !== GameMode.TOURNAMENT_LOCAL) return;
+	private getMinPlayersForCpu(): number {
+		if (this.selectedGameMode !== GameMode.TOURNAMENT_LOCAL) return 0;
 		
-		const minPlayers = this.getMinPlayersForCpu();
-		if (this.playerNames.length < minPlayers) {
-			alert(`Need at least ${minPlayers} players to add CPU.`);
-			return;
+		switch (this.currentTournamentIndex) {
+			case 4: return 3;
+			case 8: return 5;
+			case 16: return 9;
+			default: return Math.floor(this.currentTournamentIndex / 2) + 1;
 		}
-		
-		// Fill remaining slots with CPU players
-		while (this.playerNames.length < this.maxPlayersNeeded) {
-			this.playerNames.push(`CPU ${this.playerNames.length + 1}`);
-		}
-		
-		this.finishPlayerCollection();
 	}
 
 	private async finishPlayerCollection(): Promise<void> {
 		GameConfigFactory.setPlayers(this.playerNames);
-
 		this.isCollectingPlayerNames = false;
-
-		let capacity: number | undefined = undefined;
-		if (this.selectedGameMode === GameMode.TOURNAMENT_LOCAL) {
-			capacity = this.currentTournamentIndex;
-		}
-
-		await appStateManager.startGameWithMode(
-			this.selectedViewMode,
-			this.selectedGameMode!,
-			this.currentAiDifficultyIndex,
-			capacity
-		);
-	}
-
-	private handlePlayerBack(): void {
-		this.isCollectingPlayerNames = false;
-		this.playerIndex = 0;
-		this.playerNames = [];
-		this.selectedGameMode = null;
-		appStateManager.navigateTo(AppState.GAME_MODE);
+		await this.startGameWithCurrentConfig();
 	}
 
 	// ========================================
@@ -309,58 +274,73 @@ export class MenuFlowManager {
 	// ========================================
 
 	private setupPlayerSetupListeners(): void {
-		const setupBack = requireElementById(EL.BUTTONS.SETUP_BACK);
-		const startGame = requireElementById(EL.BUTTONS.START_GAME);
-		const addCpu = document.getElementById(EL.PLAYER_COLLECTION.ADD_CPU);
+		const setupBack = requireElementById<HTMLButtonElement>(EL.BUTTONS.SETUP_BACK);
+		const startGame = requireElementById<HTMLButtonElement>(EL.BUTTONS.START_GAME);
+		const addCpu = requireElementById<HTMLInputElement>(EL.PLAYER_COLLECTION.ADD_CPU);
 
-		setupBack.addEventListener('click', () => {
-			if (this.isCollectingPlayerNames) {
-				this.handlePlayerBack();
-			} else {
-				this.selectedGameMode = null;
-				appStateManager.navigateTo(AppState.GAME_MODE);
-			}
-		});
-
-		startGame.addEventListener('click', async () => {
-			if (this.selectedGameMode === null) return;
-
-			if (this.isCollectingPlayerNames) {
-				this.handlePlayerNext();
-				return;
-			}
-
-			if (!GameConfigFactory.validatePlayerSetup(this.selectedGameMode)) {
-				const t = getCurrentTranslation();
-				alert(t.pleaseFilllAllFields);
-				return;
-			}
-
-			let capacity: number | undefined = undefined;
-			if (this.selectedGameMode === GameMode.TOURNAMENT_REMOTE) {
-				capacity = this.currentOnlineTournamentIndex;
-			}
-
-			await appStateManager.startGameWithMode(
-				this.selectedViewMode, 
-				this.selectedGameMode, 
-				this.currentAiDifficultyIndex,
-				capacity
-			);
-		});
+		setupBack.addEventListener('click', () => this.handleBack(AppState.GAME_MODE));
+		startGame.addEventListener('click', () => this.handleStartGame());
 
 		if (addCpu) {
 			addCpu.addEventListener('click', () => {
 				if (this.isCollectingPlayerNames && this.selectedGameMode === GameMode.TOURNAMENT_LOCAL) {
-					this.handleAddCpu();
+		
+					const minPlayers = this.getMinPlayersForCpu();
+					if (this.playerNames.length < minPlayers) {
+						alert(`Need at least ${minPlayers} players to add CPU.`);
+						return;
+					}
+					this.finishPlayerCollection();
 				}
 			});
 		}
 	}
 
+	private async handleStartGame(): Promise<void> {
+		if (this.selectedGameMode === null) return;
+
+		if (this.isCollectingPlayerNames) {
+			this.handlePlayerInputSubmission();
+			return;
+		}
+
+		if (!GameConfigFactory.validatePlayerSetup(this.selectedGameMode)) {
+			const t = getCurrentTranslation();
+			alert(t.pleaseFilllAllFields);
+			return;
+		}
+
+		await this.startGameWithCurrentConfig();
+	}
+
+	// ========================================
+	// GAME START CONFIGURATION
+	// ========================================
+
+	private getTournamentCapacity(): number | undefined {
+		if (this.selectedGameMode === GameMode.TOURNAMENT_REMOTE)
+			return this.currentOnlineTournamentIndex;
+		if (this.selectedGameMode === GameMode.TOURNAMENT_LOCAL)
+			return this.currentTournamentIndex;
+		return undefined;
+	}
+
+	private async startGameWithCurrentConfig(): Promise<void> {
+		await appStateManager.startGameWithMode(
+			this.selectedViewMode,
+			this.selectedGameMode!,
+			this.currentAiDifficultyIndex,
+			this.getTournamentCapacity()
+		);
+	}
+
+	// ========================================
+	// DASHBOARD MANAGEMENT
+	// ========================================
+
 	private showDashboard(): void {
 		Logger.debug('Dashboard button element', 'MenuFlowManager', EL.BUTTONS.DASHBOARD);
-		const dashboardBtn = requireElementById(EL.BUTTONS.DASHBOARD);
+		const dashboardBtn = requireElementById<HTMLButtonElement>(EL.BUTTONS.DASHBOARD);
 		Logger.debug('Attaching dashboard click handler', 'MenuFlowManager');
 		dashboardBtn?.addEventListener('click', () => {
 			Logger.debug('Dashboard clicked', 'MenuFlowManager');
@@ -390,13 +370,13 @@ export class MenuFlowManager {
 	// AI DIFFICULTY MANAGEMENT
 	// ========================================
 
-	private previousAIDifficulty(): void {
-		this.currentAiDifficultyIndex = (this.currentAiDifficultyIndex - 1 + 4) % 4;
-		uiManager.updateAIDifficultyDisplay(this.currentAiDifficultyIndex);
-	}
+	private updateAIDifficulty(direction: 'next' | 'previous'): void {
+		const len = Object.keys(AiDifficulty).length / 2;
+		if (direction === 'next')
+			this.currentAiDifficultyIndex = (this.currentAiDifficultyIndex + 1) % len;
+		else
+			this.currentAiDifficultyIndex = (this.currentAiDifficultyIndex - 1 + len) % len;
 
-	private nextAIDifficulty(): void {
-		this.currentAiDifficultyIndex = (this.currentAiDifficultyIndex + 1) % 4;
 		uiManager.updateAIDifficultyDisplay(this.currentAiDifficultyIndex);
 	}
 
@@ -404,51 +384,44 @@ export class MenuFlowManager {
 	// TOURNAMENT SIZE MANAGEMENT
 	// ========================================
 
-	private previousTournamentSize(): void {
-		this.currentTournamentIndex = this.currentTournamentIndex === 4 ? 16 : this.currentTournamentIndex === 8 ? 4 : 8;
-		uiManager.updateTournamentSizeDisplay(this.currentTournamentIndex);
-	}
-
-	private nextTournamentSize(): void {
-		this.currentTournamentIndex = this.currentTournamentIndex === 4 ? 8 : this.currentTournamentIndex === 8 ? 16 : 4;
-		uiManager.updateTournamentSizeDisplay(this.currentTournamentIndex);
-	}
-
-	private previousOnlineTournamentSize(): void {
-		this.currentOnlineTournamentIndex = this.currentOnlineTournamentIndex === 4 ? 16 : this.currentOnlineTournamentIndex === 8 ? 4 : 8;
-		uiManager.updateOnlineTournamentSizeDisplay(this.currentOnlineTournamentIndex);
-	}
-
-	private nextOnlineTournamentSize(): void {
-		this.currentOnlineTournamentIndex = this.currentOnlineTournamentIndex === 4 ? 8 : this.currentOnlineTournamentIndex === 8 ? 16 : 4;
-		uiManager.updateOnlineTournamentSizeDisplay(this.currentOnlineTournamentIndex);
+	private updateTournamentSize(isOnline: boolean, direction: 'next' | 'previous'): void {
+		const currentIndex = isOnline ? this.currentOnlineTournamentIndex : this.currentTournamentIndex;
+		const currentSizeIndex = this.tournamentSizes.indexOf(currentIndex as 4 | 8 | 16);
+		
+		let newSizeIndex: number;
+		if (direction === 'next')
+			newSizeIndex = (currentSizeIndex + 1) % this.tournamentSizes.length;
+		else
+			newSizeIndex = (currentSizeIndex - 1 + this.tournamentSizes.length) % this.tournamentSizes.length;
+		
+		const newSize = this.tournamentSizes[newSizeIndex];
+		
+		if (isOnline) {
+			this.currentOnlineTournamentIndex = newSize;
+			uiManager.updateOnlineTournamentSizeDisplay(this.currentOnlineTournamentIndex);
+		} else {
+			this.currentTournamentIndex = newSize;
+			uiManager.updateTournamentSizeDisplay(this.currentTournamentIndex);
+		}
 	}
 
 	// ========================================
 	// VIEW MODE MANAGEMENT
 	// ========================================
-
-	private getViewModes() {
+	private updateViewMode(): void {
 		const t = getCurrentTranslation();
-		return [
-			{ mode: ViewMode.MODE_2D, name: t.classicMode },
-			{ mode: ViewMode.MODE_3D, name: t.immersiveMode }
-		];
+    
+		this.selectedViewMode = this.selectedViewMode === ViewMode.MODE_2D 
+			? ViewMode.MODE_3D 
+			: ViewMode.MODE_2D;
+		
+		const displayName = this.selectedViewMode === ViewMode.MODE_2D 
+			? t.classicMode 
+			: t.immersiveMode;
+		
+		uiManager.updateViewModeDisplay(displayName);
 	}
 
-	private previousViewMode(): void {
-		const viewModes = this.getViewModes();
-		this.currentViewModeIndex = (this.currentViewModeIndex - 1 + 2) % viewModes.length;
-		this.selectedViewMode = viewModes[this.currentViewModeIndex].mode;
-		uiManager.updateViewModeDisplay(viewModes[this.currentViewModeIndex].name);
-	}
-
-	private nextViewMode(): void {
-		const viewModes = this.getViewModes();
-		this.currentViewModeIndex = (this.currentViewModeIndex + 1) % viewModes.length;
-		this.selectedViewMode = viewModes[this.currentViewModeIndex].mode;
-		uiManager.updateViewModeDisplay(viewModes[this.currentViewModeIndex].name);
-	}
 }
 
 export const menuFlowManager = MenuFlowManager.getInstance();
