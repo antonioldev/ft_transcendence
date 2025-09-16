@@ -835,6 +835,10 @@ video {
   max-height: 16rem;
 }
 
+.min-h-\[16px\]{
+  min-height: 16px;
+}
+
 .w-48{
   width: 12rem;
 }
@@ -857,6 +861,10 @@ video {
 
 .min-w-\[80px\]{
   min-width: 80px;
+}
+
+.min-w-\[16px\]{
+  min-width: 16px;
 }
 
 .max-w-2xl{
