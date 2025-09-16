@@ -100,44 +100,46 @@ export class CPUBot extends Paddle {
 		return target_x + minX;
 	}
 
+	private handlePowerups() {
+		if (this._ballMovingTowards()) {
+			const rally = this.ball.current_rally;
+			const opp = this.side ? 0 : 1;
+			const botScore = this.score;
+			const oppScore = (this.ball as any)?.paddles?.[opp]?.score ?? 0;
+
+			if (this._waitScoreChange && (botScore + oppScore !== this._snapBot + this._snapOpp)) {
+				this._waitScoreChange = false;
+			}
+
+			const zFront = this.side ? this.rect.top : this.rect.bottom;
+			const dz = Math.abs(this.ball.rect.centerz - zFront);
+
+			if (this._powerup < GAME_CONFIG.slot_count - 1 && !this._waitScoreChange && this.score < oppScore && dz <= GAME_CONFIG.paddleDepth * 15) {
+				this._trigger?.(this.side, this._powerup);
+				this._waitScoreChange = true;
+				this._snapBot = botScore;
+				this._snapOpp = oppScore;
+				this._powerup++;
+			}
+
+			if (this._powerup === GAME_CONFIG.slot_count - 1 && dz <= GAME_CONFIG.paddleDepth * 15) {
+				const decider = (botScore + rally > GAME_CONFIG.scoreToWin) || (oppScore + rally >= GAME_CONFIG.scoreToWin);
+				if (decider) {
+					console.log(`DECIDER!`);
+					this._trigger?.(this.side, this._powerup);
+					this._powerup++;
+				}
+			}
+		}
+	}
+
 	update(dt: number): void {
-		// set bot difficulty using noise in intercept prediction
-		
 		// refresh once per second
 		this._view_timer += dt;
 		if (this._view_timer >= 1000.0) {
-			if (this._ballMovingTowards()) {
-				const rally = this.ball.current_rally;
-				const opp = this.side ? 0 : 1;
-				const botScore = this.score;
-				const oppScore = (this.ball as any)?.paddles?.[opp]?.score ?? 0;
-				console.log(`botScore + oppScore: ${botScore} + ${oppScore} !== ${this._snapBot} + ${this._snapOpp}`);
+			this.handlePowerups();
 
-				if (this._waitScoreChange && (botScore + oppScore !== this._snapBot + this._snapOpp)) {
-					this._waitScoreChange = false;
-				}
-
-				const zFront = this.side ? this.rect.top : this.rect.bottom;
-				const dz = Math.abs(this.ball.rect.centerz - zFront);
-
-				if (this._powerup < GAME_CONFIG.slot_count - 1 && !this._waitScoreChange && this.score < oppScore && dz <= GAME_CONFIG.paddleDepth * 15) {
-					this._trigger?.(this.side, this._powerup);
-					this._waitScoreChange = true;
-					this._snapBot = botScore;
-					this._snapOpp = oppScore;
-					this._powerup++;
-				}
-
-				if (this._powerup === GAME_CONFIG.slot_count - 1 && dz <= GAME_CONFIG.paddleDepth * 15) {
-					const decider = (botScore + rally > GAME_CONFIG.scoreToWin) || (oppScore + rally >= GAME_CONFIG.scoreToWin);
-					if (decider) {
-						console.log(`DECIDER!`);
-						this._trigger?.(this.side, this._powerup);
-						this._powerup++;
-					}
-				}
-			}
-
+			// set bot difficulty using noise in intercept prediction
 			const noise = (Math.random() - 0.5) * GAME_CONFIG.paddleWidth * this.noiseFactor;
 			this._target_x = this._ballMovingTowards()
 				? this._predict_intercept_x() + noise
@@ -151,7 +153,3 @@ export class CPUBot extends Paddle {
 		this.move(dt, dx);
 	}
 }
-
-// const zFront = this.side ? this.rect.top : this.rect.bottom;
-// const dz = Math.abs(this.ball.rect.centerz - zFront);
-// if (this.score < oppScore && dz <= GAME_CONFIG.paddleDepth * 3) {
