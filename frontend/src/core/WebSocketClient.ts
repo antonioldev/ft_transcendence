@@ -179,7 +179,7 @@ export class WebSocketClient {
     }
 
     requestLobby(): void {
-        this.sendMessage(MessageType.RESUME_LOBBY);
+        this.sendMessage(MessageType.REQUEST_LOBBY);
     }
 
     sendPlayerInput(side: number, direction: Direction): void {
@@ -198,9 +198,9 @@ export class WebSocketClient {
         this.sendMessage(MessageType.QUIT_GAME);
     }
 
-    notifyGameAnimationDone(): void {
-        this.sendMessage(MessageType.PARTIAL_WINNER_ANIMATION_DONE)
-    }
+    // notifyGameAnimationDone(): void {
+    //     this.sendMessage(MessageType.PARTIAL_WINNER_ANIMATION_DONE)
+    // }
 
     sendPowerupActivationRequest(powerup_type: PowerupType, side: number, slot: number,): void {
         console.error(powerup_type +" "+ side +" "+ slot);

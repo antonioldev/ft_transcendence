@@ -46,11 +46,6 @@ class GameManager extends EventEmitter {
         gameSession.add_client(client);
         this.gameIdMap.set(gameId, gameSession);
         this.clientGamesMap.set(client.id, gameSession);
-
-        // if gameSession not full after a period of maxJoinWaitTime then start automatically with CPU's
-        setTimeout(() => {
-            if (this.gameIdMap.has(gameId)) this.runGame(gameSession);
-        }, (GAME_CONFIG.maxJoinWaitTime * 1000));
         
         console.log(`Created ${mode} game: ${gameId}`);
         return gameSession;
@@ -88,9 +83,7 @@ class GameManager extends EventEmitter {
         if (gameSession.running) return ;
         if (gameSession.mode === GameMode.TOURNAMENT_REMOTE && gameSession.players.length < 2) {
             // wait another 30 seconds for at least 2 players to be in the tournament
-            setTimeout(() => {
-                if (this.gameIdMap.has(gameSession.id)) this.runGame(gameSession);
-            }, (GAME_CONFIG.maxJoinWaitTime * 1000));
+            setTimeout(() => { this.runGame(gameSession) }, (GAME_CONFIG.maxJoinWaitTime * 1000));
             return ;
         }
         console.log(`Game started with ${gameSession.players.length} players`);
@@ -98,8 +91,6 @@ class GameManager extends EventEmitter {
         await gameSession.start();
         gameManager.endGame(gameSession);
     }
-
-    
 
     /**
      * Retrieves a game session by its unique ID.

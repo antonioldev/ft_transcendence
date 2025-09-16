@@ -308,7 +308,9 @@ export class TournamentRemote extends AbstractTournament {
 			round_index: match.round,
 			match_index: match_index,
 		});
-		this.readyClients.delete(winner.name);
+		if (winner?.client) {
+			this.readyClients.delete(winner?.client.id);
+		}
 	}
 
 	stop() {
@@ -318,7 +320,10 @@ export class TournamentRemote extends AbstractTournament {
 		for (const match of this.client_match_map.values()) {
 			match.game.stop(this.id);
 		}
-		this.broadcast({ type: MessageType.SESSION_ENDED });
+		this.broadcast({
+			type: MessageType.SESSION_ENDED,
+			...(this.tournamentWinner?.name && { winner: this.tournamentWinner.name }),
+		});
 	}
 
 	// allClientsReady(match: Match): boolean {

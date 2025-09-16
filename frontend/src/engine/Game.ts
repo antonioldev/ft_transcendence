@@ -122,8 +122,10 @@ export class Game {
 
 			this.connectComponents();
 			this.isInitialized = true;
+			if (this.config.gameMode === (GameMode.TOURNAMENT_REMOTE || GameMode.TWO_PLAYER_REMOTE)) {
+				webSocketClient.requestLobby();
+			}
 			webSocketClient.sendPlayerReady();
-			webSocketClient.requestLobby();
 			uiManager.setLoadingScreenVisible(false);
 // 			this.updateTournamentLobby(["player0"]);
 // let counter = 1;
@@ -263,7 +265,7 @@ export class Game {
 		await this.guiManager?.showPartialWinner(winner);
 		await this.guiManager?.endGame.waitForSpaceToContinue(2000);
 		await this.guiManager?.hidePartialWinner();
-		webSocketClient.notifyGameAnimationDone();
+		webSocketClient.sendPlayerReady();
 		this.audioManager?.stopGameMusic();
 		this.stopGameLoop();
 		this.currentState = GameState.MATCH_ENDED;

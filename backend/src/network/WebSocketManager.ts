@@ -6,7 +6,8 @@ import { ClientMessage, ServerMessage, PlayerInput} from '../shared/types.js';
 import * as db from "../data/validation.js";
 import { getUserBySession, getSessionByUsername } from '../data/validation.js';
 import { error } from 'console';
-
+import { Game } from '../core/game.js';
+import { GAME_CONFIG } from '../shared/gameConfig.js';
 /**
  * Manages WebSocket connections, client interactions, and game-related messaging.
  */
@@ -135,9 +136,9 @@ export class WebSocketManager {
                 case MessageType.REQUEST_LOBBY:
                     this.handleLobbyRequest(socket, client);
                     break;
-                case MessageType.PARTIAL_WINNER_ANIMATION_DONE:
-                    this.handlePlayerReadyAfterGame(client);
-                    break;
+                // case MessageType.PARTIAL_WINNER_ANIMATION_DONE:
+                //     this.handlePlayerReadyAfterGame(client);
+                //     break;
                 case MessageType.ACTIVATE_POWERUP:
                     this.activatePowerup(client, data);
                     break;
@@ -190,6 +191,9 @@ export class WebSocketManager {
             if ((gameSession.full /*&& !gameSession.running*/) || gameSession.mode === GameMode.TOURNAMENT_LOCAL) {
                 gameManager.runGame(gameSession);
             }
+            else {
+                setTimeout(() => { gameManager.runGame(gameSession) }, (GAME_CONFIG.maxJoinWaitTime * 1000));
+            }
         } catch (error) {
             console.error('❌ Error joining game:', error);
             this.send(socket, {
@@ -214,14 +218,14 @@ export class WebSocketManager {
         gameSession.setClientReady(client.id);
     }
 
-    private handlePlayerReadyAfterGame(client: Client): void {
-        const gameSession = gameManager.findClientGame(client);
-        if (!gameSession) {
-            console.warn(`Client ${client.id} not in any games.`);
-            return;
-        }
-        gameSession.setClientReady(client.id);
-    }
+    // private handlePlayerReadyAfterGame(client: Client): void {
+    //     const gameSession = gameManager.findClientGame(client);
+    //     if (!gameSession) {
+    //         console.warn(`Client ${client.id} not in any games.`);
+    //         return;
+    //     }
+    //     gameSession.setClientReady(client.id);
+    // }
 
     /**
      * Processes player input messages and updates the game state accordingly.
@@ -519,12 +523,15 @@ export class WebSocketManager {
     }
 
     handleLobbyRequest(socket: any, client: Client) {
+        console.log(`Lobby request received from ${client.username}:${client.id}`)
+    
         const gameSession = gameManager.findClientGame(client);
-        const game = gameSession?.findGame(client.id);
-        this.send({
+        this.send(socket, {
             type: MessageType.TOURNAMENT_LOBBY,
-            lobby: game?.players.map(player => player.name)
-        }, socket);
+            lobby: gameSession?.players.map(player => player.name)
+        });
+
+        console.log(`Lobby request sent to ${client.username}:${client.id}`)
     }
 
     /**
