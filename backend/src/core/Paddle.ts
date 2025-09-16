@@ -51,6 +51,9 @@ export class CPUBot extends Paddle {
 	private _waitScoreChange = false;
 	private _snapBot = 0;
 	private _snapOpp = 0;
+	private _wiggleDir = -1;
+	private _wiggleSteps = 0;
+	private _wiggleActive = false;
 
 	constructor(
 		side: number,
@@ -101,7 +104,7 @@ export class CPUBot extends Paddle {
 		return target_x + minX;
 	}
 
-	private handlePowerups() {
+	private handlePowerups(dt: number) {
 		if (this._ballMovingTowards()) {
 			const rally = this.ball.current_rally;
 			const opp = this.side ? 0 : 1;
@@ -134,14 +137,26 @@ export class CPUBot extends Paddle {
 		}
 	}
 
+	private handleInversion(dt: number): void {
+		if (!this._wiggleActive) { 
+			this._wiggleActive = true; 
+			this._wiggleDir = -1; 
+			this._wiggleSteps = 0; 
+		}
+		this.move(dt / 4, this._wiggleDir);
+		if (++this._wiggleSteps >= 10) { 
+			this._wiggleDir *= -1; 
+			this._wiggleSteps = 0; 
+		}
+	}
+
 	update(dt: number): void {
-		// if inverted powerup active, do nothing
-		if (this.is_inverted) return;
+		if (this.is_inverted) { this.handleInversion(dt); return; }
 
 		// refresh once per second
 		this._view_timer += dt;
 		if (this._view_timer >= 1000.0) {
-			this.handlePowerups();
+			this.handlePowerups(dt);
 
 			// set bot difficulty using noise in intercept prediction
 			const noise = (Math.random() - 0.5) * GAME_CONFIG.paddleWidth * this.noiseFactor;
