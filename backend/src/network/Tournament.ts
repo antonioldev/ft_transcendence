@@ -197,19 +197,23 @@ export class TournamentLocal extends AbstractTournament {
 			match.game = new Game(match.players, this.broadcast.bind(this));
 			match.winner = await match.game.run();
 			match.next?.add_player(match.winner);
+
 			if (match.is_final) {
-				this.tournamentWinner = match.winner;
+				this.broadcast({
+					type: MessageType.SESSION_ENDED,
+					...(match.winner?.name && { winner: match.winner.name }),
+				});
 			}
-
-			this.broadcast({
-				type: MessageType.MATCH_WINNER,
-				winner: match.winner?.name,
-				round_index: match.round,
-				match_index: index,
-			});
-
-			this.readyClients.clear();
-			await this.waitForPlayersReady();
+			else {
+				this.broadcast({
+					type: MessageType.MATCH_WINNER,
+					winner: match.winner?.name,
+					round_index: match.round,
+					match_index: index,
+				});
+				this.readyClients.clear();
+				await this.waitForPlayersReady();
+			}
 			index++;
 		}
 	}
@@ -219,10 +223,6 @@ export class TournamentLocal extends AbstractTournament {
 
 		this.running = false;
 		this.current_match?.game?.stop();
-		this.broadcast({
-			type: MessageType.SESSION_ENDED,
-			...(this.tournamentWinner?.name && { winner: this.tournamentWinner.name }),
-		});
 	}
 
 	handlePlayerQuit(): void {
@@ -302,14 +302,22 @@ export class TournamentRemote extends AbstractTournament {
 		if (winner && winner.client && winner.client.id && match.next) {
 			this.client_match_map.set(winner.client.id, match.next);
 		}
-		this.broadcast({
-			type: MessageType.MATCH_WINNER,
-			winner: winner?.name,
-			round_index: match.round,
-			match_index: match_index,
-		});
-		if (winner?.client) {
-			this.readyClients.delete(winner?.client.id);
+		if (match.is_final) {
+			this.broadcast({
+				type: MessageType.SESSION_ENDED,
+				...(winner?.name && { winner: winner?.name }),
+			});
+		}
+		else {
+			this.broadcast({
+				type: MessageType.MATCH_WINNER,
+				winner: winner?.name,
+				round_index: match.round,
+				match_index: match_index,
+			}, match.clients);
+			if (winner?.client) {
+				this.readyClients.delete(winner?.client.id);
+			}
 		}
 	}
 
@@ -320,10 +328,6 @@ export class TournamentRemote extends AbstractTournament {
 		for (const match of this.client_match_map.values()) {
 			match.game.stop(this.id);
 		}
-		this.broadcast({
-			type: MessageType.SESSION_ENDED,
-			...(this.tournamentWinner?.name && { winner: this.tournamentWinner.name }),
-		});
 	}
 
 	// allClientsReady(match: Match): boolean {

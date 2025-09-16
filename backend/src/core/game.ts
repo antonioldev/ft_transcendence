@@ -201,11 +201,6 @@ export class Game {
 
 		this.running = false;
 		this.save_game(gameId);
-		this._broadcast({
-			type: MessageType.GAME_ENDED,
-			...(this.winner && { winner: this.winner.name }) // optionally send winner if exists
-		});
-		console.log("game ended: broadcasting game end");
 	}
 
 	save_game(gameId?: string) {

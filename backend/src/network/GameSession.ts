@@ -181,7 +181,6 @@ export class OneOffGame extends AbstractGameSession{
 		
 		this.game = new Game(this.players, this.broadcast.bind(this))
 		await this.game.run();
-		this.stop();
 	}
 
 	stop(): void {

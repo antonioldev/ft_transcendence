@@ -13,7 +13,6 @@ export enum MessageType {
 	RESUME_REQUEST,	 // CLIENT -> SERVER: Client requests resume (N key)  
 	PAUSED,			 // SERVER -> CLIENTS: Server confirms pause to all clients
 	RESUMED,			// SERVER -> CLIENTS: Server confirms resume to all clients
-	GAME_ENDED,		 // SERVER -> CLIENTS: Server notifies game ended (single game in a tournament)
 	SESSION_ENDED,	  // SERVER -> CLIENTS: Server notifies all games are completed
 	PARTIAL_WINNER_ANIMATION_DONE,  // CLIENT -> SERVER: Client notify the animation is completed, ready for new game
 	WELCOME,			 // SERVER -> CLIENT: Welcome message on connection
@@ -52,7 +51,6 @@ export enum WebSocketEvent {
 	ERROR = 'error',
 	GAME_PAUSED = 'gamePaused',
 	GAME_RESUMED = 'gameResumed',
-	GAME_ENDED = 'gameEnded',
 	SESSION_ENDED = 'sessionEnded',
 	STATUS_CHANGE = 'statusChange',
 	SIDE_ASSIGNMENT = 'side_assignment',

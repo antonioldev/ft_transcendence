@@ -101,10 +101,8 @@ export class WebSocketClient {
             case MessageType.RESUMED:
                 this.triggerCallback(WebSocketEvent.GAME_RESUMED);
                 break;
-            case MessageType.GAME_ENDED:
-                this.triggerCallback(WebSocketEvent.GAME_ENDED, message);
-                break;
             case MessageType.SESSION_ENDED:
+                console.error(`SESSION ENDED RECEIVED: winner = ${message.winner}`);
                 this.triggerCallback(WebSocketEvent.SESSION_ENDED, message);
                 break;
             case MessageType.SIDE_ASSIGNMENT:

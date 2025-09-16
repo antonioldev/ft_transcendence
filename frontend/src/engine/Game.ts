@@ -175,11 +175,12 @@ export class Game {
 		webSocketClient.registerCallback(WebSocketEvent.ERROR, (error: string) => { Logger.error('Network error', 'Game', error); });
 		webSocketClient.registerCallback(WebSocketEvent.GAME_PAUSED, () => { this.onServerPausedGame(); });
 		webSocketClient.registerCallback(WebSocketEvent.GAME_RESUMED, () => { this.onServerResumedGame(); });
-		webSocketClient.registerCallback(WebSocketEvent.GAME_ENDED, (message: any) => { this.onServerEndedGame(message.winner); });
 		webSocketClient.registerCallback(WebSocketEvent.SESSION_ENDED, (message: any) => { this.onServerEndedSession(message.winner); });
 		webSocketClient.registerCallback(WebSocketEvent.SIDE_ASSIGNMENT, (message: any) => { this.handlePlayerAssignment(message.left, message.right); });
 		webSocketClient.registerCallback(WebSocketEvent.MATCH_ASSIGNMENT, (message: any) => { this.guiManager?.updateTournamentRound(message); });
-		webSocketClient.registerCallback(WebSocketEvent.MATCH_WINNER, (message: any) => { this.guiManager?.updateTournamentGame(message); });
+		webSocketClient.registerCallback(WebSocketEvent.MATCH_WINNER, (message: any) => { this.guiManager?.updateTournamentGame(message); 
+			this.onServerEndedGame(message.winner);
+		});
 		webSocketClient.registerCallback(WebSocketEvent.TOURNAMENT_LOBBY, (message: any) => {this.guiManager?.updateTournamentLobby(message); uiManager.setLoadingScreenVisible(false); });
 		webSocketClient.registerCallback(WebSocketEvent.COUNTDOWN, (message: any) => { this.handleCountdown(message.countdown); });
 		webSocketClient.registerCallback(WebSocketEvent.POWERUP_ASSIGNMENT, (message: any) => { this.powerup?.assign(message); });
