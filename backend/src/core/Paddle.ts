@@ -31,10 +31,11 @@ export class Paddle {
 		if (this.is_inverted) {
 			_deltaMove *= -1;
 		}
-		if (this.rect.x + _deltaMove > getPlayerBoundaries(this.rect.width).left &&
-			this.rect.x + _deltaMove < getPlayerBoundaries(this.rect.width).right) {
-			this.rect.x += _deltaMove;
-		}
+		this.rect.x = Math.min(
+						Math.max(
+							this.rect.x + _deltaMove, 
+							getPlayerBoundaries(this.rect.width).left), 
+						getPlayerBoundaries(this.rect.width).right);
 	}
 
 	cacheRect() {
