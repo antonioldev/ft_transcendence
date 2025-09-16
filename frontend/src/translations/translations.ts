@@ -41,13 +41,16 @@ export function updateLanguageDisplay(): void {
     // Login modal
     const loginUsernameLabel = document.querySelector('#login-modal label[for="login-username"]');
     if (loginUsernameLabel) loginUsernameLabel.textContent = t.usernameOrEmail;
+    
+    const loginTitle = requireElementById(EL.BUTTONS.LOGIN_TITLE);
+    loginTitle.textContent = t.loginTitle;
 
-    // const loginUsernameInput = requireElementById<HTMLInputElement>(EL.AUTH.LOGIN_USERNAME);
 
     const loginPasswordLabel = document.querySelector('#login-modal label[for="login-password"]');
     if (loginPasswordLabel) loginPasswordLabel.textContent = t.password;
 
-    // const loginPasswordInput = requireElementById<HTMLInputElement>(EL.AUTH.LOGIN_PASSWORD);
+    const forgotPassword = document.getElementById('forgot-password');
+    if (forgotPassword) forgotPassword.textContent = t.forgotPassword;
 
     const loginSubmit = requireElementById(EL.BUTTONS.LOGIN_SUBMIT);
     loginSubmit.textContent = t.loginSubmit;
@@ -65,23 +68,19 @@ export function updateLanguageDisplay(): void {
     // Register modal
     const registerUsernameLabel = document.querySelector('#register-modal label[for="register-username"]');
     if (registerUsernameLabel) registerUsernameLabel.textContent = t.username;
+    
+    const registerTitle = requireElementById(EL.BUTTONS.REGISTER_TITLE);
+    registerTitle.textContent = t.registerTitle;
 
-    // const registerUsernameInput = requireElementById<HTMLInputElement>(EL.AUTH.REGISTER_USERNAME);
 
     const registerEmailLabel = document.querySelector('#register-modal label[for="register-email"]');
     if (registerEmailLabel) registerEmailLabel.textContent = t.email;
 
-    // const registerEmailInput = requireElementById<HTMLInputElement>(EL.AUTH.REGISTER_EMAIL);
-
     const registerPasswordLabel = document.querySelector('#register-modal label[for="register-password"]');
     if (registerPasswordLabel) registerPasswordLabel.textContent = t.password;
 
-    // const registerPasswordInput = requireElementById<HTMLInputElement>(EL.AUTH.REGISTER_PASSWORD);
-
     const registerConfirmPasswordLabel = document.querySelector('#register-modal label[for="register-confirm-password"]');
     if (registerConfirmPasswordLabel) registerConfirmPasswordLabel.textContent = t.confirmPassword;
-
-    // const registerConfirmPasswordInput = requireElementById<HTMLInputElement>(EL.AUTH.REGISTER_CONFIRM_PASSWORD);
 
     const registerSubmit = requireElementById(EL.BUTTONS.REGISTER_SUBMIT);
     registerSubmit.textContent = t.createAccount;
