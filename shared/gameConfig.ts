@@ -63,7 +63,7 @@ export const GAME_CONFIG = {
 	},
 
 	// Game mechanics
-	scoreToWin: 3,		  // Points needed to win
+	scoreToWin: 15,		  // Points needed to win
 	
 	// Input mappings
 	input2D: {
@@ -83,9 +83,9 @@ export const GAME_CONFIG = {
 
 	// CPU Difficulty: we pass this directly as the noise factor to regualate the CPU ability
 export const CPUDifficultyMap: Record<AiDifficulty, number> = {
-	[AiDifficulty.EASY]: 2.0,
-	[AiDifficulty.MEDIUM]: 1.5,
-	[AiDifficulty.HARD]: 1.0,
+	[AiDifficulty.EASY]: 3.0,
+	[AiDifficulty.MEDIUM]: 2.0,
+	[AiDifficulty.HARD]: 1.5,
 	[AiDifficulty.IMPOSSIBLE]: 0,
 }
 
