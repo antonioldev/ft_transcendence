@@ -135,17 +135,15 @@ abstract class AbstractTournament extends AbstractGameSession{
 		});
 	}
 				
-	
-
 	async start(): Promise<void> {
-		if (this.running || this.players.length != this.player_capacity) return ;
+		if (this.running) return ;
 		this.running = true;
 
 		this.add_CPUs();
 		await this.waitForPlayersReady();
 		this._match_players();
-		
 		this.broadcastRoundSchedule(1);
+
 		for (let current_round = 1; current_round <= this.num_rounds; current_round++) {
 			const matches = this.rounds.get(current_round);
 			if (!matches) return ; // maybe throw err
