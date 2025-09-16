@@ -1,6 +1,6 @@
 import { OneOffGame, AbstractGameSession } from '../network/GameSession.js';
 import { TournamentLocal, TournamentRemote } from '../network/Tournament.js';
-import { Client } from './Client.js';
+import { Client, Player } from './Client.js';
 import { GameMode } from '../shared/constants.js';
 import { registerNewGame, addPlayer2 } from '../data/validation.js';
 import * as db from "../data/validation.js";
@@ -69,13 +69,14 @@ class GameManager extends EventEmitter {
         }
         else /* Remote games*/ {
             // Try to find waiting game or create new one
-            for (const [gameId, game] of this.gameIdMap) {
-                if (game.mode === mode && !game.full) {
-                    if (mode === GameMode.TOURNAMENT_REMOTE && game.client_capacity !== capacity) continue ;
+            for (const [gameId, gameSession] of this.gameIdMap) {
+                if (gameSession.mode === mode && !gameSession.full) {
+                    if (mode === GameMode.TOURNAMENT_REMOTE && gameSession.client_capacity !== capacity) continue ;
 
-                    game.add_client(client);
+                    gameSession.add_client(client);
+                    this.clientGamesMap.set(client.id, gameSession);
                     addPlayer2(gameId, client.username); // add security
-                    return game;
+                    return gameSession;
                 }
             }
         }

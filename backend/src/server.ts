@@ -11,6 +11,7 @@ import { registerNewUser } from './data/validation.js';
 import { authRoutes } from './auth/auth_google.js';
 import sessionBindRoutes from "./auth/auth_local.js"
 
+
 dotenv.config();
 
 const fastify = Fastify({
@@ -47,7 +48,8 @@ await fastify.register(fastifyJwt, {
 
 // Enable CORS for the frontend application
 await fastify.register(fastifyCors, {
-    origin: "https://localhost",
+    // origin: "https://localhost",
+    origin: "10.11.1.3",
     methods: ['GET', 'POST', 'OPTIONS'],
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization'],

@@ -205,7 +205,7 @@ export class WebSocketManager {
 
         const gameSession = gameManager.findClientGame(client);
         if (!gameSession) {
-            console.warn(`Client ${client.id} not in any game for ready signal`);
+            console.warn(`Client ${client.username}:${client.id} not in any game for ready signal`);
             return;
         }
         gameSession.setClientReady(client.id);

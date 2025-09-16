@@ -112,9 +112,11 @@ abstract class AbstractTournament extends AbstractGameSession{
 			match.add_player(player_left);
 			match.add_player(player_right);
 
-			if (player_left && player_left.client && player_right && player_right.client) {
-				this.client_match_map?.set(player_left.client.id, match);
-				this.client_match_map?.set(player_right.client.id, match);
+			for (const player of [player_left, player_right]) {
+				if (player && player.client) {
+					console.log(`Client ${player.client.username} added to match ${match.id}`)
+					this.client_match_map?.set(player.client.id, match);
+				}
 			}
 		}
 	}
@@ -152,8 +154,13 @@ abstract class AbstractTournament extends AbstractGameSession{
 	}
 
 	canClientControlGame(client: Client) {
-		const match = this.findMatch();
-		if (!match || !match.clients.includes(client)) {
+		const match = this.findMatch(client.id);
+		if (!match) {
+			console.error("Match not found");
+			return false;
+		}
+		if	(!match.clients.includes(client)) {
+			console.error("Client not in match.clients");
 			return false;
 		}
 		return true;
@@ -313,30 +320,32 @@ export class TournamentRemote extends AbstractTournament {
 		this.broadcast({ type: MessageType.SESSION_ENDED });
 	}
 
-	allClientsReady(match: Match): boolean {
-		return (match.readyClients.size === match.clients.length && match.clients.length > 0);
-	}
+	// allClientsReady(match: Match): boolean {
+	// 	console.log("num ready clients: " + match.readyClients.size);
+	// 	console.log("num clients: " + match.clients.length);
+	// 	return (match.readyClients.size === match.clients.length && match.clients.length > 0);
+	// }
 
-	async waitForPlayersReady(match: Match) {
-		if (this.allClientsReady(match)) return ;
+	// async waitForPlayersReady(match: Match) {
+	// 	if (this.allClientsReady(match)) return ;
 
-		await new Promise(resolve => {
-			gameManager.once(`all-ready-${match.id}`, resolve);
-		});
-	}
+	// 	await new Promise(resolve => {
+	// 		gameManager.once(`all-ready-${match.id}`, resolve);
+	// 	});
+	// }
 
-	setClientReady(client_id: string): void {
-		const match = this.findMatch(client_id);
-		if (!match) return ;
+	// setClientReady(client_id: string): void {
+	// 	const match = this.findMatch(client_id);
+	// 	if (!match) return ;
 
-		match.readyClients.add(client_id);
-		console.log(`Client ${client_id} marked as ready.}`);
+	// 	match.readyClients.add(client_id);
+	// 	console.log(`Client ${client_id} marked as ready.}`);
 		
-		if (this.allClientsReady(match)) {
-			gameManager.emit(`all-ready-${match.id}`);
-			console.log(`Tournament ${this.id}: Match ${match.id}: all clients ready.`);
-		}
-	}
+	// 	if (this.allClientsReady(match)) {
+	// 		gameManager.emit(`all-ready-${match.id}`);
+	// 		console.log(`Tournament ${this.id}: Match ${match.id}: all clients ready.`);
+	// 	}
+	// }
 
 	findMatch(client_id?: string): Match | undefined {
 		if (!client_id) return ;

@@ -99,6 +99,8 @@ export abstract class AbstractGameSession {
 	}
 
 	allClientsReady(match?: Match): boolean {
+		console.log("num ready clients: " + this.readyClients.size);
+		console.log("num clients: " + this.clients.length);
 		return (this.readyClients.size === this.clients.length && this.clients.length > 0);
 	}
 
