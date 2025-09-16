@@ -178,6 +178,10 @@ export class WebSocketClient {
         this.sendMessage(MessageType.PLAYER_READY);
     }
 
+    requestLobby(): void {
+        this.sendMessage(MessageType.RESUME_LOBBY);
+    }
+
     sendPlayerInput(side: number, direction: Direction): void {
         this.sendMessage(MessageType.PLAYER_INPUT, { side, direction});
     }

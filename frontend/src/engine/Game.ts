@@ -123,6 +123,7 @@ export class Game {
 			this.connectComponents();
 			this.isInitialized = true;
 			webSocketClient.sendPlayerReady();
+			webSocketClient.requestLobby();
 			uiManager.setLoadingScreenVisible(false);
 // 			this.updateTournamentLobby(["player0"]);
 // let counter = 1;
