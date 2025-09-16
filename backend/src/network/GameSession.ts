@@ -115,10 +115,6 @@ export abstract class AbstractGameSession {
 	setClientReady(client_id: string): void {
 		this.readyClients.add(client_id);
 		console.log(`Client ${client_id} marked as ready.}`);
-		this.broadcast({
-				type: MessageType.TOURNAMENT_LOBBY,
-				lobby: this.players.map(player => player.name)
-			});
 		
 		if (this.allClientsReady()) {
 			gameManager.emit(`all-ready-${this.id}`);

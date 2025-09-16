@@ -132,6 +132,9 @@ export class WebSocketManager {
                 case MessageType.REQUEST_GAME_HISTORY:
                     this.handleUserGameHistory(socket, message);
                     break;
+                case MessageType.REQUEST_LOBBY:
+                    this.handleLobbyRequest(socket, client);
+                    break;
                 case MessageType.PARTIAL_WINNER_ANIMATION_DONE:
                     this.handlePlayerReadyAfterGame(client);
                     break;
@@ -513,6 +516,15 @@ export class WebSocketManager {
                 gameHistory: history
             });
         }
+    }
+
+    handleLobbyRequest(socket: any, client: Client) {
+        const gameSession = gameManager.findClientGame(client);
+        const game = gameSession?.findGame(client.id);
+        this.send({
+            type: MessageType.TOURNAMENT_LOBBY,
+            lobby: game?.players.map(player => player.name)
+        }, socket);
     }
 
     /**

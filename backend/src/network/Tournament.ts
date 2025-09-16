@@ -142,13 +142,13 @@ abstract class AbstractTournament extends AbstractGameSession{
 		this.running = true;
 
 		this.add_CPUs();
-		await this.waitForPlayersReady();
 		this._match_players();
 		this.broadcastRoundSchedule(1);
 
 		for (let current_round = 1; current_round <= this.num_rounds; current_round++) {
 			const matches = this.rounds.get(current_round);
 			if (!matches) return ; // maybe throw err
+			await this.waitForPlayersReady();
 			await this.run(matches);
 		}
 	}
@@ -249,6 +249,10 @@ export class TournamentRemote extends AbstractTournament {
 	add_player(player: Player) {
 		if (this.players.length < this.player_capacity) {
 			this.players.push(player);
+			this.broadcast({
+				type: MessageType.TOURNAMENT_LOBBY,
+				lobby: this.players.map(player => player.name)
+			});
 		}
 	}
 
@@ -304,6 +308,7 @@ export class TournamentRemote extends AbstractTournament {
 			round_index: match.round,
 			match_index: match_index,
 		});
+		this.readyClients.delete(winner.name);
 	}
 
 	stop() {
