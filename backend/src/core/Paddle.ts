@@ -135,6 +135,9 @@ export class CPUBot extends Paddle {
 	}
 
 	update(dt: number): void {
+		// if inverted powerup active, do nothing
+		if (this.is_inverted) return;
+
 		// refresh once per second
 		this._view_timer += dt;
 		if (this._view_timer >= 1000.0) {
