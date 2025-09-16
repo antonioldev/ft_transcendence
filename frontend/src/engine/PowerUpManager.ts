@@ -37,6 +37,7 @@ export class PowerupManager {
 
 	// Player requests to activate a powerup
 	requestActivatePowerup(side: PlayerSide, slotIndex: number): void {
+		if (!this.players.get(side)?.isControlled) return;
 		const powerUps = this.players.get(side)!.powerUps;
 		if (!powerUps) return;
 
