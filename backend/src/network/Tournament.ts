@@ -249,10 +249,6 @@ export class TournamentRemote extends AbstractTournament {
 	add_player(player: Player) {
 		if (this.players.length < this.player_capacity) {
 			this.players.push(player);
-			this.broadcast({
-				type: MessageType.TOURNAMENT_LOBBY,
-				lobby: this.players.map(player => player.name)
-			});
 		}
 	}
 
@@ -298,16 +294,16 @@ export class TournamentRemote extends AbstractTournament {
 	}
 
 	assign_winner(match: Match, winner: Player, match_index: number) {
-			match.next?.add_player(winner);
-			if (winner && winner.client && winner.client.id && match.next) {
-				this.client_match_map.set(winner.client.id, match.next);
-			}
-			this.broadcast({
-				type: MessageType.MATCH_WINNER,
-				winner: winner?.name,
-				round_index: match.round,
-				match_index: match_index,
-			});
+		match.next?.add_player(winner);
+		if (winner && winner.client && winner.client.id && match.next) {
+			this.client_match_map.set(winner.client.id, match.next);
+		}
+		this.broadcast({
+			type: MessageType.MATCH_WINNER,
+			winner: winner?.name,
+			round_index: match.round,
+			match_index: match_index,
+		});
 	}
 
 	stop() {
@@ -352,8 +348,7 @@ export class TournamentRemote extends AbstractTournament {
 		return (this.client_match_map.get(client_id));
 	}
 
-	findGame(client_id?: string) {
-		if (!client_id) return ;
-		return (this.client_match_map.get(client_id)?.game);
+	findGame(client_id?: string): Game | undefined {
+		return (this.findMatch(client_id)?.game);
 	}
 }

@@ -98,13 +98,13 @@ export abstract class AbstractGameSession {
 		}
 	}
 
-	allClientsReady(match?: Match): boolean {
+	allClientsReady(): boolean {
 		console.log("num ready clients: " + this.readyClients.size);
 		console.log("num clients: " + this.clients.length);
 		return (this.readyClients.size === this.clients.length && this.clients.length > 0);
 	}
 
-	async waitForPlayersReady(match?: Match) {
+	async waitForPlayersReady() {
 		if (this.allClientsReady()) return ;
 
 		await new Promise(resolve => {
@@ -112,9 +112,13 @@ export abstract class AbstractGameSession {
 		});
 	}
 
-	setClientReady(client_id: string, match?: Match): void {
+	setClientReady(client_id: string): void {
 		this.readyClients.add(client_id);
 		console.log(`Client ${client_id} marked as ready.}`);
+		this.broadcast({
+				type: MessageType.TOURNAMENT_LOBBY,
+				lobby: this.players.map(player => player.name)
+			});
 		
 		if (this.allClientsReady()) {
 			gameManager.emit(`all-ready-${this.id}`);
