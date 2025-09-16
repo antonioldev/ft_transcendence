@@ -64,9 +64,6 @@ export class Ball {
     private collision(direction: CollisionDirection): void {
         for (const paddle of this.paddles) {
             if (!this.rect.colliderect(paddle.rect)) continue;
-            
-            this.speed *= GAME_CONFIG.ballSpeedIncrease;
-            this.current_rally += 1;
 
             // Collision with sides of paddle
             if (direction === CollisionDirection.HORIZONTAL) { 
@@ -83,11 +80,15 @@ export class Ball {
                 if (this.rect.bottom >= paddle.rect.top && this.oldRect.bottom <= paddle.oldRect.top) {
                     this.rect.bottom = paddle.rect.top;
                     this.calculate_spin(paddle);
+                    this.speed *= GAME_CONFIG.ballSpeedIncrease;
+                    this.current_rally += 1;
 
                 }
                 else if (this.rect.top <= paddle.rect.bottom && this.oldRect.top >= paddle.oldRect.bottom) {
                     this.rect.top = paddle.rect.bottom;
                     this.calculate_spin(paddle);
+                    this.speed *= GAME_CONFIG.ballSpeedIncrease;
+                    this.current_rally += 1;
                 }
             }
         }
