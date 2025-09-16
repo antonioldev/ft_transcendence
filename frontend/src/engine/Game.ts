@@ -249,10 +249,6 @@ export class Game {
 
 		this.guiManager?.setPauseVisible(false);
 		await this.guiManager?.showTournamentMatchWinner(winner);
-		// await this.guiManager?.animateBackground(true);
-		// await this.guiManager?.showPartialWinner(winner);
-		// await this.guiManager?.endGame.waitForSpaceToContinue(2000);
-		// await this.guiManager?.hidePartialWinner();
 		webSocketClient.sendPlayerReady();
 		this.audioManager?.stopGameMusic();
 		this.stopGameLoop();

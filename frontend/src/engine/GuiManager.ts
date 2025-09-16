@@ -128,11 +128,12 @@ export class GUIManager {
 	}
 
 	updateTournamentGame(message: any): void {
-		this.matchTree.update(
-			message.winner,
-			message.round_index,
-			message.match_index
-		)
+		if (message.winner !== undefined) // TODO unify with game ended function
+			this.matchTree.update(
+				message.winner,
+				message.round_index,
+				message.match_index
+			)
 	}
 
 	updateTournamentLobby(message: any): void {
