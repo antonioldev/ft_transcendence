@@ -144,6 +144,8 @@ abstract class AbstractTournament extends AbstractGameSession{
 		this.broadcastRoundSchedule(1);
 
 		for (let current_round = 1; current_round <= this.num_rounds; current_round++) {
+			if (!this.running) return ;
+
 			const matches = this.rounds.get(current_round);
 			if (!matches) return ; // maybe throw err
 			await this.waitForPlayersReady();
