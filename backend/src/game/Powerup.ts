@@ -2,7 +2,7 @@ import { Ball } from './Ball.js';
 import { Paddle} from './Paddle.js';
 import { LEFT_PADDLE, RIGHT_PADDLE, GAME_CONFIG } from '../shared/gameConfig.js';
 import { PowerupType, MessageType} from '../shared/constants.js';
-import { Client } from '../models/Client.js'
+import { Client } from '../network/Client.js'
 import { ServerMessage } from '../shared/types.js';
 
 export class Slot {

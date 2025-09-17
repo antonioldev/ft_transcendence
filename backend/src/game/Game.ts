@@ -4,7 +4,7 @@ import { Clock } from './utils.js';
 import { GAME_CONFIG, CPUDifficultyMap, LEFT_PADDLE, RIGHT_PADDLE } from '../shared/gameConfig.js';
 import { MessageType} from '../shared/constants.js';
 import { PlayerInput, GameStateData, ServerMessage } from '../shared/types.js';
-import { Client, Player} from '../models/Client.js'
+import { Client, Player} from '../network/Client.js'
 import { saveGameResult } from '../data/validation.js';
 import { PowerupManager, Slot } from './Powerup.js';
 

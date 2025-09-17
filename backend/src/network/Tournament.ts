@@ -1,6 +1,6 @@
 import { AbstractGameSession } from './GameSession.js'
 import { Game } from '../game/Game.js';
-import { Client, Player } from '../models/Client.js';
+import { Client, Player } from './Client.js';
 import { GameMode, MessageType } from '../shared/constants.js';
 import { addPlayer2, registerNewGame } from '../data/validation.js';
 

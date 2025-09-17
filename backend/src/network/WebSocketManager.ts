@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify';
-import { gameManager } from '../models/gameManager.js';
-import { Client, Player } from '../models/Client.js';
+import { gameManager } from './GameManager.js';
+import { Client, Player } from './Client.js';
 import { MessageType, AuthCode, GameMode } from '../shared/constants.js';
 import { ClientMessage, ServerMessage, PlayerInput} from '../shared/types.js';
 import * as db from "../data/validation.js";

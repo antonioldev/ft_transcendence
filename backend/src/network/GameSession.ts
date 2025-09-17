@@ -1,9 +1,9 @@
 import { Game } from '../game/Game.js';
-import { Client, Player } from '../models/Client.js';
+import { Client, Player } from './Client.js';
 import { MessageType, GameMode, AiDifficulty } from '../shared/constants.js';
 import { PlayerInput, ServerMessage } from '../shared/types.js';
 import { Match } from './Tournament.js';
-import { gameManager } from '../models/gameManager.js';
+import { gameManager } from './GameManager.js';
 
 export abstract class AbstractGameSession {
 	mode: GameMode;
