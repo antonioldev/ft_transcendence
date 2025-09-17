@@ -208,7 +208,7 @@ export class TournamentLocal extends AbstractTournament {
 			
 			await this.waitForPlayersReady();
 			match.index = index;
-			match.game = new Game(match.players, this.broadcast.bind(this));
+			match.game = new Game(match.id, match.players, this.broadcast.bind(this));
 			match.winner = await match.game.run();
 			this.assign_winner(match, match.winner);
 			index++;
@@ -279,7 +279,7 @@ export class TournamentRemote extends AbstractTournament {
 
 			this.register_database(match);
 			match.index = index;
-			match.game = new Game(match.players, (message) => this.broadcast(message, match.clients));
+			match.game = new Game(match.id, match.players, (message) => this.broadcast(message, match.clients));
 
 			let winner_promise: Promise<Player> = match.game.run();
 			winner_promise.then((winner) => this.assign_winner(match, winner));
@@ -300,7 +300,7 @@ export class TournamentRemote extends AbstractTournament {
 		this.running = false;
 		
 		for (const match of this.client_match_map.values()) {
-			match.game.stop(this.id);
+			match.game.stop();
 		}
 	}
 

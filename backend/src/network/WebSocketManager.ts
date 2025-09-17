@@ -5,8 +5,6 @@ import { MessageType, AuthCode, GameMode } from '../shared/constants.js';
 import { ClientMessage, ServerMessage, PlayerInput} from '../shared/types.js';
 import * as db from "../data/validation.js";
 import { getUserBySession, getSessionByUsername } from '../data/validation.js';
-import { error } from 'console';
-import { Game } from '../game/Game.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
 /**
  * Manages WebSocket connections, client interactions, and game-related messaging.

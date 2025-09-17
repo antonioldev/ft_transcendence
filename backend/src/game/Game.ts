@@ -10,7 +10,7 @@ import { PowerupManager, Slot } from './Powerup.js';
 
 // The Game class runs the core game logic for all game modes.
 export class Game {
-	// Clock instance to manage game loop timing
+	id: string;
 	clock: Clock;
 	queue: PlayerInput[] = [];
 	running: boolean = true;
@@ -22,8 +22,8 @@ export class Game {
 	private _broadcast: (message: ServerMessage, clients?: Client[]) => void;
 	powerup_manager: PowerupManager;
 
-	constructor(players: Player[], broadcast_callback: (message: ServerMessage, clients?: Client[]) => void) {
-		// Initialize game properties
+	constructor(id: string, players: Player[], broadcast_callback: (message: ServerMessage, clients?: Client[]) => void) {
+		this.id = id;
 		this.clock = new Clock();
 		this._broadcast = broadcast_callback;
 		this.players = players;
@@ -174,6 +174,7 @@ export class Game {
 				state: this.get_state()
 			});
 		}
+		this.save_game_to_db();
 		return (this.winner);
 	}
 
@@ -193,32 +194,30 @@ export class Game {
 	}
 
 	// Returns if the game is currently paused
-	isPaused(): boolean { return this.paused; }
-
-	// Stop the execution of the game & broadcast the winner
-	stop(gameId?: string) {
-		if (!this.running) return ;
-
-		this.running = false;
-		this.save_game(gameId);
+	isPaused(): boolean { 
+		return this.paused; 
 	}
 
-	save_game(gameId?: string) {
-		console.log(`Game id in async stop of game.ts: ${gameId}`);
-		if (gameId && this.players[LEFT_PADDLE].client?.id != this.players[RIGHT_PADDLE].client?.id) {
+	// Stop the execution of the game & broadcast the winner
+	stop() {
+		if (!this.running) return ;
+		this.running = false;
+	}
+
+	save_game_to_db() {
+		if (this.id && this.players[LEFT_PADDLE].client?.id != this.players[RIGHT_PADDLE].client?.id) {
+			const player1 = this.players[LEFT_PADDLE];
+			const player2 = this.players[RIGHT_PADDLE];
 			const player1_score = this.paddles[LEFT_PADDLE].score;
 			const player2_score = this.paddles[RIGHT_PADDLE].score;
-			const player1_username = this.players[LEFT_PADDLE].name;
-			const player2_username = this.players[RIGHT_PADDLE].name;
-			const endTime = Date.now();
-			console.log(`TO VERIFY ==> player1_name: ${player1_username}, player2_name: ${player2_username} // client1_name: ${this.players[LEFT_PADDLE].client?.username}, client2_name: ${this.players[RIGHT_PADDLE].client?.username}`)
-			saveGameResult(gameId, player1_username, player2_username, player1_score, player2_score, endTime) // add check for error
+			saveGameResult(this.id, player1.name, player2.name, player1_score, player2_score, Date.now()) // add check for error
 		}
 	}
 	
 	// If someone quits a remote game, the opposing player wins
 	setOtherPlayerWinner(quitter_id: string) {
-		if (!this.players[LEFT_PADDLE].client || !this.players[RIGHT_PADDLE].client) return ;
+		// THIS CHECK MIGHT BE AN ISSUE FOR ONLINE GAME AS WE WANT CPU TO WIN WHEN SOMEONE QUITS
+		if (!this.players[LEFT_PADDLE].client || !this.players[RIGHT_PADDLE].client) return ; 
 		
 		this.winner = (this.players[LEFT_PADDLE].client.id === quitter_id) ? this.players[RIGHT_PADDLE] : this.players[LEFT_PADDLE];
 	}

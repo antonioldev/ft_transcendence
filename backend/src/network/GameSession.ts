@@ -2,7 +2,6 @@ import { Game } from '../game/Game.js';
 import { Client, Player } from './Client.js';
 import { MessageType, GameMode, AiDifficulty } from '../shared/constants.js';
 import { PlayerInput, ServerMessage } from '../shared/types.js';
-import { Match } from './Tournament.js';
 import { gameManager } from './GameManager.js';
 
 export abstract class AbstractGameSession {
@@ -179,7 +178,7 @@ export class OneOffGame extends AbstractGameSession{
 		this.add_CPUs(); // add any CPU's if necessary
 		await this.waitForPlayersReady();
 		
-		this.game = new Game(this.players, this.broadcast.bind(this))
+		this.game = new Game(this.id, this.players, this.broadcast.bind(this))
 		await this.game.run();
 	}
 
@@ -187,7 +186,7 @@ export class OneOffGame extends AbstractGameSession{
 		if (!this.running || !this.game) return;
 		
 		this.running = false;
-		this.game.stop(this.id);
+		this.game.stop();
 		
 		this.broadcast({ 
 			type: MessageType.SESSION_ENDED,
