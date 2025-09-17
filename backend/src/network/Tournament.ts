@@ -1,17 +1,17 @@
 import { AbstractGameSession } from './GameSession.js'
 import { Game } from '../game/Game.js';
-import { Client, Player } from './Client.js';
+import { Client, Player, CPU } from './Client.js';
 import { GameMode, MessageType } from '../shared/constants.js';
 import { addPlayer2, registerNewGame } from '../data/validation.js';
 
 export class Match {
 	id: string = `game_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 	round: number;
-	players: Player[] = [];
+	players: (Player | CPU)[] = [];
 	clients: Client[] = [];
 	readyClients: Set<string> = new Set(); // New, keep track of clients that finish loading
 	game!: Game;
-	winner?: Player;
+	winner?: Player | CPU;
 	is_final: Boolean = false;
 	index!: number;
 
@@ -23,13 +23,13 @@ export class Match {
 		this.round = round;
 	}
 
-	add_player(player: Player) {
+	add_player(player: Player | CPU) {
 		if (!player) return ;
 
 		if (!this.players.includes(player)) {
 			this.players.push(player);
 		}
-		if (player.client && !this.clients.includes(player.client)) {
+		if (!(player instanceof CPU) && !this.clients.includes(player.client)) {
 			this.clients.push(player.client);
 		}
 	}
@@ -110,7 +110,7 @@ abstract class AbstractTournament extends AbstractGameSession{
 			match.add_player(player_right);
 
 			for (const player of [player_left, player_right]) {
-				if (player && player.client) {
+				if (player && !(player instanceof CPU)) {
 					console.log(`Client ${player.client.username} added to match ${match.id}`)
 					this.client_match_map?.set(player.client.id, match);
 				}
@@ -163,10 +163,10 @@ abstract class AbstractTournament extends AbstractGameSession{
 		return true;
 	}
 
-	assign_winner(match: Match, winner: Player) {
+	assign_winner(match: Match, winner: Player | CPU) {
 		match.next?.add_player(winner);
-		if (winner && winner.client && winner.client.id && match.next) {
-			this.client_match_map?.set(winner.client.id, match.next);
+		if (winner && !(winner instanceof CPU) && match.next) {
+			this.client_match_map?.set(winner.client?.id, match.next);
 		}
 		if (match.is_final) {
 			this.broadcast({
@@ -181,8 +181,8 @@ abstract class AbstractTournament extends AbstractGameSession{
 				round_index: match.round,
 				match_index: match.index,
 			}, match.clients);
-			if (winner?.client) {
-				this.readyClients.delete(winner.client.id);
+			if (!(winner instanceof CPU)) {
+				this.readyClients.delete(winner.client?.id);
 			}
 		}
 	}
@@ -210,7 +210,9 @@ export class TournamentLocal extends AbstractTournament {
 			match.index = index;
 			match.game = new Game(match.id, match.players, this.broadcast.bind(this));
 			match.winner = await match.game.run();
-			this.assign_winner(match, match.winner);
+			if (match.winner) {
+				this.assign_winner(match, match.winner);
+			}
 			index++;
 		}
 	}
@@ -270,7 +272,7 @@ export class TournamentRemote extends AbstractTournament {
 
 	// runs all matches in a given round in parallel
 	async run(matches: Match[]): Promise<void> {
-		let round_winners: Promise<Player>[] = [];
+		let round_winners: Promise<Player | CPU>[] = [];
 
 		// run each match in parallel and await [] of match promises
 		let index = 0;
@@ -281,7 +283,7 @@ export class TournamentRemote extends AbstractTournament {
 			match.index = index;
 			match.game = new Game(match.id, match.players, (message) => this.broadcast(message, match.clients));
 
-			let winner_promise: Promise<Player> = match.game.run();
+			let winner_promise: Promise<Player | CPU> = match.game.run();
 			winner_promise.then((winner) => this.assign_winner(match, winner));
 			round_winners.push(winner_promise);
 			index++;

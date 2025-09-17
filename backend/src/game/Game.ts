@@ -4,7 +4,7 @@ import { Clock } from './utils.js';
 import { GAME_CONFIG, CPUDifficultyMap, LEFT_PADDLE, RIGHT_PADDLE } from '../shared/gameConfig.js';
 import { MessageType} from '../shared/constants.js';
 import { PlayerInput, GameStateData, ServerMessage } from '../shared/types.js';
-import { Client, Player} from '../network/Client.js'
+import { Client, Player, CPU} from '../network/Client.js'
 import { saveGameResult } from '../data/validation.js';
 import { PowerupManager, Slot } from './Powerup.js';
 
@@ -15,14 +15,14 @@ export class Game {
 	queue: PlayerInput[] = [];
 	running: boolean = true;
 	paused: boolean = false;
-	players: Player[]
-	winner!: Player;
+	players: (Player | CPU)[]
+	winner!: Player | CPU;
 	paddles: (Paddle | CPUBot)[] = [new Paddle(LEFT_PADDLE), new Paddle(RIGHT_PADDLE)];
 	ball: Ball;
 	private _broadcast: (message: ServerMessage, clients?: Client[]) => void;
 	powerup_manager: PowerupManager;
 
-	constructor(id: string, players: Player[], broadcast_callback: (message: ServerMessage, clients?: Client[]) => void) {
+	constructor(id: string, players: (Player | CPU)[], broadcast_callback: (message: ServerMessage, clients?: Client[]) => void) {
 		this.id = id;
 		this.clock = new Clock();
 		this._broadcast = broadcast_callback;
@@ -34,8 +34,8 @@ export class Game {
 
 	private _init() {
 		for (const side of [LEFT_PADDLE, RIGHT_PADDLE]) {
-			const player: Player = this.players[side];
-			if (player.name === "CPU" && player.difficulty !== undefined) {
+			const player: Player | CPU = this.players[side];
+			if (player instanceof CPU) {
 				const noiseFactor =  CPUDifficultyMap[player.difficulty];
 				this.paddles[side] = new CPUBot(side, this.ball, noiseFactor, GAME_CONFIG.paddleSpeed, 0, (s, slot) => this.activate(s, slot) );
 			}
@@ -47,9 +47,6 @@ export class Game {
 		}
 	}
 
-	// private isBot(paddle: Paddle): paddle is Paddle & { update: (dt: number) => void } {
-	// 	return typeof (paddle as any).update === 'function';
-	// }
 	private isBot(paddle: Paddle | CPUBot): paddle is CPUBot {
 		return typeof (paddle as any).update === 'function';
 	}
@@ -153,7 +150,7 @@ export class Game {
 	}
 
 	// Main game loop 
-	async run(): Promise<Player> {
+	async run(): Promise<Player | CPU> {
 		// if both are CPU then choose a random winner
 		if (this.paddles[LEFT_PADDLE] instanceof CPUBot && this.paddles[RIGHT_PADDLE] instanceof CPUBot) {
 			const index = (Math.random() > 0.5) ? 0 : 1;
@@ -205,7 +202,11 @@ export class Game {
 	}
 
 	save_game_to_db() {
-		if (this.id && this.players[LEFT_PADDLE].client?.id != this.players[RIGHT_PADDLE].client?.id) {
+		// if clients are different then game is remote and we save to db
+		// MIGHT BE ISSUE FOR REMOTE TOURNAMENT AGAINST CPU
+		if (this.players[LEFT_PADDLE] instanceof CPU || this.players[RIGHT_PADDLE] instanceof CPU) return ;
+		
+		if (this.players[LEFT_PADDLE].client.id != this.players[RIGHT_PADDLE].client.id) {
 			const player1 = this.players[LEFT_PADDLE];
 			const player2 = this.players[RIGHT_PADDLE];
 			const player1_score = this.paddles[LEFT_PADDLE].score;
@@ -217,7 +218,7 @@ export class Game {
 	// If someone quits a remote game, the opposing player wins
 	setOtherPlayerWinner(quitter_id: string) {
 		// THIS CHECK MIGHT BE AN ISSUE FOR ONLINE GAME AS WE WANT CPU TO WIN WHEN SOMEONE QUITS
-		if (!this.players[LEFT_PADDLE].client || !this.players[RIGHT_PADDLE].client) return ; 
+		if (this.players[LEFT_PADDLE] instanceof CPU || this.players[RIGHT_PADDLE] instanceof CPU) return ; 
 		
 		this.winner = (this.players[LEFT_PADDLE].client.id === quitter_id) ? this.players[RIGHT_PADDLE] : this.players[LEFT_PADDLE];
 	}

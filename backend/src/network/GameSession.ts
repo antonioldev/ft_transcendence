@@ -1,19 +1,20 @@
 import { Game } from '../game/Game.js';
-import { Client, Player } from './Client.js';
+import { Client, Player, CPU } from './Client.js';
 import { MessageType, GameMode, AiDifficulty } from '../shared/constants.js';
 import { PlayerInput, ServerMessage } from '../shared/types.js';
 import { gameManager } from './GameManager.js';
+import { GAME_CONFIG } from '../shared/gameConfig.js';
 
 export abstract class AbstractGameSession {
 	mode: GameMode;
 	id: string;
 	clients: Client[] = [];
-	players: Player[] = [];
+	players: (Player | CPU)[] = [];
 	player_capacity: number = 2;
 	client_capacity: number = 1;
 	full: boolean = false;
 	running: boolean = false;
-	ai_difficulty?: AiDifficulty;
+	ai_difficulty: AiDifficulty = AiDifficulty.MEDIUM;
 	readyClients: Set<string> = new Set(); // Keep track of clients that finish loading
 
     constructor(mode: GameMode, game_id: string) {
@@ -66,21 +67,34 @@ export abstract class AbstractGameSession {
 		}
 	}
 	
-	add_player(player: Player) {
+	add_player(player: Player | CPU) {
 		if (this.players.length < this.player_capacity) {
 			console.log(`Player ${player.name} added to game ${this.id}`);
 			this.players.push(player);
 		}
 	}
 
+	get_random_name(): string {
+		const unavailable_names: string[] = this.players.map(player => player.name);
+		let name: string;
+
+		do {
+			const index = Math.floor(Math.random() * (GAME_CONFIG.cpu_names.length - 1));
+			name = GAME_CONFIG.cpu_names[index];
+		}
+		while (unavailable_names.includes(name));
+		
+		return name + " (CPU)";
+	}
+
 	add_CPUs() {
 		for (let i = 1; this.players.length < this.player_capacity; i++) {
-			this.add_player(new Player(`CPU_${i}`, "CPU", undefined, this.ai_difficulty));
+			this.add_player(new CPU(`CPU_${i}`, this.get_random_name(), this.ai_difficulty));
 		}
 
-		if (this.mode === GameMode.TWO_PLAYER_REMOTE) {
-			this.mode = GameMode.SINGLE_PLAYER
-		}
+		// if (this.mode === GameMode.TWO_PLAYER_REMOTE) {
+		// 	this.mode = GameMode.SINGLE_PLAYER
+		// }
 
 		this.client_capacity = this.clients.length;
     }

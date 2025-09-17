@@ -24,6 +24,8 @@ export const GAME_CONFIG = {
 	paddleDepth: 0.5, // Depth of the paddle
 	paddleOffsetFromEdge: 2, // Distance from the edge of the field
 	paddleSpeed: 15, // Speed of the paddle
+	cpu_names: ["Tom", "Dick", "Harry", "John", "Oliver", "William", "Jack", "Hugo",
+				"Jane", "Sarah", "Suzie", "Sally", "Rebecca", "Rachel", "Karen", "Katie"],
 	
 	// Powerup settings
 	slot_count: 3,				// number of powerup slots each player has
