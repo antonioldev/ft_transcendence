@@ -1,4 +1,4 @@
-import { Game } from '../core/game.js';
+import { Game } from '../game/Game.js';
 import { Client, Player } from '../models/Client.js';
 import { MessageType, GameMode, AiDifficulty } from '../shared/constants.js';
 import { PlayerInput, ServerMessage } from '../shared/types.js';

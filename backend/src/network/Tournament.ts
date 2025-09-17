@@ -1,5 +1,5 @@
 import { AbstractGameSession } from './GameSession.js'
-import { Game } from '../core/game.js';
+import { Game } from '../game/Game.js';
 import { Client, Player } from '../models/Client.js';
 import { GameMode, MessageType } from '../shared/constants.js';
 import { addPlayer2, registerNewGame } from '../data/validation.js';
@@ -163,15 +163,6 @@ abstract class AbstractTournament extends AbstractGameSession{
 		return true;
 	}
 
-	// The opposing player wins their current match and the tournament continues
-	handlePlayerQuit(quitter_id: string, client_id?: string): void {
-		const match: Match | undefined = this.findMatch(client_id);
-		if (!match) return ;
-
-		match.game.setOtherPlayerWinner(quitter_id);
-		match.game.stop();
-	}
-
 	assign_winner(match: Match, winner: Player) {
 		match.next?.add_player(winner);
 		if (winner && winner.client && winner.client.id && match.next) {
@@ -311,6 +302,15 @@ export class TournamentRemote extends AbstractTournament {
 		for (const match of this.client_match_map.values()) {
 			match.game.stop(this.id);
 		}
+	}
+
+	// The opposing player wins their current match and the tournament continues
+	handlePlayerQuit(quitter_id: string, client_id?: string): void {
+		const match: Match | undefined = this.findMatch(client_id);
+		if (!match) return ;
+
+		match.game.setOtherPlayerWinner(quitter_id);
+		match.game.stop();
 	}
 
 	findMatch(client_id?: string): Match | undefined {
