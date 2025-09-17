@@ -2,11 +2,7 @@ import { AbstractGameSession } from './GameSession.js'
 import { Game } from '../core/game.js';
 import { Client, Player } from '../models/Client.js';
 import { GameMode, MessageType } from '../shared/constants.js';
-import { PlayerInput } from '../shared/types.js';
 import { addPlayer2, registerNewGame } from '../data/validation.js';
-import { gameManager } from '../models/gameManager.js';
-
-// TODO: make sure tournament count is always 4,8,16,32...
 
 export class Match {
 	id: string = `game_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -17,6 +13,7 @@ export class Match {
 	game!: Game;
 	winner?: Player;
 	is_final: Boolean = false;
+	index!: number;
 
 	left?: Match;
 	right?: Match;
@@ -175,6 +172,30 @@ abstract class AbstractTournament extends AbstractGameSession{
 		match.game.stop();
 	}
 
+	assign_winner(match: Match, winner: Player) {
+		match.next?.add_player(winner);
+		if (winner && winner.client && winner.client.id && match.next) {
+			this.client_match_map?.set(winner.client.id, match.next);
+		}
+		if (match.is_final) {
+			this.broadcast({
+				type: MessageType.SESSION_ENDED,
+				...(winner?.name && { winner: winner?.name }),
+			}, match.clients);
+		}
+		else {
+			this.broadcast({
+				type: MessageType.MATCH_WINNER,
+				winner: winner?.name,
+				round_index: match.round,
+				match_index: match.index,
+			}, match.clients);
+			if (winner?.client) {
+				this.readyClients.delete(winner.client.id);
+			}
+		}
+	}
+
 	abstract run(matches: Match[]): Promise<void>;
 	abstract findMatch(client_id?: string): Match | undefined;
 }
@@ -192,28 +213,13 @@ export class TournamentLocal extends AbstractTournament {
 		let index = 0;
 		for (const match of matches) {
 			if (!this.running) return ;
-			
 			this.current_match = match;
+			
+			await this.waitForPlayersReady();
+			match.index = index;
 			match.game = new Game(match.players, this.broadcast.bind(this));
 			match.winner = await match.game.run();
-			match.next?.add_player(match.winner);
-
-			if (match.is_final) {
-				this.broadcast({
-					type: MessageType.SESSION_ENDED,
-					...(match.winner?.name && { winner: match.winner.name }),
-				});
-			}
-			else {
-				this.broadcast({
-					type: MessageType.MATCH_WINNER,
-					winner: match.winner?.name,
-					round_index: match.round,
-					match_index: index,
-				});
-				this.readyClients.clear();
-				await this.waitForPlayersReady();
-			}
+			this.assign_winner(match, match.winner);
 			index++;
 		}
 	}
@@ -281,10 +287,11 @@ export class TournamentRemote extends AbstractTournament {
 			if (!this.running) return ;
 
 			this.register_database(match);
+			match.index = index;
 			match.game = new Game(match.players, (message) => this.broadcast(message, match.clients));
 
 			let winner_promise: Promise<Player> = match.game.run();
-			winner_promise.then((winner) => this.assign_winner(match, winner, index));
+			winner_promise.then((winner) => this.assign_winner(match, winner));
 			round_winners.push(winner_promise);
 			index++;
 		}
@@ -297,30 +304,6 @@ export class TournamentRemote extends AbstractTournament {
 		addPlayer2(match.id, match.players[1].name);
 	}
 
-	assign_winner(match: Match, winner: Player, match_index: number) {
-		match.next?.add_player(winner);
-		if (winner && winner.client && winner.client.id && match.next) {
-			this.client_match_map.set(winner.client.id, match.next);
-		}
-		if (match.is_final) {
-			this.broadcast({
-				type: MessageType.SESSION_ENDED,
-				...(winner?.name && { winner: winner?.name }),
-			});
-		}
-		else {
-			this.broadcast({
-				type: MessageType.MATCH_WINNER,
-				winner: winner?.name,
-				round_index: match.round,
-				match_index: match_index,
-			}, match.clients);
-			if (winner?.client) {
-				this.readyClients.delete(winner?.client.id);
-			}
-		}
-	}
-
 	stop() {
 		if (!this.running) return ;
 		this.running = false;
@@ -329,33 +312,6 @@ export class TournamentRemote extends AbstractTournament {
 			match.game.stop(this.id);
 		}
 	}
-
-	// allClientsReady(match: Match): boolean {
-	// 	console.log("num ready clients: " + match.readyClients.size);
-	// 	console.log("num clients: " + match.clients.length);
-	// 	return (match.readyClients.size === match.clients.length && match.clients.length > 0);
-	// }
-
-	// async waitForPlayersReady(match: Match) {
-	// 	if (this.allClientsReady(match)) return ;
-
-	// 	await new Promise(resolve => {
-	// 		gameManager.once(`all-ready-${match.id}`, resolve);
-	// 	});
-	// }
-
-	// setClientReady(client_id: string): void {
-	// 	const match = this.findMatch(client_id);
-	// 	if (!match) return ;
-
-	// 	match.readyClients.add(client_id);
-	// 	console.log(`Client ${client_id} marked as ready.}`);
-		
-	// 	if (this.allClientsReady(match)) {
-	// 		gameManager.emit(`all-ready-${match.id}`);
-	// 		console.log(`Tournament ${this.id}: Match ${match.id}: all clients ready.`);
-	// 	}
-	// }
 
 	findMatch(client_id?: string): Match | undefined {
 		if (!client_id) return ;

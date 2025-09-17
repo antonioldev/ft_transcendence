@@ -48,9 +48,9 @@ await fastify.register(fastifyJwt, {
 
 // Enable CORS for the frontend application
 await fastify.register(fastifyCors, {
-    // origin: "https://localhost",
+    origin: "https://localhost",
     // origin: "10.11.1.3",
-    origin: process.env.LAN_IP,
+    // origin: process.env.LAN_IP,
     methods: ['GET', 'POST', 'OPTIONS'],
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization'],
