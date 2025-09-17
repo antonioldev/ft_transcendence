@@ -1,4 +1,3 @@
-import { Paddle } from '../game/Paddle.js'
 import { AiDifficulty } from '../shared/constants.js';
 
 /**

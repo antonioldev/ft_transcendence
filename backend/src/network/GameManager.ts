@@ -13,7 +13,6 @@ import { EventEmitter } from 'events';
 class GameManager extends EventEmitter {
     private gameIdMap: Map<string, AbstractGameSession> = new Map();
     private clientGamesMap: Map<string, AbstractGameSession> = new Map(); // maps client id to gameSession
-    private waitingPlayers: Client[] = [];
 
     /**
      * Creates a new game session with the specified mode and adds the given client to it.

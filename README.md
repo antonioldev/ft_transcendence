@@ -49,8 +49,7 @@ https://www.npmjs.com/package/@fastify/websocket
 ft_transcendence/
 ├── backend/                 # Node.js + Fastify backend
 │   ├── src/
-│   │   ├── core/           # Game logic (Ball, Paddle, Game classes)
-│   │   ├── models/         # Data models (Client, GameManager)
+│   │   ├── game/           # Game logic (Ball, Paddle, Game classes)
 │   │   ├── network/        # WebSocket handling
 │   │   ├── shared/         # Shared types and constants
 │   │   └── config/         # Configuration files
