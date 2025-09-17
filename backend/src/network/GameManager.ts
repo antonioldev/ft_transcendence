@@ -57,24 +57,20 @@ class GameManager extends EventEmitter {
      * @returns The unique ID of the found or created game session.
      */
     findOrCreateGame(mode: GameMode, client: Client, capacity?: number): AbstractGameSession {
-        //For local games, just create game
-        if (mode === GameMode.SINGLE_PLAYER || mode === GameMode.TWO_PLAYER_LOCAL|| mode === GameMode.TOURNAMENT_LOCAL) {
-            return this.createGame(mode, client, capacity);
-        }
-        else /* Remote games*/ {
-            // Try to find waiting game or create new one
+        if (mode === GameMode.TWO_PLAYER_REMOTE|| mode === GameMode.TOURNAMENT_REMOTE) /*Remote Games*/{
+            // Try to find waiting game
             for (const [gameId, gameSession] of this.gameIdMap) {
-                if (gameSession.mode === mode && !gameSession.full) {
+                if (gameSession.mode === mode && !gameSession.full && !gameSession.running) {
                     if (mode === GameMode.TOURNAMENT_REMOTE && gameSession.client_capacity !== capacity) continue ;
 
                     gameSession.add_client(client);
                     this.clientGamesMap.set(client.id, gameSession);
-                    addPlayer2(gameId, client.username); // add security
+                    addPlayer2(gameId, client.username); // add security // this is a mistake as wont work for tournaments
                     return gameSession;
                 }
             }
         }
-        // No waiting games, create new one
+        // Local game or no waiting games => create new one
         return this.createGame(mode, client, capacity);
     }
 

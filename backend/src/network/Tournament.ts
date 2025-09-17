@@ -3,7 +3,6 @@ import { Game } from '../game/Game.js';
 import { Client, Player, CPU } from './Client.js';
 import { GameMode, MessageType } from '../shared/constants.js';
 import { addPlayer2, registerNewGame } from '../data/validation.js';
-import { matchesGlob } from 'path';
 
 export class Match {
 	id: string = `game_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;

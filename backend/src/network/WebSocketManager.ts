@@ -186,7 +186,8 @@ export class WebSocketManager {
             for (const player of data.players ?? []) {
                 gameSession.add_player(new Player(player.id, player.name, client));
             }
-            if ((gameSession.full /*&& !gameSession.running*/) || gameSession.mode === GameMode.TOURNAMENT_LOCAL) {
+
+            if ((gameSession.full) || gameSession.mode === GameMode.TOURNAMENT_LOCAL) {
                 gameManager.runGame(gameSession);
             }
             else {
@@ -215,15 +216,6 @@ export class WebSocketManager {
         }
         gameSession.setClientReady(client.id);
     }
-
-    // private handlePlayerReadyAfterGame(client: Client): void {
-    //     const gameSession = gameManager.findClientGame(client);
-    //     if (!gameSession) {
-    //         console.warn(`Client ${client.id} not in any games.`);
-    //         return;
-    //     }
-    //     gameSession.setClientReady(client.id);
-    // }
 
     /**
      * Processes player input messages and updates the game state accordingly.
