@@ -18,6 +18,7 @@ export const italian: Translation = {
 	enterPlayer1Name: 'Inserisci nome Giocatore 1',
 	enterPlayer2Name: 'Inserisci nome Giocatore 2',
 	onlineInfo: 'Sarai abbinato con un altro giocatore online',
+	next: "Prossimo Giocatore",
 	startGame: 'Inizia Partita',
 	gamePaused: 'GIOCO IN PAUSA',
 	exitGame: 'Uscire dal gioco?',

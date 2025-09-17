@@ -10,20 +10,22 @@ export interface GameConfig {
 	viewMode: ViewMode;
 	gameMode: GameMode;
 	isLocalMultiplayer: boolean;
-	isTournament:boolean;
+	isTournament: boolean;
 	players: PlayerInfo[];
 	controls: InputConfig;
 }
 
 // Class for creating a complete game configuration
 export class GameConfigFactory {
+	private static playerNames: string[] = [];
+
 	static createConfig(
 		viewMode: ViewMode, 
 		gameMode: GameMode, 
 		players: PlayerInfo[]
 	): GameConfig {
-		const isLocalMultiplayer = ( gameMode === GameMode.TWO_PLAYER_LOCAL ||  gameMode === GameMode.TOURNAMENT_LOCAL );
-		const isTournament = ( gameMode === GameMode.TOURNAMENT_REMOTE ||  gameMode === GameMode.TOURNAMENT_LOCAL );
+		const isLocalMultiplayer = (gameMode === GameMode.TWO_PLAYER_LOCAL || gameMode === GameMode.TOURNAMENT_LOCAL);
+		const isTournament = (gameMode === GameMode.TOURNAMENT_REMOTE || gameMode === GameMode.TOURNAMENT_LOCAL);
 		return {
 			canvasId: EL.GAME.CANVAS_3D,
 			viewMode,
@@ -35,64 +37,18 @@ export class GameConfigFactory {
 		};
 	}
 
-	// Extracts player information from UI based on game mode
-	static getPlayersFromUI(gameMode: GameMode): PlayerInfo[] {
-		const getInputValue = (id: string): string => {
-			const input = document.getElementById(id) as HTMLInputElement;
-			return input?.value.trim() || "";
-		};
-
-		switch (gameMode) {
-			case GameMode.SINGLE_PLAYER: {
-				const name = getInputValue(EL.PLAYER_SETUP.PLAYER1_NAME);
-				return [{ id: name, name: name, isGuest: true }];
-			}
-			
-			case GameMode.TWO_PLAYER_LOCAL: {
-				const name1 = getInputValue(EL.PLAYER_SETUP.PLAYER1_NAME_LOCAL);
-				const name2 = getInputValue(EL.PLAYER_SETUP.PLAYER2_NAME_LOCAL);
-				return [
-					{ id: name1, name: name1, isGuest: true },
-					{ id: name2, name: name2, isGuest: true }
-				];
-			}
-
-			case GameMode.TOURNAMENT_LOCAL: {
-				const name1 = getInputValue(EL.PLAYER_SETUP.PLAYER1_NAME_TOURNAMENT);
-				const name2 = getInputValue(EL.PLAYER_SETUP.PLAYER2_NAME_TOURNAMENT);
-				const name3 = getInputValue(EL.PLAYER_SETUP.PLAYER3_NAME_TOURNAMENT);
-				const name4 = getInputValue(EL.PLAYER_SETUP.PLAYER4_NAME_TOURNAMENT);
-				return [
-					{ id: name1, name: name1, isGuest: true },
-					{ id: name2, name: name2, isGuest: true },
-					{ id: name3, name: name3, isGuest: true },
-					{ id: name4, name: name4, isGuest: true }
-				];
-			}
-
-			default: {
-				return [{ id: 'Player 1', name: 'Player 1', isGuest: true }];
-			}
-		}
+	// Set player names for the current game session
+	static setPlayers(playerNames: string[]): void {
+		this.playerNames = playerNames;
 	}
 
-	static validatePlayerSetup(gameMode: GameMode): boolean {
-		try {
-			const players = this.getPlayersFromUI(gameMode);
-
-			// Check that we have the right number of players with valid names
-			if (!players[0]?.name.trim()) return false;
-
-			if (gameMode === GameMode.TWO_PLAYER_LOCAL && !players[1]?.name.trim()) return false;
-
-			if (gameMode === GameMode.TOURNAMENT_LOCAL) {
-				if (players.length < 4) return false;
-				return players.every(player => player.name.trim());
-			}
-			return true;
-		} catch {
-			return false;
-		}
+	// Convert stored player names to PlayerInfo objects
+	static getPlayers(gameMode: GameMode): PlayerInfo[] {
+		return this.playerNames.map(name => ({
+			id: name,
+			name: name,
+			isGuest: true
+		}));
 	}
 
 	static getAuthenticatedPlayer(): PlayerInfo[] {
@@ -109,9 +65,27 @@ export class GameConfigFactory {
 	static createWithAuthCheck(viewMode: ViewMode, gameMode: GameMode): GameConfig {
 		const players = authManager.isUserAuthenticated()
 			? this.getAuthenticatedPlayer()
-			: this.getPlayersFromUI(gameMode);
+			: this.getPlayers(gameMode);
 
 		return this.createConfig(viewMode, gameMode, players);
 	}
 
+	static validatePlayerSetup(gameMode: GameMode): boolean {
+		if (authManager.isUserAuthenticated())
+			return true;
+
+		// For offline modes, check we have the minimum required players
+		const minPlayers = this.getMinPlayersRequired(gameMode);
+		return this.playerNames.length >= minPlayers && 
+			   this.playerNames.every(name => name.trim().length > 0);
+	}
+
+	private static getMinPlayersRequired(gameMode: GameMode): number {
+		switch (gameMode) {
+			case GameMode.SINGLE_PLAYER: return 1;
+			case GameMode.TWO_PLAYER_LOCAL: return 2;
+			case GameMode.TOURNAMENT_LOCAL: return 2; // Minimum 2 players for tournament
+			default: return 1;
+		}
+	}
 }

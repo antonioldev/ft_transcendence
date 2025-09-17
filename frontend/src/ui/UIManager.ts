@@ -108,11 +108,18 @@ class UIManager {
 		}
 	}
 
-	showSetupForm(formType: string): void {
-		this.applyStylesToAll('.setup-form', { display: 'none' });
-		const targetForm = document.getElementById(`${formType}-setup`);
-		if (targetForm) {
-			targetForm.style.display = 'block';
+	// showSetupForm(formType: string): void {
+	// 	this.applyStylesToAll('.setup-form', { display: 'none' });
+	// 	const targetForm = document.getElementById(`${formType}-setup`);
+	// 	if (targetForm) {
+	// 		targetForm.style.display = 'block';
+	// 	}
+	// }
+	showSetupForm(formId: string) {
+		const all = ['player-setup' /* old: 'solo-setup','two-players-setup','tournament-setup' */];
+		for (const id of all) {
+			const form = document.getElementById(id);
+			if (form) form.style.display = (id === formId) ? '' : 'none';
 		}
 	}
 
@@ -172,6 +179,18 @@ class UIManager {
 		const t = getCurrentTranslation();
 		const difficulties = [t.easy, t.medium, t.hard, t.impossible];
 		soloButton.textContent = `vs AI${difficulties[currentDifficultyIndex]}`;
+	}
+
+	updateTournamentSizeDisplay(currentTournamentSize: number): void {
+		const tournamentButton = requireElementById(EL.GAME_MODES.TOURNAMENT);
+		const t = getCurrentTranslation();
+		tournamentButton.textContent = `${t.tournamentMode} (${currentTournamentSize}x 𐦂𖨆𐀪𖠋)`;
+	}
+
+	updateOnlineTournamentSizeDisplay(currentOnlineTournamentSize: number): void {
+		const tournamentOnlineButton = requireElementById(EL.GAME_MODES.TOURNAMENT_ONLINE);
+		const t = getCurrentTranslation();
+		tournamentOnlineButton.textContent = `${t.tournamentOnline} (${currentOnlineTournamentSize}x 🧑‍🧑‍🧒‍🧒)`;
 	}
 
 	// ========================================

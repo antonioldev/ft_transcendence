@@ -20,6 +20,7 @@ export interface Translation {
 	enterPlayer1Name: string;
 	enterPlayer2Name: string;
 	onlineInfo: string;
+	next: string;
 	startGame: string;
 	gamePaused: string;
 	exitGame: string;

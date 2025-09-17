@@ -11,6 +11,7 @@ import { registerNewUser } from './data/validation.js';
 import { authRoutes } from './auth/auth_google.js';
 import sessionBindRoutes from "./auth/auth_local.js"
 
+
 dotenv.config();
 
 const fastify = Fastify({
@@ -33,10 +34,10 @@ await seedDefaultUsers();
 
 async function seedDefaultUsers() {
   // pick simple starter passwords; your registerUser should pepper+argon2-hash before insert
-  await registerNewUser('Player1', 'player1@example.com', 'Password1!' );
-  await registerNewUser('Player2', 'player2@example.com', 'Password2!' );
-  await registerNewUser('Player3', 'player3@example.com', 'Password3!' );
-  await registerNewUser('Player4', 'player4@example.com', 'Password4!' );
+  await registerNewUser('p1', 'player1@example.com', 'p' );
+  await registerNewUser('p2', 'player2@example.com', 'p' );
+  await registerNewUser('p3', 'player3@example.com', 'p' );
+  await registerNewUser('p4', 'player4@example.com', 'p' );
   console.log('Seeded 4 default users via registration flow');
 }
 
@@ -47,7 +48,9 @@ await fastify.register(fastifyJwt, {
 
 // Enable CORS for the frontend application
 await fastify.register(fastifyCors, {
-    origin: "https://localhost",
+    // origin: "https://localhost",
+    // origin: "10.11.1.3",
+    origin: process.env.LAN_IP,
     methods: ['GET', 'POST', 'OPTIONS'],
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization'],

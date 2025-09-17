@@ -1,4 +1,4 @@
-import { MessageType, GameMode, Direction, GameState, AuthState, PowerupType} from './constants.js';
+import { MessageType, GameMode, Direction, GameState, AuthState, PowerupType, AiDifficulty} from './constants.js';
 
 // ============================== SHARED TYPES  ==============================
 
@@ -33,17 +33,18 @@ export interface PlayerInput {
 
 // Represents a message sent from the client to the server
 export interface ClientMessage {
-	type: MessageType; // Type of message
-	gameMode?: GameMode; // Game mode (optional)
+	type: MessageType; 		// Type of message
+	gameMode?: GameMode; 	// Game mode (optional)
 	players?: PlayerInfo[];
+	capacity?: 4 | 8 | 16; 		// indicates the size of a tournament
 	registerUser?: RegisterUser; // Used for create a new registration (not Google auth)
-	loginUser?: LoginUser; // Use to confirm the ID of the user (not Google auth)
-	side?: number; // Player side (optional)
-	direction?: Direction; // Movement direction (optional)
+	loginUser?: LoginUser; 		// Use to confirm the ID of the user (not Google auth)
+	side?: 0 | 1; 				// Player side (optional)
+	direction?: Direction; 	// Movement direction (optional)
 	username?: string;
-	aiDifficulty?: number,
-	powerup_type?: PowerupType,
-	slot?: 0 | 1 | 2,
+	aiDifficulty?: AiDifficulty;
+	powerup_type?: PowerupType;
+	slot?: number;
 }
 
 // Represents a message sent from the server to the client
@@ -64,7 +65,7 @@ export interface ServerMessage {
 	match_total?: number,
 	round_index?: number
 	powerup?: PowerupType,
-	powerups?: (PowerupType | null)[],
+	powerups?: PowerupType[],
 	slot?: number,
 	side?: number; // Player side (optional)
 	lobby?: string[];

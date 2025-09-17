@@ -79,9 +79,9 @@ export abstract class AbstractGameSession {
 			this.add_player(new Player(`CPU_${i}`, "CPU", undefined, this.ai_difficulty));
 		}
 
-		// if (this.mode === GameMode.TWO_PLAYER_REMOTE) {
-		// 	this.mode = GameMode.SINGLE_PLAYER
-		// }
+		if (this.mode === GameMode.TWO_PLAYER_REMOTE) {
+			this.mode = GameMode.SINGLE_PLAYER
+		}
 
 		this.client_capacity = this.clients.length;
     }
@@ -98,11 +98,13 @@ export abstract class AbstractGameSession {
 		}
 	}
 
-	allClientsReady(match?: Match): boolean {
+	allClientsReady(): boolean {
+		console.log("num ready clients: " + this.readyClients.size);
+		console.log("num clients: " + this.clients.length);
 		return (this.readyClients.size === this.clients.length && this.clients.length > 0);
 	}
 
-	async waitForPlayersReady(match?: Match) {
+	async waitForPlayersReady() {
 		if (this.allClientsReady()) return ;
 
 		await new Promise(resolve => {
@@ -110,7 +112,7 @@ export abstract class AbstractGameSession {
 		});
 	}
 
-	setClientReady(client_id: string, match?: Match): void {
+	setClientReady(client_id: string): void {
 		this.readyClients.add(client_id);
 		console.log(`Client ${client_id} marked as ready.}`);
 		
@@ -179,7 +181,6 @@ export class OneOffGame extends AbstractGameSession{
 		
 		this.game = new Game(this.players, this.broadcast.bind(this))
 		await this.game.run();
-		this.stop();
 	}
 
 	stop(): void {

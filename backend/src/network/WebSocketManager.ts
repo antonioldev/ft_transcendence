@@ -1,11 +1,13 @@
 import { FastifyInstance } from 'fastify';
 import { gameManager } from '../models/gameManager.js';
 import { Client, Player } from '../models/Client.js';
-import { MessageType, AuthCode } from '../shared/constants.js';
+import { MessageType, AuthCode, GameMode } from '../shared/constants.js';
 import { ClientMessage, ServerMessage, PlayerInput} from '../shared/types.js';
 import * as db from "../data/validation.js";
 import { getUserBySession, getSessionByUsername } from '../data/validation.js';
-
+import { error } from 'console';
+import { Game } from '../core/game.js';
+import { GAME_CONFIG } from '../shared/gameConfig.js';
 /**
  * Manages WebSocket connections, client interactions, and game-related messaging.
  */
@@ -131,9 +133,12 @@ export class WebSocketManager {
                 case MessageType.REQUEST_GAME_HISTORY:
                     this.handleUserGameHistory(socket, message);
                     break;
-                case MessageType.PARTIAL_WINNER_ANIMATION_DONE:
-                    this.handlePlayerReadyAfterGame(client);
+                case MessageType.REQUEST_LOBBY:
+                    this.handleLobbyRequest(socket, client);
                     break;
+                // case MessageType.PARTIAL_WINNER_ANIMATION_DONE:
+                //     this.handlePlayerReadyAfterGame(client);
+                //     break;
                 case MessageType.ACTIVATE_POWERUP:
                     this.activatePowerup(client, data);
                     break;
@@ -164,19 +169,18 @@ export class WebSocketManager {
      * @param setCurrentGameId - Callback to update the current game ID for the client.
      */
     private handleJoinGame(socket: any, client: Client, data: ClientMessage) {
-        if (!data.gameMode) {
-            this.send(socket, {
-                type: MessageType.ERROR,
-                message: 'Game mode required'
-            }); 
-            return;
-        }
         try {
-            const gameId = gameManager.findOrCreateGame(data.gameMode, client);
-            const gameSession = gameManager.getGame(gameId);
-            if (!gameSession) return ;
-            
-            if (data.aiDifficulty !== undefined) {
+            if (!data.gameMode) {
+                throw new Error(`Game mode missing`);
+            }
+            const gameSession = gameManager.findOrCreateGame(data.gameMode, client, data.capacity ?? undefined);
+            if (!gameSession) {
+                throw new Error(`client "${client}" unable to join game: game does not exist`);
+            }
+            if (gameSession.running) {
+                throw new Error(`client "${client}" unable to join game "${gameSession.id}": game already running`);
+            }
+            if (data.aiDifficulty !== undefined && gameSession.ai_difficulty === undefined) {
                 gameSession.set_ai_difficulty(data.aiDifficulty);
             }
 
@@ -184,14 +188,17 @@ export class WebSocketManager {
             for (const player of data.players ?? []) {
                 gameSession.add_player(new Player(player.id, player.name, client));
             }
-            if (gameSession.full && !gameSession.running) {
-                gameManager.runGame(gameSession, client.id);
+            if ((gameSession.full /*&& !gameSession.running*/) || gameSession.mode === GameMode.TOURNAMENT_LOCAL) {
+                gameManager.runGame(gameSession);
+            }
+            else {
+                setTimeout(() => { gameManager.runGame(gameSession) }, (GAME_CONFIG.maxJoinWaitTime * 1000));
             }
         } catch (error) {
             console.error('❌ Error joining game:', error);
             this.send(socket, {
                 type: MessageType.ERROR,
-                message: 'Failed to join game'
+                message: 'Failed to join game',
             });
         }
     }
@@ -205,20 +212,20 @@ export class WebSocketManager {
 
         const gameSession = gameManager.findClientGame(client);
         if (!gameSession) {
-            console.warn(`Client ${client.id} not in any game for ready signal`);
+            console.warn(`Client ${client.username}:${client.id} not in any game for ready signal`);
             return;
         }
         gameSession.setClientReady(client.id);
     }
 
-    private handlePlayerReadyAfterGame(client: Client): void {
-        const gameSession = gameManager.findClientGame(client);
-        if (!gameSession) {
-            console.warn(`Client ${client.id} not in any games.`);
-            return;
-        }
-        gameSession.setClientReady(client.id);
-    }
+    // private handlePlayerReadyAfterGame(client: Client): void {
+    //     const gameSession = gameManager.findClientGame(client);
+    //     if (!gameSession) {
+    //         console.warn(`Client ${client.id} not in any games.`);
+    //         return;
+    //     }
+    //     gameSession.setClientReady(client.id);
+    // }
 
     /**
      * Processes player input messages and updates the game state accordingly.
@@ -513,6 +520,18 @@ export class WebSocketManager {
                 gameHistory: history
             });
         }
+    }
+
+    handleLobbyRequest(socket: any, client: Client) {
+        console.log(`Lobby request received from ${client.username}:${client.id}`)
+    
+        const gameSession = gameManager.findClientGame(client);
+        this.send(socket, {
+            type: MessageType.TOURNAMENT_LOBBY,
+            lobby: gameSession?.players.map(player => player.name)
+        });
+
+        console.log(`Lobby request sent to ${client.username}:${client.id}`)
     }
 
     /**

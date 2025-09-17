@@ -111,11 +111,11 @@ export class AppStateManager {
 		}
 	}
 
-	async startGameWithMode(viewMode: ViewMode, gameMode: GameMode, aiDifficulty: number): Promise<void> {
+	async startGameWithMode(viewMode: ViewMode, gameMode: GameMode, aiDifficulty: number, capacity?: number): Promise<void> {
 		try {
 			uiManager.showAuthButtons();
 			this.navigateTo(AppState.GAME_3D, false);
-			await Game.create(viewMode, gameMode, aiDifficulty);
+			await Game.create(viewMode, gameMode, aiDifficulty, capacity);
 
 		} catch (error) {
 			Logger.error('Error starting game', 'AppStateManager', error);

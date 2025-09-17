@@ -112,9 +112,11 @@ abstract class AbstractTournament extends AbstractGameSession{
 			match.add_player(player_left);
 			match.add_player(player_right);
 
-			if (player_left && player_left.client && player_right && player_right.client) {
-				this.client_match_map?.set(player_left.client.id, match);
-				this.client_match_map?.set(player_right.client.id, match);
+			for (const player of [player_left, player_right]) {
+				if (player && player.client) {
+					console.log(`Client ${player.client.username} added to match ${match.id}`)
+					this.client_match_map?.set(player.client.id, match);
+				}
 			}
 		}
 	}
@@ -135,27 +137,30 @@ abstract class AbstractTournament extends AbstractGameSession{
 		});
 	}
 				
-	
-
 	async start(): Promise<void> {
-		if (this.running || this.players.length != this.player_capacity) return ;
+		if (this.running) return ;
 		this.running = true;
 
 		this.add_CPUs();
-		await this.waitForPlayersReady();
 		this._match_players();
-		
 		this.broadcastRoundSchedule(1);
+
 		for (let current_round = 1; current_round <= this.num_rounds; current_round++) {
 			const matches = this.rounds.get(current_round);
 			if (!matches) return ; // maybe throw err
+			await this.waitForPlayersReady();
 			await this.run(matches);
 		}
 	}
 
 	canClientControlGame(client: Client) {
-		const match = this.findMatch();
-		if (!match || !match.clients.includes(client)) {
+		const match = this.findMatch(client.id);
+		if (!match) {
+			console.error("Match not found");
+			return false;
+		}
+		if	(!match.clients.includes(client)) {
+			console.error("Client not in match.clients");
 			return false;
 		}
 		return true;
@@ -192,19 +197,23 @@ export class TournamentLocal extends AbstractTournament {
 			match.game = new Game(match.players, this.broadcast.bind(this));
 			match.winner = await match.game.run();
 			match.next?.add_player(match.winner);
+
 			if (match.is_final) {
-				this.tournamentWinner = match.winner;
+				this.broadcast({
+					type: MessageType.SESSION_ENDED,
+					...(match.winner?.name && { winner: match.winner.name }),
+				});
 			}
-
-			this.broadcast({
-				type: MessageType.MATCH_WINNER,
-				winner: match.winner?.name,
-				round_index: match.round,
-				match_index: index,
-			});
-
-			this.readyClients.clear();
-			await this.waitForPlayersReady();
+			else {
+				this.broadcast({
+					type: MessageType.MATCH_WINNER,
+					winner: match.winner?.name,
+					round_index: match.round,
+					match_index: index,
+				});
+				this.readyClients.clear();
+				await this.waitForPlayersReady();
+			}
 			index++;
 		}
 	}
@@ -214,10 +223,6 @@ export class TournamentLocal extends AbstractTournament {
 
 		this.running = false;
 		this.current_match?.game?.stop();
-		this.broadcast({
-			type: MessageType.SESSION_ENDED,
-			...(this.tournamentWinner?.name && { winner: this.tournamentWinner.name }),
-		});
 	}
 
 	handlePlayerQuit(): void {
@@ -293,16 +298,27 @@ export class TournamentRemote extends AbstractTournament {
 	}
 
 	assign_winner(match: Match, winner: Player, match_index: number) {
-			match.next?.add_player(winner);
-			if (winner && winner.client && winner.client.id && match.next) {
-				this.client_match_map.set(winner.client.id, match.next);
-			}
+		match.next?.add_player(winner);
+		if (winner && winner.client && winner.client.id && match.next) {
+			this.client_match_map.set(winner.client.id, match.next);
+		}
+		if (match.is_final) {
+			this.broadcast({
+				type: MessageType.SESSION_ENDED,
+				...(winner?.name && { winner: winner?.name }),
+			});
+		}
+		else {
 			this.broadcast({
 				type: MessageType.MATCH_WINNER,
 				winner: winner?.name,
 				round_index: match.round,
 				match_index: match_index,
-			});
+			}, match.clients);
+			if (winner?.client) {
+				this.readyClients.delete(winner?.client.id);
+			}
+		}
 	}
 
 	stop() {
@@ -312,41 +328,41 @@ export class TournamentRemote extends AbstractTournament {
 		for (const match of this.client_match_map.values()) {
 			match.game.stop(this.id);
 		}
-		this.broadcast({ type: MessageType.SESSION_ENDED });
 	}
 
-	allClientsReady(match: Match): boolean {
-		return (match.readyClients.size === match.clients.length && match.clients.length > 0);
-	}
+	// allClientsReady(match: Match): boolean {
+	// 	console.log("num ready clients: " + match.readyClients.size);
+	// 	console.log("num clients: " + match.clients.length);
+	// 	return (match.readyClients.size === match.clients.length && match.clients.length > 0);
+	// }
 
-	async waitForPlayersReady(match: Match) {
-		if (this.allClientsReady(match)) return ;
+	// async waitForPlayersReady(match: Match) {
+	// 	if (this.allClientsReady(match)) return ;
 
-		await new Promise(resolve => {
-			gameManager.once(`all-ready-${match.id}`, resolve);
-		});
-	}
+	// 	await new Promise(resolve => {
+	// 		gameManager.once(`all-ready-${match.id}`, resolve);
+	// 	});
+	// }
 
-	setClientReady(client_id: string): void {
-		const match = this.findMatch(client_id);
-		if (!match) return ;
+	// setClientReady(client_id: string): void {
+	// 	const match = this.findMatch(client_id);
+	// 	if (!match) return ;
 
-		match.readyClients.add(client_id);
-		console.log(`Client ${client_id} marked as ready.}`);
+	// 	match.readyClients.add(client_id);
+	// 	console.log(`Client ${client_id} marked as ready.}`);
 		
-		if (this.allClientsReady(match)) {
-			gameManager.emit(`all-ready-${match.id}`);
-			console.log(`Tournament ${this.id}: Match ${match.id}: all clients ready.`);
-		}
-	}
+	// 	if (this.allClientsReady(match)) {
+	// 		gameManager.emit(`all-ready-${match.id}`);
+	// 		console.log(`Tournament ${this.id}: Match ${match.id}: all clients ready.`);
+	// 	}
+	// }
 
 	findMatch(client_id?: string): Match | undefined {
 		if (!client_id) return ;
 		return (this.client_match_map.get(client_id));
 	}
 
-	findGame(client_id?: string) {
-		if (!client_id) return ;
-		return (this.client_match_map.get(client_id)?.game);
+	findGame(client_id?: string): Game | undefined {
+		return (this.findMatch(client_id)?.game);
 	}
 }

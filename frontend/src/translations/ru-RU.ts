@@ -18,6 +18,7 @@ export const russian: Translation = {
 	enterPlayer1Name: 'Введите имя игрока 1',
 	enterPlayer2Name: 'Введите имя игрока 2',
 	onlineInfo: 'Вы будете подключены к другому онлайн-игроку',
+	next: "Следующий игрок",
 	startGame: 'Начать игру',
 	gamePaused: 'ИГРА ПРИОСТАНОВЛЕНА',
 	exitGame: 'Выйти из игры?',

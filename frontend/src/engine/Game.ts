@@ -47,11 +47,11 @@ export class Game {
 	static getCurrentInstance(): Game | null {
 		return Game.currentInstance;
 	}
-	static async create(viewMode: ViewMode, gameMode: GameMode, aiDifficulty: number): Promise<void> {
+	static async create(viewMode: ViewMode, gameMode: GameMode, aiDifficulty: number, capacity?: number): Promise<void> {
 		try {
 			const config = GameConfigFactory.createWithAuthCheck(viewMode, gameMode);
 			const game = new Game(config);
-			await game.connect(aiDifficulty);
+			await game.connect(aiDifficulty, capacity);
 			await game.initialize();
 		} catch (error) {
 			Logger.error('Error creating game', 'Game', error);
@@ -122,22 +122,11 @@ export class Game {
 
 			this.connectComponents();
 			this.isInitialized = true;
+			if (this.config.gameMode === (GameMode.TOURNAMENT_REMOTE || GameMode.TWO_PLAYER_REMOTE)) {
+				webSocketClient.requestLobby();
+			}
 			webSocketClient.sendPlayerReady();
 			uiManager.setLoadingScreenVisible(false);
-// 			this.updateTournamentLobby(["player0"]);
-// let counter = 1;
-// const names: string[] = [];
-
-// const intervalId = setInterval(() => {
-// names.push(`Player${counter}`);
-// this.updateTournamentLobby({ lobby: [...names] });
-// counter++;
-
-// // Stop after, say, 8 players
-// if (counter > 16) {
-// 	clearInterval(intervalId);
-// }
-// }, 3000);
 		} catch (error) {
 			await this.dispose();
 			Logger.errorAndThrow('Error initializing game', 'Game', error);
@@ -172,11 +161,12 @@ export class Game {
 		webSocketClient.registerCallback(WebSocketEvent.ERROR, (error: string) => { Logger.error('Network error', 'Game', error); });
 		webSocketClient.registerCallback(WebSocketEvent.GAME_PAUSED, () => { this.onServerPausedGame(); });
 		webSocketClient.registerCallback(WebSocketEvent.GAME_RESUMED, () => { this.onServerResumedGame(); });
-		webSocketClient.registerCallback(WebSocketEvent.GAME_ENDED, (message: any) => { this.onServerEndedGame(message.winner); });
 		webSocketClient.registerCallback(WebSocketEvent.SESSION_ENDED, (message: any) => { this.onServerEndedSession(message.winner); });
 		webSocketClient.registerCallback(WebSocketEvent.SIDE_ASSIGNMENT, (message: any) => { this.handlePlayerAssignment(message.left, message.right); });
 		webSocketClient.registerCallback(WebSocketEvent.MATCH_ASSIGNMENT, (message: any) => { this.guiManager?.updateTournamentRound(message); });
-		webSocketClient.registerCallback(WebSocketEvent.MATCH_WINNER, (message: any) => { this.guiManager?.updateTournamentGame(message); });
+		webSocketClient.registerCallback(WebSocketEvent.MATCH_WINNER, (message: any) => { this.guiManager?.updateTournamentGame(message); 
+			this.onServerEndedGame(message.winner);
+		});
 		webSocketClient.registerCallback(WebSocketEvent.TOURNAMENT_LOBBY, (message: any) => {this.guiManager?.updateTournamentLobby(message); uiManager.setLoadingScreenVisible(false); });
 		webSocketClient.registerCallback(WebSocketEvent.COUNTDOWN, (message: any) => { this.handleCountdown(message.countdown); });
 		webSocketClient.registerCallback(WebSocketEvent.POWERUP_ASSIGNMENT, (message: any) => { this.powerup?.assign(message); });
@@ -184,8 +174,8 @@ export class Game {
 		webSocketClient.registerCallback(WebSocketEvent.POWERUP_DEACTIVATED, (message: any) => { this.powerup?.deactivate(message); });
 	}
 
-	async connect(aiDifficulty: number): Promise<void> {
-		webSocketClient.joinGame(this.config.gameMode, this.config.players, aiDifficulty);
+	async connect(aiDifficulty: number, capacity?: number): Promise<void> {
+		webSocketClient.joinGame(this.config.gameMode, this.config.players, aiDifficulty, capacity);
 	}
 
 // ====================			GAME CONTROL			 ====================
@@ -258,11 +248,8 @@ export class Game {
 		if (!this.isInitialized || !this.config.isTournament) return;
 
 		this.guiManager?.setPauseVisible(false);
-		await this.guiManager?.animateBackground(true);
-		await this.guiManager?.showPartialWinner(winner);
-		await this.guiManager?.endGame.waitForSpaceToContinue(2000);
-		await this.guiManager?.hidePartialWinner();
-		webSocketClient.notifyGameAnimationDone();
+		await this.guiManager?.showTournamentMatchWinner(winner);
+		webSocketClient.sendPlayerReady();
 		this.audioManager?.stopGameMusic();
 		this.stopGameLoop();
 		this.currentState = GameState.MATCH_ENDED;

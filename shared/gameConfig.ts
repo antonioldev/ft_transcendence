@@ -77,7 +77,7 @@ export const GAME_CONFIG = {
 	
 	// Timing
 	startDelay: 4.0, // Delay before the game starts
-	maxJoinWaitTime: 30.0, // Max time the server will wait for remote players to join before starting with CPU's
+	maxJoinWaitTime: 6.0, // Max time the server will wait for remote players to join before starting with CPU's
 
 } as const;
 

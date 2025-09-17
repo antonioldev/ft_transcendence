@@ -35,7 +35,6 @@ export class WebSocketClient {
         const WS_URL = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws';
 
         this.ws = new WebSocket(WS_URL);
-        // this.ws = new WebSocket('wss://localhost:3000/ws'); // TODO make it a variable
 
         const timeout = setTimeout(() => {
             if (this.connectionStatus === ConnectionStatus.CONNECTING) {
@@ -101,12 +100,7 @@ export class WebSocketClient {
             case MessageType.RESUMED:
                 this.triggerCallback(WebSocketEvent.GAME_RESUMED);
                 break;
-            case MessageType.GAME_ENDED:
-                console.error("GAME ended");
-                this.triggerCallback(WebSocketEvent.GAME_ENDED, message);
-                break;
             case MessageType.SESSION_ENDED:
-                console.error("SESSION ended");
                 this.triggerCallback(WebSocketEvent.SESSION_ENDED, message);
                 break;
             case MessageType.SIDE_ASSIGNMENT:
@@ -172,12 +166,16 @@ export class WebSocketClient {
     // GAME COMMUNICATION
     // ========================================
 
-    joinGame(gameMode: GameMode, players: PlayerInfo[], aiDifficulty: number): void {
-        this.sendMessage(MessageType.JOIN_GAME, { gameMode, players, aiDifficulty });
+    joinGame(gameMode: GameMode, players: PlayerInfo[], aiDifficulty: number, capacity?: number): void {
+        this.sendMessage(MessageType.JOIN_GAME, { gameMode, players, aiDifficulty, capacity });
     }
 
     sendPlayerReady(): void {
         this.sendMessage(MessageType.PLAYER_READY);
+    }
+
+    requestLobby(): void {
+        this.sendMessage(MessageType.REQUEST_LOBBY);
     }
 
     sendPlayerInput(side: number, direction: Direction): void {
@@ -196,9 +194,9 @@ export class WebSocketClient {
         this.sendMessage(MessageType.QUIT_GAME);
     }
 
-    notifyGameAnimationDone(): void {
-        this.sendMessage(MessageType.PARTIAL_WINNER_ANIMATION_DONE)
-    }
+    // notifyGameAnimationDone(): void {
+    //     this.sendMessage(MessageType.PARTIAL_WINNER_ANIMATION_DONE)
+    // }
 
     sendPowerupActivationRequest(powerup_type: PowerupType, side: number, slot: number,): void {
         console.error(powerup_type +" "+ side +" "+ slot);
@@ -206,11 +204,9 @@ export class WebSocketClient {
     }
 
     private sendMessage(type: MessageType, data: any = {}): void {
-        if (!this.isConnected()) {
+        if (!this.isConnected())
             Logger.errorAndThrow('WebSocket is not connected. Cannot send message.', 'WebSocketClient');
-            return;
-        }
-    
+
         const message: ClientMessage = { type, ...data };
     
         try {
