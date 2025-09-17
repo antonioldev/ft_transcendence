@@ -303,7 +303,7 @@ export class WebSocketManager {
             return;
         }
         
-        gameSession.handlePlayerQuit(client.id);
+        gameSession.handlePlayerQuit(client);
         gameManager.removeClientFromGames(client);
         console.log(`Game ${gameSession.id} ended by client: ${client.username}:${client.id}`);
     }

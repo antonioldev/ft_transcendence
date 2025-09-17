@@ -3,6 +3,7 @@ import { Game } from '../game/Game.js';
 import { Client, Player, CPU } from './Client.js';
 import { GameMode, MessageType } from '../shared/constants.js';
 import { addPlayer2, registerNewGame } from '../data/validation.js';
+import { matchesGlob } from 'path';
 
 export class Match {
 	id: string = `game_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -39,7 +40,7 @@ abstract class AbstractTournament extends AbstractGameSession{
 	client_match_map?: Map<string, Match>;	// Maps client id to match, used for easy insertion from client input
 	rounds: Map<number, Match[]> = new Map();	// Maps rounds to match[], used for easy traversal to run games
 	num_rounds: number;
-	tournamentWinner?: Player;
+	tournamentWinner?: Player | CPU;
 
 	constructor(mode: GameMode, game_id: string, capacity: number) {
 		super(mode, game_id);
@@ -163,30 +164,6 @@ abstract class AbstractTournament extends AbstractGameSession{
 		return true;
 	}
 
-	assign_winner(match: Match, winner: Player | CPU) {
-		match.next?.add_player(winner);
-		if (winner && !(winner instanceof CPU) && match.next) {
-			this.client_match_map?.set(winner.client?.id, match.next);
-		}
-		if (match.is_final) {
-			this.broadcast({
-				type: MessageType.SESSION_ENDED,
-				...(winner?.name && { winner: winner?.name }),
-			}, match.clients);
-		}
-		else {
-			this.broadcast({
-				type: MessageType.MATCH_WINNER,
-				winner: winner?.name,
-				round_index: match.round,
-				match_index: match.index,
-			}, match.clients);
-			if (!(winner instanceof CPU)) {
-				this.readyClients.delete(winner.client?.id);
-			}
-		}
-	}
-
 	abstract run(matches: Match[]): Promise<void>;
 	abstract findMatch(client_id?: string): Match | undefined;
 }
@@ -217,11 +194,31 @@ export class TournamentLocal extends AbstractTournament {
 		}
 	}
 
+	assign_winner(match: Match, winner: Player | CPU) {
+		match.next?.add_player(winner);
+		if (match.is_final) {
+			this.stop();
+		}
+		else {
+			this.broadcast({
+				type: MessageType.MATCH_WINNER,
+				winner: winner?.name,
+				round_index: match.round,
+				match_index: match.index,
+			}, match.clients);
+		}
+		this.readyClients.clear();
+	}
+
 	stop() {
 		if (!this.running) return ;
 
 		this.running = false;
 		this.current_match?.game?.stop();
+		this.broadcast({
+			type: MessageType.SESSION_ENDED,
+			...(this.current_match?.winner?.name && { winner: this.current_match?.winner?.name }),
+		});
 	}
 
 	handlePlayerQuit(): void {
@@ -291,6 +288,28 @@ export class TournamentRemote extends AbstractTournament {
 		await Promise.all(round_winners);
 	}
 
+	assign_winner(match: Match, winner: Player | CPU) {
+		match.next?.add_player(winner);
+		if (winner && !(winner instanceof CPU) && match.next) {
+			this.client_match_map?.set(winner.client?.id, match.next);
+		}
+		if (match.is_final) {
+			this.tournamentWinner = match.winner;
+			this.stop();
+		}
+		else {
+			this.broadcast({
+				type: MessageType.MATCH_WINNER,
+				winner: winner?.name,
+				round_index: match.round,
+				match_index: match.index,
+			}, match.clients);
+		}
+		if (!(winner instanceof CPU)) {
+			this.readyClients.delete(winner.client?.id);
+		}
+	}
+
 	register_database(match: Match) {
 		console.log(`Match id in the tournament: ${match.id}, for P1:${match.players[0].name}, P2: ${match.players[1].name}`);
 		registerNewGame(match.id, match.players[0].name, 1);
@@ -304,14 +323,21 @@ export class TournamentRemote extends AbstractTournament {
 		for (const match of this.client_match_map.values()) {
 			match.game.stop();
 		}
+		this.broadcast({
+			type: MessageType.SESSION_ENDED,
+			...(this.tournamentWinner?.name && { winner: this.tournamentWinner?.name }),
+		});
 	}
 
 	// The opposing player wins their current match and the tournament continues
-	handlePlayerQuit(quitter_id: string, client_id?: string): void {
-		const match: Match | undefined = this.findMatch(client_id);
-		if (!match) return ;
-
-		match.game.setOtherPlayerWinner(quitter_id);
+	handlePlayerQuit(quitter: Client): void {
+		const match: Match | undefined = this.findMatch(quitter.id);
+		if (!match) {
+			console.error(`Cannot quit: "${quitter.username}" not in any match`);
+			return ;
+		}
+		match.game.setOtherPlayerWinner(quitter);
+		match.game.save_game_to_db();
 		match.game.stop();
 	}
 

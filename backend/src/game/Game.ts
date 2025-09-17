@@ -171,7 +171,6 @@ export class Game {
 				state: this.get_state()
 			});
 		}
-		this.save_game_to_db();
 		return (this.winner);
 	}
 
@@ -202,25 +201,21 @@ export class Game {
 	}
 
 	save_game_to_db() {
-		// if clients are different then game is remote and we save to db
-		// MIGHT BE ISSUE FOR REMOTE TOURNAMENT AGAINST CPU
-		if (this.players[LEFT_PADDLE] instanceof CPU || this.players[RIGHT_PADDLE] instanceof CPU) return ;
-		
-		if (this.players[LEFT_PADDLE].client.id != this.players[RIGHT_PADDLE].client.id) {
-			const player1 = this.players[LEFT_PADDLE];
-			const player2 = this.players[RIGHT_PADDLE];
-			const player1_score = this.paddles[LEFT_PADDLE].score;
-			const player2_score = this.paddles[RIGHT_PADDLE].score;
-			saveGameResult(this.id, player1.name, player2.name, player1_score, player2_score, Date.now()) // add check for error
-		}
+		const player1 = this.players[LEFT_PADDLE];
+		const player2 = this.players[RIGHT_PADDLE];
+		const player1_score = this.paddles[LEFT_PADDLE].score;
+		const player2_score = this.paddles[RIGHT_PADDLE].score;
+		saveGameResult(this.id, player1.name, player2.name, player1_score, player2_score, Date.now()) // add check for error
 	}
 	
 	// If someone quits a remote game, the opposing player wins
-	setOtherPlayerWinner(quitter_id: string) {
-		// THIS CHECK MIGHT BE AN ISSUE FOR ONLINE GAME AS WE WANT CPU TO WIN WHEN SOMEONE QUITS
-		if (this.players[LEFT_PADDLE] instanceof CPU || this.players[RIGHT_PADDLE] instanceof CPU) return ; 
-		
-		this.winner = (this.players[LEFT_PADDLE].client.id === quitter_id) ? this.players[RIGHT_PADDLE] : this.players[LEFT_PADDLE];
+	setOtherPlayerWinner(quitter: Client) {
+		if (this.players[LEFT_PADDLE] instanceof CPU) {
+			this.winner = this.players[LEFT_PADDLE];
+		}
+		else {
+			this.winner = (this.players[LEFT_PADDLE].client === quitter) ? this.players[RIGHT_PADDLE] : this.players[LEFT_PADDLE];
+		}
 	}
 
 	activate(side: number, slot_index: number) {

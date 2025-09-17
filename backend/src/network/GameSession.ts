@@ -74,7 +74,7 @@ export abstract class AbstractGameSession {
 		}
 	}
 
-	get_random_name(): string {
+	get_cpu_name(): string {
 		const unavailable_names: string[] = this.players.map(player => player.name);
 		let name: string;
 
@@ -83,13 +83,12 @@ export abstract class AbstractGameSession {
 			name = GAME_CONFIG.cpu_names[index];
 		}
 		while (unavailable_names.includes(name));
-		
 		return name + " (CPU)";
 	}
 
 	add_CPUs() {
 		for (let i = 1; this.players.length < this.player_capacity; i++) {
-			this.add_player(new CPU(`CPU_${i}`, this.get_random_name(), this.ai_difficulty));
+			this.add_player(new CPU(`CPU_${i}`, this.get_cpu_name(), this.ai_difficulty));
 		}
 
 		// if (this.mode === GameMode.TWO_PLAYER_REMOTE) {
@@ -112,14 +111,11 @@ export abstract class AbstractGameSession {
 	}
 
 	allClientsReady(): boolean {
-		console.log("num ready clients: " + this.readyClients.size);
-		console.log("num clients: " + this.clients.length);
 		return (this.readyClients.size === this.clients.length && this.clients.length > 0);
 	}
 
 	async waitForPlayersReady() {
 		if (this.allClientsReady()) return ;
-
 		await new Promise(resolve => {
 			gameManager.once(`all-ready-${this.id}`, resolve);
 		});
@@ -173,7 +169,7 @@ export abstract class AbstractGameSession {
 	abstract start(): Promise<void>; 
 	abstract stop(client_id?: string): void;
 	
-	abstract handlePlayerQuit(quitter_id: string): void;
+	abstract handlePlayerQuit(quitter: Client): void;
 	abstract canClientControlGame(client: Client): boolean;
 	abstract findGame(client_id?: string): Game | undefined;
 }
@@ -208,9 +204,10 @@ export class OneOffGame extends AbstractGameSession{
 		});
 	}
 	
-	handlePlayerQuit(quitter_id: string): void {
+	handlePlayerQuit(quitter: Client): void {
 		if (this.game && this.mode == GameMode.TWO_PLAYER_REMOTE) {
-			this.game.setOtherPlayerWinner(quitter_id);
+			this.game.setOtherPlayerWinner(quitter);
+			this.game.save_game_to_db();
 		}
 		this.stop();
 	}
