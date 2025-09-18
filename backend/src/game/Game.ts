@@ -200,12 +200,13 @@ export class Game {
 		this.running = false;
 	}
 
-	save_game_to_db() {
+	save_to_db() {
 		const player1 = this.players[LEFT_PADDLE];
 		const player2 = this.players[RIGHT_PADDLE];
 		const player1_score = this.paddles[LEFT_PADDLE].score;
 		const player2_score = this.paddles[RIGHT_PADDLE].score;
 		saveGameResult(this.id, player1.name, player2.name, player1_score, player2_score, Date.now()) // add check for error
+		console.log(`Game ${this.id} saved to db`);
 	}
 	
 	// If someone quits a remote game, the opposing player wins

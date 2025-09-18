@@ -12,7 +12,6 @@ export class Match {
 	readyClients: Set<string> = new Set(); // New, keep track of clients that finish loading
 	game!: Game;
 	winner?: Player | CPU;
-	is_final: Boolean = false;
 	index!: number;
 
 	left?: Match;
@@ -47,9 +46,7 @@ abstract class AbstractTournament extends AbstractGameSession{
 		this.num_rounds = this._get_num_rounds(this.player_capacity);
 		this._create_rounds_map();
 
-		let final = new Match(this.num_rounds);
-		final.is_final = true;
-		this._create_match_tree(final);
+		this._create_match_tree(new Match(this.num_rounds));
 	}
 
 	private _create_rounds_map() {
@@ -197,7 +194,7 @@ export class TournamentLocal extends AbstractTournament {
 
 	assign_winner(match: Match, winner: Player | CPU) {
 		match.next?.add_player(winner);
-		if (match.is_final) {
+		if (!match.next) {
 			this.stop();
 		}
 		else {
@@ -290,11 +287,8 @@ export class TournamentRemote extends AbstractTournament {
 	}
 
 	assign_winner(match: Match, winner: Player | CPU) {
-		match.next?.add_player(winner);
-		if (winner && !(winner instanceof CPU) && match.next) {
-			this.client_match_map?.set(winner.client?.id, match.next);
-		}
-		if (match.is_final) {
+		match.game.save_to_db(); // maybe not needed if its CPU vs CPU ??
+		if (!match.next) {
 			this.tournamentWinner = match.winner;
 			this.stop();
 		}
@@ -305,9 +299,11 @@ export class TournamentRemote extends AbstractTournament {
 				round_index: match.round,
 				match_index: match.index,
 			}, match.clients);
-		}
-		if (!(winner instanceof CPU)) {
-			this.readyClients.delete(winner.client?.id);
+
+			match.next.add_player(winner);
+			if (winner instanceof CPU) return ;
+			this.client_match_map.set(winner.client.id, match.next);
+			this.readyClients.delete(winner.client.id);
 		}
 	}
 
@@ -338,7 +334,6 @@ export class TournamentRemote extends AbstractTournament {
 			return ;
 		}
 		match.game.setOtherPlayerWinner(quitter);
-		match.game.save_game_to_db();
 		match.game.stop();
 	}
 

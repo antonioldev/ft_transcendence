@@ -1,6 +1,6 @@
 import { OneOffGame, AbstractGameSession } from './GameSession.js';
 import { TournamentLocal, TournamentRemote } from './Tournament.js';
-import { Client, Player } from './Client.js';
+import { Client } from './Client.js';
 import { GameMode } from '../shared/constants.js';
 import { registerNewGame, addPlayer2 } from '../data/validation.js';
 import * as db from "../data/validation.js";

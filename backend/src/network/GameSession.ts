@@ -190,6 +190,9 @@ export class OneOffGame extends AbstractGameSession{
 		
 		this.game = new Game(this.id, this.players, this.broadcast.bind(this))
 		await this.game.run();
+		if (this.mode === GameMode.TWO_PLAYER_REMOTE) {
+			this.game.save_to_db();
+		}
 	}
 
 	stop(): void {
@@ -207,7 +210,6 @@ export class OneOffGame extends AbstractGameSession{
 	handlePlayerQuit(quitter: Client): void {
 		if (this.game && this.mode == GameMode.TWO_PLAYER_REMOTE) {
 			this.game.setOtherPlayerWinner(quitter);
-			this.game.save_game_to_db();
 		}
 		this.stop();
 	}
