@@ -15,6 +15,10 @@ export class GameStateManager {
 		return this.currentState === GameState.PAUSED;
 	}
 
+	isPausedLocal(): boolean {
+		return this.currentState === GameState.PAUSED_LOCAL;
+	}
+
 	isMatchEnded(): boolean {
 		return this.currentState === GameState.MATCH_ENDED;
 	}
@@ -25,6 +29,14 @@ export class GameStateManager {
 
 	isInGame(): boolean {
 		return this.currentState === GameState.PLAYING || this.currentState === GameState.MATCH_ENDED;
+	}
+
+	// Add a method to check if game can be paused (during countdown, winner screens, etc.)
+	canShowPauseMenu(): boolean {
+		return this.currentState === GameState.PLAYING || 
+			this.currentState === GameState.PAUSED ||
+			this.currentState === GameState.MATCH_ENDED ||
+			this.currentState === GameState.PAUSED_LOCAL;
 	}
 
 	// State setters

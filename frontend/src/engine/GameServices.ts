@@ -8,6 +8,7 @@ import { PowerupManager } from "./services/PowerUpManager";
 import { Engine, Scene} from "@babylonjs/core";
 import { GameConfig } from './GameConfig.js';
 import { GameObjects } from '../shared/types.js';
+import { GameStateManager } from "./GameStateManager";
 
 import { PlayerSide, PlayerState } from "./utils.js"
 export interface IGameServices {
@@ -35,10 +36,7 @@ export class GameServices implements IGameServices {
 		config: GameConfig,
 		gameObjects: GameObjects,
 		players: Map<PlayerSide, PlayerState>,
-		gameState: {
-			isPlaying: () => boolean;
-			isPaused: () => boolean;
-		},
+		gameState: GameStateManager,
 		gameCallbacks: {
 			onPause: () => void;
 			onResume: () => void;

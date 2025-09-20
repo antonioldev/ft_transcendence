@@ -7,6 +7,7 @@ import { getPlayerBoundaries } from '../../shared/gameConfig.js';
 import { PlayerSide, PlayerState } from "../utils.js";
 import { webSocketClient } from '../../core/WebSocketClient.js';
 import { PowerupManager } from "./PowerUpManager.js";
+import { GameStateManager } from "../GameStateManager.js";
 
 export type MoveKeys = { up: string; down: string; left?: string; right?: string };
 export type PowerKeys = { k1: string; k2: string; k3: string };
@@ -30,11 +31,6 @@ export class KeyboardManager {
 	private globalKeyDownHandler: (event: KeyboardEvent) => void;
 	private isInitialized: boolean = false;
 
-	private gameState: {
-		isPlaying: () => boolean;
-		isPaused: () => boolean;
-	};
-
 	private gameCallbacks: {
 		onPause: () => void;
 		onResume: () => void;
@@ -47,17 +43,13 @@ export class KeyboardManager {
 		private gameObjects: GameObjects,
 		private players: Map<PlayerSide, PlayerState>,
 		private powerupManager: PowerupManager | null = null,
-		state: {
-			isPlaying: () => boolean;
-			isPaused: () => boolean;
-		},
+		private gameState: GameStateManager,
 		callbacks: {
 			onPause: () => void;
 			onResume: () => void;
 			onExitToMenu: () => void;
 		}
 	) {
-		this.gameState = state;
 		this.gameCallbacks = callbacks;
 		this.deviceSourceManager = new DeviceSourceManager(scene.getEngine());
 		this.globalKeyDownHandler = this.handleGlobalKeyDown.bind(this);
@@ -78,7 +70,7 @@ export class KeyboardManager {
 			return;
 		}
 
-		if (this.gameState.isPaused()) {
+		if (this.gameState.isPaused() || this.gameState.isPausedLocal()) {
 			this.handlePauseMenuKeys(key, event.key);
 			return;
 		}
@@ -88,10 +80,13 @@ export class KeyboardManager {
 	}
 
 	private handleEscapeKey(): void {
-		if (this.gameState.isPlaying())
-			this.gameCallbacks.onPause();
-		else if (this.gameState.isPaused())
-			this.gameCallbacks.onResume();
+		if (this.gameState.canShowPauseMenu()) {
+			if (this.gameState.isPlaying() || this.gameState.isMatchEnded()) {
+				this.gameCallbacks.onPause();
+			} else if (this.gameState.isPaused() || this.gameState.isPausedLocal()) {
+				this.gameCallbacks.onResume();
+			}
+		}
 	}
 
 	private handlePauseMenuKeys(key: string, originalKey: string): void {

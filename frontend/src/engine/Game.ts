@@ -82,11 +82,7 @@ export class Game {
 				? await buildScene2D(this.scene, this.config.gameMode, this.config.viewMode, (progress: number) => uiManager.updateLoadingProgress(progress))
 				: await buildScene3D(this.scene, this.config.gameMode, this.config.viewMode, (progress: number) => uiManager.updateLoadingProgress(progress));
 
-			this.services = new GameServices(this.engine, this.scene, this.config, this.gameObjects, this.players,
-				{
-					isPlaying: () => this.state.isPlaying(),
-					isPaused: () => this.state.isPaused(),
-				},
+			this.services = new GameServices(this.engine, this.scene, this.config, this.gameObjects, this.players, this.state,
 				{
 					onPause: () => this.pause(),
 					onResume: () => this.resume(),
@@ -190,21 +186,26 @@ export class Game {
 	// Handle server confirming game is paused
 	private onServerPausedGame(): void {
 		if (!this.isInitialized || this.state.isPaused()) return;
-		this.state.set(GameState.PAUSED);
-		this.services?.gui?.setPauseVisible(true);
-		this.services?.audio?.pauseGameMusic();
-		this.stopGameLoop();
+		if (this.state.isPlaying() || this.state.isPausedLocal()) {
+			this.state.set(GameState.PAUSED);
+			this.services?.gui?.setPauseVisible(true);
+			this.services?.audio?.pauseGameMusic();
+			this.stopGameLoop();
+		}
 	}
 
 	// Handle server confirming game is resumed
 	private onServerResumedGame(): void {
-		if (!this.isInitialized || this.state.isPlaying()) return;
+		if (!this.isInitialized) return;
 
-		this.state.set(GameState.PLAYING);
-		this.services?.gui?.setPauseVisible(false);
-		this.services?.audio?.resumeGameMusic();
-		this.services?.render?.startRendering();
-		this.startGameLoop();
+		// Only resume if we were actually paused by the server
+		if (this.state.isPaused()) {
+			this.state.set(GameState.PLAYING);
+			this.services?.gui?.setPauseVisible(false);
+			this.services?.audio?.resumeGameMusic();
+			this.services?.render?.startRendering();
+			this.startGameLoop();
+		}
 	}
 
 	// Handle server ending the game
@@ -366,18 +367,43 @@ export class Game {
 	}
 
 // ====================			GAME LIFECYCLE			   ====================
+	// pause(): void {
+	// 	if (!this.isInitialized || !this.state.isPlaying()) return;
+	// 	// if (!this.isInitialized) return;
+	// 	// this.state.set(GameState.PAUSED_LOCAL);
+	// 	// this.services?.gui?.setPauseVisible(true);
+	// 	// this.services?.audio?.pauseGameMusic();
+	// 	webSocketClient.sendPauseRequest();
+	// }
+	// resume(): void {
+	// 	if (!this.isInitialized) return;
+	// 	webSocketClient.sendResumeRequest();
+	// }
 	pause(): void {
-		if (!this.isInitialized || !this.state.isPlaying()) return;
-		// if (!this.isInitialized) return;
-		// this.state.set(GameState.PAUSED_LOCAL);
-		// this.services?.gui?.setPauseVisible(true);
-		// this.services?.audio?.pauseGameMusic();
-		webSocketClient.sendPauseRequest();
+		if (!this.isInitialized || !this.state.canShowPauseMenu()) return;
+
+		this.state.set(GameState.PAUSED_LOCAL);
+		this.services?.gui?.setPauseVisible(true);
+		this.services?.audio?.pauseGameMusic();
+		this.stopGameLoop();
+
+		if (this.state.isPlaying())
+			webSocketClient.sendPauseRequest();
 	}
 
 	resume(): void {
-		if (!this.isInitialized) return;
-		webSocketClient.sendResumeRequest();
+		if (!this.isInitialized || !this.state.isPausedLocal()) return;
+
+		// Only send resume request to server if we were actually playing before pausing
+		if (this.state.isPaused()) {
+			webSocketClient.sendResumeRequest();
+		} else {
+			// For non-playing states, just resume locally
+			this.state.set(GameState.PLAYING); // You might need to track previous state
+			this.services?.gui?.setPauseVisible(false);
+			this.services?.audio?.resumeGameMusic();
+			this.startGameLoop();
+		}
 	}
 
 	async requestExitToMenu(): Promise<void> {
