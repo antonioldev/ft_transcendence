@@ -1,8 +1,8 @@
 import { AdvancedDynamicTexture, Rectangle, TextBlock, Grid} from "@babylonjs/gui";
 import { KeyboardEventTypes} from "@babylonjs/core";
 import { getCurrentTranslation } from '../../translations/translations.js';
-import { spawnFireworksInFrontOfCameras, FINAL_FIREWORKS, spawnGUISparkles } from '../scene/fireworks.js';
-import { AnimationManager, Motion } from "../AnimationManager.js";
+import { spawnGUISparkles } from '../scene/fireworks.js';
+import { AnimationManager, Motion } from "../services/AnimationManager.js";
 import { PARTIAL_END_GAME_STYLES, END_GAME_STYLES, createRect, createTextBlock, createGrid} from "./GuiStyle.js";
 
 export class EndGame {
@@ -90,12 +90,6 @@ export class EndGame {
 		this.endGameOverlay.isVisible = true;
 
 		this.animationManager?.pop(this.endGameWinnerText, Motion.F.fast, 0.9);
-
-		const scene = this.adt.getScene();
-		if (scene) {
-			const cams = scene.activeCameras?.length ? scene.activeCameras : scene.activeCamera;
-			spawnFireworksInFrontOfCameras(scene, FINAL_FIREWORKS, cams);
-		}
 
 		await new Promise(r => setTimeout(r, 5000));
 

@@ -1,6 +1,6 @@
 import { AdvancedDynamicTexture, Rectangle, TextBlock, Grid, StackPanel} from "@babylonjs/gui";
 import { getCurrentTranslation } from '../../translations/translations.js';
-import { AnimationManager } from "../AnimationManager.js";
+import { AnimationManager } from "../services/AnimationManager.js";
 import { H_LEFT, LOBBY_STYLES, createRect, createTextBlock, createStackPanel,} from "./GuiStyle.js";
 
 export class Lobby {

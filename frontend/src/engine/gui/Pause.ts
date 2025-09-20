@@ -1,6 +1,6 @@
 import { AdvancedDynamicTexture, Rectangle, TextBlock, Grid, Image} from "@babylonjs/gui";
 import { getCurrentTranslation } from '../../translations/translations.js';
-import { AnimationManager, Motion } from "../AnimationManager.js";
+import { AnimationManager, Motion } from "../services/AnimationManager.js";
 import {
   H_LEFT,
   PAUSE_MENU_STYLES,
