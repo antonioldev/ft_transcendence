@@ -19,6 +19,8 @@ export class RenderManager {
 	private fpsLimit: number = 60;
 	private camerasAnimation: any[] = [];
 	private resizeHandler: (() => void) | null = null;
+	private targetLeft: Vector3 = new Vector3();
+	private targetRight: Vector3 = new Vector3();
 
 // ====================			CONSTRUCTOR			   ====================
 	constructor(
@@ -33,45 +35,73 @@ export class RenderManager {
 	}
 
 // ====================			RENDER LOOP			   ====================
+	// startRendering(): void {
+	// 	if (!this.isInitialized || this.isRunning || !this.engine || !this.scene)
+	// 		return;
+
+	// 	this.isRunning = true;
+	// 	this.lastFrameTime = performance.now();
+	// 	this.engine.runRenderLoop(() => {
+	// 		if (!this.isRunning) return;
+
+	// 		const currentTime = performance.now();
+	// 		const deltaTime = currentTime - this.lastFrameTime;
+
+	// 		if (deltaTime < (1000 / this.fpsLimit)) return;
+
+	// 		try {
+	// 			// Render the scene
+	// 			if (this.scene && this.scene.activeCamera)
+	// 				this.scene.render();
+	// 			// Update FPS display
+	// 			this.updateFPSDisplay(deltaTime);
+	// 			this.lastFrameTime = currentTime;
+	// 		} catch (error) {
+	// 			Logger.error('Error in render loop', 'RenderManager', error);
+	// 		}
+	// 	});
+
+	// 	// this.engine.runRenderLoop(() => {
+	// 	//	 if (!this.isRenderingActive) return;
+
+	// 	//	 const currentTime = performance.now();
+	// 	//	 const deltaTime = currentTime - this.lastFrameTime;
+			
+	// 	//	 // Render the scene
+	// 	//		 if (this.scene && this.scene.activeCamera)
+	// 	//			 this.scene.render();
+	// 	//		 // Update FPS display
+	// 	//		 this.updateFPSDisplay(deltaTime);
+	// 	//		 this.lastFrameTime = currentTime;
+	// 	// });
+	// }
 	startRendering(): void {
 		if (!this.isInitialized || this.isRunning || !this.engine || !this.scene)
 			return;
 
 		this.isRunning = true;
 		this.lastFrameTime = performance.now();
+		
+		const frameInterval = 1000 / this.fpsLimit;
+		
 		this.engine.runRenderLoop(() => {
 			if (!this.isRunning) return;
 
 			const currentTime = performance.now();
 			const deltaTime = currentTime - this.lastFrameTime;
 
-			if (deltaTime < (1000 / this.fpsLimit)) return;
-
-			try {
-				// Render the scene
-				if (this.scene && this.scene.activeCamera)
-					this.scene.render();
-				// Update FPS display
-				this.updateFPSDisplay(deltaTime);
-				this.lastFrameTime = currentTime;
-			} catch (error) {
-				Logger.error('Error in render loop', 'RenderManager', error);
+			if (deltaTime >= frameInterval) {
+				try {
+					if (this.scene && this.scene.activeCamera) {
+						this.scene.render();
+					}
+					this.updateFPSDisplay(deltaTime);
+					this.lastFrameTime = currentTime;
+				} catch (error) {
+					Logger.error('Error in render loop', 'RenderManager', error);
+				}
 			}
 		});
-
-		// this.engine.runRenderLoop(() => {
-		//	 if (!this.isRenderingActive) return;
-
-		//	 const currentTime = performance.now();
-		//	 const deltaTime = currentTime - this.lastFrameTime;
-			
-		//	 // Render the scene
-		//		 if (this.scene && this.scene.activeCamera)
-		//			 this.scene.render();
-		//		 // Update FPS display
-		//		 this.updateFPSDisplay(deltaTime);
-		//		 this.lastFrameTime = currentTime;
-		// });
 	}
 
 	stopRendering(): void {
@@ -144,14 +174,15 @@ export class RenderManager {
 			const cameraFollowLimit = GAME_CONFIG.cameraFollowLimit;
 
 			if (camera1 &&this.gameObjects.players.left) {
-				const targetLeft = this.gameObjects.players.left.position.clone();
-				targetLeft.x = Math.max(-cameraFollowLimit, Math.min(cameraFollowLimit, targetLeft.x));
-				camera1.setTarget(Vector3.Lerp(camera1.getTarget(), targetLeft, GAME_CONFIG.followSpeed));
+				this.targetLeft.copyFrom(this.gameObjects.players.left.position);
+				this.targetLeft.x = Math.max(-cameraFollowLimit, Math.min(cameraFollowLimit, this.targetLeft.x));
+				camera1.setTarget(Vector3.Lerp(camera1.getTarget(), this.targetLeft, GAME_CONFIG.followSpeed));
+				
 			}
 			if (camera2 && this.gameObjects.players.right) {
-				const targetRight = this.gameObjects.players.right.position.clone();
-				targetRight.x = Math.max(-cameraFollowLimit, Math.min(cameraFollowLimit, targetRight.x));
-				camera2.setTarget(Vector3.Lerp(camera2.getTarget(), targetRight, GAME_CONFIG.followSpeed));
+				this.targetRight.copyFrom(this.gameObjects.players.right.position);
+				this.targetRight.x = Math.max(-cameraFollowLimit, Math.min(cameraFollowLimit, this.targetRight.x));
+				camera2.setTarget(Vector3.Lerp(camera2.getTarget(), this.targetRight, GAME_CONFIG.followSpeed));
 			}
 		} catch (error) {
 			Logger.errorAndThrow('Error updating 3D cameras', 'Game', error);
