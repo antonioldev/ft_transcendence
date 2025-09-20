@@ -204,15 +204,19 @@ export class WebSocketClient {
     }
 
     private sendMessage(type: MessageType, data: any = {}): void {
-        if (!this.isConnected())
-            Logger.errorAndThrow('WebSocket is not connected. Cannot send message.', 'WebSocketClient');
+        if (!this.isConnected()) {
+            Logger.warn(`Cannot send ${type}: WebSocket not connected`, 'WebSocketClient');
+            return;
+        }
 
         const message: ClientMessage = { type, ...data };
-    
+
         try {
             this.ws!.send(JSON.stringify(message));
         } catch (error) {
-            Logger.errorAndThrow(`Error sending message of type ${type}`, 'WebSocketClient', error);
+            Logger.error(`Error sending message of type ${type}`, 'WebSocketClient', error);
+            this.connectionStatus = ConnectionStatus.FAILED;
+            this.notifyStatus(ConnectionStatus.FAILED);
         }
     }
 
@@ -221,23 +225,27 @@ export class WebSocketClient {
     // ========================================
 
     registerNewUser(registrationInfo: RegisterUser): void {
-        if (this.isConnected()) {
-            const message: ClientMessage = {
-                type: MessageType.REGISTER_USER,
-                registerUser: registrationInfo
-            };
-            this.ws!.send(JSON.stringify(message));
-        }        
+        if (!this.isConnected()) {
+            this.triggerCallback(WebSocketEvent.ERROR, 'Not connected to server');
+            return;
+        }
+        const message: ClientMessage = {
+            type: MessageType.REGISTER_USER,
+            registerUser: registrationInfo
+        };
+        this.ws!.send(JSON.stringify(message));
     }
 
     loginUser(loginInfo: LoginUser): void {
-        if (this.isConnected()) {
-            const message: ClientMessage = {
-                type: MessageType.LOGIN_USER,
-                loginUser: loginInfo
-            };
-            this.ws!.send(JSON.stringify(message));
-        }          
+        if (!this.isConnected()) {
+            this.triggerCallback(WebSocketEvent.ERROR, 'Not connected to server');
+            return;
+        }
+        const message: ClientMessage = {
+            type: MessageType.LOGIN_USER,
+            loginUser: loginInfo
+        };
+        this.ws!.send(JSON.stringify(message));
     }
 
     logoutUser(): void {

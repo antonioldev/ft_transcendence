@@ -177,7 +177,12 @@ export class Game {
 	}
 
 	async connect(aiDifficulty: number, capacity?: number): Promise<void> {
-		webSocketClient.joinGame(this.config.gameMode, this.config.players, aiDifficulty, capacity);
+		try {
+			webSocketClient.joinGame(this.config.gameMode, this.config.players, aiDifficulty, capacity);
+		} catch (error) {
+			Logger.error('Failed to connect to game', 'Game', error);
+			throw new Error('Connection failed');
+		}
 	}
 
 // ====================			GAME CONTROL			 ====================
@@ -193,35 +198,38 @@ export class Game {
 	}
 
 	private async handleCountdown(countdown: number): Promise<void> {
-		if (countdown === undefined || countdown === null)
-			Logger.errorAndThrow('Server sent SIGNAL without countdown parameter', 'Game');
+		try {
+			if (countdown === undefined || countdown === null)
+				Logger.errorAndThrow('Server sent SIGNAL without countdown parameter', 'Game');
 
-		// this.loadingGui?.hide();
-		uiManager.setLoadingScreenVisible(false);
-		this.guiManager?.lobby.hide()
+			uiManager.setLoadingScreenVisible(false);
+			this.guiManager?.lobby.hide()
 
-		if (this.currentState === GameState.MATCH_ENDED)
-			this.resetForNextMatch();
-		if (countdown === GAME_CONFIG.startDelay) {
-			const controlledSides = this.getControlledSides();
-			this.renderManager?.startCameraAnimation(
-				this.gameObjects?.cameras, 
-				this.config.viewMode,
-				controlledSides,
-				this.config.isLocalMultiplayer
-			);
-		}
-		else if (countdown > 0 && GAME_CONFIG.startDelay - 1) {
-			this.guiManager?.countdown.set(true, countdown);
-			this.audioManager?.playCountdown();
-		}
-		else {
-			this.audioManager?.stopCountdown();
-			this.audioManager?.startGameMusic();
-			this.renderManager?.stopCameraAnimation();
-			this.guiManager?.countdown.set(false);
-			await this.guiManager?.animateBackground(false);
-			this.start();
+			if (this.currentState === GameState.MATCH_ENDED)
+				this.resetForNextMatch();
+			if (countdown === GAME_CONFIG.startDelay) {
+				const controlledSides = this.getControlledSides();
+				this.renderManager?.startCameraAnimation(
+					this.gameObjects?.cameras, 
+					this.config.viewMode,
+					controlledSides,
+					this.config.isLocalMultiplayer
+				);
+			}
+			else if (countdown > 0 && GAME_CONFIG.startDelay - 1) {
+				this.guiManager?.countdown.set(true, countdown);
+				this.audioManager?.playCountdown();
+			}
+			else {
+				this.audioManager?.stopCountdown();
+				this.audioManager?.startGameMusic();
+				this.renderManager?.stopCameraAnimation();
+				this.guiManager?.countdown.set(false);
+				await this.guiManager?.animateBackground(false);
+				this.start();
+			}
+		} catch (error) {
+			Logger.error('Error handling countdown', 'Game', error);
 		}
 	}
 
@@ -345,18 +353,23 @@ export class Game {
 				this.audioManager?.playPaddleHit();
 			this.audioManager?.updateMusicSpeed(state.ball.current_rally);
 
-			if (this.players.get(PlayerSide.LEFT)!.score < state.paddleLeft.score) {
-				this.players.get(PlayerSide.LEFT)!.score = state.paddleLeft.score;
+			const leftPlayer = this.players.get(PlayerSide.LEFT)!;
+			const rightPlayer = this.players.get(PlayerSide.RIGHT)!;
+
+			let scoresChanged = false;
+			if (leftPlayer.score < state.paddleLeft.score) {
+				leftPlayer.score = state.paddleLeft.score;
 				this.audioManager?.playScore();
+				scoresChanged = true;
 			}
-			if (this.players.get(PlayerSide.RIGHT)!.score < state.paddleRight.score) {
-				this.players.get(PlayerSide.RIGHT)!.score = state.paddleRight.score;
+			if (rightPlayer.score < state.paddleRight.score) {
+				rightPlayer.score = state.paddleRight.score;
 				this.audioManager?.playScore();
+				scoresChanged = true;
 			}
-			this.guiManager?.hud.updateScores(
-				this.players.get(PlayerSide.LEFT)!.score,
-				this.players.get(PlayerSide.RIGHT)!.score
-			);
+
+			if (scoresChanged)
+				this.guiManager?.hud.updateScores(leftPlayer.score, rightPlayer.score);
 
 		} catch (error) {
 			Logger.errorAndThrow('Error updating game objects', 'Game', error);

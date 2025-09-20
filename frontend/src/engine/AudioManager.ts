@@ -145,7 +145,10 @@ export class AudioManager {
 		const newPlaybackRate = this.basePlaybackRate + 
 			(speedCurve * (this.maxPlaybackRate - this.basePlaybackRate));
 
-		this.gameMusic.setPlaybackRate(newPlaybackRate);
+		// this.gameMusic.setPlaybackRate(newPlaybackRate);
+		const currentRate = this.gameMusic.getPlaybackRate();
+		if (Math.abs(newPlaybackRate - currentRate) > 0.01)
+			this.gameMusic.setPlaybackRate(newPlaybackRate);
 	}
 
 	// Sound effects methods

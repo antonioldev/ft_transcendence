@@ -165,6 +165,16 @@ export interface GameObjects {
 	cameras: any[];
 	guiCamera: any;
 	lights: any[];
+	// players: {
+	// 	left: Mesh;
+	// 	right: Mesh;
+	// };
+	// ball: Mesh;
+	// gameField: Mesh;
+	// walls: Mesh[];
+	// cameras: Camera[];
+	// guiCamera: Camera;
+	// lights: Light[]; // TODO
 }
 
 // Player control configuration (keyboard mappings)
