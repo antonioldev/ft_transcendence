@@ -17,6 +17,8 @@ import { AudioManager } from './AudioManager.js';
 import { PowerupManager } from "./PowerUpManager.js";
 import { PlayerSide, PlayerState, resetPlayersState } from "./utils.js"
 import { KeyboardManager } from "./KeybordManager.js";
+import { disposeMaterialResources } from "./scene/materialFactory.js";
+import { clearAllFireworkTimers } from "./scene/fireworks.js";
 
 
 
@@ -431,50 +433,97 @@ export class Game {
 
 // ====================			CLEANUP				  ====================
 	private async dispose(): Promise<void> {
-	if (!this.isInitialized) return;
+		if (!this.isInitialized) return;
+		
 		try {
 			this.isInitialized = false;
 			this.stopGameLoop();
 
-			this.renderManager?.dispose();
-			this.renderManager = null;
+			// Stop rendering first to prevent access to disposed objects
+			this.renderManager?.stopRendering();
 
-			this.players.clear();
-
-			this.guiManager?.dispose();
-			this.guiManager = null;
-
+			// Dispose managers in reverse order of creation
+			clearAllFireworkTimers();
 			this.input?.dispose();
 			this.input = null;
 
 			this.powerup?.dispose();
 			this.powerup = null;
 
-			uiManager.setLoadingScreenVisible(false);
+			this.guiManager?.dispose();
+			this.guiManager = null;
 
-			this.gameObjects = null;
+			this.renderManager?.dispose();
+			this.renderManager = null;
+
+			// Dispose animation manager before scene
+			this.animationManager?.dispose();
+			this.animationManager = null;
+
 			this.audioManager?.dispose();
 			this.audioManager = null;
 
-			this.scene?.onBeforeRenderObservable?.clear();
-			this.scene?.onAfterRenderObservable?.clear();
-			this.scene?.dispose();
-			this.scene = null;
+			disposeMaterialResources();
+			// Clear game objects references
+			this.gameObjects = null;
+			this.players.clear();
 
-			this.engine?.dispose();
-			this.engine = null;
+			// Clear WebSocket callbacks to prevent memory leaks
+			this.clearWebSocketCallbacks();
 
+			// Dispose scene and engine last
+			if (this.scene) {
+				this.scene.onBeforeRenderObservable?.clear();
+				this.scene.onAfterRenderObservable?.clear();
+				this.scene.dispose();
+				this.scene = null;
+			}
+
+			if (this.engine) {
+				this.engine.stopRenderLoop();
+				this.engine.dispose();
+				this.engine = null;
+			}
+
+			// Clear canvas context
 			if (this.canvas) {
 				const context = this.canvas.getContext('2d');
 				context?.clearRect(0, 0, this.canvas.width, this.canvas.height);
 			}
 			this.canvas = null;
 
-			if (Game.currentInstance === this) Game.currentInstance = null;
+			uiManager.setLoadingScreenVisible(false);
+
+			if (Game.currentInstance === this) {
+				Game.currentInstance = null;
+			}
 
 			Logger.debug('Game disposed successfully', 'Game');
 		} catch (error) {
-			Logger.errorAndThrow('Error disposing game', 'Game', error);
+			Logger.error('Error disposing game', 'Game', error);
+			// Don't rethrow - we want disposal to complete even if there are errors
+		}
+	}
+
+	private clearWebSocketCallbacks(): void {
+		try {
+			// Unregister all callbacks to prevent memory leaks
+			webSocketClient.unregisterCallback(WebSocketEvent.GAME_STATE);
+			webSocketClient.unregisterCallback(WebSocketEvent.CONNECTION);
+			webSocketClient.unregisterCallback(WebSocketEvent.ERROR);
+			webSocketClient.unregisterCallback(WebSocketEvent.GAME_PAUSED);
+			webSocketClient.unregisterCallback(WebSocketEvent.GAME_RESUMED);
+			webSocketClient.unregisterCallback(WebSocketEvent.SESSION_ENDED);
+			webSocketClient.unregisterCallback(WebSocketEvent.SIDE_ASSIGNMENT);
+			webSocketClient.unregisterCallback(WebSocketEvent.MATCH_ASSIGNMENT);
+			webSocketClient.unregisterCallback(WebSocketEvent.MATCH_WINNER);
+			webSocketClient.unregisterCallback(WebSocketEvent.TOURNAMENT_LOBBY);
+			webSocketClient.unregisterCallback(WebSocketEvent.COUNTDOWN);
+			webSocketClient.unregisterCallback(WebSocketEvent.POWERUP_ASSIGNMENT);
+			webSocketClient.unregisterCallback(WebSocketEvent.POWERUP_ACTIVATED);
+			webSocketClient.unregisterCallback(WebSocketEvent.POWERUP_DEACTIVATED);
+		} catch (error) {
+			Logger.error('Error clearing WebSocket callbacks', 'Game', error);
 		}
 	}
 }

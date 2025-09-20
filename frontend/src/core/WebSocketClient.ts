@@ -280,7 +280,11 @@ export class WebSocketClient {
     registerCallback(event: WebSocketEvent, callback: Function): void {
         this.callbacks[event] = callback;
     }
-    
+
+    unregisterCallback(event: WebSocketEvent): void {
+        this.callbacks[event] = null;
+    }
+
     triggerCallback(event: WebSocketEvent, data?: any): void {
         const callback = this.callbacks[event];
         if (callback) {

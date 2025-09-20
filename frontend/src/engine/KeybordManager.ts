@@ -8,10 +8,26 @@ import { PlayerSide, PlayerState } from "./utils.js";
 import { webSocketClient } from '../core/WebSocketClient.js';
 import { PowerupManager } from "./PowerUpManager.js";
 
+export type MoveKeys = { up: string; down: string; left?: string; right?: string };
+export type PowerKeys = { k1: string; k2: string; k3: string };
+
+export const PROFILE_P1 = {
+	move: { up: "w", down: "s", left: "a", right: "d" } satisfies MoveKeys,
+	power: { k1: "c", k2: "v", k3: "b" } satisfies PowerKeys,
+};
+
+export const PROFILE_P2 = {
+	move: { up: "arrowup", down: "arrowdown", left: "arrowleft", right: "arrowright" } satisfies MoveKeys,
+	power: { k1: "i", k2: "o", k3: "p" } satisfies PowerKeys,
+};
+
+const isAnyDown = (getInput: (key: string) => number, keys?: string[]) =>
+	!!keys?.some(k => getInput(k) === 1);
 
 // Manages all keyboard input handling for the game
 export class KeyboardManager {
 	private deviceSourceManager: DeviceSourceManager | null = null;
+	private globalKeyDownHandler: (event: KeyboardEvent) => void;
 	private isInitialized: boolean = false;
 
 	private gameState: {
@@ -44,15 +60,13 @@ export class KeyboardManager {
 		this.gameState = state;
 		this.gameCallbacks = callbacks;
 		this.deviceSourceManager = new DeviceSourceManager(scene.getEngine());
+		this.globalKeyDownHandler = this.handleGlobalKeyDown.bind(this);
 		this.setupGlobalKeyboardEvents();
 		this.isInitialized = true;
 	}
 
-	// Set up global keyboard event listeners
 	private setupGlobalKeyboardEvents(): void {
-		document.addEventListener('keydown', (event) => {
-			this.handleGlobalKeyDown(event);
-		});
+		document.addEventListener('keydown', this.globalKeyDownHandler);
 	}
 
 	// Handle global keyboard events (pause, resume, powerups, etc.)
@@ -175,7 +189,7 @@ export class KeyboardManager {
 		if (!this.isInitialized) return;
 
 		try {
-			document.removeEventListener('keydown', this.handleGlobalKeyDown);
+			document.removeEventListener('keydown', this.globalKeyDownHandler);
 			
 			this.deviceSourceManager?.dispose();
 			this.deviceSourceManager = null;

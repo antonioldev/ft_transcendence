@@ -80,9 +80,17 @@ export const PARTIAL_FIREWORKS: FireworkDetails = {
   disposeDelayMs: 2000,
 };
 
+const activeTimeouts = new Set<number>();
 const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
 const randomFromArray = <T>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
-const createDelayedAction = (action: () => void, delay: number) => setTimeout(action, delay);
+const createDelayedAction = (action: () => void, delay: number) => {
+	const timeoutId = window.setTimeout(() => {
+		activeTimeouts.delete(timeoutId);
+		action();
+	}, delay);
+	activeTimeouts.add(timeoutId);
+	return timeoutId;
+};
 
 function chooseColorPair(profile: FireworkDetails) {
 	const colors = profile.particle.colors;
@@ -158,6 +166,13 @@ export function spawnFireworksInFrontOfCameras(
   );
 
   cameras.forEach((cam) => spawnBurstsForCamera(scene, cam, profile));
+}
+
+export function clearAllFireworkTimers(): void {
+	activeTimeouts.forEach(timeoutId => {
+		window.clearTimeout(timeoutId);
+	});
+	activeTimeouts.clear();
 }
 
 /////////////////////////////////////////////////////////////////////////////////

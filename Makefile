@@ -66,6 +66,26 @@ set-env-ip:
 	printf "LAN_IP=%s\n" "$$IP" >> .env; \
 	echo "✅ LAN_IP set to $$IP and written to .env"
 
+home:
+	@echo "Cleaning up previous containers and images..."
+	docker compose down --rmi all --volumes --remove-orphans
+	@echo "Cleaning shared directories..."
+	@if exist frontend\src\shared rmdir /s /q frontend\src\shared
+	@if exist backend\src\shared rmdir /s /q backend\src\shared
+	@if exist backend\src\database\transcendence.sqlite del /q backend\src\database\transcendence.sqlite
+	@echo "Copying shared files..."
+	@mkdir frontend\src\shared 2>nul || true
+	@xcopy /s /e /y shared\* frontend\src\shared\ >nul
+	@mkdir backend\src\shared 2>nul || true
+	@xcopy /s /e /y shared\* backend\src\shared\ >nul
+	@echo "Building and starting containers..."
+	docker compose up -d --build
+	@echo "Server is starting up..."
+	@echo "Reading IP from .env file..."
+	@for /f "tokens=2 delims==" %%i in ('findstr "LAN_IP" .env') do set LAN_IP=%%i
+	@echo Server running at https://192.168.0.17:8443
+	@echo "Run 'make logs' to see the logs once containers are up"
+
 #################################################################################
 #################################     LOGS      #################################
 
@@ -145,4 +165,4 @@ update: update-deps fclean up-build
         logs logs-frontend logs-backend \
         clean fclean re restart \
         ps update update-deps \
-		pepper-env set-env-ip print-url
+		pepper-env set-env-ip print-url home

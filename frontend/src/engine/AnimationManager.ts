@@ -38,6 +38,7 @@ export const Motion = {
  * for creating and playing various types of animations with customizable properties.
  */
 export class AnimationManager {
+	private activeAnimationGroups: Set<any> = new Set();
 	constructor(private scene: Scene) {}
 
 	createFloat(
@@ -69,7 +70,11 @@ export class AnimationManager {
 
 	play(target: Control, frames: number, loop = false): Promise<void> {
 		return new Promise((resolve) => {
-		this.scene.beginAnimation(target, 0, frames, loop, 1, () => resolve());
+		const animationGroup = this.scene.beginAnimation(target, 0, frames, loop, 1, () => {
+				this.activeAnimationGroups.delete(animationGroup);
+				resolve();
+			});
+			this.activeAnimationGroups.add(animationGroup);
 		});
 	}
 
@@ -218,6 +223,17 @@ export class AnimationManager {
 		
 		target.animations = [anim];
 		return this.play(target, frames, false);
+	}
+
+	dispose(): void {
+		this.activeAnimationGroups.forEach(group => {
+			try {
+				group.stop();
+			} catch (error) {
+				console.warn('Error disposing animation group:', error);
+			}
+		});
+		this.activeAnimationGroups.clear();
 	}
 }
 
