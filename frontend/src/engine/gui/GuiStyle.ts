@@ -499,6 +499,13 @@ export const BRACKET_STYLES = {
         stretch: Image.STRETCH_UNIFORM
     },
 
+    bg: {
+        width: "100%", height: "100%",
+		stretch: Image.STRETCH_FILL,
+		isPointerBlocker: false,
+		zIndex: 0,
+    },
+
     bracketTitle: {
         fontFamily: FONT_FAMILY,
         color: COLORS.WHITE,
@@ -635,19 +642,10 @@ export const BRACKET_STYLES = {
         paddingRight: "4px",
         paddingTop: "2px",
         paddingBottom: "2px",
-        thickness: 0
+        thickness: 0,
+        alpha: 0
     },
-    
-    // matchRowRectFinal: {
-    //     width: "100%",
-    //     heightInPixels: 60,
-    //     paddingLeft: "4px",
-    //     paddingRight: "4px",
-    //     paddingTop: "4px",
-    //     paddingBottom: "4px",
-    //     thickness: 0
-    // },
-    
+
     matchRowPanel: {
         isVertical: false,
         width: "100%",
@@ -680,21 +678,11 @@ export const BRACKET_STYLES = {
         textVerticalAlignment: Control.VERTICAL_ALIGNMENT_CENTER,
         fontSize: 16
     },
-    
-    // matchPlayerTextFinal: {
-    //     color: "#FFFFFF",
-    //     height: "100%",
-    //     resizeToFit: true,
-    //     textHorizontalAlignment: Control.HORIZONTAL_ALIGNMENT_LEFT,
-    //     textVerticalAlignment: Control.VERTICAL_ALIGNMENT_CENTER,
-    //     fontSize: 18,
-    //     fontWeight: "bold"
-    // },
 
     matchVsText: {
-        widthInPixels: 40,
+        widthInPixels: 70,
         height: "100%",
-        text: "vs",
+        text: "← vs →",
         color: "#BBB",
         fontSize: 16,
         fontWeight: "bold",
@@ -702,20 +690,7 @@ export const BRACKET_STYLES = {
         textVerticalAlignment: Control.VERTICAL_ALIGNMENT_CENTER,
         background: "rgba(255,255,255,0.02)",
         cornerRadius: 20
-    },
-    
-    // matchVsTextFinal: {
-    //     widthInPixels: 40,
-    //     height: "100%",
-    //     text: "vs",
-    //     color: "#FFF",
-    //     fontSize: 18,
-    //     fontWeight: "bold",
-    //     textHorizontalAlignment: Control.HORIZONTAL_ALIGNMENT_CENTER,
-    //     textVerticalAlignment: Control.VERTICAL_ALIGNMENT_CENTER,
-    //     background: "rgba(255,255,255,0.04)",
-    //     cornerRadius: 20
-    // }
+    }
 } as const;
 
 export function applyStyles(control: any, styles: any): void {

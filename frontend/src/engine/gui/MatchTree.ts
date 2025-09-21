@@ -1,10 +1,7 @@
-import { AdvancedDynamicTexture, Rectangle, TextBlock, Grid, StackPanel } from "@babylonjs/gui";
+import { AdvancedDynamicTexture, Rectangle, TextBlock, Grid, StackPanel, Image } from "@babylonjs/gui";
 import { AnimationManager, Motion } from "../services/AnimationManager.js";
 import { H_RIGHT, BRACKET_STYLES, applyStyles,createImage, createRect, createTextBlock, createGrid, createStackPanel } from "./GuiStyle.js";
 import { getCurrentTranslation } from "../../translations/translations.js";
-
-
-
 export class MatchTree {
 	private playerTotal: number = 0;
 	private isCreated: boolean = false;
@@ -14,6 +11,7 @@ export class MatchTree {
 	private tabsBar!: Grid;
 	private roundPanels: StackPanel[] = [];
 	private tabButtons: Rectangle[] = [];
+	private tabButtonsBg: Image[] = [];
 	private tabLabels: TextBlock[] = [];
 	private currentRound: number = 0;
 
@@ -129,8 +127,24 @@ export class MatchTree {
 	}
 
 	dispose(): void {
+		this.roundPanels.forEach(panel => panel.dispose());
+		this.tabButtons.forEach(button => button.dispose());
+		this.tabButtonsBg.forEach(bg => bg.dispose());
+		this.tabLabels.forEach(label => label.dispose());
+
+		this.roundPanels = [];
+		this.tabButtons = [];
+		this.tabButtonsBg = [];
+		this.tabLabels = [];
+
+		if (this.tabsBar) this.tabsBar.dispose();
 		this.bracketGrid.dispose();
 		this.bracketOverlay.dispose();
+
+		this.isCreated = false;
+		this.playerTotal = 0;
+		this.roundsCount = 0;
+		this.currentRound = 0;
 	}
 
 	private initializeTabs(matchTotal: number): void {
@@ -142,6 +156,8 @@ export class MatchTree {
 
 		const headerRect = createRect("roundsHeaderRect", BRACKET_STYLES.tabHeaderRect);
 		const roundsHeader = createTextBlock("roundsHeader", BRACKET_STYLES.tabHeader, "ROUNDS");
+		const bg = createImage("cellBg", BRACKET_STYLES.bg, "/assets/bg/inactive.png");
+		headerRect.addControl(bg);
 		
 		headerRect.addControl(roundsHeader);
 		tabsRoot.addControl(headerRect);
@@ -155,13 +171,16 @@ export class MatchTree {
 		tabsRoot.addControl(panelsWrap);
 		for (let r = 1; r <= this.roundsCount; r++) {
 			const tab = createRect(`tab_round_${r}`, BRACKET_STYLES.tabButton);
-
+			const bgTab = createImage(`tab_bg_${r}`, BRACKET_STYLES.bg, "/assets/bg/active.png");
+			this.tabButtonsBg.push(bgTab);
+			bgTab.isVisible = false;
+			tab.addControl(bgTab);
 			const tabLabelText = (r === this.roundsCount) ? "🏆" : `${r}`;
 			const tabLabel = createTextBlock(`tab_label_${r}`, BRACKET_STYLES.tabLabelInactive, tabLabelText);
 			tab.addControl(tabLabel);
 			this.tabsBar.addControl(tab, 0, r - 1);
 
-			tab.onPointerDownObservable.add(() => this.activateRound(r - 1));
+			tab.onPointerDownObservable.add(async () => this.activateRound(r - 1));
 
 			this.tabButtons.push(tab);
 			this.tabLabels.push(tabLabel);
@@ -191,7 +210,7 @@ export class MatchTree {
 				const leftTb = createTextBlock(leftId, BRACKET_STYLES.matchPlayerText, "tbd");
 				leftRect.addControl(leftTb);
 
-				const vsTb = createTextBlock(`vs_${r}_${i}`, BRACKET_STYLES.matchVsText, "vs");
+				const vsTb = createTextBlock(`vs_${r}_${i}`, BRACKET_STYLES.matchVsText, "← vs →");
 				rowPanel.addControl(vsTb);
 
 				const rightRect = createRect(`${rightId}_rect`, BRACKET_STYLES.matchPlayerRect);
@@ -205,18 +224,44 @@ export class MatchTree {
 		this.isCreated = true;
 	}
 
-	private activateRound(idx: number): void {
-		if (idx < 0 || idx >= this.roundPanels.length) return;
+	// private activateRound(idx: number): void {
+	// 	if (idx < 0 || idx >= this.roundPanels.length) return;
 
-		for (let i = 0; i < this.roundPanels.length; i++)
-			this.roundPanels[i].isVisible = (i === idx);
-		this.applyTabActiveStyles(idx);
-	}
+	// 	for (let i = 0; i < this.roundPanels.length; i++)
+	// 		this.roundPanels[i].isVisible = (i === idx);
+	// 	this.applyTabActiveStyles(idx);
+	// }
 
 	private applyTabActiveStyles(activeIdx: number): void {
 		for (let i = 0; i < this.tabButtons.length; i++) {
 			applyStyles(this.tabButtons[i], i === activeIdx ? BRACKET_STYLES.tabButtonActive : BRACKET_STYLES.tabButton);
 			applyStyles(this.tabLabels[i], i === activeIdx ? BRACKET_STYLES.tabLabelActive : BRACKET_STYLES.tabLabelInactive);
+		
+			const bg = this.tabButtonsBg[i];
+			if (bg)
+				bg.isVisible = (i === activeIdx);
 		}
+	}
+
+	private async animateMatchRowsIn(panel: StackPanel): Promise<void> {
+		const children = panel.children;
+		const animationPromises: Promise<void>[] = [];
+
+		children.forEach((child) => {
+			if (child.name?.startsWith('matchRow_'))
+				animationPromises.push(this.animationManager.fadeIn(child as any, Motion.F.fast));
+		});
+
+		await Promise.all(animationPromises);
+	}
+
+	private async activateRound(idx: number): Promise<void> {
+		if (idx < 0 || idx >= this.roundPanels.length) return;
+
+		this.applyTabActiveStyles(idx);
+		for (let i = 0; i < this.roundPanels.length; i++)
+			this.roundPanels[i].isVisible = (i === idx);
+		await this.animateMatchRowsIn(this.roundPanels[idx]);
+		
 	}
 }
