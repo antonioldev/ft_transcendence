@@ -140,11 +140,13 @@ abstract class AbstractTournament extends AbstractGameSession{
 
 		this.add_CPUs();
 		this._match_players();
-		this.broadcastRoundSchedule(1);
+		await this.waitForPlayersReady(); // TODO eden I added this as the backend was sending the next message too early.
+		// this.broadcastRoundSchedule(1);
 
 		for (let current_round = 1; current_round <= this.num_rounds; current_round++) {
 			if (!this.running) return ;
 
+			this.broadcastRoundSchedule(current_round); // TODO added here so we get update info from server
 			const matches = this.rounds.get(current_round);
 			if (!matches) return ; // maybe throw err
 			await this.waitForPlayersReady();

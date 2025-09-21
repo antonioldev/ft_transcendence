@@ -198,7 +198,6 @@ export class Game {
 	private onServerResumedGame(): void {
 		if (!this.isInitialized) return;
 
-		// Only resume if we were actually paused by the server
 		if (this.state.isPaused()) {
 			this.state.set(GameState.PLAYING);
 			this.services?.gui?.setPauseVisible(false);
@@ -367,43 +366,24 @@ export class Game {
 	}
 
 // ====================			GAME LIFECYCLE			   ====================
-	// pause(): void {
-	// 	if (!this.isInitialized || !this.state.isPlaying()) return;
-	// 	// if (!this.isInitialized) return;
-	// 	// this.state.set(GameState.PAUSED_LOCAL);
-	// 	// this.services?.gui?.setPauseVisible(true);
-	// 	// this.services?.audio?.pauseGameMusic();
-	// 	webSocketClient.sendPauseRequest();
-	// }
-	// resume(): void {
-	// 	if (!this.isInitialized) return;
-	// 	webSocketClient.sendResumeRequest();
-	// }
 	pause(): void {
 		if (!this.isInitialized || !this.state.canShowPauseMenu()) return;
 
-		this.state.set(GameState.PAUSED_LOCAL);
+		if (this.state.isPlaying()) {
+			this.state.set(GameState.PAUSED_LOCAL);
+			webSocketClient.sendPauseRequest();
+		}
+
 		this.services?.gui?.setPauseVisible(true);
 		this.services?.audio?.pauseGameMusic();
 		this.stopGameLoop();
-
-		if (this.state.isPlaying())
-			webSocketClient.sendPauseRequest();
 	}
 
 	resume(): void {
-		if (!this.isInitialized || !this.state.isPausedLocal()) return;
+		if (!this.isInitialized) return;
 
-		// Only send resume request to server if we were actually playing before pausing
-		if (this.state.isPaused()) {
+		if (this.state.isPausedLocal() || this.state.isPaused())
 			webSocketClient.sendResumeRequest();
-		} else {
-			// For non-playing states, just resume locally
-			this.state.set(GameState.PLAYING); // You might need to track previous state
-			this.services?.gui?.setPauseVisible(false);
-			this.services?.audio?.resumeGameMusic();
-			this.startGameLoop();
-		}
 	}
 
 	async requestExitToMenu(): Promise<void> {
