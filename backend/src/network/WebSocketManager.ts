@@ -276,7 +276,6 @@ export class WebSocketManager {
             console.warn(`Client ${client.id} not in any game for resume request`);
             return;
         }
-
         if (!gameSession.canClientControlGame(client)){
             console.warn(`Client ${client.id} not authorized to resume game`);
             return;

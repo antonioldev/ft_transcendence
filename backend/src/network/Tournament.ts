@@ -186,26 +186,26 @@ export class TournamentLocal extends AbstractTournament {
 			match.game = new Game(match.id, match.players, this.broadcast.bind(this));
 			match.winner = await match.game.run();
 			if (match.winner) {
-				this.assign_winner(match, match.winner);
+				this.assign_winner(match);
 			}
 			index++;
 		}
 	}
 
-	assign_winner(match: Match, winner: Player | CPU) {
-		match.next?.add_player(winner);
+	assign_winner(match: Match) {
+		if (!match.winner) return ;
 		if (!match.next) {
-			this.stop();
+			this.stop(); 
+			return ;
 		}
-		else {
-			this.broadcast({
-				type: MessageType.MATCH_WINNER,
-				winner: winner?.name,
-				round_index: match.round,
-				match_index: match.index,
-			}, match.clients);
-		}
+		match.next.add_player(match.winner);
 		this.readyClients.clear();
+		this.broadcast({
+			type: MessageType.MATCH_WINNER,
+			winner: match.winner.name,
+			round_index: match.round,
+			match_index: match.index,
+		}, match.clients);
 	}
 
 	stop() {
