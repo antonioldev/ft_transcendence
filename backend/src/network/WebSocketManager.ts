@@ -1,11 +1,12 @@
 import { FastifyInstance } from 'fastify';
 import { gameManager } from './GameManager.js';
 import { Client, Player } from './Client.js';
-import { MessageType, AuthCode, GameMode } from '../shared/constants.js';
+import { MessageType, AuthCode, GameMode, Direction } from '../shared/constants.js';
 import { ClientMessage, ServerMessage, PlayerInput} from '../shared/types.js';
 import * as db from "../data/validation.js";
 import { getUserBySession, getSessionByUsername } from '../data/validation.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
+import { TournamentRemote } from './Tournament.js';
 /**
  * Manages WebSocket connections, client interactions, and game-related messaging.
  */
@@ -342,9 +343,13 @@ export class WebSocketManager {
 
     private toggleSpectator(client: Client, data: ClientMessage) {
         const gameSession = gameManager.findClientGameSession(client);
-        if (!gameSession) return ;
-
-        gameSession.toggle_spectator_game(client, data.direction);
+        if (!gameSession) {
+            console.warn(`Client ${client.id} not in any GameSession to toggle`);
+            return;
+        }
+        if (gameSession instanceof TournamentRemote && data.direction) {
+            gameSession.toggle_spectator_game(client, data.direction);
+        }
     }
 
    /**
