@@ -140,6 +140,9 @@ export class WebSocketManager {
                 case MessageType.ACTIVATE_POWERUP:
                     this.activatePowerup(client, data);
                     break;
+                case MessageType.TOGGLE_SPECTATOR_GAME:
+                    this.toggleSpectator(client, data);
+                    break;
                 case MessageType.QUIT_GAME:
                     this.handleQuitGame(client);
                     break;
@@ -209,7 +212,7 @@ export class WebSocketManager {
     private handlePlayerReady(client: Client): void {
         console.log(`Client ${client.id} is ready`);
 
-        const gameSession = gameManager.findClientGame(client);
+        const gameSession = gameManager.findClientGameSession(client);
         if (!gameSession) {
             console.warn(`Client ${client.username}:${client.id} not in any game for ready signal`);
             return;
@@ -228,7 +231,7 @@ export class WebSocketManager {
             return;
         }
 
-        const gameSession = gameManager.findClientGame(client);
+        const gameSession = gameManager.findClientGameSession(client);
         if (!gameSession) {
             console.warn(`Client ${client.id} not in any game`);
             return;
@@ -252,7 +255,7 @@ export class WebSocketManager {
      * @param client - The client that send the request.
      */
     private handlePauseRequest(client: Client): void {
-        const gameSession = gameManager.findClientGame(client);
+        const gameSession = gameManager.findClientGameSession(client);
         if (!gameSession) {
             console.warn(`Client ${client.id} not in any game for pause request`);
             return;
@@ -271,7 +274,7 @@ export class WebSocketManager {
      * @param client - The client that send the request.
      */
     private handleResumeRequest(client: Client): void {
-        const gameSession = gameManager.findClientGame(client);
+        const gameSession = gameManager.findClientGameSession(client);
         if (!gameSession) {
             console.warn(`Client ${client.id} not in any game for resume request`);
             return;
@@ -288,7 +291,7 @@ export class WebSocketManager {
      * @param data - The user information that are used to confirm login
      */
     private handleQuitGame(client: Client): void {
-        const gameSession = gameManager.findClientGame(client);
+        const gameSession = gameManager.findClientGameSession(client);
         if (!gameSession) {
             console.warn(`Client ${client.id} not in any game to quit`);
             return;
@@ -304,7 +307,7 @@ export class WebSocketManager {
      * @param client - The client that disconnected.
      */
     private handleDisconnection(client: Client): void {
-        const gameSession = gameManager.findClientGame(client);
+        const gameSession = gameManager.findClientGameSession(client);
         if (!gameSession) return ;
 
         gameSession.stop(); // TODO: temp as wont work for Tournament 
@@ -320,7 +323,7 @@ export class WebSocketManager {
             console.error("Error: cannot activate powerup, missing data");
             return;
         }
-        const gameSession = gameManager.findClientGame(client);
+        const gameSession = gameManager.findClientGameSession(client);
         if (!gameSession) {
             console.error("Error: cannot activate powerup, game does not exist");
             return ;
@@ -335,6 +338,13 @@ export class WebSocketManager {
             return;
         }
         game.activate(data.side, data.slot);
+    }
+
+    private toggleSpectator(client: Client, data: ClientMessage) {
+        const gameSession = gameManager.findClientGameSession(client);
+        if (!gameSession) return ;
+
+        gameSession.toggle_spectator_game(client, data.direction);
     }
 
    /**
@@ -514,7 +524,7 @@ export class WebSocketManager {
     handleLobbyRequest(socket: any, client: Client) {
         console.log(`Lobby request received from ${client.username}:${client.id}`)
     
-        const gameSession = gameManager.findClientGame(client);
+        const gameSession = gameManager.findClientGameSession(client);
         this.send(socket, {
             type: MessageType.TOURNAMENT_LOBBY,
             lobby: gameSession?.players.map(player => player.name)

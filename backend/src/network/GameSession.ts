@@ -4,6 +4,7 @@ import { MessageType, GameMode, AiDifficulty } from '../shared/constants.js';
 import { PlayerInput, ServerMessage } from '../shared/types.js';
 import { gameManager } from './GameManager.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
+import { Direction } from 'node:readline';
 
 export abstract class AbstractGameSession {
 	mode: GameMode;

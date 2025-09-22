@@ -42,6 +42,7 @@ export enum MessageType {
 	POWERUP_ASSIGNMENT,
 	POWERUP_ACTIVATED,
 	POWERUP_DEACTIVATED,
+	TOGGLE_SPECTATOR_GAME	// Used to change which game the spectator is watching
 }
 
 export enum WebSocketEvent {

@@ -40,7 +40,7 @@ export interface ClientMessage {
 	registerUser?: RegisterUser; // Used for create a new registration (not Google auth)
 	loginUser?: LoginUser; 		// Use to confirm the ID of the user (not Google auth)
 	side?: 0 | 1; 				// Player side (optional)
-	direction?: Direction; 	// Movement direction (optional)
+	direction?: Direction; 	// Movement direction  || Spectator toggle direction
 	username?: string;
 	aiDifficulty?: AiDifficulty;
 	powerup_type?: PowerupType;
