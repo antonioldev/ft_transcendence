@@ -3,6 +3,7 @@ import { Game } from '../game/Game.js';
 import { Client, Player, CPU } from './Client.js';
 import { GameMode, MessageType } from '../shared/constants.js';
 import { addPlayer2, registerNewGame } from '../data/validation.js';
+import { LEFT_PADDLE, RIGHT_PADDLE } from '../shared/gameConfig.js';
 
 export class Match {
 	id: string = `game_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -45,7 +46,6 @@ abstract class AbstractTournament extends AbstractGameSession{
 		this.player_capacity = capacity;
 		this.num_rounds = this._get_num_rounds(this.player_capacity);
 		this._create_rounds_map();
-
 		this._create_match_tree(new Match(this.num_rounds));
 	}
 
@@ -119,14 +119,14 @@ abstract class AbstractTournament extends AbstractGameSession{
 		const matches = this.rounds.get(roundIndex);
 		if (!matches || matches.length === 0) return;
 
-		matches.forEach((m, i) => {
+		matches.forEach((match, i) => {
 			this.broadcast({
 				type: MessageType.MATCH_ASSIGNMENT,
 				round_index: roundIndex,
 				match_index: i,
 				match_total: matches.length,
-				left:  m.players[0]?.name ?? "TBD",
-				right: m.players[1]?.name ?? "TBD",
+				left:  match.players[LEFT_PADDLE]?.name ?? "TBD",
+				right: match.players[RIGHT_PADDLE]?.name ?? "TBD",
 			});
 		});
 	}
