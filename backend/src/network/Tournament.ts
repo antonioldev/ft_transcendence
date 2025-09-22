@@ -287,21 +287,23 @@ export class TournamentRemote extends AbstractTournament {
 	}
 
 	assign_winner(match: Match, winner: Player | CPU) {
-		match.game.save_to_db(); // maybe not needed if its CPU vs CPU ??
+		if (match.players[LEFT_PADDLE] instanceof Player && match.players[RIGHT_PADDLE] instanceof Player) {
+			match.game.save_to_db();
+		}
 		if (!match.next) {
 			this.tournamentWinner = match.winner;
 			this.stop();
+			return ;
 		}
-		else {
-			this.broadcast({
-				type: MessageType.MATCH_WINNER,
-				winner: winner?.name,
-				round_index: match.round,
-				match_index: match.index,
-			}, match.clients);
+		match.next.add_player(winner);
+		this.broadcast({
+			type: MessageType.MATCH_WINNER,
+			winner: winner?.name,
+			round_index: match.round,
+			match_index: match.index,
+		}, match.clients);
 
-			match.next.add_player(winner);
-			if (winner instanceof CPU) return ;
+		if (winner instanceof Player) {
 			this.client_match_map.set(winner.client.id, match.next);
 			this.readyClients.delete(winner.client.id);
 		}
