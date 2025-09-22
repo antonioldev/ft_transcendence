@@ -83,7 +83,8 @@ export function resetPlayersState(): Map<PlayerSide, PlayerState> {
 			score: 0,
 			powerUps: [null, null, null],
 			activePowerup: null,
-			inverted: false
+			inverted: false,
+			controlledBy: null
 		}],
 		[PlayerSide.RIGHT, {
 			isControlled: false,
@@ -91,10 +92,13 @@ export function resetPlayersState(): Map<PlayerSide, PlayerState> {
 			score: 0,
 			powerUps: [null, null, null],
 			activePowerup: null,
-			inverted: false
+			inverted: false,
+			controlledBy: null
 		}]
 		]);
 }
+
+export enum LocalSlot { A , B }
 
 export enum PlayerSide {
 	LEFT = 0,
@@ -108,6 +112,7 @@ export interface PlayerState {
 	powerUps: (PowerupType | null)[];
 	activePowerup: PowerupType | null;
 	inverted: boolean;
+	controlledBy: LocalSlot | null;
 }
 
 
