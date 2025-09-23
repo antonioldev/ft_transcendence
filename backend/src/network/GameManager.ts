@@ -129,7 +129,7 @@ class GameManager extends EventEmitter {
 
         if (gameSession instanceof TournamentRemote) {
             gameSession.remove_client(client);
-            if (gameSession.clients.length === 0) {
+            if (gameSession.clients.size === 0) {
                 this.endGame(gameSession);
             }
         }

@@ -25,9 +25,9 @@ export class PowerupManager {
 	slots = [this.left_slots, this.right_slots];
 	paddles: Paddle[];
 	ball: Ball;
-	private _broadcast: (message: ServerMessage, clients?: Client[]) => void;
+	private _broadcast: (message: ServerMessage, clients?: Set<Client>) => void;
 
-	constructor(paddles: Paddle[], ball: Ball, broadcast_callback: (message: ServerMessage, clients?: Client[]) => void) {
+	constructor(paddles: Paddle[], ball: Ball, broadcast_callback: (message: ServerMessage, clients?: Set<Client>) => void) {
 		this.paddles = paddles;
 		this.ball = ball;
 		this._broadcast = broadcast_callback;
@@ -40,6 +40,34 @@ export class PowerupManager {
 		for (let i = 0; i < GAME_CONFIG.slot_count; i++) {
 			this.left_slots[i] = new Slot(Math.floor(Math.random() * num_powerups), LEFT_PADDLE, i);
 			this.right_slots[i] = new Slot(Math.floor(Math.random() * num_powerups), RIGHT_PADDLE, i);
+		}
+	}
+
+	send_state(clients?: Set<Client>) {
+		for (const side of [LEFT_PADDLE, RIGHT_PADDLE]) {
+			this._broadcast({
+				type: MessageType.POWERUP_ASSIGNMENT,
+				side: side,
+				powerups: this.slots[side].map(slot => slot.type),
+			}, clients)
+			for (const slot of this.slots[side]) {
+				if (slot.is_active) {
+					this._broadcast({
+						type: MessageType.POWERUP_ACTIVATED,
+						powerup: slot.type,
+						side: slot.side,
+						slot: slot.index,
+					}, clients)
+				}
+				else if (slot.is_spent) {
+					this._broadcast({
+						type: MessageType.POWERUP_DEACTIVATED,
+						powerup: slot.type,
+						side: slot.side,
+						slot: slot.index,
+					}, clients)
+				}
+			}
 		}
 	}
 
