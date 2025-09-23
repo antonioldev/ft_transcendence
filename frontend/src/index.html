@@ -122,7 +122,7 @@
         <div class="h-full flex items-center justify-center px-4 sm:px-8 md:px-16 lg:px-40 py-8 sm:py-12">
             <div class="w-full max-w-sm sm:max-w-md mx-auto space-y-6 sm:space-y-8">
                 <div>
-                    <h1 class="text-center uppercase text-xl sm:text-2xl font-bold tracking-tight text-light-green font-sans">
+                    <h1 id="login-title" class="text-center uppercase text-xl sm:text-2xl font-bold tracking-tight text-light-green font-sans">
                         Sign in to your account
                     </h1>
                 </div>
@@ -137,7 +137,8 @@
                                           focus:outline-2 focus:outline-orange font-sans">
                             <span class="error-message" id="login-username-error">Please enter your email or username</span>
                         </div>
-                    </div>                    <div class="form-field-container">
+                    </div>
+                    <div class="form-field-container">
                         <div class="flex items-center justify-between">
                             <label for="login-password" class="block text-sm sm:text-base font-medium text-light-green font-sans">
                                 Password
@@ -169,7 +170,7 @@
                     </div>
                 </form>
 
-                <p class="text-center text-xs sm:text-sm text-light-green font-sans">
+                <p id="not-a-member" class="text-center text-xs sm:text-sm text-light-green font-sans">
                     Not a member?
                     <a href="#" id="show-register" class="font-semibold text-orange hover:text-light-green transition-colors duration-200">
                         Create account
