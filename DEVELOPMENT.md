@@ -61,20 +61,30 @@ In the `frontend/src/index.html` file:
 - TailwindCSS watch mode
 - Vite dev server with HTTP (port 5173)
 - Docker-based backend development
+- Automatic WebSocket connection switching (dev vs prod)
 
 ## Port Configuration
 
 ### Development Mode (HTTP)
 - **Frontend**: `http://localhost:5173` (Vite dev server)
 - **Backend**: `http://localhost:3000` (Docker container)
+- **WebSocket**: `ws://localhost:3000/ws` (direct to backend)
 
 ### Production Mode (HTTPS)
 - **Frontend**: `https://localhost:8443` (Docker with SSL)
 - **Backend**: `https://localhost:3000` (Docker container)
+- **WebSocket**: `wss://localhost:8443/ws` (through nginx proxy)
+
+## WebSocket Configuration
+
+The WebSocket client automatically detects the environment:
+- In **development** (port 5173): connects directly to `ws://localhost:3000/ws`
+- In **production**: connects through nginx proxy using the current host
 
 ## Important notes
 
 - The development frontend runs at `http://localhost:5173` (HTTP for faster development)
+- WebSocket connections are automatically routed to the correct backend port
 - When switching back to production, it is necessary to update the port configuration:
   - In `frontend/vite.config.js`, change ports from 5173 to 8443
 - The backend continues running in Docker on the configured port
