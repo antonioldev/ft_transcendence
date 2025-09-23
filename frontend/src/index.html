@@ -289,18 +289,18 @@
     <!-- Hidden elements for JS compatibility -->
     <div id="auth-buttons" style="display: none;"></div>
     <div id="logout-btn" style="display: none;"></div>
-    <div id="user-info" class="fixed top-16 right-7 z-40 bg-blue-background border border-light-green p-3 text-xs text-light-green font-sans text-center" style="display: none;">
+    <div id="user-info" class="fixed top-16 right-7 z-40 bg-blue-background border border-light-green p-3 text-xs text-light-green font-sans text-center rounded-sm" style="display: none;">
         <div class="flex flex-col items-center gap-1">
             <div class="text-light-green font-tiny5-regular text-sm">
                 <span id="greeting">Hi</span>, <span id="user-name" class="font-sans font-bold"></span>
             </div>
             <div class="flex items-center gap-2">
                 <button type="button" id="dashboard-btn" 
-                        class="text-light-green hover:text-white transition-colors duration-200 font-tiny5-regular text-xs px-1">
+                        class="text-light-green hover:text-white transition-colors duration-200 font-tiny5-regular text-xs px-1 rounded-sm">
                     Dashboard
                 </button>
                 <button type="button" id="logout-btn" 
-                        class="text-orange hover:text-white transition-colors duration-200 font-tiny5-regular text-xs px-1">
+                        class="text-orange hover:text-white transition-colors duration-200 font-tiny5-regular text-xs px-1 rounded-sm">
                     Logout
                 </button>
             </div>
@@ -348,18 +348,18 @@
                 <div class="flex items-center gap-2">
                     <button type="button" id="solo-difficulty-back" 
                             class="text-light-green hover:text-white transition-colors duration-200 
-                                   font-poppins-semibold text-lg px-2">
+                                   font-poppins-semibold text-lg px-2 rounded-sm">
                         ◂
                     </button>
                     <button type="button" id="solo-mode" 
                             class="flex-1 bg-transparent text-light-green font-poppins-semibold text-lg px-6 py-3 
                                    hover:bg-light-green hover:text-blue-background transition-colors duration-200
-                                   border border-light-green text-center">
+                                   border border-light-green text-center rounded-sm">
                         vs AI (Medium)
                     </button>
                     <button type="button" id="solo-difficulty-forward" 
                             class="text-light-green hover:text-white transition-colors duration-200 
-                                   font-poppins-semibold text-lg px-2">
+                                   font-poppins-semibold text-lg px-2 rounded-sm">
                         ▸
                     </button>
                 </div>
@@ -368,28 +368,28 @@
                 <button type="button" id="local-mode" 
                         class="w-full bg-transparent text-light-green font-poppins-semibold text-lg px-6 py-3 
                                hover:bg-light-green hover:text-blue-background transition-colors duration-200
-                               border border-light-green">
+                               border border-light-green rounded-sm">
                     Local 2 Players
                 </button>
                 
                 <button type="button" id="online-mode" 
                         class="w-full bg-transparent text-light-green font-poppins-semibold text-lg px-6 py-3 
                                hover:bg-light-green hover:text-blue-background transition-colors duration-200
-                               border border-light-green">
+                               border border-light-green rounded-sm">
                     Online 2 Players
                 </button>
                 
                 <button type="button" id="tournament-mode" 
                         class="w-full bg-transparent text-light-green font-poppins-semibold text-lg px-6 py-3 
                                hover:bg-light-green hover:text-blue-background transition-colors duration-200
-                               border border-light-green">
+                               border border-light-green rounded-sm">
                     Tournament
                 </button>
                 
                 <button type="button" id="tournament-online-mode" 
                         class="w-full bg-transparent text-light-green font-poppins-semibold text-lg px-6 py-3 
                                hover:bg-light-green hover:text-blue-background transition-colors duration-200
-                               border border-light-green">
+                               border border-light-green rounded-sm">
                     Tournament Online
                 </button>
                 
@@ -489,16 +489,13 @@
                            class="block w-full rounded-sm bg-transparent border border-light-green px-3 py-2 text-sm text-light-green 
                                   placeholder:text-gray-500 opacity-90 focus:outline-2 focus:outline-orange font-sans" />
                 </div>
-                <p class="text-sm text-light-green font-sans opacity-80 text-center">
-                    Tournament will be implemented in a future update
-                </p>
             </form>
 
             <!-- Action Buttons -->
             <div class="space-y-4 mt-8">
                 <button type="button" id="start-game" 
                         class="w-full uppercase bg-light-green text-blue-background font-tiny5-regular text-lg px-6 py-3 
-                               hover:bg-orange transition-colors duration-200">
+                               hover:bg-orange transition-colors duration-200 rounded-sm">
                     Start Game
                 </button>
                 <div class="text-center">
@@ -583,7 +580,7 @@
                 <button type="button" id="dashboard-back" 
                         class="bg-transparent text-light-green font-tiny5-regular text-lg px-6 py-3 
                                hover:bg-light-green hover:text-blue-background transition-colors duration-200
-                               border border-light-green">
+                               border border-light-green rounded-sm">
                     Back
                 </button>
             </div>
