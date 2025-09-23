@@ -81,6 +81,8 @@ export const GAME_CONFIG = {
 	startDelay: 4.0, // Delay before the game starts
 	maxJoinWaitTime: 6.0, // Max time the server will wait for remote players to join before starting with CPU's
 
+	minTournamentSize: 2, //3
+
 } as const;
 
 	// CPU Difficulty: we pass this directly as the noise factor to regualate the CPU ability

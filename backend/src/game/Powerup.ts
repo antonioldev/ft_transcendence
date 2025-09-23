@@ -1,7 +1,7 @@
 import { Ball } from './Ball.js';
 import { Paddle} from './Paddle.js';
 import { LEFT_PADDLE, RIGHT_PADDLE, GAME_CONFIG } from '../shared/gameConfig.js';
-import { PowerupType, MessageType} from '../shared/constants.js';
+import { PowerupType, PowerupState, MessageType} from '../shared/constants.js';
 import { Client } from '../network/Client.js'
 import { ServerMessage } from '../shared/types.js';
 
@@ -9,8 +9,7 @@ export class Slot {
 	type: PowerupType;
 	index: number;
 	side: number;
-	is_active: boolean = false; // true when powerup is currently in use
-	is_spent: boolean = false;	// true when a powerup has been used up
+	state: PowerupState = PowerupState.UNUSED;
 
 	constructor(type: PowerupType, side: number, index: number) {
 		this.type = type;
@@ -25,13 +24,14 @@ export class PowerupManager {
 	slots = [this.left_slots, this.right_slots];
 	paddles: Paddle[];
 	ball: Ball;
-	private _broadcast: (message: ServerMessage, clients?: Client[]) => void;
+	private _broadcast: (message: ServerMessage, clients?: Set<Client>) => void;
 
-	constructor(paddles: Paddle[], ball: Ball, broadcast_callback: (message: ServerMessage, clients?: Client[]) => void) {
+	constructor(paddles: Paddle[], ball: Ball, broadcast_callback: (message: ServerMessage, clients?: Set<Client>) => void) {
 		this.paddles = paddles;
 		this.ball = ball;
 		this._broadcast = broadcast_callback;
 		this._init_powerups();
+		this.send_state();
 	}
 
 	_init_powerups() {
@@ -43,8 +43,19 @@ export class PowerupManager {
 		}
 	}
 
+	send_state(clients?: Set<Client>) {
+		for (const side of [LEFT_PADDLE, RIGHT_PADDLE]) {
+			this._broadcast({
+				type: MessageType.POWERUP_ASSIGNMENT,
+				side: side,
+				powerups: this.slots[side].map(slot => slot.type),
+				slot_states: this.slots[side].map(slot => slot.state),
+			}, clients)
+		}
+	}
+
 	activate(slot: Slot) {
-		if (slot.is_active || slot.is_spent) return ;
+		if (slot.state === (PowerupState.ACTIVE || PowerupState.SPENT)) return ;
 		
 		const opponent_side: number = slot.side === LEFT_PADDLE ? RIGHT_PADDLE : LEFT_PADDLE;
 		let timeout: number  = GAME_CONFIG.powerupDuration;
@@ -78,15 +89,15 @@ export class PowerupManager {
 			type: MessageType.POWERUP_ACTIVATED,
 			powerup: slot.type,
 			side: slot.side,
-			slot: slot.index,
+			slot_index: slot.index,
 		})
 
-		slot.is_active = true;
+		slot.state = PowerupState.ACTIVE;
 		setTimeout(() => this.deactivate(slot), timeout);
 	}
 
 	deactivate(slot: Slot) {
-		if (slot.is_spent) return ;
+		if (slot.state === PowerupState.SPENT) return ;
 		const opponent_side: number = slot.side === LEFT_PADDLE ? RIGHT_PADDLE : LEFT_PADDLE;
 
 		switch (slot.type) {
@@ -117,16 +128,15 @@ export class PowerupManager {
 			type: MessageType.POWERUP_DEACTIVATED,
 			powerup: slot.type,
 			side: slot.side,
-			slot: slot.index,
+			slot_index: slot.index,
 		})
 
-		slot.is_active = false;
-		slot.is_spent = true;
+		slot.state = PowerupState.SPENT;
 	}
 
 	find_active_powerup(type: PowerupType, side: number) {
 		for (const slot of this.slots[side]) {
-			if (slot.type === type && slot.is_active) {
+			if (slot.type === type && slot.state === PowerupState.ACTIVE) {
 				return (slot);
 			}
 		}

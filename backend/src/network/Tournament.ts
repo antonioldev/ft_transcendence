@@ -10,7 +10,7 @@ export class Match {
 	id: string = `game_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 	round: number;
 	players: (Player | CPU)[] = [];
-	clients: Client[] = [];
+	clients: Set<Client> = new Set();
 	readyClients: Set<string> = new Set(); // New, keep track of clients that finish loading
 	game!: Game;
 	winner?: Player | CPU;
@@ -31,21 +31,14 @@ export class Match {
 		if (!this.players.includes(player)) {
 			this.players.push(player);
 		}
-		if (!(player instanceof CPU) && !this.clients.includes(player.client)) {
-			this.clients.push(player.client);
+		if (!(player instanceof CPU) && !this.clients.has(player.client)) {
+			this.clients.add(player.client);
 		}
 	}
 
 	assign_winner(winner: Player | CPU) {
 		this.winner = winner;
 		this.loser = this.players[LEFT_PADDLE] === winner ? this.players[RIGHT_PADDLE] : this.players[LEFT_PADDLE];
-	}
-
-	remove_spectator(client: Client) {
-		const index = this.clients.indexOf(client);
-		if (index !== -1) {
-			this.clients.splice(index, 1);
-		}
 	}
 }
 
@@ -214,7 +207,7 @@ export class TournamentLocal extends AbstractTournament {
 
 	canClientControlGame(client: Client) {
 		if (!this.current_match) return false;
-		if	(!this.current_match.clients.includes(client)) {
+		if	(!this.current_match.clients.has(client)) {
 			console.error(`Client ${client.id} not in current match`);
 			return false;
 		}
@@ -248,7 +241,7 @@ export class TournamentLocal extends AbstractTournament {
 export class TournamentRemote extends AbstractTournament {
 	client_match_map: Map<string, Match> = new Map();	// Maps client id to match, used for easy insertion from client input
 	spectator_match_map: Map<string, Match> = new Map();	// Maps spectator id to match, used to toggle game viewed by spectator
-	spectators: Set<Client> = new Set();	// List of defeated players watching the rest of the games
+	defeated_players: Set<Player> = new Set();	// List of defeated players watching the rest of the games
 
 	constructor(mode: GameMode, game_id: string, capacity: number) {
 		super(mode, game_id, capacity);
@@ -280,17 +273,11 @@ export class TournamentRemote extends AbstractTournament {
 		}
 	}
 
-	// runs all matches in a given round in parallel
+	// run each match in parallel and await [] of winner promises
 	async run(matches: Match[]): Promise<void> {
 		let round_winners: Promise<Player | CPU>[] = [];
 
-		// add all spectators to the first match in a round
-		for (const spectator of this.spectators) {
-			matches[0]?.clients.push(spectator);
-			this.spectator_match_map.set(spectator.id, matches[0]);
-		}
-
-		// run each match in parallel and await [] of match promises
+		this.handle_spectators(matches);
 		let index = 0;
 		for (const match of matches) {
 			if (!this.running) return ;
@@ -330,18 +317,40 @@ export class TournamentRemote extends AbstractTournament {
 			this.readyClients.delete(winner.client.id);
 		}
 		if (match.loser instanceof Player) {
-			this.client_match_map.delete(match.loser.client.id); // NEED TO TEST IF THIS BREAKS GAME TRANSITIONS
-			this.assign_spectator(match.loser.client);
+			this.client_match_map.delete(match.loser.client.id);
+			this.defeated_players.add(match.loser);
+		}
+		for (const client of match.clients) {
+			this.spectate_remaining_game(client);
 		}
 	}
 
-	assign_spectator(client: Client) {
-		this.spectators.add(client);
+	spectate_remaining_game(client: Client) {
 		for (const match of this.rounds.get(this.current_round) ?? []) {
 			if (match.game?.running) {
-				match.clients.push(client);
-				this.spectator_match_map.set(client.id, match);
+				this.assign_spectator(client, match);
 			}
+		}
+	}
+
+	assign_spectator(client: Client, match: Match) {
+		match.clients.add(client);
+		this.spectator_match_map.set(client.id, match);
+		match.game.send_current_state(client);
+	}
+
+	handle_spectators(matches: Match[]) {
+		// remove current round players from spectators map
+		for (const match of matches) {
+			for (const player of [match.players[LEFT_PADDLE], match.players[RIGHT_PADDLE]]) {
+				if (player instanceof Player) {
+					this.spectator_match_map.delete(player.client.id);
+				}
+			}
+		}
+		// add all remaining spectators to the first match in a round
+		for (const player of this.defeated_players) {
+			this.assign_spectator(player.client, matches[0]);
 		}
 	}
 
@@ -352,7 +361,7 @@ export class TournamentRemote extends AbstractTournament {
 	}
 
 	canClientControlGame(client: Client) {
-		if (this.spectators.has(client)) {
+		if (this.spectator_match_map.get(client.id)) {
 			console.error(`Client ${client.id} is a spectator`);
 			return false;
 		}
@@ -378,12 +387,11 @@ export class TournamentRemote extends AbstractTournament {
 	}
 
 	toggle_spectator_game(client: Client, direction: Direction) {
-		if (!this.spectators.has(client)) {
+		const old_match = this.spectator_match_map.get(client.id);
+		if (!old_match) {
 			console.error(`Client ${client.id} is not a spectator`);
 			return ;
 		}
-		const old_match = this.spectator_match_map.get(client.id);
-		if (!old_match) return ;
 
 		const matches = this.rounds.get(this.current_round);
 		if (!matches) return ;
@@ -392,9 +400,8 @@ export class TournamentRemote extends AbstractTournament {
 		if (new_index < 0) new_index = matches.length - 1;
 		else if (new_index > matches.length) new_index = 0;
 		
-		old_match.remove_spectator(client);
-		matches[new_index].clients.push(client);
-		this.spectator_match_map.set(client.id, matches[new_index]);
+		old_match.clients.delete(client);
+		this.assign_spectator(client, matches[new_index]);
 	}
 
 	// The opposing player wins their current match and the tournament continues

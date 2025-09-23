@@ -87,6 +87,11 @@ export enum PowerupType {
 	GROW_PADDLE,
 	FREEZE,
 }
+export enum PowerupState {
+	UNUSED,
+	ACTIVE,
+	SPENT,
+}
 
 // Directions for player movement
 export enum Direction {
@@ -162,8 +167,8 @@ export enum UserManagement {
 	UPDATE_USER_PROFILE	 // Request to update user information 
 }
 
-export enum PowerUpAction {
-	CREATED = "created",
-	ACTIVATED = "activated", 
-	DEACTIVATED = "deactivated"
-}
+// export enum PowerUpAction {
+// 	CREATED = "created",
+// 	ACTIVATED = "activated", 
+// 	DEACTIVATED = "deactivated"
+// }

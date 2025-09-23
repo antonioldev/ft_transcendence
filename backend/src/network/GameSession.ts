@@ -9,7 +9,7 @@ import { Direction } from 'node:readline';
 export abstract class AbstractGameSession {
 	mode: GameMode;
 	id: string;
-	clients: Client[] = [];
+	clients: Set<Client> = new Set();
 	players: (Player | CPU)[] = [];
 	player_capacity: number = 2;
 	client_capacity: number = 1;
@@ -26,7 +26,7 @@ export abstract class AbstractGameSession {
 		}
 	}
 
-	broadcast(message: ServerMessage, clients?: Client[]): void {
+	broadcast(message: ServerMessage, clients?: Set<Client>): void {
 		const targets = clients ?? this.clients;
 		let deleted_clients: (Client)[] = [];
 		for (const client of targets) {
@@ -48,22 +48,22 @@ export abstract class AbstractGameSession {
 	}
 
 	add_client(client: Client) {
-		if (this.clients.length >= this.client_capacity) return ;
+		if (this.clients.size >= this.client_capacity) return ;
 
-		this.clients.push(client);
-		if (this.clients.length === this.client_capacity) {
+		this.clients.add(client);
+		if (this.clients.size === this.client_capacity) {
 			this.full = true;
 		}
 }
 
 	remove_client(client: Client) {
-		const index = this.clients.indexOf(client);
-		if (index !== -1) {
-			this.clients.splice(index, 1);
-			this.readyClients.delete(client.id); // WILL CHANGE AFTER
-			this.full = false;
-		}
-		if (this.clients.length === 0) {
+		if (!this.clients.has(client)) return ;
+
+		this.clients.delete(client);
+		this.readyClients.delete(client.id);
+		this.full = false;
+
+		if (this.clients.size === 0) {
 			this.stop();
 		}
 	}
@@ -96,7 +96,7 @@ export abstract class AbstractGameSession {
 		// 	this.mode = GameMode.SINGLE_PLAYER
 		// }
 
-		this.client_capacity = this.clients.length;
+		this.client_capacity = this.clients.size;
     }
 
 	remove_player(player: Player) {
@@ -112,7 +112,7 @@ export abstract class AbstractGameSession {
 	}
 
 	allClientsReady(): boolean {
-		return (this.readyClients.size === this.clients.length && this.clients.length > 0);
+		return (this.readyClients.size === this.clients.size && this.clients.size > 0);
 	}
 
 	async waitForPlayersReady() {
@@ -216,7 +216,7 @@ export class OneOffGame extends AbstractGameSession{
 	}
 
 	canClientControlGame(client: Client) {
-		return (this.clients.includes(client))
+		return (this.clients.has(client))
 	}
 
 	findGame() {

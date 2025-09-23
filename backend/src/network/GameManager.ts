@@ -76,7 +76,7 @@ class GameManager extends EventEmitter {
 
     async runGame(gameSession: AbstractGameSession): Promise<void> {
         if (gameSession.running) return ;
-        if (gameSession.mode === GameMode.TOURNAMENT_REMOTE && gameSession.players.length < 3) {
+        if (gameSession.mode === GameMode.TOURNAMENT_REMOTE && gameSession.players.length < GAME_CONFIG.minTournamentSize) {
             // wait another 30 seconds for at least 3 players to be in the tournament
             setTimeout(() => { this.runGame(gameSession) }, (GAME_CONFIG.maxJoinWaitTime * 1000));
             return ;
@@ -129,7 +129,7 @@ class GameManager extends EventEmitter {
 
         if (gameSession instanceof TournamentRemote) {
             gameSession.remove_client(client);
-            if (gameSession.clients.length === 0) {
+            if (gameSession.clients.size === 0) {
                 this.endGame(gameSession);
             }
         }

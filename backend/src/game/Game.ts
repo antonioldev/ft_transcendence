@@ -19,10 +19,10 @@ export class Game {
 	winner!: Player | CPU;
 	paddles: (Paddle | CPUBot)[] = [new Paddle(LEFT_PADDLE), new Paddle(RIGHT_PADDLE)];
 	ball: Ball;
-	private _broadcast: (message: ServerMessage, clients?: Client[]) => void;
+	private _broadcast: (message: ServerMessage, clients?: Set<Client>) => void;
 	powerup_manager: PowerupManager;
 
-	constructor(id: string, players: (Player | CPU)[], broadcast_callback: (message: ServerMessage, clients?: Client[]) => void) {
+	constructor(id: string, players: (Player | CPU)[], broadcast_callback: (message: ServerMessage, clients?: Set<Client>) => void) {
 		this.id = id;
 		this.clock = new Clock();
 		this._broadcast = broadcast_callback;
@@ -39,11 +39,6 @@ export class Game {
 				const noiseFactor =  CPUDifficultyMap[player.difficulty];
 				this.paddles[side] = new CPUBot(side, this.ball, noiseFactor, GAME_CONFIG.paddleSpeed, 0, (s, slot) => this.activate(s, slot) );
 			}
-			this._broadcast({
-				type: MessageType.POWERUP_ASSIGNMENT,
-				side: side,
-				powerups: this.powerup_manager.slots[side].map(slot => slot.type),
-			})
 		}
 	}
 
@@ -120,7 +115,14 @@ export class Game {
 		}
 	}
 
-	assign_sides() {
+	// used to send the names a powerups to a spectator joining a game
+	send_current_state(client: Client) {
+		// need to add client as arg
+		this.powerup_manager.send_state(new Set([client])); 
+		this.send_side_assignment(new Set([client]));
+	}
+
+	send_side_assignment(clients?: Set<Client>) {
 		if (!this.players[LEFT_PADDLE] || !this.players[RIGHT_PADDLE]) {
 			console.error("Error assigning sides: player(s) undefined")
 			return ;
@@ -129,7 +131,7 @@ export class Game {
 			type: MessageType.SIDE_ASSIGNMENT,
 			left: this.players[LEFT_PADDLE].name,
 			right: this.players[RIGHT_PADDLE].name,
-		});
+		}, clients);
 	}
 	
 	async send_countdown(): Promise<void> {
@@ -158,7 +160,7 @@ export class Game {
 			this.stop();
 			return (this.winner);
 		}
-		this.assign_sides();
+		this.send_side_assignment();
 		await this.send_countdown();
 		// run game loop, updating and broadcasting state to clients until win
 		while (this.running) {
