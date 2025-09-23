@@ -275,30 +275,26 @@ export class AuthManager {
 	// AUTHENTICATION HANDLERS
 	// ========================================
 
-	private async restoreSessionOnBoot(): Promise<void> {
-		try {
-            console.log('Attempting to restore session');
-			// 1) Try classic cookie session
-			const res = await fetch('/api/auth/session/me', {
-				method: 'GET',
-				credentials: 'include',
-				cache: 'no-store',
-			});
+    private async restoreSessionOnBoot(): Promise<void> {
+        try {
+            // 1) Try classic cookie session
+            const res = await fetch('/api/auth/session/me', {
+                method: 'GET',
+                credentials: 'include',
+                cache: 'no-store',
+            });
 
-			if (res.ok) {
-				const data = await res.json(); // expected: { ok: true, user: {...} }
-				if (data?.ok && data.user?.username) {
-                    console.log('Session restored successfully via cookie');
-					this.authState = AuthState.LOGGED_IN;
-					this.currentUser = { username: data.user.username };
-					uiManager.showUserInfo(this.currentUser.username);
-					appStateManager.navigateTo(AppState.MAIN_MENU);
-					WebSocketClient.getInstance();
-					return;
-				}
-			}
-
-            console.log('Cookie session not found, trying Google restore');
+            if (res.ok) {
+                const data = await res.json(); // expected: { ok: true, user: {...} }
+                if (data?.ok && data.user?.username) {
+                    this.authState = AuthState.LOGGED_IN;
+                    this.currentUser = { username: data.user.username };
+                    uiManager.showUserInfo(this.currentUser.username);
+                    appStateManager.navigateTo(AppState.MAIN_MENU);
+                    WebSocketClient.getInstance();
+                    return;
+                }
+            }
 
             // 2) Fallback: try Google restore if you kept the Google token
             const googleIdToken = localStorage.getItem('google_id_token'); // set this on Google login success
@@ -360,101 +356,67 @@ export class AuthManager {
         const username = usernameInput.value.trim();
         const password = passwordInput.value;
         const t = getCurrentTranslation();
-        const wsClient = WebSocketClient.getInstance();
+        const wsClient = WebSocketClient.getInstance(); // or use a shared instance if you already have one
         
-        // Clear previous errors
-        this.clearValidationErrors(['login-username', 'login-password']);
-        
-        let hasErrors = false;
-
-        // Validate username/email
-        if (!username) {
-            this.showFieldError('login-username', t.errorEnterEmailOrUsername);
-            hasErrors = true;
-        }
-
-        // Validate password
-        if (!password) {
-            this.showFieldError('login-password', t.errorEnterPassword);
-            hasErrors = true;
-        }
-
-        if (hasErrors) {
-        const wsClient = WebSocketClient.getInstance();
-        
-        // Clear previous errors
-        this.clearValidationErrors(['login-username', 'login-password']);
-        
-        let hasErrors = false;
-
-        // Validate username/email
-        if (!username) {
-            this.showFieldError('login-username', t.errorEnterEmailOrUsername);
-            hasErrors = true;
-        }
-
-        // Validate password
-        if (!password) {
-            this.showFieldError('login-password', t.errorEnterPassword);
-            hasErrors = true;
-        }
-
-        if (hasErrors) {
+        // Basic validation
+        if (!username || !password) {
+            alert(t.pleaseFilllAllFields);
+            uiManager.clearForm(this.loginFields);
             return;
         }    
 
-		const user: LoginUser = { username, password };
-		
-		// --- Helper: set HttpOnly cookie via binder route ---
-		const bindSessionCookie = async (sid: string) => {
-		const res = await fetch('/api/auth/session/bind', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ sid }),
-			credentials: 'include',
-		});
-		if (!res.ok) throw new Error('bind_failed');
-		};
+        const user: LoginUser = { username, password };
+        
+        // --- Helper: set HttpOnly cookie via binder route ---
+        const bindSessionCookie = async (sid: string) => {
+        const res = await fetch('/api/auth/session/bind', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sid }),
+            credentials: 'include',
+        });
+        if (!res.ok) throw new Error('bind_failed');
+        };
 
-		// --- Helper: parse the server string payload safely ---
-		const parsePayload = (raw: unknown): { text: string; sid?: string; uname?: string } => {
-			let payload: any = raw;
-			if (typeof payload === 'string') {
-				try {
-					payload = JSON.parse(payload);
-				} catch {
-					return { text: payload };
-				}
-			}
-			const text  = payload.text ?? payload.message ?? 'Login success';
-			const sid   = payload.sid ?? payload.sessionId ?? payload.data?.sid;
-			const uname = payload.username ?? payload.user?.username;
-			return { text, sid, uname };
-		};
+        // --- Helper: parse the server string payload safely ---
+        const parsePayload = (raw: unknown): { text: string; sid?: string; uname?: string } => {
+            let payload: any = raw;
+            if (typeof payload === 'string') {
+                try {
+                    payload = JSON.parse(payload);
+                } catch {
+                    return { text: payload };
+                }
+            }
+            const text  = payload.text ?? payload.message ?? 'Login success';
+            const sid   = payload.sid ?? payload.sessionId ?? payload.data?.sid;
+            const uname = payload.username ?? payload.user?.username;
+            return { text, sid, uname };
+        };
 
-		// SUCCESS: the callback still receives a string; we parse it here
-		wsClient.registerCallback(WebSocketEvent.LOGIN_SUCCESS, async (raw: string) => {
-			try {
-				const { text, sid, uname } = parsePayload(raw);
-				if (!sid) {
-					Logger.error('Missing sid in LOGIN_SUCCESS payload', 'AuthManager', { raw });
-					alert('Login succeeded but session binding failed (no sid).');
-					return;
-				}
+        // SUCCESS: the callback still receives a string; we parse it here
+        wsClient.registerCallback(WebSocketEvent.LOGIN_SUCCESS, async (raw: string) => {
+            try {
+                const { text, sid, uname } = parsePayload(raw);
+                if (!sid) {
+                    Logger.error('Missing sid in LOGIN_SUCCESS payload', 'AuthManager', { raw });
+                    alert('Login succeeded but session binding failed (no sid).');
+                    return;
+                }
 
-				await bindSessionCookie(sid);
+                await bindSessionCookie(sid);
 
-				this.authState = AuthState.LOGGED_IN;
-				this.currentUser = { username: uname ?? username };
-				uiManager.clearForm(this.loginFields);
-				appStateManager.navigateTo(AppState.MAIN_MENU);
-				uiManager.showUserInfo(this.currentUser.username);
-				Logger.debug(text ?? 'Login ok', 'AuthManager');
-			} catch (e) {
-				Logger.errorAndThrow('Binder call failed', 'AuthManager', e);
-				alert('Login succeeded but could not finalize session. Please retry.');
-			}
-		});
+                this.authState = AuthState.LOGGED_IN;
+                this.currentUser = { username: uname ?? username };
+                uiManager.clearForm(this.loginFields);
+                appStateManager.navigateTo(AppState.MAIN_MENU);
+                uiManager.showUserInfo(this.currentUser.username);
+                Logger.info(text ?? 'Login ok', 'AuthManager');
+            } catch (e) {
+                Logger.error('Binder call failed', 'AuthManager', e);
+                alert('Login succeeded but could not finalize session. Please retry.');
+            }
+        });
 
 		wsClient.registerCallback(WebSocketEvent.LOGIN_FAILURE, (msg: string) => {
 			this.authState = AuthState.LOGGED_FAILED;
@@ -485,16 +447,10 @@ export class AuthManager {
     // Handles the registration form submission process.
     // Validates input fields, processes registration, and provides user feedback.
     private handleRegisterSubmit(): void {
-        const usernameInput = requireElementById<HTMLInputElement>(EL.AUTH.REGISTER_USERNAME);
-        const emailInput = requireElementById<HTMLInputElement>(EL.AUTH.REGISTER_EMAIL);
-        const passwordInput = requireElementById<HTMLInputElement>(EL.AUTH.REGISTER_PASSWORD);
-        const confirmPasswordInput = requireElementById<HTMLInputElement>(EL.AUTH.REGISTER_CONFIRM_PASSWORD);
-        
-        const username = usernameInput.value.trim();
-        const email = emailInput.value.trim();
-        const password = passwordInput.value;
-        const confirmPassword = confirmPasswordInput.value;
-        
+        const username = requireElementById<HTMLInputElement>(EL.AUTH.REGISTER_USERNAME).value.trim();
+        const email = requireElementById<HTMLInputElement>(EL.AUTH.REGISTER_EMAIL).value;
+        const password = requireElementById<HTMLInputElement>(EL.AUTH.REGISTER_PASSWORD).value;
+        const confirmPassword = requireElementById<HTMLInputElement>(EL.AUTH.REGISTER_CONFIRM_PASSWORD).value;
         const t = getCurrentTranslation();
         const wsClient = WebSocketClient.getInstance();
 
@@ -630,15 +586,15 @@ export class AuthManager {
 		}
 	};
 
-	initializeGoogleSignIn(googleClientId, handleAuthSuccess)
-		.then(() => {
-			renderGoogleButton('google-login-btn-container');
-			renderGoogleButton('google-register-btn-container');
-		})
-		.catch(error => {
-			console.error("Failed  to initialize or render Google button due to an error:", error);
-		});
-	}
+    initializeGoogleSignIn(googleClientId, handleAuthSuccess)
+        .then(() => {
+            renderGoogleButton('google-login-btn-container');
+            renderGoogleButton('google-register-btn-container');
+        })
+        .catch(error => {
+            console.error("Failed  to initialize or render Google button due to an error:", error);
+        });
+    }
 
 	// ========================================
 	// STATE GETTERS

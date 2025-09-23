@@ -1,4 +1,4 @@
-exi# Development Environment
+# Development Environment
 
 ## How to start the development environment
 

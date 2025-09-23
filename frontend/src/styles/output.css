@@ -616,6 +616,7 @@ video {
   }
 }
 
+<<<<<<< HEAD
 .visible{
   visibility: visible;
 }
@@ -2118,6 +2119,13 @@ video {
     background-position: 0% 90%, 20% 90%, 45% 70%, 60% 110%, 75% 80%, 95% 70%, 110% 10%;
     background-size: 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%;
   }
+=======
+/* Override Tailwind's default font inheritance for custom fonts */
+
+.font-poppins-semibold {
+  font-family: 'Poppins', sans-serif !important;
+  font-weight: 600;
+>>>>>>> 69cb0189936c263692e2cb0a3b7fc421f0119e5a
 }
 
 /* Form validation styles */
@@ -2477,15 +2485,25 @@ video {
   background-color: rgb(160 200 120 / var(--tw-bg-opacity, 1));
 }
 
+<<<<<<< HEAD
 .bg-transparent{
   background-color: transparent;
 }
 
+=======
+>>>>>>> 69cb0189936c263692e2cb0a3b7fc421f0119e5a
 .bg-orange{
   --tw-bg-opacity: 1;
   background-color: rgb(235 91 0 / var(--tw-bg-opacity, 1));
 }
 
+<<<<<<< HEAD
+=======
+.bg-transparent{
+  background-color: transparent;
+}
+
+>>>>>>> 69cb0189936c263692e2cb0a3b7fc421f0119e5a
 .bg-opacity-50{
   --tw-bg-opacity: 0.5;
 }
@@ -2575,6 +2593,13 @@ video {
   text-align: center;
 }
 
+<<<<<<< HEAD
+=======
+.font-poppins-semibold{
+  font-family: "Poppins", sans-serif;
+}
+
+>>>>>>> 69cb0189936c263692e2cb0a3b7fc421f0119e5a
 .font-sans{
   font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
@@ -2662,11 +2687,14 @@ video {
   color: rgb(168 85 247 / var(--tw-text-opacity, 1));
 }
 
+<<<<<<< HEAD
 .text-white{
   --tw-text-opacity: 1;
   color: rgb(255 255 255 / var(--tw-text-opacity, 1));
 }
 
+=======
+>>>>>>> 69cb0189936c263692e2cb0a3b7fc421f0119e5a
 .opacity-80{
   opacity: 0.8;
 }
@@ -2772,11 +2800,14 @@ video {
   color: rgb(107 114 128 / var(--tw-text-opacity, 1));
 }
 
+<<<<<<< HEAD
 .hover\:border-orange:hover{
   --tw-border-opacity: 1;
   border-color: rgb(235 91 0 / var(--tw-border-opacity, 1));
 }
 
+=======
+>>>>>>> 69cb0189936c263692e2cb0a3b7fc421f0119e5a
 .hover\:border-light-green:hover{
   --tw-border-opacity: 1;
   border-color: rgb(160 200 120 / var(--tw-border-opacity, 1));

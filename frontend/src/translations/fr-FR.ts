@@ -68,8 +68,11 @@ export const french: Translation = {
     impossible: ' (Impossible)',
     winner: 'Vainqueur du match',
     continue: 'Appuyez sur ESPACE pour continuer',
+<<<<<<< HEAD
 	tournamentTitle: 'Classement du Tournoi',
 	escToClose: 'Appuyez sur ESC pour fermer',
+=======
+>>>>>>> 69cb0189936c263692e2cb0a3b7fc421f0119e5a
     
     // Validation error messages
     errorEnterEmailOrUsername: 'Veuillez entrer email ou nom d\'utilisateur',
