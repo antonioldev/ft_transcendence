@@ -134,10 +134,11 @@ export const EL = {
 	LANGUAGE_SELECT: 'language_select',
 	VIEW_MODE_DISPLAY: 'view-mode-display',
 
-	// User info display
-	USER_INFO: 'user-info',
-	USER_NAME: 'user-name',
-	AUTH_BUTTONS: 'auth-buttons',
+    // User info display
+    USER_INFO: 'user-info',
+    USER_NAME: 'user-name',
+    AUTH_BUTTONS: 'auth-buttons',
+    GREETING: 'greeting',
 
 	// Connection status
 	CONNECTION_STATUS: 'connection-status'

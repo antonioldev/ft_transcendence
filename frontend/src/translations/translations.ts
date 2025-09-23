@@ -183,9 +183,13 @@ export function updateLanguageDisplay(): void {
 	const setupBack = requireElementById(EL.BUTTONS.SETUP_BACK);
 	setupBack.textContent = t.back;
 
-	// Loading
-	const loading = requireElementById(EL.GAME.LOADING_TEXT);
-	loading.textContent = t.loading;
+    // Loading
+    const loading = requireElementById(EL.GAME.LOADING_TEXT);
+    loading.textContent = t.loading;
+
+    // Dashboard
+    const greeting = requireElementById(EL.DISPLAY.GREETING);
+    greeting.textContent = t.greeting;
 }
 
 // Cycles to the next language in the list and updates the UI accordingly.

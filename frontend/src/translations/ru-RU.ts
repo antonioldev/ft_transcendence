@@ -27,6 +27,7 @@ export const russian: Translation = {
     alertPlayer2: 'Введите имя для игрока 2',
     register: 'Зарегистрироваться',
     login: 'Войти',
+    greeting: 'Привет',
     username: 'Имя пользователя:',
     email: 'Email:',
     password: 'Пароль:',
