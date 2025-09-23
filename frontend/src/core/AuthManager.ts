@@ -347,7 +347,7 @@ export class AuthManager {
             this.authState = AuthState.GUEST;
             this.currentUser = null;
         } catch (e) {
-            console.log('Session restore failed (expected on first visit):');
+            console.log('Session restore failed (expected on first visit)');
             this.authState = AuthState.GUEST;
             this.currentUser = null;
         }
