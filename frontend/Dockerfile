@@ -24,8 +24,8 @@ COPY tsconfig.json ./
 # Build TypeScript
 RUN npm run build
 
-# # Production stage
-# FROM nginx:alpine
+# Production stage
+FROM nginx:alpine
 
 # Copy built JS files
 COPY --from=builder /app/dist/ /usr/share/nginx/html/
@@ -37,7 +37,6 @@ RUN sh -c "echo \"window.GOOGLE_CLIENT_ID='${GOOGLE_CLIENT_ID}';\" > /usr/share/
 # Copy HTML and other static files
 COPY src/*.html /usr/share/nginx/html/
 COPY src/42_favicon.ico /usr/share/nginx/html/
-COPY src/atari.png /usr/share/nginx/html/
 COPY src/assets/ /usr/share/nginx/html/assets/
 
 EXPOSE 80
