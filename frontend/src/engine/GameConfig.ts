@@ -1,6 +1,5 @@
 import { ViewMode, GameMode } from '../shared/constants.js';
-import { PlayerInfo, InputConfig } from '../shared/types.js';
-import { GAME_CONFIG } from '../shared/gameConfig.js';
+import { PlayerInfo } from '../shared/types.js';
 import { EL } from '../ui/elements.js';
 import { authManager } from '../core/AuthManager.js';
 
@@ -10,9 +9,9 @@ export interface GameConfig {
 	viewMode: ViewMode;
 	gameMode: GameMode;
 	isLocalMultiplayer: boolean;
+	isRemoteMultiplayer: boolean;
 	isTournament: boolean;
 	players: PlayerInfo[];
-	// controls: InputConfig;
 }
 
 // Class for creating a complete game configuration
@@ -26,14 +25,15 @@ export class GameConfigFactory {
 	): GameConfig {
 		const isLocalMultiplayer = (gameMode === GameMode.TWO_PLAYER_LOCAL || gameMode === GameMode.TOURNAMENT_LOCAL);
 		const isTournament = (gameMode === GameMode.TOURNAMENT_REMOTE || gameMode === GameMode.TOURNAMENT_LOCAL);
+		const isRemoteMultiplayer = (gameMode === GameMode.TOURNAMENT_REMOTE || gameMode === GameMode.TWO_PLAYER_REMOTE);
 		return {
 			canvasId: EL.GAME.CANVAS_3D,
 			viewMode,
 			gameMode,
 			isLocalMultiplayer,
+			isRemoteMultiplayer,
 			isTournament,
-			players,
-			// controls: viewMode === ViewMode.MODE_2D ? GAME_CONFIG.input2D : GAME_CONFIG.input3D
+			players
 		};
 	}
 

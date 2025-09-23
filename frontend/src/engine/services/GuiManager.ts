@@ -36,7 +36,7 @@ export class GUIManager {
 			this.isTournament = config.isTournament;
 
 			this.countdown = new Countdown(this.adt, this.animationManager);
-			this.powerUp = new PowerUp(this.adt, this.animationManager);
+			this.powerUp = new PowerUp(this.adt, this.animationManager, config);
 			this.matchTree = new MatchTree(this.adt, this.animationManager);
 			this.hud = new Hud(this.adt, this.animationManager,config);
 			this.endGame = new EndGame(this.adt, this.animationManager);

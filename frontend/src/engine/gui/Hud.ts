@@ -1,6 +1,6 @@
 import { AdvancedDynamicTexture, TextBlock, Grid} from "@babylonjs/gui";
 import { GameConfig } from '../GameConfig.js';
-import { ViewMode} from '../../shared/constants.js';
+import { GameMode, ViewMode} from '../../shared/constants.js';
 import { getCurrentTranslation } from '../../translations/translations.js';
 import { AnimationManager, Motion } from "../services/AnimationManager.js";
 import { HUD_STYLES, createTextBlock, createGrid,} from "./GuiStyle.js";
@@ -30,7 +30,7 @@ export class Hud {
 		this.fpsText =  createTextBlock("fpsText", HUD_STYLES.fpsText, "FPS: 0");
 		this.hudGrid.addControl(this.fpsText, 0, 0);
 
-		const p1Controls =  createTextBlock("PlayerControls_p1", HUD_STYLES.playerControlsP1, this.getControlsText(config.viewMode, 1));
+		const p1Controls =  createTextBlock("PlayerControls_p1", HUD_STYLES.playerControlsP1, this.getControlsText(config, 1));
 		this.hudGrid.addControl(p1Controls, 0, 1);
 
 		const p1Cell = new Grid();
@@ -57,7 +57,7 @@ export class Hud {
 		p2Cell.addControl(this.score2Text, 1, 0);
 		this.hudGrid.addControl(p2Cell, 0, 3);
 
-		const p2Controls =  createTextBlock("PlayerControls_p2", HUD_STYLES.playerControlsP2, this.getControlsText(config.viewMode, 2));
+		const p2Controls =  createTextBlock("PlayerControls_p2", HUD_STYLES.playerControlsP2, this.getControlsText(config, 2));
 		this.hudGrid.addControl(p2Controls, 0, 4);
 
 		const rallyCell = new Grid();
@@ -106,11 +106,18 @@ export class Hud {
 		return false;
 	}
 
-	private getControlsText(viewMode: ViewMode, player: number): string {
+	private getControlsText(config: GameConfig, player: number): string {
 		const t = getCurrentTranslation();
 		const move = t.controls;
+
+		if (config.gameMode === GameMode.SINGLE_PLAYER || config.isRemoteMultiplayer) {
+			if (config.viewMode === ViewMode.MODE_2D)
+				return move + "\nP1: W / S";
+			else
+				return move + "\nP2: ← / →";
+		}
 		
-		if (viewMode === ViewMode.MODE_2D)
+		if (config.viewMode === ViewMode.MODE_2D)
 			return player === 1 ? move + "\nP1: W / S" : move + "\nP2: ↑ / ↓";
 		else
 			return player === 1 ? move + "\nP1: A / D" : move + "\nP2: ← / →";
