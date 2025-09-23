@@ -328,8 +328,18 @@ export class TournamentRemote extends AbstractTournament {
 			this.readyClients.delete(winner.client.id);
 		}
 		if (match.loser instanceof Player) {
-			this.spectators.push(match.loser.client);
-			// this.client_match_map.delete(match.loser.client.id); NEED TO TEST IF THIS BREAKS GAME TRANSITIONS
+			this.assign_spectator(match.loser.client);
+		}
+	}
+
+	assign_spectator(loser: Client) {
+		this.client_match_map.delete(loser.id); // NEED TO TEST IF THIS BREAKS GAME TRANSITIONS
+		this.spectators.push(loser);
+		for (const match of this.rounds.get(this.current_round) ?? []) {
+			if (match.game.running) {
+				match.clients.push(loser);
+				this.spectator_match_map.set(loser.id, match);
+			}
 		}
 	}
 
@@ -357,7 +367,7 @@ export class TournamentRemote extends AbstractTournament {
 		this.running = false;
 		
 		for (const match of this.client_match_map.values()) {
-			match.game.stop();
+			match.game?.stop();
 		}
 		this.broadcast({
 			type: MessageType.SESSION_ENDED,
@@ -392,8 +402,8 @@ export class TournamentRemote extends AbstractTournament {
 			console.error(`Cannot quit: "${quitter.username}" not in any match`);
 			return ;
 		}
-		match.game.setOtherPlayerWinner(quitter);
-		match.game.stop();
+		match.game?.setOtherPlayerWinner(quitter);
+		match.game?.stop();
 	}
 
 	findMatch(client_id?: string): Match | undefined {
