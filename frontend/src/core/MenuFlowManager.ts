@@ -66,22 +66,49 @@ export class MenuFlowManager {
 		return MenuFlowManager.instance;
 	}
 
-	static initialize(): void {
-		const menuFlowManager = MenuFlowManager.getInstance();
-		menuFlowManager.setupEventListeners();
-	}
+    static initialize(): void {
+        // Ensure DOM is fully loaded before initializing
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                const menuFlowManager = MenuFlowManager.getInstance();
+                menuFlowManager.setupEventListeners();
+            });
+        } else {
+            // DOM is already loaded
+            const menuFlowManager = MenuFlowManager.getInstance();
+            menuFlowManager.setupEventListeners();
+        }
+    }
 
 	// ========================================
 	// EVENT LISTENERS SETUP
 	// ========================================
 
-	private setupEventListeners(): void {
-		this.setupNavigationListeners();
-		this.setupGameModeButtons();
-		this.setupPlayerSetupListeners();
-		this.setupPlayerInputHandling();
-		this.showDashboard();
-	}
+    private setupEventListeners(): void {
+        // View mode navigation controls - with defensive checks
+        try {
+            const viewModeBack = requireElementById(EL.BUTTONS.VIEW_MODE_BACK);
+            const viewModeForward = requireElementById(EL.BUTTONS.VIEW_MODE_FORWARD);
+            const backBtn = requireElementById(EL.BUTTONS.DASHBOARD_BACK);
+            const soloDifficultyBack = requireElementById(EL.BUTTONS.SOLO_DIFFICULTY_BACK);
+            const soloDifficultyForward = requireElementById(EL.BUTTONS.SOLO_DIFFICULTY_FORWARD);
+
+            viewModeBack.addEventListener('click', () => this.previousViewMode());
+            viewModeForward.addEventListener('click', () => this.nextViewMode());
+            backBtn.addEventListener('click', () => { appStateManager.navigateTo(AppState.MAIN_MENU);});
+            soloDifficultyBack.addEventListener('click', () => this.previousAIDifficulty());
+            soloDifficultyForward.addEventListener('click', () => this.nextAIDifficulty());
+
+            uiManager.updateAIDifficultyDisplay(this.currentAiDifficultyIndex);
+        } catch (error) {
+            Logger.error(`Failed to setup basic event listeners: ${error}`, 'MenuFlowManager');
+        }
+
+        // Game mode selection buttons
+        this.setupGameModeButtons();
+        this.setupPlayerSetupListeners();
+        this.showDashboard();
+    }
 
 	private setupNavigationListeners(): void {
 		const elements = {
