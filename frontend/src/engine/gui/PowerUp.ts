@@ -1,5 +1,5 @@
 import { AdvancedDynamicTexture, Control, Rectangle, TextBlock, Image} from "@babylonjs/gui";
-import { PowerupType, PowerUpAction } from '../../shared/constants.js';
+import { PowerupType, PowerupState } from '../../shared/constants.js';
 import { AnimationManager, Motion } from "../services/AnimationManager.js";
 import { H_RIGHT, H_LEFT, POWER_UP_STYLES, createRect, createTextBlock, createImage} from "./GuiStyle.js";
 
@@ -81,7 +81,7 @@ export class PowerUp {
 	// 		this.powerUpSlotP2.isVisible = show;
 	// }
 
-	update(player: number, slotIndex: number, powerUpType: PowerupType | null, action: PowerUpAction): void {
+	update(player: number, slotIndex: number, powerUpType: PowerupType | null, action: PowerupState): void {
 		const scene = this.adt.getScene();
 		const cells = player === 0 ? this.powerUpCellsP1 : this.powerUpCellsP2;
 		
@@ -90,7 +90,7 @@ export class PowerUp {
 			const direction = player === 0 ? -100 : 100;
 
 			switch (action) {
-				case PowerUpAction.CREATED:
+				case PowerupState.UNUSED:
 					scene?.stopAnimation(cell.root);
 					cell.root.scaleX = 1;
 					cell.root.scaleY = 1;
@@ -117,14 +117,14 @@ export class PowerUp {
 						}, delay);}
 					break;
 					
-				case PowerUpAction.ACTIVATED:
+				case PowerupState.ACTIVE:
 					if (cell.icon) {
 						cell.root.color = "rgba(255, 0, 0, 1)";
 						this.animationManager?.twinkle(cell.root, Motion.F.fast);
 					}
 					break;
 					
-				case PowerUpAction.DEACTIVATED:
+				case PowerupState.SPENT:
 					scene?.stopAnimation(cell.root);
 					cell.root.scaleX = 1;
 					cell.root.scaleY = 1;

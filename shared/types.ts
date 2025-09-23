@@ -1,4 +1,4 @@
-import { MessageType, GameMode, Direction, GameState, AuthState, PowerupType, AiDifficulty} from './constants.js';
+import { MessageType, GameMode, Direction, GameState, AuthState, PowerupType, AiDifficulty, PowerupState} from './constants.js';
 
 // ============================== SHARED TYPES  ==============================
 
@@ -64,9 +64,10 @@ export interface ServerMessage {
 	match_index?: number,
 	match_total?: number,
 	round_index?: number
-	powerup?: PowerupType,
 	powerups?: PowerupType[],
-	slot?: number,
+	slot_states?: PowerupState[],
+	powerup?: PowerupType,
+	slot_index?: number,
 	side?: number; // Player side (optional)
 	lobby?: string[];
 }

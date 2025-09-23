@@ -39,11 +39,6 @@ export class Game {
 				const noiseFactor =  CPUDifficultyMap[player.difficulty];
 				this.paddles[side] = new CPUBot(side, this.ball, noiseFactor, GAME_CONFIG.paddleSpeed, 0, (s, slot) => this.activate(s, slot) );
 			}
-			this._broadcast({
-				type: MessageType.POWERUP_ASSIGNMENT,
-				side: side,
-				powerups: this.powerup_manager.slots[side].map(slot => slot.type),
-			})
 		}
 	}
 
@@ -123,8 +118,8 @@ export class Game {
 	// used to send the names a powerups to a spectator joining a game
 	send_current_state(client: Client) {
 		// need to add client as arg
-		this.powerup_manager.send_state(); 
-		this.send_side_assignment();
+		this.powerup_manager.send_state(new Set([client])); 
+		this.send_side_assignment(new Set([client]));
 	}
 
 	send_side_assignment(clients?: Set<Client>) {

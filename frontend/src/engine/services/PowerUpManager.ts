@@ -21,17 +21,18 @@ export class PowerupManager {
 		if (!message || !Array.isArray(message.powerups))
 			console.warn("[PowerUps] invalid message", message);
 
-		const ids: number[] = message.powerups;
+		const types: number[] = message.powerups;
+		const states: number[] = message.slot_states;
 		const side = message.side;
 
 		if (side !== PlayerSide.LEFT && side !== PlayerSide.RIGHT)
 			return;
 
-		this.players.get(side)!.powerUps = ids.map(id => id as PowerupType);
+		// this.players.get(side)!.powerUps = types.map(id => id as PowerupType);
 
-		ids.forEach((powerup, index) => {
-			this.guiManager?.powerUp.update(side, index, powerup as PowerupType, PowerUpAction.CREATED);
-		});
+		for (let i = 0; i < Math.min(types.length, states.length); i++) {
+			this.guiManager?.powerUp.update(side, i, types[i], states[i]);
+		} 
 	}
 
 	// Player requests to activate a powerup

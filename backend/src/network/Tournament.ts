@@ -40,10 +40,6 @@ export class Match {
 		this.winner = winner;
 		this.loser = this.players[LEFT_PADDLE] === winner ? this.players[RIGHT_PADDLE] : this.players[LEFT_PADDLE];
 	}
-
-	remove_spectator(client: Client) {
-		this.clients.delete(client);
-	}
 }
 
 abstract class AbstractTournament extends AbstractGameSession{
@@ -206,7 +202,7 @@ export class TournamentLocal extends AbstractTournament {
 			winner: match.winner.name,
 			round_index: match.round,
 			match_index: match.index,
-		});
+		}, match.clients);
 	}
 
 	canClientControlGame(client: Client) {
@@ -244,8 +240,8 @@ export class TournamentLocal extends AbstractTournament {
 
 export class TournamentRemote extends AbstractTournament {
 	client_match_map: Map<string, Match> = new Map();	// Maps client id to match, used for easy insertion from client input
-	// spectator_match_map: Map<string, Match> = new Map();	// Maps spectator id to match, used to toggle game viewed by spectator
-	spectators: Set<Client> = new Set();	// List of defeated players watching the rest of the games
+	spectator_match_map: Map<string, Match> = new Map();	// Maps spectator id to match, used to toggle game viewed by spectator
+	defeated_players: Set<Player> = new Set();	// List of defeated players watching the rest of the games
 
 	constructor(mode: GameMode, game_id: string, capacity: number) {
 		super(mode, game_id, capacity);
@@ -277,16 +273,11 @@ export class TournamentRemote extends AbstractTournament {
 		}
 	}
 
-	// runs all matches in a given round in parallel
+	// run each match in parallel and await [] of winner promises
 	async run(matches: Match[]): Promise<void> {
 		let round_winners: Promise<Player | CPU>[] = [];
 
-		// add all spectators to the first match in a round
-		for (const spectator of this.spectators) {
-			matches[0]?.clients.add(spectator);
-		}
-
-		// run each match in parallel and await [] of winner promises
+		this.handle_spectators(matches);
 		let index = 0;
 		for (const match of matches) {
 			if (!this.running) return ;
@@ -313,41 +304,53 @@ export class TournamentRemote extends AbstractTournament {
 			this.stop();
 			return ;
 		}
+		match.next.add_player(winner);
 		this.broadcast({
 			type: MessageType.MATCH_WINNER,
 			winner: winner?.name,
 			round_index: match.round,
 			match_index: match.index,
 		}, match.clients);
-		
-		match.next.add_player(winner);
+
 		if (winner instanceof Player) {
 			this.client_match_map.set(winner.client.id, match.next);
 			this.readyClients.delete(winner.client.id);
-			this.add_spectator(winner.client);
 		}
 		if (match.loser instanceof Player) {
-			this.client_match_map.delete(match.loser.client.id); // NEED TO TEST IF THIS BREAKS GAME TRANSITIONS
-			this.add_spectator(match.loser.client);
+			this.client_match_map.delete(match.loser.client.id);
+			this.defeated_players.add(match.loser);
+		}
+		for (const client of match.clients) {
+			this.spectate_remaining_game(client);
 		}
 	}
 
-	add_spectator(client: Client) {
-		this.spectators.add(client);
+	spectate_remaining_game(client: Client) {
 		for (const match of this.rounds.get(this.current_round) ?? []) {
 			if (match.game?.running) {
-				match.clients.add(client);
+				this.assign_spectator(client, match);
 			}
 		}
 	}
 
-	remove_spectator(client: Client) {
-		this.spectators.delete(client);
-		for (const match of this.rounds.get(this.current_round) ?? []) {
-			if (match.clients.has(client)) {
-				match.remove_spectator(client);
-				break ;
+	assign_spectator(client: Client, match: Match) {
+		match.clients.add(client);
+		this.spectator_match_map.set(client.id, match);
+		match.game.send_current_state(client);
+	}
+
+	handle_spectators(matches: Match[]) {
+		// remove current round players from spectators map
+		for (const match of matches) {
+			for (const player of [match.players[LEFT_PADDLE], match.players[RIGHT_PADDLE]]) {
+				if (player instanceof Player) {
+					this.spectator_match_map.delete(player.client.id);
+				}
 			}
+		}
+		// add all remaining spectators to the first match in a round
+		for (const player of this.defeated_players) {
+			this.assign_spectator(player.client, matches[0]);
 		}
 	}
 
@@ -358,7 +361,7 @@ export class TournamentRemote extends AbstractTournament {
 	}
 
 	canClientControlGame(client: Client) {
-		if (this.spectators.has(client)) {
+		if (this.spectator_match_map.get(client.id)) {
 			console.error(`Client ${client.id} is a spectator`);
 			return false;
 		}
@@ -384,28 +387,21 @@ export class TournamentRemote extends AbstractTournament {
 	}
 
 	toggle_spectator_game(client: Client, direction: Direction) {
-		if (!this.spectators.has(client)) {
+		const old_match = this.spectator_match_map.get(client.id);
+		if (!old_match) {
 			console.error(`Client ${client.id} is not a spectator`);
 			return ;
 		}
+
 		const matches = this.rounds.get(this.current_round);
 		if (!matches) return ;
-
-		let old_match;
-		for (const match of matches) {
-			if (match.clients.has(client)) {
-				old_match = match;
-				break ;
-			}
-		}
-		if (!old_match) return ;
 		
 		let new_index: number = old_match.index + direction;
 		if (new_index < 0) new_index = matches.length - 1;
 		else if (new_index > matches.length) new_index = 0;
 		
-		old_match.remove_spectator(client);
-		matches[new_index].clients.add(client);
+		old_match.clients.delete(client);
+		this.assign_spectator(client, matches[new_index]);
 	}
 
 	// The opposing player wins their current match and the tournament continues

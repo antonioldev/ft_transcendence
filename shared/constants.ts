@@ -87,6 +87,11 @@ export enum PowerupType {
 	GROW_PADDLE,
 	FREEZE,
 }
+export enum PowerupState {
+	UNUSED,
+	ACTIVE,
+	SPENT,
+}
 
 // Directions for player movement
 export enum Direction {
