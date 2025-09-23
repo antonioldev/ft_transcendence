@@ -167,8 +167,8 @@ export enum UserManagement {
 	UPDATE_USER_PROFILE	 // Request to update user information 
 }
 
-export enum PowerUpAction {
-	CREATED = "created",
-	ACTIVATED = "activated", 
-	DEACTIVATED = "deactivated"
-}
+// export enum PowerUpAction {
+// 	CREATED = "created",
+// 	ACTIVATED = "activated", 
+// 	DEACTIVATED = "deactivated"
+// }

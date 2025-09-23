@@ -1,4 +1,4 @@
-import { PowerupType, PowerUpAction } from "../../shared/constants.js";
+import { PowerupType, PowerupState } from "../../shared/constants.js";
 import { GAME_CONFIG } from "../../shared/gameConfig.js";
 import { AnimationManager } from "./AnimationManager.js";
 import { GUIManager } from "./GuiManager.js";
@@ -89,7 +89,7 @@ export class PowerupManager {
 					this.players.get(PlayerSide.LEFT)!.inverted = true;
 				break;
 		}
-		this.guiManager?.powerUp.update(side, slot, null, PowerUpAction.ACTIVATED);
+		this.guiManager?.powerUp.update(side, slot, null, PowerupState.ACTIVE);
 	}
 
 	deactivate(message: any): void {
@@ -130,7 +130,7 @@ export class PowerupManager {
 					this.players.get(PlayerSide.LEFT)!.inverted = false;
 				break;
 		}
-		this.guiManager?.powerUp.update(side, slot, null, PowerUpAction.DEACTIVATED);
+		this.guiManager?.powerUp.update(side, slot, null, PowerupState.SPENT);
 	}
 
 	dispose(): void {
