@@ -248,7 +248,7 @@ export class TournamentLocal extends AbstractTournament {
 export class TournamentRemote extends AbstractTournament {
 	client_match_map: Map<string, Match> = new Map();	// Maps client id to match, used for easy insertion from client input
 	spectator_match_map: Map<string, Match> = new Map();	// Maps spectator id to match, used to toggle game viewed by spectator
-	spectators: Client[] = [];	// List of defeated players watching the rest of the games
+	spectators: Set<Client> = new Set();	// List of defeated players watching the rest of the games
 
 	constructor(mode: GameMode, game_id: string, capacity: number) {
 		super(mode, game_id, capacity);
@@ -336,20 +336,11 @@ export class TournamentRemote extends AbstractTournament {
 	}
 
 	assign_spectator(client: Client) {
-		this.spectators.push(client);
+		this.spectators.add(client);
 		for (const match of this.rounds.get(this.current_round) ?? []) {
-			if (match.game.running) {
+			if (match.game?.running) {
 				match.clients.push(client);
 				this.spectator_match_map.set(client.id, match);
-			}
-		}
-	}
-
-	remove_spectator(client: Client) {
-		for (const match of this.rounds.get(this.current_round) ?? []) {
-			if (match.clients.includes(client)) {
-				match.remove_spectator(client);
-				this.spectator_match_map.delete(client.id);
 			}
 		}
 	}
@@ -361,7 +352,7 @@ export class TournamentRemote extends AbstractTournament {
 	}
 
 	canClientControlGame(client: Client) {
-		if (this.spectators.includes(client)) {
+		if (this.spectators.has(client)) {
 			console.error(`Client ${client.id} is a spectator`);
 			return false;
 		}
@@ -387,7 +378,7 @@ export class TournamentRemote extends AbstractTournament {
 	}
 
 	toggle_spectator_game(client: Client, direction: Direction) {
-		if (!this.spectators.includes(client)) {
+		if (!this.spectators.has(client)) {
 			console.error(`Client ${client.id} is not a spectator`);
 			return ;
 		}
