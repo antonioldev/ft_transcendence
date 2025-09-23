@@ -1,5 +1,6 @@
 import { ConnectionStatus } from '../shared/constants.js';
 // import { UI_COLORS, UI_STYLES } from './styles.js';
+// import { UI_COLORS, UI_STYLES } from './styles.js';
 import { EL, requireElementById} from './elements.js';
 import { getCurrentTranslation } from '../translations/translations.js';
 
@@ -39,57 +40,57 @@ class UIManager {
     //     document.documentElement.style.margin = '0';
     //     document.documentElement.style.padding = '0';
         
-    //     // Layout & containers
-    //     this.applyStylesToAll('.screen', UI_STYLES.screen);
-    //     this.applyStylesToAll('.overlay', UI_STYLES.overlay);
-    //     this.applyStylesToAll('.container', UI_STYLES.container);
+        // Layout & containers
+        // this.applyStylesToAll('.screen', UI_STYLES.screen);
+        // this.applyStylesToAll('.overlay', UI_STYLES.overlay);
+        // this.applyStylesToAll('.container', UI_STYLES.container);
 
-    //     // Form elements
-    //     this.applyStylesToAll('.button-group, .input-group', UI_STYLES.formGroup);
-    //     this.applyStylesToAll('fieldset', UI_STYLES.fieldset);
-    //     this.applyStylesToAll('.input', UI_STYLES.input);
-    //     this.applyStylesToAll('.label', UI_STYLES.label);
+        // Form elements
+        // this.applyStylesToAll('.button-group, .input-group', UI_STYLES.formGroup);
+        // this.applyStylesToAll('fieldset', UI_STYLES.fieldset);
+        // this.applyStylesToAll('.input', UI_STYLES.input);
+        // this.applyStylesToAll('.label', UI_STYLES.label);
 
-    //     // Buttons
-    //     this.applyStylesToAll('.button', UI_STYLES.button);
-    //     this.applyStylesToAll('.play-button', UI_STYLES.playButton);
-    //     this.applyStylesToAll('.secondary', UI_STYLES.secondary);
-    //     this.applyStylesToAll('.nav-button', UI_STYLES.navButton);
-    //     this.applyStylesToAll('.solo-mode-container', UI_STYLES.soloModeContainer);
-    //     this.applyStylesToAll('.difficulty-button', UI_STYLES.difficultyButton);
-    //     this.applyStylesToAll('.solo-button-in-container', UI_STYLES.soloButtonInContainer);
+        // Buttons
+        // this.applyStylesToAll('.button', UI_STYLES.button);
+        // this.applyStylesToAll('.play-button', UI_STYLES.playButton);
+        // this.applyStylesToAll('.secondary', UI_STYLES.secondary);
+        // this.applyStylesToAll('.nav-button', UI_STYLES.navButton);
+        // this.applyStylesToAll('.solo-mode-container', UI_STYLES.soloModeContainer);
+        // this.applyStylesToAll('.difficulty-button', UI_STYLES.difficultyButton);
+        // this.applyStylesToAll('.solo-button-in-container', UI_STYLES.soloButtonInContainer);
 
-    //     // Typography
-    //     this.applyStylesToAll('.title', UI_STYLES.title);
-    //     this.applyStylesToAll('.info-text', UI_STYLES.infoText);
+        // Typography
+        // this.applyStylesToAll('.title', UI_STYLES.title);
+        // this.applyStylesToAll('.info-text', UI_STYLES.infoText);
 
-    //     // Selectors & navigation
-    //     this.applyStylesToAll('.selector', UI_STYLES.selector);
-    //     this.applyStylesToAll('.selector-text', UI_STYLES.selectorText);
+        // Selectors & navigation
+        // this.applyStylesToAll('.selector', UI_STYLES.selector);
+        // this.applyStylesToAll('.selector-text', UI_STYLES.selectorText);
 
-    //     // Authentication & user info
-    //     this.applyStylesToAll('#auth-buttons, #user-info', UI_STYLES.authArea);
-    //     this.applyStylesToAll('#user-info', UI_STYLES.userInfo);
-    //     this.applyStylesToAll('#user-name', UI_STYLES.userName);
+        // Authentication & user info
+        // this.applyStylesToAll('#auth-buttons, #user-info', UI_STYLES.authArea);
+        // this.applyStylesToAll('#user-info', UI_STYLES.userInfo);
+        // this.applyStylesToAll('#user-name', UI_STYLES.userName);
 
-    //     // Connection status
-    //     this.applyStylesToAll('.connection-status', UI_STYLES.connectionStatus);
+        // Connection status
+        // this.applyStylesToAll('.connection-status', UI_STYLES.connectionStatus);
 
-    //     // Game dialogs & overlays
-    //     this.applyStylesToAll('.game-overlay', UI_STYLES.gameOverlay);
-    //     this.applyStylesToAll('.pause-title, .pause-text, .pause-controls', {
-    //         color: UI_COLORS.text,
-    //         textAlign: 'center' as const,
-    //         userSelect: 'none' as const
-    //     });
-    //     this.applyStylesToAll('.pause-title', UI_STYLES.pauseLarge);
-    //     this.applyStylesToAll('.pause-text', UI_STYLES.pauseMedium);
-    //     this.applyStylesToAll('.pause-controls', UI_STYLES.pauseSmall);
-    //     this.applyStylesToAll('.setup-form', UI_STYLES.setupForm);
+        // Game dialogs & overlays
+        // this.applyStylesToAll('.game-overlay', UI_STYLES.gameOverlay);
+        // this.applyStylesToAll('.pause-title, .pause-text, .pause-controls', {
+        //     color: UI_COLORS.text,
+        //     textAlign: 'center' as const,
+        //     userSelect: 'none' as const
+        // });
+        // this.applyStylesToAll('.pause-title', UI_STYLES.pauseLarge);
+        // this.applyStylesToAll('.pause-text', UI_STYLES.pauseMedium);
+        // this.applyStylesToAll('.pause-controls', UI_STYLES.pauseSmall);
+        // this.applyStylesToAll('.setup-form', UI_STYLES.setupForm);
 
-    //     this.applyStylesToAll('.loading-content', UI_STYLES.loadingContent);
-    //     this.applyStylesToAll('.progress-bar', UI_STYLES.progressBar);
-    //     this.applyStylesToAll('#progress-fill', UI_STYLES.progressFill);
+        // this.applyStylesToAll('.loading-content', UI_STYLES.loadingContent);
+        // this.applyStylesToAll('.progress-bar', UI_STYLES.progressBar);
+        // this.applyStylesToAll('#progress-fill', UI_STYLES.progressFill);
 
     //     // Special cases
     //     const mainMenu = document.getElementById('main-menu');
@@ -99,11 +100,11 @@ class UIManager {
     //         mainMenu.style.position = 'relative';
     //     }
 
-    //     const mainTitle = document.getElementById('main-title');
-    //     if (mainTitle) {
-    //         this.applyStyles(mainTitle, UI_STYLES.mainTitle);
-    //     }
-    // }
+        // const mainTitle = document.getElementById('main-title');
+        // if (mainTitle) {
+        //     this.applyStyles(mainTitle, UI_STYLES.mainTitle);
+        // }
+    }
 
 	// ========================================
 	// SCREEN & LAYOUT MANAGEMENT
