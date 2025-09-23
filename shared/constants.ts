@@ -36,7 +36,8 @@ export enum MessageType {
 	REQUEST_USER_PROFILE,	// Type for back to frontend comm
 	UPDATE_USER_PROFILE,	 // Request to update user information 
 	COUNTDOWN,			   // Used to send countdown timer before game starts
-	MATCH_WINNER,			// Used to send winner of match
+	MATCH_WINNER,			// Used to display winner screen
+	MATCH_RESULT,			// Used to update tournament tree with match winner
 	MATCH_ASSIGNMENT,		// Used to send tournament match assignment to all clients
 	ACTIVATE_POWERUP,		// Activates a specified powerup
 	POWERUP_ASSIGNMENT,

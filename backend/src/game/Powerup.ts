@@ -44,6 +44,9 @@ export class PowerupManager {
 	}
 
 	send_state(clients?: Set<Client>) {
+		for (const client of clients ?? []) {
+			console.error(`CLIENT ${client.username} REQUESTED POWERUP STATE`)
+		}
 		for (const side of [LEFT_PADDLE, RIGHT_PADDLE]) {
 			this._broadcast({
 				type: MessageType.POWERUP_ASSIGNMENT,

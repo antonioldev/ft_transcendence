@@ -311,6 +311,13 @@ export class TournamentRemote extends AbstractTournament {
 			round_index: match.round,
 			match_index: match.index,
 		}, match.clients);
+		
+		this.broadcast({
+			type: MessageType.MATCH_RESULT,
+			winner: winner?.name,
+			round_index: match.round,
+			match_index: match.index,
+		});
 
 		if (winner instanceof Player) {
 			this.client_match_map.set(winner.client.id, match.next);
@@ -321,11 +328,11 @@ export class TournamentRemote extends AbstractTournament {
 			this.defeated_players.add(match.loser);
 		}
 		for (const client of match.clients) {
-			this.spectate_remaining_game(client);
+			this.spectate_other_match(client);
 		}
 	}
 
-	spectate_remaining_game(client: Client) {
+	spectate_other_match(client: Client) {
 		for (const match of this.rounds.get(this.current_round) ?? []) {
 			if (match.game?.running) {
 				this.assign_spectator(client, match);
@@ -336,7 +343,7 @@ export class TournamentRemote extends AbstractTournament {
 	assign_spectator(client: Client, match: Match) {
 		match.clients.add(client);
 		this.spectator_match_map.set(client.id, match);
-		match.game.send_current_state(client);
+		// match.game.send_current_state(client);
 	}
 
 	handle_spectators(matches: Match[]) {
