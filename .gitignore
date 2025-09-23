@@ -139,3 +139,6 @@ wandb/
 # *.pt and *.pth files
 *.pt
 *.pth
+
+# Tailwind CSS
+output.css
