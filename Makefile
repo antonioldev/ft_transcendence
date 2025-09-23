@@ -67,6 +67,28 @@ set-env-ip:
 	echo "✅ LAN_IP set to $$IP and written to .env"
 
 #################################################################################
+#################################     DEV      ##################################
+
+# DEVELOPMENT: Start only backend and run frontend in dev mode
+dev: secret-env build-backend start-backend dev-frontend
+
+# Start only backend (without frontend)
+start-backend:
+	@mkdir -p backend/src/shared
+	@cp -rf shared/* backend/src/shared/
+	@chmod -R a-w backend/src/shared
+	docker-compose up -d backend nginx
+
+# Run frontend in development mode with hot reload
+dev-frontend:
+	@mkdir -p frontend/src/shared
+	@cp -rf shared/* frontend/src/shared/
+	@echo "🚀 Starting frontend in development mode..."
+	@echo "💡 Frontend will be served at: https://localhost:8443"
+	@echo "🔄 Hot reload enabled - changes will appear automatically"
+	cd frontend && npm run dev
+
+#################################################################################
 #################################     LOGS      #################################
 
 logs:
