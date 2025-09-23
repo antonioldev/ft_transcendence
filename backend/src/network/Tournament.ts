@@ -331,19 +331,19 @@ export class TournamentRemote extends AbstractTournament {
 		}
 		if (match.loser instanceof Player) {
 			this.client_match_map.delete(match.loser.client.id); // NEED TO TEST IF THIS BREAKS GAME TRANSITIONS
-			this.assign_spectator(match.loser.client);
+			this.spectators.add(match.loser.client);
 		}
 	}
 
-	assign_spectator(client: Client) {
-		this.spectators.add(client);
-		for (const match of this.rounds.get(this.current_round) ?? []) {
-			if (match.game?.running) {
-				match.clients.push(client);
-				this.spectator_match_map.set(client.id, match);
-			}
-		}
-	}
+	// assign_spectator(client: Client) {
+	// 	this.spectators.add(client);
+	// 	for (const match of this.rounds.get(this.current_round) ?? []) {
+	// 		if (match.game?.running) {
+	// 			match.clients.push(client);
+	// 			this.spectator_match_map.set(client.id, match);
+	// 		}
+	// 	}
+	// }
 
 	register_database(match: Match) {
 		console.log(`Match id in the tournament: ${match.id}, for P1:${match.players[0].name}, P2: ${match.players[1].name}`);
