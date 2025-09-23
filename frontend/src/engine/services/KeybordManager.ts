@@ -2,7 +2,7 @@ import { DeviceSourceManager, DeviceType, Scene } from "@babylonjs/core";
 import { Logger } from '../../utils/LogManager.js';
 import { GameConfig } from '../GameConfig.js';
 import { Direction, GameMode, ViewMode } from '../../shared/constants.js';
-import { PlayerControls, GameObjects } from '../../shared/types.js';
+import { GameObjects } from '../../shared/types.js';
 import { getPlayerBoundaries } from '../../shared/gameConfig.js';
 import { PlayerSide, PlayerState } from "../utils.js";
 import { webSocketClient } from '../../core/WebSocketClient.js';
@@ -13,22 +13,25 @@ import { GameStateManager } from "../GameStateManager.js";
 export const Keys = {
   W: 87, S: 83, A: 65, D: 68,
   C: 67, V: 86, B: 66, I: 73, O: 79, P: 80,
-  UP: 38, DOWN: 40, LEFT: 37, RIGHT: 39
+  UP: 38, DOWN: 40, LEFT: 37, RIGHT: 39,
+  ESC: 27, Y: 89, N: 78,
+  ONE: 49, TWO: 50, THREE: 51
 } as const;
-export enum LocalSlot { A , B };
+
 export type MoveKeys = { left: number; right: number; };
 export type PowerKeys = { k1: number; k2: number; k3: number };
 export type KeysProfile = { move: MoveKeys; power: PowerKeys };
 
-
 export const PROFILES_2D = {
   P1: { move: { left: Keys.W, right: Keys.S }, power: { k1: Keys.C, k2: Keys.V, k3: Keys.B } },
   P2: { move: { left: Keys.UP, right: Keys.DOWN }, power: { k1: Keys.I, k2: Keys.O, k3: Keys.P } },
+  DEFAULT: { move: { left: Keys.UP, right: Keys.DOWN }, power: { k1: Keys.ONE, k2: Keys.TWO, k3: Keys.THREE } }
 } as const;
 
 export const PROFILES_3D = {
   P1: { move: { left: Keys.A, right: Keys.D }, power: { k1: Keys.C, k2: Keys.V, k3: Keys.B } },
   P2: { move: { left: Keys.LEFT, right: Keys.RIGHT }, power: { k1: Keys.I, k2: Keys.O, k3: Keys.P } },
+  DEFAULT: { move: { left: Keys.LEFT, right: Keys.RIGHT }, power: { k1: Keys.ONE, k2: Keys.TWO, k3: Keys.THREE } }
 } as const;
 
 
@@ -37,7 +40,7 @@ export const PROFILES_3D = {
 export class KeyboardManager {
 	private deviceSourceManager: DeviceSourceManager | null = null;
 	private globalKeyDownHandler: (event: KeyboardEvent) => void;
-	private activeProfiles!: { P1: KeysProfile; P2: KeysProfile };
+	private activeProfiles!: { P1: KeysProfile; P2: KeysProfile; DEFAULT: KeysProfile };
 	private isInitialized: boolean = false;
 
 	private gameCallbacks: {
@@ -48,7 +51,7 @@ export class KeyboardManager {
 
 	constructor(
 		scene: Scene,
-		config: GameConfig,
+		private config: GameConfig,
 		private gameObjects: GameObjects,
 		private players: Map<PlayerSide, PlayerState>,
 		private powerupManager: PowerupManager | null = null,
@@ -75,37 +78,37 @@ export class KeyboardManager {
 	}
 
 	mapModeAndAssignment(mode: GameMode, controlledSides?: number[]) {
-		this.players.get(PlayerSide.LEFT)!.controlledBy = null;
-		this.players.get(PlayerSide.RIGHT)!.controlledBy = null;
+		this.players.get(PlayerSide.LEFT)!.isControlled = false;
+		this.players.get(PlayerSide.RIGHT)!.isControlled = false;
 		
 		switch (mode) {
-		case GameMode.SINGLE_PLAYER:
-		case GameMode.TWO_PLAYER_REMOTE:
-		case GameMode.TOURNAMENT_REMOTE:
-			if (controlledSides && controlledSides.length > 0) {
-				const assignedSide = controlledSides[0] as PlayerSide;
-				this.players.get(assignedSide)!.controlledBy = LocalSlot.A;
-			}
-			break;
-		case GameMode.TWO_PLAYER_LOCAL:
-		case GameMode.TOURNAMENT_LOCAL:
-			this.players.get(PlayerSide.LEFT)!.controlledBy = LocalSlot.A;
-			this.players.get(PlayerSide.RIGHT)!.controlledBy = LocalSlot.B;
-			break;
+			case GameMode.SINGLE_PLAYER:
+			case GameMode.TWO_PLAYER_REMOTE:
+			case GameMode.TOURNAMENT_REMOTE:
+				if (controlledSides && controlledSides.length > 0) {
+					const assignedSide = controlledSides[0] as PlayerSide;
+					this.players.get(assignedSide)!.isControlled = true;
+				}
+				break;
+			case GameMode.TWO_PLAYER_LOCAL:
+			case GameMode.TOURNAMENT_LOCAL:
+				this.players.get(PlayerSide.LEFT)!.isControlled = true;
+				this.players.get(PlayerSide.RIGHT)!.isControlled = true;
+				break;
 		}
 	}
 
 	// Handle global keyboard events (pause, resume, powerups, etc.)
 	private handleGlobalKeyDown(event: KeyboardEvent): void {
-		const key = event.key.toLowerCase();
+		const key = event.keyCode
 
-		if (event.key === 'Escape') {
+		if (event.keyCode === Keys.ESC) {
 			this.handleEscapeKey();
 			return;
 		}
 
 		if (this.gameState.isPaused() || this.gameState.isPausedLocal()) {
-			this.handlePauseMenuKeys(key, event.key);
+			this.handlePauseMenuKeys(key);
 			return;
 		}
 
@@ -122,30 +125,35 @@ export class KeyboardManager {
 		}
 	}
 
-	private handlePauseMenuKeys(key: string, originalKey: string): void {
-		if (key === 'y')
+	private handlePauseMenuKeys(key: number): void {
+		if (key === Keys.Y)
 			this.gameCallbacks.onExitToMenu?.();
-		else if (key === 'n' || originalKey === 'Escape')
+		else if (key === Keys.N || key === Keys.ESC)
 			this.gameCallbacks.onResume();
 	}
 
-	private handlePowerupKeys(key: string): void {
+	private handlePowerupKeys(key: number): void {
 		if (!this.powerupManager) return;
 
 		for (const [side, playerState] of this.players.entries()) {
-			if (!playerState.isControlled || playerState.controlledBy === null) continue;
+			if (!playerState.isControlled) continue;
 			
-			const profile = (playerState.controlledBy === LocalSlot.A) ? this.activeProfiles.P1 : this.activeProfiles.P2;
+			let profile: KeysProfile;
 			
-			if (key === profile.power.k1.toLowerCase()) {
+			if (this.config.isLocalMultiplayer)
+				profile = (side === PlayerSide.LEFT) ? this.activeProfiles.P1 : this.activeProfiles.P2;
+			else
+				profile = this.activeProfiles.DEFAULT;
+			
+			if (key === profile.power.k1){
 				this.powerupManager.requestActivatePowerup(side, 0);
 				return;
 			}
-			if (key === profile.power.k2.toLowerCase()) {
+			if (key === profile.power.k2) {
 				this.powerupManager.requestActivatePowerup(side, 1);
 				return;
 			}
-			if (key === profile.power.k3.toLowerCase()) {
+			if (key === profile.power.k3) {
 				this.powerupManager.requestActivatePowerup(side, 2);
 				return;
 			}
@@ -159,12 +167,11 @@ export class KeyboardManager {
 		const keyboardSource = this.deviceSourceManager.getDeviceSource(DeviceType.Keyboard);
 		if (!keyboardSource) return;
 
-		// Check each player
 		for (const [side, playerState] of this.players.entries()) {
-			if (!playerState.isControlled || playerState.controlledBy === null) continue;
+			if (!playerState.isControlled) continue;
 			
-			const profile = (playerState.controlledBy === LocalSlot.A) ? this.activeProfiles.P1 : this.activeProfiles.P2;
-			this.handlePlayerMovement(keyboardSource, profile, side, playerState);
+			// const profile = (playerState.controlledBy === LocalSlot.A) ? this.activeProfiles.P1 : this.activeProfiles.P2;
+			this.handlePlayerMovement(keyboardSource, side, playerState);
 		}
 		} catch (error) {
 		Logger.error('Error updating player input', 'KeyboardManager', error);
@@ -172,9 +179,18 @@ export class KeyboardManager {
 	}
 
 	// Handle individual player input
-	private handlePlayerMovement(keyboardSource: any, profile: KeysProfile, side: PlayerSide, playerState: PlayerState): void {
+	private handlePlayerMovement(keyboardSource: any, side: PlayerSide, playerState: PlayerState): void {
+		if (!playerState.isControlled) return;
+		
 		const bounds = getPlayerBoundaries(playerState.size);
 		const player = side === PlayerSide.LEFT ? this.gameObjects.players.left : this.gameObjects.players.right;
+
+		let profile: KeysProfile;
+		if (this.config.isLocalMultiplayer) {
+			profile = (side === PlayerSide.LEFT) ? this.activeProfiles.P1 : this.activeProfiles.P2;
+		} else {
+			profile = this.activeProfiles.DEFAULT;
+		}
 
 		let input: Direction = Direction.STOP;
 		if (keyboardSource.getInput(profile.move.left) === 1)
@@ -186,8 +202,8 @@ export class KeyboardManager {
 
 		const inverted = playerState.inverted;
 		const effectiveInput = inverted
-		? (input === Direction.LEFT ? Direction.RIGHT : Direction.LEFT)
-		: input;
+			? (input === Direction.LEFT ? Direction.RIGHT : Direction.LEFT)
+			: input;
 
 		if (effectiveInput === Direction.LEFT && player.position.x <= bounds.left) return;
 		if (effectiveInput === Direction.RIGHT && player.position.x >= bounds.right) return;

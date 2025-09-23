@@ -98,8 +98,6 @@ export function resetPlayersState(): Map<PlayerSide, PlayerState> {
 		]);
 }
 
-export enum LocalSlot { A , B }
-
 export enum PlayerSide {
 	LEFT = 0,
 	RIGHT = 1
@@ -112,7 +110,6 @@ export interface PlayerState {
 	powerUps: (PowerupType | null)[];
 	activePowerup: PowerupType | null;
 	inverted: boolean;
-	controlledBy: LocalSlot | null;
 }
 
 

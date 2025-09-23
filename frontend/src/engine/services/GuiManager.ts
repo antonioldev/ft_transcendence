@@ -113,8 +113,7 @@ export class GUIManager {
 
 		if (p1) p1.color = player1 ? "rgba(255, 255, 255, 0.7)" : "rgba(0, 0, 0, 0)";
 		if (p2) p2.color = player2 ? "rgba(255, 255, 255, 0.7)" : "rgba(0, 0, 0, 0)";
-		if (player1) this.powerUp.showIndividually(1, true);
-		if (player2) this.powerUp.showIndividually(2, true);
+		this.powerUp.show(true);
 	}
 
 	updateTournamentRound(message: any): void {

@@ -208,11 +208,11 @@ export class Game {
 	}
 
 	// Handle server ending the game
-	private async onServerEndedGame(winner: string): Promise<void> {
+	private async onServerEndedGame(message: any): Promise<void> {
 		if (!this.isInitialized || !this.config.isTournament) return;
-
+		this.services?.gui?.updateTournamentGame(message); 
 		this.services?.gui?.setPauseVisible(false);
-		await this.services?.gui?.showTournamentMatchWinner(winner);
+		await this.services?.gui?.showTournamentMatchWinner(message.winner);
 		webSocketClient.sendPlayerReady();
 		this.services?.audio?.stopGameMusic();
 		this.stopGameLoop();
@@ -414,9 +414,7 @@ export class Game {
 		webSocketClient.registerCallback(WebSocketEvent.SESSION_ENDED, (message: any) => { this.onServerEndedSession(message.winner); });
 		webSocketClient.registerCallback(WebSocketEvent.SIDE_ASSIGNMENT, (message: any) => { this.handlePlayerAssignment(message.left, message.right); });
 		webSocketClient.registerCallback(WebSocketEvent.MATCH_ASSIGNMENT, (message: any) => { this.services?.gui?.updateTournamentRound(message); });
-		webSocketClient.registerCallback(WebSocketEvent.MATCH_WINNER, (message: any) => { this.services?.gui?.updateTournamentGame(message); 
-			this.onServerEndedGame(message.winner);
-		});
+		webSocketClient.registerCallback(WebSocketEvent.MATCH_WINNER, (message: any) => { this.onServerEndedGame(message);});
 		webSocketClient.registerCallback(WebSocketEvent.TOURNAMENT_LOBBY, (message: any) => {this.services?.gui?.updateTournamentLobby(message); uiManager.setLoadingScreenVisible(false); });
 		webSocketClient.registerCallback(WebSocketEvent.COUNTDOWN, (message: any) => { this.handleCountdown(message.countdown); });
 		webSocketClient.registerCallback(WebSocketEvent.POWERUP_ASSIGNMENT, (message: any) => { this.services?.powerup?.assign(message); });

@@ -12,7 +12,7 @@ export interface GameConfig {
 	isLocalMultiplayer: boolean;
 	isTournament: boolean;
 	players: PlayerInfo[];
-	controls: InputConfig;
+	// controls: InputConfig;
 }
 
 // Class for creating a complete game configuration
@@ -33,7 +33,7 @@ export class GameConfigFactory {
 			isLocalMultiplayer,
 			isTournament,
 			players,
-			controls: viewMode === ViewMode.MODE_2D ? GAME_CONFIG.input2D : GAME_CONFIG.input3D
+			// controls: viewMode === ViewMode.MODE_2D ? GAME_CONFIG.input2D : GAME_CONFIG.input3D
 		};
 	}
 

@@ -74,12 +74,12 @@ export class PowerUp {
 		this.powerUpSlotP2.isVisible = show;
 	}
 
-	showIndividually(player: number, show: boolean): void {
-		if (player === 1)
-			this.powerUpSlotP1.isVisible = show;
-		else if (player === 2)
-			this.powerUpSlotP2.isVisible = show;
-	}
+	// showIndividually(player: number, show: boolean): void {
+	// 	if (player === 1)
+	// 		this.powerUpSlotP1.isVisible = show;
+	// 	else if (player === 2)
+	// 		this.powerUpSlotP2.isVisible = show;
+	// }
 
 	update(player: number, slotIndex: number, powerUpType: PowerupType | null, action: PowerUpAction): void {
 		const scene = this.adt.getScene();
