@@ -1,6 +1,6 @@
 import { AdvancedDynamicTexture, Control, Rectangle, TextBlock, Image} from "@babylonjs/gui";
 import { PowerupType, PowerUpAction } from '../../shared/constants.js';
-import { AnimationManager, Motion } from "../AnimationManager.js";
+import { AnimationManager, Motion } from "../services/AnimationManager.js";
 import { H_RIGHT, H_LEFT, POWER_UP_STYLES, createRect, createTextBlock, createImage} from "./GuiStyle.js";
 
 export class PowerUp {

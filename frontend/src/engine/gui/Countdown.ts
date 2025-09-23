@@ -1,5 +1,5 @@
 import { AdvancedDynamicTexture, Rectangle, TextBlock} from "@babylonjs/gui";
-import { AnimationManager, Motion } from "../AnimationManager.js";
+import { AnimationManager, Motion } from "../services/AnimationManager.js";
 import { COUNTDOWN_STYLES, createRect, createTextBlock,} from "./GuiStyle.js";
 
 

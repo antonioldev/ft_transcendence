@@ -101,7 +101,9 @@ export enum GameState {
 	PAUSED = 1,
 	WAITING = 2,
 	MATCH_ENDED = 3,
-	EXITING = 4
+	EXITING = 4,
+	CONNECTING = 5,
+	PAUSED_LOCAL = 6
 }
 
 // View modes for the game

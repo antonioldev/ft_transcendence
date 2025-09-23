@@ -2,7 +2,7 @@ import { AdvancedDynamicTexture, TextBlock, Grid} from "@babylonjs/gui";
 import { GameConfig } from '../GameConfig.js';
 import { ViewMode} from '../../shared/constants.js';
 import { getCurrentTranslation } from '../../translations/translations.js';
-import { AnimationManager, Motion } from "../AnimationManager.js";
+import { AnimationManager, Motion } from "../services/AnimationManager.js";
 import { HUD_STYLES, createTextBlock, createGrid,} from "./GuiStyle.js";
 
 export class Hud {

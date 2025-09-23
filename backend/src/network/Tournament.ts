@@ -152,14 +152,16 @@ abstract class AbstractTournament extends AbstractGameSession{
 
 		this.add_CPUs();
 		this._match_players();
-		this.broadcastRoundSchedule(1);
+		// await this.waitForPlayersReady(); // TODO eden I added this as the backend was sending the next message too early.
+		// this.broadcastRoundSchedule(1);
 
 		for (this.current_round = 1; this.current_round <= this.num_rounds; this.current_round++) {
 			if (!this.running) return ;
-
+			
+			await this.waitForPlayersReady();
+			this.broadcastRoundSchedule(this.current_round); // TODO added here so we get update info from server
 			const matches = this.rounds.get(this.current_round);
 			if (!matches) return ; // maybe throw err
-			await this.waitForPlayersReady();
 			await this.run(matches);
 		}
 	}
@@ -328,17 +330,26 @@ export class TournamentRemote extends AbstractTournament {
 			this.readyClients.delete(winner.client.id);
 		}
 		if (match.loser instanceof Player) {
+			this.client_match_map.delete(match.loser.client.id); // NEED TO TEST IF THIS BREAKS GAME TRANSITIONS
 			this.assign_spectator(match.loser.client);
 		}
 	}
 
-	assign_spectator(loser: Client) {
-		this.client_match_map.delete(loser.id); // NEED TO TEST IF THIS BREAKS GAME TRANSITIONS
-		this.spectators.push(loser);
+	assign_spectator(client: Client) {
+		this.spectators.push(client);
 		for (const match of this.rounds.get(this.current_round) ?? []) {
 			if (match.game.running) {
-				match.clients.push(loser);
-				this.spectator_match_map.set(loser.id, match);
+				match.clients.push(client);
+				this.spectator_match_map.set(client.id, match);
+			}
+		}
+	}
+
+	remove_spectator(client: Client) {
+		for (const match of this.rounds.get(this.current_round) ?? []) {
+			if (match.clients.includes(client)) {
+				match.remove_spectator(client);
+				this.spectator_match_map.delete(client.id);
 			}
 		}
 	}
