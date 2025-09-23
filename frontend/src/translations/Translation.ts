@@ -31,10 +31,15 @@ export interface Translation {
     register: string;
     login: string;
     loginSubmit: string;
+    loginTitle: string;
+    registerTitle: string;
     greeting: string;
     username: string;
     email: string;
     password: string;
+    forgotPassword: string;
+    notRegistered: string;
+    alreadyRegistered: string;
     confirmPassword: string;
     usernameOrEmail: string;
     createAccount: string;

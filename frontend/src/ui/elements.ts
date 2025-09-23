@@ -47,11 +47,16 @@ export const EL = {
 	VIEW_MODE_BACK: 'view-mode-back',
 	VIEW_MODE_FORWARD: 'view-mode-forward',
 
-	// Form submission buttons
-	LOGIN_SUBMIT: 'login-submit',
-	REGISTER_SUBMIT: 'register-submit',
-	START_GAME: 'start-game',
-	// GOOGLE_LOGIN: 'google-login-btn',
+    // Form submission buttons
+    LOGIN_TITLE: 'login-title',
+    REGISTER_TITLE: 'register-title',
+    LOGIN_SUBMIT: 'login-submit',
+    REGISTER_SUBMIT: 'register-submit',
+    START_GAME: 'start-game',
+    GOOGLE_LOGIN: 'google-login-btn-container',
+    FORGOT_PASSWORD: 'forgot-password',
+    NOT_REGISTERED: 'not-registered',
+    ALREADY_REGISTERED: 'already-registered',
 
 	// Modal switching
 	SHOW_REGISTER: 'show-register',
