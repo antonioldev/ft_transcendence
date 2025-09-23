@@ -93,8 +93,8 @@ ipython_config.py
 __pypackages__/
 
 # Environments
-# env
-# .env
+env
+.env
 .venv
 env/
 venv/
