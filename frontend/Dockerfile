@@ -13,13 +13,14 @@ RUN npm install
 # Pass GOOGLE_CLIENT_ID as a build argument
 ARG GOOGLE_CLIENT_ID
 
-# Inject GOOGLE_CLIENT_ID into the frontend code
-RUN mkdir -p /app/dist && echo "window.GOOGLE_CLIENT_ID = '${GOOGLE_CLIENT_ID}';" > /app/dist/env-config.js
-
 # Copy TypeScript source
 COPY src/ ./src/
-COPY index.html ./
+# COPY src/index.html ./
 COPY tsconfig.json ./
+COPY vite.config.js ./
+
+# Inject GOOGLE_CLIENT_ID into the frontend code
+RUN echo "window.GOOGLE_CLIENT_ID = '${GOOGLE_CLIENT_ID}';" > /app/env-config.js
 
 # Build TypeScript
 RUN npm run build
@@ -29,14 +30,12 @@ FROM nginx:alpine
 
 # Copy built JS files
 COPY --from=builder /app/dist/ /usr/share/nginx/html/
-ARG GOOGLE_CLIENT_ID
-RUN sh -c "echo \"window.GOOGLE_CLIENT_ID='${GOOGLE_CLIENT_ID}';\" > /usr/share/nginx/html/env-config.js"
 
 # COPY mime.types /etc/nginx/mime.types
 
 # Copy HTML and other static files
 COPY src/*.html /usr/share/nginx/html/
-COPY src/42_favicon.ico /usr/share/nginx/html/
+COPY src/assets/images/42_favicon.ico /usr/share/nginx/html/
 COPY src/assets/ /usr/share/nginx/html/assets/
 
 EXPOSE 80

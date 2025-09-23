@@ -359,10 +359,6 @@ export class AuthManager {
         const passwordInput = requireElementById<HTMLInputElement>(EL.AUTH.LOGIN_PASSWORD);
         const username = usernameInput.value.trim();
         const password = passwordInput.value;
-        const usernameInput = requireElementById<HTMLInputElement>(EL.AUTH.LOGIN_USERNAME);
-        const passwordInput = requireElementById<HTMLInputElement>(EL.AUTH.LOGIN_PASSWORD);
-        const username = usernameInput.value.trim();
-        const password = passwordInput.value;
         const t = getCurrentTranslation();
         const wsClient = WebSocketClient.getInstance();
         
@@ -498,15 +494,7 @@ export class AuthManager {
         const email = emailInput.value.trim();
         const password = passwordInput.value;
         const confirmPassword = confirmPasswordInput.value;
-        const usernameInput = requireElementById<HTMLInputElement>(EL.AUTH.REGISTER_USERNAME);
-        const emailInput = requireElementById<HTMLInputElement>(EL.AUTH.REGISTER_EMAIL);
-        const passwordInput = requireElementById<HTMLInputElement>(EL.AUTH.REGISTER_PASSWORD);
-        const confirmPasswordInput = requireElementById<HTMLInputElement>(EL.AUTH.REGISTER_CONFIRM_PASSWORD);
         
-        const username = usernameInput.value.trim();
-        const email = emailInput.value.trim();
-        const password = passwordInput.value;
-        const confirmPassword = confirmPasswordInput.value;
         const t = getCurrentTranslation();
         const wsClient = WebSocketClient.getInstance();
 

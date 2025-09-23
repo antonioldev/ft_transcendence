@@ -5,9 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ft_transcendence</title>
     <link rel="icon" href="/assets/images/42_favicon.ico" type="image/x-icon">
-    <link rel="icon" href="/assets/images/42_favicon.ico" type="image/x-icon">
-    <!-- <link href="/output.css" rel="stylesheet"> -->
-    <link rel="stylesheet" href="/styles/input.css"> <!-- FASE DE DESENVOLVIMENTO -> DELETE!!!! -->
+    <link href="/output.css" rel="stylesheet">
+    <!-- <link rel="stylesheet" href="/styles/input.css"> Tailwind CSS -->
     <link href="https://fonts.googleapis.com/css2?family=Tiny5&display=swap" rel="stylesheet">
     <script src="https://cdn.babylonjs.com/babylon.js"></script>
     <script src="https://cdn.babylonjs.com/gui/babylon.gui.min.js"></script>
@@ -67,7 +66,6 @@
                     id="play-btn" 
                     class="bg-transparent text-light-green font-tiny5-regular text-lg px-6 py-2 
                         hover:bg-orange hover:text-blue-background transition-colors duration-200
-                        hover:bg-orange hover:text-blue-background transition-colors duration-200
                         border border-light-green hover:border-orange
                         min-w-[120px] text-left">
                 PLAY
@@ -78,7 +76,6 @@
                     id="login-btn" 
                     class="bg-transparent text-light-green font-tiny5-regular text-lg px-6 py-2 
                         hover:bg-light-green hover:text-blue-background transition-colors duration-200
-                        hover:bg-light-green hover:text-blue-background transition-colors duration-200
                         border border-light-green
                         min-w-[180px] text-left">
                 LOGIN
@@ -88,7 +85,6 @@
             <button type="button" 
                     id="register-btn" 
                     class="bg-transparent text-light-green font-tiny5-regular text-lg px-6 py-2 
-                        hover:bg-light-green hover:text-blue-background transition-colors duration-200
                         hover:bg-light-green hover:text-blue-background transition-colors duration-200
                         border border-light-green
                         min-w-[180px] text-left">
@@ -159,7 +155,6 @@
 
                     <div>
                         <button type="submit" id="login-submit"
-                            class="inline-block w-full justify-center rounded-md bg-light-green px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold text-blue-background 
                             class="inline-block w-full justify-center rounded-md bg-light-green px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold text-blue-background 
                                    hover:bg-orange transition-colors duration-200 font-sans">
                             Sign in
@@ -589,17 +584,9 @@
         </div>
     </div>
 
-    <!-- Dino Animation - Fixed in bottom right for all screens
-    <img id="dino-gif" 
-        src="/assets/images/dino.gif" 
-        alt="Animated Dinosaur" 
-        class="z-40"
-        style="position: absolute !important; bottom: 1rem !important; right: 0rem !important; width: 200px !important; height: 200px !important; transform: scaleX(-1) !important;"
-    /> -->
-
     <!-- DEVELOPMENT: Use .ts for hot reload -->
-    <script type="module" src="./core/main.ts"></script>
+    <!-- <script type="module" src="./core/main.ts"></script> -->
     <!-- PRODUCTION: Use compiled .js -->
-    <!-- <script type="module" src="./core/main.js"></script> -->
+    <script type="module" src="./core/main.js"></script>
 </body>
 </html>
