@@ -2352,16 +2352,16 @@ video {
   min-width: 150px;
 }
 
+.min-w-\[16px\]{
+  min-width: 16px;
+}
+
 .min-w-\[180px\]{
   min-width: 180px;
 }
 
 .min-w-\[80px\]{
   min-width: 80px;
-}
-
-.min-w-\[16px\]{
-  min-width: 16px;
 }
 
 .max-w-2xl{
