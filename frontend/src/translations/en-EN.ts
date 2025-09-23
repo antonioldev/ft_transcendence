@@ -63,5 +63,15 @@ export const english: Translation = {
     winner: 'Winner',
     continue: 'Press SPACE to continue',
     tournamentTitle: 'Bracket',
-	escToClose: 'Press ESC to close'
+	escToClose: 'Press ESC to close',
+    
+    // Validation error messages
+    errorEnterEmailOrUsername: 'Please enter your email or username',
+    errorEnterPassword: 'Please enter your password',
+    errorEnterUsername: 'Please enter a username',
+    errorEnterEmail: 'Please enter an email',
+    errorEnterValidEmail: 'Please enter a valid email',
+    errorPasswordMinLength: 'Password must be at least 6 characters',
+    errorConfirmPassword: 'Please confirm your password',
+    errorPasswordsDoNotMatch: 'Passwords do not match'
 };

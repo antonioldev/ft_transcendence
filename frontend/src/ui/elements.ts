@@ -168,7 +168,19 @@ export const EL = {
   // CONTAINERS & LAYOUT
   // ========================================
   CONTAINERS: {
-	MODE_BUTTONS_TABLE: 'mode-buttons-table'
+    MODE_BUTTONS_TABLE: 'mode-buttons-table'
+  },
+
+  // ========================================
+  // ERROR MESSAGES
+  // ========================================
+  ERRORS: {
+    LOGIN_USERNAME_ERROR: 'login-username-error',
+    LOGIN_PASSWORD_ERROR: 'login-password-error',
+    REGISTER_USERNAME_ERROR: 'register-username-error',
+    REGISTER_EMAIL_ERROR: 'register-email-error',
+    REGISTER_PASSWORD_ERROR: 'register-password-error',
+    REGISTER_CONFIRM_PASSWORD_ERROR: 'register-confirm-password-error'
   }
 } as const;
 

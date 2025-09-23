@@ -63,5 +63,15 @@ export const portuguese: Translation = {
     winner: 'Vencedor da partida',
     continue: 'Pressione ESPAÇO para continuar',
 	tournamentTitle: 'Classificação do Torneio de Pong',
-	escToClose: 'Pressione ESC para fechar'
+	escToClose: 'Pressione ESC para fechar',
+    
+    // Validation error messages
+    errorEnterEmailOrUsername: 'Por favor, insira seu email ou nome de usuário',
+    errorEnterPassword: 'Por favor, insira sua senha',
+    errorEnterUsername: 'Por favor, insira um nome de usuário',
+    errorEnterEmail: 'Por favor, insira um email',
+    errorEnterValidEmail: 'Por favor, insira um email válido',
+    errorPasswordMinLength: 'A senha deve ter pelo menos 6 caracteres',
+    errorConfirmPassword: 'Por favor, confirme sua senha',
+    errorPasswordsDoNotMatch: 'As senhas não coincidem'
 };
