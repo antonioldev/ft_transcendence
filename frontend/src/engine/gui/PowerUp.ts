@@ -2,6 +2,7 @@ import { AdvancedDynamicTexture, Control, Rectangle, TextBlock, Image} from "@ba
 import { PowerupType, PowerupState } from '../../shared/constants.js';
 import { AnimationManager, Motion } from "../services/AnimationManager.js";
 import { H_RIGHT, H_LEFT, POWER_UP_STYLES, createRect, createTextBlock, createImage} from "./GuiStyle.js";
+import { GameConfig } from "../GameConfig.js";
 
 export class PowerUp {
 	private powerUpSlotP1!: Rectangle;
@@ -17,13 +18,13 @@ export class PowerUp {
 		[PowerupType.FREEZE]:			"assets/icons/powerup/stop.png"
 	};
 
-	constructor(private adt: AdvancedDynamicTexture, private animationManager: AnimationManager) {
+	constructor(private adt: AdvancedDynamicTexture, private animationManager: AnimationManager, config: GameConfig) {
 		this.powerUpSlotP1 = createRect("powerUpSlotP1", POWER_UP_STYLES.powerUpSlot);
 		this.powerUpSlotP1.horizontalAlignment = H_LEFT;
 		this.adt.addControl(this.powerUpSlotP1);
 
 		for (let i = 0; i < 3; i++) {
-			const cell = this.createPowerUpCell(i, 0); // Player 1
+			const cell = this.createPowerUpCell(i, 0, config); // Player 1
 			this.powerUpCellsP1.push(cell);
 			this.powerUpSlotP1!.addControl(cell.root);
 		}
@@ -33,19 +34,22 @@ export class PowerUp {
 		this.adt.addControl(this.powerUpSlotP2);
 
 		for (let i = 0; i < 3; i++) {
-			const cell = this.createPowerUpCell(i, 1); // Player 2
+			const cell = this.createPowerUpCell(i, 1, config); // Player 2
 			this.powerUpCellsP2.push(cell);
 			this.powerUpSlotP2!.addControl(cell.root);
 		}
 	}
 
-	private createPowerUpCell(index: number, player: number): {root: Rectangle; icon?: Image; letter?: TextBlock} {
+	private createPowerUpCell(index: number, player: number, config: GameConfig): {root: Rectangle; icon?: Image; letter?: TextBlock} {
 		const cell = createRect(`powerUpCell_${player}_${index}`, POWER_UP_STYLES.powerUpCell);
 		cell.top = `${index * 90}px`;
 
 		const icon = createImage(`powerUpIcon_${player}_${index}`, POWER_UP_STYLES.powerUpIcon, "");
 
-		const letterKeys = player === 0 ? ['C', 'V', 'B'] : ['I', 'O', 'P'];
+		let letterKeys = ['1', '2', '3'];
+		if (config.isLocalMultiplayer)
+			letterKeys = player === 0 ? ['C', 'V', 'B'] : ['I', 'O', 'P'];
+
 		const letter = createTextBlock( `powerUpLetter_${player}_${index}`, POWER_UP_STYLES.powerUpLetter, letterKeys[index]);
 
 		// Position the letter correctly
@@ -73,13 +77,6 @@ export class PowerUp {
 		this.powerUpSlotP1.isVisible = show;
 		this.powerUpSlotP2.isVisible = show;
 	}
-
-	// showIndividually(player: number, show: boolean): void {
-	// 	if (player === 1)
-	// 		this.powerUpSlotP1.isVisible = show;
-	// 	else if (player === 2)
-	// 		this.powerUpSlotP2.isVisible = show;
-	// }
 
 	update(player: number, slotIndex: number, powerUpType: PowerupType | null, action: PowerupState): void {
 		const scene = this.adt.getScene();

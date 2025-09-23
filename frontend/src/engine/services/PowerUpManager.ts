@@ -32,6 +32,7 @@ export class PowerupManager {
 
 		for (let i = 0; i < Math.min(types.length, states.length); i++) {
 			this.guiManager?.powerUp.update(side, i, types[i], states[i]);
+			console.error("type: "+types[i]+", state: "+ states[i]);
 		} 
 	}
 

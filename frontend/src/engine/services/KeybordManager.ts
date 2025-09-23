@@ -25,13 +25,15 @@ export type KeysProfile = { move: MoveKeys; power: PowerKeys };
 export const PROFILES_2D = {
   P1: { move: { left: Keys.W, right: Keys.S }, power: { k1: Keys.C, k2: Keys.V, k3: Keys.B } },
   P2: { move: { left: Keys.UP, right: Keys.DOWN }, power: { k1: Keys.I, k2: Keys.O, k3: Keys.P } },
-  DEFAULT: { move: { left: Keys.UP, right: Keys.DOWN }, power: { k1: Keys.ONE, k2: Keys.TWO, k3: Keys.THREE } }
+  DEFAULT: { move: { left: Keys.UP, right: Keys.DOWN }, power: { k1: Keys.ONE, k2: Keys.TWO, k3: Keys.THREE } },
+  DEFAULT_RIGHT: { move: { left: Keys.UP, right: Keys.DOWN }, power: { k1: Keys.ONE, k2: Keys.TWO, k3: Keys.THREE } }
 } as const;
 
 export const PROFILES_3D = {
   P1: { move: { left: Keys.A, right: Keys.D }, power: { k1: Keys.C, k2: Keys.V, k3: Keys.B } },
-  P2: { move: { left: Keys.LEFT, right: Keys.RIGHT }, power: { k1: Keys.I, k2: Keys.O, k3: Keys.P } },
-  DEFAULT: { move: { left: Keys.LEFT, right: Keys.RIGHT }, power: { k1: Keys.ONE, k2: Keys.TWO, k3: Keys.THREE } }
+  P2: { move: { left: Keys.RIGHT, right: Keys.LEFT }, power: { k1: Keys.I, k2: Keys.O, k3: Keys.P } },
+  DEFAULT: { move: { left: Keys.LEFT, right: Keys.RIGHT }, power: { k1: Keys.ONE, k2: Keys.TWO, k3: Keys.THREE } },
+  DEFAULT_RIGHT: { move: { left: Keys.RIGHT, right: Keys.LEFT }, power: { k1: Keys.ONE, k2: Keys.TWO, k3: Keys.THREE } }
 } as const;
 
 
@@ -40,7 +42,7 @@ export const PROFILES_3D = {
 export class KeyboardManager {
 	private deviceSourceManager: DeviceSourceManager | null = null;
 	private globalKeyDownHandler: (event: KeyboardEvent) => void;
-	private activeProfiles!: { P1: KeysProfile; P2: KeysProfile; DEFAULT: KeysProfile };
+	private activeProfiles!: { P1: KeysProfile; P2: KeysProfile; DEFAULT: KeysProfile, DEFAULT_RIGHT: KeysProfile };
 	private isInitialized: boolean = false;
 
 	private gameCallbacks: {
@@ -107,6 +109,11 @@ export class KeyboardManager {
 			return;
 		}
 
+		if (this.gameState.isMatchEnded()) {
+			this.handleSwitchGame(key);
+			return;
+		}
+
 		if (this.gameState.isPaused() || this.gameState.isPausedLocal()) {
 			this.handlePauseMenuKeys(key);
 			return;
@@ -122,6 +129,16 @@ export class KeyboardManager {
 				this.gameCallbacks.onPause();
 			else if (this.gameState.isPaused() || this.gameState.isPausedLocal())
 				this.gameCallbacks.onResume();
+		}
+	}
+
+	private handleSwitchGame(key: number): void {
+		if (key === 37){
+			webSocketClient.sendSwitchGame(Direction.LEFT);
+			return;
+		}
+		if (key == 39){
+			webSocketClient.sendSwitchGame(Direction.RIGHT);
 		}
 	}
 
@@ -164,21 +181,19 @@ export class KeyboardManager {
 		if (!this.isInitialized || !this.deviceSourceManager || !this.gameObjects) return;
 
 		try {
-		const keyboardSource = this.deviceSourceManager.getDeviceSource(DeviceType.Keyboard);
-		if (!keyboardSource) return;
+			const keyboardSource = this.deviceSourceManager.getDeviceSource(DeviceType.Keyboard);
+			if (!keyboardSource) return;
 
-		for (const [side, playerState] of this.players.entries()) {
-			if (!playerState.isControlled) continue;
-			
-			// const profile = (playerState.controlledBy === LocalSlot.A) ? this.activeProfiles.P1 : this.activeProfiles.P2;
-			this.handlePlayerMovement(keyboardSource, side, playerState);
-		}
-		} catch (error) {
-		Logger.error('Error updating player input', 'KeyboardManager', error);
+			for (const [side, playerState] of this.players.entries()) {
+				if (!playerState.isControlled) continue;
+
+				this.handlePlayerMovement(keyboardSource, side, playerState);
+			}
+			} catch (error) {
+			Logger.error('Error updating player input', 'KeyboardManager', error);
 		}
 	}
 
-	// Handle individual player input
 	private handlePlayerMovement(keyboardSource: any, side: PlayerSide, playerState: PlayerState): void {
 		if (!playerState.isControlled) return;
 		
@@ -186,11 +201,12 @@ export class KeyboardManager {
 		const player = side === PlayerSide.LEFT ? this.gameObjects.players.left : this.gameObjects.players.right;
 
 		let profile: KeysProfile;
-		if (this.config.isLocalMultiplayer) {
+		if (this.config.isLocalMultiplayer)
 			profile = (side === PlayerSide.LEFT) ? this.activeProfiles.P1 : this.activeProfiles.P2;
-		} else {
+		else if (this.config.viewMode === ViewMode.MODE_3D && side === PlayerSide.RIGHT)
+			profile = this.activeProfiles.DEFAULT_RIGHT;
+		else
 			profile = this.activeProfiles.DEFAULT;
-		}
 
 		let input: Direction = Direction.STOP;
 		if (keyboardSource.getInput(profile.move.left) === 1)
@@ -200,10 +216,19 @@ export class KeyboardManager {
 		
 		if (input === Direction.STOP) return;
 
-		const inverted = playerState.inverted;
-		const effectiveInput = inverted
-			? (input === Direction.LEFT ? Direction.RIGHT : Direction.LEFT)
-			: input;
+		let effectiveInput = input;
+		
+		// 3D Player 2 camera inversion (ONLY in local multiplayer)
+		if (this.config.isRemoteMultiplayer && 
+			this.config.viewMode === ViewMode.MODE_3D && 
+			side === PlayerSide.RIGHT) {
+			effectiveInput = (input === Direction.LEFT) ? Direction.RIGHT : Direction.LEFT;
+		}
+		
+		// Powerup inversion
+		if (playerState.inverted) {
+			effectiveInput = (effectiveInput === Direction.LEFT) ? Direction.RIGHT : Direction.LEFT;
+		}
 
 		if (effectiveInput === Direction.LEFT && player.position.x <= bounds.left) return;
 		if (effectiveInput === Direction.RIGHT && player.position.x >= bounds.right) return;

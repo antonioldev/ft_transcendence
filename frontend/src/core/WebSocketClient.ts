@@ -194,12 +194,11 @@ export class WebSocketClient {
         this.sendMessage(MessageType.QUIT_GAME);
     }
 
-    // notifyGameAnimationDone(): void {
-    //     this.sendMessage(MessageType.PARTIAL_WINNER_ANIMATION_DONE)
-    // }
+    sendSwitchGame(direction: Direction): void {
+        this.sendMessage(MessageType.TOGGLE_SPECTATOR_GAME, direction)
+    }
 
     sendPowerupActivationRequest(powerup_type: PowerupType, side: number, slot: number,): void {
-        console.error(powerup_type +" "+ side +" "+ slot);
         this.sendMessage(MessageType.ACTIVATE_POWERUP, {powerup_type, slot, side});
     }
 
