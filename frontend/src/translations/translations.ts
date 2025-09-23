@@ -58,8 +58,11 @@ export function updateLanguageDisplay(): void {
 	const loginBack = requireElementById(EL.BUTTONS.LOGIN_BACK);
 	loginBack.textContent = t.back;
 
-	const showRegister = requireElementById(EL.BUTTONS.SHOW_REGISTER);
-	showRegister.textContent = t.createAccount;
+    const showRegister = requireElementById(EL.BUTTONS.SHOW_REGISTER);
+    showRegister.textContent = t.createAccount;
+
+    const notRegistered = document.getElementById('not-registered');
+    if (notRegistered) notRegistered.textContent = t.notRegistered;
 
 	// Update "Don't have an account?" text
 	const loginFooter = document.querySelector('#login-modal .modal-footer .info-text');
@@ -91,8 +94,11 @@ export function updateLanguageDisplay(): void {
     const showLogin = requireElementById(EL.BUTTONS.SHOW_LOGIN);
     showLogin.textContent = t.loginSubmit;
 
-	const registerFooter = document.querySelector('#register-modal .modal-footer .info-text');
-	if (registerFooter) registerFooter.textContent = t.alreadyHaveAccount;
+    const alreadyRegistered = document.getElementById('already-registered');
+    if (alreadyRegistered) alreadyRegistered.textContent = t.alreadyHaveAccount;
+
+    const registerFooter = document.querySelector('#register-modal .modal-footer .info-text');
+    if (registerFooter) registerFooter.textContent = t.alreadyHaveAccount;
 
 	// Game mode selection
 	const modeTitle = requireElementById(EL.DISPLAY.MODE_TITLE);

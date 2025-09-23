@@ -42,8 +42,8 @@
     <main id="main-menu" class="contents">
         <!-- ft_transcendence in top left -->
         <div class="absolute top-4 left-5 flex items-center gap-2">
-            <div id="connection-status" class="text-xs text-light-green animation-ping opacity-80">
-                <!-- Connection status will be updated by JS -->
+            <div id="connection-status" class="connection-status text-xs text-light-green opacity-80 min-w-[16px] min-h-[16px] flex items-center justify-center">
+                🟡
             </div>
             <h2 class="text-light-green font-tiny5-regular text-sm sm:text-base md:text-lg">
                 ft_transcendence
@@ -111,8 +111,8 @@
     <div id="login-modal" class="fixed inset-0 bg-blue-background flex items-center justify-center" style="display: none;">
         <!-- ft_transcendence in top left -->
         <div class="absolute top-4 left-5 z-10 flex items-center gap-2">
-            <div id="connection-status" class="text-xs text-light-green opacity-80">
-                <!-- Connection status will be updated by JS -->
+            <div class="connection-status text-xs text-light-green opacity-80 min-w-[16px] min-h-[16px] flex items-center justify-center">
+                🟡
             </div>
             <h2 class="text-light-green font-tiny5-regular text-sm sm:text-base md:text-lg">
                 ft_transcendence
@@ -144,7 +144,7 @@
                                 Password
                             </label>
                             <div class="text-xs sm:text-sm">
-                                <a href="#" class="font-semibold text-orange hover:text-light-green transition-colors duration-200 font-sans">
+                                <a href="#" id="forgot-password" class="font-semibold text-orange hover:text-light-green transition-colors duration-200 font-sans">
                                     Forgot password?
                                 </a>
                             </div>
@@ -170,9 +170,9 @@
                     </div>
                 </form>
 
-                <p id="not-a-member" class="text-center text-xs sm:text-sm text-light-green font-sans">
-                    Not a member?
-                    <a href="#" id="show-register" class="font-semibold text-orange hover:text-light-green transition-colors duration-200">
+                <p class="text-center text-xs sm:text-sm text-light-green font-sans">
+                    <a id="not-registered"> "Not a member?" </a>
+                    <a href="#" id="show-register" class="font-semibold text-orange hover:text-light-green transition-colors duration-200" aria-label="Create account">
                         Create account
                     </a>
                 </p>
@@ -194,8 +194,8 @@
     <div id="register-modal" class="fixed inset-0 bg-blue-background flex items-center justify-center" style="display: none;">
         <!-- ft_transcendence in top left -->
         <div class="absolute top-4 left-5 z-10 flex items-center gap-2">
-            <div id="connection-status" class="text-xs text-light-green opacity-80">
-                <!-- Connection status will be updated by JS -->
+            <div class="connection-status text-xs text-light-green opacity-80 min-w-[16px] min-h-[16px] flex items-center justify-center">
+                🟡
             </div>
             <h2 class="text-light-green font-tiny5-regular text-sm sm:text-base md:text-lg">
                 ft_transcendence
@@ -205,7 +205,7 @@
         <div class="h-full flex items-center justify-center px-4 sm:px-8 md:px-16 lg:px-40 py-8 sm:py-12">
             <div class="w-full max-w-sm sm:max-w-md mx-auto space-y-6 sm:space-y-8">
                 <div>
-                    <h1 class="text-center uppercase text-xl sm:text-2xl font-bold tracking-tight text-light-green font-sans">
+                    <h1 id="register-title" class="text-center uppercase text-xl sm:text-2xl font-bold tracking-tight text-light-green font-sans">
                         Create your account
                     </h1>
                 </div>
@@ -269,7 +269,7 @@
                 </form>
 
                 <p class="text-center text-xs sm:text-sm text-light-green font-sans">
-                    Already have an account?
+                    <a id="already-registered">Already have an account?</a>
                     <a href="#" id="show-login" class="font-semibold text-orange hover:text-light-green transition-colors duration-200">
                         Sign in
                     </a>
@@ -313,8 +313,8 @@
     <div id="game-mode-overlay" class="fixed inset-0 bg-blue-background flex items-center justify-center" style="display: none;">
         <!-- ft_transcendence in top left -->
         <div class="absolute top-4 left-5 z-10 flex items-center gap-2">
-            <div id="connection-status" class="text-xs text-light-green opacity-80">
-                <!-- Connection status will be updated by JS -->
+            <div class="connection-status text-xs text-light-green opacity-80 min-w-[16px] min-h-[16px] flex items-center justify-center">
+                🟡
             </div>
             <h2 class="text-light-green font-tiny5-regular text-sm sm:text-base md:text-lg">
                 ft_transcendence
@@ -412,8 +412,8 @@
     <div id="player-setup-overlay" class="fixed inset-0 bg-blue-background flex items-center justify-center" style="display: none;">
         <!-- ft_transcendence in top left -->
         <div class="absolute top-4 left-5 z-10 flex items-center gap-2">
-            <div id="connection-status" class="text-xs text-light-green opacity-80">
-                <!-- Connection status will be updated by JS -->
+            <div class="connection-status text-xs text-light-green opacity-80 min-w-[16px] min-h-[16px] flex items-center justify-center">
+                🟡
             </div>
             <h2 class="text-light-green font-tiny5-regular text-sm sm:text-base md:text-lg">
                 ft_transcendence
@@ -545,9 +545,6 @@
     <div id="stats-dashboard" class="fixed inset-0 bg-blue-background flex items-center justify-center" style="display: none;">
         <!-- ft_transcendence in top left -->
         <div class="absolute top-4 left-5 z-10 flex items-center gap-2">
-            <div id="connection-status" class="text-xs text-light-green opacity-80">
-                <!-- Connection status will be updated by JS -->
-            </div>
             <h2 class="text-light-green font-tiny5-regular text-sm sm:text-base md:text-lg">
                 ft_transcendence
             </h2>
