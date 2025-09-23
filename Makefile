@@ -43,12 +43,16 @@ stop:
 build: secret-env build-backend build-frontend
 
 build-frontend:
+	@chmod -R u+w frontend/src/shared || true
+	@rm -rf frontend/src/shared || true
 	@mkdir -p frontend/src/shared
 	@cp -rf shared/* frontend/src/shared/
 	@chmod -R a-w frontend/src/shared
 	@docker-compose build frontend
 
 build-backend:
+	@chmod -R u+w backend/src/shared || true
+	@rm -rf backend/src/shared || true
 	@mkdir -p backend/src/shared
 	@cp -rf shared/* backend/src/shared/
 	@chmod -R a-w backend/src/shared
@@ -69,24 +73,30 @@ set-env-ip:
 #################################################################################
 #################################     DEV      ##################################
 
-# DEVELOPMENT: Start only backend and run frontend in dev mode
-dev: secret-env build-backend start-backend dev-frontend
+# DEVELOPMENT: Start complete development environment in Docker
+dev: secret-env build-backend-only
+	docker-compose -f docker-compose.dev.yml up --build
 
-# Start only backend (without frontend)
-start-backend:
+# Build only backend for development
+build-backend-only:
+	@chmod -R u+w backend/src/shared || true
+	@rm -rf backend/src/shared || true
 	@mkdir -p backend/src/shared
 	@cp -rf shared/* backend/src/shared/
 	@chmod -R a-w backend/src/shared
-	docker-compose up -d backend nginx
+	@docker-compose -f docker-compose.dev.yml build backend
+
+# Start only backend (without frontend)
+start-backend:
+	docker-compose -f docker-compose.dev.yml up -d backend
 
 # Run frontend in development mode with hot reload
 dev-frontend:
-	@mkdir -p frontend/src/shared
-	@cp -rf shared/* frontend/src/shared/
-	@echo "🚀 Starting frontend in development mode..."
-	@echo "💡 Frontend will be served at: https://localhost:8443"
-	@echo "🔄 Hot reload enabled - changes will appear automatically"
-	cd frontend && npm run dev
+	docker-compose -f docker-compose.dev.yml up -d --build frontend-dev
+
+# Stop development environment
+dev-stop:
+	docker-compose -f docker-compose.dev.yml down
 
 #################################################################################
 #################################     LOGS      #################################
@@ -111,6 +121,7 @@ clean:
 
 fclean:
 	docker-compose down --rmi all --volumes --remove-orphans
+	docker-compose -f docker-compose.dev.yml down --rmi all --volumes --remove-orphans
 	@chmod -R u+w frontend/src/shared || true
 	@rm -rf frontend/src/shared || true
 	@chmod -R u+w backend/src/shared || true
@@ -160,11 +171,12 @@ update-deps:
 	cd $(BACKEND_DIR) && npx npm-check-updates -u && npm install
 	cd $(FRONTEND_DIR) && npx npm-check-updates -u && npm install
 
-update: update-deps fclean up-build
+update: update-deps fclean build start
 
 .PHONY: run start stop \
-        build build-frontend build-backend \
+        build build-frontend build-backend build-backend-only \
+        dev start-backend dev-frontend dev-stop \
         logs logs-frontend logs-backend \
-        clean fclean re restart \
+        clean fclean clean-db wipe-all wipe-images re restart \
         ps update update-deps \
 		pepper-env set-env-ip print-url
