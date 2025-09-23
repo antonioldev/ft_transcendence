@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ft_transcendence</title>
     <link rel="icon" href="/assets/images/42_favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/assets/images/42_favicon.ico" type="image/x-icon">
     <!-- <link href="/output.css" rel="stylesheet"> -->
     <link rel="stylesheet" href="/styles/input.css"> <!-- FASE DE DESENVOLVIMENTO -> DELETE!!!! -->
     <link href="https://fonts.googleapis.com/css2?family=Tiny5&display=swap" rel="stylesheet">
@@ -62,6 +63,7 @@
                     id="play-btn" 
                     class="bg-transparent text-light-green font-tiny5-regular text-lg px-6 py-2 
                         hover:bg-orange hover:text-blue-background transition-colors duration-200
+                        hover:bg-orange hover:text-blue-background transition-colors duration-200
                         border border-light-green hover:border-orange
                         min-w-[120px] text-left">
                 PLAY
@@ -71,6 +73,7 @@
             <button type="button" 
                     id="login-btn" 
                     class="bg-transparent text-light-green font-tiny5-regular text-lg px-6 py-2 
+                        hover:bg-light-green hover:text-blue-background transition-colors duration-200
                         hover:bg-light-green hover:text-blue-background transition-colors duration-200
                         border border-light-green
                         min-w-[120px] text-left">
@@ -82,6 +85,7 @@
                     id="register-btn" 
                     class="bg-transparent text-light-green font-tiny5-regular text-lg px-6 py-2 
                         hover:bg-light-green hover:text-blue-background transition-colors duration-200
+                        hover:bg-light-green hover:text-blue-background transition-colors duration-200
                         border border-light-green
                         min-w-[120px] text-left">
                 REGISTER
@@ -91,8 +95,9 @@
         <!-- Atari image in bottom right -->
         <img 
             src="/assets/images/atari.png" 
+            src="/assets/images/atari.png" 
             alt="Atari"
-            class="absolute bottom-1 right-4 md:bottom-2 md:right-4 lg:bottom-2 lg:right-4 
+            class="absolute bottom-2 right-4 md:bottom-2 md:right-4 lg:bottom-2 lg:right-4 
                    w-48 h-48 sm:w-60 sm:h-60 md:w-72 md:h-72 lg:w-84 lg:h-84 xl:w-96 xl:h-96
                    object-contain opacity-80"
         />
@@ -122,11 +127,10 @@
                     <div class="form-field-container">
                         <label for="login-username" class="block text-sm sm:text-base font-medium text-light-green font-sans">
                         </label>
-                        <div class="mt-2">
-                            <input id="login-username" name="email" type="text" autocomplete="email" required 
-                                   class="form-input block rounded-md bg-transparent border border-light-green px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-light-green 
-                                          focus:outline-2 focus:outline-orange font-sans">
-                            <span class="error-message" id="login-username-error">Please enter your email or username</span>
+                        <div class="mt-1 sm:mt-2">
+                            <input id="login-username" type="email" name="email" required autocomplete="email" 
+                                class="block w-full rounded-md bg-transparent border border-light-green px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-light-green 
+                                     focus:outline-2 focus:outline-orange font-sans" />
                         </div>
                     </div>                    <div class="form-field-container">
                         <div class="flex items-center justify-between">
@@ -149,6 +153,7 @@
 
                     <div>
                         <button type="submit" id="login-submit"
+                            class="inline-block w-full justify-center rounded-md bg-light-green px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold text-blue-background 
                             class="inline-block w-full justify-center rounded-md bg-light-green px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold text-blue-background 
                                    hover:bg-orange transition-colors duration-200 font-sans">
                             Sign in
