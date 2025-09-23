@@ -15,12 +15,12 @@ import { DashboardManager } from './DashboardManager.js';
 // const memoryDetector = new MemoryLeakDetector();
 
 function loadPage(): void {
-	// Initialize classes
-	uiManager.initializeStyles();
-	AppStateManager.initialize();
-	AuthManager.initialize();
-	MenuFlowManager.initialize();
-	DashboardManager.initialize();
+    // Initialize classes
+    // uiManager.initializeStyles();
+    AppStateManager.initialize();
+    AuthManager.initialize();
+    MenuFlowManager.initialize();
+    DashboardManager.initialize();
 
 	// Setup language system
 	updateLanguageDisplay();
