@@ -29,11 +29,14 @@ export class Match {
 		if (!player) return ;
 
 		if (!this.players.includes(player)) {
+			console.log(`Player ${player.name} added to match ${this.id}`)
 			this.players.push(player);
 		}
-		if (!(player instanceof CPU) && !this.clients.has(player.client)) {
+		if (player instanceof Player) {
+			console.log(`Client ${player.client} added to match ${this.id}`)
 			this.clients.add(player.client);
 		}
+
 	}
 
 	assign_winner(winner: Player | CPU) {
@@ -114,12 +117,11 @@ abstract class AbstractTournament extends AbstractGameSession{
 			match.add_player(player_left);
 			match.add_player(player_right);
 
-			for (const player of [player_left, player_right]) {
-				if (player && !(player instanceof CPU)) {
-					console.log(`Client ${player.client.username} added to match ${match.id}`)
-					this.client_match_map?.set(player.client.id, match);
-				}
-			}
+			// for (const player of [player_left, player_right]) {
+			// 	if (player && !(player instanceof CPU)) {
+			// 		this.client_match_map?.set(player.client.id, match);
+			// 	}
+			// }
 		}
 	}
 
@@ -239,9 +241,8 @@ export class TournamentLocal extends AbstractTournament {
 }
 
 export class TournamentRemote extends AbstractTournament {
-	client_match_map: Map<string, Match> = new Map();	// Maps client id to match, used for easy insertion from client input
-	spectator_match_map: Map<string, Match> = new Map();	// Maps spectator id to match, used to toggle game viewed by spectator
-	defeated_players: Set<Player> = new Set();	// List of defeated players watching the rest of the games
+	client_match_map: Map<string, Match> = new Map();	// Maps client id to match
+	defeated_clients: Set<Client> = new Set();	// List of defeated players watching the rest of the games
 
 	constructor(mode: GameMode, game_id: string, capacity: number) {
 		super(mode, game_id, capacity);
@@ -277,7 +278,7 @@ export class TournamentRemote extends AbstractTournament {
 	async run(matches: Match[]): Promise<void> {
 		let round_winners: Promise<Player | CPU>[] = [];
 
-		this.handle_spectators(matches);
+		this.assign_clients(matches);
 		let index = 0;
 		for (const match of matches) {
 			if (!this.running) return ;
@@ -320,18 +321,23 @@ export class TournamentRemote extends AbstractTournament {
 		});
 
 		if (winner instanceof Player) {
-			this.client_match_map.set(winner.client.id, match.next);
 			this.readyClients.delete(winner.client.id);
 		}
 		if (match.loser instanceof Player) {
-			this.client_match_map.delete(match.loser.client.id);
-			this.defeated_players.add(match.loser);
+			this.defeated_clients.add(match.loser.client);
 		}
 		for (const client of match.clients) {
 			this.spectate_other_match(client);
 		}
 	}
 
+	assign_spectator(client: Client, match: Match) {
+		this.client_match_map.set(client.id, match);
+		match.clients.add(client);
+		match.game?.send_side_assignment(new Set([client]));
+	}
+	
+	// find another running game and add client as spectator
 	spectate_other_match(client: Client) {
 		for (const match of this.rounds.get(this.current_round) ?? []) {
 			if (match.game?.running) {
@@ -340,24 +346,18 @@ export class TournamentRemote extends AbstractTournament {
 		}
 	}
 
-	assign_spectator(client: Client, match: Match) {
-		match.clients.add(client);
-		this.spectator_match_map.set(client.id, match);
-		match.game.send_side_assignment(new Set([client]));
-	}
-
-	handle_spectators(matches: Match[]) {
-		// remove current round players from spectators map
+	assign_clients(matches: Match[]) {
+		// clients who are still playing are assigned to their correct game
 		for (const match of matches) {
 			for (const player of [match.players[LEFT_PADDLE], match.players[RIGHT_PADDLE]]) {
 				if (player instanceof Player) {
-					this.spectator_match_map.delete(player.client.id);
+					this.client_match_map.set(player.client.id, match);
 				}
 			}
 		}
-		// add all remaining spectators to the first match in a round
-		for (const player of this.defeated_players) {
-			this.assign_spectator(player.client, matches[0]);
+		// add all defeated players to the first match in a round
+		for (const client of this.defeated_clients) {
+			this.assign_spectator(client, matches[0]);
 		}
 	}
 
@@ -368,7 +368,7 @@ export class TournamentRemote extends AbstractTournament {
 	}
 
 	canClientControlGame(client: Client) {
-		if (this.spectator_match_map.get(client.id)) {
+		if (this.defeated_clients.has(client)) {
 			console.error(`Client ${client.id} is a spectator`);
 			return false;
 		}
@@ -394,7 +394,7 @@ export class TournamentRemote extends AbstractTournament {
 	}
 
 	toggle_spectator_game(client: Client, direction: Direction) {
-		const old_match = this.spectator_match_map.get(client.id);
+		const old_match = this.client_match_map.get(client.id);
 		if (!old_match) {
 			console.error(`Client ${client.id} is not a spectator`);
 			return ;
@@ -413,11 +413,12 @@ export class TournamentRemote extends AbstractTournament {
 
 	// The opposing player wins their current match and the tournament continues
 	handlePlayerQuit(quitter: Client): void {
-		const match: Match | undefined = this.findMatch(quitter.id);
+		const match = this.findMatch(quitter.id);
 		if (!match) {
 			console.error(`Cannot quit: "${quitter.username}" not in any match`);
 			return ;
 		}
+		this.client_match_map.delete(quitter.id);
 		match.game?.setOtherPlayerWinner(quitter);
 		match.game?.stop();
 	}

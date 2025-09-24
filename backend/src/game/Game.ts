@@ -150,10 +150,8 @@ export class Game {
 	async run(): Promise<Player | CPU> {
 		// if both are CPU then choose a random winner
 		if (this.paddles[LEFT_PADDLE] instanceof CPUBot && this.paddles[RIGHT_PADDLE] instanceof CPUBot) {
-			const index = (Math.random() > 0.5) ? 0 : 1;
-			this.winner = this.players[index];
-			this.stop();
-			return (this.winner);
+			const random_index = (Math.random() > 0.5) ? 0 : 1;
+			return (this.players[random_index]);
 		}
 		this.send_side_assignment();
 		await this.send_countdown();
