@@ -16,10 +16,15 @@ export interface Size {
 	z: number; // Depth
 }
 
+export interface Powerup {
+	type: PowerupType,
+	state: PowerupState,
+}
+
 // Represents the state of the game (paddles and ball positions)
 export interface GameStateData {
-	paddleLeft: { x: number; score: number }; // Left paddle position and score
-	paddleRight: { x: number; score: number }; // Right paddle position and score
+	paddleLeft: { x: number; score: number, powerups: Powerup[] }; // Left paddle position and score
+	paddleRight: { x: number; score: number, powerups: Powerup[] }; // Right paddle position and score
 	ball: { x: number; z: number, current_rally: number }; // Ball position
 }
 

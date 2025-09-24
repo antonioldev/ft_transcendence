@@ -135,9 +135,6 @@ export class WebSocketManager {
                 case MessageType.REQUEST_LOBBY:
                     this.handleLobbyRequest(socket, client);
                     break;
-                // case MessageType.PARTIAL_WINNER_ANIMATION_DONE:
-                //     this.handlePlayerReadyAfterGame(client);
-                //     break;
                 case MessageType.ACTIVATE_POWERUP:
                     this.activatePowerup(client, data);
                     break;
