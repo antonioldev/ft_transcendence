@@ -134,7 +134,7 @@ export abstract class AbstractGameSession {
 
 	resume(client_id?: string): void {
 		const game = this.findGame(client_id);
-		if (!this.running || !game || !game.is_running()) {
+		if (!this.running || !game) {
 			console.log(`Game ${this.id} is not running, cannot resume`);
 			return ;
 		}

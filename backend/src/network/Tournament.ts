@@ -353,9 +353,9 @@ export class TournamentRemote extends AbstractTournament {
 	}
 
 	register_database(match: Match) {
-		console.log(`Match id in the tournament: ${match.id}, for P1:${match.players[0].name}, P2: ${match.players[1].name}`);
-		registerNewGame(match.id, match.players[0].name, 1);
-		addPlayer2(match.id, match.players[1].name);
+		console.log(`Match id in the tournament: ${match.id}, for P1:${match.players[LEFT].name}, P2: ${match.players[RIGHT].name}`);
+		registerNewGame(match.id, match.players[LEFT].name, 1);
+		addPlayer2(match.id, match.players[RIGHT].name);
 	}
 
 	canClientControlGame(client: Client) {

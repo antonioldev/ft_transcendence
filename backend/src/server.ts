@@ -84,8 +84,7 @@ const start = async (): Promise<void> => {
     try {
         await fastify.listen({ 
             port: config.server.port,
-            // host: config.server.host
-            host: '0.0.0.0' 
+            host: config.server.host
         });
         console.log(`Pong server ready`);
     } catch (err) {

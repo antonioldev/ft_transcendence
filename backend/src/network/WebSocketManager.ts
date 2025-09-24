@@ -170,7 +170,6 @@ export class WebSocketManager {
 
             // add players to gameSession
             for (const player of data.players ?? []) {
-                if (gameSession.full) break ;
                 gameSession.add_player(new Player(player.id, player.name, client));
             }
             if ((gameSession.full) || gameSession.mode === GameMode.TOURNAMENT_LOCAL) {
