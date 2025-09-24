@@ -241,7 +241,7 @@ export class TournamentLocal extends AbstractTournament {
 }
 
 export class TournamentRemote extends AbstractTournament {
-	client_match_map: Map<string, Match> = new Map();	// Maps client id to match
+	client_match_map: Map<string, Match> = new Map();	// Maps client id to the match they are in
 	defeated_clients: Set<Client> = new Set();	// List of defeated players watching the rest of the games
 
 	constructor(mode: GameMode, game_id: string, capacity: number) {
@@ -396,16 +396,15 @@ export class TournamentRemote extends AbstractTournament {
 	toggle_spectator_game(client: Client, direction: Direction) {
 		const old_match = this.client_match_map.get(client.id);
 		if (!old_match) {
-			console.error(`Client ${client.id} is not a spectator`);
+			console.error(`Client ${client.id} is not in any game`);
 			return ;
 		}
-
 		const matches = this.rounds.get(this.current_round);
 		if (!matches) return ;
 		
 		let new_index: number = old_match.index + direction;
 		if (new_index < 0) new_index = matches.length - 1;
-		else if (new_index > matches.length) new_index = 0;
+		else if (new_index > matches.length - 1) new_index = 0;
 		
 		old_match.clients.delete(client);
 		this.assign_spectator(client, matches[new_index]);
