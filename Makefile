@@ -73,35 +73,6 @@ set-env-ip:
 #################################################################################
 #################################     DEV      ##################################
 
-# DEVELOPMENT: Start complete development environment in Docker
-dev: secret-env build-backend-only
-	docker-compose -f docker-compose.dev.yml up -d --build
-
-# Build only backend for development
-build-backend-only:
-	@chmod -R u+w backend/src/shared || true
-	@rm -rf backend/src/shared || true
-	@mkdir -p backend/src/shared
-	@cp -rf shared/* backend/src/shared/
-	@chmod -R a-w backend/src/shared
-	@docker-compose -f docker-compose.dev.yml build backend
-
-# Start only backend (without frontend)
-start-backend:
-	docker-compose -f docker-compose.dev.yml up -d backend
-
-# Run frontend in development mode with hot reload
-dev-frontend:
-	docker-compose -f docker-compose.dev.yml up -d --build frontend-dev
-
-# Stop development environment
-dev-stop:
-	docker-compose -f docker-compose.dev.yml down
-
-#################################################################################
-#################################     DEV      ##################################
-
-# DEVELOPMENT: Start complete development environment in Docker
 dev: secret-env build-backend-only
 	docker-compose -f docker-compose.dev.yml up -d --build
 
