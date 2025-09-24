@@ -467,7 +467,7 @@
                 </div>
 
             <!-- Solo Player Setup -->
-            <form id="solo-setup" class="space-y-4" style="display: none;">
+            <!-- <form id="solo-setup" class="space-y-4" style="display: none;">
                 <div>
                     <label for="player1-name" class="block text-sm sm:text-base font-medium text-light-green font-sans">
                         Player Name:
@@ -476,10 +476,10 @@
                            class="form-input block rounded-sm bg-transparent border border-light-green px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-light-green 
                                     focus:outline-2 focus:outline-orange font-sans">
                 </div>
-            </form>
+            </form> -->
 
             <!-- Local 2 Player Setup -->
-            <form id="two-players-setup" class="space-y-4" style="display: none;">
+            <!-- <form id="two-players-setup" class="space-y-4" style="display: none;">
                 <div>
                     <label for="player1-name-local" class="block text-sm sm:text-base font-medium text-light-green font-sans">
                         Player 1 Name:
@@ -496,47 +496,47 @@
                            class="form-input block rounded-sm bg-transparent border border-light-green px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-light-green 
                                     focus:outline-2 focus:outline-orange font-sans">
                 </div>
+            </form> -->
+
+            <!-- Player Setup -->
+            <form id="player-setup" class="w-full max-w-sm">
+                <fieldset>
+                    <div class="input-group border-none p-0 m-0">
+                    <div class="flex flex-col gap-2">
+                        <label id="player-label" class="text-light-green font-sans text-lg">Player 1</label>
+                        <input
+                            type="text" id="player-input" placeholder="Enter name"  maxlength="20" autocomplete="off"
+                            class="form-input block rounded-sm bg-transparent border border-light-green px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-light-green 
+                                focus:outline-2 focus:outline-orange font-sans"
+                        />
+                    </div>
+                </fieldset>
             </form>
-
-            <!-- Offline Tournament Setup -->
-            <div id="offline-tournament-setup" class="space-y-4" style="display: none;">
-                <form id="player-setup" class="w-full max-w-sm">
-                    <fieldset class="border-none p-0 m-0">
-                        <div class="flex flex-col gap-2">
-                            <label id="player-label" class="text-light-green font-sans text-lg">Player 1</label>
-                            <input
-                                type="text" id="player-input" placeholder="Enter name"  maxlength="20" autocomplete="off"
-                                class="form-input block rounded-sm bg-transparent border border-light-green px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-light-green 
-                                    focus:outline-2 focus:outline-orange font-sans"
-                            />
-                        </div>
-                    </fieldset>
-                </form>
         
-
-                <div class="flex flex-col sm:flex-row items-center gap-4 mt-4 w-full justify-center">
-                    <button id="start-game" type="button" class="btn w-full sm:w-auto
-                            bg-transparent text-light-green font-sans text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 
-                            hover:bg-light-green hover:text-blue-background transition-colors duration-200
-                            border border-light-green rounded-sm">
-                        Next
-                    </button>
-                    <button id="add-cpu" type="button" disabled class="btn btn-secondary w-full sm:w-auto
-                            bg-transparent text-light-green font-sans text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 
-                            hover:bg-light-green hover:text-blue-background transition-colors duration-200
-                            border border-light-green rounded-sm">
-                        Add CPU
-                    </button>
-                    <button id="setup-back" type="button" class="btn btn-secondary w-full sm:w-auto
-                            bg-transparent text-light-green font-sans text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 
-                            hover:bg-light-green hover:text-blue-background transition-colors duration-200
-                            border border-light-green rounded-sm">
-                        Back
-                    </button>
-                </div>
-            </div>
-
             <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row items-center gap-4 mt-4 w-full justify-center">
+                <button id="start-game" type="button" class="btn w-full sm:w-auto
+                        bg-transparent text-light-green font-sans text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 
+                        hover:bg-light-green hover:text-blue-background transition-colors duration-200
+                        border border-light-green rounded-sm">
+                    Next
+                </button>
+                <button id="add-cpu" type="button" disabled class="btn btn-secondary w-full sm:w-auto
+                        bg-transparent text-light-green font-sans text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 
+                        hover:bg-light-green hover:text-blue-background transition-colors duration-200
+                        border border-light-green rounded-sm">
+                    Add CPU
+                </button>
+                <button id="setup-back" type="button" class="btn btn-secondary w-full sm:w-auto
+                        bg-transparent text-light-green font-sans text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 
+                        hover:bg-light-green hover:text-blue-background transition-colors duration-200
+                        border border-light-green rounded-sm">
+                    Back
+                </button>
+            </div>
+        </div>
+
+            
             <!-- <div class="space-y-4 mt-8">
                 <button type="button" id="start-game" 
                         class="w-full uppercase bg-light-green text-blue-background font-tiny5-regular text-lg px-6 py-3 
