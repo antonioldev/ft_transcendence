@@ -292,6 +292,7 @@ export class WebSocketManager {
             console.error("Error: cannot activate powerup, missing data");
             return;
         }
+        
         const gameSession = gameManager.findClientGameSession(client);
         if (!gameSession) {
             console.error("Error: cannot activate powerup, game does not exist");

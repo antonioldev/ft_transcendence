@@ -70,11 +70,6 @@ export interface ServerMessage {
 	match_index?: number,
 	match_total?: number,
 	round_index?: number
-	powerups?: PowerupType[],
-	slot_states?: PowerupState[],
-	powerup?: PowerupType,
-	slot_index?: number,
-	side?: number; // Player side (optional)
 	lobby?: string[];
 }
 
