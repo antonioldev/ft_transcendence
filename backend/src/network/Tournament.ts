@@ -199,11 +199,7 @@ export class TournamentLocal extends AbstractTournament {
 
 	canClientControlGame(client: Client) {
 		if (!this.current_match) return false;
-		if	(!this.current_match.clients.has(client)) {
-			console.error(`Client ${client.id} not in current match`);
-			return false;
-		}
-		return true;
+		return (this.current_match.clients.has(client));
 	}
 
 	stop() {

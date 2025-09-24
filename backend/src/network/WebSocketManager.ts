@@ -507,28 +507,6 @@ export class WebSocketManager {
         console.log(`Lobby sent to ${client.username}:${client.id}`)
     }
 
-    // /**
-    //  * Gets the count of currently connected clients.
-    //  * @returns The number of connected clients.
-    //  */
-    // getConnectedClientsCount(): number {
-    //     return this.clients.size;
-    // }
-
-    // /**
-    //  * Disconnects all connected clients and clears the client list.
-    //  */
-    // disconnectAllClients(): void {
-    //     for (const [clientId, client] of this.clients) {
-    //         try {
-    //             client.websocket.close();
-    //         } catch (error) {
-    //             console.error(`❌ Error disconnecting client ${clientId}:`, error);
-    //         }
-    //     }
-    //     this.clients.clear();
-    // }
-
     private parseCookie(cookieHeader: string): Record<string, string> {
         const out: Record<string, string> = {};
         cookieHeader.split(';').forEach(kv => {
