@@ -95,7 +95,7 @@ export class Game {
 
 			this.registerCallbacks();
 			this.isInitialized = true;
-			if (this.config.gameMode === (GameMode.TOURNAMENT_REMOTE || GameMode.TWO_PLAYER_REMOTE))
+			if (this.config.isRemoteMultiplayer)
 				webSocketClient.requestLobby();
 			webSocketClient.sendPlayerReady();
 			uiManager.setLoadingScreenVisible(false);
@@ -202,7 +202,7 @@ export class Game {
 			this.state.set(GameState.PLAYING);
 			this.services?.gui?.setPauseVisible(false);
 			this.services?.audio?.resumeGameMusic();
-			this.services?.render?.startRendering();
+			// this.services?.render?.startRendering();
 			this.startGameLoop();
 		}
 	}
@@ -210,13 +210,24 @@ export class Game {
 	// Handle server ending the game
 	private async onServerEndedGame(message: any): Promise<void> {
 		if (!this.isInitialized || !this.config.isTournament) return;
-		this.services?.gui?.updateTournamentGame(message); 
 		this.services?.gui?.setPauseVisible(false);
-		await this.services?.gui?.showTournamentMatchWinner(message.winner);
+		const controlledSides = this.getControlledSides();
+		const showPlayerLoses = controlledSides.length === 1 && 
+			!controlledSides.some(side => this.players.get(side)?.name === message.winner.name);
+		
+		if (showPlayerLoses){
+			// await this.services?.gui?.showTournamentMatchWinner(message.winner); // TODO
+			await this.services?.gui?.showTournamentMatchLoser();
+			this.state.set(GameState.SPECTATOR);
+		}
+		else {
+			await this.services?.gui?.showTournamentMatchWinner(message.winner);
+			this.state.set(GameState.MATCH_ENDED);
+		}
 		webSocketClient.sendPlayerReady();
 		this.services?.audio?.stopGameMusic();
 		this.stopGameLoop();
-		this.state.set(GameState.MATCH_ENDED);
+		// this.state.set(GameState.MATCH_ENDED);
 	}
 
 	private async onServerEndedSession(winner: string): Promise<void> {
@@ -341,11 +352,14 @@ export class Game {
 		const leftPlayer = this.players?.get(PlayerSide.LEFT);
 		const rightPlayer = this.players?.get(PlayerSide.RIGHT);
 		
-		if (leftPlayer)
+		if (leftPlayer){
+			leftPlayer.name = leftPlayerName;
 			leftPlayer.isControlled = this.config.players.some(player => player.name === leftPlayerName);
-
-		if (rightPlayer)
+		}
+		if (rightPlayer){
+			rightPlayer.name = rightPlayerName;
 			rightPlayer.isControlled = this.config.players.some(player => player.name === rightPlayerName);
+		}
 
 		const controlledSides = this.getControlledSides();
 		this.services?.input?.mapModeAndAssignment(this.config.gameMode, controlledSides)
@@ -375,7 +389,7 @@ export class Game {
 		}
 
 		this.services?.gui?.setPauseVisible(true);
-		this.services?.audio?.pauseGameMusic();
+		// this.services?.audio?.pauseGameMusic();
 		this.stopGameLoop();
 	}
 
@@ -384,6 +398,11 @@ export class Game {
 
 		if (this.state.isPausedLocal() || this.state.isPaused())
 			webSocketClient.sendResumeRequest();
+
+		this.services?.gui?.setPauseVisible(false);
+		// this.services?.audio?.resumeGameMusic();
+		// this.services?.render?.startRendering();
+		this.startGameLoop();
 	}
 
 	async requestExitToMenu(): Promise<void> {
@@ -415,6 +434,7 @@ export class Game {
 		webSocketClient.registerCallback(WebSocketEvent.SIDE_ASSIGNMENT, (message: any) => { this.handlePlayerAssignment(message.left, message.right); });
 		webSocketClient.registerCallback(WebSocketEvent.MATCH_ASSIGNMENT, (message: any) => { this.services?.gui?.updateTournamentRound(message); });
 		webSocketClient.registerCallback(WebSocketEvent.MATCH_WINNER, (message: any) => { this.onServerEndedGame(message);});
+		webSocketClient.registerCallback(WebSocketEvent.MATCH_RESULT, (message: any) => { this.services?.gui?.updateTournamentGame(message);});
 		webSocketClient.registerCallback(WebSocketEvent.TOURNAMENT_LOBBY, (message: any) => {this.services?.gui?.updateTournamentLobby(message); uiManager.setLoadingScreenVisible(false); });
 		webSocketClient.registerCallback(WebSocketEvent.COUNTDOWN, (message: any) => { this.handleCountdown(message.countdown); });
 		webSocketClient.registerCallback(WebSocketEvent.POWERUP_ASSIGNMENT, (message: any) => { this.services?.powerup?.assign(message); });
@@ -432,6 +452,7 @@ export class Game {
 			webSocketClient.unregisterCallback(WebSocketEvent.SIDE_ASSIGNMENT);
 			webSocketClient.unregisterCallback(WebSocketEvent.MATCH_ASSIGNMENT);
 			webSocketClient.unregisterCallback(WebSocketEvent.MATCH_WINNER);
+			webSocketClient.unregisterCallback(WebSocketEvent.MATCH_RESULT);
 			webSocketClient.unregisterCallback(WebSocketEvent.TOURNAMENT_LOBBY);
 			webSocketClient.unregisterCallback(WebSocketEvent.COUNTDOWN);
 			webSocketClient.unregisterCallback(WebSocketEvent.POWERUP_ASSIGNMENT);

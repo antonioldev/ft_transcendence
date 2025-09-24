@@ -78,6 +78,7 @@ export function get3DCamera2Viewport() {
 export function resetPlayersState(): Map<PlayerSide, PlayerState> {
 	return new Map([
 		[PlayerSide.LEFT, {
+			name: "",
 			isControlled: false,
 			size: GAME_CONFIG.paddleWidth,
 			score: 0,
@@ -87,6 +88,7 @@ export function resetPlayersState(): Map<PlayerSide, PlayerState> {
 			controlledBy: null
 		}],
 		[PlayerSide.RIGHT, {
+			name: "",
 			isControlled: false,
 			size: GAME_CONFIG.paddleWidth,
 			score: 0,
@@ -104,6 +106,7 @@ export enum PlayerSide {
 }
 
 export interface PlayerState {
+	name: string;
 	isControlled: boolean;
 	size: number;
 	score: number;

@@ -213,6 +213,7 @@ export function clearAllFireworkTimers(): void {
 }
 
 export interface SparkleDetails {
+	asset: string;
 	count: number;
 	duration: number;
 	size: { min: number; max: number };
@@ -222,6 +223,7 @@ export interface SparkleDetails {
 }
 
 export const PARTIAL_GUI_SPARKLES: SparkleDetails = {
+	asset: "assets/textures/particle/flare_transparent.png",
 	count: 48,
 	duration: 3000,
 	size: { min: 5, max: 40 },
@@ -235,8 +237,136 @@ export const PARTIAL_GUI_SPARKLES: SparkleDetails = {
 	spread: { x: 80, y: 60 }
 };
 
-function createSparkleElement(config: SparkleDetails): Image {
-	const sparkle = new Image("sparkle", "assets/textures/particle/flare_transparent.png");
+
+export const PARTIAL_GUI_SPARKLES_LOSER: SparkleDetails = {
+	asset: "assets/textures/particle/flare_red.png",
+	count: 32,
+	duration: 2000,
+	size: { min: 3, max: 25 },
+	colors: [
+		"#CD5C5C", // Indian red
+		"#A0522D", // Sienna  
+		"#B22222", // Fire brick
+		"#8B4513", // Saddle brown
+		"#DC143C", // Crimson
+		"#800000", // Maroon
+		"#9B111E"  // Ruby red
+	],
+	spread: { x: 60, y: 50 }
+};
+
+// function createSparkleElement(config: SparkleDetails): Image {
+// 	const sparkle = new Image("sparkle", config.asset);
+// 	sparkle.stretch = Image.STRETCH_UNIFORM;
+
+// 	const size = randomInRange(config.size.min, config.size.max);
+// 	sparkle.widthInPixels = size;
+// 	sparkle.heightInPixels = size;
+
+// 	sparkle.color = randomFromArray(config.colors);
+
+// 	sparkle.left = `${randomInRange(-config.spread.x / 2, config.spread.x / 2)}%`;
+// 	sparkle.top = `${randomInRange(-config.spread.y / 2, config.spread.y / 2)}%`;
+
+// 	sparkle.alpha = 0;
+// 	sparkle.scaleX = 0;
+// 	sparkle.scaleY = 0;
+
+// 	sparkle.zIndex = Math.floor(randomInRange(7, 9));
+
+// 	return sparkle;
+// }
+
+
+// function animateSparkle(sparkle: Image, animationManager: any, delay: number, duration: number, winner: boolean): void {
+// 	createDelayedAction(() => {
+// 	sparkle.animations = [
+// 		animationManager.createFloat("alpha", 0, 1, 8, false, animationManager.Motion?.ease.quadOut()),
+// 		animationManager.createFloat("scaleX", 0, 1, 8, false, animationManager.Motion?.ease.quadOut()),
+// 		animationManager.createFloat("scaleY", 0, 1, 8, false, animationManager.Motion?.ease.quadOut()),
+// 	];
+
+// 	// animationManager.play(sparkle, 8, false).then(() => {
+// 	// 	const LOOP_CYCLE = Animation.ANIMATIONLOOPMODE_CYCLE;
+// 	// 	sparkle.animations = [
+// 	// 	animationManager.createFloat("alpha", 1, 0.3, 20, true, animationManager.Motion?.ease.sine(), LOOP_CYCLE),
+// 	// 	];
+// 	// 	animationManager.play(sparkle, 20, true);
+
+// 		// createDelayedAction(() => {
+// 		// sparkle.animations = [
+// 		// 	animationManager.createFloat("alpha", sparkle.alpha, 0, 12, false, animationManager.Motion?.ease.quadOut()),
+// 		// 	animationManager.createFloat("scaleX", sparkle.scaleX, 0, 12, false, animationManager.Motion?.ease.quadOut()),
+// 		// 	animationManager.createFloat("scaleY", sparkle.scaleY, 0, 12, false, animationManager.Motion?.ease.quadOut()),
+// 		// ];
+// 		// animationManager.play(sparkle, 12, false).then(() => {
+// 		// 	sparkle.dispose();
+// 		// });
+// 		// }, Math.max(0, duration - 500));
+// 	// 	createDelayedAction(() => {
+// 	// 		if (winner) {
+// 	// 			sparkle.animations = [
+// 	// 				animationManager.createFloat("alpha", sparkle.alpha, 0, 12, false, animationManager.Motion?.ease.quadOut()),
+// 	// 				animationManager.createFloat("scaleX", sparkle.scaleX, 0, 12, false, animationManager.Motion?.ease.quadOut()),
+// 	// 				animationManager.createFloat("scaleY", sparkle.scaleY, 0, 12, false, animationManager.Motion?.ease.quadOut()),
+// 	// 			];
+// 	// 			animationManager.play(sparkle, 12, false).then(() => {
+// 	// 				sparkle.dispose();
+// 	// 			});
+// 	// 		} else {
+// 	// 			sparkle.animations = [
+// 	// 				animationManager.createFloat("alpha", 1, 0, frames, false, animationManager.Motion.ease.sine()),
+// 	// 				animationManager.createFloat("scaleX", 1, 0.1, frames, false, animationManager.Motion.ease.quadOut()),
+// 	// 				animationManager.createFloat("scaleY", 1, 0.1, frames, false, animationManager.Motion.ease.quadOut()),
+// 	// 				animationManager.createFloat("topInPixels", sparkle.topInPixels, sparkle.topInPixels + 200, frames, false, animationManager.Motion.ease.quadOut()),
+// 	// 				animationManager.createFloat("rotation", 0, Math.PI / 4, frames, false, animationManager.Motion.ease.sine())
+// 	// 			];
+// 	// 			animationManager.play(sparkle, 12, false).then(() => {
+// 	// 				sparkle.dispose();
+// 	// 			});
+// 	// 		}
+// 	// 	}, delay);
+// 	// });
+
+// 		animationManager.play(sparkle, 8, false).then(() => {
+// 	const LOOP_CYCLE = Animation.ANIMATIONLOOPMODE_CYCLE;
+// 	sparkle.animations = [
+// 		animationManager.createFloat("alpha", 1, 0.3, 20, true, animationManager.Motion?.ease.sine(), LOOP_CYCLE),
+// 	];
+// 	animationManager.play(sparkle, 20, true);
+
+// 	createDelayedAction(() => {
+// 		if (winner) {
+// 			sparkle.animations = [
+// 				animationManager.createFloat("alpha", sparkle.alpha, 0, 12, false, animationManager.Motion?.ease.quadOut()),
+// 				animationManager.createFloat("scaleX", sparkle.scaleX, 0, 12, false, animationManager.Motion?.ease.quadOut()),
+// 				animationManager.createFloat("scaleY", sparkle.scaleY, 0, 12, false, animationManager.Motion?.ease.quadOut()),
+// 			];
+// 			animationManager.play(sparkle, 12, false).then(() => {
+// 				sparkle.dispose();
+// 			});
+// 		} else {
+// 			sparkle.animations = [
+// 				animationManager.createFloat("alpha", 1, 0, 60, false, animationManager.Motion?.ease.sine()),
+// 				animationManager.createFloat("scaleX", 1, 0.1, 60, false, animationManager.Motion?.ease.quadOut()),
+// 				animationManager.createFloat("scaleY", 1, 0.1, 60, false, animationManager.Motion?.ease.quadOut()),
+// 				animationManager.createFloat("topInPixels", sparkle.topInPixels, sparkle.topInPixels + 200, 60, false, animationManager.Motion?.ease.quadOut()),
+// 				animationManager.createFloat("rotation", 0, Math.PI / 4, 60, false, animationManager.Motion?.ease.sine())
+// 			];
+// 			animationManager.play(sparkle, 60, false).then(() => {
+// 				sparkle.dispose();
+// 			});
+// 		}
+// 	}, Math.max(0, duration - 500));
+// });
+
+
+// 	}, delay);
+// }
+
+
+function createSparkleElement(config: SparkleDetails, winner: boolean): Image {
+	const sparkle = new Image("sparkle", config.asset);
 	sparkle.stretch = Image.STRETCH_UNIFORM;
 
 	const size = randomInRange(config.size.min, config.size.max);
@@ -245,8 +375,17 @@ function createSparkleElement(config: SparkleDetails): Image {
 
 	sparkle.color = randomFromArray(config.colors);
 
+	// Position logic - loser sparkles start higher
+	if (!winner) {
+		// Loser sparkles start from top 30% of the spread area (higher on screen)
+		const startYOffset = -config.spread.y * 0.3; // Start higher
+		sparkle.top = `${randomInRange(startYOffset, startYOffset + config.spread.y * 0.4)}%`;
+	} else {
+		// Winner sparkles use normal centered positioning
+		sparkle.top = `${randomInRange(-config.spread.y / 2, config.spread.y / 2)}%`;
+	}
+	
 	sparkle.left = `${randomInRange(-config.spread.x / 2, config.spread.x / 2)}%`;
-	sparkle.top = `${randomInRange(-config.spread.y / 2, config.spread.y / 2)}%`;
 
 	sparkle.alpha = 0;
 	sparkle.scaleX = 0;
@@ -257,49 +396,81 @@ function createSparkleElement(config: SparkleDetails): Image {
 	return sparkle;
 }
 
-
-function animateSparkle(sparkle: Image, animationManager: any, delay: number, duration: number): void {
+function animateSparkle(sparkle: Image, animationManager: any, delay: number, duration: number, winner: boolean): void {
 	createDelayedAction(() => {
-	sparkle.animations = [
-		animationManager.createFloat("alpha", 0, 1, 8, false, animationManager.Motion?.ease.quadOut()),
-		animationManager.createFloat("scaleX", 0, 1, 8, false, animationManager.Motion?.ease.quadOut()),
-		animationManager.createFloat("scaleY", 0, 1, 8, false, animationManager.Motion?.ease.quadOut()),
-	];
-
-	animationManager.play(sparkle, 8, false).then(() => {
-		const LOOP_CYCLE = Animation.ANIMATIONLOOPMODE_CYCLE;
 		sparkle.animations = [
-		animationManager.createFloat("alpha", 1, 0.3, 20, true, animationManager.Motion?.ease.sine(), LOOP_CYCLE),
+			animationManager.createFloat("alpha", 0, 1, 8, false, animationManager.Motion?.ease.quadOut()),
+			animationManager.createFloat("scaleX", 0, 1, 8, false, animationManager.Motion?.ease.quadOut()),
+			animationManager.createFloat("scaleY", 0, 1, 8, false, animationManager.Motion?.ease.quadOut()),
 		];
-		animationManager.play(sparkle, 20, true);
 
-		createDelayedAction(() => {
-		sparkle.animations = [
-			animationManager.createFloat("alpha", sparkle.alpha, 0, 12, false, animationManager.Motion?.ease.quadOut()),
-			animationManager.createFloat("scaleX", sparkle.scaleX, 0, 12, false, animationManager.Motion?.ease.quadOut()),
-			animationManager.createFloat("scaleY", sparkle.scaleY, 0, 12, false, animationManager.Motion?.ease.quadOut()),
-		];
-		animationManager.play(sparkle, 12, false).then(() => {
-			sparkle.dispose();
+		animationManager.play(sparkle, 8, false).then(() => {
+			const LOOP_CYCLE = Animation.ANIMATIONLOOPMODE_CYCLE;
+			sparkle.animations = [
+				animationManager.createFloat("alpha", 1, 0.3, 20, true, animationManager.Motion?.ease.sine(), LOOP_CYCLE),
+			];
+			animationManager.play(sparkle, 20, true);
+
+			createDelayedAction(() => {
+				if (winner) {
+					sparkle.animations = [
+						animationManager.createFloat("alpha", sparkle.alpha, 0, 12, false, animationManager.Motion?.ease.quadOut()),
+						animationManager.createFloat("scaleX", sparkle.scaleX, 0, 12, false, animationManager.Motion?.ease.quadOut()),
+						animationManager.createFloat("scaleY", sparkle.scaleY, 0, 12, false, animationManager.Motion?.ease.quadOut()),
+					];
+					animationManager.play(sparkle, 12, false).then(() => {
+						sparkle.dispose();
+					});
+				} else {
+					// Loser sparkles fall faster and start falling immediately
+					const fallDistance = 300 + Math.random() * 200; // Increased fall distance
+					const fallDuration = 40 + Math.random() * 20; // Faster fall
+					
+					sparkle.animations = [
+						animationManager.createFloat("alpha", 1, 0, fallDuration, false, animationManager.Motion?.ease.sine()),
+						animationManager.createFloat("scaleX", 1, 0.1, fallDuration, false, animationManager.Motion?.ease.quadOut()),
+						animationManager.createFloat("scaleY", 1, 0.1, fallDuration, false, animationManager.Motion?.ease.quadOut()),
+						animationManager.createFloat("topInPixels", sparkle.topInPixels, sparkle.topInPixels + fallDistance, fallDuration, false, animationManager.Motion?.ease.quadIn()), // Use quadIn for faster acceleration
+						animationManager.createFloat("rotation", 0, Math.PI / 2 + Math.random() * Math.PI, fallDuration, false, animationManager.Motion?.ease.sine())
+					];
+					animationManager.play(sparkle, fallDuration, false).then(() => {
+						sparkle.dispose();
+					});
+				}
+			}, Math.max(0, duration - (winner ? 500 : 300))); // Shorter delay for loser sparkles
 		});
-		}, Math.max(0, duration - 500));
-	});
 	}, delay);
 }
 
-
 export function spawnGUISparkles(
 	advancedTexture: AdvancedDynamicTexture, 
-	animationManager: any
+	animationManager: any,
+	winner: boolean
 ): void {
-	const config = PARTIAL_GUI_SPARKLES;
+	const config = winner ? PARTIAL_GUI_SPARKLES : PARTIAL_GUI_SPARKLES_LOSER;
 	for (let i = 0; i < config.count; i++) {
-	const sparkle = createSparkleElement(config);
-	advancedTexture.addControl(sparkle);
-	
-	// Stagger the sparkles
-	const delay = Math.random() * 800;
-	animateSparkle(sparkle, animationManager, delay, config.duration);
+		const sparkle = createSparkleElement(config, winner);
+		advancedTexture.addControl(sparkle);
+		
+		// Stagger the sparkles
+		const delay = Math.random() * (winner ? 800 : 400); // Shorter delay for loser sparkles
+		animateSparkle(sparkle, animationManager, delay, config.duration, winner);
 	}
 }
+
+// export function spawnGUISparkles(
+// 	advancedTexture: AdvancedDynamicTexture, 
+// 	animationManager: any,
+// 	winner: boolean
+// ): void {
+// 	const config = winner ? PARTIAL_GUI_SPARKLES : PARTIAL_GUI_SPARKLES_LOSER;
+// 	for (let i = 0; i < config.count; i++) {
+// 		const sparkle = createSparkleElement(config);
+// 		advancedTexture.addControl(sparkle);
+		
+// 		// Stagger the sparkles
+// 		const delay = Math.random() * 800;
+// 		animateSparkle(sparkle, animationManager, delay, config.duration, winner);
+// 	}
+// }
 

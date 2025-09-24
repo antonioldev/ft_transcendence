@@ -78,24 +78,36 @@ export class GUIManager {
 		}
 	}
 
-	async showPartialWinner(winner: string): Promise<void> {
-		if (!this.isReady) return;
-		this.powerUp.show(false);
-		await this.endGame.showPartial(winner);
-	}
+	// async showPartialWinner(winner: string): Promise<void> {
+	// 	if (!this.isReady) return;
+	// 	this.powerUp.show(false);
+	// 	await this.endGame.showPartial(winner);
+	// }
 
-	async hidePartialWinner(): Promise<void> {
-		if (!this.isReady) return;
-		await this.endGame.hidePartial();
-	}
+	// async hidePartialWinner(): Promise<void> {
+	// 	if (!this.isReady) return;
+	// 	await this.endGame.hidePartial();
+	// }
 
 	async showTournamentMatchWinner(winner: string): Promise<void> {
 		if (!this.isReady) return;
 		
 		await this.animateBackground(true);
-		await this.showPartialWinner(winner);
+		// await this.showPartialWinner(winner);
+		this.powerUp.show(false);
+		await this.endGame.showPartial(winner);
 		await this.endGame.waitForSpaceToContinue(2000);
-		await this.hidePartialWinner();
+		// await this.hidePartialWinner();
+		await this.endGame.hidePartial();
+	}
+
+	async showTournamentMatchLoser(): Promise<void> {
+		if (!this.isReady) return;
+		
+		await this.animateBackground(true);
+		this.powerUp.show(false);
+		await this.endGame.showPartialLoser(); // New method for showing loss
+		await this.endGame.hidePartial();
 	}
 
 	async showWinner(winner: string): Promise<void> {
@@ -127,7 +139,7 @@ export class GUIManager {
 	}
 
 	updateTournamentGame(message: any): void {
-		if (message.winner !== undefined) // TODO unify with game ended function
+		if (message.winner !== undefined)
 			this.matchTree.update(
 				message.winner,
 				message.round_index,

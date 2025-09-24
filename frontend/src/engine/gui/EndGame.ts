@@ -64,7 +64,7 @@ export class EndGame {
 		this.partialWinnerName.isVisible = true;
 		this.partialEndGameOverlay.isPointerBlocker = true;
 
-		spawnGUISparkles(this.adt, this.animationManager);
+		spawnGUISparkles(this.adt, this.animationManager, true);
 
 		await this.animationManager?.slideInY(this.partialWinnerLabel, -200, Motion.F.base);
 		await new Promise(r => setTimeout(r, 60));
@@ -72,6 +72,26 @@ export class EndGame {
 		this.animationManager?.breathe(this.partialWinnerName, Motion.F.breath);
 
 		await new Promise(r => setTimeout(r, 180));
+	}
+
+	async showPartialLoser(): Promise<void> {
+		if (!this.adt) return;
+
+		this.partialWinnerName.text = "You Lost"; // TODO translate
+		this.partialWinnerLabel.text = "Match Ended";
+		
+		this.partialEndGameOverlay.isVisible = true;
+		this.partialWinnerLabel.isVisible = true;
+		this.partialWinnerName.isVisible = true;
+		this.partialEndGameOverlay.isPointerBlocker = true;
+
+		spawnGUISparkles(this.adt, this.animationManager, false);
+
+		await this.animationManager?.slideInY(this.partialWinnerLabel, -200, Motion.F.slow);
+		await new Promise(r => setTimeout(r, 100));
+		await this.animationManager?.slideInY(this.partialWinnerName, 50, Motion.F.base);
+		
+		await new Promise(r => setTimeout(r, 250));
 	}
 
 	async hidePartial(): Promise<void> {

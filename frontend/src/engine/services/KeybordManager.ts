@@ -1,7 +1,7 @@
 import { DeviceSourceManager, DeviceType, Scene } from "@babylonjs/core";
 import { Logger } from '../../utils/LogManager.js';
 import { GameConfig } from '../GameConfig.js';
-import { Direction, GameMode, ViewMode } from '../../shared/constants.js';
+import { Direction, GameMode, ViewMode, GameState } from '../../shared/constants.js';
 import { GameObjects } from '../../shared/types.js';
 import { getPlayerBoundaries } from '../../shared/gameConfig.js';
 import { PlayerSide, PlayerState } from "../utils.js";
@@ -100,53 +100,63 @@ export class KeyboardManager {
 		}
 	}
 
-	// Handle global keyboard events (pause, resume, powerups, etc.)
 	private handleGlobalKeyDown(event: KeyboardEvent): void {
-		const key = event.keyCode
+		const key = event.keyCode;
 
-		if (event.keyCode === Keys.ESC) {
+		if (key === Keys.ESC) {
 			this.handleEscapeKey();
 			return;
 		}
 
-		if (this.gameState.isMatchEnded()) {
-			this.handleSwitchGame(key);
-			return;
-		}
-
-		if (this.gameState.isPaused() || this.gameState.isPausedLocal()) {
+		if (this.gameState.isPaused() || this.gameState.isPausedLocal() || this.gameState.isSpectatorPaused()) {
 			this.handlePauseMenuKeys(key);
 			return;
 		}
 
-		if (this.gameState.isPlaying())
+		if (this.gameState.isSpectator()) {
+			this.handleSwitchGame(key);
+			return;
+		}
+
+		if (this.gameState.isPlaying()) {
 			this.handlePowerupKeys(key);
+		}
 	}
 
+	// Updated escape key handler
 	private handleEscapeKey(): void {
-		if (this.gameState.canShowPauseMenu()) {
-			if (this.gameState.isPlaying() || this.gameState.isMatchEnded())
-				this.gameCallbacks.onPause();
-			else if (this.gameState.isPaused() || this.gameState.isPausedLocal())
-				this.gameCallbacks.onResume();
+		if (!this.gameState.canShowPauseMenu()) return;
+
+		if (this.gameState.isPaused() || this.gameState.isPausedLocal()) {
+			this.gameCallbacks.onResume();
+		} else if (this.gameState.isSpectatorPaused()) {
+			this.gameState.set(GameState.SPECTATOR);
+			this.gameCallbacks.onResume();
+		} else if (this.gameState.isSpectator()) {
+			this.gameState.set(GameState.SPECTATOR_PAUSED);
+			this.gameCallbacks.onPause();
+		} else {
+			this.gameCallbacks.onPause();
 		}
 	}
 
 	private handleSwitchGame(key: number): void {
-		if (key === 37){
+		if (key === Keys.LEFT)
 			webSocketClient.sendSwitchGame(Direction.LEFT);
-			return;
-		}
-		if (key == 39){
+		else if (key === Keys.RIGHT)
 			webSocketClient.sendSwitchGame(Direction.RIGHT);
-		}
 	}
 
 	private handlePauseMenuKeys(key: number): void {
-		if (key === Keys.Y)
-			this.gameCallbacks.onExitToMenu?.();
-		else if (key === Keys.N || key === Keys.ESC)
-			this.gameCallbacks.onResume();
+		switch (key) {
+			case Keys.Y:
+				this.gameCallbacks.onExitToMenu?.();
+				break;
+			case Keys.N:
+			case Keys.ESC:
+				this.gameCallbacks.onResume();
+				break;
+		}
 	}
 
 	private handlePowerupKeys(key: number): void {

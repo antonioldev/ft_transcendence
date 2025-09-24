@@ -64,6 +64,7 @@ export enum WebSocketEvent {
 	GAME_HISTORY = 'GAME_HISTORY',
 	MATCH_ASSIGNMENT = 'match_assignment',
 	MATCH_WINNER = 'match_winner',
+	MATCH_RESULT = 'match_result',
 	POWERUP_ASSIGNMENT = 'powerup_assignment',
 	POWERUP_ACTIVATED = 'powerup_activated',
 	POWERUP_DEACTIVATED = 'powerup_deactivated',
@@ -109,7 +110,10 @@ export enum GameState {
 	MATCH_ENDED = 3,
 	EXITING = 4,
 	CONNECTING = 5,
-	PAUSED_LOCAL = 6
+	PAUSED_LOCAL = 6,
+	SPECTATOR = 7,
+	SPECTATOR_PAUSED
+
 }
 
 // View modes for the game

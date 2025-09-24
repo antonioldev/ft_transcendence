@@ -130,7 +130,8 @@ export class AudioManager {
 
 	// Resume the game music
 	resumeGameMusic(): void {
-		this.gameMusic?.play();
+		if (this.gameMusic?.isPlaying !== true )
+			this.gameMusic?.play();
 	}
 
 	// Update music speed based on rally count with gentler curve and pinch effect

@@ -31,12 +31,22 @@ export class GameStateManager {
 		return this.currentState === GameState.PLAYING || this.currentState === GameState.MATCH_ENDED;
 	}
 
+	isSpectator(): boolean {
+		return this.currentState === GameState.SPECTATOR;
+	}
+
+	isSpectatorPaused(): boolean {
+		return this.currentState === GameState.SPECTATOR_PAUSED;
+	}
+
 	// Add a method to check if game can be paused (during countdown, winner screens, etc.)
 	canShowPauseMenu(): boolean {
 		return this.currentState === GameState.PLAYING || 
 			this.currentState === GameState.PAUSED ||
 			this.currentState === GameState.MATCH_ENDED ||
-			this.currentState === GameState.PAUSED_LOCAL;
+			this.currentState === GameState.PAUSED_LOCAL ||
+			this.currentState === GameState.SPECTATOR ||
+			this.currentState === GameState.SPECTATOR_PAUSED;
 	}
 
 	// State setters
