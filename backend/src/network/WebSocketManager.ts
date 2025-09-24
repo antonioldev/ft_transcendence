@@ -11,8 +11,6 @@ import { TournamentRemote } from './Tournament.js';
  * Manages WebSocket connections, client interactions, and game-related messaging.
  */
 export class WebSocketManager {
-    private clients = new Map<string, Client>();
-
     /**
      * Sets up WebSocket routes for the Fastify server.
      * @param fastify - The Fastify instance to configure.
@@ -68,25 +66,18 @@ export class WebSocketManager {
             client = new Client(clientId, 'temp', '', socket); // will be updated if server approve a classic login request from client
         }
 
-        this.clients.set(clientId, client);
-
         socket.on('message', async (message: string) => {
             await this.handleMessage(socket, client, message);
         });
 
         socket.on('close', () => {
             console.log(`WebSocket closed for client ${clientId}:`);
-            this.handleDisconnection(client);
+            this.removeFromGameSession(client);
         });
 
         socket.on('error', (error: any) => {
             console.error(`❌ WebSocket error for client ${clientId}:`, error);
-            this.handleDisconnection(client);
-        });
-
-        this.send(socket, {
-            type: MessageType.WELCOME,
-            message: 'Connected to game server'
+            this.removeFromGameSession(client);
         });
     }
 
@@ -142,7 +133,7 @@ export class WebSocketManager {
                     this.toggleSpectator(client, data);
                     break;
                 case MessageType.QUIT_GAME:
-                    this.handleQuitGame(client);
+                    this.removeFromGameSession(client);
                     break;
                 default:
                     this.send(socket, {
@@ -173,21 +164,15 @@ export class WebSocketManager {
                 throw new Error(`Game mode missing`);
             }
             const gameSession = gameManager.findOrCreateGame(data.gameMode, client, data.capacity ?? undefined);
-            if (!gameSession) {
-                throw new Error(`client "${client}" unable to join game: game does not exist`);
-            }
-            if (gameSession.running) {
-                throw new Error(`client "${client}" unable to join game "${gameSession.id}": game already running`);
-            }
             if (data.aiDifficulty !== undefined && gameSession.ai_difficulty === undefined) {
                 gameSession.set_ai_difficulty(data.aiDifficulty);
             }
 
             // add players to gameSession
             for (const player of data.players ?? []) {
+                if (gameSession.full) break ;
                 gameSession.add_player(new Player(player.id, player.name, client));
             }
-
             if ((gameSession.full) || gameSession.mode === GameMode.TOURNAMENT_LOCAL) {
                 gameManager.runGame(gameSession);
             }
@@ -284,35 +269,21 @@ export class WebSocketManager {
         gameSession.resume(client.id);
     }
 
-   /**
-     * Handles the disconnection of a client, removing them from games and cleaning up resources.
-     * @param data - The user information that are used to confirm login
-     */
-    private handleQuitGame(client: Client): void {
-        const gameSession = gameManager.findClientGameSession(client);
-        if (!gameSession) {
-            console.warn(`Client ${client.id} not in any game to quit`);
-            return;
-        }
-        
-        gameSession.handlePlayerQuit(client);
-        gameManager.removeClientFromGames(client);
-        console.log(`Game ${gameSession.id} ended by client: ${client.username}:${client.id}`);
-    }
-
     /**
      * Handles the disconnection of a client, removing them from games and cleaning up resources.
      * @param client - The client that disconnected.
      */
-    private handleDisconnection(client: Client): void {
+    private removeFromGameSession(client: Client): void {
         const gameSession = gameManager.findClientGameSession(client);
-        if (!gameSession) return ;
+        if (!gameSession) {
+            console.warn(`Cannot disconnect: Client ${client.id} not in any game`);
+            return;
+        }
 
-        gameSession.handlePlayerQuit(client); // TODO: temp as wont work for Tournament 
+        gameSession.handlePlayerQuit(client);
         gameManager.removeClientFromGames(client);
-        this.clients.delete(client.id);
         console.log(`Client disconnected: ${client.username}:${client.id}`);
-    } 
+    }
 
     private activatePowerup(client: Client, data: ClientMessage) {
         if (data.powerup_type === undefined || data.powerup_type === null || 
@@ -543,27 +514,27 @@ export class WebSocketManager {
         return `client_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     }
 
-    /**
-     * Gets the count of currently connected clients.
-     * @returns The number of connected clients.
-     */
-    getConnectedClientsCount(): number {
-        return this.clients.size;
-    }
+    // /**
+    //  * Gets the count of currently connected clients.
+    //  * @returns The number of connected clients.
+    //  */
+    // getConnectedClientsCount(): number {
+    //     return this.clients.size;
+    // }
 
-    /**
-     * Disconnects all connected clients and clears the client list.
-     */
-    disconnectAllClients(): void {
-        for (const [clientId, client] of this.clients) {
-            try {
-                client.websocket.close();
-            } catch (error) {
-                console.error(`❌ Error disconnecting client ${clientId}:`, error);
-            }
-        }
-        this.clients.clear();
-    }
+    // /**
+    //  * Disconnects all connected clients and clears the client list.
+    //  */
+    // disconnectAllClients(): void {
+    //     for (const [clientId, client] of this.clients) {
+    //         try {
+    //             client.websocket.close();
+    //         } catch (error) {
+    //             console.error(`❌ Error disconnecting client ${clientId}:`, error);
+    //         }
+    //     }
+    //     this.clients.clear();
+    // }
 
     private parseCookie(cookieHeader: string): Record<string, string> {
         const out: Record<string, string> = {};

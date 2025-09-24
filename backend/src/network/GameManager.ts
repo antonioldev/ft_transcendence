@@ -115,7 +115,7 @@ class GameManager extends EventEmitter {
         for (const client of gameSession.clients) {
             this.clientGamesMap.delete(client.id);
         }
-        console.log(`Removed game: ${gameSession.id}`);
+        console.log(`Game ended: ${gameSession.id}`);
     }
 
     /**

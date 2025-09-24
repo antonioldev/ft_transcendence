@@ -15,7 +15,6 @@ export enum MessageType {
 	RESUMED,			// SERVER -> CLIENTS: Server confirms resume to all clients
 	SESSION_ENDED,	  // SERVER -> CLIENTS: Server notifies all games are completed
 	PARTIAL_WINNER_ANIMATION_DONE,  // CLIENT -> SERVER: Client notify the animation is completed, ready for new game
-	WELCOME,			 // SERVER -> CLIENT: Welcome message on connection
 	PLAYER_READY,	   // CLIENT -> SERVER: Client loaded babylon and is waiting for server
 	REQUEST_LOBBY,		// Client requests the lobby from the server
 	TOURNAMENT_LOBBY,	   // broadcasts the tournament lobby whenever it changes 

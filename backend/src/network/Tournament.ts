@@ -116,12 +116,6 @@ abstract class AbstractTournament extends AbstractGameSession{
 
 			match.add_player(player_left);
 			match.add_player(player_right);
-
-			// for (const player of [player_left, player_right]) {
-			// 	if (player && !(player instanceof CPU)) {
-			// 		this.client_match_map?.set(player.client.id, match);
-			// 	}
-			// }
 		}
 	}
 
@@ -147,9 +141,6 @@ abstract class AbstractTournament extends AbstractGameSession{
 
 		this.add_CPUs();
 		this._match_players();
-		// await this.waitForPlayersReady(); // TODO eden I added this as the backend was sending the next message too early.
-		// this.broadcastRoundSchedule(1);
-
 		for (this.current_round = 1; this.current_round <= this.num_rounds; this.current_round++) {
 			if (!this.running) return ;
 			

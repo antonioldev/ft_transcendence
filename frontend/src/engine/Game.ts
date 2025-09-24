@@ -441,6 +441,7 @@ export class Game {
 		webSocketClient.registerCallback(WebSocketEvent.POWERUP_ACTIVATED, (message: any) => { this.services?.powerup?.activate(message); });
 		webSocketClient.registerCallback(WebSocketEvent.POWERUP_DEACTIVATED, (message: any) => { this.services?.powerup?.deactivate(message); });
 	}
+
 	private unregisterCallbacks(): void {
 		try {
 			webSocketClient.unregisterCallback(WebSocketEvent.GAME_STATE);
