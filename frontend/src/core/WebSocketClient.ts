@@ -48,7 +48,6 @@ export class WebSocketClient {
             clearTimeout(timeout);
             this.connectionStatus = ConnectionStatus.CONNECTED;
             this.notifyStatus(ConnectionStatus.CONNECTED);
-            this.triggerCallback(WebSocketEvent.CONNECTION);	
         };
 
         this.ws.onmessage = (event) => {
@@ -72,7 +71,6 @@ export class WebSocketClient {
             Logger.error('WebSocket error', 'WebSocketClient', error);
             this.connectionStatus = ConnectionStatus.FAILED;
             this.notifyStatus(ConnectionStatus.FAILED);
-            this.triggerCallback(WebSocketEvent.ERROR, 'Connection failed');
         };
     }
 
@@ -144,15 +142,6 @@ export class WebSocketClient {
                 break;
             case MessageType.MATCH_RESULT:
                 this.triggerCallback(WebSocketEvent.MATCH_RESULT, message);
-                break;
-            // case MessageType.POWERUP_ASSIGNMENT:
-            //     this.triggerCallback(WebSocketEvent.POWERUP_ASSIGNMENT, message); 
-            //     break;
-            // case MessageType.POWERUP_ACTIVATED:
-            //     this.triggerCallback(WebSocketEvent.POWERUP_ACTIVATED, message); 
-            //     break;
-            // case MessageType.POWERUP_DEACTIVATED:
-            //     this.triggerCallback(WebSocketEvent.POWERUP_DEACTIVATED, message); 
                 break;
             case MessageType.TOURNAMENT_LOBBY:
                 this.triggerCallback(WebSocketEvent.TOURNAMENT_LOBBY, message); 

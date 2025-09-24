@@ -145,4 +145,8 @@ export class PowerupManager {
 		
 		this.guiManager?.powerUp.update(side, slot, PowerupState.SPENT);
 	}
+
+	dispose(): void {
+		
+	}
 }

@@ -433,7 +433,6 @@ export class Game {
 // ====================			WEBSOCKET				  ====================
 	private registerCallbacks(): void {
 		webSocketClient.registerCallback(WebSocketEvent.GAME_STATE, (state: GameStateData) => { this.updateGameObjects(state); });
-		webSocketClient.registerCallback(WebSocketEvent.CONNECTION, () => { });
 		webSocketClient.registerCallback(WebSocketEvent.ERROR, (error: string) => { Logger.error('Network error', 'Game', error); });
 		webSocketClient.registerCallback(WebSocketEvent.GAME_PAUSED, () => { this.onServerPausedGame(); });
 		webSocketClient.registerCallback(WebSocketEvent.GAME_RESUMED, () => { this.onServerResumedGame(); });
@@ -449,7 +448,6 @@ export class Game {
 	private unregisterCallbacks(): void {
 		try {
 			webSocketClient.unregisterCallback(WebSocketEvent.GAME_STATE);
-			webSocketClient.unregisterCallback(WebSocketEvent.CONNECTION);
 			webSocketClient.unregisterCallback(WebSocketEvent.ERROR);
 			webSocketClient.unregisterCallback(WebSocketEvent.GAME_PAUSED);
 			webSocketClient.unregisterCallback(WebSocketEvent.GAME_RESUMED);
