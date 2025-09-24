@@ -57,13 +57,12 @@ export class WebSocketManager {
      */
     private handleConnection(socket: any, authenticatedUser?: { username: string; email: string }): void {
         let client: Client;
-        if (authenticatedUser) {
-            // Google authenticated user
+        if (authenticatedUser) { // Google authenticated user
             client = new Client(authenticatedUser.username, authenticatedUser.email, socket);
             client.loggedIn = true; // Mark as already authenticated
-        } else {
-            // Traditional authentication will authenticate via messages
-            client = new Client('temp', '', socket); // will be updated if server approve a classic login request from client
+        }
+        else { // Traditional authentication via messages, details updated with login request
+            client = new Client('default', 'default@default', socket);
         }
 
         socket.on('message', async (message: string) => {
@@ -140,7 +139,6 @@ export class WebSocketManager {
                         type: MessageType.ERROR,
                         message: 'Unknown message type'
                     });
-
             }
         } catch (error) {
             console.error('❌ Error parsing message:', error);
@@ -172,13 +170,16 @@ export class WebSocketManager {
             for (const player of data.players ?? []) {
                 gameSession.add_player(new Player(player.id, player.name, client));
             }
+
+            // start game if full or local, otherwise wait for players to join
             if ((gameSession.full) || gameSession.mode === GameMode.TOURNAMENT_LOCAL) {
                 gameManager.runGame(gameSession);
             }
             else {
                 setTimeout(() => { gameManager.runGame(gameSession) }, (GAME_CONFIG.maxJoinWaitTime * 1000));
             }
-        } catch (error) {
+        }
+        catch (error) {
             console.error('❌ Error joining game:', error);
             this.send(socket, {
                 type: MessageType.ERROR,

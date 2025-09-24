@@ -11,7 +11,6 @@ export class Match {
 	round: number;
 	players: (Player | CPU)[] = [];
 	clients: Set<Client> = new Set();
-	readyClients: Set<string> = new Set(); // Clients that are ready to start
 	game!: Game;
 	winner?: Player | CPU;
 	loser?: Player | CPU;
