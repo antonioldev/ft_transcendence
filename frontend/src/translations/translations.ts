@@ -25,17 +25,13 @@ export function updateLanguageDisplay(): void {
     const langDisplay = requireElementById(EL.DISPLAY.LANGUAGE_SELECT);
     langDisplay.textContent = langs[currentLang];
 
-<<<<<<< HEAD
-	const playBtn = requireElementById(EL.BUTTONS.PLAY);
-	playBtn.textContent = t.play;
 
 	// Auth buttons
 	const registerBtn = requireElementById(EL.BUTTONS.REGISTER);
 	registerBtn.textContent = t.register;
-=======
+    
     const playBtn = requireElementById(EL.BUTTONS.PLAY);
     playBtn.textContent = t.play;
->>>>>>> 69cb0189936c263692e2cb0a3b7fc421f0119e5a
 
 	const loginBtn = requireElementById(EL.BUTTONS.LOGIN);
 	loginBtn.textContent = t.login;
@@ -69,15 +65,9 @@ export function updateLanguageDisplay(): void {
     const notRegistered = document.getElementById('not-registered');
     if (notRegistered) notRegistered.textContent = t.notRegistered;
 
-<<<<<<< HEAD
-	// Update "Don't have an account?" text
-	const loginFooter = document.querySelector('#login-modal .modal-footer .info-text');
-	if (loginFooter) loginFooter.textContent = t.dontHaveAccount;
-=======
     // Update "Don't have an account?" text
     const loginFooter = document.querySelector('#login-modal .modal-footer .info-text');
     if (loginFooter) loginFooter.textContent = t.dontHaveAccount;
->>>>>>> 69cb0189936c263692e2cb0a3b7fc421f0119e5a
 
     // Register modal
     const registerUsernameLabel = document.querySelector('#register-modal label[for="register-username"]');
@@ -96,19 +86,11 @@ export function updateLanguageDisplay(): void {
     const registerConfirmPasswordLabel = document.querySelector('#register-modal label[for="register-confirm-password"]');
     if (registerConfirmPasswordLabel) registerConfirmPasswordLabel.textContent = t.confirmPassword;
 
-<<<<<<< HEAD
 	const registerSubmit = requireElementById(EL.BUTTONS.REGISTER_SUBMIT);
 	registerSubmit.textContent = t.createAccount;
 
 	const registerBack = requireElementById(EL.BUTTONS.REGISTER_BACK);
 	registerBack.textContent = t.back;
-=======
-    const registerSubmit = requireElementById(EL.BUTTONS.REGISTER_SUBMIT);
-    registerSubmit.textContent = t.createAccount;
-
-    const registerBack = requireElementById(EL.BUTTONS.REGISTER_BACK);
-    registerBack.textContent = t.back;
->>>>>>> 69cb0189936c263692e2cb0a3b7fc421f0119e5a
 
     const showLogin = requireElementById(EL.BUTTONS.SHOW_LOGIN);
     showLogin.textContent = t.loginSubmit;
@@ -173,29 +155,19 @@ export function updateLanguageDisplay(): void {
     if (tournamentLabel2) tournamentLabel2.textContent = t.player2Name;
 
     // const tournamentInput2 = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER2_NAME_TOURNAMENT);
-<<<<<<< HEAD
     // const tournamentInput2 = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER2_NAME_TOURNAMENT);
-=======
->>>>>>> 69cb0189936c263692e2cb0a3b7fc421f0119e5a
 
     const tournamentLabel3 = document.querySelector('#tournament-setup label[for="player3-name-tournament"]');
     if (tournamentLabel3) tournamentLabel3.textContent = "Player 3 Name:"; // TODO: Add translation key for player3Name
 
     // const tournamentInput3 = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER3_NAME_TOURNAMENT);
-<<<<<<< HEAD
     // const tournamentInput3 = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER3_NAME_TOURNAMENT);
-=======
->>>>>>> 69cb0189936c263692e2cb0a3b7fc421f0119e5a
 
     const tournamentLabel4 = document.querySelector('#tournament-setup label[for="player4-name-tournament"]');
     if (tournamentLabel4) tournamentLabel4.textContent = "Player 4 Name:"; // TODO: Add translation key for player4Name
 
-<<<<<<< HEAD
 	// const tournamentInput4 = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER4_NAME_TOURNAMENT);
 	// tournamentInput4.placeholder = "Enter Player 4 name";
-=======
-    // const tournamentInput4 = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER4_NAME_TOURNAMENT);
->>>>>>> 69cb0189936c263692e2cb0a3b7fc421f0119e5a
 
 	const playerName = requireElementById<HTMLInputElement>(EL.PLAYER_COLLECTION.INPUT);
 	playerName.placeholder = t.enterName;

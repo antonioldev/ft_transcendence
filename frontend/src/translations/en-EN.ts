@@ -68,11 +68,8 @@ export const english: Translation = {
     impossible: ' (Impossible)',
     winner: 'Winner',
     continue: 'Press SPACE to continue',
-<<<<<<< HEAD
     tournamentTitle: 'Bracket',
 	escToClose: 'Press ESC to close',
-=======
->>>>>>> 69cb0189936c263692e2cb0a3b7fc421f0119e5a
     
     // Validation error messages
     errorEnterEmailOrUsername: 'Please enter email or username',

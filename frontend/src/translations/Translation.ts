@@ -3,12 +3,8 @@
  * Each property corresponds to a translatable string in the application.
  */
 export interface Translation {
-<<<<<<< HEAD
     appTitle: string;
 	classicMode: string;
-=======
-    classicMode: string;
->>>>>>> 69cb0189936c263692e2cb0a3b7fc421f0119e5a
     immersiveMode: string;
     selectGameMode: string;
     soloMode: string;
@@ -75,11 +71,8 @@ export interface Translation {
     impossible: string;
     winner: string;
     continue: string;
-<<<<<<< HEAD
 	tournamentTitle: string;
 	escToClose: string;
-=======
->>>>>>> 69cb0189936c263692e2cb0a3b7fc421f0119e5a
     
     // Validation error messages
     errorEnterEmailOrUsername: string;

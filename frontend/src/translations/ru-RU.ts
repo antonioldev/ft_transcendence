@@ -68,11 +68,8 @@ export const russian: Translation = {
     impossible: ' (Невозможный)',
     winner: 'Победитель матча',
     continue: 'Нажмите ПРОБЕЛ, чтобы продолжить',
-<<<<<<< HEAD
 	tournamentTitle: 'Турнирное Дерево',
 	escToClose: 'Нажмите ESC для закрытия',
-=======
->>>>>>> 69cb0189936c263692e2cb0a3b7fc421f0119e5a
     
     // Validation error messages
     errorEnterEmailOrUsername: 'Пожалуйста, введите email или имя пользователя',

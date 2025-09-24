@@ -68,11 +68,8 @@ export const portuguese: Translation = {
     impossible: ' (Impossível)',
     winner: 'Vencedor da partida',
     continue: 'Pressione ESPAÇO para continuar',
-<<<<<<< HEAD
 	tournamentTitle: 'Classificação do Torneio de Pong',
 	escToClose: 'Pressione ESC para fechar',
-=======
->>>>>>> 69cb0189936c263692e2cb0a3b7fc421f0119e5a
     
     // Validation error messages
     errorEnterEmailOrUsername: 'Por favor, insira email ou nome de usuário',
