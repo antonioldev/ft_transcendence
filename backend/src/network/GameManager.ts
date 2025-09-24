@@ -6,6 +6,7 @@ import { registerNewGame, addPlayer2 } from '../data/validation.js';
 import * as db from "../data/validation.js";
 import { GAME_CONFIG } from '../shared/gameConfig.js';
 import { EventEmitter } from 'events';
+import { generateGameId } from '../data/database.js';
 
 /**
  * Manages game sessions and player interactions within the game.
@@ -21,7 +22,7 @@ class GameManager extends EventEmitter {
      * @returns The unique ID of the created game session.
      */
     createGame(mode: GameMode, client: Client, capacity?: number): AbstractGameSession {
-        const gameId = `game_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        const gameId = generateGameId();
         // Create a new game in DB with 1st player as client only if the game is remote
         if (mode === GameMode.TWO_PLAYER_REMOTE) {
             registerNewGame(gameId, client.username, 0);

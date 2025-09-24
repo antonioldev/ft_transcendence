@@ -4,19 +4,19 @@ import { Client, Player, CPU } from './Client.js';
 import { GameMode, MessageType, Direction } from '../shared/constants.js';
 import { addPlayer2, registerNewGame } from '../data/validation.js';
 import { LEFT, RIGHT } from '../shared/gameConfig.js';
-import { spec } from 'node:test/reporters';
+import { generateGameId } from '../data/database.js';
 
 export class Match {
-	id: string = `game_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+	id: string = generateGameId();
 	round: number;
 	players: (Player | CPU)[] = [];
 	clients: Set<Client> = new Set();
-	readyClients: Set<string> = new Set(); // New, keep track of clients that finish loading
+	readyClients: Set<string> = new Set(); // Clients that are ready to start
 	game!: Game;
 	winner?: Player | CPU;
 	loser?: Player | CPU;
+	
 	index!: number;
-
 	left?: Match;
 	right?: Match;
 	next?: Match;

@@ -12,6 +12,14 @@ export function registerDatabaseFunctions(database: Database.Database) {
   db = database;
 }
 
+export function generateClientId(): string {
+	return `client_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+ }
+ 
+ export function generateGameId(): string {
+	 return `game_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+ }
+
 const HOUR = 60 * 60;
 
 const nowSec = () => Math.floor(Date.now() / 1000);

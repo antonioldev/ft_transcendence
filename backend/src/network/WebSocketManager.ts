@@ -7,6 +7,8 @@ import * as db from "../data/validation.js";
 import { getUserBySession, getSessionByUsername } from '../data/validation.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
 import { TournamentRemote } from './Tournament.js';
+import { generateClientId } from '../data/database.js';
+
 /**
  * Manages WebSocket connections, client interactions, and game-related messaging.
  */
@@ -54,7 +56,7 @@ export class WebSocketManager {
      * @param socket - The WebSocket connection object.
      */
     private handleConnection(socket: any, authenticatedUser?: { username: string; email: string }): void {
-        const clientId = this.generateClientId();
+        const clientId = generateClientId();
 
         let client: Client;
         if (authenticatedUser) {
@@ -504,14 +506,6 @@ export class WebSocketManager {
         });
 
         console.log(`Lobby sent to ${client.username}:${client.id}`)
-    }
-
-    /**
-     * Generates a unique client ID.
-     * @returns A unique string representing the client ID.
-     */
-    private generateClientId(): string {
-        return `client_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     }
 
     // /**
