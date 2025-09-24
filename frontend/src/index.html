@@ -64,17 +64,17 @@
             <!-- PLAY button -->
             <button type="button" 
                     id="play-btn" 
-                    class="bg-transparent text-light-green font-tiny5-regular text-lg px-6 py-2 
-                        hover:bg-orange hover:text-blue-background transition-colors duration-200
-                        border border-light-green hover:border-orange
-                        min-w-[120px] text-left">
-                PLAY
+                    class="bg-orange rounded-sm text-blue-background font-poppins-semibold text-lg px-8 py-2 
+                        hover:bg-light-green hover:text-blue-background transition-colors duration-200
+                        border border-orange hover:border-light-green
+                        min-w-[180px] text-left">
+                PLAY    
             </button>
             
             <!-- LOGIN button -->
             <button type="button" 
                     id="login-btn" 
-                    class="bg-transparent text-light-green font-tiny5-regular text-lg px-6 py-2 
+                    class="bg-transparent rounded-sm text-light-green font-poppins-semibold text-lg px-8 py-2 
                         hover:bg-light-green hover:text-blue-background transition-colors duration-200
                         border border-light-green
                         min-w-[180px] text-left">
@@ -84,7 +84,7 @@
             <!-- REGISTER button -->
             <button type="button" 
                     id="register-btn" 
-                    class="bg-transparent text-light-green font-tiny5-regular text-lg px-6 py-2 
+                    class="bg-transparent rounded-sm text-light-green font-poppins-semibold text-lg px-8 py-2 
                         hover:bg-light-green hover:text-blue-background transition-colors duration-200
                         border border-light-green
                         min-w-[180px] text-left">
@@ -361,34 +361,79 @@
                     </button>
                 </div>
                 
-                <!-- Other Game Modes -->
-                <button type="button" id="local-mode" 
-                        class="w-full bg-transparent text-light-green font-poppins-semibold text-lg px-6 py-3 
-                               hover:bg-light-green hover:text-blue-background transition-colors duration-200
-                               border border-light-green rounded-sm">
-                    Local 2 Players
-                </button>
+                <!-- Local Game with 2 Players -->
+                <div class="flex items-center gap-2">
+                    <div class="text-light-green font-poppins-semibold text-lg px-2 rounded-sm opacity-0">
+                        ◂
+                    </div>
+                    <button type="button" id="local-mode" 
+                            class="flex-1 bg-transparent text-light-green font-poppins-semibold text-lg px-6 py-3 
+                                   hover:bg-light-green hover:text-blue-background transition-colors duration-200
+                                   border border-light-green text-center rounded-sm">
+                        Local 2 Players
+                    </button>
+                    <div class="text-light-green font-poppins-semibold text-lg px-2 rounded-sm opacity-0">
+                        ▸
+                    </div>
+                </div>
                 
-                <button type="button" id="online-mode" 
-                        class="w-full bg-transparent text-light-green font-poppins-semibold text-lg px-6 py-3 
-                               hover:bg-light-green hover:text-blue-background transition-colors duration-200
-                               border border-light-green rounded-sm">
-                    Online 2 Players
-                </button>
+                <!-- Online Game with 2 Players -->
+                <div class="flex items-center gap-2">
+                    <div class="text-light-green font-poppins-semibold text-lg px-2 rounded-sm opacity-0">
+                        ◂
+                    </div>
+                    <button type="button" id="online-mode" 
+                            class="flex-1 bg-transparent text-light-green font-poppins-semibold text-lg px-6 py-3 
+                                   hover:bg-light-green hover:text-blue-background transition-colors duration-200
+                                   border border-light-green text-center rounded-sm">
+                        Online 2 Players
+                    </button>
+                    <div class="text-light-green font-poppins-semibold text-lg px-2 rounded-sm opacity-0">
+                        ▸
+                    </div>
+                </div>
                 
-                <button type="button" id="tournament-mode" 
-                        class="w-full bg-transparent text-light-green font-poppins-semibold text-lg px-6 py-3 
-                               hover:bg-light-green hover:text-blue-background transition-colors duration-200
-                               border border-light-green rounded-sm">
-                    Tournament
-                </button>
+                <!-- Tournament Mode with Number of Players -->
+                <div class="flex items-center gap-2">
+                    <button type="button" id="tournament-number-back" 
+                            class="text-light-green hover:text-white transition-colors duration-200 
+                                   font-poppins-semibold text-lg px-2 rounded-sm">
+                        ◂
+                    </button>
+                    <button type="button" id="tournament-mode" 
+                            class="flex-1 bg-transparent text-light-green font-poppins-semibold text-lg px-6 py-3 
+                                   hover:bg-light-green hover:text-blue-background transition-colors duration-200
+                                   border border-light-green text-center rounded-sm">
+                        Tournament (4 x 👤)
+                    </button>
+                    <button type="button" id="tournament-number-forward" 
+                            class="text-light-green hover:text-white transition-colors duration-200 
+                                   font-poppins-semibold text-lg px-2 rounded-sm">
+                        ▸
+                    </button>
+                </div>
                 
-                <button type="button" id="tournament-online-mode" 
-                        class="w-full bg-transparent text-light-green font-poppins-semibold text-lg px-6 py-3 
-                               hover:bg-light-green hover:text-blue-background transition-colors duration-200
-                               border border-light-green rounded-sm">
-                    Tournament Online
-                </button>
+                <!-- Online Tournament Mode with Number of Players -->
+                <div class="flex items-center gap-2">
+                    <button type="button" id="tournament-online-number-back" 
+                            class="text-light-green hover:text-white transition-colors duration-200 
+                                    font-poppins-semibold text-lg px-2 rounded-sm">
+                        ◂
+                    </button>
+                    <button type="button" id="tournament-online-mode" 
+                            class="flex-1 bg-transparent text-light-green font-poppins-semibold text-lg px-6 py-3 
+                                   hover:bg-light-green hover:text-blue-background transition-colors duration-200
+                                   border border-light-green text-center rounded-sm">
+                        Tournament Online
+                    </button>
+                    <button type="button" id="tournament-online-number-forward" 
+                            class="text-light-green hover:text-white transition-colors duration-200 
+                                    font-poppins-semibold text-lg px-2 rounded-sm">
+                        ▸
+                    </button>
+                </div>
+
+                <!-- TODO: If the user tries to access online modes without being logged in, show a message prompting them to log in. -->
                 
                 <!-- Back Button -->
                 <div class="text-center">
@@ -452,44 +497,40 @@
                 </div>
             </form>
 
-            <!-- Tournament Setup -->
-            <form id="tournament-setup" class="space-y-6" style="display: none;">
-                <div>
-                    <label for="player1-name-tournament" class="block text-sm font-medium text-light-green font-sans mb-2">
-                        Player 1 Name:
-                    </label>
-                    <input type="text" id="player1-name-tournament" name="player1-name" maxlength="20" required autocomplete="off"
-                           class="block w-full rounded-sm bg-transparent border border-light-green px-3 py-2 text-sm text-light-green 
-                                  placeholder:text-gray-500 opacity-90 focus:outline-2 focus:outline-orange font-sans" />
+            <!-- Offline Tournament Setup -->
+            <div id="offline-tournament-setup" class="space-y-6" style="display: none;">
+                <form id="player-setup" class="w-full max-w-sm">
+                    <fieldset class="border-none p-0 m-0">
+                        <div class="flex flex-col gap-2">
+                            <label id="player-label" class="text-light-green font-sans text-lg">Player 1</label>
+                            <input
+                                type="text"
+                                id="player-input"
+                                class="form-input bg-transparent border border-light-green text-light-green placeholder-gray-400 focus:outline-none focus:border-white transition-colors duration-200"
+                                placeholder="Enter name"
+                                maxlength="20"
+                                autocomplete="off"
+                            />
+                        </div>
+                    </fieldset>
+                </form>
+        
+
+                <div class="flex flex-col sm:flex-row items-center gap-4 mt-4 w-full justify-center">
+                    <button id="start-game" type="button" class="btn w-full sm:w-auto" disabled>
+                        Next
+                    </button>
+                    <button id="add-cpu" type="button" class="btn btn-secondary w-full sm:w-auto">
+                        Add CPU
+                    </button>
+                    <button id="setup-back" type="button" class="btn btn-secondary w-full sm:w-auto">
+                        Back
+                    </button>
                 </div>
-                <div>
-                    <label for="player2-name-tournament" class="block text-sm font-medium text-light-green font-sans mb-2">
-                        Player 2 Name:
-                    </label>
-                    <input type="text" id="player2-name-tournament" name="player2-name" maxlength="20" required autocomplete="off"
-                           class="block w-full rounded-sm bg-transparent border border-light-green px-3 py-2 text-sm text-light-green 
-                                  placeholder:text-gray-500 opacity-90 focus:outline-2 focus:outline-orange font-sans" />
-                </div>
-                <div>
-                    <label for="player3-name-tournament" class="block text-sm font-medium text-light-green font-sans mb-2">
-                        Player 3 Name:
-                    </label>
-                    <input type="text" id="player3-name-tournament" name="player3-name" maxlength="20" required autocomplete="off"
-                           class="block w-full rounded-sm bg-transparent border border-light-green px-3 py-2 text-sm text-light-green 
-                                  placeholder:text-gray-500 opacity-90 focus:outline-2 focus:outline-orange font-sans" />
-                </div>
-                <div>
-                    <label for="player4-name-tournament" class="block text-sm font-medium text-light-green font-sans mb-2">
-                        Player 4 Name:
-                    </label>
-                    <input type="text" id="player4-name-tournament" name="player4-name" maxlength="20" required autocomplete="off"
-                           class="block w-full rounded-sm bg-transparent border border-light-green px-3 py-2 text-sm text-light-green 
-                                  placeholder:text-gray-500 opacity-90 focus:outline-2 focus:outline-orange font-sans" />
-                </div>
-            </form>
+            </div>
 
             <!-- Action Buttons -->
-            <div class="space-y-4 mt-8">
+            <!-- <div class="space-y-4 mt-8">
                 <button type="button" id="start-game" 
                         class="w-full uppercase bg-light-green text-blue-background font-tiny5-regular text-lg px-6 py-3 
                                hover:bg-orange transition-colors duration-200 rounded-sm">
@@ -503,7 +544,7 @@
                         Back
                     </button>
                 </div>
-            </div>
+            </div> -->
         </div>
     </div>
 
@@ -585,8 +626,8 @@
     </div>
 
     <!-- DEVELOPMENT: Use .ts for hot reload -->
-    <!-- <script type="module" src="./core/main.ts"></script> -->
+    <script type="module" src="./core/main.ts"></script>
     <!-- PRODUCTION: Use compiled .js -->
-    <script type="module" src="./core/main.js"></script>
+    <!-- <script type="module" src="./core/main.js"></script> -->
 </body>
 </html>
