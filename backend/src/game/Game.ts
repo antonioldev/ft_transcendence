@@ -28,7 +28,7 @@ export class Game {
 		this._broadcast = broadcast_callback;
 		this.players = players;
 		this.ball = new Ball(this.paddles, this._update_score.bind(this));
-		this.powerup_manager = new PowerupManager(this.paddles, this.ball, this._broadcast)
+		this.powerup_manager = new PowerupManager(this.paddles, this.ball)
 		this._init();
 	}
 
@@ -102,10 +102,12 @@ export class Game {
 			paddleLeft: {
 				x:     this.paddles[LEFT_PADDLE].rect.centerx,
 				score: this.paddles[LEFT_PADDLE].score,
+				powerups: this.powerup_manager.get_state(LEFT_PADDLE),
 			},
 			paddleRight: {
 				x:     this.paddles[RIGHT_PADDLE].rect.centerx,
 				score: this.paddles[RIGHT_PADDLE].score,
+				powerups: this.powerup_manager.get_state(RIGHT_PADDLE),
 			},
 			ball: {
 				x: this.ball.rect.centerx,
@@ -113,13 +115,6 @@ export class Game {
 				current_rally: this.ball.current_rally,
 			},
 		}
-	}
-
-	// used to send the names a powerups to a spectator joining a game
-	send_current_state(client: Client) {
-		// need to add client as arg
-		this.powerup_manager.send_state(new Set([client])); 
-		this.send_side_assignment(new Set([client]));
 	}
 
 	send_side_assignment(clients?: Set<Client>) {

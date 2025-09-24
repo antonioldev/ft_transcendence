@@ -343,7 +343,7 @@ export class TournamentRemote extends AbstractTournament {
 	assign_spectator(client: Client, match: Match) {
 		match.clients.add(client);
 		this.spectator_match_map.set(client.id, match);
-		// match.game.send_current_state(client);
+		match.game.send_side_assignment(new Set([client]));
 	}
 
 	handle_spectators(matches: Match[]) {

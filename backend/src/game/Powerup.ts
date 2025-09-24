@@ -1,9 +1,8 @@
 import { Ball } from './Ball.js';
 import { Paddle} from './Paddle.js';
 import { LEFT_PADDLE, RIGHT_PADDLE, GAME_CONFIG } from '../shared/gameConfig.js';
-import { PowerupType, PowerupState, MessageType} from '../shared/constants.js';
-import { Client } from '../network/Client.js'
-import { ServerMessage } from '../shared/types.js';
+import { PowerupType, PowerupState} from '../shared/constants.js';
+import { Powerup } from '../shared/types.js';
 
 export class Slot {
 	type: PowerupType;
@@ -24,14 +23,11 @@ export class PowerupManager {
 	slots = [this.left_slots, this.right_slots];
 	paddles: Paddle[];
 	ball: Ball;
-	private _broadcast: (message: ServerMessage, clients?: Set<Client>) => void;
 
-	constructor(paddles: Paddle[], ball: Ball, broadcast_callback: (message: ServerMessage, clients?: Set<Client>) => void) {
+	constructor(paddles: Paddle[], ball: Ball) {
 		this.paddles = paddles;
 		this.ball = ball;
-		this._broadcast = broadcast_callback;
 		this._init_powerups();
-		this.send_state();
 	}
 
 	_init_powerups() {
@@ -43,25 +39,22 @@ export class PowerupManager {
 		}
 	}
 
-	send_state(clients?: Set<Client>) {
-		for (const client of clients ?? []) {
-			console.error(`CLIENT ${client.username} REQUESTED POWERUP STATE`)
+	get_state(side: number): Powerup[] {
+		let state: Powerup[] = [];
+		for (let i = 0; i < GAME_CONFIG.slot_count; i++) {
+			state.push({
+				type: this.slots[side][i].type,
+				state: this.slots[side][i].state,
+			})
 		}
-		for (const side of [LEFT_PADDLE, RIGHT_PADDLE]) {
-			this._broadcast({
-				type: MessageType.POWERUP_ASSIGNMENT,
-				side: side,
-				powerups: this.slots[side].map(slot => slot.type),
-				slot_states: this.slots[side].map(slot => slot.state),
-			}, clients)
-		}
+		return (state);
 	}
 
 	activate(slot: Slot) {
 		if (slot.state === (PowerupState.ACTIVE || PowerupState.SPENT)) return ;
 		
 		const opponent_side: number = slot.side === LEFT_PADDLE ? RIGHT_PADDLE : LEFT_PADDLE;
-		let timeout: number  = GAME_CONFIG.powerupDuration;
+		let timeout: number = GAME_CONFIG.powerupDuration;
 
 		switch (slot.type) {
 			case PowerupType.SLOW_OPPONENT:
@@ -71,7 +64,7 @@ export class PowerupManager {
 				timeout = this.shrink(opponent_side);
 				break ;
 			case PowerupType.INVERT_OPPONENT:
-				this.paddles[opponent_side].is_inverted = true;
+				timeout = this.invert(opponent_side);
 				break ;				
 			case PowerupType.INCREASE_PADDLE_SPEED:
 				timeout = this.speed_up(slot.side);
@@ -80,21 +73,12 @@ export class PowerupManager {
 				timeout = this.grow(slot.side);
 				break ;
 			case PowerupType.FREEZE:
-				timeout = GAME_CONFIG.freezeDuration;
-				this.ball.isPaused = true;
+				timeout = this.freeze_ball();
 				break ;
 			default:
 				console.error(`Error: cannot activate unknown Powerup "${slot.type}`);
 				return ;
 		}
-
-		this._broadcast({
-			type: MessageType.POWERUP_ACTIVATED,
-			powerup: slot.type,
-			side: slot.side,
-			slot_index: slot.index,
-		})
-
 		slot.state = PowerupState.ACTIVE;
 		setTimeout(() => this.deactivate(slot), timeout);
 	}
@@ -126,14 +110,6 @@ export class PowerupManager {
 				console.error(`Error: cannot deactivate unknown Powerup "${slot.type}`);
 				return ;
 		}
-		
-		this._broadcast({
-			type: MessageType.POWERUP_DEACTIVATED,
-			powerup: slot.type,
-			side: slot.side,
-			slot_index: slot.index,
-		})
-
 		slot.state = PowerupState.SPENT;
 	}
 
@@ -146,6 +122,8 @@ export class PowerupManager {
 		return (null);
 	}
 
+
+	// POWERUPS 
 	slow_down(opponent_side: number): number {
 		const opponent = this.paddles[opponent_side];
 		
@@ -211,5 +189,15 @@ export class PowerupManager {
 			return (0);
 		}
 		return (GAME_CONFIG.powerupDuration);
+	}
+
+	invert(side: number): number {
+		this.paddles[side].is_inverted = true;
+		return (GAME_CONFIG.powerupDuration);
+	}
+
+	freeze_ball(): number {
+		this.ball.isPaused = true;
+		return (GAME_CONFIG.freezeDuration);
 	}
 }
