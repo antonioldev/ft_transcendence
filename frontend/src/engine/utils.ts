@@ -82,6 +82,7 @@ export function resetPlayersState(): Map<PlayerSide, PlayerState> {
 			isControlled: false,
 			size: GAME_CONFIG.paddleWidth,
 			score: 0,
+			powerUpsAssigned: false,
 			powerUps: [null, null, null],
 			activePowerup: null,
 			inverted: false,
@@ -92,6 +93,7 @@ export function resetPlayersState(): Map<PlayerSide, PlayerState> {
 			isControlled: false,
 			size: GAME_CONFIG.paddleWidth,
 			score: 0,
+			powerUpsAssigned: false,
 			powerUps: [null, null, null],
 			activePowerup: null,
 			inverted: false,
@@ -110,6 +112,7 @@ export interface PlayerState {
 	isControlled: boolean;
 	size: number;
 	score: number;
+	powerUpsAssigned: boolean;
 	powerUps: (PowerupType | null)[];
 	activePowerup: PowerupType | null;
 	inverted: boolean;

@@ -328,6 +328,10 @@ export class Game {
 			const leftPlayer = this.players.get(PlayerSide.LEFT)!;
 			const rightPlayer = this.players.get(PlayerSide.RIGHT)!;
 
+			this.services?.powerup?.handleUpdates(PlayerSide.LEFT, leftPlayer, state.paddleLeft.powerups);
+			this.services?.powerup?.handleUpdates(PlayerSide.RIGHT, rightPlayer, state.paddleRight.powerups);
+
+
 			let scoresChanged = false;
 			if (leftPlayer.score < state.paddleLeft.score) {
 				leftPlayer.score = state.paddleLeft.score;

@@ -147,14 +147,14 @@ export class WebSocketClient {
             case MessageType.MATCH_RESULT:
                 this.triggerCallback(WebSocketEvent.MATCH_RESULT, message);
                 break;
-            case MessageType.POWERUP_ASSIGNMENT:
-                this.triggerCallback(WebSocketEvent.POWERUP_ASSIGNMENT, message); 
-                break;
-            case MessageType.POWERUP_ACTIVATED:
-                this.triggerCallback(WebSocketEvent.POWERUP_ACTIVATED, message); 
-                break;
-            case MessageType.POWERUP_DEACTIVATED:
-                this.triggerCallback(WebSocketEvent.POWERUP_DEACTIVATED, message); 
+            // case MessageType.POWERUP_ASSIGNMENT:
+            //     this.triggerCallback(WebSocketEvent.POWERUP_ASSIGNMENT, message); 
+            //     break;
+            // case MessageType.POWERUP_ACTIVATED:
+            //     this.triggerCallback(WebSocketEvent.POWERUP_ACTIVATED, message); 
+            //     break;
+            // case MessageType.POWERUP_DEACTIVATED:
+            //     this.triggerCallback(WebSocketEvent.POWERUP_DEACTIVATED, message); 
                 break;
             case MessageType.TOURNAMENT_LOBBY:
                 this.triggerCallback(WebSocketEvent.TOURNAMENT_LOBBY, message); 
