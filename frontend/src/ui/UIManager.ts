@@ -38,7 +38,6 @@ class UIManager {
         const screen = document.getElementById(screenId);
         if (screen) {
             const displayValue = screenId === 'main-menu' ? 'block' : 'flex';
-            console.log(`Setting display to: ${displayValue}`);
             screen.style.display = displayValue;
         } else {
             console.error(`Screen element not found: ${screenId}`);
@@ -50,7 +49,7 @@ class UIManager {
         const setupForms = [
             'solo-setup',
             'two-players-setup', 
-            'tournament-setup'
+            'offline-tournament-setup'
         ];
         
         setupForms.forEach(id => {
@@ -63,6 +62,8 @@ class UIManager {
         const targetForm = document.getElementById(`${formType}-setup`);
         if (targetForm) {
             targetForm.style.display = 'block';
+        } else {
+            console.error(`Setup form not found: ${targetForm}`);
         }
     }
 
@@ -127,13 +128,13 @@ class UIManager {
 	updateTournamentSizeDisplay(currentTournamentSize: number): void {
 		const tournamentButton = requireElementById(EL.GAME_MODES.TOURNAMENT);
 		const t = getCurrentTranslation();
-		tournamentButton.textContent = `${t.tournamentMode} (${currentTournamentSize}x 𐦂𖨆𐀪𖠋)`;
+		tournamentButton.textContent = `${t.tournamentMode} (${currentTournamentSize} x 👤)`;
 	}
 
 	updateOnlineTournamentSizeDisplay(currentOnlineTournamentSize: number): void {
 		const tournamentOnlineButton = requireElementById(EL.GAME_MODES.TOURNAMENT_ONLINE);
 		const t = getCurrentTranslation();
-		tournamentOnlineButton.textContent = `${t.tournamentOnline} (${currentOnlineTournamentSize}x 🧑‍🧑‍🧒‍🧒)`;
+		tournamentOnlineButton.textContent = `${t.tournamentOnline} (${currentOnlineTournamentSize} x 👤)`;
 	}
 
 	// ========================================

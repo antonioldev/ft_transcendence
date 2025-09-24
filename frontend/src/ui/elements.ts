@@ -47,16 +47,16 @@ export const EL = {
 	VIEW_MODE_BACK: 'view-mode-back',
 	VIEW_MODE_FORWARD: 'view-mode-forward',
 
-    // Form submission buttons
-    LOGIN_TITLE: 'login-title',
-    REGISTER_TITLE: 'register-title',
-    LOGIN_SUBMIT: 'login-submit',
-    REGISTER_SUBMIT: 'register-submit',
-    START_GAME: 'start-game',
-    GOOGLE_LOGIN: 'google-login-btn-container',
-    FORGOT_PASSWORD: 'forgot-password',
-    NOT_REGISTERED: 'not-registered',
-    ALREADY_REGISTERED: 'already-registered',
+  // Form submission buttons
+  LOGIN_TITLE: 'login-title',
+  REGISTER_TITLE: 'register-title',
+  LOGIN_SUBMIT: 'login-submit',
+  REGISTER_SUBMIT: 'register-submit',
+  START_GAME: 'start-game',
+  GOOGLE_LOGIN: 'google-login-btn-container',
+  FORGOT_PASSWORD: 'forgot-password',
+  NOT_REGISTERED: 'not-registered',
+  ALREADY_REGISTERED: 'already-registered',
 
 	// Modal switching
 	SHOW_REGISTER: 'show-register',
@@ -97,7 +97,7 @@ export const EL = {
   // ========================================
   // PLAYER SETUP FORMS
   // ========================================
-//   PLAYER_SETUP: {
+  PLAYER_SETUP: {
 // 	// Solo player setup
 // 	PLAYER1_NAME: 'player1-name',
 
@@ -114,11 +114,12 @@ export const EL = {
 // 	PLAYER3_NAME_TOURNAMENT: 'player3-name-tournament',
 // 	PLAYER4_NAME_TOURNAMENT: 'player4-name-tournament',
 
-// 	// Setup forms
-// 	SOLO_SETUP: 'solo-setup',
-// 	TWO_PLAYERS_SETUP: 'two-players-setup',
-// 	TOURNAMENT_SETUP: 'tournament-setup'
-//   },
+	// Setup forms
+	SOLO_SETUP: 'solo-setup',
+	TWO_PLAYERS_SETUP: 'two-players-setup',
+	TOURNAMENT_SETUP: 'tournament-setup'
+  },
+
 	PLAYER_COLLECTION: {
 		FORM: 'player-setup',
 		LABEL: 'player-label',
@@ -139,11 +140,11 @@ export const EL = {
 	LANGUAGE_SELECT: 'language_select',
 	VIEW_MODE_DISPLAY: 'view-mode-display',
 
-    // User info display
-    USER_INFO: 'user-info',
-    USER_NAME: 'user-name',
-    AUTH_BUTTONS: 'auth-buttons',
-    GREETING: 'greeting',
+  // User info display
+  USER_INFO: 'user-info',
+  USER_NAME: 'user-name',
+  AUTH_BUTTONS: 'auth-buttons',
+  GREETING: 'greeting',
 
 	// Connection status
 	CONNECTION_STATUS: 'connection-status'

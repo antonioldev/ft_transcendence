@@ -85,54 +85,78 @@ export class MenuFlowManager {
 	// ========================================
 
     private setupEventListeners(): void {
-        // View mode navigation controls - with defensive checks
         try {
-            const viewModeBack = requireElementById(EL.BUTTONS.VIEW_MODE_BACK);
-            const viewModeForward = requireElementById(EL.BUTTONS.VIEW_MODE_FORWARD);
-            const backBtn = requireElementById(EL.BUTTONS.DASHBOARD_BACK);
-            const soloDifficultyBack = requireElementById(EL.BUTTONS.SOLO_DIFFICULTY_BACK);
-            const soloDifficultyForward = requireElementById(EL.BUTTONS.SOLO_DIFFICULTY_FORWARD);
-
-            viewModeBack.addEventListener('click', () => this.previousViewMode());
-            viewModeForward.addEventListener('click', () => this.nextViewMode());
-            backBtn.addEventListener('click', () => { appStateManager.navigateTo(AppState.MAIN_MENU);});
-            soloDifficultyBack.addEventListener('click', () => this.previousAIDifficulty());
-            soloDifficultyForward.addEventListener('click', () => this.nextAIDifficulty());
-
+            // Setup navigation listeners (includes view mode, difficulty, and tournament navigation)
+            this.setupNavigationListeners();
+            
+            // Game mode selection buttons
+            this.setupGameModeButtons();
+            this.setupPlayerSetupListeners();
+            this.showDashboard();
+            
+            // Initialize UI displays
             uiManager.updateAIDifficultyDisplay(this.currentAiDifficultyIndex);
+            uiManager.updateTournamentSizeDisplay(this.currentTournamentIndex);
+            uiManager.updateOnlineTournamentSizeDisplay(this.currentOnlineTournamentIndex);
+            
         } catch (error) {
-            Logger.error(`Failed to setup basic event listeners: ${error}`, 'MenuFlowManager');
+            console.error(`Failed to setup event listeners: ${error}`, 'MenuFlowManager');
         }
-
-        // Game mode selection buttons
-        this.setupGameModeButtons();
-        this.setupPlayerSetupListeners();
-        this.showDashboard();
     }
 
 	private setupNavigationListeners(): void {
-		const elements = {
-			viewModeBack: requireElementById<HTMLButtonElement>(EL.BUTTONS.VIEW_MODE_BACK),
-			viewModeForward: requireElementById<HTMLButtonElement>(EL.BUTTONS.VIEW_MODE_FORWARD),
-			backBtn: requireElementById<HTMLButtonElement>(EL.BUTTONS.DASHBOARD_BACK),
-			soloDifficultyBack: requireElementById<HTMLButtonElement>(EL.BUTTONS.SOLO_DIFFICULTY_BACK),
-			soloDifficultyForward: requireElementById<HTMLButtonElement>(EL.BUTTONS.SOLO_DIFFICULTY_FORWARD),
-			tournamentNumberBack: requireElementById<HTMLButtonElement>(EL.BUTTONS.TOURNAMENT_NUMBER_BACK),
-			tournamentNumberForward: requireElementById<HTMLButtonElement>(EL.BUTTONS.TOURNAMENT_NUMBER_FORWARD),
-			tournamentOnlineNumberBack: requireElementById<HTMLButtonElement>(EL.BUTTONS.TOURNAMENT_ONLINE_NUMBER_BACK),
-			tournamentOnlineNumberForward: requireElementById<HTMLButtonElement>(EL.BUTTONS.TOURNAMENT_ONLINE_NUMBER_FORWARD)
-		};
-		
-		elements.soloDifficultyBack.addEventListener('click', () => this.updateAIDifficulty('previous'));
-		elements.soloDifficultyForward.addEventListener('click', () => this.updateAIDifficulty('next'));
-		elements.viewModeBack.addEventListener('click', () => this.updateViewMode());
-		elements.viewModeForward.addEventListener('click', () => this.updateViewMode());
-		elements.tournamentNumberBack.addEventListener('click', () => this.updateTournamentSize(false, 'previous'));
-		elements.tournamentNumberForward.addEventListener('click', () => this.updateTournamentSize(false, 'next'));
-		elements.tournamentOnlineNumberBack.addEventListener('click', () => this.updateTournamentSize(true, 'previous'));
-		elements.tournamentOnlineNumberForward.addEventListener('click', () => this.updateTournamentSize(true, 'next'));
-
-		uiManager.updateAIDifficultyDisplay(this.currentAiDifficultyIndex);
+		try {
+			const elements = {
+				viewModeBack: requireElementById<HTMLButtonElement>(EL.BUTTONS.VIEW_MODE_BACK),
+				viewModeForward: requireElementById<HTMLButtonElement>(EL.BUTTONS.VIEW_MODE_FORWARD),
+				backBtn: requireElementById<HTMLButtonElement>(EL.BUTTONS.DASHBOARD_BACK),
+				soloDifficultyBack: requireElementById<HTMLButtonElement>(EL.BUTTONS.SOLO_DIFFICULTY_BACK),
+				soloDifficultyForward: requireElementById<HTMLButtonElement>(EL.BUTTONS.SOLO_DIFFICULTY_FORWARD),
+				tournamentNumberBack: requireElementById<HTMLButtonElement>(EL.BUTTONS.TOURNAMENT_NUMBER_BACK),
+				tournamentNumberForward: requireElementById<HTMLButtonElement>(EL.BUTTONS.TOURNAMENT_NUMBER_FORWARD),
+				tournamentOnlineNumberBack: requireElementById<HTMLButtonElement>(EL.BUTTONS.TOURNAMENT_ONLINE_NUMBER_BACK),
+				tournamentOnlineNumberForward: requireElementById<HTMLButtonElement>(EL.BUTTONS.TOURNAMENT_ONLINE_NUMBER_FORWARD)
+			};
+			
+			
+			// View mode navigation
+			elements.viewModeBack.addEventListener('click', () => {
+				this.updateViewMode();
+			});
+			elements.viewModeForward.addEventListener('click', () => {
+				this.updateViewMode();
+			});
+			
+			// Dashboard back button
+			elements.backBtn.addEventListener('click', () => { 
+				appStateManager.navigateTo(AppState.MAIN_MENU);
+			});
+			
+			// AI difficulty navigation
+			elements.soloDifficultyBack.addEventListener('click', () => {
+				this.updateAIDifficulty('previous');
+			});
+			elements.soloDifficultyForward.addEventListener('click', () => {
+				this.updateAIDifficulty('next');
+			});
+			
+			// Tournament size navigation
+			elements.tournamentNumberBack.addEventListener('click', () => {
+				this.updateTournamentSize(false, 'previous');
+			});
+			elements.tournamentNumberForward.addEventListener('click', () => {
+				this.updateTournamentSize(false, 'next');
+			});
+			elements.tournamentOnlineNumberBack.addEventListener('click', () => {
+				this.updateTournamentSize(true, 'previous');
+			});
+			elements.tournamentOnlineNumberForward.addEventListener('click', () => {
+				this.updateTournamentSize(true, 'next');
+			});
+			
+		} catch (error) {
+			console.error(`Failed to setup navigation listeners: ${error}`, 'MenuFlowManager');
+		}
 	}
 
 	private setupGameModeButtons(): void {
@@ -182,7 +206,15 @@ export class MenuFlowManager {
 			if (config.requiresSetup && !authManager.isUserAuthenticated()) {
 				this.beginPlayerCollection(gameMode);
 				appStateManager.navigateTo(AppState.PLAYER_SETUP);
-				uiManager.showSetupForm(EL.PLAYER_COLLECTION.FORM);
+				
+				// Show appropriate setup form based on game mode
+				if (gameMode === GameMode.SINGLE_PLAYER) {
+					uiManager.showSetupForm('solo');
+				} else if (gameMode === GameMode.TWO_PLAYER_LOCAL) {
+					uiManager.showSetupForm('two-players');
+				} else if (gameMode === GameMode.TOURNAMENT_LOCAL) {
+					uiManager.showSetupForm('offline-tournament');
+				}
 			} else {
 				await this.startGameWithCurrentConfig();
 			}
@@ -235,18 +267,14 @@ export class MenuFlowManager {
 
 		input.value = '';
 		input.focus();
-	}
 
-	private setupPlayerInputHandling(): void {
-		const input = requireElementById<HTMLInputElement>(EL.PLAYER_COLLECTION.INPUT);
-		if (input) {
-			input.onkeydown = (e: KeyboardEvent) => {
-				if (e.key === 'Enter') {
-					e.preventDefault();
-					this.handlePlayerInputSubmission();
-				}
-			};
-		}
+		// Setup input handling for Enter key
+		input.onkeydown = (e: KeyboardEvent) => {
+			if (e.key === 'Enter') {
+				e.preventDefault();
+				this.handlePlayerInputSubmission();
+			}
+		};
 	}
 
 	private handlePlayerInputSubmission(): void {
