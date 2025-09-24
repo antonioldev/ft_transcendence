@@ -1,7 +1,7 @@
 import { Rect } from './utils.js';
 import { Paddle } from './Paddle.js'
 import { CollisionDirection } from '../shared/constants.js'
-import { GAME_CONFIG, getBallStartPosition, LEFT_PADDLE, RIGHT_PADDLE } from '../shared/gameConfig.js';
+import { GAME_CONFIG, getBallStartPosition, LEFT, RIGHT } from '../shared/gameConfig.js';
 
 // Represents the ball in the game, handling its movement, collisions, and scoring logic.
 export class Ball {
@@ -55,7 +55,7 @@ export class Ball {
         const deflection_angle = angle_magnitude * angle_sign;
 
         // apply the angle to the ball's direction vector
-        const z = (paddle.side === LEFT_PADDLE) ? Math.cos(deflection_angle) : -(Math.cos(deflection_angle));
+        const z = (paddle.side === LEFT) ? Math.cos(deflection_angle) : -(Math.cos(deflection_angle));
         const x = -(Math.sin(deflection_angle));
         this.direction = [x, z];
     }
@@ -108,11 +108,11 @@ export class Ball {
         
         // Goal detection (top/bottom goals)
         if (this.rect.centerz <= GAME_CONFIG.goalBounds.rightGoal) {
-            this.updateScore(RIGHT_PADDLE, this.current_rally);
+            this.updateScore(RIGHT, this.current_rally);
             this.reset();
         }
         if (this.rect.centerz >= GAME_CONFIG.goalBounds.leftGoal) {
-            this.updateScore(LEFT_PADDLE, this.current_rally);
+            this.updateScore(LEFT, this.current_rally);
             this.reset();
         }
     }

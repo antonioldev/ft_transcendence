@@ -3,7 +3,7 @@ import { Game } from '../game/Game.js';
 import { Client, Player, CPU } from './Client.js';
 import { GameMode, MessageType, Direction } from '../shared/constants.js';
 import { addPlayer2, registerNewGame } from '../data/validation.js';
-import { LEFT_PADDLE, RIGHT_PADDLE } from '../shared/gameConfig.js';
+import { LEFT, RIGHT } from '../shared/gameConfig.js';
 import { spec } from 'node:test/reporters';
 
 export class Match {
@@ -41,7 +41,7 @@ export class Match {
 
 	assign_winner(winner: Player | CPU) {
 		this.winner = winner;
-		this.loser = this.players[LEFT_PADDLE] === winner ? this.players[RIGHT_PADDLE] : this.players[LEFT_PADDLE];
+		this.loser = this.players[LEFT] === winner ? this.players[RIGHT] : this.players[LEFT];
 	}
 }
 
@@ -129,8 +129,8 @@ abstract class AbstractTournament extends AbstractGameSession{
 				round_index: roundIndex,
 				match_index: i,
 				match_total: matches.length,
-				left:  match.players[LEFT_PADDLE]?.name ?? "TBD",
-				right: match.players[RIGHT_PADDLE]?.name ?? "TBD",
+				left:  match.players[LEFT]?.name ?? "TBD",
+				right: match.players[RIGHT]?.name ?? "TBD",
 			});
 		});
 	}
@@ -288,7 +288,7 @@ export class TournamentRemote extends AbstractTournament {
 
 	assign_winner(match: Match, winner: Player | CPU) {
 		match.assign_winner(winner);
-		if (match.players[LEFT_PADDLE] instanceof Player && match.players[RIGHT_PADDLE] instanceof Player) {
+		if (match.players[LEFT] instanceof Player && match.players[RIGHT] instanceof Player) {
 			match.game.save_to_db();
 		}
 		if (!match.next) {
@@ -340,7 +340,7 @@ export class TournamentRemote extends AbstractTournament {
 	assign_clients(matches: Match[]) {
 		// clients who are still playing are assigned to their correct game
 		for (const match of matches) {
-			for (const player of [match.players[LEFT_PADDLE], match.players[RIGHT_PADDLE]]) {
+			for (const player of [match.players[LEFT], match.players[RIGHT]]) {
 				if (player instanceof Player) {
 					this.client_match_map.set(player.client.id, match);
 				}
