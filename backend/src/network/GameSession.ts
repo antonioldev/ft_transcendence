@@ -134,11 +134,11 @@ export abstract class AbstractGameSession {
 
 	resume(client_id?: string): void {
 		const game = this.findGame(client_id);
-		if (!this.running || !game || !game.running) {
+		if (!this.running || !game || !game.is_running()) {
 			console.log(`Game ${this.id} is not running, cannot resume`);
 			return ;
 		}
-		if (!game.paused) {
+		if (!game.is_paused()) {
 			console.log(`Game ${this.id} is not paused`);
 			return ;
 		}
@@ -149,11 +149,11 @@ export abstract class AbstractGameSession {
 
 	pause(client_id?: string): void {
 		const game = this.findGame(client_id);
-		if (!this.running || !game || !game.running) {
+		if (!this.running || !game || !game.is_running()) {
 			console.log(`Game ${this.id} is not running, cannot pause`);
 			return ;
 		}
-		if (game.paused) {
+		if (game.is_paused()) {
 			console.log(`Game ${this.id} is already paused`);
 			return ;
 		}

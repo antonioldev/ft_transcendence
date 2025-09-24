@@ -334,7 +334,7 @@ export class TournamentRemote extends AbstractTournament {
 
 	spectate_other_match(client: Client) {
 		for (const match of this.rounds.get(this.current_round) ?? []) {
-			if (match.game?.running) {
+			if (match.game?.is_running()) {
 				this.assign_spectator(client, match);
 			}
 		}

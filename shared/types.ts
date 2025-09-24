@@ -1,4 +1,4 @@
-import { MessageType, GameMode, Direction, ClientState, AuthState, PowerupType, AiDifficulty, PowerupState} from './constants.js';
+import { MessageType, GameMode, Direction, ClientState, AuthState, PowerupType, AiDifficulty, PowerupState, GameState} from './constants.js';
 
 // ============================== SHARED TYPES  ==============================
 
@@ -23,6 +23,7 @@ export interface Powerup {
 
 // Represents the state of the game (paddles and ball positions)
 export interface GameStateData {
+	state: GameState,
 	paddleLeft: { x: number; score: number, powerups: Powerup[] }; // Left paddle position and score
 	paddleRight: { x: number; score: number, powerups: Powerup[] }; // Right paddle position and score
 	ball: { x: number; z: number, current_rally: number }; // Ball position
