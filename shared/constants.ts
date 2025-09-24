@@ -102,7 +102,7 @@ export enum Direction {
 	STOP = 0			   // Stop movement
 }
 
-// States the game can be in
+// States the client can be in
 export enum ClientState {
 	PLAYING,
 	PAUSED,
@@ -113,6 +113,13 @@ export enum ClientState {
 	PAUSED_LOCAL,
 	SPECTATOR,
 	SPECTATOR_PAUSED
+}
+
+// States the game can be in
+export enum GameState {
+	RUNNING,
+	PAUSED,
+	ENDED,
 }
 
 // View modes for the game

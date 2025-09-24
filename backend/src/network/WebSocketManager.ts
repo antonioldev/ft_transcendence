@@ -308,7 +308,7 @@ export class WebSocketManager {
         const gameSession = gameManager.findClientGameSession(client);
         if (!gameSession) return ;
 
-        gameSession.stop(); // TODO: temp as wont work for Tournament 
+        gameSession.handlePlayerQuit(client); // TODO: temp as wont work for Tournament 
         gameManager.removeClientFromGames(client);
         this.clients.delete(client.id);
         console.log(`Client disconnected: ${client.username}:${client.id}`);
@@ -532,7 +532,7 @@ export class WebSocketManager {
             lobby: gameSession?.players.map(player => player.name)
         });
 
-        console.log(`Lobby request sent to ${client.username}:${client.id}`)
+        console.log(`Lobby sent to ${client.username}:${client.id}`)
     }
 
     /**

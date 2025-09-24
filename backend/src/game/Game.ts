@@ -2,7 +2,7 @@ import { Ball } from './Ball.js';
 import { Paddle, CPUBot } from './Paddle.js';
 import { Clock } from './utils.js';
 import { GAME_CONFIG, CPUDifficultyMap, LEFT_PADDLE, RIGHT_PADDLE } from '../shared/gameConfig.js';
-import { MessageType} from '../shared/constants.js';
+import { MessageType, GameState} from '../shared/constants.js';
 import { PlayerInput, GameStateData, ServerMessage } from '../shared/types.js';
 import { Client, Player, CPU} from '../network/Client.js'
 import { saveGameResult } from '../data/validation.js';
@@ -13,14 +13,13 @@ export class Game {
 	id: string;
 	clock: Clock;
 	queue: PlayerInput[] = [];
-	running: boolean = true;
-	paused: boolean = false;
+	state: GameState = GameState.RUNNING;
 	players: (Player | CPU)[]
 	winner!: Player | CPU;
 	paddles: (Paddle | CPUBot)[] = [new Paddle(LEFT_PADDLE), new Paddle(RIGHT_PADDLE)];
 	ball: Ball;
-	private _broadcast: (message: ServerMessage, clients?: Set<Client>) => void;
 	powerup_manager: PowerupManager;
+	private _broadcast: (message: ServerMessage, clients?: Set<Client>) => void;
 
 	constructor(id: string, players: (Player | CPU)[], broadcast_callback: (message: ServerMessage, clients?: Set<Client>) => void) {
 		this.id = id;
@@ -47,7 +46,7 @@ export class Game {
 	}
 
 	private _handle_input(dt: number): void {
-		if (!this.running) return ;
+		if (!this.is_running) return ;
 
 		this._process_queue(dt);
 
@@ -61,7 +60,7 @@ export class Game {
 
 	// Update the score for the specified side
 	private _update_score(side: number, score: number): void {
-		if (!this.running) return ;
+		if (!this.is_running()) return ;
 
 		this.paddles[side].score += score;
 		if (this.paddles[side].score >= GAME_CONFIG.scoreToWin) {
@@ -91,7 +90,7 @@ export class Game {
 
 	// Add a new input to the queue
 	enqueue(input: PlayerInput): void {
-		if (!this.paused) {
+		if (this.is_running()) {
 			this.queue.push(input);
 		}
 	}
@@ -99,6 +98,7 @@ export class Game {
 	// Retrieve the current game state as a data object
 	get_state(): GameStateData {
 		return {
+			state: this.state,
 			paddleLeft: {
 				x:     this.paddles[LEFT_PADDLE].rect.centerx,
 				score: this.paddles[LEFT_PADDLE].score,
@@ -155,10 +155,11 @@ export class Game {
 		}
 		this.send_side_assignment();
 		await this.send_countdown();
+
 		// run game loop, updating and broadcasting state to clients until win
-		while (this.running) {
+		while (this.is_ended()) {
 			const dt = await this.clock.tick(60);
-			if (this.paused) continue ;
+			if (this.is_paused()) continue ;
 
 			this._update_state(dt);
 			this._broadcast({
@@ -171,28 +172,33 @@ export class Game {
 
 	// Pause the game
 	pause(): void {
-		if(!this.paused) {
-			this.paused = true;
-			this.queue = []
-			this._broadcast( {type: MessageType.PAUSED} );
-		}
+		this.state = GameState.PAUSED;
+		this.queue = []
 	}
 
 	// Resume the game
 	resume(): void { 
-		this.paused = false; 
-		this._broadcast({type: MessageType.RESUMED});
+		this.state = GameState.RUNNING;
 	}
 
 	// Returns if the game is currently paused
-	isPaused(): boolean { 
-		return this.paused; 
+	is_paused(): boolean { 
+		return (this.state === GameState.PAUSED); 
 	}
 
-	// Stop the execution of the game & broadcast the winner
+	// Returns if the game is currently running
+	is_running(): boolean { 
+		return (this.state === GameState.RUNNING); 
+	}
+	// Returns if the game is currently running
+	is_ended(): boolean { 
+		return (this.state === GameState.ENDED); 
+	}
+
+	// Stop the execution of the game
 	stop() {
-		if (!this.running) return ;
-		this.running = false;
+		if (this.state === GameState.ENDED) return ;
+		this.state = GameState.ENDED;
 	}
 
 	save_to_db() {
