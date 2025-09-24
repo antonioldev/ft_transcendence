@@ -210,12 +210,15 @@ export class Game {
 	// Handle server ending the game
 	private async onServerEndedGame(message: any): Promise<void> {
 		if (!this.isInitialized || !this.config.isTournament) return;
+		
 		this.services?.gui?.setPauseVisible(false);
 		const controlledSides = this.getControlledSides();
-		const showPlayerLoses = controlledSides.length === 1 && 
-			!controlledSides.some(side => this.players.get(side)?.name === message.winner.name);
+
+		const singlePlayer = controlledSides.length === 1 ? this.players.get(controlledSides[0]) : null;
+	
+		const showLoser = singlePlayer !== null && singlePlayer?.name !== message.winner;
 		
-		if (showPlayerLoses){
+		if (showLoser){
 			// await this.services?.gui?.showTournamentMatchWinner(message.winner); // TODO
 			await this.services?.gui?.showTournamentMatchLoser();
 			this.state.set(GameState.SPECTATOR);
@@ -370,8 +373,8 @@ export class Game {
 		);
 	}
 
-	private getControlledSides(): number[] {
-		const controlledSides: number[] = [];
+	private getControlledSides(): PlayerSide[] {
+		const controlledSides: PlayerSide[] = [];
 		if (this.players?.get(PlayerSide.LEFT)?.isControlled) 
 			controlledSides.push(PlayerSide.LEFT);
 		if (this.players?.get(PlayerSide.RIGHT)?.isControlled)
