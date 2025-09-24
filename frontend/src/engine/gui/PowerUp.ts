@@ -81,6 +81,7 @@ export class PowerUp {
 
 	assign(player: PlayerSide, slotIndex: number, powerUpType: PowerupType): void {
 		const scene = this.adt.getScene();
+		this.show(true);
 		const cells = player === 0 ? this.powerUpCellsP1 : this.powerUpCellsP2;
 		
 		if (slotIndex >= 0 && slotIndex < cells.length) {
@@ -121,7 +122,7 @@ export class PowerUp {
 	}
 
 	// Update the existing update method to only handle state changes
-	update(player: PlayerSide, slotIndex: number, powerUpType: PowerupType | null, action: PowerupState): void {
+	update(player: PlayerSide, slotIndex: number, action: PowerupState): void {
 		const scene = this.adt.getScene();
 		const cells = player === 0 ? this.powerUpCellsP1 : this.powerUpCellsP2;
 		
@@ -149,88 +150,9 @@ export class PowerUp {
 						});
 					}
 					break;
-					
-				// case PowerupState.UNUSED:
-				// 	// Reset to normal state without animation
-				// 	scene?.stopAnimation(cell.root);
-				// 	cell.root.scaleX = 1;
-				// 	cell.root.scaleY = 1;
-				// 	cell.root.color = "rgba(255, 255, 255, 0.5)";
-				// 	cell.root.background = "rgba(0, 0, 0, 1)";
-				// 	if (cell.icon) {
-				// 		cell.icon.alpha = 1;
-				// 	}
-				// 	break;
 			}
 		}
 	}
-
-	// update(player: PlayerSide, slotIndex: number, powerUpType: PowerupType | null, action: PowerupState): void {
-	// 	const scene = this.adt.getScene();
-	// 	const cells = player === 0 ? this.powerUpCellsP1 : this.powerUpCellsP2;
-		
-	// 	if (slotIndex >= 0 && slotIndex < cells.length) {
-	// 		const cell = cells[slotIndex];
-	// 		const direction = player === 0 ? -100 : 100;
-
-	// 		switch (action) {
-	// 			case PowerupState.UNUSED:
-	// 				scene?.stopAnimation(cell.root);
-
-	// 				cell.root.scaleX = 1;
-	// 				cell.root.scaleY = 1;
-	// 				cell.root.alpha = 0;
-	// 				cell.root.color = "rgba(255, 255, 255, 0.5)";
-	// 				cell.root.background = "rgba(0, 0, 0, 1)";					
-	// 				if (powerUpType !== null && this.POWERUP_ICON[powerUpType]) {
-	// 					if (!cell.icon) {
-	// 						console.error("trying");
-	// 						cell.icon = new Image(`powerUpIcon_${player}_${slotIndex}`, this.POWERUP_ICON[powerUpType]);
-	// 						cell.icon.stretch = Image.STRETCH_UNIFORM;
-	// 						cell.icon.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
-	// 						cell.icon.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
-	// 						cell.root.addControl(cell.icon);
-	// 					} else {
-	// 						console.error("failed");
-	// 						cell.icon.source = this.POWERUP_ICON[powerUpType];
-	// 					}
-	// 					cell.icon.alpha = 1;
-	// 					cell.icon.isVisible = true;
-
-	// 					cell.root.alpha = 0;
-	// 					const delay = slotIndex * 100;
-	// 					setTimeout(() => {
-	// 						this.animationManager.slideInX(cell.root, direction, Motion.F.slow)
-	// 							.then(() => {
-	// 								return this.animationManager.pop(cell.root, Motion.F.fast, 1.1);
-	// 							});
-	// 					}, delay);
-	// 				}
-	// 				break;
-					
-	// 			case PowerupState.ACTIVE:
-	// 				if (cell.icon) {
-	// 					cell.root.color = "rgba(255, 0, 0, 1)";
-	// 					this.animationManager?.twinkle(cell.root, Motion.F.fast);
-	// 				}
-	// 				break;
-					
-	// 			case PowerupState.SPENT:
-	// 				scene?.stopAnimation(cell.root);
-	// 				cell.root.scaleX = 1;
-	// 				cell.root.scaleY = 1;
-	// 				cell.root.color = "rgba(255, 255, 255, 0.5)";
-	// 				cell.root.background = "rgba(255, 255, 255, 0.25)";
-					
-	// 				if (cell.icon) {
-	// 					this.animationManager.fadeOut(cell.icon, Motion.F.fast).then(() => {
-	// 						cell.icon!.alpha = 0.3;
-	// 					});
-	// 				}
-	// 				break;
-	// 		}
-	// 	}
-	// }
 
 	dispose(): void {
 		this.powerUpSlotP1?.dispose();

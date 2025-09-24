@@ -15,97 +15,73 @@ export class PowerupManager {
 		private gameObjects: GameObjects
 	) {}
 
-	handleUpdates(side: PlayerSide, player: PlayerState, serverPowerups: Powerup[]): void {
+	handleUpdates(side: PlayerSide, serverPowerups: Powerup[]): void {
+		
 		if (!serverPowerups || serverPowerups.length === 0)
+			return;
+
+		const player = this.players.get(side);
+		if (player === null || player === undefined)
 			return;
 
 		if (!player.powerUpsAssigned) {
 			player.powerUpsAssigned = true;
-			const assignMessage = {
-				side: side,
-				powerups: serverPowerups.map(p => p.type),
-				slot_states: serverPowerups.map(p => p.state)
-			};
-			this.assign(assignMessage);
+			player.powerUps = [...serverPowerups];
+			for (let i = 0; i < serverPowerups.length; i++)
+				this.guiManager?.powerUp.assign(side, i, serverPowerups[i].type);
 			return;
 		}
 
 		for (let i = 0; i < serverPowerups.length; i++) {
 			const serverPowerup = serverPowerups[i];
+			const clientPowerup = player.powerUps[i];
+			let powerUpStateChanged = false;
 
-			if (serverPowerup.state === PowerupState.ACTIVE && player.activePowerup !== serverPowerup.type) {
-				this.activate({
-					side: side,
-					slot: i,
-					powerup: serverPowerup.type
-				});
-			} else if (serverPowerup.state === PowerupState.SPENT && player.activePowerup === serverPowerup.type) {
-				this.deactivate({
-					side: side,
-					slot: i,
-					powerup: serverPowerup.type
-				});
+			if (serverPowerup.state === PowerupState.ACTIVE && clientPowerup.state === PowerupState.UNUSED) {
+				clientPowerup.state = serverPowerup.state;
+				this.activate(side, i, serverPowerup.type);
+				powerUpStateChanged = true;
+			} else if (serverPowerup.state === PowerupState.SPENT && clientPowerup.state === PowerupState.ACTIVE) {
+				clientPowerup.state = serverPowerup.state;
+				this.deactivate(side, i, serverPowerup.type);
+				powerUpStateChanged = true;
 			}
-			this.guiManager?.powerUp.update(side, i, serverPowerup.type, serverPowerup.state);
+			if (powerUpStateChanged)
+				this.guiManager?.powerUp.update(side, i, serverPowerup.state);
 		}
 	}
 
-	assign(message: any): void {
-		if (!message || !Array.isArray(message.powerups))
-			return;
-
-		const types: number[] = message.powerups;
-		const states: number[] = message.slot_states;
-		const side = message.side;
-
-		if (side !== PlayerSide.LEFT && side !== PlayerSide.RIGHT)
-			return;
-
-		const mappedTypes = types.map(id => id as PowerupType);
-		this.players.get(side)!.powerUps = mappedTypes;
-
-		for (let i = 0; i < Math.min(types.length, states.length); i++)
-			this.guiManager?.powerUp.assign(side, i, types[i]);
-	}
-
-	// Player requests to activate a powerup
 	requestActivatePowerup(side: PlayerSide, slotIndex: number): void {
-		if (!this.players.get(side)?.isControlled)
+		const player = this.players.get(side);
+		if (!player?.isControlled)
 			return;
 		
-		const powerUps = this.players.get(side)!.powerUps;
+		const powerUps = player.powerUps;
 		
-		if (!powerUps)
+		if (!powerUps || slotIndex >= powerUps.length)
 			return;
 
 		const powerup = powerUps[slotIndex];
 		
-		if (powerup === null || powerup === undefined)
+		if (!powerup || powerup.state !== PowerupState.UNUSED)
 			return;
 
-		const currentlyActive = this.players.get(side)!.activePowerup;
+		const hasActivePowerupOfSameType = powerUps.some(p => 
+			p.type === powerup.type && p.state === PowerupState.ACTIVE
+		);
 		
-		if (currentlyActive === powerup)
+		if (hasActivePowerupOfSameType)
 			return;
 
-		webSocketClient.sendPowerupActivationRequest(powerup, side, slotIndex);
+		webSocketClient.sendPowerupActivationRequest(powerup.type, side, slotIndex);
 	}
 
-	activate(message: any): void {
-		if (!message)
-			return;
-
-		const side = message.side;
-		const slot = message.slot;
-		const powerup = message.powerup;
-
+	activate(side: PlayerSide, slot: number, powerupType: PowerupType): void {
 		const med = GAME_CONFIG.paddleWidth;
 		const lrg = GAME_CONFIG.increasedPaddleWidth;
 		const sml = GAME_CONFIG.decreasedPaddleWidth;
 		
-		this.players.get(side)!.activePowerup = powerup;
-		
-		switch (message.powerup) {
+		switch (powerupType) {
 			case PowerupType.SHRINK_OPPONENT:
 				if (side === PlayerSide.LEFT) {
 					this.animationManager?.scaleWidth(this.gameObjects?.players.right, med, sml);
@@ -131,24 +107,16 @@ export class PowerupManager {
 					this.players.get(PlayerSide.LEFT)!.inverted = true;
 				break;
 		}
-		this.guiManager?.powerUp.update(side, slot, powerup, PowerupState.ACTIVE);
+		
+		this.guiManager?.powerUp.update(side, slot, PowerupState.ACTIVE);
 	}
 
-	deactivate(message: any): void {
-		if (!message)
-			return;
-
-		const side = message.side;
-		const slot = message.slot;
-		const powerup = message.powerup;
-
+	deactivate(side: PlayerSide, slot: number, powerupType: PowerupType): void {
 		const med = GAME_CONFIG.paddleWidth;
 		const lrg = GAME_CONFIG.increasedPaddleWidth;
 		const sml = GAME_CONFIG.decreasedPaddleWidth;
 		
-		this.players.get(side)!.activePowerup = null;
-		
-		switch (message.powerup) {
+		switch (powerupType) {
 			case PowerupType.SHRINK_OPPONENT:
 				if (side === PlayerSide.LEFT) {
 					this.animationManager?.scaleWidth(this.gameObjects?.players.right, sml, med);
@@ -174,6 +142,7 @@ export class PowerupManager {
 					this.players.get(PlayerSide.LEFT)!.inverted = false;
 				break;
 		}
-		this.guiManager?.powerUp.update(side, slot, powerup, PowerupState.SPENT);
+		
+		this.guiManager?.powerUp.update(side, slot, PowerupState.SPENT);
 	}
 }

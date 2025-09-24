@@ -328,8 +328,8 @@ export class Game {
 			const leftPlayer = this.players.get(PlayerSide.LEFT)!;
 			const rightPlayer = this.players.get(PlayerSide.RIGHT)!;
 
-			this.services?.powerup?.handleUpdates(PlayerSide.LEFT, leftPlayer, state.paddleLeft.powerups);
-			this.services?.powerup?.handleUpdates(PlayerSide.RIGHT, rightPlayer, state.paddleRight.powerups);
+			this.services?.powerup?.handleUpdates(PlayerSide.LEFT, state.paddleLeft.powerups);
+			this.services?.powerup?.handleUpdates(PlayerSide.RIGHT, state.paddleRight.powerups);
 
 
 			let scoresChanged = false;
@@ -444,9 +444,6 @@ export class Game {
 		webSocketClient.registerCallback(WebSocketEvent.MATCH_RESULT, (message: any) => { this.services?.gui?.updateTournamentGame(message);});
 		webSocketClient.registerCallback(WebSocketEvent.TOURNAMENT_LOBBY, (message: any) => {this.services?.gui?.updateTournamentLobby(message); uiManager.setLoadingScreenVisible(false); });
 		webSocketClient.registerCallback(WebSocketEvent.COUNTDOWN, (message: any) => { this.handleCountdown(message.countdown); });
-		webSocketClient.registerCallback(WebSocketEvent.POWERUP_ASSIGNMENT, (message: any) => { this.services?.powerup?.assign(message); });
-		webSocketClient.registerCallback(WebSocketEvent.POWERUP_ACTIVATED, (message: any) => { this.services?.powerup?.activate(message); });
-		webSocketClient.registerCallback(WebSocketEvent.POWERUP_DEACTIVATED, (message: any) => { this.services?.powerup?.deactivate(message); });
 	}
 	private unregisterCallbacks(): void {
 		try {
@@ -462,9 +459,6 @@ export class Game {
 			webSocketClient.unregisterCallback(WebSocketEvent.MATCH_RESULT);
 			webSocketClient.unregisterCallback(WebSocketEvent.TOURNAMENT_LOBBY);
 			webSocketClient.unregisterCallback(WebSocketEvent.COUNTDOWN);
-			webSocketClient.unregisterCallback(WebSocketEvent.POWERUP_ASSIGNMENT);
-			webSocketClient.unregisterCallback(WebSocketEvent.POWERUP_ACTIVATED);
-			webSocketClient.unregisterCallback(WebSocketEvent.POWERUP_DEACTIVATED);
 		} catch (error) {
 			Logger.error('Error clearing WebSocket callbacks', 'Game', error);
 		}
