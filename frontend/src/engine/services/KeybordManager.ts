@@ -161,12 +161,10 @@ export class KeyboardManager {
 
 	private handlePowerupKeys(key: number): void {
 		if (!this.powerupManager) return;
-
 		for (const [side, playerState] of this.players.entries()) {
 			if (!playerState.isControlled) continue;
 			
 			let profile: KeysProfile;
-			
 			if (this.config.isLocalMultiplayer)
 				profile = (side === PlayerSide.LEFT) ? this.activeProfiles.P1 : this.activeProfiles.P2;
 			else

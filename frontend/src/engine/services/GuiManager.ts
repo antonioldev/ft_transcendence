@@ -93,11 +93,10 @@ export class GUIManager {
 		if (!this.isReady) return;
 		
 		await this.animateBackground(true);
-		// await this.showPartialWinner(winner);
 		this.powerUp.show(false);
 		await this.endGame.showPartial(winner);
-		await this.endGame.waitForSpaceToContinue(2000);
-		// await this.hidePartialWinner();
+		// await this.endGame.waitForSpaceToContinue(2000);
+		await this.endGame.waitForContinue(2000, true);
 		await this.endGame.hidePartial();
 	}
 
@@ -107,6 +106,7 @@ export class GUIManager {
 		await this.animateBackground(true);
 		this.powerUp.show(false);
 		await this.endGame.showPartialLoser(); // New method for showing loss
+		await this.endGame.waitForContinue(2000, false);
 		await this.endGame.hidePartial();
 	}
 

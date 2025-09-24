@@ -11,7 +11,6 @@ export class PowerupManager {
 	constructor(
 		private players: Map<PlayerSide, PlayerState>,
 		private animationManager: AnimationManager,
-		// private audioManager: AudioManager,
 		private guiManager: GUIManager,
 		private gameObjects: GameObjects
 	) {}
@@ -28,27 +27,51 @@ export class PowerupManager {
 		if (side !== PlayerSide.LEFT && side !== PlayerSide.RIGHT)
 			return;
 
-		// this.players.get(side)!.powerUps = types.map(id => id as PowerupType);
+		this.players.get(side)!.powerUps = types.map(id => id as PowerupType);
 
-		for (let i = 0; i < Math.min(types.length, states.length); i++) {
+		for (let i = 0; i < Math.min(types.length, states.length); i++)
 			this.guiManager?.powerUp.update(side, i, types[i], states[i]);
-			console.error("type: "+types[i]+", state: "+ states[i]);
-		} 
 	}
 
 	// Player requests to activate a powerup
 	requestActivatePowerup(side: PlayerSide, slotIndex: number): void {
-		if (!this.players.get(side)?.isControlled) return;
+		console.error('=== requestActivatePowerup DEBUG ===');
+		console.error('side:', side);
+		console.error('slotIndex:', slotIndex);
+		console.error('player controlled?', this.players.get(side)?.isControlled);
+		
+		if (!this.players.get(side)?.isControlled) {
+			console.error('EARLY RETURN: Player not controlled');
+			return;
+		}
+		
 		const powerUps = this.players.get(side)!.powerUps;
-		if (!powerUps) return;
+		console.error('powerUps array:', powerUps);
+		
+		if (!powerUps) {
+			console.error('EARLY RETURN: No powerUps array');
+			return;
+		}
 
 		const powerup = powerUps[slotIndex];
-		if (powerup === null || powerup === undefined) return;
+		console.error('powerup at slot', slotIndex, ':', powerup);
+		
+		if (powerup === null || powerup === undefined) {
+			console.error('EARLY RETURN: Powerup is null or undefined');
+			return;
+		}
 
 		const currentlyActive = this.players.get(side)!.activePowerup;
-		if (currentlyActive === powerup) return;
+		console.error('currently active powerup:', currentlyActive);
+		
+		if (currentlyActive === powerup) {
+			console.error('EARLY RETURN: Same powerup already active');
+			return;
+		}
 
+		console.error('SENDING powerup activation request:', powerup, side, slotIndex);
 		webSocketClient.sendPowerupActivationRequest(powerup, side, slotIndex);
+		console.error('=== requestActivatePowerup END ===');
 	}
 
 	activate(message: any): void {
