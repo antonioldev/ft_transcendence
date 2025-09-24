@@ -11,11 +11,7 @@ export enum MessageType {
 	QUIT_GAME,		  // CLIENT -> SERVER: Send this message when CTRL + Y
 	PAUSE_REQUEST,	  // CLIENT -> SERVER: Client requests pause (ESC key)
 	RESUME_REQUEST,	 // CLIENT -> SERVER: Client requests resume (N key)  
-	PAUSED,			 // SERVER -> CLIENTS: Server confirms pause to all clients
-	RESUMED,			// SERVER -> CLIENTS: Server confirms resume to all clients
 	SESSION_ENDED,	  // SERVER -> CLIENTS: Server notifies all games are completed
-	PARTIAL_WINNER_ANIMATION_DONE,  // CLIENT -> SERVER: Client notify the animation is completed, ready for new game
-	WELCOME,			 // SERVER -> CLIENT: Welcome message on connection
 	PLAYER_READY,	   // CLIENT -> SERVER: Client loaded babylon and is waiting for server
 	REQUEST_LOBBY,		// Client requests the lobby from the server
 	TOURNAMENT_LOBBY,	   // broadcasts the tournament lobby whenever it changes 
@@ -40,9 +36,6 @@ export enum MessageType {
 	MATCH_RESULT,			// Used to update tournament tree with match winner
 	MATCH_ASSIGNMENT,		// Used to send tournament match assignment to all clients
 	ACTIVATE_POWERUP,		// Activates a specified powerup
-	POWERUP_ASSIGNMENT,
-	POWERUP_ACTIVATED,
-	POWERUP_DEACTIVATED,
 	TOGGLE_SPECTATOR_GAME	// Used to change which game the spectator is watching
 }
 
@@ -102,7 +95,7 @@ export enum Direction {
 	STOP = 0			   // Stop movement
 }
 
-// States the game can be in
+// States the client can be in
 export enum ClientState {
 	PLAYING,
 	PAUSED,
@@ -113,6 +106,13 @@ export enum ClientState {
 	PAUSED_LOCAL,
 	SPECTATOR,
 	SPECTATOR_PAUSED
+}
+
+// States the game can be in
+export enum GameState {
+	RUNNING,
+	PAUSED,
+	ENDED,
 }
 
 // View modes for the game

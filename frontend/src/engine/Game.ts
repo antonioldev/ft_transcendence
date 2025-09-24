@@ -445,6 +445,7 @@ export class Game {
 		webSocketClient.registerCallback(WebSocketEvent.TOURNAMENT_LOBBY, (message: any) => {this.services?.gui?.updateTournamentLobby(message); uiManager.setLoadingScreenVisible(false); });
 		webSocketClient.registerCallback(WebSocketEvent.COUNTDOWN, (message: any) => { this.handleCountdown(message.countdown); });
 	}
+
 	private unregisterCallbacks(): void {
 		try {
 			webSocketClient.unregisterCallback(WebSocketEvent.GAME_STATE);

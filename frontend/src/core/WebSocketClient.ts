@@ -106,8 +106,6 @@ export class WebSocketClient {
             case MessageType.SIDE_ASSIGNMENT:
                 this.triggerCallback(WebSocketEvent.SIDE_ASSIGNMENT, message);
                 break;
-            case MessageType.WELCOME:
-                break;
             case MessageType.COUNTDOWN:
                 this.triggerCallback(WebSocketEvent.COUNTDOWN, message);
                 break;

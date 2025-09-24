@@ -85,18 +85,17 @@ export const GAME_CONFIG = {
 
 } as const;
 
-	// CPU Difficulty: we pass this directly as the noise factor to regualate the CPU ability
+// CPU Difficulty: we pass this directly as the noise factor to regualate the CPU ability
 export const CPUDifficultyMap: Record<AiDifficulty, number> = {
-	[AiDifficulty.EASY]: 3.0,
-	[AiDifficulty.MEDIUM]: 2.0,
-	[AiDifficulty.HARD]: 1.5,
+	[AiDifficulty.EASY]: 2.0,
+	[AiDifficulty.MEDIUM]: 1.5,
+	[AiDifficulty.HARD]: 1.0,
 	[AiDifficulty.IMPOSSIBLE]: 0,
 }
 
 // Paddle/Player constants
-export const LEFT_PADDLE = 0; // Identifier for the left paddle
-export const RIGHT_PADDLE = 1; // Identifier for the right paddle
-export const BALL = 2; // Identifier for the ball
+export const LEFT = 0; // Identifier for the left paddle
+export const RIGHT = 1; // Identifier for the right paddle
 
 // Utility functions that work for both frontend and backend
 

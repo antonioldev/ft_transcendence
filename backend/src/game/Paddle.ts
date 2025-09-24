@@ -1,7 +1,7 @@
 import { Rect } from './utils.js';
 import { Ball } from './Ball.js'
 import { GAME_CONFIG, getBallStartPosition, getPlayerLeftPosition, 
-         getPlayerRightPosition, LEFT_PADDLE, RIGHT_PADDLE, getPlayerBoundaries } from '../shared/gameConfig.js';
+         getPlayerRightPosition, LEFT, RIGHT, getPlayerBoundaries } from '../shared/gameConfig.js';
 
 
 export class Paddle {
@@ -15,7 +15,7 @@ export class Paddle {
 	constructor(side: number) {
 		this.side = side;
 
-		const position = side === LEFT_PADDLE ? getPlayerLeftPosition() : getPlayerRightPosition();
+		const position = side === LEFT ? getPlayerLeftPosition() : getPlayerRightPosition();
 		this.rect = new Rect(
 			position.x,
 			position.z,

@@ -1,6 +1,6 @@
 import { Ball } from './Ball.js';
 import { Paddle} from './Paddle.js';
-import { LEFT_PADDLE, RIGHT_PADDLE, GAME_CONFIG } from '../shared/gameConfig.js';
+import { LEFT, RIGHT, GAME_CONFIG } from '../shared/gameConfig.js';
 import { PowerupType, PowerupState} from '../shared/constants.js';
 import { Powerup } from '../shared/types.js';
 
@@ -34,8 +34,8 @@ export class PowerupManager {
 		// generates 3 random powerups in each player's slots
 		const num_powerups = Object.keys(PowerupType).length / 2;
 		for (let i = 0; i < GAME_CONFIG.slot_count; i++) {
-			this.left_slots[i] = new Slot(Math.floor(Math.random() * num_powerups), LEFT_PADDLE, i);
-			this.right_slots[i] = new Slot(Math.floor(Math.random() * num_powerups), RIGHT_PADDLE, i);
+			this.left_slots[i] = new Slot(Math.floor(Math.random() * num_powerups), LEFT, i);
+			this.right_slots[i] = new Slot(Math.floor(Math.random() * num_powerups), RIGHT, i);
 		}
 	}
 
@@ -53,7 +53,7 @@ export class PowerupManager {
 	activate(slot: Slot) {
 		if (slot.state === (PowerupState.ACTIVE || PowerupState.SPENT)) return ;
 		
-		const opponent_side: number = slot.side === LEFT_PADDLE ? RIGHT_PADDLE : LEFT_PADDLE;
+		const opponent_side: number = slot.side === LEFT ? RIGHT : LEFT;
 		let timeout: number = GAME_CONFIG.powerupDuration;
 
 		switch (slot.type) {
@@ -85,7 +85,7 @@ export class PowerupManager {
 
 	deactivate(slot: Slot) {
 		if (slot.state === PowerupState.SPENT) return ;
-		const opponent_side: number = slot.side === LEFT_PADDLE ? RIGHT_PADDLE : LEFT_PADDLE;
+		const opponent_side: number = slot.side === LEFT ? RIGHT : LEFT;
 
 		switch (slot.type) {
 			case PowerupType.SLOW_OPPONENT:
@@ -142,7 +142,7 @@ export class PowerupManager {
 
 	speed_up(side: number): number {
 		const caller = this.paddles[side];
-		const opponent_side = side === LEFT_PADDLE ? RIGHT_PADDLE : LEFT_PADDLE;
+		const opponent_side = side === LEFT ? RIGHT : LEFT;
 		
 		if (caller.speed === GAME_CONFIG.paddleSpeed) {
 			caller.speed = GAME_CONFIG.increasedPaddleSpeed;
@@ -160,7 +160,7 @@ export class PowerupManager {
 
 	grow(side: number): number {
 		const caller = this.paddles[side];
-		const opponent_side = side === LEFT_PADDLE ? RIGHT_PADDLE : LEFT_PADDLE;
+		const opponent_side = side === LEFT ? RIGHT : LEFT;
 		
 		if (caller.rect.width === GAME_CONFIG.paddleWidth) {
 			caller.rect.width = GAME_CONFIG.increasedPaddleWidth;
