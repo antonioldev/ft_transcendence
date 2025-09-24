@@ -5,7 +5,7 @@ FROM node:alpine AS builder
 WORKDIR /app
 
 # Copy package files
-COPY package*.json package-lock.json ./
+COPY package*.json ./
 
 # Install dependencies
 RUN npm install
@@ -13,11 +13,14 @@ RUN npm install
 # Pass GOOGLE_CLIENT_ID as a build argument
 ARG GOOGLE_CLIENT_ID
 
-# Copy TypeScript source
-COPY src/ ./src/
-# COPY src/index.html ./
-COPY tsconfig.json ./
-COPY vite.config.js ./
+# Copy the entire source code to the working directory
+COPY . .
+
+# # Copy TypeScript source
+# COPY src/ ./src/
+# # COPY src/index.html ./
+# COPY tsconfig.json ./
+# COPY vite.config.js ./
 
 # Inject GOOGLE_CLIENT_ID into the frontend code
 RUN echo "window.GOOGLE_CLIENT_ID = '${GOOGLE_CLIENT_ID}';" > /app/env-config.js
@@ -33,9 +36,9 @@ COPY --from=builder /app/dist/ /usr/share/nginx/html/
 
 # COPY mime.types /etc/nginx/mime.types
 
-# Copy HTML and other static files
-COPY src/*.html /usr/share/nginx/html/
-COPY src/assets/images/42_favicon.ico /usr/share/nginx/html/
-COPY src/assets/ /usr/share/nginx/html/assets/
+# # Copy HTML and other static files
+# COPY src/*.html /usr/share/nginx/html/
+# COPY src/assets/images/42_favicon.ico /usr/share/nginx/html/
+# COPY src/assets/ /usr/share/nginx/html/assets/
 
 EXPOSE 80
