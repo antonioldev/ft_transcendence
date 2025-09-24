@@ -52,8 +52,8 @@ abstract class AbstractTournament extends AbstractGameSession{
 	current_round: number = 1;
 	tournamentWinner?: Player | CPU;
 
-	constructor(mode: GameMode, game_id: string, capacity: number) {
-		super(mode, game_id);
+	constructor(mode: GameMode, capacity: number) {
+		super(mode);
 		this.player_capacity = capacity;
 		this.num_rounds = this._get_num_rounds(this.player_capacity);
 		this._create_rounds_map();
@@ -160,8 +160,8 @@ export class TournamentLocal extends AbstractTournament {
 	current_match?: Match; // used for the server to access the current active match
 	readyClients: Set<string> = new Set(); // Keep track of clients that finish loading
 
-	constructor(mode: GameMode, game_id: string, capacity: number) {
-		super(mode, game_id, capacity);
+	constructor(mode: GameMode, capacity: number) {
+		super(mode, capacity);
 	}
 
 	// runs each game in a round one by one and awaits each game before starting the next
@@ -236,8 +236,8 @@ export class TournamentRemote extends AbstractTournament {
 	spectators: Set<Client> = new Set();	// List of defeated players watching the rest of the games
 	active_matches: Match[] = [];
 
-	constructor(mode: GameMode, game_id: string, capacity: number) {
-		super(mode, game_id, capacity);
+	constructor(mode: GameMode, capacity: number) {
+		super(mode, capacity);
 		this.client_capacity = capacity;
 	}
 

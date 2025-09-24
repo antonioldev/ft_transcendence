@@ -14,16 +14,14 @@ export function registerDatabaseFunctions(database: Database.Database) {
 
 export function generateClientId(): string {
 	return `client_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
- }
+}
  
- export function generateGameId(): string {
-	 return `game_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
- }
+export function generateGameId(): string {
+	return `game_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+}
 
 const HOUR = 60 * 60;
-
 const nowSec = () => Math.floor(Date.now() / 1000);
-
 const GAME_ID_RE = /^game_\d{13}_[a-z0-9]{9}$/;
 const SID_RE     = /^[a-f0-9]{64}$/;
 

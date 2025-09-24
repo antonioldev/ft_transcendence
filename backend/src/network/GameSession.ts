@@ -4,11 +4,11 @@ import { MessageType, GameMode, AiDifficulty } from '../shared/constants.js';
 import { PlayerInput, ServerMessage } from '../shared/types.js';
 import { gameManager } from './GameManager.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
-import { Direction } from 'node:readline';
+import { generateGameId } from '../data/database.js';
 
 export abstract class AbstractGameSession {
 	mode: GameMode;
-	id: string;
+	id: string = generateGameId();
 	clients: Set<Client> = new Set();
 	players: (Player | CPU)[] = [];
 	player_capacity: number = 2;
@@ -18,8 +18,7 @@ export abstract class AbstractGameSession {
 	ai_difficulty: AiDifficulty = AiDifficulty.MEDIUM;
 	readyClients: Set<string> = new Set(); // Keep track of clients that finish loading
 
-    constructor(mode: GameMode, game_id: string) {
-		this.id = game_id
+    constructor(mode: GameMode) {
         this.mode = mode
 		if (this.mode == GameMode.TWO_PLAYER_REMOTE) {
 			this.client_capacity = 2
@@ -178,8 +177,8 @@ export abstract class AbstractGameSession {
 export class OneOffGame extends AbstractGameSession{
 	game!: Game;
 
-	constructor (mode: GameMode, game_id: string) {
-		super(mode, game_id)
+	constructor (mode: GameMode) {
+		super(mode)
 	}
 
 	async start(): Promise<void> {

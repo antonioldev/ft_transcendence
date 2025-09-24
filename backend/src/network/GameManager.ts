@@ -22,32 +22,29 @@ class GameManager extends EventEmitter {
      * @returns The unique ID of the created game session.
      */
     createGame(mode: GameMode, client: Client, capacity?: number): AbstractGameSession {
-        const gameId = generateGameId();
-        // Create a new game in DB with 1st player as client only if the game is remote
-        if (mode === GameMode.TWO_PLAYER_REMOTE) {
-            registerNewGame(gameId, client.username, 0);
-        }
-        else if (mode === GameMode.TOURNAMENT_REMOTE) {
-            registerNewGame(gameId, client.username, 1);
-        }
-
         // Create new gamesession and add the client
         let gameSession: AbstractGameSession;
         if (mode === GameMode.TOURNAMENT_LOCAL) {
-            gameSession = new TournamentLocal(mode, gameId, capacity ?? 4); // maybe handle undefined capacity better ??
+            gameSession = new TournamentLocal(mode, capacity ?? 4); // maybe handle undefined capacity better ??
         }
         else if (mode === GameMode.TOURNAMENT_REMOTE) {
-            gameSession = new TournamentRemote(mode, gameId, capacity ?? 4);
+            gameSession = new TournamentRemote(mode, capacity ?? 4);
         }
         else {
-            gameSession = new OneOffGame(mode, gameId);
+            gameSession = new OneOffGame(mode);
         }
-
         gameSession.add_client(client);
-        this.gameIdMap.set(gameId, gameSession);
+        this.gameIdMap.set(gameSession.id, gameSession);
         this.clientGamesMap.set(client.id, gameSession);
         
-        console.log(`Created ${mode} game: ${gameId}`);
+        // Create a new game in DB with 1st player as client only if the game is remote
+        if (mode === GameMode.TWO_PLAYER_REMOTE) {
+            registerNewGame(gameSession.id, client.username, 0);
+        }
+        else if (mode === GameMode.TOURNAMENT_REMOTE) {
+            registerNewGame(gameSession.id, client.username, 1);
+        }
+        console.log(`Created ${mode} game: ${gameSession.id}`);
         return gameSession;
     }
 

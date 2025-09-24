@@ -56,16 +56,14 @@ export class WebSocketManager {
      * @param socket - The WebSocket connection object.
      */
     private handleConnection(socket: any, authenticatedUser?: { username: string; email: string }): void {
-        const clientId = generateClientId();
-
         let client: Client;
         if (authenticatedUser) {
             // Google authenticated user
-            client = new Client(clientId, authenticatedUser.username, authenticatedUser.email, socket);
+            client = new Client(authenticatedUser.username, authenticatedUser.email, socket);
             client.loggedIn = true; // Mark as already authenticated
         } else {
             // Traditional authentication will authenticate via messages
-            client = new Client(clientId, 'temp', '', socket); // will be updated if server approve a classic login request from client
+            client = new Client('temp', '', socket); // will be updated if server approve a classic login request from client
         }
 
         socket.on('message', async (message: string) => {
@@ -73,12 +71,12 @@ export class WebSocketManager {
         });
 
         socket.on('close', () => {
-            console.log(`WebSocket closed for client ${clientId}:`);
+            console.log(`WebSocket closed for client ${client.id}:`);
             this.removeFromGameSession(client);
         });
 
         socket.on('error', (error: any) => {
-            console.error(`❌ WebSocket error for client ${clientId}:`, error);
+            console.error(`❌ WebSocket error for client ${client.id}:`, error);
             this.removeFromGameSession(client);
         });
     }
