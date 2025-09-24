@@ -1,4 +1,4 @@
-import { MessageType, GameMode, Direction, GameState, AuthState, PowerupType, AiDifficulty, PowerupState} from './constants.js';
+import { MessageType, GameMode, Direction, ClientState, AuthState, PowerupType, AiDifficulty, PowerupState} from './constants.js';
 
 // ============================== SHARED TYPES  ==============================
 
@@ -199,8 +199,8 @@ export interface InputConfig {
 export interface StateConfig {
 	dialogId?: string;	  // ID of pause dialog
 	controller?: any;	   // Game controller instance
-	oppositeState?: GameState; // State to transition to
-	playingState?: GameState;  // Playing state for this mode
+	oppositeState?: ClientState; // State to transition to
+	playingState?: ClientState;  // Playing state for this mode
 }
 
 // ============================== CAMERA & SCENE TYPES ==============================

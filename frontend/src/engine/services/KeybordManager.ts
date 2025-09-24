@@ -1,7 +1,7 @@
 import { DeviceSourceManager, DeviceType, Scene } from "@babylonjs/core";
 import { Logger } from '../../utils/LogManager.js';
 import { GameConfig } from '../GameConfig.js';
-import { Direction, GameMode, ViewMode, GameState } from '../../shared/constants.js';
+import { Direction, GameMode, ViewMode, ClientState } from '../../shared/constants.js';
 import { GameObjects } from '../../shared/types.js';
 import { getPlayerBoundaries } from '../../shared/gameConfig.js';
 import { PlayerSide, PlayerState } from "../utils.js";
@@ -130,10 +130,10 @@ export class KeyboardManager {
 		if (this.gameState.isPaused() || this.gameState.isPausedLocal()) {
 			this.gameCallbacks.onResume();
 		} else if (this.gameState.isSpectatorPaused()) {
-			this.gameState.set(GameState.SPECTATOR);
+			this.gameState.set(ClientState.SPECTATOR);
 			this.gameCallbacks.onResume();
 		} else if (this.gameState.isSpectator()) {
-			this.gameState.set(GameState.SPECTATOR_PAUSED);
+			this.gameState.set(ClientState.SPECTATOR_PAUSED);
 			this.gameCallbacks.onPause();
 		} else {
 			this.gameCallbacks.onPause();

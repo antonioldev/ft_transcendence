@@ -4,7 +4,7 @@ import { buildScene2D, buildScene3D } from './scene/sceneBuilder.js';
 import { webSocketClient } from '../core/WebSocketClient.js';
 import { GameStateData, GameObjects } from '../shared/types.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
-import { GameState, ViewMode, WebSocketEvent, AppState } from '../shared/constants.js';
+import { ClientState, ViewMode, WebSocketEvent, AppState } from '../shared/constants.js';
 import { Logger } from '../utils/LogManager.js';
 import { uiManager } from '../ui/UIManager.js';
 import { GameMode } from '../shared/constants.js';
@@ -140,7 +140,7 @@ export class Game {
 		if (!this.isInitialized) return;
 
 		try {
-			this.state.set(GameState.PLAYING);
+			this.state.set(ClientState.PLAYING);
 			this.startGameLoop();
 		} catch (error) {
 			Logger.errorAndThrow('Error starting game', 'Game', error);
@@ -187,7 +187,7 @@ export class Game {
 	private onServerPausedGame(): void {
 		if (!this.isInitialized || this.state.isPaused()) return;
 		if (this.state.isPlaying() || this.state.isPausedLocal()) {
-			this.state.set(GameState.PAUSED);
+			this.state.set(ClientState.PAUSED);
 			this.services?.gui?.setPauseVisible(true);
 			this.services?.audio?.pauseGameMusic();
 			this.stopGameLoop();
@@ -199,7 +199,7 @@ export class Game {
 		if (!this.isInitialized) return;
 
 		if (this.state.isPaused()) {
-			this.state.set(GameState.PLAYING);
+			this.state.set(ClientState.PLAYING);
 			this.services?.gui?.setPauseVisible(false);
 			this.services?.audio?.resumeGameMusic();
 			// this.services?.render?.startRendering();
@@ -218,11 +218,11 @@ export class Game {
 		if (showPlayerLoses){
 			// await this.services?.gui?.showTournamentMatchWinner(message.winner); // TODO
 			await this.services?.gui?.showTournamentMatchLoser();
-			this.state.set(GameState.SPECTATOR);
+			this.state.set(ClientState.SPECTATOR);
 		}
 		else {
 			await this.services?.gui?.showTournamentMatchWinner(message.winner);
-			this.state.set(GameState.MATCH_ENDED);
+			this.state.set(ClientState.MATCH_ENDED);
 		}
 		webSocketClient.sendPlayerReady();
 		this.services?.audio?.stopGameMusic();
@@ -384,7 +384,7 @@ export class Game {
 		if (!this.isInitialized || !this.state.canShowPauseMenu()) return;
 
 		if (this.state.isPlaying()) {
-			this.state.set(GameState.PAUSED_LOCAL);
+			this.state.set(ClientState.PAUSED_LOCAL);
 			webSocketClient.sendPauseRequest();
 		}
 
@@ -409,7 +409,7 @@ export class Game {
 		if (this.state.isExiting()) return;
 
 		try {
-			this.state.set(GameState.EXITING);
+			this.state.set(ClientState.EXITING);
 			webSocketClient.sendQuitGame();
 		} catch (error) {
 			Logger.error('Error during request exit', 'Game', error);
