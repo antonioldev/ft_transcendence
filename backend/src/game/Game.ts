@@ -14,7 +14,7 @@ export class Game {
 	clock: Clock;
 	queue: PlayerInput[] = [];
 	state: GameState = GameState.RUNNING;
-	players: (Player | CPU)[]
+	players: readonly (Player | CPU)[]
 	winner!: Player | CPU;
 	loser!: Player | CPU;
 	paddles: (Paddle | CPUBot)[] = [new Paddle(LEFT), new Paddle(RIGHT)];
@@ -29,10 +29,11 @@ export class Game {
 		this.players = players;
 		this.ball = new Ball(this.paddles, this._update_score.bind(this));
 		this.powerup_manager = new PowerupManager(this.paddles, this.ball)
-		this._init();
+		this._init_CPUs();
+		this.send_side_assignment();
 	}
 
-	private _init() {
+	private _init_CPUs() {
 		for (const side of [LEFT, RIGHT]) {
 			const player: Player | CPU = this.players[side];
 			if (player instanceof CPU) {
@@ -157,7 +158,6 @@ export class Game {
 			const random_index = (Math.random() > 0.5) ? 0 : 1;
 			return (this.players[random_index]);
 		}
-		this.send_side_assignment();
 		await this.send_countdown();
 
 		// run game loop, updating and broadcasting state to clients until win

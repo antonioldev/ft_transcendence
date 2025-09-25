@@ -12,6 +12,7 @@ export class Match {
 	players: (Player | CPU)[] = [];
 	clients: Set<Client> = new Set();
 	game!: Game;
+	spectators_allowed: Boolean = false;
 	
 	index!: number;
 	left?: Match;
@@ -135,10 +136,10 @@ abstract class AbstractTournament extends AbstractGameSession{
 		this.add_CPUs();
 		this._match_players();
 		for (this.current_round = 1; this.current_round <= this.num_rounds; this.current_round++) {
-			// if (!this.running) {
-			// 	console.warn(`Tournament ${this.id} ended prematurely on round ${this.current_round}`);
-			// 	return ;
-			// }
+			if (!this.running) {
+				console.log(`Tournament ${this.id} ended prematurely on round ${this.current_round}`);
+				return ;
+			}
 			await this.waitForPlayersReady();
 			this.broadcastRoundSchedule(this.current_round); // TODO added here so we get update info from server
 			
@@ -146,7 +147,7 @@ abstract class AbstractTournament extends AbstractGameSession{
 			if (!matches) return ; // maybe throw err
 			await this.run(matches);
 		}
-		console.error(`Game ${this.id} ended naturally`);
+		console.log(`Game ${this.id} ended naturally`);
 	}
 
 	abstract run(matches: Match[]): Promise<void>;
@@ -268,9 +269,13 @@ export class TournamentRemote extends AbstractTournament {
 				return ;
 			}
 
-			this.register_database(match);
 			match.index = index;
+			if (match.players.length !== 2) {
+				console.error(`Incorrect number of players in match ${match.id}`);
+				return ;
+			}
 			match.game = new Game(match.id, match.players, (message) => this.broadcast(message, match.clients));
+			this.register_database(match);
 			this.active_matches.push(match);
 			
 			let winner_promise: Promise<Player | CPU> = match.game.run();
@@ -292,13 +297,6 @@ export class TournamentRemote extends AbstractTournament {
 		}
 		match.next.add_player(winner);
 
-		this.broadcast({
-			type: MessageType.MATCH_RESULT,
-			winner: winner?.name,
-			round_index: match.round,
-			match_index: match.index,
-		});
-
 		// update readyClients to wait for the winner before starting next round
 		if (winner instanceof Player) {
 			this.readyClients.delete(winner.client.id);
@@ -312,14 +310,23 @@ export class TournamentRemote extends AbstractTournament {
 		for (const client of match.clients) {
 			this.assign_spectator(client, this.active_matches[0]);
 		}
+
+		this.broadcast({
+			type: MessageType.MATCH_RESULT,
+			winner: winner?.name,
+			round_index: match.round,
+			match_index: match.index,
+		});
 	}
 
 	assign_spectator(client: Client, match?: Match) {
 		this.spectators.add(client);
-		if (!match) return ;
-		
-		this.client_match_map.set(client.id, match);
+		if (!match || !match.spectators_allowed) {
+			console.log(`Failed to add spectator to match ${match?.id}: spectators not allowed`)
+			return ;
+		}
 		match.clients.add(client);
+		this.client_match_map.set(client.id, match);
 		match.game?.send_side_assignment(new Set([client]));
 	}
 
@@ -332,6 +339,7 @@ export class TournamentRemote extends AbstractTournament {
 					this.spectators.delete(player.client);
 				}
 			}
+			match.spectators_allowed = true;
 		}
 		// add all defeated players to the first match in a round
 		for (const client of this.spectators) {

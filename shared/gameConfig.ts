@@ -32,7 +32,7 @@ export const GAME_CONFIG = {
 	increasedPaddleWidth: 4.5, // Width of the paddle when GROW_PADDLE activated
 	decreasedPaddleWidth: 1.5, // Width of the paddle when SHRINK_PADDLE activated
 	increasedPaddleSpeed: 22, // Speed of the paddle when INCREASE_PADDLE_SPEED activated
-	decreasedPaddleSpeed: 7, // Speed of the paddle when SLOW_PADDLE activated
+	decreasedPaddleSpeed: 4, // Speed of the paddle when SLOW_PADDLE activated
 	powerupDuration: 5000,	   // time elapsed before powerup is deactivated
 	freezeDuration: 1500.0, // duration of ball freeze 
 
@@ -46,7 +46,7 @@ export const GAME_CONFIG = {
 
 	// Ball settings
 	ballRadius: 0.3, // Radius of the ball
-	ballInitialSpeed: 3, //6, // Initial speed of the ball
+	ballInitialSpeed: 6, // Initial speed of the ball
 	ballMaxAngle: Math.PI / 4, // Maximum angle of the ball trajectory
 	ballMinAngle: Math.PI / 12, // Minimum angle of the ball trajectory
 	ballSpeedIncrease: 1.05, // Speed multiplier after paddle hit
