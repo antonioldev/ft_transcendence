@@ -12,8 +12,6 @@ export class Match {
 	players: (Player | CPU)[] = [];
 	clients: Set<Client> = new Set();
 	game!: Game;
-	winner?: Player | CPU;
-	loser?: Player | CPU;
 	
 	index!: number;
 	left?: Match;
@@ -36,11 +34,6 @@ export class Match {
 			this.clients.add(player.client);
 		}
 
-	}
-
-	assign_winner(winner: Player | CPU) {
-		this.winner = winner;
-		this.loser = this.players[LEFT] === winner ? this.players[RIGHT] : this.players[LEFT];
 	}
 }
 
@@ -173,8 +166,8 @@ export class TournamentLocal extends AbstractTournament {
 			await this.waitForPlayersReady();
 			match.index = index;
 			match.game = new Game(match.id, match.players, this.broadcast.bind(this));
-			match.winner = await match.game.run();
-			if (match.winner) {
+			await match.game.run();
+			if (match.game?.winner) {
 				this.assign_winner(match);
 			}
 			index++;
@@ -182,19 +175,13 @@ export class TournamentLocal extends AbstractTournament {
 	}
 
 	assign_winner(match: Match) {
-		if (!match.winner) return ;
+		if (!match.game.winner) return ;
 		if (!match.next) {
 			this.stop(); 
 			return ;
 		}
-		match.next.add_player(match.winner);
+		match.next.add_player(match.game.winner);
 		this.readyClients.clear();
-		// this.broadcast({
-		// 	type: MessageType.MATCH_WINNER,
-		// 	winner: match.winner.name,
-		// 	round_index: match.round,
-		// 	match_index: match.index,
-		// }, match.clients);
 	}
 
 	canClientControlGame(client: Client) {
@@ -209,7 +196,7 @@ export class TournamentLocal extends AbstractTournament {
 		this.current_match?.game?.stop();
 		this.broadcast({
 			type: MessageType.SESSION_ENDED,
-			...(this.current_match?.winner?.name && { winner: this.current_match?.winner?.name }),
+			...(this.current_match?.game?.winner?.name && { winner: this.current_match?.game?.winner?.name }),
 		});
 	}
 
@@ -285,23 +272,16 @@ export class TournamentRemote extends AbstractTournament {
 	}
 
 	assign_winner(match: Match, winner: Player | CPU) {
-		match.assign_winner(winner);
 		if (match.players[LEFT] instanceof Player && match.players[RIGHT] instanceof Player) {
 			match.game.save_to_db();
 		}
 		if (!match.next) {
-			this.tournamentWinner = match.winner;
+			this.tournamentWinner = match.game?.winner;
 			this.stop();
 			return ;
 		}
 		match.next.add_player(winner);
-		// this.broadcast({
-		// 	type: MessageType.MATCH_WINNER,
-		// 	winner: winner?.name,
-		// 	round_index: match.round,
-		// 	match_index: match.index,
-		// }, match.clients);
-		
+
 		this.broadcast({
 			type: MessageType.MATCH_RESULT,
 			winner: winner?.name,
@@ -317,7 +297,6 @@ export class TournamentRemote extends AbstractTournament {
 		// remove match from active_matches[]
 		const index = this.active_matches.indexOf(match);
 		if (index !== -1) this.active_matches.splice(index, 1);
-		if (this.active_matches.length === 0) return ;
 		
 		// find another active match and add clients as spectators
 		for (const client of match.clients) {
@@ -325,8 +304,10 @@ export class TournamentRemote extends AbstractTournament {
 		}
 	}
 
-	assign_spectator(client: Client, match: Match) {
+	assign_spectator(client: Client, match?: Match) {
 		this.spectators.add(client);
+		if (!match) return ;
+
 		this.client_match_map.set(client.id, match);
 		match.clients.add(client);
 		match.game?.send_side_assignment(new Set([client]));
@@ -371,7 +352,7 @@ export class TournamentRemote extends AbstractTournament {
 		if (!this.running) return ;
 		this.running = false;
 		
-		for (const match of this.client_match_map.values()) {
+		for (const match of this.active_matches) {
 			match.game?.stop();
 		}
 		this.broadcast({
