@@ -216,7 +216,7 @@ export class TournamentLocal extends AbstractTournament {
 export class TournamentRemote extends AbstractTournament {
 	client_match_map: Map<string, Match> = new Map();	// Maps client id to the match they are in
 	spectators: Set<Client> = new Set();	// List of defeated players watching the rest of the games
-	active_matches: Match[] = [];
+	active_matches: Match[] = [];			// list of all active matches in a round
 
 	constructor(mode: GameMode, capacity: number) {
 		super(mode, capacity);
@@ -298,7 +298,7 @@ export class TournamentRemote extends AbstractTournament {
 		const index = this.active_matches.indexOf(match);
 		if (index !== -1) this.active_matches.splice(index, 1);
 		
-		// find another active match and add clients as spectators
+		// add clients as spectators to an active match
 		for (const client of match.clients) {
 			this.assign_spectator(client, this.active_matches[0]);
 		}
@@ -307,7 +307,7 @@ export class TournamentRemote extends AbstractTournament {
 	assign_spectator(client: Client, match?: Match) {
 		this.spectators.add(client);
 		if (!match) return ;
-
+		
 		this.client_match_map.set(client.id, match);
 		match.clients.add(client);
 		match.game?.send_side_assignment(new Set([client]));
