@@ -140,6 +140,34 @@ export class EndGame {
 		});
 	}
 
+	async waitForContinue(ms: number, requireSpace: boolean = true): Promise<void> {
+		if (!this.adt) return;
+
+		const scene = this.adt.getScene();
+
+		await new Promise<void>(res => setTimeout(res, ms));
+		if (requireSpace) {
+			this.continueText.isVisible = true;
+			this.animationManager?.twinkle(this.continueText, Motion.F.slow);
+
+			return new Promise<void>((resolve) => {
+				const sub = scene?.onKeyboardObservable.add((kbInfo: any) => {
+					if (kbInfo.type === KeyboardEventTypes.KEYDOWN) {
+						const e = kbInfo.event as KeyboardEvent;
+						if (e.code === "Space" || e.key === " ") {
+							scene.onKeyboardObservable.remove(sub);
+							this.continueText.isVisible = false;
+							this.partialWinnerLabel.isVisible = false;
+							this.partialWinnerName.isVisible = false;
+							resolve();
+						}
+					}
+				}) ?? null;
+			});
+		}
+		return Promise.resolve();
+	}
+
 	dispose(): void {
 		this.endGameWinnerText.dispose();
 		this.endGameOverlay.dispose();

@@ -7,6 +7,8 @@ import * as db from "../data/validation.js";
 import { getUserBySession, getSessionByUsername } from '../data/validation.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
 import { TournamentRemote } from './Tournament.js';
+import { generateClientId } from '../data/database.js';
+
 /**
  * Manages WebSocket connections, client interactions, and game-related messaging.
  */
@@ -54,16 +56,13 @@ export class WebSocketManager {
      * @param socket - The WebSocket connection object.
      */
     private handleConnection(socket: any, authenticatedUser?: { username: string; email: string }): void {
-        const clientId = this.generateClientId();
-
         let client: Client;
-        if (authenticatedUser) {
-            // Google authenticated user
-            client = new Client(clientId, authenticatedUser.username, authenticatedUser.email, socket);
+        if (authenticatedUser) { // Google authenticated user
+            client = new Client(authenticatedUser.username, authenticatedUser.email, socket);
             client.loggedIn = true; // Mark as already authenticated
-        } else {
-            // Traditional authentication will authenticate via messages
-            client = new Client(clientId, 'temp', '', socket); // will be updated if server approve a classic login request from client
+        }
+        else { // Traditional authentication via messages, details updated with login request
+            client = new Client('default', 'default@default', socket);
         }
 
         socket.on('message', async (message: string) => {
@@ -71,12 +70,12 @@ export class WebSocketManager {
         });
 
         socket.on('close', () => {
-            console.log(`WebSocket closed for client ${clientId}:`);
+            console.log(`WebSocket closed for client ${client.id}:`);
             this.removeFromGameSession(client);
         });
 
         socket.on('error', (error: any) => {
-            console.error(`❌ WebSocket error for client ${clientId}:`, error);
+            console.error(`❌ WebSocket error for client ${client.id}:`, error);
             this.removeFromGameSession(client);
         });
     }
@@ -140,7 +139,6 @@ export class WebSocketManager {
                         type: MessageType.ERROR,
                         message: 'Unknown message type'
                     });
-
             }
         } catch (error) {
             console.error('❌ Error parsing message:', error);
@@ -172,13 +170,16 @@ export class WebSocketManager {
             for (const player of data.players ?? []) {
                 gameSession.add_player(new Player(player.id, player.name, client));
             }
+
+            // start game if full or local, otherwise wait for players to join
             if ((gameSession.full) || gameSession.mode === GameMode.TOURNAMENT_LOCAL) {
                 gameManager.runGame(gameSession);
             }
             else {
                 setTimeout(() => { gameManager.runGame(gameSession) }, (GAME_CONFIG.maxJoinWaitTime * 1000));
             }
-        } catch (error) {
+        }
+        catch (error) {
             console.error('❌ Error joining game:', error);
             this.send(socket, {
                 type: MessageType.ERROR,
@@ -505,36 +506,6 @@ export class WebSocketManager {
 
         console.log(`Lobby sent to ${client.username}:${client.id}`)
     }
-
-    /**
-     * Generates a unique client ID.
-     * @returns A unique string representing the client ID.
-     */
-    private generateClientId(): string {
-        return `client_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    }
-
-    // /**
-    //  * Gets the count of currently connected clients.
-    //  * @returns The number of connected clients.
-    //  */
-    // getConnectedClientsCount(): number {
-    //     return this.clients.size;
-    // }
-
-    // /**
-    //  * Disconnects all connected clients and clears the client list.
-    //  */
-    // disconnectAllClients(): void {
-    //     for (const [clientId, client] of this.clients) {
-    //         try {
-    //             client.websocket.close();
-    //         } catch (error) {
-    //             console.error(`❌ Error disconnecting client ${clientId}:`, error);
-    //         }
-    //     }
-    //     this.clients.clear();
-    // }
 
     private parseCookie(cookieHeader: string): Record<string, string> {
         const out: Record<string, string> = {};

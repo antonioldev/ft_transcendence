@@ -11,6 +11,7 @@ import { GameObjects } from '../shared/types.js';
 import { GameStateManager } from "./GameStateManager";
 
 import { PlayerSide, PlayerState } from "./utils.js"
+import { GameState } from "../shared/constants";
 export interface IGameServices {
 	audio: AudioManager;
 	render: RenderManager;
@@ -36,19 +37,20 @@ export class GameServices implements IGameServices {
 		config: GameConfig,
 		gameObjects: GameObjects,
 		players: Map<PlayerSide, PlayerState>,
-		gameState: GameStateManager,
-		gameCallbacks: {
-			onPause: () => void;
-			onResume: () => void;
-			onExitToMenu: () => void;
-		}
+		// gameState: GameStateManager,
+		// gameState: GameState,
+		// gameCallbacks: {
+		// 	onPause: () => void;
+		// 	onResume: () => void;
+		// 	onExitToMenu: () => void;
+		// }
 	) {
 		this.animation = new AnimationManager(scene);
 		this.audio = new AudioManager(scene);
 		this.gui = new GUIManager(scene, config, this.animation, this.audio);
 		this.particles = new Particles();
 		this.powerup = new PowerupManager(players, this.animation, this.gui, gameObjects);
-		this.input = new KeyboardManager(scene, config, gameObjects, players, this.powerup, gameState, gameCallbacks);
+		this.input = new KeyboardManager(scene, config, gameObjects, players, this.powerup, this.gui);//, gameCallbacks);
 		this.render = new RenderManager(engine, scene, this.gui, this.animation, gameObjects);
 	}
 

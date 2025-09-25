@@ -1,7 +1,6 @@
 import { Color3, Vector3, Viewport } from "@babylonjs/core";
-
 import { GAME_CONFIG } from '../shared/gameConfig.js';
-import { PowerupType } from "../shared/constants.js";
+import { Powerup } from "../shared/types.js";
 
 // Colors for Babylon.js (frontend only)
 export const COLORS = {
@@ -82,22 +81,20 @@ export function resetPlayersState(): Map<PlayerSide, PlayerState> {
 			isControlled: false,
 			size: GAME_CONFIG.paddleWidth,
 			score: 0,
-			powerUps: [null, null, null],
-			activePowerup: null,
+			powerUpsAssigned: false,
+			powerUps: [],
 			inverted: false,
-			controlledBy: null
 		}],
 		[PlayerSide.RIGHT, {
 			name: "",
 			isControlled: false,
 			size: GAME_CONFIG.paddleWidth,
 			score: 0,
-			powerUps: [null, null, null],
-			activePowerup: null,
+			powerUpsAssigned: false,
+			powerUps: [],
 			inverted: false,
-			controlledBy: null
 		}]
-		]);
+	]);
 }
 
 export enum PlayerSide {
@@ -110,8 +107,8 @@ export interface PlayerState {
 	isControlled: boolean;
 	size: number;
 	score: number;
-	powerUps: (PowerupType | null)[];
-	activePowerup: PowerupType | null;
+	powerUpsAssigned: boolean;
+	powerUps: Powerup [];
 	inverted: boolean;
 }
 

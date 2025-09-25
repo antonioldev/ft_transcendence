@@ -110,6 +110,7 @@ export enum ClientState {
 
 // States the game can be in
 export enum GameState {
+	INIT,
 	RUNNING,
 	PAUSED,
 	ENDED,

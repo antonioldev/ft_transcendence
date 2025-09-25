@@ -21,6 +21,7 @@ export class GUIManager {
 	private adt: AdvancedDynamicTexture | null = null;
 	private isInitialized: boolean = false;
 	private isTournament: boolean = false;
+	private pauseVisible: boolean = false;
 	countdown!: Countdown;
 	powerUp!: PowerUp;
 	matchTree!: MatchTree;
@@ -78,26 +79,14 @@ export class GUIManager {
 		}
 	}
 
-	// async showPartialWinner(winner: string): Promise<void> {
-	// 	if (!this.isReady) return;
-	// 	this.powerUp.show(false);
-	// 	await this.endGame.showPartial(winner);
-	// }
-
-	// async hidePartialWinner(): Promise<void> {
-	// 	if (!this.isReady) return;
-	// 	await this.endGame.hidePartial();
-	// }
 
 	async showTournamentMatchWinner(winner: string): Promise<void> {
 		if (!this.isReady) return;
 		
 		await this.animateBackground(true);
-		// await this.showPartialWinner(winner);
 		this.powerUp.show(false);
 		await this.endGame.showPartial(winner);
-		await this.endGame.waitForSpaceToContinue(2000);
-		// await this.hidePartialWinner();
+		await this.endGame.waitForContinue(2000, true);
 		await this.endGame.hidePartial();
 	}
 
@@ -106,7 +95,8 @@ export class GUIManager {
 		
 		await this.animateBackground(true);
 		this.powerUp.show(false);
-		await this.endGame.showPartialLoser(); // New method for showing loss
+		await this.endGame.showPartialLoser();
+		await this.endGame.waitForContinue(2000, false);
 		await this.endGame.hidePartial();
 	}
 
@@ -125,7 +115,6 @@ export class GUIManager {
 
 		if (p1) p1.color = player1 ? "rgba(255, 255, 255, 0.7)" : "rgba(0, 0, 0, 0)";
 		if (p2) p2.color = player2 ? "rgba(255, 255, 255, 0.7)" : "rgba(0, 0, 0, 0)";
-		this.powerUp.show(true);
 	}
 
 	updateTournamentRound(message: any): void {
@@ -152,12 +141,19 @@ export class GUIManager {
 		this.lobby.show(names);
 	}
 	
-	// Check if gui is initialised
 	isReady(): boolean {
 		return this.isInitialized;
 	}
 
-	// Clean up all GUI resources
+	isPauseMenuVisible(): boolean {
+		return this.pauseVisible;
+	}
+
+	togglePauseMenu(): void {
+		this.pauseVisible = !this.pauseVisible;
+		this.setPauseVisible(this.pauseVisible)
+	}
+
 	dispose(): void {
 		if (!this.isReady()) return;
 		

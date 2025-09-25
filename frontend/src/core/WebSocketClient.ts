@@ -48,7 +48,6 @@ export class WebSocketClient {
             clearTimeout(timeout);
             this.connectionStatus = ConnectionStatus.CONNECTED;
             this.notifyStatus(ConnectionStatus.CONNECTED);
-            this.triggerCallback(WebSocketEvent.CONNECTION);	
         };
 
         this.ws.onmessage = (event) => {
@@ -72,7 +71,6 @@ export class WebSocketClient {
             Logger.error('WebSocket error', 'WebSocketClient', error);
             this.connectionStatus = ConnectionStatus.FAILED;
             this.notifyStatus(ConnectionStatus.FAILED);
-            this.triggerCallback(WebSocketEvent.ERROR, 'Connection failed');
         };
     }
 
@@ -94,11 +92,11 @@ export class WebSocketClient {
             case MessageType.GAME_STATE:
                 this.triggerCallback(WebSocketEvent.GAME_STATE, message.state);
                 break;
-            case MessageType.PAUSED:
-                this.triggerCallback(WebSocketEvent.GAME_PAUSED);
-                break;
-            case MessageType.RESUMED:
-                this.triggerCallback(WebSocketEvent.GAME_RESUMED);
+            // case MessageType.PAUSED:
+            //     this.triggerCallback(WebSocketEvent.GAME_PAUSED);
+            //     break;
+            // case MessageType.RESUMED:
+            //     this.triggerCallback(WebSocketEvent.GAME_RESUMED);
                 break;
             case MessageType.SESSION_ENDED:
                 this.triggerCallback(WebSocketEvent.SESSION_ENDED, message);
@@ -144,15 +142,6 @@ export class WebSocketClient {
                 break;
             case MessageType.MATCH_RESULT:
                 this.triggerCallback(WebSocketEvent.MATCH_RESULT, message);
-                break;
-            case MessageType.POWERUP_ASSIGNMENT:
-                this.triggerCallback(WebSocketEvent.POWERUP_ASSIGNMENT, message); 
-                break;
-            case MessageType.POWERUP_ACTIVATED:
-                this.triggerCallback(WebSocketEvent.POWERUP_ACTIVATED, message); 
-                break;
-            case MessageType.POWERUP_DEACTIVATED:
-                this.triggerCallback(WebSocketEvent.POWERUP_DEACTIVATED, message); 
                 break;
             case MessageType.TOURNAMENT_LOBBY:
                 this.triggerCallback(WebSocketEvent.TOURNAMENT_LOBBY, message); 

@@ -1,13 +1,14 @@
 import { DeviceSourceManager, DeviceType, Scene } from "@babylonjs/core";
 import { Logger } from '../../utils/LogManager.js';
 import { GameConfig } from '../GameConfig.js';
-import { Direction, GameMode, ViewMode, ClientState } from '../../shared/constants.js';
+import { Direction, GameMode, ViewMode, ClientState, GameState } from '../../shared/constants.js';
 import { GameObjects } from '../../shared/types.js';
 import { getPlayerBoundaries } from '../../shared/gameConfig.js';
 import { PlayerSide, PlayerState } from "../utils.js";
 import { webSocketClient } from '../../core/WebSocketClient.js';
 import { PowerupManager } from "./PowerUpManager.js";
 import { GameStateManager } from "../GameStateManager.js";
+import { GUIManager } from "./GuiManager.js";
 
 
 export const Keys = {
@@ -45,26 +46,28 @@ export class KeyboardManager {
 	private activeProfiles!: { P1: KeysProfile; P2: KeysProfile; DEFAULT: KeysProfile, DEFAULT_RIGHT: KeysProfile };
 	private isInitialized: boolean = false;
 
-	private gameCallbacks: {
-		onPause: () => void;
-		onResume: () => void;
-		onExitToMenu: () => void;
-	};
+	// private gameCallbacks: {
+	// 	onPause: () => void;
+	// 	onResume: () => void;
+	// 	onExitToMenu: () => void;
+	// };
 
 	constructor(
 		scene: Scene,
 		private config: GameConfig,
 		private gameObjects: GameObjects,
 		private players: Map<PlayerSide, PlayerState>,
-		private powerupManager: PowerupManager | null = null,
-		private gameState: GameStateManager,
-		callbacks: {
-			onPause: () => void;
-			onResume: () => void;
-			onExitToMenu: () => void;
-		}
+		private powerupManager: PowerupManager,
+		private gui: GUIManager,
+		// private gameState: GameStateManager,
+		// private gameState: GameState,
+		// callbacks: {
+		// 	onPause: () => void;
+		// 	onResume: () => void;
+		// 	onExitToMenu: () => void;
+		// }
 	) {
-		this.gameCallbacks = callbacks;
+		// this.gameCallbacks = callbacks;
 		this.deviceSourceManager = new DeviceSourceManager(scene.getEngine());
 		this.globalKeyDownHandler = this.handleGlobalKeyDown.bind(this);
 		this.setupGlobalKeyboardEvents();
@@ -108,83 +111,123 @@ export class KeyboardManager {
 			return;
 		}
 
-		if (this.gameState.isPaused() || this.gameState.isPausedLocal() || this.gameState.isSpectatorPaused()) {
+		// if (this.gameState.isPaused() || this.gameState.isPausedLocal() || this.gameState.isSpectatorPaused()) {
+		// 	this.handlePauseMenuKeys(key);
+		// 	return;
+		// }
+
+		// if (this.gameState.isSpectator()) {
+		// 	this.handleSwitchGame(key);
+		// 	return;
+		// }
+
+		// if (this.gameState.isPlaying()) {
+			// this.handlePowerupKeys(key);
+		if (this.gui.isPauseMenuVisible())
 			this.handlePauseMenuKeys(key);
-			return;
-		}
-
-		if (this.gameState.isSpectator()) {
-			this.handleSwitchGame(key);
-			return;
-		}
-
-		if (this.gameState.isPlaying()) {
+		else
 			this.handlePowerupKeys(key);
-		}
 	}
 
 	// Updated escape key handler
 	private handleEscapeKey(): void {
-		if (!this.gameState.canShowPauseMenu()) return;
+		this.gui.togglePauseMenu();
 
-		if (this.gameState.isPaused() || this.gameState.isPausedLocal()) {
-			this.gameCallbacks.onResume();
-		} else if (this.gameState.isSpectatorPaused()) {
-			this.gameState.set(ClientState.SPECTATOR);
-			this.gameCallbacks.onResume();
-		} else if (this.gameState.isSpectator()) {
-			this.gameState.set(ClientState.SPECTATOR_PAUSED);
-			this.gameCallbacks.onPause();
-		} else {
-			this.gameCallbacks.onPause();
-		}
+		if (this.gui.isPauseMenuVisible())
+			webSocketClient.sendPauseRequest();
+		else
+			webSocketClient.sendResumeRequest();
+		// if (!this.gameState.canShowPauseMenu()) return;
+
+		// if (this.gameState.isPaused() || this.gameState.isPausedLocal()) {
+		// 	this.gameCallbacks.onResume();
+		// } else if (this.gameState.isSpectatorPaused()) {
+		// 	this.gameState.set(ClientState.SPECTATOR);
+		// 	this.gameCallbacks.onResume();
+		// } else if (this.gameState.isSpectator()) {
+		// 	this.gameState.set(ClientState.SPECTATOR_PAUSED);
+		// 	this.gameCallbacks.onPause();
+		// } else {
+		// 	this.gameCallbacks.onPause();
+		// }
 	}
 
-	private handleSwitchGame(key: number): void {
-		if (key === Keys.LEFT)
-			webSocketClient.sendSwitchGame(Direction.LEFT);
-		else if (key === Keys.RIGHT)
-			webSocketClient.sendSwitchGame(Direction.RIGHT);
-	}
+	// private handleSwitchGame(key: number): void {
+	// 	if (key === Keys.LEFT)
+	// 		webSocketClient.sendSwitchGame(Direction.LEFT);
+	// 	else if (key === Keys.RIGHT)
+	// 		webSocketClient.sendSwitchGame(Direction.RIGHT);
+	// }
 
 	private handlePauseMenuKeys(key: number): void {
+		const isSpectators = !this.players.get(PlayerSide.LEFT)?.isControlled
+						&& !this.players.get(PlayerSide.RIGHT)?.isControlled;
 		switch (key) {
 			case Keys.Y:
-				this.gameCallbacks.onExitToMenu?.();
+				webSocketClient.sendQuitGame();
+				// this.gameCallbacks.onExitToMenu?.();
 				break;
 			case Keys.N:
 			case Keys.ESC:
-				this.gameCallbacks.onResume();
+				webSocketClient.sendResumeRequest();
+				// this.gameCallbacks.onResume();
+				break;
+			case Keys.LEFT:
+				if (isSpectators)
+					webSocketClient.sendSwitchGame(Direction.LEFT);
+				break;
+			case Keys.RIGHT:
+				if (isSpectators)
+					webSocketClient.sendSwitchGame(Direction.RIGHT);
 				break;
 		}
 	}
 
 	private handlePowerupKeys(key: number): void {
 		if (!this.powerupManager) return;
-
-		for (const [side, playerState] of this.players.entries()) {
-			if (!playerState.isControlled) continue;
+		this.players.forEach((playerState, side) => {
+			if (!playerState.isControlled) return;
 			
 			let profile: KeysProfile;
-			
 			if (this.config.isLocalMultiplayer)
 				profile = (side === PlayerSide.LEFT) ? this.activeProfiles.P1 : this.activeProfiles.P2;
 			else
 				profile = this.activeProfiles.DEFAULT;
 			
-			if (key === profile.power.k1){
-				this.powerupManager.requestActivatePowerup(side, 0);
-				return;
+			switch (key) {
+				case profile.power.k1:
+					this.powerupManager.requestActivatePowerup(side, 0);
+					return;
+				case profile.power.k2:
+					this.powerupManager.requestActivatePowerup(side, 1);
+					return;
+				case profile.power.k3:
+					this.powerupManager.requestActivatePowerup(side, 2);
+					return;
 			}
-			if (key === profile.power.k2) {
-				this.powerupManager.requestActivatePowerup(side, 1);
-				return;
-			}
-			if (key === profile.power.k3) {
-				this.powerupManager.requestActivatePowerup(side, 2);
-				return;
-			}
-		}
+		});
+		// for (const [side, playerState] of this.players.entries()) {
+		// 	if (!playerState.isControlled) continue;
+			
+		// 	let profile: KeysProfile;
+		// 	if (this.config.isLocalMultiplayer)
+		// 		profile = (side === PlayerSide.LEFT) ? this.activeProfiles.P1 : this.activeProfiles.P2;
+		// 	else
+		// 		profile = this.activeProfiles.DEFAULT;
+			
+		// 	if (key === profile.power.k1){
+		// 		this.powerupManager.requestActivatePowerup(side, 0);
+		// 		return;
+		// 	}
+		// 	if (key === profile.power.k2) {
+		// 		this.powerupManager.requestActivatePowerup(side, 1);
+		// 		return;
+		// 	}
+		// 	if (key === profile.power.k3) {
+		// 		this.powerupManager.requestActivatePowerup(side, 2);
+		// 		return;
+		// 	}
+		// }
 	}
 
 	update(): void {
@@ -194,12 +237,16 @@ export class KeyboardManager {
 			const keyboardSource = this.deviceSourceManager.getDeviceSource(DeviceType.Keyboard);
 			if (!keyboardSource) return;
 
-			for (const [side, playerState] of this.players.entries()) {
-				if (!playerState.isControlled) continue;
+			// for (const [side, playerState] of this.players.entries()) {
+			// 	if (!playerState.isControlled) continue;
 
-				this.handlePlayerMovement(keyboardSource, side, playerState);
-			}
-			} catch (error) {
+			// 	this.handlePlayerMovement(keyboardSource, side, playerState);
+			// }
+			this.players.forEach((playerState, side) => {
+				if (playerState.isControlled)
+					this.handlePlayerMovement(keyboardSource, side, playerState);
+			});
+		} catch (error) {
 			Logger.error('Error updating player input', 'KeyboardManager', error);
 		}
 	}
@@ -254,12 +301,11 @@ export class KeyboardManager {
 			
 			this.deviceSourceManager?.dispose();
 			this.deviceSourceManager = null;
-			this.gameCallbacks = {
-				onPause: () => {},
-				onResume: () => {},
-				onExitToMenu: () => {}
-			};
-			this.powerupManager = null;
+			// this.gameCallbacks = {
+			// 	onPause: () => {},
+			// 	onResume: () => {},
+			// 	onExitToMenu: () => {}
+			// };
 			
 			this.isInitialized = false;
 			Logger.debug('KeyboardManager disposed', 'KeyboardManager');

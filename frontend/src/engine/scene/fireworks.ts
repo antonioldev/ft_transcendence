@@ -255,116 +255,6 @@ export const PARTIAL_GUI_SPARKLES_LOSER: SparkleDetails = {
 	spread: { x: 60, y: 50 }
 };
 
-// function createSparkleElement(config: SparkleDetails): Image {
-// 	const sparkle = new Image("sparkle", config.asset);
-// 	sparkle.stretch = Image.STRETCH_UNIFORM;
-
-// 	const size = randomInRange(config.size.min, config.size.max);
-// 	sparkle.widthInPixels = size;
-// 	sparkle.heightInPixels = size;
-
-// 	sparkle.color = randomFromArray(config.colors);
-
-// 	sparkle.left = `${randomInRange(-config.spread.x / 2, config.spread.x / 2)}%`;
-// 	sparkle.top = `${randomInRange(-config.spread.y / 2, config.spread.y / 2)}%`;
-
-// 	sparkle.alpha = 0;
-// 	sparkle.scaleX = 0;
-// 	sparkle.scaleY = 0;
-
-// 	sparkle.zIndex = Math.floor(randomInRange(7, 9));
-
-// 	return sparkle;
-// }
-
-
-// function animateSparkle(sparkle: Image, animationManager: any, delay: number, duration: number, winner: boolean): void {
-// 	createDelayedAction(() => {
-// 	sparkle.animations = [
-// 		animationManager.createFloat("alpha", 0, 1, 8, false, animationManager.Motion?.ease.quadOut()),
-// 		animationManager.createFloat("scaleX", 0, 1, 8, false, animationManager.Motion?.ease.quadOut()),
-// 		animationManager.createFloat("scaleY", 0, 1, 8, false, animationManager.Motion?.ease.quadOut()),
-// 	];
-
-// 	// animationManager.play(sparkle, 8, false).then(() => {
-// 	// 	const LOOP_CYCLE = Animation.ANIMATIONLOOPMODE_CYCLE;
-// 	// 	sparkle.animations = [
-// 	// 	animationManager.createFloat("alpha", 1, 0.3, 20, true, animationManager.Motion?.ease.sine(), LOOP_CYCLE),
-// 	// 	];
-// 	// 	animationManager.play(sparkle, 20, true);
-
-// 		// createDelayedAction(() => {
-// 		// sparkle.animations = [
-// 		// 	animationManager.createFloat("alpha", sparkle.alpha, 0, 12, false, animationManager.Motion?.ease.quadOut()),
-// 		// 	animationManager.createFloat("scaleX", sparkle.scaleX, 0, 12, false, animationManager.Motion?.ease.quadOut()),
-// 		// 	animationManager.createFloat("scaleY", sparkle.scaleY, 0, 12, false, animationManager.Motion?.ease.quadOut()),
-// 		// ];
-// 		// animationManager.play(sparkle, 12, false).then(() => {
-// 		// 	sparkle.dispose();
-// 		// });
-// 		// }, Math.max(0, duration - 500));
-// 	// 	createDelayedAction(() => {
-// 	// 		if (winner) {
-// 	// 			sparkle.animations = [
-// 	// 				animationManager.createFloat("alpha", sparkle.alpha, 0, 12, false, animationManager.Motion?.ease.quadOut()),
-// 	// 				animationManager.createFloat("scaleX", sparkle.scaleX, 0, 12, false, animationManager.Motion?.ease.quadOut()),
-// 	// 				animationManager.createFloat("scaleY", sparkle.scaleY, 0, 12, false, animationManager.Motion?.ease.quadOut()),
-// 	// 			];
-// 	// 			animationManager.play(sparkle, 12, false).then(() => {
-// 	// 				sparkle.dispose();
-// 	// 			});
-// 	// 		} else {
-// 	// 			sparkle.animations = [
-// 	// 				animationManager.createFloat("alpha", 1, 0, frames, false, animationManager.Motion.ease.sine()),
-// 	// 				animationManager.createFloat("scaleX", 1, 0.1, frames, false, animationManager.Motion.ease.quadOut()),
-// 	// 				animationManager.createFloat("scaleY", 1, 0.1, frames, false, animationManager.Motion.ease.quadOut()),
-// 	// 				animationManager.createFloat("topInPixels", sparkle.topInPixels, sparkle.topInPixels + 200, frames, false, animationManager.Motion.ease.quadOut()),
-// 	// 				animationManager.createFloat("rotation", 0, Math.PI / 4, frames, false, animationManager.Motion.ease.sine())
-// 	// 			];
-// 	// 			animationManager.play(sparkle, 12, false).then(() => {
-// 	// 				sparkle.dispose();
-// 	// 			});
-// 	// 		}
-// 	// 	}, delay);
-// 	// });
-
-// 		animationManager.play(sparkle, 8, false).then(() => {
-// 	const LOOP_CYCLE = Animation.ANIMATIONLOOPMODE_CYCLE;
-// 	sparkle.animations = [
-// 		animationManager.createFloat("alpha", 1, 0.3, 20, true, animationManager.Motion?.ease.sine(), LOOP_CYCLE),
-// 	];
-// 	animationManager.play(sparkle, 20, true);
-
-// 	createDelayedAction(() => {
-// 		if (winner) {
-// 			sparkle.animations = [
-// 				animationManager.createFloat("alpha", sparkle.alpha, 0, 12, false, animationManager.Motion?.ease.quadOut()),
-// 				animationManager.createFloat("scaleX", sparkle.scaleX, 0, 12, false, animationManager.Motion?.ease.quadOut()),
-// 				animationManager.createFloat("scaleY", sparkle.scaleY, 0, 12, false, animationManager.Motion?.ease.quadOut()),
-// 			];
-// 			animationManager.play(sparkle, 12, false).then(() => {
-// 				sparkle.dispose();
-// 			});
-// 		} else {
-// 			sparkle.animations = [
-// 				animationManager.createFloat("alpha", 1, 0, 60, false, animationManager.Motion?.ease.sine()),
-// 				animationManager.createFloat("scaleX", 1, 0.1, 60, false, animationManager.Motion?.ease.quadOut()),
-// 				animationManager.createFloat("scaleY", 1, 0.1, 60, false, animationManager.Motion?.ease.quadOut()),
-// 				animationManager.createFloat("topInPixels", sparkle.topInPixels, sparkle.topInPixels + 200, 60, false, animationManager.Motion?.ease.quadOut()),
-// 				animationManager.createFloat("rotation", 0, Math.PI / 4, 60, false, animationManager.Motion?.ease.sine())
-// 			];
-// 			animationManager.play(sparkle, 60, false).then(() => {
-// 				sparkle.dispose();
-// 			});
-// 		}
-// 	}, Math.max(0, duration - 500));
-// });
-
-
-// 	}, delay);
-// }
-
-
 function createSparkleElement(config: SparkleDetails, winner: boolean): Image {
 	const sparkle = new Image("sparkle", config.asset);
 	sparkle.stretch = Image.STRETCH_UNIFORM;
@@ -375,13 +265,10 @@ function createSparkleElement(config: SparkleDetails, winner: boolean): Image {
 
 	sparkle.color = randomFromArray(config.colors);
 
-	// Position logic - loser sparkles start higher
 	if (!winner) {
-		// Loser sparkles start from top 30% of the spread area (higher on screen)
-		const startYOffset = -config.spread.y * 0.3; // Start higher
+		const startYOffset = -config.spread.y * 0.8;
 		sparkle.top = `${randomInRange(startYOffset, startYOffset + config.spread.y * 0.4)}%`;
 	} else {
-		// Winner sparkles use normal centered positioning
 		sparkle.top = `${randomInRange(-config.spread.y / 2, config.spread.y / 2)}%`;
 	}
 	
@@ -453,24 +340,8 @@ export function spawnGUISparkles(
 		advancedTexture.addControl(sparkle);
 		
 		// Stagger the sparkles
-		const delay = Math.random() * (winner ? 800 : 400); // Shorter delay for loser sparkles
+		const delay = Math.random() * (winner ? 800 : 100);
 		animateSparkle(sparkle, animationManager, delay, config.duration, winner);
 	}
 }
-
-// export function spawnGUISparkles(
-// 	advancedTexture: AdvancedDynamicTexture, 
-// 	animationManager: any,
-// 	winner: boolean
-// ): void {
-// 	const config = winner ? PARTIAL_GUI_SPARKLES : PARTIAL_GUI_SPARKLES_LOSER;
-// 	for (let i = 0; i < config.count; i++) {
-// 		const sparkle = createSparkleElement(config);
-// 		advancedTexture.addControl(sparkle);
-		
-// 		// Stagger the sparkles
-// 		const delay = Math.random() * 800;
-// 		animateSparkle(sparkle, animationManager, delay, config.duration, winner);
-// 	}
-// }
 

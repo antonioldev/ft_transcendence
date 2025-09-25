@@ -1,4 +1,5 @@
 import { AiDifficulty } from '../shared/constants.js';
+import { generateClientId } from '../data/database.js';
 
 /**
  * Represents a physical device/browser connection to the server
@@ -6,14 +7,13 @@ import { AiDifficulty } from '../shared/constants.js';
  * This is about the WebSocket connection, not the game participant
  */
 export class Client {
-    id: string;
+    id: string = generateClientId();
     username: string;       // Username for future authentication (not used yet)
     email: string;       // email for future authentication (not used yet)
     websocket: any;
     loggedIn: boolean;      // Whether this client is authenticated
 
-    constructor(id: string, username: string, email: string, websocket: any) {
-        this.id = id;
+    constructor(username: string, email: string, websocket: any) {
         this.username = username;       // Keep for future use
         this.email = email;       // Keep for future use
         this.websocket = websocket;

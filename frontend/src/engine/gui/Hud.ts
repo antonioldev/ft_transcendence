@@ -112,9 +112,9 @@ export class Hud {
 
 		if (config.gameMode === GameMode.SINGLE_PLAYER || config.isRemoteMultiplayer) {
 			if (config.viewMode === ViewMode.MODE_2D)
-				return move + "\nP1: W / S";
+				return move + "\n↑ / ↓";
 			else
-				return move + "\nP2: ← / →";
+				return move + "\n← / →";
 		}
 		
 		if (config.viewMode === ViewMode.MODE_2D)

@@ -2,7 +2,7 @@ import { PowerupType, PowerupState } from "../../shared/constants.js";
 import { GAME_CONFIG } from "../../shared/gameConfig.js";
 import { AnimationManager } from "./AnimationManager.js";
 import { GUIManager } from "./GuiManager.js";
-import { GameObjects } from "../../shared/types.js";
+import { GameObjects, Powerup } from "../../shared/types.js";
 import { webSocketClient } from '../../core/WebSocketClient.js';
 import { PlayerSide, PlayerState } from "../utils.js"
 
@@ -11,60 +11,77 @@ export class PowerupManager {
 	constructor(
 		private players: Map<PlayerSide, PlayerState>,
 		private animationManager: AnimationManager,
-		// private audioManager: AudioManager,
 		private guiManager: GUIManager,
 		private gameObjects: GameObjects
 	) {}
 
-	// Handle server assigning powerups to player
-	assign(message: any): void {
-		if (!message || !Array.isArray(message.powerups))
-			console.warn("[PowerUps] invalid message", message);
-
-		const types: number[] = message.powerups;
-		const states: number[] = message.slot_states;
-		const side = message.side;
-
-		if (side !== PlayerSide.LEFT && side !== PlayerSide.RIGHT)
+	handleUpdates(side: PlayerSide, serverPowerups: Powerup[]): void {
+		
+		if (!serverPowerups || serverPowerups.length === 0)
 			return;
 
-		// this.players.get(side)!.powerUps = types.map(id => id as PowerupType);
+		const player = this.players.get(side);
+		if (player === null || player === undefined)
+			return;
 
-		for (let i = 0; i < Math.min(types.length, states.length); i++) {
-			this.guiManager?.powerUp.update(side, i, types[i], states[i]);
-			console.error("type: "+types[i]+", state: "+ states[i]);
-		} 
+		if (!player.powerUpsAssigned) {
+			player.powerUpsAssigned = true;
+			player.powerUps = [...serverPowerups];
+			for (let i = 0; i < serverPowerups.length; i++)
+				this.guiManager?.powerUp.assign(side, i, serverPowerups[i].type);
+			return;
+		}
+
+		for (let i = 0; i < serverPowerups.length; i++) {
+			const serverPowerup = serverPowerups[i];
+			const clientPowerup = player.powerUps[i];
+			let powerUpStateChanged = false;
+
+			if (serverPowerup.state === PowerupState.ACTIVE && clientPowerup.state === PowerupState.UNUSED) {
+				clientPowerup.state = serverPowerup.state;
+				this.activate(side, i, serverPowerup.type);
+				powerUpStateChanged = true;
+			} else if (serverPowerup.state === PowerupState.SPENT && clientPowerup.state === PowerupState.ACTIVE) {
+				clientPowerup.state = serverPowerup.state;
+				this.deactivate(side, i, serverPowerup.type);
+				powerUpStateChanged = true;
+			}
+			if (powerUpStateChanged)
+				this.guiManager?.powerUp.update(side, i, serverPowerup.state);
+		}
 	}
 
-	// Player requests to activate a powerup
 	requestActivatePowerup(side: PlayerSide, slotIndex: number): void {
-		if (!this.players.get(side)?.isControlled) return;
-		const powerUps = this.players.get(side)!.powerUps;
-		if (!powerUps) return;
+		const player = this.players.get(side);
+		if (!player?.isControlled)
+			return;
+		
+		const powerUps = player.powerUps;
+		
+		if (!powerUps || slotIndex >= powerUps.length)
+			return;
 
 		const powerup = powerUps[slotIndex];
-		if (powerup === null || powerup === undefined) return;
+		
+		if (!powerup || powerup.state !== PowerupState.UNUSED)
+			return;
 
-		const currentlyActive = this.players.get(side)!.activePowerup;
-		if (currentlyActive === powerup) return;
+		const hasActivePowerupOfSameType = powerUps.some(p => 
+			p.type === powerup.type && p.state === PowerupState.ACTIVE
+		);
+		
+		if (hasActivePowerupOfSameType)
+			return;
 
-		webSocketClient.sendPowerupActivationRequest(powerup, side, slotIndex);
+		webSocketClient.sendPowerupActivationRequest(powerup.type, side, slotIndex);
 	}
 
-	activate(message: any): void {
-		if (!message) return;
-
-		console.warn(`[PowerUp Toggle] Activating power-up:`, message);
-
-		const side = message.side;
-		const slot = message.slot;
-		const powerup = message.powerup;
-
+	activate(side: PlayerSide, slot: number, powerupType: PowerupType): void {
 		const med = GAME_CONFIG.paddleWidth;
 		const lrg = GAME_CONFIG.increasedPaddleWidth;
 		const sml = GAME_CONFIG.decreasedPaddleWidth;
-		this.players.get(side)!.activePowerup = powerup;
-		switch (message.powerup) {
+		
+		switch (powerupType) {
 			case PowerupType.SHRINK_OPPONENT:
 				if (side === PlayerSide.LEFT) {
 					this.animationManager?.scaleWidth(this.gameObjects?.players.right, med, sml);
@@ -90,22 +107,15 @@ export class PowerupManager {
 					this.players.get(PlayerSide.LEFT)!.inverted = true;
 				break;
 		}
-		this.guiManager?.powerUp.update(side, slot, null, PowerupState.ACTIVE);
+		this.guiManager?.powerUp.update(side, slot, PowerupState.ACTIVE);
 	}
 
-	deactivate(message: any): void {
-		if (!message) return;
-
-		console.warn(`[PowerUp Toggle] Deactivating power-up:`, message);
-
-		const side = message.side;
-		const slot = message.slot;
-
+	deactivate(side: PlayerSide, slot: number, powerupType: PowerupType): void {
 		const med = GAME_CONFIG.paddleWidth;
 		const lrg = GAME_CONFIG.increasedPaddleWidth;
 		const sml = GAME_CONFIG.decreasedPaddleWidth;
-		this.players.get(side)!.activePowerup = null;
-		switch (message.powerup) {
+		
+		switch (powerupType) {
 			case PowerupType.SHRINK_OPPONENT:
 				if (side === PlayerSide.LEFT) {
 					this.animationManager?.scaleWidth(this.gameObjects?.players.right, sml, med);
@@ -131,9 +141,10 @@ export class PowerupManager {
 					this.players.get(PlayerSide.LEFT)!.inverted = false;
 				break;
 		}
-		this.guiManager?.powerUp.update(side, slot, null, PowerupState.SPENT);
+		this.guiManager?.powerUp.update(side, slot, PowerupState.SPENT);
 	}
 
 	dispose(): void {
+		
 	}
 }
