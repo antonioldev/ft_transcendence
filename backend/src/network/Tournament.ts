@@ -30,7 +30,7 @@ export class Match {
 			this.players.push(player);
 		}
 		if (player instanceof Player) {
-			console.log(`Client ${player.client} added to match ${this.id}`)
+			console.log(`Client ${player.client.id} added to match ${this.id}`)
 			this.clients.add(player.client);
 		}
 
@@ -134,7 +134,7 @@ abstract class AbstractTournament extends AbstractGameSession{
 		this.add_CPUs();
 		this._match_players();
 		for (this.current_round = 1; this.current_round <= this.num_rounds; this.current_round++) {
-			if (!this.running) return ;
+			// if (!this.running) return ;
 			
 			await this.waitForPlayersReady();
 			this.broadcastRoundSchedule(this.current_round); // TODO added here so we get update info from server
@@ -142,6 +142,7 @@ abstract class AbstractTournament extends AbstractGameSession{
 			if (!matches) return ; // maybe throw err
 			await this.run(matches);
 		}
+		console.error(`Game ${this.id} ended naturally`);
 	}
 
 	abstract run(matches: Match[]): Promise<void>;
