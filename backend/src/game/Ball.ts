@@ -13,6 +13,8 @@ export class Ball {
     isPaused: Boolean = false;
     updateScore: (side: number, score: number) => void; // Callback to update the score.
     current_rally = 1; 
+    powershot_active?: boolean;         // whether ball is currently at superspeed
+    powershot_activated_by?: number;    // which side activated the powershot
 
     // Initializes the ball with players and a score update callback.
     constructor(paddles: any[], updateScoreCallback: (side: number, score: number) => void) {
@@ -62,35 +64,50 @@ export class Ball {
 
     // Handles collisions with paddles and adjusts the ball's direction accordingly.
     private collision(direction: CollisionDirection): void {
-        for (const paddle of this.paddles) {
-            if (!this.rect.colliderect(paddle.rect)) continue;
+        for (const side of [LEFT, RIGHT]) {
+            if (!this.rect.colliderect(this.paddles[side].rect)) continue;
 
             // Collision with sides of paddle
             if (direction === CollisionDirection.HORIZONTAL) { 
-                if (this.rect.right >= paddle.rect.left && this.oldRect.right <= paddle.oldRect.left) {
-                    this.rect.right = paddle.rect.left;
+                if (this.rect.right >= this.paddles[side].rect.left && this.oldRect.right <= this.paddles[side].oldRect.left) {
+                    this.rect.right = this.paddles[side].rect.left;
                     this.direction[0] *= -1;
                 }
-                else if (this.rect.left <= paddle.rect.right && this.oldRect.left >= paddle.oldRect.right) {
-                    this.rect.left = paddle.rect.right;
+                else if (this.rect.left <= this.paddles[side].rect.right && this.oldRect.left >= this.paddles[side].oldRect.right) {
+                    this.rect.left = this.paddles[side].rect.right;
                     this.direction[0] *= -1;
                 }
             }
             else { // Collision with front of paddle
-                if (this.rect.bottom >= paddle.rect.top && this.oldRect.bottom <= paddle.oldRect.top) {
-                    this.rect.bottom = paddle.rect.top;
-                    this.calculate_spin(paddle);
+                if (this.rect.bottom >= this.paddles[side].rect.top && this.oldRect.bottom <= this.paddles[side].oldRect.top) {
+                    this.rect.bottom = this.paddles[side].rect.top;
+                    this.calculate_spin(this.paddles[side]);
                     this.speed *= GAME_CONFIG.ballSpeedIncrease;
                     this.current_rally += 1;
-
+                    this.handle_powershot(side);
                 }
-                else if (this.rect.top <= paddle.rect.bottom && this.oldRect.top >= paddle.oldRect.bottom) {
-                    this.rect.top = paddle.rect.bottom;
-                    this.calculate_spin(paddle);
+                else if (this.rect.top <= this.paddles[side].rect.bottom && this.oldRect.top >= this.paddles[side].oldRect.bottom) {
+                    this.rect.top = this.paddles[side].rect.bottom;
+                    this.calculate_spin(this.paddles[side]);
                     this.speed *= GAME_CONFIG.ballSpeedIncrease;
                     this.current_rally += 1;
+                    this.handle_powershot(side);
                 }
             }
+        }
+    }
+
+    handle_powershot(collision_side: number) {
+        if (!this.powershot_activated_by || !this.powershot_active) return ;
+        
+        if (this.powershot_activated_by === collision_side) {
+            this.speed = GAME_CONFIG.ballPowerShotSpeed;
+            this.powershot_activated_by = undefined;
+            this.powershot_active = true;
+        }
+        else if (this.powershot_active) {
+            this.speed = GAME_CONFIG.ballInitialSpeed;
+            this.powershot_active = false;
         }
     }
 

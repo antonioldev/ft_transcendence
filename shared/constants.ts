@@ -80,6 +80,7 @@ export enum PowerupType {
 	INCREASE_PADDLE_SPEED,
 	GROW_PADDLE,
 	FREEZE,
+	POWERSHOT,
 }
 export enum PowerupState {
 	UNUSED,

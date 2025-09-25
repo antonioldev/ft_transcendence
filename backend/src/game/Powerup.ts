@@ -75,6 +75,9 @@ export class PowerupManager {
 			case PowerupType.FREEZE:
 				timeout = this.freeze_ball();
 				break ;
+			case PowerupType.POWERSHOT:
+				this.powershot(slot.side);
+				break ;
 			default:
 				console.error(`Error: cannot activate unknown Powerup "${slot.type}`);
 				return ;
@@ -106,6 +109,9 @@ export class PowerupManager {
 			case PowerupType.FREEZE:
 				this.ball.isPaused = false;
 				break ;
+			case PowerupType.POWERSHOT:
+				// speed reset handled internally by ball
+				break ;
 			default:
 				console.error(`Error: cannot deactivate unknown Powerup "${slot.type}`);
 				return ;
@@ -121,7 +127,6 @@ export class PowerupManager {
 		}
 		return (null);
 	}
-
 
 	// POWERUPS 
 	slow_down(opponent_side: number): number {
@@ -199,5 +204,10 @@ export class PowerupManager {
 	freeze_ball(): number {
 		this.ball.isPaused = true;
 		return (GAME_CONFIG.freezeDuration);
+	}
+
+	powershot(side: number): number {
+		this.ball.powershot_activated_by = side;
+		return (3);
 	}
 }
