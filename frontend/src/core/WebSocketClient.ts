@@ -92,12 +92,6 @@ export class WebSocketClient {
             case MessageType.GAME_STATE:
                 this.triggerCallback(WebSocketEvent.GAME_STATE, message.state);
                 break;
-            // case MessageType.PAUSED:
-            //     this.triggerCallback(WebSocketEvent.GAME_PAUSED);
-            //     break;
-            // case MessageType.RESUMED:
-            //     this.triggerCallback(WebSocketEvent.GAME_RESUMED);
-                break;
             case MessageType.SESSION_ENDED:
                 this.triggerCallback(WebSocketEvent.SESSION_ENDED, message);
                 break;
@@ -137,9 +131,6 @@ export class WebSocketClient {
             case MessageType.MATCH_ASSIGNMENT:
                 this.triggerCallback(WebSocketEvent.MATCH_ASSIGNMENT, message);
                 break;
-            // case MessageType.MATCH_WINNER:
-            //     this.triggerCallback(WebSocketEvent.MATCH_WINNER, message);
-            //     break;
             case MessageType.MATCH_RESULT:
                 this.triggerCallback(WebSocketEvent.MATCH_RESULT, message);
                 break;

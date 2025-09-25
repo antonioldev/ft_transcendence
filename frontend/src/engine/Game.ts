@@ -4,7 +4,7 @@ import { buildScene2D, buildScene3D } from './scene/sceneBuilder.js';
 import { webSocketClient } from '../core/WebSocketClient.js';
 import { GameStateData, GameObjects } from '../shared/types.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
-import { ClientState, ViewMode, WebSocketEvent, AppState, GameState } from '../shared/constants.js';
+import { ViewMode, WebSocketEvent, AppState, GameState } from '../shared/constants.js';
 import { Logger } from '../utils/LogManager.js';
 import { uiManager } from '../ui/UIManager.js';
 import { GameMode } from '../shared/constants.js';
@@ -13,7 +13,6 @@ import { GameConfigFactory } from './GameConfig.js';
 import { PlayerSide, PlayerState, resetPlayersState } from "./utils.js"
 import { disposeMaterialResources } from "./scene/materialFactory.js";
 import { GameServices } from "./GameServices.js";
-import { GameStateManager } from "./GameStateManager.js";
 
 /**
  * The Game class serves as the core of the game engine, managing the initialization,
@@ -23,8 +22,7 @@ import { GameStateManager } from "./GameStateManager.js";
  */
 export class Game {
 	private isInitialized: boolean = false;
-	private serverState: GameState = GameState.INIT; //change
-	// state: GameStateManager;
+	private serverState: GameState = GameState.INIT;
 	private engine: Engine | null = null;
 	private scene: Scene | null = null;
 	private services: GameServices | null = null;
@@ -374,7 +372,8 @@ export class Game {
 			case GameState.ENDED:
 				const winner = state.winner;
 				const loser = state.loser;
-				this.onServerEndedGame(winner, loser);
+				if (winner && loser)
+					this.onServerEndedGame(winner, loser);
 				break;
 		}
 	}

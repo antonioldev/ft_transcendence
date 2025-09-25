@@ -47,13 +47,14 @@ export class MatchTree {
 
 	insert(
 		roundIndex: number,
+		roundsTotal: number,
 		matchIndex: number,
 		left: string | null,
 		right: string | null,
 		matchTotal?: number
 	): void {
 		if (!this.isCreated && matchTotal !== undefined) {
-			this.initializeTabs(matchTotal);
+			this.initializeTabs(matchTotal, roundsTotal);
 		}
 		if (!this.isCreated) return;
 		this.currentRound = Math.max(this.currentRound, roundIndex - 1);
@@ -147,9 +148,9 @@ export class MatchTree {
 		this.currentRound = 0;
 	}
 
-	private initializeTabs(matchTotal: number): void {
+	private initializeTabs(matchTotal: number, roundsTotal: number): void {
 		this.playerTotal = matchTotal * 2;
-		this.roundsCount = Math.ceil(Math.log2(this.playerTotal));
+		this.roundsCount = roundsTotal;
 
 		const tabsRoot = createStackPanel("bracketTabsRoot", BRACKET_STYLES.tabsRoot);
 		this.bracketGrid.addControl(tabsRoot, 0, 0);

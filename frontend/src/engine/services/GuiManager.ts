@@ -21,6 +21,7 @@ export class GUIManager {
 	private adt: AdvancedDynamicTexture | null = null;
 	private isInitialized: boolean = false;
 	private isTournament: boolean = false;
+	private isLastMatch: boolean = false;
 	private pauseVisible: boolean = false;
 	countdown!: Countdown;
 	powerUp!: PowerUp;
@@ -81,7 +82,7 @@ export class GUIManager {
 
 
 	async showTournamentMatchWinner(winner: string, waitForSpace: boolean): Promise<void> {
-		if (!this.isReady) return;
+		if (!this.isReady || this.isLastMatch) return;
 		
 		await this.animateBackground(true);
 		this.powerUp.show(false);
@@ -91,7 +92,7 @@ export class GUIManager {
 	}
 
 	async showTournamentMatchLoser(): Promise<void> {
-		if (!this.isReady) return;
+		if (!this.isReady || this.isLastMatch) return;
 		
 		await this.animateBackground(true);
 		this.powerUp.show(false);
@@ -118,8 +119,11 @@ export class GUIManager {
 	}
 
 	updateTournamentRound(message: any): void {
+		if (message.round_index === message.round_total)
+			this.isLastMatch = true;
 		this.matchTree.insert(
 			message.round_index,
+			message.round_total,
 			message.match_index,
 			message.left ?? null,
 			message.right ?? null,
