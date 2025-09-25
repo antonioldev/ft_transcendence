@@ -10,9 +10,6 @@ COPY package*.json ./
 # Install dependencies
 RUN npm install
 
-# Pass GOOGLE_CLIENT_ID as a build argument
-ARG GOOGLE_CLIENT_ID
-
 # Copy the entire source code to the working directory
 COPY . .
 
@@ -22,17 +19,23 @@ COPY . .
 # COPY tsconfig.json ./
 # COPY vite.config.js ./
 
+# Build TypeScript 
+RUN npm run build
+
+# Pass GOOGLE_CLIENT_ID as a build argument
+ARG GOOGLE_CLIENT_ID
+
 # Inject GOOGLE_CLIENT_ID into the frontend code
 RUN echo "window.GOOGLE_CLIENT_ID = '${GOOGLE_CLIENT_ID}';" > /app/env-config.js
-
-# Build TypeScript
-RUN npm run build
 
 # Production stage
 FROM nginx:alpine
 
 # Copy built JS files
 COPY --from=builder /app/dist/ /usr/share/nginx/html/
+
+# Copy environment config file
+COPY --from=builder /app/env-config.js /usr/share/nginx/html/
 
 # COPY mime.types /etc/nginx/mime.types
 

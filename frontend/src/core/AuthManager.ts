@@ -111,10 +111,12 @@ export class AuthManager {
 	): void {
 		showRegister?.addEventListener('click', () => {
 			appStateManager.navigateTo(AppState.REGISTER);
+            this.prepareGoogleLogin();
 		});
 
 		showLogin?.addEventListener('click', () => {
 			appStateManager.navigateTo(AppState.LOGIN);
+            this.prepareGoogleLogin();
 		});
 	}
 
@@ -441,7 +443,6 @@ export class AuthManager {
 			this.authState = AuthState.LOGGED_FAILED;
 			alert('Loggin failed due to connection error.');  
 		}
-
 	}
 
     // Handles the registration form submission process.
@@ -533,7 +534,6 @@ export class AuthManager {
             uiManager.clearForm(this.registrationFields);
             alert('Registration failed due to connection error.');  
         }
-        
     }
 
 	public setupGoogleLoginButton(): void {
