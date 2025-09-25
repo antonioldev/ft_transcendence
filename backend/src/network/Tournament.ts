@@ -118,6 +118,7 @@ abstract class AbstractTournament extends AbstractGameSession{
 		matches.forEach((match, i) => {
 			this.broadcast({
 				type: MessageType.MATCH_ASSIGNMENT,
+				round_total: this.num_rounds,
 				round_index: roundIndex,
 				match_index: i,
 				match_total: matches.length,
@@ -134,10 +135,13 @@ abstract class AbstractTournament extends AbstractGameSession{
 		this.add_CPUs();
 		this._match_players();
 		for (this.current_round = 1; this.current_round <= this.num_rounds; this.current_round++) {
-			// if (!this.running) return ;
-			
+			// if (!this.running) {
+			// 	console.warn(`Tournament ${this.id} ended prematurely on round ${this.current_round}`);
+			// 	return ;
+			// }
 			await this.waitForPlayersReady();
 			this.broadcastRoundSchedule(this.current_round); // TODO added here so we get update info from server
+			
 			const matches = this.rounds.get(this.current_round);
 			if (!matches) return ; // maybe throw err
 			await this.run(matches);
@@ -239,10 +243,12 @@ export class TournamentRemote extends AbstractTournament {
 		if (index !== -1) {
 			this.players.splice(index, 1);
 			this.full = false;
-			this.broadcast({
-				type: MessageType.TOURNAMENT_LOBBY,
-				lobby: this.players.map(player => player.name)
-			});
+			if (!this.running) {
+				this.broadcast({
+					type: MessageType.TOURNAMENT_LOBBY,
+					lobby: this.players.map(player => player.name)
+				});
+			}
 		}
 		if (this.players.length === 0) {
 			this.stop();
@@ -251,12 +257,16 @@ export class TournamentRemote extends AbstractTournament {
 
 	// run each match in parallel and await [] of winner promises
 	async run(matches: Match[]): Promise<void> {
+		this.active_matches = []; // just to be safe
 		let round_winners: Promise<Player | CPU>[] = [];
 
 		this.assign_clients(matches);
 		let index = 0;
 		for (const match of matches) {
-			if (!this.running) return ;
+			if (!this.running) {
+				console.warn(`Tournament ${this.id}: round ${this.current_round} ended prematurely`);
+				return ;
+			}
 
 			this.register_database(match);
 			match.index = index;
@@ -269,7 +279,6 @@ export class TournamentRemote extends AbstractTournament {
 			index++;
 		}
 		await Promise.all(round_winners);
-		this.active_matches = []; // just to be safe
 	}
 
 	assign_winner(match: Match, winner: Player | CPU) {

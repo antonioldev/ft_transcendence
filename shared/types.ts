@@ -71,7 +71,8 @@ export interface ServerMessage {
 	sid?: string,
 	match_index?: number,
 	match_total?: number,
-	round_index?: number
+	round_index?: number,
+	round_total?: number,
 	lobby?: string[];
 }
 
