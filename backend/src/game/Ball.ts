@@ -8,7 +8,7 @@ export class Ball {
     rect: Rect; // Current position and size of the ball.
     oldRect: Rect; // Previous position and size of the ball.
     direction: [number, number]; // Direction vector of the ball's movement.
-    speed = GAME_CONFIG.ballInitialSpeed; // Initial speed of the ball.
+    speed: number = GAME_CONFIG.ballInitialSpeed; // Initial speed of the ball.
     paddles: (Paddle)[]; // Array of players (paddles) in the game.
     isPaused: Boolean = false;
     updateScore: (side: number, score: number) => void; // Callback to update the score.
@@ -99,7 +99,7 @@ export class Ball {
 
     handle_powershot(collision_side: number) {
         if (!this.powershot_activated_by || !this.powershot_active) return ;
-        
+
         if (this.powershot_activated_by === collision_side) {
             this.speed = GAME_CONFIG.ballPowerShotSpeed;
             this.powershot_activated_by = undefined;
