@@ -98,8 +98,6 @@ export class Ball {
     }
 
     handle_powershot(collision_side: number) {
-        if (!this.powershot_activated_by || !this.powershot_active) return ;
-
         if (this.powershot_activated_by === collision_side) {
             this.speed = GAME_CONFIG.ballPowerShotSpeed;
             this.powershot_activated_by = undefined;
