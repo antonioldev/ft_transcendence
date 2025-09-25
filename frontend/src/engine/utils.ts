@@ -7,7 +7,7 @@ import { PowerupType } from "../shared/constants.js";
 export const COLORS = {
 	field2D: new Color3(20/255, 61/255, 96/255, 1),
 	field3D: new Color3(0.4, 0.6, 0.4),
-	player1_2D: Color3.Blue(),
+	player1_2D: new Color3(160/255, 200/255, 120/255, 1),
 	player2_2D: Color3.White(),
 	player1_3D: new Color3(0.89, 0.89, 0),
 	player2_3D: new Color3(1, 0, 0),
