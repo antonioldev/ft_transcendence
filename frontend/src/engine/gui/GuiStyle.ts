@@ -6,7 +6,7 @@ export const H_RIGHT = Control.HORIZONTAL_ALIGNMENT_RIGHT;
 export const V_TOP = Control.VERTICAL_ALIGNMENT_TOP;
 export const V_CENTER = Control.VERTICAL_ALIGNMENT_CENTER;
 export const V_BOTTOM = Control.VERTICAL_ALIGNMENT_BOTTOM;
-const FONT_FAMILY = 'Poppins, Arial, sans-serif';
+const FONT_FAMILY = 'Poppins, Tiny5, sans-serif';
 
 // Color constants
 export const COLORS = {
@@ -17,6 +17,11 @@ export const COLORS = {
     TRANSPARENT_BLACK_90: "rgba(0, 0, 0, 0.9)",
     TRANSPARENT_BLACK_98: "rgba(2, 2, 2, 0.98)",
     TRANSPARENT_WHITE_50: "rgba(255, 255, 255, 0.5)",
+    DARK_BLUE: "rgba(20, 61, 96, 1)",
+    LIGHT_GREEN: "rgba(160, 200, 120, 1)",
+    ORANGE: "rgba(235, 91, 0, 1)",
+    LIGHT_BROWN: "rgba(129, 82, 63, 1)",
+    DARK_BROWN: "rgba(63, 42, 43, 1)",
     GOLD: "rgba(255, 215, 0, 1)",
     GOLD_SHADOW: "rgba(255, 217, 0, 0.80)",
     GOLD_GLOW: "rgba(255, 215, 0, 0.8)",
@@ -74,8 +79,10 @@ export const HUD_STYLES = {
     hudGrid: {
         width: "100%",
         height: "20%",
-        background: COLORS.TRANSPARENT_BLACK_55,
+        background: COLORS.DARK_BLUE,
         verticalAlignment: V_BOTTOM,
+        horizontalAlignment: H_CENTER,
+        // cornerRadius: 50,
         zIndex: 8
     },
 

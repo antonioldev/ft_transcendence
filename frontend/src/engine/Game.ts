@@ -150,7 +150,7 @@ export class Game {
 	private async  createScene(): Promise<Scene> {
 		const scene = new Scene(this.engine!);
 		scene.createDefaultEnvironment({ createGround: false, createSkybox: false });
-		scene.clearColor = new Color4(0, 0, 0, 1);
+		scene.clearColor = new Color4(20/255, 61/255, 96/255, 1);
 		return scene;
 	}
 
