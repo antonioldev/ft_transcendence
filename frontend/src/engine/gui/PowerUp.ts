@@ -154,6 +154,42 @@ export class PowerUp {
 		}
 	}
 
+	reset(): void {
+		const scene = this.adt.getScene();
+
+		this.powerUpCellsP1.forEach((cell) => {
+			scene?.stopAnimation(cell.root);
+			cell.root.scaleX = 1;
+			cell.root.scaleY = 1;
+			cell.root.alpha = 0;
+			cell.root.color = "rgba(255, 255, 255, 0.5)";
+			cell.root.background = "rgba(0, 0, 0, 1)";
+			
+			if (cell.icon) {
+				cell.icon.alpha = 0;
+				cell.icon.isVisible = false;
+				cell.icon.source = "";
+			}
+		});
+
+		this.powerUpCellsP2.forEach((cell) => {
+			scene?.stopAnimation(cell.root);
+			cell.root.scaleX = 1;
+			cell.root.scaleY = 1;
+			cell.root.alpha = 0;
+			cell.root.color = "rgba(255, 255, 255, 0.5)";
+			cell.root.background = "rgba(0, 0, 0, 1)";
+			
+			if (cell.icon) {
+				cell.icon.alpha = 0;
+				cell.icon.isVisible = false;
+				cell.icon.source = "";
+			}
+		});
+
+		this.show(false);
+	}
+
 	dispose(): void {
 		this.powerUpSlotP1?.dispose();
 		this.powerUpSlotP2?.dispose();

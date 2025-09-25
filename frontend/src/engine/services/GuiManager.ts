@@ -80,13 +80,13 @@ export class GUIManager {
 	}
 
 
-	async showTournamentMatchWinner(winner: string): Promise<void> {
+	async showTournamentMatchWinner(winner: string, waitForSpace: boolean): Promise<void> {
 		if (!this.isReady) return;
 		
 		await this.animateBackground(true);
 		this.powerUp.show(false);
 		await this.endGame.showPartial(winner);
-		await this.endGame.waitForContinue(2000, true);
+		await this.endGame.waitForContinue(2000, waitForSpace);
 		await this.endGame.hidePartial();
 	}
 
