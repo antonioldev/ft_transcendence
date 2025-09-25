@@ -394,8 +394,9 @@ export class Game {
 			rightPlayer.isControlled = this.config.players.some(player => player.name === rightPlayerName);
 		}
 
+		this.services?.input?.assignLocalControls();
+
 		const controlledSides = this.getControlledSides();
-		this.services?.input?.mapModeAndAssignment(this.config.gameMode, controlledSides)
 		this.services?.render?.updateActiveCameras(this.config.viewMode, controlledSides, this.config.isLocalMultiplayer);
 		this.services?.gui?.updateControlVisibility(
 			leftPlayer?.isControlled || false, 
