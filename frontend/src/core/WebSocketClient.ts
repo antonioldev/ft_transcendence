@@ -92,11 +92,11 @@ export class WebSocketClient {
             case MessageType.GAME_STATE:
                 this.triggerCallback(WebSocketEvent.GAME_STATE, message.state);
                 break;
-            case MessageType.PAUSED:
-                this.triggerCallback(WebSocketEvent.GAME_PAUSED);
-                break;
-            case MessageType.RESUMED:
-                this.triggerCallback(WebSocketEvent.GAME_RESUMED);
+            // case MessageType.PAUSED:
+            //     this.triggerCallback(WebSocketEvent.GAME_PAUSED);
+            //     break;
+            // case MessageType.RESUMED:
+            //     this.triggerCallback(WebSocketEvent.GAME_RESUMED);
                 break;
             case MessageType.SESSION_ENDED:
                 this.triggerCallback(WebSocketEvent.SESSION_ENDED, message);

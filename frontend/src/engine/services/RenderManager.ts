@@ -35,46 +35,6 @@ export class RenderManager {
 	}
 
 // ====================			RENDER LOOP			   ====================
-	// startRendering(): void {
-	// 	if (!this.isInitialized || this.isRunning || !this.engine || !this.scene)
-	// 		return;
-
-	// 	this.isRunning = true;
-	// 	this.lastFrameTime = performance.now();
-	// 	this.engine.runRenderLoop(() => {
-	// 		if (!this.isRunning) return;
-
-	// 		const currentTime = performance.now();
-	// 		const deltaTime = currentTime - this.lastFrameTime;
-
-	// 		if (deltaTime < (1000 / this.fpsLimit)) return;
-
-	// 		try {
-	// 			// Render the scene
-	// 			if (this.scene && this.scene.activeCamera)
-	// 				this.scene.render();
-	// 			// Update FPS display
-	// 			this.updateFPSDisplay(deltaTime);
-	// 			this.lastFrameTime = currentTime;
-	// 		} catch (error) {
-	// 			Logger.error('Error in render loop', 'RenderManager', error);
-	// 		}
-	// 	});
-
-	// 	// this.engine.runRenderLoop(() => {
-	// 	//	 if (!this.isRenderingActive) return;
-
-	// 	//	 const currentTime = performance.now();
-	// 	//	 const deltaTime = currentTime - this.lastFrameTime;
-			
-	// 	//	 // Render the scene
-	// 	//		 if (this.scene && this.scene.activeCamera)
-	// 	//			 this.scene.render();
-	// 	//		 // Update FPS display
-	// 	//		 this.updateFPSDisplay(deltaTime);
-	// 	//		 this.lastFrameTime = currentTime;
-	// 	// });
-	// }
 	startRendering(): void {
 		if (!this.isInitialized || this.isRunning || !this.engine || !this.scene)
 			return;

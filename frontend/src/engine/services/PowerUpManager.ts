@@ -107,7 +107,6 @@ export class PowerupManager {
 					this.players.get(PlayerSide.LEFT)!.inverted = true;
 				break;
 		}
-		
 		this.guiManager?.powerUp.update(side, slot, PowerupState.ACTIVE);
 	}
 
@@ -142,7 +141,6 @@ export class PowerupManager {
 					this.players.get(PlayerSide.LEFT)!.inverted = false;
 				break;
 		}
-		
 		this.guiManager?.powerUp.update(side, slot, PowerupState.SPENT);
 	}
 

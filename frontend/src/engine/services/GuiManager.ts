@@ -21,6 +21,7 @@ export class GUIManager {
 	private adt: AdvancedDynamicTexture | null = null;
 	private isInitialized: boolean = false;
 	private isTournament: boolean = false;
+	private pauseVisible: boolean = false;
 	countdown!: Countdown;
 	powerUp!: PowerUp;
 	matchTree!: MatchTree;
@@ -140,12 +141,19 @@ export class GUIManager {
 		this.lobby.show(names);
 	}
 	
-	// Check if gui is initialised
 	isReady(): boolean {
 		return this.isInitialized;
 	}
 
-	// Clean up all GUI resources
+	isPauseMenuVisible(): boolean {
+		return this.pauseVisible;
+	}
+
+	togglePauseMenu(): void {
+		this.pauseVisible = !this.pauseVisible;
+		this.setPauseVisible(this.pauseVisible)
+	}
+
 	dispose(): void {
 		if (!this.isReady()) return;
 		
