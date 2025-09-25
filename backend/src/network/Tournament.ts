@@ -189,12 +189,12 @@ export class TournamentLocal extends AbstractTournament {
 		}
 		match.next.add_player(match.winner);
 		this.readyClients.clear();
-		this.broadcast({
-			type: MessageType.MATCH_WINNER,
-			winner: match.winner.name,
-			round_index: match.round,
-			match_index: match.index,
-		}, match.clients);
+		// this.broadcast({
+		// 	type: MessageType.MATCH_WINNER,
+		// 	winner: match.winner.name,
+		// 	round_index: match.round,
+		// 	match_index: match.index,
+		// }, match.clients);
 	}
 
 	canClientControlGame(client: Client) {
@@ -295,12 +295,12 @@ export class TournamentRemote extends AbstractTournament {
 			return ;
 		}
 		match.next.add_player(winner);
-		this.broadcast({
-			type: MessageType.MATCH_WINNER,
-			winner: winner?.name,
-			round_index: match.round,
-			match_index: match.index,
-		}, match.clients);
+		// this.broadcast({
+		// 	type: MessageType.MATCH_WINNER,
+		// 	winner: winner?.name,
+		// 	round_index: match.round,
+		// 	match_index: match.index,
+		// }, match.clients);
 		
 		this.broadcast({
 			type: MessageType.MATCH_RESULT,
@@ -406,10 +406,10 @@ export class TournamentRemote extends AbstractTournament {
 			console.error(`Cannot quit: "${quitter.username}" not in any match`);
 			return ;
 		}
-		this.client_match_map.delete(quitter.id);
-		this.spectators.delete(quitter);
 		match.game?.setOtherPlayerWinner(quitter);
 		match.game?.stop();
+		this.client_match_map.delete(quitter.id);
+		this.spectators.delete(quitter);
 	}
 
 	findMatch(client_id: string): Match | undefined {

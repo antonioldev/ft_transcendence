@@ -44,8 +44,8 @@ export enum WebSocketEvent {
 	CONNECTION = 'connection',
 	COUNTDOWN = 'countdown',
 	ERROR = 'error',
-	GAME_PAUSED = 'gamePaused',
-	GAME_RESUMED = 'gameResumed',
+	// GAME_PAUSED = 'gamePaused',
+	// GAME_RESUMED = 'gameResumed',
 	SESSION_ENDED = 'sessionEnded',
 	STATUS_CHANGE = 'statusChange',
 	SIDE_ASSIGNMENT = 'side_assignment',
@@ -62,7 +62,6 @@ export enum WebSocketEvent {
 	POWERUP_ACTIVATED = 'powerup_activated',
 	POWERUP_DEACTIVATED = 'powerup_deactivated',
 	TOURNAMENT_LOBBY = 'tournament_lobby'
-	
 }
 
 // Different game modes available

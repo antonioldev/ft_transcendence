@@ -16,6 +16,7 @@ export class Game {
 	state: GameState = GameState.RUNNING;
 	players: (Player | CPU)[]
 	winner!: Player | CPU;
+	loser!: Player | CPU;
 	paddles: (Paddle | CPUBot)[] = [new Paddle(LEFT), new Paddle(RIGHT)];
 	ball: Ball;
 	powerup_manager: PowerupManager;
@@ -64,7 +65,8 @@ export class Game {
 
 		this.paddles[side].score += score;
 		if (this.paddles[side].score >= GAME_CONFIG.scoreToWin) {
-			this.winner = this.players[side];
+			this.assign_winner(this.players[side]);
+			// this.winner = this.players[side];
 			this.stop();
 		}
 	}
@@ -99,6 +101,8 @@ export class Game {
 	get_state(): GameStateData {
 		return {
 			state: this.state,
+			...(this.winner?.name && { winner: this.winner.name }),
+			...(this.loser?.name && { loser: this.loser.name }),
 			paddleLeft: {
 				x:     this.paddles[LEFT].rect.centerx,
 				score: this.paddles[LEFT].score,
@@ -224,5 +228,11 @@ export class Game {
 		const slot: Slot = this.powerup_manager.slots[side][slot_index];
 		this.powerup_manager.activate(slot);
         console.log(`Powerup ${slot.type} activated by ${this.players[side].name}`);
+	}
+
+
+	assign_winner(winner: Player | CPU) {
+		this.winner = winner;
+		this.loser = this.players[LEFT] === winner ? this.players[RIGHT] : this.players[LEFT];
 	}
 }

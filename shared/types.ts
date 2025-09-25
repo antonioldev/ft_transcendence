@@ -24,6 +24,8 @@ export interface Powerup {
 // Represents the state of the game (paddles and ball positions)
 export interface GameStateData {
 	state: GameState,
+	winner?: string,
+	loser?: string,
 	paddleLeft: { x: number; score: number, powerups: Powerup[] }; // Left paddle position and score
 	paddleRight: { x: number; score: number, powerups: Powerup[] }; // Right paddle position and score
 	ball: { x: number; z: number, current_rally: number }; // Ball position
