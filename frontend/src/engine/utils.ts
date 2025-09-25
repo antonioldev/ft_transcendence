@@ -1,6 +1,7 @@
 import { Color3, Vector3, Viewport } from "@babylonjs/core";
 import { GAME_CONFIG } from '../shared/gameConfig.js';
 import { Powerup } from "../shared/types.js";
+import { KeysProfile } from "./services/KeybordManager.js";
 
 // Colors for Babylon.js (frontend only)
 export const COLORS = {
@@ -79,6 +80,7 @@ export function resetPlayersState(): Map<PlayerSide, PlayerState> {
 		[PlayerSide.LEFT, {
 			name: "",
 			isControlled: false,
+			keyboardProfile: undefined,
 			size: GAME_CONFIG.paddleWidth,
 			score: 0,
 			powerUpsAssigned: false,
@@ -88,6 +90,7 @@ export function resetPlayersState(): Map<PlayerSide, PlayerState> {
 		[PlayerSide.RIGHT, {
 			name: "",
 			isControlled: false,
+			keyboardProfile: undefined,
 			size: GAME_CONFIG.paddleWidth,
 			score: 0,
 			powerUpsAssigned: false,
@@ -105,6 +108,7 @@ export enum PlayerSide {
 export interface PlayerState {
 	name: string;
 	isControlled: boolean;
+	keyboardProfile?: KeysProfile;
 	size: number;
 	score: number;
 	powerUpsAssigned: boolean;

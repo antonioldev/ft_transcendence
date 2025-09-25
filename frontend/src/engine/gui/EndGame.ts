@@ -117,28 +117,28 @@ export class EndGame {
 	}
 
 
-	async waitForSpaceToContinue(ms: number): Promise<void> {
-		if (!this.adt) return;
-		const scene = this.adt.getScene();
-		await new Promise<void>(res => setTimeout(res, ms));
-		this.continueText.isVisible = true;
-		this.animationManager?.twinkle(this.continueText, Motion.F.slow);
+	// async waitForSpaceToContinue(ms: number): Promise<void> {
+	// 	if (!this.adt) return;
+	// 	const scene = this.adt.getScene();
+	// 	await new Promise<void>(res => setTimeout(res, ms));
+	// 	this.continueText.isVisible = true;
+	// 	this.animationManager?.twinkle(this.continueText, Motion.F.slow);
 
-		return new Promise<void>((resolve) => {
-			const sub = scene?.onKeyboardObservable.add((kbInfo: any) => {
-				if (kbInfo.type === KeyboardEventTypes.KEYDOWN) {
-					const e = kbInfo.event as KeyboardEvent;
-					if (e.code === "Space" || e.key === " ") {
-						scene.onKeyboardObservable.remove(sub);
-						this.continueText.isVisible = false;
-						this.partialWinnerLabel.isVisible = false;
-						this.partialWinnerName.isVisible = false;
-						resolve();
-					}
-				}
-			}) ?? null;
-		});
-	}
+	// 	return new Promise<void>((resolve) => {
+	// 		const sub = scene?.onKeyboardObservable.add((kbInfo: any) => {
+	// 			if (kbInfo.type === KeyboardEventTypes.KEYDOWN) {
+	// 				const e = kbInfo.event as KeyboardEvent;
+	// 				if (e.code === "Space" || e.key === " ") {
+	// 					scene.onKeyboardObservable.remove(sub);
+	// 					this.continueText.isVisible = false;
+	// 					this.partialWinnerLabel.isVisible = false;
+	// 					this.partialWinnerName.isVisible = false;
+	// 					resolve();
+	// 				}
+	// 			}
+	// 		}) ?? null;
+	// 	});
+	// }
 
 	async waitForContinue(ms: number, requireSpace: boolean = true): Promise<void> {
 		if (!this.adt) return;

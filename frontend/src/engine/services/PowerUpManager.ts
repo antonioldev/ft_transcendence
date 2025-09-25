@@ -19,12 +19,13 @@ export class PowerupManager {
 		
 		if (!serverPowerups || serverPowerups.length === 0)
 			return;
-
+		console.error("handleUpdates");
 		const player = this.players.get(side);
 		if (player === null || player === undefined)
 			return;
 
 		if (!player.powerUpsAssigned) {
+			console.error("assign");
 			player.powerUpsAssigned = true;
 			player.powerUps = [...serverPowerups];
 			for (let i = 0; i < serverPowerups.length; i++)
