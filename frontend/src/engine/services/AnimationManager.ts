@@ -4,9 +4,8 @@ import { SineEase } from "@babylonjs/core/Animations/easing";
 import { QuadraticEase, EasingFunction } from "@babylonjs/core/Animations/easing";
 import { Vector3 } from "@babylonjs/core/Maths/math.vector";
 import type { Control } from "@babylonjs/gui/2D/controls/control";
-import { getCamera2DPosition, getCamera3DPlayer1Position, getCamera3DPlayer2Position,} from '../utils.js';
+import { getCamera2DPosition, getCamera3DPlayer1Position, getCamera3DPlayer2Position } from '../utils.js';
 import { GAME_CONFIG } from "../../shared/gameConfig.js";
-
 
 type FloatProp =
   | "alpha"
@@ -23,7 +22,7 @@ export const Motion = {
 		fast: 12,
 		base: 16,
 		slow: 24,
-		xSlow: 60,  // 1seconds
+		xSlow: 60,  // 1 second
 		breath: 120
 	},
 	ease: {
@@ -41,7 +40,8 @@ export class AnimationManager {
 	private activeAnimationGroups: Set<any> = new Set();
 	constructor(private scene: Scene) {}
 
-	createFloat(
+	// ==================== LOW-LEVEL ANIMATION CREATION ====================
+	private createFloat(
 		property: FloatProp,
 		from: number,
 		to: number,
@@ -68,9 +68,9 @@ export class AnimationManager {
 		return anim;
 	}
 
-	play(target: Control, frames: number, loop = false): Promise<void> {
+	private play(target: Control, frames: number, loop = false): Promise<void> {
 		return new Promise((resolve) => {
-		const animationGroup = this.scene.beginAnimation(target, 0, frames, loop, 1, () => {
+			const animationGroup = this.scene.beginAnimation(target, 0, frames, loop, 1, () => {
 				this.activeAnimationGroups.delete(animationGroup);
 				resolve();
 			});
@@ -78,79 +78,8 @@ export class AnimationManager {
 		});
 	}
 
-	fadeIn(target: Control, frames = Motion.F.base) {
-		target.alpha = 0;
-		target.animations = [ this.createFloat("alpha", 0, 1, frames, false, Motion.ease.quadOut()) ];
-		return this.play(target, frames, false);
-	}
-
-	fadeOut(target: Control, frames = Motion.F.fast) {
-		target.animations = [ this.createFloat("alpha", 1, 0, frames, false, Motion.ease.quadOut()) ];
-		return this.play(target, frames, false);
-	}
-
-	pulse(target: Control, frames = Motion.F.slow) {
-		target.animations = [
-		this.createFloat("scaleX", 1, 2, frames, true, Motion.ease.quadOut()),
-		this.createFloat("scaleY", 1, 2, frames, true, Motion.ease.quadOut()),
-		];
-		return this.play(target, frames, false);
-	}
-
-	pop(target: Control, frames = Motion.F.fast, end: number) {
-		target.animations = [
-		this.createFloat("scaleX", 1, end, frames, true, Motion.ease.quadOut()),
-		this.createFloat("scaleY", 1, end, frames, true, Motion.ease.quadOut()),
-		];
-		return this.play(target, frames, false);
-	}
-
-	breathe(target: Control, frames = Motion.F.breath) {
-		target.animations = [
-		this.createFloat("scaleX", 1, 1.5, frames, true, Motion.ease.sine(), Animation.ANIMATIONLOOPMODE_CYCLE),
-		this.createFloat("scaleY", 1, 1.5, frames, true, Motion.ease.sine(), Animation.ANIMATIONLOOPMODE_CYCLE),
-		];
-		return this.play(target, frames, true);
-	}
-
-	slideInY(target: Control, fromPx = 40, frames = Motion.F.base) {
-		target.topInPixels = fromPx;
-		target.alpha = 0;
-		target.animations = [
-		this.createFloat("topInPixels", fromPx, 0, frames, false, Motion.ease.quadOut()),
-		this.createFloat("alpha", 0, 1, frames, false, Motion.ease.quadOut()),
-		];
-		return this.play(target, frames, false);
-	}
-
-	slideOutY(target: Control, toPx = 40, frames = Motion.F.fast) {
-		target.animations = [
-		this.createFloat("topInPixels", 0, toPx, frames, false, Motion.ease.quadOut()),
-		this.createFloat("alpha", 1, 0, frames, false, Motion.ease.quadOut()),
-		];
-		return this.play(target, frames, false);
-	}
-
-	slideInX(target: Control, fromPx = -400, frames = Motion.F.base) {
-		target.leftInPixels = fromPx;
-		target.alpha = 0;
-		target.animations = [
-			this.createFloat("leftInPixels", fromPx, 0, frames, false, Motion.ease.quadOut()),
-			this.createFloat("alpha", 0, 1, frames, false, Motion.ease.quadOut()),
-		];
-		return this.play(target, frames, false);
-	}
-
-	slideOutX(target: Control, toPx = 400, frames = Motion.F.fast) {
-		target.animations = [
-			this.createFloat("leftInPixels", 0, toPx, frames, false, Motion.ease.quadOut()),
-			this.createFloat("alpha", 1, 0, frames, false, Motion.ease.quadOut()),
-		];
-		return this.play(target, frames, false);
-	}
-
-	twinkle(target: Control, frames = Motion.F.slow) {
-		target.animations = [ this.createFloat("alpha", 1, 0.6, frames, true, Motion.ease.sine(), Animation.ANIMATIONLOOPMODE_CYCLE) ];
+	twinkle(target: Control, frames = Motion.F.slow): Promise<void> {
+		target.animations = [this.createFloat("alpha", 1, 0.6, frames, true, Motion.ease.sine(), Animation.ANIMATIONLOOPMODE_CYCLE)];
 		return this.play(target, frames, true);
 	}
 
@@ -164,19 +93,178 @@ export class AnimationManager {
 		return this.play(target, frames, false);
 	}
 
+	scale(target: Control, from: number, to: number, frames = Motion.F.breath, pingPong: boolean = false, loop: boolean = false): Promise<void> {
+		target.animations = [
+			this.createFloat("scaleX", from, to, frames, pingPong, Motion.ease.sine(), Animation.ANIMATIONLOOPMODE_CYCLE),
+			this.createFloat("scaleY", from, to, frames, pingPong, Motion.ease.sine(), Animation.ANIMATIONLOOPMODE_CYCLE),
+		];
+		return this.play(target, frames, loop);
+	}
+
+	// Add this to your AnimationManager class
+	fade(
+		target: Control, 
+		type: 'in' | 'out' = 'in',
+		frames = Motion.F.base
+	): Promise<void> {
+		if (type === 'in') {
+			target.alpha = 0;
+			target.animations = [this.createFloat("alpha", 0, 1, frames, false, Motion.ease.quadOut())];
+		} else {
+			target.animations = [this.createFloat("alpha", 1, 0, frames, false, Motion.ease.quadOut())];
+		}
+		
+		return this.play(target, frames, false);
+	}
+
+	fadeInWithBorder(target: Control, frames = Motion.F.base, thicknessFrom = 0, thicknessTo = 4): Promise<void> {
+		target.alpha = 0;
+		(target as any).thickness = thicknessFrom;
+		target.animations = [
+			this.createFloat("alpha", 0, 1, frames, false, Motion.ease.quadOut()),
+			this.createFloat("thickness", thicknessFrom, thicknessTo, frames, false, Motion.ease.quadOut()),
+		];
+		return this.play(target, frames, false);
+	}
+
+	fadeOutWithBorder(target: Control, frames = Motion.F.fast, thicknessFrom = 4, thicknessTo = 0): Promise<void> {
+		target.animations = [
+			this.createFloat("alpha", 1, 0, frames, false, Motion.ease.quadOut()),
+			this.createFloat("thickness", thicknessFrom, thicknessTo, frames, false, Motion.ease.quadOut()),
+		];
+		return this.play(target, frames, false);
+	}
+
+	// Shake animation (left-right movement)
+	shake(target: Control, frames = Motion.F.fast, intensity = 10): Promise<void> {
+		const originalLeft = target.leftInPixels;
+		target.animations = [
+			this.createFloat("leftInPixels", originalLeft, originalLeft + intensity, Math.floor(frames / 4), true, Motion.ease.sine())
+		];
+		return this.play(target, frames, false);
+	}
+
+	// Jump animation (combined scale and vertical movement)
+	jump(target: Control, frames = Motion.F.base, jumpHeight = -30, scaleAmount = 1.1): Promise<void> {
+		const originalTop = target.topInPixels;
+		target.animations = [
+			this.createFloat("topInPixels", originalTop, originalTop + jumpHeight, frames, true, Motion.ease.quadOut()),
+			this.createFloat("scaleX", 1, scaleAmount, frames, true, Motion.ease.quadOut()),
+			this.createFloat("scaleY", 1, scaleAmount, frames, true, Motion.ease.quadOut()),
+		];
+		return this.play(target, frames, false);
+	}
+
+	// Zoom in animation (scale from 0 to 1)
+	zoomIn(target: Control, frames = Motion.F.base): Promise<void> {
+		target.scaleX = 0;
+		target.scaleY = 0;
+		target.alpha = 0;
+		target.animations = [
+			this.createFloat("scaleX", 0, 1, frames, false, Motion.ease.quadOut()),
+			this.createFloat("scaleY", 0, 1, frames, false, Motion.ease.quadOut()),
+			this.createFloat("alpha", 0, 1, frames, false, Motion.ease.quadOut()),
+		];
+		return this.play(target, frames, false);
+	}
+
+	// Zoom out animation (scale from 1 to 0)
+	zoomOut(target: Control, frames = Motion.F.fast): Promise<void> {
+		target.animations = [
+			this.createFloat("scaleX", 1, 0, frames, false, Motion.ease.quadOut()),
+			this.createFloat("scaleY", 1, 0, frames, false, Motion.ease.quadOut()),
+			this.createFloat("alpha", 1, 0, frames, false, Motion.ease.quadOut()),
+		];
+		return this.play(target, frames, false);
+	}
+
+	// Spin animation (continuous rotation)
+	spin(target: Control, frames = Motion.F.base, rotations = 1): Promise<void> {
+		const rotationAmount = Math.PI * 2 * rotations;
+		target.animations = [
+			this.createFloat("rotation", 0, rotationAmount, frames, false, Motion.ease.sine())
+		];
+		return this.play(target, frames, false);
+	}
+
+	// Glow animation (scale with alpha variation)
+	glow(target: Control, frames = Motion.F.breath, glowScale = 1.05): Promise<void> {
+		target.animations = [
+			this.createFloat("scaleX", 1, glowScale, frames, true, Motion.ease.sine(), Animation.ANIMATIONLOOPMODE_CYCLE),
+			this.createFloat("scaleY", 1, glowScale, frames, true, Motion.ease.sine(), Animation.ANIMATIONLOOPMODE_CYCLE),
+			this.createFloat("alpha", 1, 0.8, frames, true, Motion.ease.sine(), Animation.ANIMATIONLOOPMODE_CYCLE),
+		];
+		return this.play(target, frames, true);
+	}
+
+	// Slide in from any direction with custom distance
+	slideFromDirection(
+		target: Control, 
+		direction: 'up' | 'down' | 'left' | 'right', 
+		type: 'in' | 'out' = 'in',
+		distance = 100, 
+		frames = Motion.F.base, 
+		withFade = true
+	): Promise<void> {
+		target.alpha = withFade ? (type === 'in' ? 0 : 1) : target.alpha;
+		
+		let property: FloatProp;
+		let startValue: number;
+		let endValue: number;
+		
+		const isVertical = direction === 'up' || direction === 'down';
+		property = isVertical ? 'topInPixels' : 'leftInPixels';
+		
+		if (type === 'in') {
+			// Slide IN: from distance to 0
+			endValue = 0;
+			switch (direction) {
+				case 'up': startValue = distance; break;
+				case 'down': startValue = -distance; break;
+				case 'left': startValue = distance; break;
+				case 'right': startValue = -distance; break;
+			}
+			if (property === 'topInPixels') target.topInPixels = startValue;
+			else target.leftInPixels = startValue;
+		} else {
+			// Slide OUT: from 0 to distance
+			startValue = 0;
+			switch (direction) {
+				case 'up': endValue = -distance; break;
+				case 'down': endValue = distance; break;
+				case 'left': endValue = -distance; break;
+				case 'right': endValue = distance; break;
+			}
+		}
+		
+		const animations: Animation[] = [
+			this.createFloat(property, startValue, endValue, frames, false, Motion.ease.quadOut())
+		];
+		
+		if (withFade) {
+			const alphaFrom = type === 'in' ? 0 : 1;
+			const alphaTo = type === 'in' ? 1 : 0;
+			animations.push(this.createFloat("alpha", alphaFrom, alphaTo, frames, false, Motion.ease.quadOut()));
+		}
+		
+		target.animations = animations;
+		return this.play(target, frames, false);
+	}
+
+
 	createCameraMoveAnimation(cameraName: string): Animation {
 		const startPosition = getCamera2DPosition();
 		const endPosition = cameraName === "camera1"
-		? getCamera3DPlayer1Position()
-		: getCamera3DPlayer2Position();
+			? getCamera3DPlayer1Position()
+			: getCamera3DPlayer2Position();
 
 		const ease = new QuadraticEase();
 		ease.setEasingMode(EasingFunction.EASINGMODE_EASEOUT);
 
 		const anim = Animation.CreateAnimation("position", Animation.ANIMATIONTYPE_VECTOR3, 60, ease);
 		anim.setKeys([
-		{ frame: 0, value: startPosition },
-		{ frame: 180, value: endPosition },
+			{ frame: 0, value: startPosition },
+			{ frame: 180, value: endPosition },
 		]);
 		return anim;
 	}
@@ -190,18 +278,18 @@ export class AnimationManager {
 
 		const anim = Animation.CreateAnimation("target", Animation.ANIMATIONTYPE_VECTOR3, 60, ease);
 		anim.setKeys([
-		{ frame: 0, value: startTarget },
-		{ frame: 180, value: endTarget },
+			{ frame: 0, value: startTarget },
+			{ frame: 180, value: endTarget },
 		]);
 		return anim;
 	}
 
 	scaleWidth(
-	target: any,
-	from: number,
-	to: number,
-	frames = Motion.F.fast,
-	ease: EasingFunction = Motion.ease.quadOut()
+		target: any,
+		from: number,
+		to: number,
+		frames = Motion.F.fast,
+		ease: EasingFunction = Motion.ease.quadOut()
 	): Promise<void> {
 		const baseWidth = GAME_CONFIG.paddleWidth;
 		const fromScale = from / baseWidth;

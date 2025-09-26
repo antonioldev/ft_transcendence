@@ -16,7 +16,6 @@ export class EndGame {
 	constructor(private adt: AdvancedDynamicTexture, private animationManager: AnimationManager) {
 		const t = getCurrentTranslation();
 
-		// Partial End Game
 		this.partialEndGameOverlay = createRect("partialWinnerLayer", PARTIAL_END_GAME_STYLES.partialEndGameOverlay);
 		this.adt!.addControl(this.partialEndGameOverlay);
 
@@ -36,7 +35,6 @@ export class EndGame {
 		this.continueText = createTextBlock( "continue_text", PARTIAL_END_GAME_STYLES.continueText, t.continue );
 		centerColumn.addControl(this.continueText, 2, 0);
 
-		// END GAME
 		this.endGameOverlay = createGrid("endGameOverlay", END_GAME_STYLES.endGameOverlay);
 		this.endGameOverlay.addColumnDefinition(1.0);
 
@@ -46,11 +44,11 @@ export class EndGame {
 	}
 
 	async fadeBackground(show: boolean): Promise<void> {
-		if (show) {
+		if (show && !this.partialEndGameOverlay.isVisible) {
 			this.partialEndGameOverlay.isVisible = true;
-			await this.animationManager?.fadeIn(this.partialEndGameOverlay, Motion.F.slow);
-		} else {
-			await this.animationManager?.fadeOut(this.partialEndGameOverlay, Motion.F.fast);
+			await this.animationManager?.fade(this.partialEndGameOverlay, 'in', Motion.F.slow);
+		} else if (!show && this.partialEndGameOverlay.isVisible) {
+			await this.animationManager?.fade(this.partialEndGameOverlay, 'out', Motion.F.fast);
 			this.partialEndGameOverlay.isVisible = false;
 		}
 	}
@@ -59,6 +57,7 @@ export class EndGame {
 		if (!this.adt) return;
 
 		this.partialWinnerName.text = name;
+		this.partialWinnerName.color = "rgba(255, 215, 0, 1)";
 		this.partialEndGameOverlay.isVisible = true;
 		this.partialWinnerLabel.isVisible = true;
 		this.partialWinnerName.isVisible = true;
@@ -66,10 +65,10 @@ export class EndGame {
 
 		spawnGUISparkles(this.adt, this.animationManager, true);
 
-		await this.animationManager?.slideInY(this.partialWinnerLabel, -200, Motion.F.base);
+		await this.animationManager?.slideFromDirection(this.partialWinnerLabel, 'up', 'in', 200, Motion.F.base);
 		await new Promise(r => setTimeout(r, 60));
-		await this.animationManager?.slideInY(this.partialWinnerName, 50, Motion.F.slow);
-		this.animationManager?.breathe(this.partialWinnerName, Motion.F.breath);
+		await this.animationManager?.slideFromDirection(this.partialWinnerName, 'down', 'in', 50, Motion.F.slow);
+		this.animationManager?.scale(this.partialWinnerName, 1, 1.5, Motion.F.breath, true, true);
 
 		await new Promise(r => setTimeout(r, 180));
 	}
@@ -78,6 +77,7 @@ export class EndGame {
 		if (!this.adt) return;
 
 		this.partialWinnerName.text = "You Lost"; // TODO translate
+		this.partialWinnerName.color = "rgba(255, 0, 0, 1)";
 		this.partialWinnerLabel.text = "Match Ended";
 		
 		this.partialEndGameOverlay.isVisible = true;
@@ -87,17 +87,17 @@ export class EndGame {
 
 		spawnGUISparkles(this.adt, this.animationManager, false);
 
-		await this.animationManager?.slideInY(this.partialWinnerLabel, -200, Motion.F.slow);
+		await this.animationManager?.slideFromDirection(this.partialWinnerLabel, 'up', 'in', 200, Motion.F.slow);
 		await new Promise(r => setTimeout(r, 100));
-		await this.animationManager?.slideInY(this.partialWinnerName, 50, Motion.F.base);
-		
+		await this.animationManager?.slideFromDirection(this.partialWinnerName, 'down', 'in', 50, Motion.F.base);
+
 		await new Promise(r => setTimeout(r, 250));
 	}
 
 	async hidePartial(): Promise<void> {
 		await Promise.all([
-			this.animationManager?.slideOutY(this.partialWinnerLabel, -50, Motion.F.fast),
-			this.animationManager?.slideOutY(this.partialWinnerName, 50, Motion.F.fast),
+			this.animationManager?.slideFromDirection(this.partialWinnerLabel, 'up', 'out', 50, Motion.F.fast),
+			this.animationManager?.slideFromDirection(this.partialWinnerName, 'down', 'out', 50, Motion.F.fast),
 		]);
 
 		this.partialEndGameOverlay.isPointerBlocker = false;
@@ -109,36 +109,12 @@ export class EndGame {
 		this.endGameWinnerText.color = "rgba(255, 255, 255, 1)";
 		this.endGameOverlay.isVisible = true;
 
-		this.animationManager?.pop(this.endGameWinnerText, Motion.F.fast, 0.9);
+		this.animationManager?.scale(this.endGameWinnerText, 1, 1.2, Motion.F.breath, true);
 
 		await new Promise(r => setTimeout(r, 5000));
 
 		this.endGameOverlay.isVisible = false;
 	}
-
-
-	// async waitForSpaceToContinue(ms: number): Promise<void> {
-	// 	if (!this.adt) return;
-	// 	const scene = this.adt.getScene();
-	// 	await new Promise<void>(res => setTimeout(res, ms));
-	// 	this.continueText.isVisible = true;
-	// 	this.animationManager?.twinkle(this.continueText, Motion.F.slow);
-
-	// 	return new Promise<void>((resolve) => {
-	// 		const sub = scene?.onKeyboardObservable.add((kbInfo: any) => {
-	// 			if (kbInfo.type === KeyboardEventTypes.KEYDOWN) {
-	// 				const e = kbInfo.event as KeyboardEvent;
-	// 				if (e.code === "Space" || e.key === " ") {
-	// 					scene.onKeyboardObservable.remove(sub);
-	// 					this.continueText.isVisible = false;
-	// 					this.partialWinnerLabel.isVisible = false;
-	// 					this.partialWinnerName.isVisible = false;
-	// 					resolve();
-	// 				}
-	// 			}
-	// 		}) ?? null;
-	// 	});
-	// }
 
 	async waitForContinue(ms: number, requireSpace: boolean = true): Promise<void> {
 		if (!this.adt) return;

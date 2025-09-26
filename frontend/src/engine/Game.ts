@@ -166,7 +166,8 @@ export class Game {
 				this.services?.audio?.stopCountdown();
 				this.services?.audio?.startGameMusic();
 				this.services?.render?.stopCameraAnimation();
-				this.services?.gui?.countdown.set(false);
+				// this.services?.gui?.countdown.set(false);
+				await this.services?.gui?.countdown.finishCountdown();
 				await this.services?.gui?.animateBackground(false);
 				this.startGameLoop();
 			}

@@ -98,7 +98,7 @@ export class Hud {
 			if (rally > 0 && rally % 5 === 0)
 				this.animationManager?.rotatePulse(this.rally, 1, Motion.F.slow);
 			else
-				this.animationManager?.pop(this.rally, Motion.F.base, 1.4);
+				this.animationManager?.scale(this.rally, 1, 1.4, Motion.F.base, true );
 			this.previousRally = rally;
 			return true;
 		}
@@ -131,9 +131,9 @@ export class Hud {
 		this.score2Text.text = rightScore.toString();
 
 		if (leftScore > oldLeft)
-			this.animationManager?.pop(this.score1Text, Motion.F.fast, 0.9);
+			this.animationManager?.scale(this.score1Text, 1, 0.9, Motion.F.base, true );
 		else if (rightScore > oldRight)
-			this.animationManager?.pop(this.score2Text, Motion.F.fast, 0.9);
+			this.animationManager?.scale(this.score2Text, 1, 0.9, Motion.F.base, true );
 	}
 
 	updatePlayerNames(player1Name: string, player2Name: string): void {

@@ -18,23 +18,32 @@ export class Countdown {
 	}
 
 	set(show: boolean, count?: number): void {
-		this.countdownContainer.isVisible = show;
+		if (show && !this.countdownContainer.isVisible) {
+			this.countdownContainer.isVisible = true;
+		} else if (!show && this.countdownContainer.isVisible) {
+			this.countdownContainer.isVisible = false;
+			// return;
+		}
 
 		if (show && count !== undefined) {
 			this.countdownText.text = count.toString();
-			this.animationManager?.pulse(this.countdownText, Motion.F.xSlow);
+			this.animationManager?.scale(this.countdownText, 1, 1.8, Motion.F.xSlow, true, false);
 			return;
 		}
 		this.countdownText.animations = [];
 	}
 
-	async finish(hideAfterMs = 350) {
+	async finishCountdown() {
 		this.countdownText.text = "GO!";
 		this.countdownText.animations = [];
-		this.animationManager?.pulse(this.countdownText);
 
-		await new Promise((r) => setTimeout(r, hideAfterMs));
-		await this.animationManager?.fadeOut(this.countdownContainer);
+		await this.animationManager.scale(this.countdownText, 3, Motion.F.base)
+		await this.animationManager?.slideFromDirection(this.countdownText, 'up', 'out', 400, Motion.F.base);
+
+		this.countdownText.scaleX = 1;
+		this.countdownText.scaleY = 1;
+		this.countdownText.topInPixels = 0;
+		this.countdownText.alpha = 1;
 		this.countdownContainer.isVisible = false;
 	}
 

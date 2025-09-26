@@ -88,6 +88,7 @@ export class PowerUp {
 		if (slotIndex >= 0 && slotIndex < cells.length) {
 			const cell = cells[slotIndex];
 			const direction = player === 0 ? -100 : 100;
+			const slideDirection = player === 1 ? 'left' : 'right';
 
 			scene?.stopAnimation(cell.root);
 
@@ -113,9 +114,9 @@ export class PowerUp {
 				cell.root.alpha = 0;
 				const delay = slotIndex * 100;
 				setTimeout(() => {
-					this.animationManager.slideInX(cell.root, direction, Motion.F.slow)
+					this.animationManager.slideFromDirection(cell.root, slideDirection, 'in', Math.abs(direction), Motion.F.slow)
 						.then(() => {
-							return this.animationManager.pop(cell.root, Motion.F.fast, 1.1);
+							return this.animationManager.scale(cell.root, 1, 1.1, Motion.F.fast, true);
 						});
 				}, delay);
 			}
@@ -130,12 +131,12 @@ export class PowerUp {
 		if (slotIndex >= 0 && slotIndex < cells.length) {
 			const cell = cells[slotIndex];
 
+		
 			switch (action) {
 				case PowerupState.ACTIVE:
-					if (cell.icon) {
-						cell.root.color = "rgba(255, 0, 0, 1)";
+					cell.root.color = "rgba(255, 0, 0, 1)";
+					if (cell.icon)
 						this.animationManager?.twinkle(cell.root, Motion.F.fast);
-					}
 					break;
 					
 				case PowerupState.SPENT:
@@ -145,11 +146,10 @@ export class PowerUp {
 					cell.root.color = "rgba(255, 255, 255, 0.5)";
 					cell.root.background = "rgba(255, 255, 255, 0.25)";
 					
-					if (cell.icon) {
-						this.animationManager.fadeOut(cell.icon, Motion.F.fast).then(() => {
+					if (cell.icon)
+						this.animationManager.fade(cell.icon, 'out', Motion.F.fast).then(() => {
 							cell.icon!.alpha = 0.3;
 						});
-					}
 					break;
 			}
 		}

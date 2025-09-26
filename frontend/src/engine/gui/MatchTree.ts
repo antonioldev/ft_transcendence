@@ -119,9 +119,9 @@ export class MatchTree {
 			this.bracketOverlay.horizontalAlignment = H_RIGHT;
 			this.bracketOverlay.paddingRight = "5px";
 			this.bracketOverlay.leftInPixels = 400;
-			this.animationManager.slideInX(this.bracketOverlay, 400, Motion.F.base);
+			this.animationManager.slideFromDirection(this.bracketOverlay, 'left', 'in', 400, Motion.F.base);
 		} else {
-			this.animationManager.slideOutX(this.bracketOverlay, 400, Motion.F.xFast).then(() => {
+			this.animationManager.slideFromDirection(this.bracketOverlay, 'right', 'out', 400, Motion.F.xFast).then(() => {
 				this.bracketOverlay.isVisible = false;
 			});
 		}
@@ -225,13 +225,6 @@ export class MatchTree {
 		this.isCreated = true;
 	}
 
-	// private activateRound(idx: number): void {
-	// 	if (idx < 0 || idx >= this.roundPanels.length) return;
-
-	// 	for (let i = 0; i < this.roundPanels.length; i++)
-	// 		this.roundPanels[i].isVisible = (i === idx);
-	// 	this.applyTabActiveStyles(idx);
-	// }
 
 	private applyTabActiveStyles(activeIdx: number): void {
 		for (let i = 0; i < this.tabButtons.length; i++) {
@@ -250,7 +243,7 @@ export class MatchTree {
 
 		children.forEach((child) => {
 			if (child.name?.startsWith('matchRow_'))
-				animationPromises.push(this.animationManager.fadeIn(child as any, Motion.F.fast));
+				animationPromises.push(this.animationManager.fade(child as any, 'in', Motion.F.fast));
 		});
 
 		await Promise.all(animationPromises);

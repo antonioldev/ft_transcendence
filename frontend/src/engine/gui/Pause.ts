@@ -17,7 +17,6 @@ export class Pause {
 	private pauseInstruction!: TextBlock;
 	private pauseHint!: TextBlock;
 	private muteIcon?: Image;
-	// private toggleMuteCallback?: () => boolean;
 
 	constructor(private adt: AdvancedDynamicTexture, private animationManager: AnimationManager, isTournament: boolean, private onToggleMute?: () => boolean) {
 		const t = getCurrentTranslation();
@@ -60,36 +59,31 @@ export class Pause {
 
 	private async animateMuteIcon(): Promise<void> {
 		if (!this.muteIcon) return;
-		await this.animationManager?.pop(this.muteIcon, Motion.F.xFast, 0.9);
+		await this.animationManager?.scale(this.muteIcon, 1, 0.9, Motion.F.xFast, true);
 	}
 
 	show(show: boolean): void {
 		if (show) {
-			this.pauseOverlay.isVisible = true;
-			this.pauseOverlay.alpha = 0;
-			this.pauseOverlay.thickness = 0;
+			if(!this.pauseOverlay.isVisible) {
+				this.pauseOverlay.isVisible = true;
+				this.pauseOverlay.alpha = 0;
+				this.pauseOverlay.thickness = 0;
 
-			const frames = Motion.F.base;
-			this.pauseOverlay.animations = [
-			this.animationManager.createFloat("alpha", 0, 1, frames, false, Motion.ease.quadOut()),
-			this.animationManager.createFloat("thickness", 0, 4, frames, false, Motion.ease.quadOut()),
-			];
-			this.animationManager.play(this.pauseOverlay, frames, false);
+				this.animationManager.fadeInWithBorder(this.pauseOverlay, Motion.F.base, 0, 4);
+			}
 		} else {
-			const frames = Motion.F.fast;
-			this.pauseOverlay.animations = [
-			this.animationManager.createFloat("alpha", 1, 0, frames, false, Motion.ease.quadOut()),
-			this.animationManager.createFloat("thickness", 4, 0, frames, false, Motion.ease.quadOut()),
-			];
-			this.animationManager.play(this.pauseOverlay, frames, false).then(() => {
-			this.pauseOverlay.isVisible = false;
-			this.pauseOverlay.alpha = 0;
-			this.pauseOverlay.thickness = 0;
-			});
+			if (this.pauseOverlay.isVisible) {
+				this.animationManager.fadeOutWithBorder(this.pauseOverlay, Motion.F.fast, 4, 0).then(() => {
+					this.pauseOverlay.isVisible = false;
+					this.pauseOverlay.alpha = 0;
+					this.pauseOverlay.thickness = 0;
+				});
+			}
 		}
 	}
 
 	dispose(): void {
+		this.muteIcon?.onPointerClickObservable.clear();
 		this.muteIcon?.dispose()
 		this.pauseHint.dispose();
 		this.pauseInstruction.dispose();

@@ -43,7 +43,7 @@ export class Lobby {
 		const t = getCurrentTranslation();
 		if (this.overlay && this.overlay.isVisible === false) {
 			this.overlay!.isVisible = true;
-			this.animationManager?.fadeIn(this.overlay!);
+			this.animationManager?.fade(this.overlay!, 'in');
 		}
 
 		if (!this.subtitle) return;
@@ -64,7 +64,7 @@ export class Lobby {
 			const leftTb = createTextBlock(`lobbyRowText_${i}`, LOBBY_STYLES.rowText, players[i]);
 			leftRow.addControl(leftTb);
 			rowContainer.addControl(leftRow, 0, 0);
-			setTimeout(() => this.animationManager.fadeIn(leftTb), (i * 120));
+			setTimeout(() => this.animationManager.fade(leftTb, 'in'), (i * 120));
 
 			if (players[i + 1] !== undefined) {
 				const rightRow = createRect(`lobbyRow_${i+1}`, LOBBY_STYLES.rowRect);
@@ -72,7 +72,7 @@ export class Lobby {
 				rightTb.textHorizontalAlignment = H_LEFT;
 				rightRow.addControl(rightTb);
 				rowContainer.addControl(rightRow, 0, 1);
-				setTimeout(() => this.animationManager.fadeIn(rightTb), ((i + 1) * 120));
+				setTimeout(() => this.animationManager.fade(rightTb, 'in'), ((i + 1) * 120));
 			}
 			
 			this.listPanel!.addControl(rowContainer);
@@ -100,8 +100,9 @@ export class Lobby {
 
 	hide(): void {
 		if (!this.overlay) return;
-		this.animationManager?.fadeOut(this.overlay!);
-		this.overlay!.isVisible = false;
+		this.animationManager?.fade(this.overlay!, 'out').then(() => {
+			this.overlay!.isVisible = false;
+		});
 		this.stopDots();
 	}
 
