@@ -144,3 +144,4 @@ wandb/
 
 # Tailwind CSS
 output.css
+.env
