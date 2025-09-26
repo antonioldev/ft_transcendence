@@ -38,7 +38,12 @@ export async function initializeGoogleSignIn(clientId: string, callback: (respon
 		if (window.google) {
 			window.google.accounts.id.initialize({
 				client_id: clientId,
-				callback: callback
+				callback: callback,
+				use_fedcm_for_prompt: false,
+				cancel_on_tap_outside: true,
+                auto_select: false,
+				prompt_parent_id: '',
+                intermediate_iframes_close_delay: 1000,
 			});
 		} else {
 			throw new Error('Google GSI library not available on window.');
