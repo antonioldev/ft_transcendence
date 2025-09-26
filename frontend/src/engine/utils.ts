@@ -75,31 +75,6 @@ export function get3DCamera2Viewport() {
 	return VIEWPORTS.RIGHT_HALF;
 }
 
-export function resetPlayersState(): Map<PlayerSide, PlayerState> {
-	return new Map([
-		[PlayerSide.LEFT, {
-			name: "",
-			isControlled: false,
-			keyboardProfile: undefined,
-			size: GAME_CONFIG.paddleWidth,
-			score: 0,
-			powerUpsAssigned: false,
-			powerUps: [],
-			inverted: false,
-		}],
-		[PlayerSide.RIGHT, {
-			name: "",
-			isControlled: false,
-			keyboardProfile: undefined,
-			size: GAME_CONFIG.paddleWidth,
-			score: 0,
-			powerUpsAssigned: false,
-			powerUps: [],
-			inverted: false,
-		}]
-	]);
-}
-
 export enum PlayerSide {
 	LEFT = 0,
 	RIGHT = 1

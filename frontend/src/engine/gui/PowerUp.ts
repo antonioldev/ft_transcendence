@@ -16,7 +16,8 @@ export class PowerUp {
 		[PowerupType.INCREASE_PADDLE_SPEED]:"assets/icons/powerup/fast.png",
 		[PowerupType.GROW_PADDLE]:		 "assets/icons/powerup/larger.png",
 		[PowerupType.INVERT_OPPONENT]:	"assets/icons/powerup/invert.png",
-		[PowerupType.FREEZE]:			"assets/icons/powerup/stop.png"
+		[PowerupType.FREEZE]:			"assets/icons/powerup/stop.png",
+		[PowerupType.POWERSHOT]:		"assets/icons/powerup/stop.png"
 	};
 
 	constructor(private adt: AdvancedDynamicTexture, private animationManager: AnimationManager, config: GameConfig) {
