@@ -5,6 +5,7 @@ dist/
 backend/src/shared
 frontend/src/shared
 .swp
+cookie.txt
 
 # sqlite file that containt dabatase of the game
 backend/src/database/transcendence.sqlite
@@ -102,6 +103,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+env-config.ts
 
 # Spyder project settings
 .spyderproject
