@@ -542,22 +542,22 @@ export class AuthManager {
 
 	// Prepares and initializes Google Sign-In for the application
 	private prepareGoogleLogin(): void {
-	const googleClientId = window.GOOGLE_CLIENT_ID;
-	if (!googleClientId) {
-		console.error("Google Client ID not found in global window.");
-		return;
-	}
+        const googleClientId = window.GOOGLE_CLIENT_ID;
+        if (!googleClientId) {
+            console.error("Google Client ID not found in global window.");
+            return;
+        }
 
-	const handleAuthSuccess = async (googleResponse: google.accounts.id.CredentialResponse) => {
-		console.log("Google token received, sending to backend...");
-		try {
-		// 1) Hit your backend; allow cookies to be set
-		const authRes = await fetch('/api/auth/google', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			credentials: 'include',					  // ⬅️ IMPORTANT
-			body: JSON.stringify({ token: googleResponse.credential })
-		});
+	    const handleAuthSuccess = async (googleResponse: google.accounts.id.CredentialResponse) => {
+            console.log("Google token received, sending to backend...");
+            try {
+                // 1) Hit your backend; allow cookies to be set
+                const authRes = await fetch('/api/auth/google', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',					  // ⬅️ IMPORTANT
+                    body: JSON.stringify({ token: googleResponse.credential })
+                });
 
                 if (!authRes.ok) {
                     const errorData = await authRes.json();
@@ -565,15 +565,22 @@ export class AuthManager {
                 }
 
                 // Parses the response to get the session token from your application
-                const { sessionToken } = await authRes.json();
-                console.log("Backend responded with session token:", sessionToken);
+                // const { sessionToken } = await authRes.json();
+                // console.log("Backend responded with session token:", sessionToken);
 
-                // TODO: Store the sessionToken
+                // // TODO: Store the sessionToken
                 
-                // Decodes the session token and updates the current user and authentication state
-                const decodedToken = JSON.parse(atob(sessionToken.split('.')[1]));
-                this.currentUser = { username: decodedToken.user.username };
-                this.authState = AuthState.LOGGED_IN;
+                // // Decodes the session token and updates the current user and authentication state
+                // const decodedToken = JSON.parse(atob(sessionToken.split('.')[1]));
+                // this.currentUser = { username: decodedToken.user.username };
+                // this.authState = AuthState.LOGGED_IN;
+
+                // Parses the response to get the user data from your application
+                const { user, success } = await authRes.json();
+                console.log("Backend responded with user data:", user, "success:", success);
+
+                // Updates the current user and authentication state
+                this.currentUser = { username: user.username };
                 
                 // Updates the UI to show user information and navigates to game mode selection
                 uiManager.showUserInfo(this.currentUser.username);
