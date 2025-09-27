@@ -142,6 +142,7 @@ abstract class AbstractTournament extends AbstractGameSession{
 			if (!matches) return ; // maybe throw err
 			await this.run(matches);
 		}
+		this.stop();
 		console.log(`Game ${this.id} ended naturally`);
 	}
 
@@ -151,6 +152,10 @@ abstract class AbstractTournament extends AbstractGameSession{
 
 	in_lobby(): Boolean {
 		return (this.state === TournamentState.LOBBY);
+	}
+
+	is_ended(): Boolean {
+		return (this.state === TournamentState.ENDED);
 	}
 
 	abstract run(matches: Match[]): Promise<void>;
@@ -186,7 +191,7 @@ export class TournamentLocal extends AbstractTournament {
 	assign_winner(match: Match) {
 		if (!match.game.winner) return ;
 		if (!match.next) {
-			this.stop(); 
+			this.tournamentWinner = match.game?.winner;
 			return ;
 		}
 		match.next.add_player(match.game.winner);
@@ -199,13 +204,13 @@ export class TournamentLocal extends AbstractTournament {
 	}
 
 	stop() {
-		// if (!this.running) return ;
+		if (this.is_ended()) return ;
 
 		this.state = TournamentState.ENDED;
 		this.current_match?.game?.stop();
 		this.broadcast({
 			type: MessageType.SESSION_ENDED,
-			...(this.current_match?.game?.winner?.name && { winner: this.current_match?.game?.winner?.name }),
+			...(this.tournamentWinner?.name && { winner: this.tournamentWinner?.name }),
 		});
 	}
 
@@ -294,7 +299,7 @@ export class TournamentRemote extends AbstractTournament {
 		}
 		if (!match.next) {
 			this.tournamentWinner = match.game?.winner;
-			this.stop();
+			// this.stop();
 			return ;
 		}
 		match.next.add_player(winner);
@@ -389,7 +394,7 @@ export class TournamentRemote extends AbstractTournament {
 	}
 
 	stop() {
-		// if (!this.running) return ;
+		if (this.is_ended()) return ;
 		this.state = TournamentState.ENDED
 		
 		for (const match of this.active_matches) {
