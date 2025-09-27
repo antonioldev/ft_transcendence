@@ -32,11 +32,11 @@ export enum MessageType {
 	REQUEST_USER_PROFILE,	// Type for back to frontend comm
 	UPDATE_USER_PROFILE,	 // Request to update user information 
 	COUNTDOWN,			   // Used to send countdown timer before game starts
-	// MATCH_WINNER,			// Used to display winner screen
 	MATCH_RESULT,			// Used to update tournament tree with match winner
 	MATCH_ASSIGNMENT,		// Used to send tournament match assignment to all clients
 	ACTIVATE_POWERUP,		// Activates a specified powerup
-	TOGGLE_SPECTATOR_GAME	// Used to change which game the spectator is watching
+	TOGGLE_SPECTATOR_GAME,	// Used to change which game the spectator is watching
+	SPECTATE_GAME,			// Used to change which game the spectator is watching
 }
 
 export enum WebSocketEvent {
@@ -44,8 +44,6 @@ export enum WebSocketEvent {
 	CONNECTION = 'connection',
 	COUNTDOWN = 'countdown',
 	ERROR = 'error',
-	// GAME_PAUSED = 'gamePaused',
-	// GAME_RESUMED = 'gameResumed',
 	SESSION_ENDED = 'sessionEnded',
 	STATUS_CHANGE = 'statusChange',
 	SIDE_ASSIGNMENT = 'side_assignment',
@@ -56,7 +54,6 @@ export enum WebSocketEvent {
 	USER_STATS = 'USER_STATS',
 	GAME_HISTORY = 'GAME_HISTORY',
 	MATCH_ASSIGNMENT = 'match_assignment',
-	// MATCH_WINNER = 'match_winner',
 	MATCH_RESULT = 'match_result',
 	POWERUP_ASSIGNMENT = 'powerup_assignment',
 	POWERUP_ACTIVATED = 'powerup_activated',

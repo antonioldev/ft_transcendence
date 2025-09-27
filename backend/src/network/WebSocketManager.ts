@@ -7,7 +7,6 @@ import * as db from "../data/validation.js";
 import { getUserBySession, getSessionByUsername } from '../data/validation.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
 import { TournamentRemote } from './Tournament.js';
-import { generateClientId } from '../data/database.js';
 
 /**
  * Manages WebSocket connections, client interactions, and game-related messaging.
@@ -130,6 +129,9 @@ export class WebSocketManager {
                     break;
                 case MessageType.TOGGLE_SPECTATOR_GAME:
                     this.toggleSpectator(client, data);
+                    break;
+                case MessageType.SPECTATE_GAME:
+                    this.spectateGame(client);
                     break;
                 case MessageType.QUIT_GAME:
                     console.log(`QUIT_GAME received from ${client.username}:${client.id}`);
@@ -319,6 +321,17 @@ export class WebSocketManager {
         }
         if (gameSession instanceof TournamentRemote && data.direction) {
             gameSession.toggle_spectator_game(client, data.direction);
+        }
+    }
+
+    spectateGame(client: Client) {
+        const gameSession = gameManager.findClientGameSession(client);
+        if (!gameSession) {
+            console.warn(`Client ${client.id} not in any GameSession to toggle`);
+            return;
+        }
+        if (gameSession instanceof TournamentRemote) {
+            gameSession.assign_spectator(client);
         }
     }
 
