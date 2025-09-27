@@ -61,7 +61,7 @@ class GameManager extends EventEmitter {
     findOrCreateGame(mode: GameMode, client: Client, capacity?: number): AbstractGameSession {
         if (mode === GameMode.TWO_PLAYER_REMOTE || mode === GameMode.TOURNAMENT_REMOTE) /*Remote Games*/{
             // Try to find waiting game
-            for (const [gameId, gameSession] of this.gameIdMap) {
+            for (const gameSession of this.gameIdMap.values()) {
                 if (gameSession.mode === mode && !gameSession.full && !gameSession.is_running()) {
                     if (mode === GameMode.TOURNAMENT_REMOTE && gameSession.client_capacity !== capacity) {
                         continue ;
