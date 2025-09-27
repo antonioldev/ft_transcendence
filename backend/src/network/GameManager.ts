@@ -6,7 +6,6 @@ import { registerNewGame, addPlayer2 } from '../data/validation.js';
 import * as db from "../data/validation.js";
 import { GAME_CONFIG } from '../shared/gameConfig.js';
 import { EventEmitter } from 'events';
-import { generateGameId } from '../data/database.js';
 
 /**
  * Manages game sessions and player interactions within the game.
@@ -21,6 +20,14 @@ class GameManager extends EventEmitter {
      * @param client - The client initiating the game.
      * @returns The unique ID of the created game session.
      */
+
+    addClient(client: Client, gameSession: AbstractGameSession) {
+        gameSession.add_client(client);
+        this.gameIdMap.set(gameSession.id, gameSession);
+        this.clientGamesMap.set(client.id, gameSession);
+        // addPlayer2(gameId, client.username); // add security // this wont work for tournaments
+    }
+
     createGame(mode: GameMode, client: Client, capacity?: number): AbstractGameSession {
         // Create new gamesession and add the client
         let gameSession: AbstractGameSession;
@@ -33,9 +40,6 @@ class GameManager extends EventEmitter {
         else {
             gameSession = new OneOffGame(mode);
         }
-        gameSession.add_client(client);
-        this.gameIdMap.set(gameSession.id, gameSession);
-        this.clientGamesMap.set(client.id, gameSession);
         
         // Create a new game in DB with 1st player as client only if the game is remote
         if (mode === GameMode.TWO_PLAYER_REMOTE) {
@@ -59,28 +63,27 @@ class GameManager extends EventEmitter {
             // Try to find waiting game
             for (const [gameId, gameSession] of this.gameIdMap) {
                 if (gameSession.mode === mode && !gameSession.full && !gameSession.running) {
-                    if (mode === GameMode.TOURNAMENT_REMOTE && gameSession.client_capacity !== capacity) continue ;
-
-                    gameSession.add_client(client);
-                    this.clientGamesMap.set(client.id, gameSession);
-                    addPlayer2(gameId, client.username); // add security // this is a mistake as wont work for tournaments
+                    if (mode === GameMode.TOURNAMENT_REMOTE && gameSession.client_capacity !== capacity) {
+                        continue ;
+                    }
                     return gameSession;
                 }
             }
         }
         // Local game or no waiting games => create new one
-        return this.createGame(mode, client, capacity);
+        return (this.createGame(mode, client, capacity));
     }
 
     async runGame(gameSession: AbstractGameSession): Promise<void> {
         if (gameSession.running) return ;
-        if (gameSession.mode === GameMode.TOURNAMENT_REMOTE && gameSession.players.length < GAME_CONFIG.minTournamentSize) {
+        if (gameSession.mode === GameMode.TOURNAMENT_REMOTE && gameSession.players.size < GAME_CONFIG.minTournamentSize) {
             // wait another 30 seconds for at least 3 players to be in the tournament
             setTimeout(() => { this.runGame(gameSession) }, (GAME_CONFIG.maxJoinWaitTime * 1000));
             return ;
         }
-        console.log(`Game started with ${gameSession.players.length} players`);
+        console.log(`Game started with ${gameSession.players.size} players`);
         db.updateStartTime(gameSession.id);
+        gameSession.add_CPUs(); // add CPU's if necessary
         await gameSession.start();
         gameManager.endGame(gameSession);
     }

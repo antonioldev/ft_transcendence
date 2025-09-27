@@ -10,7 +10,8 @@ export abstract class AbstractGameSession {
 	mode: GameMode;
 	id: string = generateGameId();
 	clients: Set<Client> = new Set();
-	players: (Player | CPU)[] = [];
+	players: Set<Player | CPU> = new Set();
+
 	player_capacity: number = 2;
 	client_capacity: number = 1;
 	full: boolean = false;
@@ -53,7 +54,7 @@ export abstract class AbstractGameSession {
 		if (this.clients.size === this.client_capacity) {
 			this.full = true;
 		}
-}
+	}
 
 	remove_client(client: Client) {
 		if (!this.clients.has(client)) return ;
@@ -68,14 +69,14 @@ export abstract class AbstractGameSession {
 	}
 	
 	add_player(player: Player | CPU) {
-		if (this.players.length < this.player_capacity) {
+		if (this.players.size < this.player_capacity) {
 			console.log(`Player ${player.name} added to game ${this.id}`);
-			this.players.push(player);
+			this.players.add(player);
 		}
 	}
 
 	get_cpu_name(): string {
-		const unavailable_names: string[] = this.players.map(player => player.name);
+		const unavailable_names: string[] = [...this.players].map(player => player.name);
 		let name: string;
 
 		do {
@@ -87,7 +88,7 @@ export abstract class AbstractGameSession {
 	}
 
 	add_CPUs() {
-		for (let i = 1; this.players.length < this.player_capacity; i++) {
+		for (let i = 1; this.players.size < this.player_capacity; i++) {
 			this.add_player(new CPU(`CPU_${i}`, this.get_cpu_name(), this.ai_difficulty));
 		}
 
@@ -98,17 +99,17 @@ export abstract class AbstractGameSession {
 		this.client_capacity = this.clients.size;
     }
 
-	remove_player(player: Player) {
-		const index = this.players.indexOf(player);
-		if (index !== -1) {
-			console.log(`Player ${player.name} removed from game ${this.id}`);
-			this.players.splice(index, 1);
-			this.full = false;
-		}
-		if (this.players.length === 0) {
-			this.stop();
-		}
-	}
+	// remove_player(player: Player) {
+	// 	const index = this.players.indexOf(player);
+	// 	if (index !== -1) {
+	// 		console.log(`Player ${player.name} removed from game ${this.id}`);
+	// 		this.players.splice(index, 1);
+	// 		this.full = false;
+	// 	}
+	// 	if (this.players.length === 0) {
+	// 		this.stop();
+	// 	}
+	// }
 
 	allClientsReady(): boolean {
 		return (this.readyClients.size === this.clients.size && this.clients.size > 0);
@@ -185,10 +186,8 @@ export class OneOffGame extends AbstractGameSession{
 		if (this.running) return;
 		this.running = true;
 		
-		this.add_CPUs(); // add any CPU's if necessary
 		await this.waitForPlayersReady();
-		
-		this.game = new Game(this.id, this.players, this.broadcast.bind(this))
+		this.game = new Game(this.id, [...this.players], this.broadcast.bind(this))
 		await this.game.run();
 		if (this.mode === GameMode.TWO_PLAYER_REMOTE) {
 			this.game.save_to_db();

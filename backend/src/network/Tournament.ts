@@ -5,6 +5,7 @@ import { GameMode, MessageType, Direction } from '../shared/constants.js';
 import { addPlayer2, registerNewGame } from '../data/validation.js';
 import { LEFT, RIGHT } from '../shared/gameConfig.js';
 import { generateGameId } from '../data/database.js';
+import { randomize } from './utils.js';
 
 export class Match {
 	id: string = generateGameId();
@@ -69,13 +70,6 @@ abstract class AbstractTournament extends AbstractGameSession{
 		return (round_count);
 	}
 
-	private _randomize_players() {
-		for (let i = this.players.length - 1; i > 0; i--) { 
-			const j = Math.floor(Math.random() * (i + 1)); 
-			[this.players[i], this.players[j]] = [this.players[j], this.players[i]]; 
-		} 
-	}
-
 	// creates the tournament tree structure and assigns each match to the rounds map
 	private _create_match_tree(current_match: Match) {
 		this.rounds.get(current_match.round)?.push(current_match);
@@ -93,8 +87,8 @@ abstract class AbstractTournament extends AbstractGameSession{
 	}
 
 	// assigns players to the matches in round_1
-	private _match_players(): void {
-		this._randomize_players();
+	private _match_players(players: (Player | CPU)[]): void {
+		randomize(players);
 
 		const round_one = this.rounds.get(1);
 		if (!round_one) {
@@ -103,8 +97,8 @@ abstract class AbstractTournament extends AbstractGameSession{
 		}
 
 		for (let i = 0, j = 0; j < this.player_capacity; i++, j+=2) {
-			let player_left = this.players[j];
-			let player_right = this.players[j + 1];
+			let player_left = players[j];
+			let player_right = players[j + 1];
 			const match = round_one[i];
 
 			match.add_player(player_left);
@@ -133,15 +127,15 @@ abstract class AbstractTournament extends AbstractGameSession{
 		if (this.running) return ;
 		this.running = true;
 
-		this.add_CPUs();
-		this._match_players();
+		this._match_players([...this.players]);
 		for (this.current_round = 1; this.current_round <= this.num_rounds; this.current_round++) {
 			if (!this.running) {
 				console.log(`Tournament ${this.id} ended prematurely on round ${this.current_round}`);
 				return ;
 			}
+
 			await this.waitForPlayersReady();
-			this.broadcastRoundSchedule(this.current_round); // TODO added here so we get update info from server
+			this.broadcastRoundSchedule(this.current_round);
 			
 			const matches = this.rounds.get(this.current_round);
 			if (!matches) return ; // maybe throw err
@@ -230,29 +224,47 @@ export class TournamentRemote extends AbstractTournament {
 	}
 
 	add_player(player: Player) {
-		if (this.players.length < this.player_capacity) {
-			this.players.push(player);
+		if (this.players.size < this.player_capacity) {
+			this.players.add(player);
 			this.broadcast({
 				type: MessageType.TOURNAMENT_LOBBY,
-				lobby: this.players.map(player => player.name)
+				lobby: [...this.players].map(player => player.name)
 			});
 		}
 	}
 
-	remove_player(player: Player) {
-		const index = this.players.indexOf(player);
-		if (index !== -1) {
-			this.players.splice(index, 1);
-			this.full = false;
-			if (!this.running) {
-				this.broadcast({
-					type: MessageType.TOURNAMENT_LOBBY,
-					lobby: this.players.map(player => player.name)
-				});
+	// remove_player(player: Player) {
+	// 	const index = this.players.indexOf(player);
+	// 	if (index !== -1) {
+	// 		this.players.splice(index, 1);
+	// 		this.full = false;
+	// 		if (!this.running) {
+	// 			this.broadcast({
+	// 				type: MessageType.TOURNAMENT_LOBBY,
+	// 				lobby: this.players.map(player => player.name)
+	// 			});
+	// 		}
+	// 	}
+	// 	if (this.players.length === 0) {
+	// 		this.stop();
+	// 	}
+	// }
+
+		remove_player(client: Client) {
+		for (const player of this.players) {
+			if (player instanceof Player && player.client === client) {
+				this.players.delete(player);
+				this.full = false;
+				if (!this.running) {
+					this.broadcast({
+						type: MessageType.TOURNAMENT_LOBBY,
+						lobby: [...this.players].map(player => player.name)
+					});
+				}
+			} 
+			if (this.players.size === 0) {
+				this.stop();
 			}
-		}
-		if (this.players.length === 0) {
-			this.stop();
 		}
 	}
 
@@ -397,6 +409,9 @@ export class TournamentRemote extends AbstractTournament {
 
 	// The opposing player wins their current match and the tournament continues
 	handlePlayerQuit(quitter: Client): void {
+		if (!this.running) {
+			this.remove_player(quitter);
+		}
 		const match = this.findMatch(quitter.id);
 		if (!match) {
 			console.error(`Cannot quit: "${quitter.username}" not in any match`);

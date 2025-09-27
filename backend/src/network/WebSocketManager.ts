@@ -127,11 +127,11 @@ export class WebSocketManager {
                 case MessageType.ACTIVATE_POWERUP:
                     this.activatePowerup(client, data);
                     break;
-                case MessageType.TOGGLE_SPECTATOR_GAME:
-                    this.toggleSpectator(client, data);
-                    break;
                 case MessageType.SPECTATE_GAME:
                     this.spectateGame(client);
+                    break;
+                case MessageType.TOGGLE_SPECTATOR_GAME:
+                    this.toggleSpectator(client, data);
                     break;
                 case MessageType.QUIT_GAME:
                     console.log(`QUIT_GAME received from ${client.username}:${client.id}`);
@@ -165,6 +165,8 @@ export class WebSocketManager {
                 throw new Error(`Game mode missing`);
             }
             const gameSession = gameManager.findOrCreateGame(data.gameMode, client, data.capacity ?? undefined);
+            gameManager.addClient(client, gameSession);
+
             if (data.aiDifficulty !== undefined && gameSession.ai_difficulty === undefined) {
                 gameSession.set_ai_difficulty(data.aiDifficulty);
             }
@@ -513,9 +515,10 @@ export class WebSocketManager {
         console.log(`Lobby request received from ${client.username}:${client.id}`)
     
         const gameSession = gameManager.findClientGameSession(client);
+        if (!gameSession) return ;
         this.send(client.websocket, {
             type: MessageType.TOURNAMENT_LOBBY,
-            lobby: gameSession?.players.map(player => player.name)
+            lobby: [...gameSession.players].map(player => player.name)
         });
 
         console.log(`Lobby sent to ${client.username}:${client.id}`)
