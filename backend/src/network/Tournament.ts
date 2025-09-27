@@ -1,7 +1,7 @@
 import { AbstractGameSession } from './GameSession.js'
 import { Game } from '../game/Game.js';
 import { Client, Player, CPU } from './Client.js';
-import { GameMode, MessageType, Direction } from '../shared/constants.js';
+import { GameMode, MessageType, Direction, TournamentState } from '../shared/constants.js';
 import { addPlayer2, registerNewGame } from '../data/validation.js';
 import { LEFT, RIGHT } from '../shared/gameConfig.js';
 import { generateGameId } from '../data/database.js';
@@ -45,6 +45,7 @@ abstract class AbstractTournament extends AbstractGameSession{
 	num_rounds: number;
 	current_round: number = 1;
 	tournamentWinner?: Player | CPU;
+	state: TournamentState = TournamentState.INIT;
 
 	constructor(mode: GameMode, capacity: number) {
 		super(mode);
@@ -124,12 +125,12 @@ abstract class AbstractTournament extends AbstractGameSession{
 	}
 				
 	async start(): Promise<void> {
-		if (this.running) return ;
-		this.running = true;
+		if (this.is_running()) return ;
+		this.state = TournamentState.RUNNING;
 
 		this._match_players([...this.players]);
 		for (this.current_round = 1; this.current_round <= this.num_rounds; this.current_round++) {
-			if (!this.running) {
+			if (!this.is_running()) {
 				console.log(`Tournament ${this.id} ended prematurely on round ${this.current_round}`);
 				return ;
 			}
@@ -142,6 +143,14 @@ abstract class AbstractTournament extends AbstractGameSession{
 			await this.run(matches);
 		}
 		console.log(`Game ${this.id} ended naturally`);
+	}
+
+	is_running(): boolean {
+		return (this.state === TournamentState.RUNNING);
+	}
+
+	in_lobby(): Boolean {
+		return (this.state === TournamentState.LOBBY);
 	}
 
 	abstract run(matches: Match[]): Promise<void>;
@@ -160,7 +169,7 @@ export class TournamentLocal extends AbstractTournament {
 	async run(matches: Match[]): Promise<void> {
 		let index = 0;
 		for (const match of matches) {
-			if (!this.running) return ;
+			if (!this.is_running()) return ;
 			this.current_match = match;
 			
 			await this.waitForPlayersReady();
@@ -190,9 +199,9 @@ export class TournamentLocal extends AbstractTournament {
 	}
 
 	stop() {
-		if (!this.running) return ;
+		// if (!this.running) return ;
 
-		this.running = false;
+		this.state = TournamentState.ENDED;
 		this.current_match?.game?.stop();
 		this.broadcast({
 			type: MessageType.SESSION_ENDED,
@@ -226,36 +235,21 @@ export class TournamentRemote extends AbstractTournament {
 	add_player(player: Player) {
 		if (this.players.size < this.player_capacity) {
 			this.players.add(player);
-			this.broadcast({
-				type: MessageType.TOURNAMENT_LOBBY,
-				lobby: [...this.players].map(player => player.name)
-			});
+			if (this.in_lobby()) {
+				this.broadcast({
+					type: MessageType.TOURNAMENT_LOBBY,
+					lobby: [...this.players].map(player => player.name)
+				});
+			}
 		}
 	}
 
-	// remove_player(player: Player) {
-	// 	const index = this.players.indexOf(player);
-	// 	if (index !== -1) {
-	// 		this.players.splice(index, 1);
-	// 		this.full = false;
-	// 		if (!this.running) {
-	// 			this.broadcast({
-	// 				type: MessageType.TOURNAMENT_LOBBY,
-	// 				lobby: this.players.map(player => player.name)
-	// 			});
-	// 		}
-	// 	}
-	// 	if (this.players.length === 0) {
-	// 		this.stop();
-	// 	}
-	// }
-
-		remove_player(client: Client) {
+	remove_player(client: Client) {
 		for (const player of this.players) {
 			if (player instanceof Player && player.client === client) {
 				this.players.delete(player);
 				this.full = false;
-				if (!this.running) {
+				if (this.in_lobby()) {
 					this.broadcast({
 						type: MessageType.TOURNAMENT_LOBBY,
 						lobby: [...this.players].map(player => player.name)
@@ -276,7 +270,7 @@ export class TournamentRemote extends AbstractTournament {
 		// this.reassign_clients(matches);
 		let index = 0;
 		for (const match of matches) {
-			if (!this.running) {
+			if (!this.is_running()) {
 				console.warn(`Tournament ${this.id}: round ${this.current_round} ended prematurely`);
 				return ;
 			}
@@ -395,8 +389,8 @@ export class TournamentRemote extends AbstractTournament {
 	}
 
 	stop() {
-		if (!this.running) return ;
-		this.running = false;
+		// if (!this.running) return ;
+		this.state = TournamentState.ENDED
 		
 		for (const match of this.active_matches) {
 			match.game?.stop();
@@ -409,18 +403,19 @@ export class TournamentRemote extends AbstractTournament {
 
 	// The opposing player wins their current match and the tournament continues
 	handlePlayerQuit(quitter: Client): void {
-		if (!this.running) {
-			this.remove_player(quitter);
+		this.remove_client(quitter);
+		this.remove_player(quitter);
+		if (this.is_running()) {
+			const match = this.findMatch(quitter.id);
+			if (!match) {
+				console.error(`Cannot quit: "${quitter.username}" not in any match`);
+				return ;
+			}
+			match.game?.setOtherPlayerWinner(quitter);
+			match.game?.stop();
+			this.client_match_map.delete(quitter.id);
+			this.defeated_clients.delete(quitter);
 		}
-		const match = this.findMatch(quitter.id);
-		if (!match) {
-			console.error(`Cannot quit: "${quitter.username}" not in any match`);
-			return ;
-		}
-		match.game?.setOtherPlayerWinner(quitter);
-		match.game?.stop();
-		this.client_match_map.delete(quitter.id);
-		this.defeated_clients.delete(quitter);
 	}
 
 	findMatch(client_id: string): Match | undefined {

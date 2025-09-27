@@ -113,6 +113,14 @@ export enum GameState {
 	ENDED,
 }
 
+// States the game can be in
+export enum TournamentState {
+	INIT,
+	LOBBY,
+	RUNNING,
+	ENDED,
+}
+
 // View modes for the game
 export enum ViewMode {
 	MODE_2D = 0,		   // 2D view

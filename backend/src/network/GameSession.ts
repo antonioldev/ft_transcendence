@@ -15,7 +15,6 @@ export abstract class AbstractGameSession {
 	player_capacity: number = 2;
 	client_capacity: number = 1;
 	full: boolean = false;
-	running: boolean = false;
 	ai_difficulty: AiDifficulty = AiDifficulty.MEDIUM;
 	readyClients: Set<string> = new Set(); // Keep track of clients that finish loading
 
@@ -134,7 +133,7 @@ export abstract class AbstractGameSession {
 
 	resume(client_id?: string): void {
 		const game = this.findGame(client_id);
-		if (!this.running || !game) {
+		if (!game) {
 			console.log(`Game ${this.id} is not running, cannot resume`);
 			return ;
 		}
@@ -149,7 +148,7 @@ export abstract class AbstractGameSession {
 
 	pause(client_id?: string): void {
 		const game = this.findGame(client_id);
-		if (!this.running || !game || !game.is_running()) {
+		if (!game || !game.is_running()) {
 			console.log(`Game ${this.id} is not running, cannot pause`);
 			return ;
 		}
@@ -173,9 +172,11 @@ export abstract class AbstractGameSession {
 	abstract handlePlayerQuit(quitter: Client): void;
 	abstract canClientControlGame(client: Client): boolean;
 	abstract findGame(client_id?: string): Game | undefined;
+	abstract is_running(): boolean;
 }
 
 export class OneOffGame extends AbstractGameSession{
+	running: boolean = false;
 	game!: Game;
 
 	constructor (mode: GameMode) {
@@ -219,5 +220,9 @@ export class OneOffGame extends AbstractGameSession{
 
 	findGame() {
 		return (this.game);
+	}
+
+	is_running(): boolean {
+		return (this.running);
 	}
 }

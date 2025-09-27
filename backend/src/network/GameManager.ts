@@ -62,7 +62,7 @@ class GameManager extends EventEmitter {
         if (mode === GameMode.TWO_PLAYER_REMOTE || mode === GameMode.TOURNAMENT_REMOTE) /*Remote Games*/{
             // Try to find waiting game
             for (const [gameId, gameSession] of this.gameIdMap) {
-                if (gameSession.mode === mode && !gameSession.full && !gameSession.running) {
+                if (gameSession.mode === mode && !gameSession.full && !gameSession.is_running()) {
                     if (mode === GameMode.TOURNAMENT_REMOTE && gameSession.client_capacity !== capacity) {
                         continue ;
                     }
@@ -75,7 +75,7 @@ class GameManager extends EventEmitter {
     }
 
     async runGame(gameSession: AbstractGameSession): Promise<void> {
-        if (gameSession.running) return ;
+        if (gameSession.is_running()) return ;
         if (gameSession.mode === GameMode.TOURNAMENT_REMOTE && gameSession.players.size < GAME_CONFIG.minTournamentSize) {
             // wait another 30 seconds for at least 3 players to be in the tournament
             setTimeout(() => { this.runGame(gameSession) }, (GAME_CONFIG.maxJoinWaitTime * 1000));
