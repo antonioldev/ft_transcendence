@@ -13,7 +13,7 @@ export class Game {
 	id: string;
 	clock: Clock;
 	queue: PlayerInput[] = [];
-	state: GameState = GameState.RUNNING;
+	state: GameState = GameState.INIT;
 	players: readonly (Player | CPU)[]
 	winner!: Player | CPU;
 	loser!: Player | CPU;
@@ -159,6 +159,7 @@ export class Game {
 			return (this.players[random_index]);
 		}
 		await this.send_countdown();
+		this.state = GameState.RUNNING;
 
 		// run game loop, updating and broadcasting state to clients until win
 		while (!this.is_ended()) {
