@@ -8,6 +8,12 @@ import { EL, requireElementById} from '../ui/elements.js';
 import { initializeGoogleSignIn, renderGoogleButton } from './GoogleSignIn.js';
 import { appStateManager } from './AppStateManager.js';
 
+// Declare the type for Google Response to avoid TypeScript errors
+type GoogleCredentialResponse = {
+    credential: string;
+    select_by?: string;
+};
+
 /**
  * Manages user authentication state, login/logout workflows, and user registration.
  * Handles the transition between guest and authenticated user states, including
@@ -548,7 +554,7 @@ export class AuthManager {
             return;
         }
 
-	    const handleAuthSuccess = async (googleResponse: google.accounts.id.CredentialResponse) => {
+	    const handleAuthSuccess = async (googleResponse: GoogleCredentialResponse) => {
             console.log("Google token received, sending to backend...");
             try {
                 // 1) Hit your backend; allow cookies to be set
@@ -580,7 +586,14 @@ export class AuthManager {
                 console.log("Backend responded with user data:", user, "success:", success);
 
                 // Updates the current user and authentication state
+                this.authState = AuthState.LOGGED_IN;
                 this.currentUser = { username: user.username };
+                
+                // Store Google token for session restore if needed
+                localStorage.setItem('google_id_token', googleResponse.credential);
+                
+                // Initialize WebSocket connection for authenticated user
+                WebSocketClient.getInstance();
                 
                 // Updates the UI to show user information and navigates to game mode selection
                 uiManager.showUserInfo(this.currentUser.username);
@@ -676,6 +689,10 @@ export class AuthManager {
 		wsClient.logoutUser();
 		this.authState = AuthState.GUEST;
 		this.currentUser = null;
+		
+		// Clear Google token from localStorage
+		localStorage.removeItem('google_id_token');
+		
 		uiManager.showAuthButtons();
 		appStateManager.navigateTo(AppState.MAIN_MENU);
 	}
