@@ -228,8 +228,7 @@ export class TournamentLocal extends AbstractTournament {
 }
 
 export class TournamentRemote extends AbstractTournament {
-	client_match_map: Map<string, Match> = new Map();	// Maps client id to the match they are in
-	defeated_clients: Set<Client> = new Set();	// List of defeated players watching the rest of the games
+	client_match_map: Map<string, Match> = new Map();	// Maps client id to the match they are in, CONTAINS ONLY ACTIVE PLAYERS
 	active_matches: Match[] = [];			// list of all active matches in a round
 
 	constructor(mode: GameMode, capacity: number) {
@@ -310,7 +309,6 @@ export class TournamentRemote extends AbstractTournament {
 			this.client_match_map.set(winner.client.id, match.next);
 		}
 		if (match.game.loser instanceof Player) {
-			this.defeated_clients.add(match.game.loser.client);
 			this.client_match_map.delete(match.game.loser.client.id);
 		}
 
@@ -334,17 +332,6 @@ export class TournamentRemote extends AbstractTournament {
 		spectator_match.clients.add(client);
 		spectator_match.game?.send_side_assignment(new Set([client]));
 	}
-
-	// reassign_clients(matches: Match[]) {
-	// 	// add clients who are still playing to their match in case they were previously spectating
-	// 	for (const match of matches) {
-	// 		for (const player of [match.players[LEFT], match.players[RIGHT]]) {
-	// 			if (player instanceof Player) {
-	// 				this.client_match_map.set(player.client.id, match);
-	// 			}
-	// 		}
-	// 	}
-	// }
 
 	toggle_spectator_game(client: Client, direction: Direction) {
 		if (this.active_matches.length <= 1) return ;
@@ -381,10 +368,6 @@ export class TournamentRemote extends AbstractTournament {
 	}
 
 	canClientControlGame(client: Client) {
-		if (this.defeated_clients.has(client)) {
-			console.error(`Client ${client.id} is a spectator`);
-			return false;
-		}
 		const match = this.findMatch(client.id);
 		if (!match || !this.active_matches.includes(match)) {
 			console.error(`Client ${client.id} not in any active match`);
@@ -419,7 +402,7 @@ export class TournamentRemote extends AbstractTournament {
 			match.game?.setOtherPlayerWinner(quitter);
 			match.game?.stop();
 			this.client_match_map.delete(quitter.id);
-			this.defeated_clients.delete(quitter);
+			// this.defeated_clients.delete(quitter);
 		}
 	}
 
