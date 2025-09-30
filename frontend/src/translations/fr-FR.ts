@@ -65,5 +65,6 @@ export const french: Translation = {
 	tournamentTitle: 'Classement du Tournoi',
 	escToClose: 'Appuyez sur ESC pour fermer',
 	spectator: '🎮 MODE SPECTATEUR',
-	spectatorInstruction: '← Match Précédent | → Match Suivant | Espace: Afficher/Masquer le Bracket | Y: Quitter'
+	spectatorInstruction: '← Match Précédent | → Match Suivant | Espace: Afficher/Masquer le Bracket | Y: Quitter',
+	spectatorQuestion: 'Veux-tu regarder le reste du tournoi ? Appuie sur O, ou appuie sur N pour quitter'
 };

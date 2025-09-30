@@ -46,6 +46,8 @@ export class KeyboardManager {
 	// private activeProfiles!: { P1: KeysProfile; P2: KeysProfile;};
 	private isInitialized: boolean = false;
 	private isSpectator: boolean = false;
+	private isAwaitingSpectatorChoice: boolean = false;
+	private spectatorChoiceResolver: ((choice: boolean) => void) | null = null;
 
 	constructor(
 		scene: Scene,
@@ -107,16 +109,36 @@ export class KeyboardManager {
 		this.isSpectator = isSpectator;
 	}
 
+	waitForSpectatorChoice(): Promise<boolean> {
+		this.isAwaitingSpectatorChoice = true;
+		return new Promise<boolean>((resolve) => {
+			this.spectatorChoiceResolver = resolve;
+
+			setTimeout(() => {
+				if (this.isAwaitingSpectatorChoice) {
+					this.isAwaitingSpectatorChoice = false;
+					this.spectatorChoiceResolver = null;
+					resolve(false);
+				}
+			}, 15000);
+		});
+	}
+
 	private handleGlobalKeyDown(event: KeyboardEvent): void {
 		const key = event.keyCode;
 
-		if (key === 70) { // F key - Open
-			this.gui.curtain.start();
-			return;
-		}
+		// if (key === 70) { // F key - Open
+		// 	this.gui.curtain.start();
+		// 	return;
+		// }
 		
-		if (key === 71) { // G key - Close
-			this.gui.curtain.stop();
+		// if (key === 71) { // G key - Close
+		// 	this.gui.curtain.stop();
+		// 	return;
+		// }
+
+		if (this.isAwaitingSpectatorChoice) {
+			this.handleSpectatorChoiceKeys(key);
 			return;
 		}
 
@@ -134,6 +156,25 @@ export class KeyboardManager {
 			this.handlePauseMenuKeys(key);
 		else
 			this.handlePowerupKeys(key);
+	}
+
+	private handleSpectatorChoiceKeys(key: number): void {
+		if (key === Keys.Y) {
+			this.isAwaitingSpectatorChoice = false;
+			this.isSpectator = true;
+			
+			if (this.spectatorChoiceResolver) {
+				this.spectatorChoiceResolver(true);
+				this.spectatorChoiceResolver = null;
+			}
+		} else if (key === Keys.N) {
+			this.isAwaitingSpectatorChoice = false;
+			
+			if (this.spectatorChoiceResolver) {
+				this.spectatorChoiceResolver(false);
+				this.spectatorChoiceResolver = null;
+			}
+		}
 	}
 
 	private handleSpectatorInteraciot(key: number) {

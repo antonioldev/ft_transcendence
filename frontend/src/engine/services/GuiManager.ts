@@ -22,6 +22,7 @@ export class GUIManager {
 	private adt: AdvancedDynamicTexture | null = null;
 	private isInitialized: boolean = false;
 	private isTournament: boolean = false;
+	private isLocal: boolean = false;
 	private isLastMatch: boolean = false;
 	private pauseVisible: boolean = false;
 	countdown!: Countdown;
@@ -39,7 +40,7 @@ export class GUIManager {
 			this.adt = AdvancedDynamicTexture.CreateFullscreenUI("UI", true, this.scene);
 			this.adt!.layer!.layerMask = 0x20000000;
 			this.isTournament = config.isTournament;
-
+			this.isLocal = config.isLocalMultiplayer;
 			this.countdown = new Countdown(this.adt, this.animationManager);
 			this.powerUp = new PowerUp(this.adt, this.animationManager, config);
 			this.matchTree = new MatchTree(this.adt, this.animationManager);
@@ -100,7 +101,8 @@ export class GUIManager {
 		await this.animateBackground(true);
 		this.powerUp.show(false);
 		await this.endGame.showPartialLoser();
-		await this.endGame.waitForContinue(2000, false);
+		await this.endGame.showSpectatorPrompt();
+		// await this.endGame.waitForContinue(2000, false);
 		await this.endGame.hidePartial();
 	}
 

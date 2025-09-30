@@ -65,5 +65,6 @@ export const italian: Translation = {
 	tournamentTitle: 'Classifica del Torneo',
 	escToClose: 'Premere ESC per chiudere',
 	spectator: '🎮 MODALITÀ SPETTATORE',
-	spectatorInstruction: '← Partita Precedente | → Partita Successiva | Spazio: Mostra/Nascondi Tabellone | Y: Esci'
+	spectatorInstruction: '← Partita Precedente | → Partita Successiva | Spazio: Mostra/Nascondi Tabellone | Y: Esci',
+	spectatorQuestion: 'Vuoi guardere il resto del torneo? Premi Y, oppure premi N per uscire'
 };

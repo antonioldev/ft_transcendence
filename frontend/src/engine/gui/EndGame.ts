@@ -9,6 +9,8 @@ export class EndGame {
 	private partialEndGameOverlay!: Rectangle;
 	private partialWinnerLabel!: TextBlock;
 	private partialWinnerName!: TextBlock;
+	private spectatorText!: TextBlock;
+
 	private continueText!: TextBlock;
 	private endGameOverlay!: Grid;
 	private endGameWinnerText!: TextBlock;
@@ -92,6 +94,26 @@ export class EndGame {
 		await this.animationManager?.slideFromDirection(this.partialWinnerName, 'down', 'in', 50, Motion.F.base);
 
 		await new Promise(r => setTimeout(r, 250));
+	}
+
+	async showSpectatorPrompt(): Promise<boolean> {
+		const t = getCurrentTranslation();
+
+		this.continueText.text = t.spectatorQuestion;
+		const timerText = createTextBlock(
+			"spectatorTimer", PARTIAL_END_GAME_STYLES.continueText, "10");
+		timerText.fontSize = "20px";
+		timerText.top = "120px";
+		
+		this.partialEndGameOverlay.addControl(timerText);
+
+		this.continueText.isVisible = true;
+		timerText.isVisible = true;
+		this.animationManager?.twinkle(this.continueText, Motion.F.slow);
+		setTimeout(resizeBy, 2000);
+		
+		return(true);
+        
 	}
 
 	async hidePartial(): Promise<void> {

@@ -213,16 +213,24 @@ export class Game {
 		
 		if (showLoser){
 			await this.services?.gui?.showTournamentMatchLoser();
-			this.services?.input.setSpectator(true);
-			this.services?.gui.hud.setSpectatorMode();
+			const wantsToSpectate = await this.services?.input.waitForSpectatorChoice();
+			if (wantsToSpectate) {
+				this.services?.input.setSpectator(true);
+				this.services?.gui.hud.setSpectatorMode();
+				webSocketClient.sendSpectatorReady();
+			} else
+				this.requestExitToMenu();
 		}
 		else {
-			const waitForSpace = controlledSides.length !== 0 ? true : false;
+			const waitForSpace = controlledSides.length !== 0 && this.config.gameMode === GameMode.TOURNAMENT_REMOTE;
 			await this.services?.gui?.showTournamentMatchWinner(winner, waitForSpace);
+			this.resetForNextMatch();
+			webSocketClient.sendPlayerReady();
+			this.services?.audio?.stopGameMusic();
 		}
-		this.resetForNextMatch();
-		webSocketClient.sendPlayerReady();
-		this.services?.audio?.stopGameMusic();
+		// this.resetForNextMatch();
+		// webSocketClient.sendPlayerReady();
+		// this.services?.audio?.stopGameMusic();
 	}
 
 	private async onServerEndedSession(winner: string): Promise<void> {

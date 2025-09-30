@@ -155,6 +155,10 @@ export class WebSocketClient {
         this.sendMessage(MessageType.PLAYER_READY);
     }
 
+    sendSpectatorReady(): void {
+        this.sendMessage(MessageType.SPECTATE_GAME);
+    }
+
     requestLobby(): void {
         this.sendMessage(MessageType.REQUEST_LOBBY);
     }

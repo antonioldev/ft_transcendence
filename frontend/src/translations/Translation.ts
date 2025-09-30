@@ -68,6 +68,7 @@ export interface Translation {
 	escToClose: string;
 	spectator: string,
 	spectatorInstruction: string;
+	spectatorQuestion: string;
 }
 
 export type TranslationKey = keyof Translation;

@@ -65,5 +65,7 @@ export const portuguese: Translation = {
 	tournamentTitle: 'Classificação do Torneio de Pong',
 	escToClose: 'Pressione ESC para fechar',
 	spectator: '🎮 MODO ESPECTADOR',
-	spectatorInstruction: '← Partida Anterior | → Próxima Partida | Espaço: Mostrar/Ocultar Chave | Y: Sair'
+	spectatorInstruction: '← Partida Anterior | → Próxima Partida | Espaço: Mostrar/Ocultar Chave | Y: Sair',
+	spectatorQuestion: 'Quer assistir ao resto do torneio? Pressione S, ou pressione N para sair.'
+
 };
