@@ -45,8 +45,7 @@ export class KeyboardManager {
 	private activeProfiles!: { P1: KeysProfile; P2: KeysProfile; DEFAULT: KeysProfile, DEFAULT_RIGHT: KeysProfile };
 	// private activeProfiles!: { P1: KeysProfile; P2: KeysProfile;};
 	private isInitialized: boolean = false;
-	private isSpectator: boolean = false;
-	private isAwaitingSpectatorChoice: boolean = false;
+	private spectatorStatus: 'no' | 'yes' | 'deciding' = 'no';
 	private spectatorChoiceResolver: ((choice: boolean) => void) | null = null;
 
 	constructor(
@@ -105,22 +104,30 @@ export class KeyboardManager {
 		});
 	}
 
-	setSpectator(isSpectator: boolean): void {
-		this.isSpectator = isSpectator;
+	setSpectator(status: 'no' | 'yes' | 'deciding'): void {
+		this.spectatorStatus = status;
+	}
+
+	private get isSpectator(): boolean {
+		return this.spectatorStatus === 'yes';
+	}
+
+	private get isAwaitingSpectatorChoice(): boolean {
+		return this.spectatorStatus === 'deciding';
 	}
 
 	waitForSpectatorChoice(): Promise<boolean> {
-		this.isAwaitingSpectatorChoice = true;
+		this.setSpectator('deciding');
 		return new Promise<boolean>((resolve) => {
 			this.spectatorChoiceResolver = resolve;
 
 			setTimeout(() => {
-				if (this.isAwaitingSpectatorChoice) {
-					this.isAwaitingSpectatorChoice = false;
+				if (this.spectatorStatus === 'deciding') {
+					this.setSpectator('no');
 					this.spectatorChoiceResolver = null;
 					resolve(false);
 				}
-			}, 15000);
+			}, 10000);
 		});
 	}
 
@@ -159,21 +166,16 @@ export class KeyboardManager {
 	}
 
 	private handleSpectatorChoiceKeys(key: number): void {
+		if (this.spectatorStatus !== 'deciding') return;
+		
 		if (key === Keys.Y) {
-			this.isAwaitingSpectatorChoice = false;
-			this.isSpectator = true;
-			
-			if (this.spectatorChoiceResolver) {
-				this.spectatorChoiceResolver(true);
-				this.spectatorChoiceResolver = null;
-			}
+			this.setSpectator('yes');
+			this.spectatorChoiceResolver?.(true);
+			this.spectatorChoiceResolver = null;
 		} else if (key === Keys.N) {
-			this.isAwaitingSpectatorChoice = false;
-			
-			if (this.spectatorChoiceResolver) {
-				this.spectatorChoiceResolver(false);
-				this.spectatorChoiceResolver = null;
-			}
+			this.setSpectator('no');
+			this.spectatorChoiceResolver?.(false);
+			this.spectatorChoiceResolver = null;
 		}
 	}
 

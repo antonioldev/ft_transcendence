@@ -215,7 +215,7 @@ export class Game {
 			await this.services?.gui?.showTournamentMatchLoser();
 			const wantsToSpectate = await this.services?.input.waitForSpectatorChoice();
 			if (wantsToSpectate) {
-				this.services?.input.setSpectator(true);
+				this.services?.input.setSpectator('yes');
 				this.services?.gui.hud.setSpectatorMode();
 				webSocketClient.sendSpectatorReady();
 			} else
