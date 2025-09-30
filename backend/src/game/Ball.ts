@@ -14,7 +14,7 @@ export class Ball {
     updateScore: (side: number, score: number) => void; // Callback to update the score.
     current_rally = 1; 
     powershot_active?: boolean;         // whether ball is currently at superspeed
-    powershot_activated_by?: number;    // which side activated the powershot
+    // powershot_activated_by?: number;    // which side activated the powershot
 
     // Initializes the ball with players and a score update callback.
     constructor(paddles: any[], updateScoreCallback: (side: number, score: number) => void) {
@@ -98,17 +98,17 @@ export class Ball {
     }
 
     handle_powershot(collision_side: number) {
-        if (this.powershot_activated_by === collision_side) {
+        if (this.paddles[collision_side].powershot_activated) {
             this.speed = GAME_CONFIG.ballPowerShotSpeed;
-            this.powershot_activated_by = undefined;
+            this.paddles[collision_side].powershot_activated = false;
             this.powershot_active = true;
         }
         else if (this.powershot_active) {
             this.speed = GAME_CONFIG.ballInitialSpeed;
             this.powershot_active = false;
         }
-    }
 
+    }
     // Handles collisions with walls and detects goals to update the score.
     wallCollision(): void {
         // Wall collisions (left/right walls)

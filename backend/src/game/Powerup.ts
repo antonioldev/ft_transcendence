@@ -36,6 +36,8 @@ export class PowerupManager {
 		for (let i = 0; i < GAME_CONFIG.slot_count; i++) {
 			this.left_slots[i] = new Slot(Math.floor(Math.random() * num_powerups), LEFT, i);
 			this.right_slots[i] = new Slot(Math.floor(Math.random() * num_powerups), RIGHT, i);
+			// this.left_slots[i] = new Slot(PowerupType.POWERSHOT, LEFT, i);
+			// this.right_slots[i] = new Slot(PowerupType.POWERSHOT, RIGHT, i);
 		}
 	}
 
@@ -76,7 +78,7 @@ export class PowerupManager {
 				timeout = this.freeze_ball();
 				break ;
 			case PowerupType.POWERSHOT:
-				this.powershot(slot.side);
+				timeout = this.powershot(slot.side);
 				break ;
 			default:
 				console.error(`Error: cannot activate unknown Powerup "${slot.type}`);
@@ -110,7 +112,7 @@ export class PowerupManager {
 				this.ball.isPaused = false;
 				break ;
 			case PowerupType.POWERSHOT:
-				// speed reset handled internally by ball
+				this.paddles[slot.side].powershot_activated = false;
 				break ;
 			default:
 				console.error(`Error: cannot deactivate unknown Powerup "${slot.type}`);
@@ -207,7 +209,7 @@ export class PowerupManager {
 	}
 
 	powershot(side: number): number {
-		this.ball.powershot_activated_by = side;
-		return (3);
+		this.paddles[side].powershot_activated = true;
+		return (GAME_CONFIG.powershotTimeLimit); // fix timer for this
 	}
 }
