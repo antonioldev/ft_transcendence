@@ -32,9 +32,11 @@ export const COLORS = {
     BLUE_LIGHT_STRING: "#8db1f0ff",
     CYAN_LIGHT_STRING: "#79d7eeff",
 
-    SPECTATOR_BLUE: "rgba(0, 100, 255, 0.3)",
+    SPECTATOR_BLUE: "#143D60",
     SPECTATOR_RED: "rgba(255, 0, 0, 0.3)",
     SPECTATOR_YELLOW: "rgba(255, 255, 0, 1)",
+    ORANGE: "#EB5B00", 
+    GREEN: "#A0C878"
 } as const;
 
 
@@ -283,6 +285,18 @@ export const POWER_UP_STYLES = {
         color: COLORS.WHITE,
         verticalAlignment: V_CENTER,
         textHorizontalAlignment: H_LEFT
+    },
+
+    powerUpHd: {
+        widthInPixels: 300,
+        heightInPixels: 300,
+        stretch: Image.STRETCH_UNIFORM,
+        horizontalAlignment: H_CENTER,
+        verticalAlignment: V_CENTER,
+        isVisible: false,
+        top: -100,
+        alpha: 0,
+        zIndex: 15
     }
 } as const;
 export const PAUSE_MENU_STYLES = {
@@ -420,7 +434,94 @@ export const COUNTDOWN_STYLES = {
         fontWeight: "bold",
         outlineWidth: 2,
         outlineColor: COLORS.TRANSPARENT_BLACK_66
+    },
+
+    namePlayerLeft: {
+        fontFamily: FONT_FAMILY,
+        color: COLORS.WHITE,
+        textHorizontalAlignment: H_CENTER,
+        textVerticalAlignment: V_CENTER,
+        fontSize: 100,
+        shadowOffsetX: 2,
+        shadowOffsetY: 2,
+        shadowBlur: 12,
+        shadowColor: COLORS.GOLD_SHADOW,
+        fontWeight: "bold",
+        outlineWidth: 3,
+        outlineColor: COLORS.TRANSPARENT_BLACK_66,
+        horizontalAlignment: H_CENTER,
+        verticalAlignment: V_CENTER,
+        leftInPixels: -300,
+        topInPixels: -150,
+        isVisible: false,
+        alpha: 0,
+        zIndex: 11
+    },
+
+    vsText: {
+        fontFamily: FONT_FAMILY,
+        color: COLORS.WHITE,
+        textHorizontalAlignment: H_CENTER,
+        textVerticalAlignment: V_CENTER,
+        fontSize: 60,
+        shadowOffsetX: 3,
+        shadowOffsetY: 3,
+        shadowBlur: 20,
+        shadowColor: "rgba(255, 0, 0, 0.8)",
+        fontWeight: "bold",
+        outlineWidth: 5,
+        outlineColor: COLORS.BLACK,
+        horizontalAlignment: H_CENTER,
+        verticalAlignment: V_CENTER,
+        topInPixels: -50,
+        isVisible: false,
+        alpha: 0,
+        zIndex: 11
+    },
+
+    namePlayerRight: {
+        fontFamily: FONT_FAMILY,
+        color: COLORS.WHITE,
+        textHorizontalAlignment: H_CENTER,
+        textVerticalAlignment: V_CENTER,
+        fontSize: 100,
+        shadowOffsetX: 2,
+        shadowOffsetY: 2,
+        shadowBlur: 12,
+        shadowColor: COLORS.GOLD_SHADOW,
+        fontWeight: "bold",
+        outlineWidth: 3,
+        outlineColor: COLORS.TRANSPARENT_BLACK_66,
+        horizontalAlignment: H_CENTER,
+        verticalAlignment: V_CENTER,
+        leftInPixels: 300,
+        topInPixels: 50,
+        isVisible: false,
+        alpha: 0,
+        zIndex: 11
+    },
+
+    readyText: {
+        fontFamily: FONT_FAMILY,
+        color: COLORS.GOLD,
+        textHorizontalAlignment: H_CENTER,
+        textVerticalAlignment: V_CENTER,
+        fontSize: 120,
+        shadowOffsetX: 2,
+        shadowOffsetY: 2,
+        shadowBlur: 15,
+        shadowColor: COLORS.GOLD_SHADOW,
+        fontWeight: "bold",
+        outlineWidth: 4,
+        outlineColor: COLORS.TRANSPARENT_BLACK_66,
+        horizontalAlignment: H_CENTER,
+        verticalAlignment: V_CENTER,
+        topInPixels: -50,
+        isVisible: false,
+        alpha: 0,
+        zIndex: 11
     }
+
 } as const;
 export const VIEW_MODE_STYLES = {
     dividerLine: {
@@ -746,7 +847,43 @@ export const BRACKET_STYLES = {
         cornerRadius: 20
     }
 } as const;
-
+export const CURTAIN_STYLES = {
+    leftBackground: {
+        background: '#143D60',
+        thickness: 0,
+        horizontalAlignment: H_LEFT,
+        verticalAlignment: V_TOP,
+        isVisible: false,
+        zIndex: 0
+    },
+    
+    rightBackground: {
+        background: '#143D60',
+        thickness: 0,
+        horizontalAlignment: H_LEFT,
+        verticalAlignment: V_TOP,
+        isVisible: false,
+        zIndex: 0
+    },
+    
+    leftPaddle: {
+        background: '#EB5B00',
+        thickness: 0,
+        horizontalAlignment: H_RIGHT,
+        verticalAlignment: V_TOP,
+        isVisible: false,
+        zIndex: 1
+    },
+    
+    rightPaddle: {
+        background: '#EB5B00',
+        thickness: 0,
+        horizontalAlignment: H_LEFT,
+        verticalAlignment: V_TOP,
+        isVisible: false,
+        zIndex: 1
+    }
+} as const;
 export function applyStyles(control: any, styles: any): void {
     Object.entries(styles).forEach(([key, value]) => {
         if (value !== undefined && key in control) {

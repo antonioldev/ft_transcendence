@@ -81,6 +81,7 @@ export class PowerupManager {
 		const lrg = GAME_CONFIG.increasedPaddleWidth;
 		const sml = GAME_CONFIG.decreasedPaddleWidth;
 		
+		this.guiManager?.powerUp.activateAnimationHD(side, powerupType);
 		switch (powerupType) {
 			case PowerupType.SHRINK_OPPONENT:
 				if (side === PlayerSide.LEFT) {

@@ -207,6 +207,27 @@ export class AnimationManager {
 		return this.play(target, frames, true);
 	}
 
+	// Add this method to your AnimationManager class
+	async smashEffect(target: Control, frames = Motion.F.fast): Promise<void> {
+		target.animations = [];
+
+		const smashFrames = Math.floor(frames * 0.6);  // 60% of frames for the smash
+		const settleFrames = Math.floor(frames * 0.4); // 40% for settling
+		
+		const smashAnim = this.createFloat("scaleX", 0.1, 1.3, smashFrames, false, Motion.ease.quadOut());
+		const smashAnimY = this.createFloat("scaleY", 0.1, 1.3, smashFrames, false, Motion.ease.quadOut());
+
+		const settleAnim = this.createFloat("scaleX", 1.3, 1.0, settleFrames, false, Motion.ease.quadOut());
+		const settleAnimY = this.createFloat("scaleY", 1.3, 1.0, settleFrames, false, Motion.ease.quadOut());
+
+		target.animations = [smashAnim, smashAnimY];
+		
+		return this.play(target, smashFrames, false).then(() => {
+			target.animations = [settleAnim, settleAnimY];
+			return this.play(target, settleFrames, false);
+		});
+	}
+
 
 
 	// Slide in from any direction with custom distance

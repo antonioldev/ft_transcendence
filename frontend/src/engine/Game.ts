@@ -153,27 +153,33 @@ export class Game {
 				Logger.errorAndThrow('Server sent SIGNAL without countdown parameter', 'Game');
 
 			uiManager.setLoadingScreenVisible(false);
-			this.services?.gui?.lobby.hide()
+			this.services?.gui?.lobby.hide();
+			const playerLeft = this.players.get(PlayerSide.LEFT)?.name;
+			const playerRight = this.players.get(PlayerSide.RIGHT)?.name;
 
 			if (countdown === GAME_CONFIG.startDelay) {
-				// this.resetForNextMatch();
 				const controlledSides = this.getControlledSides();
-				this.services?.render?.startCameraAnimation(
-					this.gameObjects?.cameras, 
-					this.config.viewMode,
-					controlledSides,
-					this.config.isLocalMultiplayer
-				);
+				await Promise.all([
+					this.services?.gui.countdown.introduceNames(playerLeft!, playerRight!),
+					this.services?.render?.startCameraAnimation(
+						this.gameObjects?.cameras, 
+						this.config.viewMode,
+						controlledSides,
+						this.config.isLocalMultiplayer
+					)
+				]);
 			}
-			else if (countdown > 0 && GAME_CONFIG.startDelay - 1) {
+			else if (countdown === 4) {
+				this.services?.gui.countdown.hideNames();
+			}
+			else if (countdown === 3 || countdown === 2 || countdown === 1) {
 				this.services?.gui?.countdown.set(true, countdown);
 				this.services?.audio?.playCountdown();
 			}
-			else {
+			else if (countdown === 0) {
 				this.services?.audio?.stopCountdown();
 				this.services?.audio?.startGameMusic();
 				this.services?.render?.stopCameraAnimation();
-				// this.services?.gui?.countdown.set(false);
 				await this.services?.gui?.countdown.finishCountdown();
 				await this.services?.gui?.animateBackground(false);
 				this.startGameLoop();
