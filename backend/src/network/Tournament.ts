@@ -230,7 +230,7 @@ export class TournamentLocal extends AbstractTournament {
 		return (this.current_match);
 	}
 
-	findGame() {
+	getGame() {
 		return (this.current_match?.game);
 	}
 }
@@ -437,7 +437,7 @@ export class TournamentRemote extends AbstractTournament {
 		return (this.client_match_map.get(client_id));
 	}
 
-	findGame(client_id: string): Game | undefined {
+	getGame(client_id: string): Game | undefined {
 		return (this.findMatch(client_id)?.game);
 	}
 }

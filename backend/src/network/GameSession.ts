@@ -120,7 +120,7 @@ export abstract class AbstractGameSession {
 	}
 
 	resume(client_id?: string): void {
-		const game = this.findGame(client_id);
+		const game = this.getGame(client_id);
 		if (!game) {
 			console.log(`Game ${this.id} is not running, cannot resume`);
 			return ;
@@ -135,7 +135,7 @@ export abstract class AbstractGameSession {
 	}
 
 	pause(client_id?: string): void {
-		const game = this.findGame(client_id);
+		const game = this.getGame(client_id);
 		if (!game || !game.is_running()) {
 			console.log(`Game ${this.id} is not running, cannot pause`);
 			return ;
@@ -150,7 +150,7 @@ export abstract class AbstractGameSession {
 	}
 
 	enqueue(input: PlayerInput, client_id?: string): void  {
-		const game = this.findGame(client_id);
+		const game = this.getGame(client_id);
 		game?.enqueue(input);
 	}
 
@@ -159,7 +159,7 @@ export abstract class AbstractGameSession {
 	
 	abstract handlePlayerQuit(quitter: Client): void;
 	abstract canClientControlGame(client: Client): boolean;
-	abstract findGame(client_id?: string): Game | undefined;
+	abstract getGame(client_id?: string): Game | undefined;
 	abstract is_running(): boolean;
 }
 
@@ -213,7 +213,7 @@ export class OneOffGame extends AbstractGameSession{
 		return (this.clients.has(client))
 	}
 
-	findGame() {
+	getGame() {
 		return (this.game);
 	}
 

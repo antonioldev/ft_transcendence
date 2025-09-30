@@ -80,9 +80,7 @@ export async function logoutUser(username: string): Promise<number> {
 /**
  * Get user info from a session id.
  */
-export function getUserBySession(
-	sid: string
-): { id: number; username: string; email?: string } | null {
+export function getUserBySession(sid: string): { id: number; username: string; email?: string } | null {
 	try {
 		const row = dbFunction.getUserBySession(sid);
 		console.log(

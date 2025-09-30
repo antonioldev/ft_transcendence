@@ -108,21 +108,6 @@ export class WebSocketManager {
                 case MessageType.RESUME_REQUEST:
                     this.handleResumeRequest(client);
                     break;
-                case MessageType.LOGIN_USER:
-                    await this.handleLoginUser(client, data);
-                    break;
-                case MessageType.LOGOUT_USER:
-                    await this.handleLogoutUser(client);
-                    break;                    
-                case MessageType.REGISTER_USER:
-                    await this.handleRegisterNewUser(client, data);
-                    break;
-                case MessageType.REQUEST_USER_STATS:
-                    await this.handleUserStats(client, message);
-                    break;
-                case MessageType.REQUEST_GAME_HISTORY:
-                    this.handleUserGameHistory(client, message);
-                    break;
                 case MessageType.REQUEST_LOBBY:
                     this.handleLobbyRequest(client);
                     break;
@@ -138,17 +123,30 @@ export class WebSocketManager {
                 case MessageType.QUIT_GAME:
                     gameManager.removeClient(client);
                     break;
+                case MessageType.LOGIN_USER:
+                    await this.handleLoginUser(client, data);
+                    break;
+                case MessageType.LOGOUT_USER:
+                    await this.handleLogoutUser(client);
+                    break;                    
+                case MessageType.REGISTER_USER:
+                    await this.handleRegisterNewUser(client, data);
+                    break;
+                case MessageType.REQUEST_USER_STATS:
+                    await this.handleUserStats(client, message);
+                    break;
+                case MessageType.REQUEST_GAME_HISTORY:
+                    this.handleUserGameHistory(client, message);
+                    break;
                 default:
-                    this.send(client.websocket, {
-                        type: MessageType.ERROR,
-                        message: 'Unknown message type'
-                    });
+                    throw(new Error("Unknown message type"));
             }
-        } catch (error) {
+        } 
+        catch (error) {
             console.error('❌ Error parsing message:', error);
             this.send(client.websocket, {
                 type: MessageType.ERROR,
-                message: 'Invalid message format'
+                message: 'Message request failed',
             });
         }
     }
@@ -161,36 +159,27 @@ export class WebSocketManager {
      * @param setCurrentGameId - Callback to update the current game ID for the client.
      */
     private handleJoinGame(client: Client, data: ClientMessage) {
-        try {
-            if (!data.gameMode) {
-                throw new Error(`Game mode missing`);
-            }
-            const gameSession = gameManager.findOrCreateGame(data.gameMode, data.capacity ?? undefined);
-            gameManager.addClient(client, gameSession);
-
-            if (data.aiDifficulty !== undefined && gameSession.ai_difficulty === undefined) {
-                gameSession.set_ai_difficulty(data.aiDifficulty);
-            }
-
-            // add players to gameSession
-            for (const player of data.players ?? []) {
-                gameSession.add_player(new Player(player.id, player.name, client));
-            }
-
-            // start game if full or local, otherwise wait for players to join
-            if ((gameSession.full) || gameSession.mode === GameMode.TOURNAMENT_LOCAL) {
-                gameManager.runGame(gameSession);
-            }
-            else {
-                setTimeout(() => { gameManager.runGame(gameSession) }, (GAME_CONFIG.maxJoinWaitTime * 1000));
-            }
+        if (!data.gameMode) {
+            throw new Error(`Game mode missing`);
         }
-        catch (error) {
-            console.error('❌ Error joining game:', error);
-            this.send(client.websocket, {
-                type: MessageType.ERROR,
-                message: 'Failed to join game',
-            });
+        const gameSession = gameManager.findOrCreateGame(data.gameMode, data.capacity ?? undefined);
+        gameManager.addClient(client, gameSession);
+
+        if (data.aiDifficulty !== undefined && gameSession.ai_difficulty === undefined) {
+            gameSession.set_ai_difficulty(data.aiDifficulty);
+        }
+
+        // add players to gameSession
+        for (const player of data.players ?? []) {
+            gameSession.add_player(new Player(player.id, player.name, client));
+        }
+
+        // start game if full or local, otherwise wait for players to join
+        if ((gameSession.full) || gameSession.mode === GameMode.TOURNAMENT_LOCAL) {
+            gameManager.runGame(gameSession);
+        }
+        else {
+            setTimeout(() => { gameManager.runGame(gameSession) }, (GAME_CONFIG.maxJoinWaitTime * 1000));
         }
     }
 
@@ -199,8 +188,7 @@ export class WebSocketManager {
      * @param client - The client that is ready
      */
     private handlePlayerReady(client: Client): void {
-        
-        const gameSession = gameManager.findClientGameSession(client);
+        const gameSession = gameManager.findGameSession(client);
         if (!gameSession) {
             console.warn(`Client ${client.username}:${client.id} not in any game for ready signal`);
             return;
@@ -220,7 +208,7 @@ export class WebSocketManager {
             return;
         }
 
-        const gameSession = gameManager.findClientGameSession(client);
+        const gameSession = gameManager.findGameSession(client);
         if (!gameSession) {
             console.warn(`Client ${client.id} not in any game`);
             return;
@@ -244,7 +232,7 @@ export class WebSocketManager {
      * @param client - The client that send the request.
      */
     private handlePauseRequest(client: Client): void {
-        const gameSession = gameManager.findClientGameSession(client);
+        const gameSession = gameManager.findGameSession(client);
         if (!gameSession) {
             console.warn(`Client ${client.id} not in any game for pause request`);
             return;
@@ -263,7 +251,7 @@ export class WebSocketManager {
      * @param client - The client that send the request.
      */
     private handleResumeRequest(client: Client): void {
-        const gameSession = gameManager.findClientGameSession(client);
+        const gameSession = gameManager.findGameSession(client);
         if (!gameSession) {
             console.warn(`Client ${client.id} not in any game for resume request`);
             return;
@@ -283,13 +271,8 @@ export class WebSocketManager {
             return;
         }
         
-        const gameSession = gameManager.findClientGameSession(client);
+        const gameSession = gameManager.findGameSession(client);
         if (!gameSession) {
-            console.error("Error: cannot activate powerup, game does not exist");
-            return ;
-        }
-        const game = gameSession.findGame(client.id);
-        if (!game) {
             console.error("Error: cannot activate powerup, game does not exist");
             return ;
         }
@@ -297,11 +280,16 @@ export class WebSocketManager {
             console.warn(`Client ${client.id} not authorized to control game`);
             return;
         }
+        const game = gameSession.getGame(client.id);
+        if (!game) {
+            console.error("Error: cannot activate powerup, game does not exist");
+            return ;
+        }
         game.activate(data.side, data.slot);
     }
 
     private toggleSpectator(client: Client, data: ClientMessage) {
-        const gameSession = gameManager.findClientGameSession(client);
+        const gameSession = gameManager.findGameSession(client);
         if (!gameSession) {
             console.warn(`Client ${client.id} not in any GameSession to toggle`);
             return;
@@ -312,7 +300,7 @@ export class WebSocketManager {
     }
 
     spectateGame(client: Client) {
-        const gameSession = gameManager.findClientGameSession(client);
+        const gameSession = gameManager.findGameSession(client);
         if (!gameSession) {
             console.warn(`Client ${client.id} not in any GameSession to toggle`);
             return;
@@ -338,9 +326,8 @@ export class WebSocketManager {
             return;
         }
 
-        try {
-            const result = await db.verifyLogin(loginInfo.username, loginInfo.password);
-            switch (result) {
+        const result = await db.verifyLogin(loginInfo.username, loginInfo.password);
+        switch (result) {
             case AuthCode.OK:
                 const sid = getSessionByUsername(loginInfo.username);
                 if (!sid) {
@@ -379,13 +366,6 @@ export class WebSocketManager {
                     message: "User already login"}
                 );
                 return;
-            }
-        } catch (error) {
-            console.error('❌ Error checking user login information:', error);
-            this.send(client.websocket, {
-                type: MessageType.ERROR,
-                message: 'Failed to log user'
-            });
         }
     }
 
@@ -398,13 +378,13 @@ export class WebSocketManager {
             console.error('Error in logout user');
         }
     }
+    
     /**
      * Handles the disconnection of a client, removing them from games and cleaning up resources.
      * @param data - The user information that are used to confirm login
      */
     private async handleRegisterNewUser(client: Client, data: ClientMessage): Promise<void> {
         const regInfo = data.registerUser;
-
         if (!regInfo) {
             console.warn("Missing registration object");
             this.send(client.websocket, {
@@ -413,7 +393,6 @@ export class WebSocketManager {
             });
             return;
         }
-
         const { username, email, password } = regInfo;
 
         if (!username || !email || typeof password !== 'string') {
@@ -423,36 +402,27 @@ export class WebSocketManager {
             });
             return;
         }
+        const result = await db.registerNewUser(username, email, password);
 
-        try {
-            const result = await db.registerNewUser(username, email, password);
-
-            switch (result) {
-            case AuthCode.OK:
-                this.send(client.websocket, {
-                    type: MessageType.SUCCESS_REGISTRATION,
-                    message: 'User registered successfully'
-                });
-                return;
-            case AuthCode.USER_EXISTS:
-                this.send(client.websocket, {
-                    type: MessageType.USER_EXIST,
-                    message: 'User already exists'
-                });
-                return;
-            case AuthCode.USERNAME_TAKEN:
-                this.send(client.websocket, {
-                    type: MessageType.USERNAME_TAKEN,
-                    message: 'Username is already registered'
-                });
-                return;
-            }
-        } catch (error) {
-            console.error('❌ Error registering user:', error);
+        switch (result) {
+        case AuthCode.OK:
             this.send(client.websocket, {
-                type: MessageType.ERROR,
-                message: 'Failed to register user'
+                type: MessageType.SUCCESS_REGISTRATION,
+                message: 'User registered successfully'
             });
+            return;
+        case AuthCode.USER_EXISTS:
+            this.send(client.websocket, {
+                type: MessageType.USER_EXIST,
+                message: 'User already exists'
+            });
+            return;
+        case AuthCode.USERNAME_TAKEN:
+            this.send(client.websocket, {
+                type: MessageType.USERNAME_TAKEN,
+                message: 'Username is already registered'
+            });
+            return;
         }
     }
 
@@ -499,7 +469,7 @@ export class WebSocketManager {
     handleLobbyRequest(client: Client) {
         console.log(`Lobby request received from ${client.username}:${client.id}`)
     
-        const gameSession = gameManager.findClientGameSession(client);
+        const gameSession = gameManager.findGameSession(client);
         if (!gameSession) return ;
         this.send(client.websocket, {
             type: MessageType.TOURNAMENT_LOBBY,

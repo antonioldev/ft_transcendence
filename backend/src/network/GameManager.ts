@@ -117,9 +117,12 @@ class GameManager extends EventEmitter {
      * @param client - The client whose game is being searched for.
      * @returns The game object or null if the client is not in a game.
      */
-    findClientGameSession(client: Client): AbstractGameSession | undefined {
+    findGameSession(client: Client): AbstractGameSession | undefined {
         return (this.clientGamesMap.get(client.id));
     }
+
+    
+
 }
 
 export const gameManager = new GameManager();
