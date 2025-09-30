@@ -11,11 +11,7 @@ export enum MessageType {
 	QUIT_GAME,		  // CLIENT -> SERVER: Send this message when CTRL + Y
 	PAUSE_REQUEST,	  // CLIENT -> SERVER: Client requests pause (ESC key)
 	RESUME_REQUEST,	 // CLIENT -> SERVER: Client requests resume (N key)  
-	PAUSED,			 // SERVER -> CLIENTS: Server confirms pause to all clients
-	RESUMED,			// SERVER -> CLIENTS: Server confirms resume to all clients
 	SESSION_ENDED,	  // SERVER -> CLIENTS: Server notifies all games are completed
-	PARTIAL_WINNER_ANIMATION_DONE,  // CLIENT -> SERVER: Client notify the animation is completed, ready for new game
-	WELCOME,			 // SERVER -> CLIENT: Welcome message on connection
 	PLAYER_READY,	   // CLIENT -> SERVER: Client loaded babylon and is waiting for server
 	REQUEST_LOBBY,		// Client requests the lobby from the server
 	TOURNAMENT_LOBBY,	   // broadcasts the tournament lobby whenever it changes 
@@ -36,12 +32,11 @@ export enum MessageType {
 	REQUEST_USER_PROFILE,	// Type for back to frontend comm
 	UPDATE_USER_PROFILE,	 // Request to update user information 
 	COUNTDOWN,			   // Used to send countdown timer before game starts
-	MATCH_WINNER,			// Used to send winner of match
+	MATCH_RESULT,			// Used to update tournament tree with match winner
 	MATCH_ASSIGNMENT,		// Used to send tournament match assignment to all clients
 	ACTIVATE_POWERUP,		// Activates a specified powerup
-	POWERUP_ASSIGNMENT,
-	POWERUP_ACTIVATED,
-	POWERUP_DEACTIVATED,
+	TOGGLE_SPECTATOR_GAME,	// Used to change which game the spectator is watching
+	SPECTATE_GAME,			// Used to change which game the spectator is watching
 }
 
 export enum WebSocketEvent {
@@ -49,8 +44,6 @@ export enum WebSocketEvent {
 	CONNECTION = 'connection',
 	COUNTDOWN = 'countdown',
 	ERROR = 'error',
-	GAME_PAUSED = 'gamePaused',
-	GAME_RESUMED = 'gameResumed',
 	SESSION_ENDED = 'sessionEnded',
 	STATUS_CHANGE = 'statusChange',
 	SIDE_ASSIGNMENT = 'side_assignment',
@@ -61,12 +54,11 @@ export enum WebSocketEvent {
 	USER_STATS = 'USER_STATS',
 	GAME_HISTORY = 'GAME_HISTORY',
 	MATCH_ASSIGNMENT = 'match_assignment',
-	MATCH_WINNER = 'match_winner',
+	MATCH_RESULT = 'match_result',
 	POWERUP_ASSIGNMENT = 'powerup_assignment',
 	POWERUP_ACTIVATED = 'powerup_activated',
 	POWERUP_DEACTIVATED = 'powerup_deactivated',
 	TOURNAMENT_LOBBY = 'tournament_lobby'
-	
 }
 
 // Different game modes available
@@ -85,6 +77,16 @@ export enum PowerupType {
 	INCREASE_PADDLE_SPEED,
 	GROW_PADDLE,
 	FREEZE,
+	POWERSHOT,
+	INVISIBLE_BALL,
+	DOUBLE_POINTS,
+	RESET_RALLY,
+}
+
+export enum PowerupState {
+	UNUSED,
+	ACTIVE,
+	SPENT,
 }
 
 // Directions for player movement
@@ -94,18 +96,38 @@ export enum Direction {
 	STOP = 0			   // Stop movement
 }
 
+// States the client can be in
+export enum ClientState {
+	PLAYING,
+	PAUSED,
+	MATCH_ENDED,
+	WAITING,
+	EXITING,
+	CONNECTING,
+	PAUSED_LOCAL,
+	SPECTATOR,
+	SPECTATOR_PAUSED
+}
+
 // States the game can be in
 export enum GameState {
-	PLAYING = 0,
-	PAUSED = 1,
-	WAITING = 2,
-	MATCH_ENDED = 3,
-	EXITING = 4
+	INIT,
+	RUNNING,
+	PAUSED,
+	ENDED,
+}
+
+// States the game can be in
+export enum TournamentState {
+	INIT,
+	LOBBY,
+	RUNNING,
+	ENDED,
 }
 
 // View modes for the game
 export enum ViewMode {
-	MODE_2D = 0,		   // 2D view
+	MODE_2D = 0,		// 2D view
 	MODE_3D = 1			// 3D view
 }
 
@@ -157,10 +179,4 @@ export enum UserManagement {
 	SEND_USER_PROFILE,	  // Type for front to backend comm
 	REQUEST_USER_PROFILE,	// Type for back to frontend comm
 	UPDATE_USER_PROFILE	 // Request to update user information 
-}
-
-export enum PowerUpAction {
-	CREATED = "created",
-	ACTIVATED = "activated", 
-	DEACTIVATED = "deactivated"
 }

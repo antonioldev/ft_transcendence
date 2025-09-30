@@ -1,18 +1,21 @@
 import { Rect } from './utils.js';
 import { Paddle } from './Paddle.js'
 import { CollisionDirection } from '../shared/constants.js'
-import { GAME_CONFIG, getBallStartPosition, LEFT_PADDLE, RIGHT_PADDLE } from '../shared/gameConfig.js';
+import { GAME_CONFIG, getBallStartPosition, LEFT, RIGHT } from '../shared/gameConfig.js';
 
 // Represents the ball in the game, handling its movement, collisions, and scoring logic.
 export class Ball {
     rect: Rect; // Current position and size of the ball.
     oldRect: Rect; // Previous position and size of the ball.
     direction: [number, number]; // Direction vector of the ball's movement.
-    speed = GAME_CONFIG.ballInitialSpeed; // Initial speed of the ball.
+    speed: number = GAME_CONFIG.ballInitialSpeed; // Initial speed of the ball.
     paddles: (Paddle)[]; // Array of players (paddles) in the game.
     isPaused: Boolean = false;
     updateScore: (side: number, score: number) => void; // Callback to update the score.
     current_rally = 1; 
+    
+    powershot_active: boolean = false;       // whether ball is currently at superspeed
+    double_points_active: boolean = false;    // whether double points powerup activated
 
     // Initializes the ball with players and a score update callback.
     constructor(paddles: any[], updateScoreCallback: (side: number, score: number) => void) {
@@ -55,43 +58,57 @@ export class Ball {
         const deflection_angle = angle_magnitude * angle_sign;
 
         // apply the angle to the ball's direction vector
-        const z = (paddle.side === LEFT_PADDLE) ? Math.cos(deflection_angle) : -(Math.cos(deflection_angle));
+        const z = (paddle.side === LEFT) ? Math.cos(deflection_angle) : -(Math.cos(deflection_angle));
         const x = -(Math.sin(deflection_angle));
         this.direction = [x, z];
     }
 
     // Handles collisions with paddles and adjusts the ball's direction accordingly.
     private collision(direction: CollisionDirection): void {
-        for (const paddle of this.paddles) {
-            if (!this.rect.colliderect(paddle.rect)) continue;
+        for (const side of [LEFT, RIGHT]) {
+            if (!this.rect.colliderect(this.paddles[side].rect)) continue;
 
             // Collision with sides of paddle
             if (direction === CollisionDirection.HORIZONTAL) { 
-                if (this.rect.right >= paddle.rect.left && this.oldRect.right <= paddle.oldRect.left) {
-                    this.rect.right = paddle.rect.left;
+                if (this.rect.right >= this.paddles[side].rect.left && this.oldRect.right <= this.paddles[side].oldRect.left) {
+                    this.rect.right = this.paddles[side].rect.left;
                     this.direction[0] *= -1;
                 }
-                else if (this.rect.left <= paddle.rect.right && this.oldRect.left >= paddle.oldRect.right) {
-                    this.rect.left = paddle.rect.right;
+                else if (this.rect.left <= this.paddles[side].rect.right && this.oldRect.left >= this.paddles[side].oldRect.right) {
+                    this.rect.left = this.paddles[side].rect.right;
                     this.direction[0] *= -1;
                 }
             }
             else { // Collision with front of paddle
-                if (this.rect.bottom >= paddle.rect.top && this.oldRect.bottom <= paddle.oldRect.top) {
-                    this.rect.bottom = paddle.rect.top;
-                    this.calculate_spin(paddle);
+                if (this.rect.bottom >= this.paddles[side].rect.top && this.oldRect.bottom <= this.paddles[side].oldRect.top) {
+                    this.rect.bottom = this.paddles[side].rect.top;
+                    this.calculate_spin(this.paddles[side]);
                     this.speed *= GAME_CONFIG.ballSpeedIncrease;
-                    this.current_rally += 1;
-
+                    this.current_rally += this.double_points_active ? 2 : 1;
+                    this.handle_powershot(side);
                 }
-                else if (this.rect.top <= paddle.rect.bottom && this.oldRect.top >= paddle.oldRect.bottom) {
-                    this.rect.top = paddle.rect.bottom;
-                    this.calculate_spin(paddle);
+                else if (this.rect.top <= this.paddles[side].rect.bottom && this.oldRect.top >= this.paddles[side].oldRect.bottom) {
+                    this.rect.top = this.paddles[side].rect.bottom;
+                    this.calculate_spin(this.paddles[side]);
                     this.speed *= GAME_CONFIG.ballSpeedIncrease;
-                    this.current_rally += 1;
+                    this.current_rally += this.double_points_active ? 2 : 1;
+                    this.handle_powershot(side);
                 }
             }
         }
+    }
+
+    handle_powershot(collision_side: number) {
+        if (this.paddles[collision_side].powershot_activated) {
+            this.speed = GAME_CONFIG.ballPowerShotSpeed;
+            this.paddles[collision_side].powershot_activated = false;
+            this.powershot_active = true;
+        }
+        else if (this.powershot_active) {
+            this.speed = GAME_CONFIG.ballInitialSpeed;
+            this.powershot_active = false;
+        }
+
     }
 
     // Handles collisions with walls and detects goals to update the score.
@@ -108,11 +125,11 @@ export class Ball {
         
         // Goal detection (top/bottom goals)
         if (this.rect.centerz <= GAME_CONFIG.goalBounds.rightGoal) {
-            this.updateScore(RIGHT_PADDLE, this.current_rally);
+            this.updateScore(RIGHT, this.current_rally);
             this.reset();
         }
         if (this.rect.centerz >= GAME_CONFIG.goalBounds.leftGoal) {
-            this.updateScore(LEFT_PADDLE, this.current_rally);
+            this.updateScore(LEFT, this.current_rally);
             this.reset();
         }
     }

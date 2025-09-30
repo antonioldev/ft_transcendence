@@ -1,4 +1,4 @@
-import { MessageType, GameMode, Direction, GameState, AuthState, PowerupType, AiDifficulty} from './constants.js';
+import { MessageType, GameMode, Direction, ClientState, AuthState, PowerupType, AiDifficulty, PowerupState, GameState} from './constants.js';
 
 // ============================== SHARED TYPES  ==============================
 
@@ -16,10 +16,18 @@ export interface Size {
 	z: number; // Depth
 }
 
+export interface Powerup {
+	type: PowerupType,
+	state: PowerupState,
+}
+
 // Represents the state of the game (paddles and ball positions)
 export interface GameStateData {
-	paddleLeft: { x: number; score: number }; // Left paddle position and score
-	paddleRight: { x: number; score: number }; // Right paddle position and score
+	state: GameState,
+	winner?: string,
+	loser?: string,
+	paddleLeft: { x: number; score: number, powerups: Powerup[] }; // Left paddle position and score
+	paddleRight: { x: number; score: number, powerups: Powerup[] }; // Right paddle position and score
 	ball: { x: number; z: number, current_rally: number }; // Ball position
 }
 
@@ -40,7 +48,7 @@ export interface ClientMessage {
 	registerUser?: RegisterUser; // Used for create a new registration (not Google auth)
 	loginUser?: LoginUser; 		// Use to confirm the ID of the user (not Google auth)
 	side?: 0 | 1; 				// Player side (optional)
-	direction?: Direction; 	// Movement direction (optional)
+	direction?: Direction; 	// Movement direction  || Spectator toggle direction
 	username?: string;
 	aiDifficulty?: AiDifficulty;
 	powerup_type?: PowerupType;
@@ -63,11 +71,8 @@ export interface ServerMessage {
 	sid?: string,
 	match_index?: number,
 	match_total?: number,
-	round_index?: number
-	powerup?: PowerupType,
-	powerups?: PowerupType[],
-	slot?: number,
-	side?: number; // Player side (optional)
+	round_index?: number,
+	round_total?: number,
 	lobby?: string[];
 }
 
@@ -165,6 +170,16 @@ export interface GameObjects {
 	cameras: any[];
 	guiCamera: any;
 	lights: any[];
+	// players: {
+	// 	left: Mesh;
+	// 	right: Mesh;
+	// };
+	// ball: Mesh;
+	// gameField: Mesh;
+	// walls: Mesh[];
+	// cameras: Camera[];
+	// guiCamera: Camera;
+	// lights: Light[]; // TODO
 }
 
 // Player control configuration (keyboard mappings)
@@ -183,8 +198,8 @@ export interface InputConfig {
 export interface StateConfig {
 	dialogId?: string;	  // ID of pause dialog
 	controller?: any;	   // Game controller instance
-	oppositeState?: GameState; // State to transition to
-	playingState?: GameState;  // Playing state for this mode
+	oppositeState?: ClientState; // State to transition to
+	playingState?: ClientState;  // Playing state for this mode
 }
 
 // ============================== CAMERA & SCENE TYPES ==============================

@@ -79,5 +79,8 @@ export const french: Translation = {
     errorEnterValidEmail: 'Veuillez entrer un email valide',
     errorPasswordMinLength: 'Le mot de passe doit contenir au moins 6 caractères',
     errorConfirmPassword: 'Veuillez confirmer mot de passe',
-    errorPasswordsDoNotMatch: 'Les mots de passe ne correspondent pas'
+    errorPasswordsDoNotMatch: 'Les mots de passe ne correspondent pas',
+	spectator: '🎮 MODE SPECTATEUR',
+	spectatorInstruction: '← Match Précédent | → Match Suivant | Espace: Afficher/Masquer le Bracket | Y: Quitter',
+	spectatorQuestion: 'Veux-tu regarder le reste du tournoi ? Appuie sur O, ou appuie sur N pour quitter'
 };

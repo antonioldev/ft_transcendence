@@ -20,33 +20,35 @@ class GameManager extends EventEmitter {
      * @param client - The client initiating the game.
      * @returns The unique ID of the created game session.
      */
-    createGame(mode: GameMode, client: Client, capacity?: number): AbstractGameSession {
-        const gameId = `game_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        // Create a new game in DB with 1st player as client only if the game is remote
-        if (mode === GameMode.TWO_PLAYER_REMOTE) {
-            registerNewGame(gameId, client.username, 0);
-        }
-        else if (mode === GameMode.TOURNAMENT_REMOTE) {
-            registerNewGame(gameId, client.username, 1);
-        }
 
+    addClient(client: Client, gameSession: AbstractGameSession) {
+        gameSession.add_client(client);
+        this.gameIdMap.set(gameSession.id, gameSession);
+        this.clientGamesMap.set(client.id, gameSession);
+        // addPlayer2(gameId, client.username); // add security // this wont work for tournaments
+    }
+
+    createGame(mode: GameMode, client: Client, capacity?: number): AbstractGameSession {
         // Create new gamesession and add the client
         let gameSession: AbstractGameSession;
         if (mode === GameMode.TOURNAMENT_LOCAL) {
-            gameSession = new TournamentLocal(mode, gameId, capacity ?? 4); // maybe handle undefined capacity better ??
+            gameSession = new TournamentLocal(mode, capacity ?? 4); // maybe handle undefined capacity better ??
         }
         else if (mode === GameMode.TOURNAMENT_REMOTE) {
-            gameSession = new TournamentRemote(mode, gameId, capacity ?? 4);
+            gameSession = new TournamentRemote(mode, capacity ?? 4);
         }
         else {
-            gameSession = new OneOffGame(mode, gameId);
+            gameSession = new OneOffGame(mode);
         }
-
-        gameSession.add_client(client);
-        this.gameIdMap.set(gameId, gameSession);
-        this.clientGamesMap.set(client.id, gameSession);
         
-        console.log(`Created ${mode} game: ${gameId}`);
+        // Create a new game in DB with 1st player as client only if the game is remote
+        if (mode === GameMode.TWO_PLAYER_REMOTE) {
+            registerNewGame(gameSession.id, client.username, 0);
+        }
+        else if (mode === GameMode.TOURNAMENT_REMOTE) {
+            registerNewGame(gameSession.id, client.username, 1);
+        }
+        console.log(`Created ${mode} game: ${gameSession.id}`);
         return gameSession;
     }
 
@@ -57,32 +59,31 @@ class GameManager extends EventEmitter {
      * @returns The unique ID of the found or created game session.
      */
     findOrCreateGame(mode: GameMode, client: Client, capacity?: number): AbstractGameSession {
-        if (mode === GameMode.TWO_PLAYER_REMOTE|| mode === GameMode.TOURNAMENT_REMOTE) /*Remote Games*/{
+        if (mode === GameMode.TWO_PLAYER_REMOTE || mode === GameMode.TOURNAMENT_REMOTE) /*Remote Games*/{
             // Try to find waiting game
-            for (const [gameId, gameSession] of this.gameIdMap) {
-                if (gameSession.mode === mode && !gameSession.full && !gameSession.running) {
-                    if (mode === GameMode.TOURNAMENT_REMOTE && gameSession.client_capacity !== capacity) continue ;
-
-                    gameSession.add_client(client);
-                    this.clientGamesMap.set(client.id, gameSession);
-                    addPlayer2(gameId, client.username); // add security // this is a mistake as wont work for tournaments
+            for (const gameSession of this.gameIdMap.values()) {
+                if (gameSession.mode === mode && !gameSession.full && !gameSession.is_running()) {
+                    if (mode === GameMode.TOURNAMENT_REMOTE && gameSession.client_capacity !== capacity) {
+                        continue ;
+                    }
                     return gameSession;
                 }
             }
         }
         // Local game or no waiting games => create new one
-        return this.createGame(mode, client, capacity);
+        return (this.createGame(mode, client, capacity));
     }
 
     async runGame(gameSession: AbstractGameSession): Promise<void> {
-        if (gameSession.running) return ;
-        if (gameSession.mode === GameMode.TOURNAMENT_REMOTE && gameSession.players.length < 2) {
-            // wait another 30 seconds for at least 2 players to be in the tournament
+        if (gameSession.is_running()) return ;
+        if (gameSession.mode === GameMode.TOURNAMENT_REMOTE && gameSession.players.size < GAME_CONFIG.minTournamentSize) {
+            // wait another 30 seconds for at least 3 players to be in the tournament
             setTimeout(() => { this.runGame(gameSession) }, (GAME_CONFIG.maxJoinWaitTime * 1000));
             return ;
         }
-        console.log(`Game started with ${gameSession.players.length} players`);
+        console.log(`Game started with ${gameSession.players.size} players`);
         db.updateStartTime(gameSession.id);
+        gameSession.add_CPUs(); // add CPU's if necessary
         await gameSession.start();
         gameManager.endGame(gameSession);
     }
@@ -101,7 +102,7 @@ class GameManager extends EventEmitter {
      * @param client - The client whose game is being searched for.
      * @returns The game object or null if the client is not in a game.
      */
-    findClientGame(client: Client): AbstractGameSession | undefined {
+    findClientGameSession(client: Client): AbstractGameSession | undefined {
         return (this.clientGamesMap.get(client.id));
     }
 
@@ -115,7 +116,7 @@ class GameManager extends EventEmitter {
         for (const client of gameSession.clients) {
             this.clientGamesMap.delete(client.id);
         }
-        console.log(`Removed game: ${gameSession.id}`);
+        console.log(`Game ended: ${gameSession.id}`);
     }
 
     /**
@@ -129,7 +130,7 @@ class GameManager extends EventEmitter {
 
         if (gameSession instanceof TournamentRemote) {
             gameSession.remove_client(client);
-            if (gameSession.clients.length === 0) {
+            if (gameSession.clients.size === 0) {
                 this.endGame(gameSession);
             }
         }

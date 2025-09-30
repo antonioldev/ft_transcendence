@@ -29,16 +29,14 @@ fastify.register(sessionBindRoutes);
 // init the database
 const db = await initialisazeDatabase('./database/transcendence.sqlite');
 registerDatabaseFunctions(db);
-await seedDefaultUsers();
+await seedDefaultUsers(8);
 
-
-async function seedDefaultUsers() {
+async function seedDefaultUsers(user_count: number) {
   // pick simple starter passwords; your registerUser should pepper+argon2-hash before insert
-  await registerNewUser('p1', 'player1@example.com', 'p' );
-  await registerNewUser('p2', 'player2@example.com', 'p' );
-  await registerNewUser('p3', 'player3@example.com', 'p' );
-  await registerNewUser('p4', 'player4@example.com', 'p' );
-  console.log('Seeded 4 default users via registration flow');
+  for (let i = 0; i < user_count; i++) {
+      await registerNewUser(`p${i}`, `player${i}@example.com`, 'p' );
+  }
+  console.log(`Seeded ${user_count} default users via registration flow`);
 }
 
 // Register JWT plugin
@@ -93,8 +91,7 @@ const start = async (): Promise<void> => {
     try {
         await fastify.listen({ 
             port: config.server.port,
-            // host: config.server.host
-            host: '0.0.0.0' 
+            host: config.server.host
         });
         console.log(`Pong server ready`);
     } catch (err) {

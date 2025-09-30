@@ -1,4 +1,4 @@
-import { Control, Image, StackPanel, Grid, TextBlock, Rectangle } from "@babylonjs/gui";
+import { Control, Image, StackPanel, Grid, TextBlock, Rectangle} from "@babylonjs/gui";
 
 export const H_LEFT = Control.HORIZONTAL_ALIGNMENT_LEFT;
 export const H_CENTER = Control.HORIZONTAL_ALIGNMENT_CENTER;
@@ -8,7 +8,6 @@ export const V_CENTER = Control.VERTICAL_ALIGNMENT_CENTER;
 export const V_BOTTOM = Control.VERTICAL_ALIGNMENT_BOTTOM;
 const FONT_FAMILY = 'Poppins, Tiny5, sans-serif';
 
-// Color constants
 export const COLORS = {
     WHITE: "rgba(255, 255, 255, 1)",
     BLACK: "rgba(0, 0, 0, 1)",
@@ -31,8 +30,65 @@ export const COLORS = {
     LOSER_GRAY: "#999999",
     LOSER_GRAY_DARK: "rgba(0, 0, 0, 0.4)",
     LOSER_BORDER: "rgba(128, 128, 128, 0.5)",
+
+    BLACK_STRING: "#000000",
+    BLUE_LIGHT_STRING: "#8db1f0ff",
+    CYAN_LIGHT_STRING: "#79d7eeff",
+
+    SPECTATOR_BLUE: "#143D60",
+    SPECTATOR_RED: "rgba(255, 0, 0, 0.3)",
+    SPECTATOR_YELLOW: "rgba(255, 255, 0, 1)",
+    ORANGE: "#EB5B00", 
+    GREEN: "#A0C878"
 } as const;
 
+
+export const SPECTATOR_STYLE = {
+    spectatorOverlay: {
+        width: "100%",
+        height: "100%",
+        background: COLORS.TRANSPARENT,
+        thickness: 3,
+        color: COLORS.SPECTATOR_RED,
+        zIndex: 19,
+        isVisible: false
+    },
+
+    spectatorBanner: {
+        width: "100%",
+        height: "40px",
+        background: COLORS.SPECTATOR_RED,
+        alpha: 1,
+        horizontalAlignment: H_CENTER,
+        verticalAlignment: V_TOP,
+    },
+
+    spectatorText: {
+        fontFamily: FONT_FAMILY,
+        color: COLORS.WHITE,
+        fontSize: 18,
+        fontWeight: "bold",
+        textHorizontalAlignment: H_LEFT,
+        textVerticalAlignment: V_CENTER,
+        paddingLeft: "20px",
+        width: "300px"
+    },
+
+    spectatorControls: {
+        fontFamily: FONT_FAMILY,
+        color: COLORS.SPECTATOR_YELLOW,
+        fontSize: 14,
+        textHorizontalAlignment: H_RIGHT,
+        textVerticalAlignment: V_CENTER,
+        width: "600px"
+    },
+
+    bannerContent: {
+        width: "100%",
+        height: "100%",
+        isVertical: false
+    }
+} as const;
 
 export const LOADING_STYLE = {
     overlay: {
@@ -74,7 +130,6 @@ export const LOADING_STYLE = {
         top: "24px"
     }
 } as const;
-
 export const HUD_STYLES = {
     hudGrid: {
         width: "100%",
@@ -197,11 +252,11 @@ export const HUD_STYLES = {
         rally: 0.10
     }
 } as const;
-
 export const POWER_UP_STYLES = {
     powerUpSlot: {
         width: "110px",
         height: "280px",
+        top: "50px",
         background: COLORS.TRANSPARENT,
         verticalAlignment: V_TOP,
         thickness: 0,
@@ -235,9 +290,20 @@ export const POWER_UP_STYLES = {
         color: COLORS.WHITE,
         verticalAlignment: V_CENTER,
         textHorizontalAlignment: H_LEFT
+    },
+
+    powerUpHd: {
+        widthInPixels: 300,
+        heightInPixels: 300,
+        stretch: Image.STRETCH_UNIFORM,
+        horizontalAlignment: H_CENTER,
+        verticalAlignment: V_CENTER,
+        isVisible: false,
+        top: -100,
+        alpha: 0,
+        zIndex: 15
     }
 } as const;
-
 export const PAUSE_MENU_STYLES = {
     pauseOverlay: {
         width: "100%",
@@ -293,7 +359,6 @@ export const PAUSE_MENU_STYLES = {
         muteIcon: 0.1
     }
 } as const;
-
 export const LOBBY_STYLES = {
   overlay: {
     width: "100%",
@@ -350,7 +415,6 @@ export const LOBBY_STYLES = {
     textHorizontalAlignment: H_RIGHT
   },
 };
-
 export const COUNTDOWN_STYLES = {
     countdownContainer: {
         width: "100%",
@@ -375,9 +439,95 @@ export const COUNTDOWN_STYLES = {
         fontWeight: "bold",
         outlineWidth: 2,
         outlineColor: COLORS.TRANSPARENT_BLACK_66
-    }
-} as const;
+    },
 
+    namePlayerLeft: {
+        fontFamily: FONT_FAMILY,
+        color: COLORS.WHITE,
+        textHorizontalAlignment: H_CENTER,
+        textVerticalAlignment: V_CENTER,
+        fontSize: 100,
+        shadowOffsetX: 2,
+        shadowOffsetY: 2,
+        shadowBlur: 12,
+        shadowColor: COLORS.GOLD_SHADOW,
+        fontWeight: "bold",
+        outlineWidth: 3,
+        outlineColor: COLORS.TRANSPARENT_BLACK_66,
+        horizontalAlignment: H_CENTER,
+        verticalAlignment: V_CENTER,
+        leftInPixels: -300,
+        topInPixels: -150,
+        isVisible: false,
+        alpha: 0,
+        zIndex: 11
+    },
+
+    vsText: {
+        fontFamily: FONT_FAMILY,
+        color: COLORS.WHITE,
+        textHorizontalAlignment: H_CENTER,
+        textVerticalAlignment: V_CENTER,
+        fontSize: 60,
+        shadowOffsetX: 3,
+        shadowOffsetY: 3,
+        shadowBlur: 20,
+        shadowColor: "rgba(255, 0, 0, 0.8)",
+        fontWeight: "bold",
+        outlineWidth: 5,
+        outlineColor: COLORS.BLACK,
+        horizontalAlignment: H_CENTER,
+        verticalAlignment: V_CENTER,
+        topInPixels: -50,
+        isVisible: false,
+        alpha: 0,
+        zIndex: 11
+    },
+
+    namePlayerRight: {
+        fontFamily: FONT_FAMILY,
+        color: COLORS.WHITE,
+        textHorizontalAlignment: H_CENTER,
+        textVerticalAlignment: V_CENTER,
+        fontSize: 100,
+        shadowOffsetX: 2,
+        shadowOffsetY: 2,
+        shadowBlur: 12,
+        shadowColor: COLORS.GOLD_SHADOW,
+        fontWeight: "bold",
+        outlineWidth: 3,
+        outlineColor: COLORS.TRANSPARENT_BLACK_66,
+        horizontalAlignment: H_CENTER,
+        verticalAlignment: V_CENTER,
+        leftInPixels: 300,
+        topInPixels: 50,
+        isVisible: false,
+        alpha: 0,
+        zIndex: 11
+    },
+
+    readyText: {
+        fontFamily: FONT_FAMILY,
+        color: COLORS.GOLD,
+        textHorizontalAlignment: H_CENTER,
+        textVerticalAlignment: V_CENTER,
+        fontSize: 120,
+        shadowOffsetX: 2,
+        shadowOffsetY: 2,
+        shadowBlur: 15,
+        shadowColor: COLORS.GOLD_SHADOW,
+        fontWeight: "bold",
+        outlineWidth: 4,
+        outlineColor: COLORS.TRANSPARENT_BLACK_66,
+        horizontalAlignment: H_CENTER,
+        verticalAlignment: V_CENTER,
+        topInPixels: -50,
+        isVisible: false,
+        alpha: 0,
+        zIndex: 11
+    }
+
+} as const;
 export const VIEW_MODE_STYLES = {
     dividerLine: {
         width: "5px",
@@ -389,7 +539,6 @@ export const VIEW_MODE_STYLES = {
         thickness: 0
     }
 } as const;
-
 export const PARTIAL_END_GAME_STYLES = {
     partialEndGameOverlay: {
         width: "100%",
@@ -447,10 +596,10 @@ export const PARTIAL_END_GAME_STYLES = {
         textVerticalAlignment: V_CENTER,
         outlineWidth: 2,
         outlineColor: COLORS.GOLD,
+        isVisible: false,
         zIndex: 10
     }
 } as const;
-
 export const END_GAME_STYLES = {
     endGameOverlay: {
         width: "100%",
@@ -476,14 +625,14 @@ export const END_GAME_STYLES = {
         outlineColor: COLORS.TRANSPARENT_BLACK_66
     }
 } as const;
-
 export const BRACKET_STYLES = {
     bracketOverlay: {
-        width: "55%",
-        height: "80%",
+        width: "560px",
+        height: "650px",
+        top: "40px",
         background: COLORS.TRANSPARENT_BLACK_98,
         horizontalAlignment: H_RIGHT,
-        verticalAlignment: V_CENTER,
+        verticalAlignment: V_BOTTOM,
         cornerRadius: 12,
         isVisible: false,
         isPointerBlocker: true,
@@ -491,27 +640,36 @@ export const BRACKET_STYLES = {
         padding: "8px",
         thickness: 0
     },
-
-    bracketContainer: {
-        width: "100%",
-        height: "100%"
+    containerRows: {
+        header: 0.2,
+        content: 0.8
     },
-
     headerGrid: {
         height: "80px"
     },
-
+    gridColumns: {
+        icon: 70,
+        title: 1
+    },
     bracketIcon: {
         width: "68px",
         height: "68px",
-        horizontalAlignment: H_LEFT,
+        horizontalAlignment: H_CENTER,
+        verticalAlignment: V_CENTER,
         stretch: Image.STRETCH_UNIFORM
+    },
+
+    bg: {
+        width: "100%", height: "100%",
+		stretch: Image.STRETCH_FILL,
+		isPointerBlocker: false,
+		zIndex: 0,
     },
 
     bracketTitle: {
         fontFamily: FONT_FAMILY,
         color: COLORS.WHITE,
-        textHorizontalAlignment: H_LEFT,
+        textHorizontalAlignment: H_CENTER,
         textVerticalAlignment: V_CENTER,
         fontSize: 36,
         shadowBlur: 20,
@@ -519,64 +677,14 @@ export const BRACKET_STYLES = {
         shadowColor: COLORS.GOLD_GLOW
     },
 
-    bracketScroll: {
+    bracketGrid: {
         width: "100%",
         height: "100%",
-        thickness: 0,
-        barSize: 8,
-        background: "transparent",
-        wheelPrecision: 20
+        paddingLeft: "2px"
     },
 
-    contentWrap: {
-        isVertical: false,
-        height: "100%",
-        width: "800px"
-    },
-
-    bracketGrid: {
-        width: "800px",
-        height: "100%"
-    },
-
-    gridColumns: {
-        icon: 70,
-        title: 1
-    },
-
-    bracketColPanel: {
-        isVertical: true,
-        horizontalAlignment: H_LEFT,
-        verticalAlignment: V_CENTER,
-        widthInPixels: 160,
-        clipChildren: false
-    },
-
-    bracketCellRect: {
-        widthInPixels: 150,
-        paddingTop: "5px",
-        paddingBottom: "5px",
-        paddingLeft: "6px",
-        horizontalAlignment: H_CENTER,
-        verticalAlignment: V_CENTER,
-        clipChildren: false
-    },
-
-    containerRows: {
-        header: 0.2,
-        content: 0.8
-    },
-
-    bracketCellText: {
-        fontFamily: FONT_FAMILY,
-        color: COLORS.WHITE,
-        height: "100%",
-        resizeToFit: true,
-        textHorizontalAlignment: H_LEFT,
-        textVerticalAlignment: V_CENTER
-    },
-
-     winnerCell: {
+    // Winner/Loser states
+    winnerCell: {
         background: COLORS.WINNER_GREEN_LIGHT,
         thickness: 2,
         color: COLORS.WINNER_GREEN
@@ -603,9 +711,184 @@ export const BRACKET_STYLES = {
     loserText: {
         alpha: 0.6,
         color: COLORS.LOSER_GRAY
+    },
+
+    tabsRoot: {
+        isVertical: true,
+        width: "100%",
+        height: "100%",
+        horizontalAlignment: H_CENTER
+    },
+    
+    tabsBar: {
+        width: "100%",
+        heightInPixels: 44,
+    },
+    
+    roundPanelsWrap: {
+        isVertical: true,
+        width: "100%",
+        height: "100%"
+    },
+    
+    roundPanel: {
+        isVertical: true,
+        width: "100%",
+        height: "100%"
+    },
+
+    tabHeaderRect: {
+        width: "100%",
+        heightInPixels: 30,
+        background: "#5a7db8",
+        thickness: 0
+    },
+
+    tabHeader: {
+        fontFamily: FONT_FAMILY,
+        color: "#FFFFFF",
+        textHorizontalAlignment: H_CENTER,
+        textVerticalAlignment: V_CENTER,
+        fontSize: 20,
+        fontWeight: "bold",
+        heightInPixels: 30
+    },
+
+    tabButton: {
+        height: "85%",
+        thickness: 0,
+        background: "#5a7db8",
+        isPointerBlocker: true,
+        cornerRadiusW: 8,
+        cornerRadiusZ: 8,
+        verticalAlignment: V_TOP
+    },
+
+    tabButtonActive: {
+        height: "100%",
+        thickness: 0,
+        background: "#4db8d4",
+        isPointerBlocker: true,
+        cornerRadiusW: 8,
+        cornerRadiusZ: 8,
+        shadowOffsetY: 2,
+        shadowBlur: 4,
+        shadowColor: "rgba(238, 236, 236, 0.6)",
+        verticalAlignment: V_TOP
+    },
+
+    tabLabelInactive: {
+        color: "#2D3748",
+        fontSize: 16,
+        textHorizontalAlignment: Control.HORIZONTAL_ALIGNMENT_CENTER,
+        textVerticalAlignment: Control.VERTICAL_ALIGNMENT_CENTER
+    },
+
+    tabLabelActive: {
+        color: "#FFFFFF",
+        fontSize: 16,
+        fontWeight: "bold",
+        outlineWidth: 1,
+        outlineColor: "#1A202C",
+        textHorizontalAlignment: Control.HORIZONTAL_ALIGNMENT_CENTER,
+        textVerticalAlignment: Control.VERTICAL_ALIGNMENT_CENTER
+    },
+
+    // Match display
+    matchRowRect: {
+        width: "100%",
+        heightInPixels: 48,
+        paddingLeft: "4px",
+        paddingRight: "4px",
+        paddingTop: "2px",
+        paddingBottom: "2px",
+        thickness: 0,
+        alpha: 0
+    },
+
+    matchRowPanel: {
+        isVertical: false,
+        width: "100%",
+        height: "100%",
+        horizontalAlignment: Control.HORIZONTAL_ALIGNMENT_CENTER,
+        spacing: 8
+    },
+
+    matchPlayerRect: {
+        widthInPixels: 240,
+        height: "100%",
+        paddingTop: "6px",
+        paddingBottom: "6px",
+        paddingLeft: "8px",
+        paddingRight: "8px",
+        verticalAlignment: Control.VERTICAL_ALIGNMENT_CENTER,
+        horizontalAlignment: Control.HORIZONTAL_ALIGNMENT_CENTER,
+        cornerRadius: 6,
+        thickness: 1,
+        color: "#555",
+        background: "rgba(255,255,255,0.06)",
+        clipChildren: false
+    },
+    
+    matchPlayerText: {
+        color: "#FFFFFF",
+        height: "100%",
+        resizeToFit: true,
+        textHorizontalAlignment: Control.HORIZONTAL_ALIGNMENT_LEFT,
+        textVerticalAlignment: Control.VERTICAL_ALIGNMENT_CENTER,
+        fontSize: 16
+    },
+
+    matchVsText: {
+        widthInPixels: 70,
+        height: "100%",
+        text: "← vs →",
+        color: "#BBB",
+        fontSize: 16,
+        fontWeight: "bold",
+        textHorizontalAlignment: Control.HORIZONTAL_ALIGNMENT_CENTER,
+        textVerticalAlignment: Control.VERTICAL_ALIGNMENT_CENTER,
+        background: "rgba(255,255,255,0.02)",
+        cornerRadius: 20
     }
 } as const;
-
+export const CURTAIN_STYLES = {
+    leftBackground: {
+        background: '#143D60',
+        thickness: 0,
+        horizontalAlignment: H_LEFT,
+        verticalAlignment: V_TOP,
+        isVisible: false,
+        zIndex: 0
+    },
+    
+    rightBackground: {
+        background: '#143D60',
+        thickness: 0,
+        horizontalAlignment: H_LEFT,
+        verticalAlignment: V_TOP,
+        isVisible: false,
+        zIndex: 0
+    },
+    
+    leftPaddle: {
+        background: '#EB5B00',
+        thickness: 0,
+        horizontalAlignment: H_RIGHT,
+        verticalAlignment: V_TOP,
+        isVisible: false,
+        zIndex: 1
+    },
+    
+    rightPaddle: {
+        background: '#EB5B00',
+        thickness: 0,
+        horizontalAlignment: H_LEFT,
+        verticalAlignment: V_TOP,
+        isVisible: false,
+        zIndex: 1
+    }
+} as const;
 export function applyStyles(control: any, styles: any): void {
     Object.entries(styles).forEach(([key, value]) => {
         if (value !== undefined && key in control) {

@@ -79,5 +79,9 @@ export const portuguese: Translation = {
     errorEnterValidEmail: 'Por favor, insira um email válido',
     errorPasswordMinLength: 'A senha deve ter pelo menos 6 caracteres',
     errorConfirmPassword: 'Por favor, confirme senha',
-    errorPasswordsDoNotMatch: 'As senhas não coincidem'
+    errorPasswordsDoNotMatch: 'As senhas não coincidem',
+	spectator: '🎮 MODO ESPECTADOR',
+	spectatorInstruction: '← Partida Anterior | → Próxima Partida | Espaço: Mostrar/Ocultar Chave | Y: Sair',
+	spectatorQuestion: 'Quer assistir ao resto do torneio? Pressione S, ou pressione N para sair.'
+
 };

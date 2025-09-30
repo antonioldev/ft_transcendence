@@ -16,7 +16,7 @@ export interface Config {
 
 const config: Config = {
     server: {
-        host: process.env.BACKEND_HOST || '0.0.0.0',
+        host: '0.0.0.0',
         port: parseInt(process.env.BACKEND_PORT || '3000', 10)
     },
     // database: { //Exampe

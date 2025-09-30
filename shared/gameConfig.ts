@@ -32,9 +32,11 @@ export const GAME_CONFIG = {
 	increasedPaddleWidth: 4.5, // Width of the paddle when GROW_PADDLE activated
 	decreasedPaddleWidth: 1.5, // Width of the paddle when SHRINK_PADDLE activated
 	increasedPaddleSpeed: 22, // Speed of the paddle when INCREASE_PADDLE_SPEED activated
-	decreasedPaddleSpeed: 7, // Speed of the paddle when SLOW_PADDLE activated
-	powerupDuration: 5000,	   // time elapsed before powerup is deactivated
-	freezeDuration: 1500.0, // duration of ball freeze 
+	decreasedPaddleSpeed: 4, // Speed of the paddle when SLOW_PADDLE activated
+	powerupDuration: 6000,	   // time elapsed before powerup is deactivated
+	freezeDuration: 1500.0, // duration of ball freeze
+	powershotTimeLimit: 3000.0, // time limit to use powershot after activating
+	invisibilityTimeLimit: 3000.0, // time limit to use powershot after activating
 
 	// Camera settings (mainly for frontend)
 	camera2DHeight: 25, // Camera height in 2D mode
@@ -46,10 +48,11 @@ export const GAME_CONFIG = {
 
 	// Ball settings
 	ballRadius: 0.3, // Radius of the ball
-	ballInitialSpeed: 5, // Initial speed of the ball
+	ballInitialSpeed: 6, // Initial speed of the ball
 	ballMaxAngle: Math.PI / 4, // Maximum angle of the ball trajectory
 	ballMinAngle: Math.PI / 12, // Minimum angle of the ball trajectory
-	ballSpeedIncrease: 1.08, // Speed multiplier after paddle hit
+	ballSpeedIncrease: 1.05, // Speed multiplier after paddle hit
+	ballPowerShotSpeed: 12, // Speed multiplier after paddle hit
 	maxBallSpeed: 12,	   // Maximum ball speed
 	
 	// Wall collision boundaries (accounting for ball radius)
@@ -78,23 +81,24 @@ export const GAME_CONFIG = {
 	},
 	
 	// Timing
-	startDelay: 4.0, // Delay before the game starts
+	startDelay: 8.0, // Delay before the game starts
 	maxJoinWaitTime: 6.0, // Max time the server will wait for remote players to join before starting with CPU's
+
+	minTournamentSize: 2, //3
 
 } as const;
 
-	// CPU Difficulty: we pass this directly as the noise factor to regualate the CPU ability
+// CPU Difficulty: we pass this directly as the noise factor to regualate the CPU ability
 export const CPUDifficultyMap: Record<AiDifficulty, number> = {
-	[AiDifficulty.EASY]: 3.0,
-	[AiDifficulty.MEDIUM]: 2.0,
-	[AiDifficulty.HARD]: 1.5,
+	[AiDifficulty.EASY]: 2.0,
+	[AiDifficulty.MEDIUM]: 1.5,
+	[AiDifficulty.HARD]: 1.0,
 	[AiDifficulty.IMPOSSIBLE]: 0,
 }
 
 // Paddle/Player constants
-export const LEFT_PADDLE = 0; // Identifier for the left paddle
-export const RIGHT_PADDLE = 1; // Identifier for the right paddle
-export const BALL = 2; // Identifier for the ball
+export const LEFT = 0; // Identifier for the left paddle
+export const RIGHT = 1; // Identifier for the right paddle
 
 // Utility functions that work for both frontend and backend
 

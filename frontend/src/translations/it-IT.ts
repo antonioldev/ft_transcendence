@@ -79,5 +79,8 @@ export const italian: Translation = {
     errorEnterValidEmail: 'Inserisci un email valido',
     errorPasswordMinLength: 'La password deve contenere almeno 6 caratteri',
     errorConfirmPassword: 'Conferma password',
-    errorPasswordsDoNotMatch: 'Le password non corrispondono'
+    errorPasswordsDoNotMatch: 'Le password non corrispondono',
+	spectator: '🎮 MODALITÀ SPETTATORE',
+	spectatorInstruction: '← Partita Precedente | → Partita Successiva | Spazio: Mostra/Nascondi Tabellone | Y: Esci',
+	spectatorQuestion: 'Vuoi guardere il resto del torneo? Premi Y, oppure premi N per uscire'
 };

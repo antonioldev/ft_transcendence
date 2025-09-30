@@ -59,6 +59,10 @@ export async function createVegetation(
 	scene: Scene,
 	vegetationAsset: VegetationAsset
 ): Promise<any[]> {
+	if (!scene) {
+		Logger.error('Scene is required for vegetation creation', 'EnvironmentFactory');
+		return [];
+	}
 	if (!vegetationAsset?.path) return [];
 	const objects: any[] = []
 	try {
@@ -85,7 +89,8 @@ export async function createVegetation(
 		originalMesh.setEnabled(false);
 
 	} catch(error) {
-		Logger.errorAndThrow('Could not load vegetation', 'EnvironmentFactory', error);
+		Logger.error('Could not load vegetation', 'EnvironmentFactory', error);
+		return [];
 	}
 	return objects;
 }

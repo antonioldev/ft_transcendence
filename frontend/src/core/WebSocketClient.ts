@@ -59,7 +59,6 @@ export class WebSocketClient {
             clearTimeout(timeout);
             this.connectionStatus = ConnectionStatus.CONNECTED;
             this.notifyStatus(ConnectionStatus.CONNECTED);
-            this.triggerCallback(WebSocketEvent.CONNECTION);	
         };
 
         this.ws.onmessage = (event) => {
@@ -83,7 +82,6 @@ export class WebSocketClient {
             Logger.error('WebSocket error', 'WebSocketClient', error);
             this.connectionStatus = ConnectionStatus.FAILED;
             this.notifyStatus(ConnectionStatus.FAILED);
-            this.triggerCallback(WebSocketEvent.ERROR, 'Connection failed');
         };
     }
 
@@ -105,19 +103,11 @@ export class WebSocketClient {
             case MessageType.GAME_STATE:
                 this.triggerCallback(WebSocketEvent.GAME_STATE, message.state);
                 break;
-            case MessageType.PAUSED:
-                this.triggerCallback(WebSocketEvent.GAME_PAUSED);
-                break;
-            case MessageType.RESUMED:
-                this.triggerCallback(WebSocketEvent.GAME_RESUMED);
-                break;
             case MessageType.SESSION_ENDED:
                 this.triggerCallback(WebSocketEvent.SESSION_ENDED, message);
                 break;
             case MessageType.SIDE_ASSIGNMENT:
                 this.triggerCallback(WebSocketEvent.SIDE_ASSIGNMENT, message);
-                break;
-            case MessageType.WELCOME:
                 break;
             case MessageType.COUNTDOWN:
                 this.triggerCallback(WebSocketEvent.COUNTDOWN, message);
@@ -152,17 +142,8 @@ export class WebSocketClient {
             case MessageType.MATCH_ASSIGNMENT:
                 this.triggerCallback(WebSocketEvent.MATCH_ASSIGNMENT, message);
                 break;
-            case MessageType.MATCH_WINNER:
-                this.triggerCallback(WebSocketEvent.MATCH_WINNER, message);
-                break;
-            case MessageType.POWERUP_ASSIGNMENT:
-                this.triggerCallback(WebSocketEvent.POWERUP_ASSIGNMENT, message); 
-                break;
-            case MessageType.POWERUP_ACTIVATED:
-                this.triggerCallback(WebSocketEvent.POWERUP_ACTIVATED, message); 
-                break;
-            case MessageType.POWERUP_DEACTIVATED:
-                this.triggerCallback(WebSocketEvent.POWERUP_DEACTIVATED, message); 
+            case MessageType.MATCH_RESULT:
+                this.triggerCallback(WebSocketEvent.MATCH_RESULT, message);
                 break;
             case MessageType.TOURNAMENT_LOBBY:
                 this.triggerCallback(WebSocketEvent.TOURNAMENT_LOBBY, message); 
@@ -185,6 +166,10 @@ export class WebSocketClient {
         this.sendMessage(MessageType.PLAYER_READY);
     }
 
+    sendSpectatorReady(): void {
+        this.sendMessage(MessageType.SPECTATE_GAME);
+    }
+
     requestLobby(): void {
         this.sendMessage(MessageType.REQUEST_LOBBY);
     }
@@ -205,25 +190,28 @@ export class WebSocketClient {
         this.sendMessage(MessageType.QUIT_GAME);
     }
 
-    // notifyGameAnimationDone(): void {
-    //     this.sendMessage(MessageType.PARTIAL_WINNER_ANIMATION_DONE)
-    // }
+    sendSwitchGame(direction: Direction): void {
+        this.sendMessage(MessageType.TOGGLE_SPECTATOR_GAME, direction)
+    }
 
     sendPowerupActivationRequest(powerup_type: PowerupType, side: number, slot: number,): void {
-        console.error(powerup_type +" "+ side +" "+ slot);
         this.sendMessage(MessageType.ACTIVATE_POWERUP, {powerup_type, slot, side});
     }
 
     private sendMessage(type: MessageType, data: any = {}): void {
-        if (!this.isConnected())
-            Logger.errorAndThrow('WebSocket is not connected. Cannot send message.', 'WebSocketClient');
+        if (!this.isConnected()) {
+            Logger.warn(`Cannot send ${type}: WebSocket not connected`, 'WebSocketClient');
+            return;
+        }
 
         const message: ClientMessage = { type, ...data };
-    
+
         try {
             this.ws!.send(JSON.stringify(message));
         } catch (error) {
-            Logger.errorAndThrow(`Error sending message of type ${type}`, 'WebSocketClient', error);
+            Logger.error(`Error sending message of type ${type}`, 'WebSocketClient', error);
+            this.connectionStatus = ConnectionStatus.FAILED;
+            this.notifyStatus(ConnectionStatus.FAILED);
         }
     }
 
@@ -232,23 +220,27 @@ export class WebSocketClient {
     // ========================================
 
     registerNewUser(registrationInfo: RegisterUser): void {
-        if (this.isConnected()) {
-            const message: ClientMessage = {
-                type: MessageType.REGISTER_USER,
-                registerUser: registrationInfo
-            };
-            this.ws!.send(JSON.stringify(message));
-        }        
+        if (!this.isConnected()) {
+            this.triggerCallback(WebSocketEvent.ERROR, 'Not connected to server');
+            return;
+        }
+        const message: ClientMessage = {
+            type: MessageType.REGISTER_USER,
+            registerUser: registrationInfo
+        };
+        this.ws!.send(JSON.stringify(message));
     }
 
     loginUser(loginInfo: LoginUser): void {
-        if (this.isConnected()) {
-            const message: ClientMessage = {
-                type: MessageType.LOGIN_USER,
-                loginUser: loginInfo
-            };
-            this.ws!.send(JSON.stringify(message));
-        }          
+        if (!this.isConnected()) {
+            this.triggerCallback(WebSocketEvent.ERROR, 'Not connected to server');
+            return;
+        }
+        const message: ClientMessage = {
+            type: MessageType.LOGIN_USER,
+            loginUser: loginInfo
+        };
+        this.ws!.send(JSON.stringify(message));
     }
 
     logoutUser(): void {
@@ -291,7 +283,11 @@ export class WebSocketClient {
     registerCallback(event: WebSocketEvent, callback: Function): void {
         this.callbacks[event] = callback;
     }
-    
+
+    unregisterCallback(event: WebSocketEvent): void {
+        this.callbacks[event] = null;
+    }
+
     triggerCallback(event: WebSocketEvent, data?: any): void {
         const callback = this.callbacks[event];
         if (callback) {

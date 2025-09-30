@@ -83,6 +83,9 @@ export interface Translation {
     errorPasswordMinLength: string;
     errorConfirmPassword: string;
     errorPasswordsDoNotMatch: string;
+	spectator: string,
+	spectatorInstruction: string;
+	spectatorQuestion: string;
 }
 
 export type TranslationKey = keyof Translation;

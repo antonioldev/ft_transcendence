@@ -1,17 +1,17 @@
 import { FastifyInstance } from 'fastify';
 import { gameManager } from './GameManager.js';
 import { Client, Player } from './Client.js';
-import { MessageType, AuthCode, GameMode } from '../shared/constants.js';
+import { MessageType, AuthCode, GameMode, Direction } from '../shared/constants.js';
 import { ClientMessage, ServerMessage, PlayerInput} from '../shared/types.js';
 import * as db from "../data/validation.js";
 import { getUserBySession, getSessionByUsername } from '../data/validation.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
+import { TournamentRemote } from './Tournament.js';
+
 /**
  * Manages WebSocket connections, client interactions, and game-related messaging.
  */
 export class WebSocketManager {
-    private clients = new Map<string, Client>();
-
     /**
      * Sets up WebSocket routes for the Fastify server.
      * @param fastify - The Fastify instance to configure.
@@ -55,37 +55,27 @@ export class WebSocketManager {
      * @param socket - The WebSocket connection object.
      */
     private handleConnection(socket: any, authenticatedUser?: { username: string; email: string }): void {
-        const clientId = this.generateClientId();
-
         let client: Client;
-        if (authenticatedUser) {
-            // Google authenticated user
-            client = new Client(clientId, authenticatedUser.username, authenticatedUser.email, socket);
+        if (authenticatedUser) { // Google authenticated user
+            client = new Client(authenticatedUser.username, authenticatedUser.email, socket);
             client.loggedIn = true; // Mark as already authenticated
-        } else {
-            // Traditional authentication will authenticate via messages
-            client = new Client(clientId, 'temp', '', socket); // will be updated if server approve a classic login request from client
+        }
+        else { // Traditional authentication via messages, details updated with login request
+            client = new Client('default', 'default@default', socket);
         }
 
-        this.clients.set(clientId, client);
-
         socket.on('message', async (message: string) => {
-            await this.handleMessage(socket, client, message);
+            await this.handleMessage(client, message);
         });
 
         socket.on('close', () => {
-            console.log(`WebSocket closed for client ${clientId}:`);
-            this.handleDisconnection(client);
+            console.log(`WebSocket closed for client ${client.id}:`);
+            this.removeFromGameSession(client);
         });
 
         socket.on('error', (error: any) => {
-            console.error(`❌ WebSocket error for client ${clientId}:`, error);
-            this.handleDisconnection(client);
-        });
-
-        this.send(socket, {
-            type: MessageType.WELCOME,
-            message: 'Connected to game server'
+            console.error(`❌ WebSocket error for client ${client.id}:`, error);
+            this.removeFromGameSession(client);
         });
     }
 
@@ -96,13 +86,13 @@ export class WebSocketManager {
      * @param message - The raw message string received.
      * @param setCurrentGameId - Callback to update the current game ID for the client.
      */
-    private async handleMessage(socket: any, client: Client, message: string): Promise<void> {
+    private async handleMessage(client: Client, message: string): Promise<void> {
         try {
             const data: ClientMessage = JSON.parse(message.toString());
             
             switch (data.type) {
                 case MessageType.JOIN_GAME:
-                    this.handleJoinGame(socket, client, data);
+                    this.handleJoinGame(client, data);
                     break;
                 case MessageType.PLAYER_READY:
                     this.handlePlayerReady(client);
@@ -117,42 +107,45 @@ export class WebSocketManager {
                     this.handleResumeRequest(client);
                     break;
                 case MessageType.LOGIN_USER:
-                    await this.handleLoginUser(socket, client, data);
+                    await this.handleLoginUser(client, data);
                     break;
                 case MessageType.LOGOUT_USER:
-                    await this.handleLogoutUser(socket, client, data);
+                    await this.handleLogoutUser(client);
                     break;                    
                 case MessageType.REGISTER_USER:
-                    await this.handleRegisterNewUser(socket, data);
+                    await this.handleRegisterNewUser(client, data);
                     break;
                 case MessageType.REQUEST_USER_STATS:
-                    await this.handleUserStats(socket, message);
+                    await this.handleUserStats(client, message);
                     break;
                 case MessageType.REQUEST_GAME_HISTORY:
-                    this.handleUserGameHistory(socket, message);
+                    this.handleUserGameHistory(client, message);
                     break;
                 case MessageType.REQUEST_LOBBY:
-                    this.handleLobbyRequest(socket, client);
+                    this.handleLobbyRequest(client);
                     break;
-                // case MessageType.PARTIAL_WINNER_ANIMATION_DONE:
-                //     this.handlePlayerReadyAfterGame(client);
-                //     break;
                 case MessageType.ACTIVATE_POWERUP:
                     this.activatePowerup(client, data);
                     break;
+                case MessageType.SPECTATE_GAME:
+                    this.spectateGame(client);
+                    break;
+                case MessageType.TOGGLE_SPECTATOR_GAME:
+                    this.toggleSpectator(client, data);
+                    break;
                 case MessageType.QUIT_GAME:
-                    this.handleQuitGame(client);
+                    console.log(`QUIT_GAME received from ${client.username}:${client.id}`);
+                    this.removeFromGameSession(client);
                     break;
                 default:
-                    this.send(socket, {
+                    this.send(client.websocket, {
                         type: MessageType.ERROR,
                         message: 'Unknown message type'
                     });
-
             }
         } catch (error) {
             console.error('❌ Error parsing message:', error);
-            this.send(socket, {
+            this.send(client.websocket, {
                 type: MessageType.ERROR,
                 message: 'Invalid message format'
             });
@@ -166,18 +159,14 @@ export class WebSocketManager {
      * @param data - The message data containing game mode information.
      * @param setCurrentGameId - Callback to update the current game ID for the client.
      */
-    private handleJoinGame(socket: any, client: Client, data: ClientMessage) {
+    private handleJoinGame(client: Client, data: ClientMessage) {
         try {
             if (!data.gameMode) {
                 throw new Error(`Game mode missing`);
             }
             const gameSession = gameManager.findOrCreateGame(data.gameMode, client, data.capacity ?? undefined);
-            if (!gameSession) {
-                throw new Error(`client "${client}" unable to join game: game does not exist`);
-            }
-            if (gameSession.running) {
-                throw new Error(`client "${client}" unable to join game "${gameSession.id}": game already running`);
-            }
+            gameManager.addClient(client, gameSession);
+
             if (data.aiDifficulty !== undefined && gameSession.ai_difficulty === undefined) {
                 gameSession.set_ai_difficulty(data.aiDifficulty);
             }
@@ -187,15 +176,17 @@ export class WebSocketManager {
                 gameSession.add_player(new Player(player.id, player.name, client));
             }
 
+            // start game if full or local, otherwise wait for players to join
             if ((gameSession.full) || gameSession.mode === GameMode.TOURNAMENT_LOCAL) {
                 gameManager.runGame(gameSession);
             }
             else {
                 setTimeout(() => { gameManager.runGame(gameSession) }, (GAME_CONFIG.maxJoinWaitTime * 1000));
             }
-        } catch (error) {
+        }
+        catch (error) {
             console.error('❌ Error joining game:', error);
-            this.send(socket, {
+            this.send(client.websocket, {
                 type: MessageType.ERROR,
                 message: 'Failed to join game',
             });
@@ -207,14 +198,14 @@ export class WebSocketManager {
      * @param client - The client that is ready
      */
     private handlePlayerReady(client: Client): void {
-        console.log(`Client ${client.id} is ready`);
-
-        const gameSession = gameManager.findClientGame(client);
+        
+        const gameSession = gameManager.findClientGameSession(client);
         if (!gameSession) {
             console.warn(`Client ${client.username}:${client.id} not in any game for ready signal`);
             return;
         }
         gameSession.setClientReady(client.id);
+        console.log(`Client ${client.id} is ready`);
     }
 
     /**
@@ -228,7 +219,7 @@ export class WebSocketManager {
             return;
         }
 
-        const gameSession = gameManager.findClientGame(client);
+        const gameSession = gameManager.findClientGameSession(client);
         if (!gameSession) {
             console.warn(`Client ${client.id} not in any game`);
             return;
@@ -252,7 +243,7 @@ export class WebSocketManager {
      * @param client - The client that send the request.
      */
     private handlePauseRequest(client: Client): void {
-        const gameSession = gameManager.findClientGame(client);
+        const gameSession = gameManager.findClientGameSession(client);
         if (!gameSession) {
             console.warn(`Client ${client.id} not in any game for pause request`);
             return;
@@ -271,7 +262,7 @@ export class WebSocketManager {
      * @param client - The client that send the request.
      */
     private handleResumeRequest(client: Client): void {
-        const gameSession = gameManager.findClientGame(client);
+        const gameSession = gameManager.findClientGameSession(client);
         if (!gameSession) {
             console.warn(`Client ${client.id} not in any game for resume request`);
             return;
@@ -283,35 +274,21 @@ export class WebSocketManager {
         gameSession.resume(client.id);
     }
 
-   /**
-     * Handles the disconnection of a client, removing them from games and cleaning up resources.
-     * @param data - The user information that are used to confirm login
-     */
-    private handleQuitGame(client: Client): void {
-        const gameSession = gameManager.findClientGame(client);
-        if (!gameSession) {
-            console.warn(`Client ${client.id} not in any game to quit`);
-            return;
-        }
-        
-        gameSession.handlePlayerQuit(client);
-        gameManager.removeClientFromGames(client);
-        console.log(`Game ${gameSession.id} ended by client: ${client.username}:${client.id}`);
-    }
-
     /**
      * Handles the disconnection of a client, removing them from games and cleaning up resources.
      * @param client - The client that disconnected.
      */
-    private handleDisconnection(client: Client): void {
-        const gameSession = gameManager.findClientGame(client);
-        if (!gameSession) return ;
+    private removeFromGameSession(client: Client): void {
+        const gameSession = gameManager.findClientGameSession(client);
+        if (!gameSession) {
+            console.warn(`Cannot disconnect: Client ${client.id} not in any game`);
+            return;
+        }
 
-        gameSession.stop(); // TODO: temp as wont work for Tournament 
+        gameSession.handlePlayerQuit(client);
         gameManager.removeClientFromGames(client);
-        this.clients.delete(client.id);
         console.log(`Client disconnected: ${client.username}:${client.id}`);
-    } 
+    }
 
     private activatePowerup(client: Client, data: ClientMessage) {
         if (data.powerup_type === undefined || data.powerup_type === null || 
@@ -320,7 +297,8 @@ export class WebSocketManager {
             console.error("Error: cannot activate powerup, missing data");
             return;
         }
-        const gameSession = gameManager.findClientGame(client);
+        
+        const gameSession = gameManager.findClientGameSession(client);
         if (!gameSession) {
             console.error("Error: cannot activate powerup, game does not exist");
             return ;
@@ -337,16 +315,38 @@ export class WebSocketManager {
         game.activate(data.side, data.slot);
     }
 
+    private toggleSpectator(client: Client, data: ClientMessage) {
+        const gameSession = gameManager.findClientGameSession(client);
+        if (!gameSession) {
+            console.warn(`Client ${client.id} not in any GameSession to toggle`);
+            return;
+        }
+        if (gameSession instanceof TournamentRemote && data.direction) {
+            gameSession.toggle_spectator_game(client, data.direction);
+        }
+    }
+
+    spectateGame(client: Client) {
+        const gameSession = gameManager.findClientGameSession(client);
+        if (!gameSession) {
+            console.warn(`Client ${client.id} not in any GameSession to toggle`);
+            return;
+        }
+        if (gameSession instanceof TournamentRemote) {
+            gameSession.assign_spectator(client);
+        }
+    }
+
    /**
      * Handles the disconnection of a client, removing them from games and cleaning up resources.
      * @param data - The user information that are used to confirm login
      */
-    private async handleLoginUser(socket: any, client: Client, data: ClientMessage): Promise<void> {
+    private async handleLoginUser(client: Client, data: ClientMessage): Promise<void> {
         const loginInfo = data.loginUser;
 
         if (!loginInfo?.username || typeof loginInfo.password !== 'string') {
             console.warn("Missing login information");
-            this.send(socket, {
+            this.send(client.websocket, {
                 type: MessageType.LOGIN_FAILURE,
                 message: 'Missing username or password'
             });
@@ -359,37 +359,37 @@ export class WebSocketManager {
             case AuthCode.OK:
                 const sid = getSessionByUsername(loginInfo.username);
                 if (!sid) {
-                    this.send(socket, {
+                    this.send(client.websocket, {
                         type: MessageType.LOGIN_FAILURE,
                         message: 'SID is not valid',
                     });
                     return;
                 }
-                socket.send(JSON.stringify({
-                type: MessageType.SUCCESS_LOGIN,
-                message: {                     // keep "message" as an OBJECT, not a string
-                    text: 'Login success',
-                    sid: sid,                         // <-- put your generated session id here
-                    username: loginInfo.username
-                }
+                client.websocket.send(JSON.stringify({
+                    type: MessageType.SUCCESS_LOGIN,
+                    message: {                     // keep "message" as an OBJECT, not a string
+                        text: 'Login success',
+                        sid: sid,                         // <-- put your generated session id here
+                        username: loginInfo.username
+                    }
                 }));
                 client.username = loginInfo.username;
                 client.loggedIn = true;
                 return;
             case AuthCode.NOT_FOUND:
-                this.send(socket, {
+                this.send(client.websocket, {
                     type: MessageType.USER_NOTEXIST,
                     message: "User doesn't exist"
                 });
                 return;
             case AuthCode.BAD_CREDENTIALS:
-                this.send(socket, {
+                this.send(client.websocket, {
                     type: MessageType.LOGIN_FAILURE,
                     message: 'Username or password are incorrect'
                 });
                 return;
             case AuthCode.ALREADY_LOGIN:
-                this.send(socket, {
+                this.send(client.websocket, {
                     type: MessageType.LOGIN_FAILURE,
                     message: "User already login"}
                 );
@@ -397,14 +397,14 @@ export class WebSocketManager {
             }
         } catch (error) {
             console.error('❌ Error checking user login information:', error);
-            this.send(socket, {
+            this.send(client.websocket, {
                 type: MessageType.ERROR,
                 message: 'Failed to log user'
             });
         }
     }
 
-    private async handleLogoutUser(socket: any, client: Client, data: ClientMessage): Promise<void> {
+    private async handleLogoutUser(client: Client): Promise<void> {
         const username = client.username;
         try {
             await db.logoutUser(username);
@@ -417,12 +417,12 @@ export class WebSocketManager {
      * Handles the disconnection of a client, removing them from games and cleaning up resources.
      * @param data - The user information that are used to confirm login
      */
-    private async handleRegisterNewUser(socket: any, data: ClientMessage): Promise<void> {
+    private async handleRegisterNewUser(client: Client, data: ClientMessage): Promise<void> {
         const regInfo = data.registerUser;
 
         if (!regInfo) {
             console.warn("Missing registration object");
-            this.send(socket, {
+            this.send(client.websocket, {
                 type: MessageType.ERROR,
                 message: 'Missing registration data'
             });
@@ -432,7 +432,7 @@ export class WebSocketManager {
         const { username, email, password } = regInfo;
 
         if (!username || !email || typeof password !== 'string') {
-            this.send(socket, {
+            this.send(client.websocket, {
                 type: MessageType.ERROR,
                 message: 'Missing username, email, or password'
             });
@@ -444,19 +444,19 @@ export class WebSocketManager {
 
             switch (result) {
             case AuthCode.OK:
-                this.send(socket, {
+                this.send(client.websocket, {
                     type: MessageType.SUCCESS_REGISTRATION,
                     message: 'User registered successfully'
                 });
                 return;
             case AuthCode.USER_EXISTS:
-                this.send(socket, {
+                this.send(client.websocket, {
                     type: MessageType.USER_EXIST,
                     message: 'User already exists'
                 });
                 return;
             case AuthCode.USERNAME_TAKEN:
-                this.send(socket, {
+                this.send(client.websocket, {
                     type: MessageType.USERNAME_TAKEN,
                     message: 'Username is already registered'
                 });
@@ -464,7 +464,7 @@ export class WebSocketManager {
             }
         } catch (error) {
             console.error('❌ Error registering user:', error);
-            this.send(socket, {
+            this.send(client.websocket, {
                 type: MessageType.ERROR,
                 message: 'Failed to register user'
             });
@@ -477,80 +477,51 @@ export class WebSocketManager {
         });
     }
 
-    private async handleUserStats(socket: any, message: string) {
+    private async handleUserStats(client: Client, message: string) {
         console.log("HandleMessage WSM: calling get User stats");
         const stats = db.getUserStats(message); // from DB
         if (!stats) {
-            this.send(socket, {
+            this.send(client.websocket, {
                 type: MessageType.ERROR,
                 message: 'user not recognised'
             });
         }
         else {
-            this.send(socket, {
+            this.send(client.websocket, {
                 type: MessageType.SEND_USER_STATS,
                 stats: stats
             });
         }
     }
 
-    private handleUserGameHistory(socket: any, message: string): void {
+    private handleUserGameHistory(client: Client, message: string): void {
         console.log("HandleMessage WSM: calling get User game history");
         const history = db.getGameHistoryForUser(message); // from DB
         if (!history) {
-            this.send(socket, {
+            this.send(client.websocket, {
                 type: MessageType.ERROR,
                 message: 'user not recognised'
             });
         }
         else {
-            this.send(socket, {
+            this.send(client.websocket, {
                 type: MessageType.SEND_GAME_HISTORY,
                 gameHistory: history
             });
         }
     }
 
-    handleLobbyRequest(socket: any, client: Client) {
+    handleLobbyRequest(client: Client) {
         console.log(`Lobby request received from ${client.username}:${client.id}`)
     
-        const gameSession = gameManager.findClientGame(client);
-        this.send(socket, {
+        const gameSession = gameManager.findClientGameSession(client);
+        if (!gameSession) return ;
+        this.send(client.websocket, {
             type: MessageType.TOURNAMENT_LOBBY,
-            lobby: gameSession?.players.map(player => player.name)
+            lobby: [...gameSession.players].map(player => player.name)
         });
 
-        console.log(`Lobby request sent to ${client.username}:${client.id}`)
-    }
-
-    /**
-     * Generates a unique client ID.
-     * @returns A unique string representing the client ID.
-     */
-    private generateClientId(): string {
-        return `client_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    }
-
-    /**
-     * Gets the count of currently connected clients.
-     * @returns The number of connected clients.
-     */
-    getConnectedClientsCount(): number {
-        return this.clients.size;
-    }
-
-    /**
-     * Disconnects all connected clients and clears the client list.
-     */
-    disconnectAllClients(): void {
-        for (const [clientId, client] of this.clients) {
-            try {
-                client.websocket.close();
-            } catch (error) {
-                console.error(`❌ Error disconnecting client ${clientId}:`, error);
-            }
-        }
-        this.clients.clear();
+        console.log(`Lobby sent to ${client.username}:${client.id}`)
     }
 
     private parseCookie(cookieHeader: string): Record<string, string> {

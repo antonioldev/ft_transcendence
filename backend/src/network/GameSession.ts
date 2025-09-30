@@ -4,28 +4,28 @@ import { MessageType, GameMode, AiDifficulty } from '../shared/constants.js';
 import { PlayerInput, ServerMessage } from '../shared/types.js';
 import { gameManager } from './GameManager.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
+import { generateGameId } from '../data/database.js';
 
 export abstract class AbstractGameSession {
 	mode: GameMode;
-	id: string;
-	clients: Client[] = [];
-	players: (Player | CPU)[] = [];
+	id: string = generateGameId();
+	clients: Set<Client> = new Set();
+	players: Set<Player | CPU> = new Set();
+
 	player_capacity: number = 2;
 	client_capacity: number = 1;
 	full: boolean = false;
-	running: boolean = false;
 	ai_difficulty: AiDifficulty = AiDifficulty.MEDIUM;
 	readyClients: Set<string> = new Set(); // Keep track of clients that finish loading
 
-    constructor(mode: GameMode, game_id: string) {
-		this.id = game_id
+    constructor(mode: GameMode) {
         this.mode = mode
 		if (this.mode == GameMode.TWO_PLAYER_REMOTE) {
 			this.client_capacity = 2
 		}
 	}
 
-	broadcast(message: ServerMessage, clients?: Client[]): void {
+	broadcast(message: ServerMessage, clients?: Set<Client>): void {
 		const targets = clients ?? this.clients;
 		let deleted_clients: (Client)[] = [];
 		for (const client of targets) {
@@ -47,35 +47,35 @@ export abstract class AbstractGameSession {
 	}
 
 	add_client(client: Client) {
-		if (this.clients.length >= this.client_capacity) return ;
+		if (this.clients.size >= this.client_capacity) return ;
 
-		this.clients.push(client);
-		if (this.clients.length === this.client_capacity) {
+		this.clients.add(client);
+		if (this.clients.size === this.client_capacity) {
 			this.full = true;
 		}
-}
+	}
 
 	remove_client(client: Client) {
-		const index = this.clients.indexOf(client);
-		if (index !== -1) {
-			this.clients.splice(index, 1);
-			this.readyClients.delete(client.id); // WILL CHANGE AFTER
-			this.full = false;
-		}
-		if (this.clients.length === 0) {
+		if (!this.clients.has(client)) return ;
+
+		this.clients.delete(client);
+		// this.readyClients.delete(client.id);
+		this.full = false;
+
+		if (this.clients.size === 0) {
 			this.stop();
 		}
 	}
 	
 	add_player(player: Player | CPU) {
-		if (this.players.length < this.player_capacity) {
+		if (this.players.size < this.player_capacity) {
 			console.log(`Player ${player.name} added to game ${this.id}`);
-			this.players.push(player);
+			this.players.add(player);
 		}
 	}
 
 	get_cpu_name(): string {
-		const unavailable_names: string[] = this.players.map(player => player.name);
+		const unavailable_names: string[] = [...this.players].map(player => player.name);
 		let name: string;
 
 		do {
@@ -87,7 +87,7 @@ export abstract class AbstractGameSession {
 	}
 
 	add_CPUs() {
-		for (let i = 1; this.players.length < this.player_capacity; i++) {
+		for (let i = 1; this.players.size < this.player_capacity; i++) {
 			this.add_player(new CPU(`CPU_${i}`, this.get_cpu_name(), this.ai_difficulty));
 		}
 
@@ -95,26 +95,14 @@ export abstract class AbstractGameSession {
 		// 	this.mode = GameMode.SINGLE_PLAYER
 		// }
 
-		this.client_capacity = this.clients.length;
+		this.client_capacity = this.clients.size;
     }
 
-	remove_player(player: Player) {
-		const index = this.players.indexOf(player);
-		if (index !== -1) {
-			console.log(`Player ${player.name} removed from game ${this.id}`);
-			this.players.splice(index, 1);
-			this.full = false;
-		}
-		if (this.players.length === 0) {
-			this.stop();
-		}
-	}
-
 	allClientsReady(): boolean {
-		return (this.readyClients.size === this.clients.length && this.clients.length > 0);
+		return (this.readyClients.size === this.clients.size && this.clients.size > 0);
 	}
 
-	async waitForPlayersReady() {
+	async waitForClientsReady() {
 		if (this.allClientsReady()) return ;
 		await new Promise(resolve => {
 			gameManager.once(`all-ready-${this.id}`, resolve);
@@ -133,11 +121,11 @@ export abstract class AbstractGameSession {
 
 	resume(client_id?: string): void {
 		const game = this.findGame(client_id);
-		if (!this.running || !game || !game.running) {
+		if (!game) {
 			console.log(`Game ${this.id} is not running, cannot resume`);
 			return ;
 		}
-		if (!game.paused) {
+		if (!game.is_paused()) {
 			console.log(`Game ${this.id} is not paused`);
 			return ;
 		}
@@ -148,11 +136,11 @@ export abstract class AbstractGameSession {
 
 	pause(client_id?: string): void {
 		const game = this.findGame(client_id);
-		if (!this.running || !game || !game.running) {
+		if (!game || !game.is_running()) {
 			console.log(`Game ${this.id} is not running, cannot pause`);
 			return ;
 		}
-		if (game.paused) {
+		if (game.is_paused()) {
 			console.log(`Game ${this.id} is already paused`);
 			return ;
 		}
@@ -172,23 +160,23 @@ export abstract class AbstractGameSession {
 	abstract handlePlayerQuit(quitter: Client): void;
 	abstract canClientControlGame(client: Client): boolean;
 	abstract findGame(client_id?: string): Game | undefined;
+	abstract is_running(): boolean;
 }
 
 export class OneOffGame extends AbstractGameSession{
+	running: boolean = false;
 	game!: Game;
 
-	constructor (mode: GameMode, game_id: string) {
-		super(mode, game_id)
+	constructor (mode: GameMode) {
+		super(mode)
 	}
 
 	async start(): Promise<void> {
 		if (this.running) return;
 		this.running = true;
 		
-		this.add_CPUs(); // add any CPU's if necessary
-		await this.waitForPlayersReady();
-		
-		this.game = new Game(this.id, this.players, this.broadcast.bind(this))
+		await this.waitForClientsReady();
+		this.game = new Game(this.id, [...this.players], this.broadcast.bind(this))
 		await this.game.run();
 		if (this.mode === GameMode.TWO_PLAYER_REMOTE) {
 			this.game.save_to_db();
@@ -215,10 +203,14 @@ export class OneOffGame extends AbstractGameSession{
 	}
 
 	canClientControlGame(client: Client) {
-		return (this.clients.includes(client))
+		return (this.clients.has(client))
 	}
 
 	findGame() {
 		return (this.game);
+	}
+
+	is_running(): boolean {
+		return (this.running);
 	}
 }

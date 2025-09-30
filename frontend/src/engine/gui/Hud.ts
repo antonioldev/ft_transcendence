@@ -1,9 +1,9 @@
-import { AdvancedDynamicTexture, TextBlock, Grid} from "@babylonjs/gui";
+import { AdvancedDynamicTexture, TextBlock, Grid, Rectangle} from "@babylonjs/gui";
 import { GameConfig } from '../GameConfig.js';
-import { ViewMode} from '../../shared/constants.js';
+import { GameMode, ViewMode} from '../../shared/constants.js';
 import { getCurrentTranslation } from '../../translations/translations.js';
-import { AnimationManager, Motion } from "../AnimationManager.js";
-import { HUD_STYLES, createTextBlock, createGrid,} from "./GuiStyle.js";
+import { AnimationManager, Motion } from "../services/AnimationManager.js";
+import { HUD_STYLES, createTextBlock, createGrid, createRect, createStackPanel, SPECTATOR_STYLE} from "./GuiStyle.js";
 
 export class Hud {
 	private hudGrid!: Grid;
@@ -15,8 +15,17 @@ export class Hud {
 	private rallyText!: TextBlock;
 	private rally!: TextBlock;
 	private previousRally: number = 1;
+	private spectatorOverlay!: Rectangle;
+	private spectatorBanner!: Rectangle;
+	private spectatorText!: TextBlock;
+	private spectatorControls!: TextBlock;
 
 	constructor(private adt: AdvancedDynamicTexture, private animationManager: AnimationManager, config: GameConfig) {
+		this.createHud(config);
+		this.createSpectatorBanner();
+	}
+
+	private createHud(config: GameConfig): void {
 		this.hudGrid = createGrid("hudGrid", HUD_STYLES.hudGrid);
 		this.adt!.addControl(this.hudGrid);
 
@@ -30,7 +39,7 @@ export class Hud {
 		this.fpsText =  createTextBlock("fpsText", HUD_STYLES.fpsText, "FPS: 0");
 		this.hudGrid.addControl(this.fpsText, 0, 0);
 
-		const p1Controls =  createTextBlock("PlayerControls_p1", HUD_STYLES.playerControlsP1, this.getControlsText(config.viewMode, 1));
+		const p1Controls =  createTextBlock("PlayerControls_p1", HUD_STYLES.playerControlsP1, this.getControlsText(config, 1));
 		this.hudGrid.addControl(p1Controls, 0, 1);
 
 		const p1Cell = new Grid();
@@ -57,7 +66,7 @@ export class Hud {
 		p2Cell.addControl(this.score2Text, 1, 0);
 		this.hudGrid.addControl(p2Cell, 0, 3);
 
-		const p2Controls =  createTextBlock("PlayerControls_p2", HUD_STYLES.playerControlsP2, this.getControlsText(config.viewMode, 2));
+		const p2Controls =  createTextBlock("PlayerControls_p2", HUD_STYLES.playerControlsP2, this.getControlsText(config, 2));
 		this.hudGrid.addControl(p2Controls, 0, 4);
 
 		const rallyCell = new Grid();
@@ -74,6 +83,24 @@ export class Hud {
 
 		this.rally.transformCenterX = 0.5;
 		this.rally.transformCenterY = 0.5;
+	}
+
+	private createSpectatorBanner(): void {
+		const t = getCurrentTranslation();
+
+		this.spectatorOverlay= createRect("spectatorOverlay", SPECTATOR_STYLE.spectatorOverlay);
+		this.adt!.addControl(this.spectatorOverlay);
+		this.spectatorBanner = createRect("spectatorBanner", SPECTATOR_STYLE.spectatorBanner);
+		this.spectatorOverlay.addControl(this.spectatorBanner);
+
+		const bannerContent = createStackPanel("bannerContent", SPECTATOR_STYLE.bannerContent);
+		this.spectatorBanner.addControl(bannerContent);
+
+		this.spectatorText = createTextBlock("spectatorText", SPECTATOR_STYLE.spectatorText, t.spectator);
+		bannerContent.addControl(this.spectatorText);
+
+		this.spectatorControls = createTextBlock("spectatorControls", SPECTATOR_STYLE.spectatorControls, t.spectatorInstruction);
+		bannerContent.addControl(this.spectatorControls);
 	}
 
 	show(show: boolean): void {
@@ -98,7 +125,7 @@ export class Hud {
 			if (rally > 0 && rally % 5 === 0)
 				this.animationManager?.rotatePulse(this.rally, 1, Motion.F.slow);
 			else
-				this.animationManager?.pop(this.rally, Motion.F.base, 1.4);
+				this.animationManager?.scale(this.rally, 1, 1.4, Motion.F.base, true );
 			this.previousRally = rally;
 			return true;
 		}
@@ -106,14 +133,27 @@ export class Hud {
 		return false;
 	}
 
-	private getControlsText(viewMode: ViewMode, player: number): string {
+	private getControlsText(config: GameConfig, player: number): string {
 		const t = getCurrentTranslation();
 		const move = t.controls;
+
+		if (config.gameMode === GameMode.SINGLE_PLAYER || config.isRemoteMultiplayer) {
+			if (config.viewMode === ViewMode.MODE_2D)
+				return move + "\n↑ / ↓";
+			else
+				return move + "\n← / →";
+		}
 		
-		if (viewMode === ViewMode.MODE_2D)
+		if (config.viewMode === ViewMode.MODE_2D)
 			return player === 1 ? move + "\nP1: W / S" : move + "\nP2: ↑ / ↓";
 		else
 			return player === 1 ? move + "\nP1: A / D" : move + "\nP2: ← / →";
+	}
+
+	async setSpectatorMode(): Promise<void> {
+		this.spectatorOverlay.isVisible = true;
+		this.animationManager.fade(this.spectatorBanner, 'in', Motion.F.base);
+		this.animationManager.twinkle(this.spectatorOverlay, Motion.F.fast);
 	}
 
 	updateScores(leftScore: number, rightScore: number): void {
@@ -124,9 +164,9 @@ export class Hud {
 		this.score2Text.text = rightScore.toString();
 
 		if (leftScore > oldLeft)
-			this.animationManager?.pop(this.score1Text, Motion.F.fast, 0.9);
+			this.animationManager?.scale(this.score1Text, 1, 0.9, Motion.F.base, true );
 		else if (rightScore > oldRight)
-			this.animationManager?.pop(this.score2Text, Motion.F.fast, 0.9);
+			this.animationManager?.scale(this.score2Text, 1, 0.9, Motion.F.base, true );
 	}
 
 	updatePlayerNames(player1Name: string, player2Name: string): void {
@@ -144,5 +184,7 @@ export class Hud {
 		this.player2Label.dispose();
 		this.fpsText.dispose();
 		this.hudGrid.dispose();
+		this.spectatorText.dispose();
+		this.spectatorBanner.dispose();
 	}
 }

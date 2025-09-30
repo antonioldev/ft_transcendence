@@ -1,16 +1,14 @@
 import { Ball } from './Ball.js';
 import { Paddle} from './Paddle.js';
-import { LEFT_PADDLE, RIGHT_PADDLE, GAME_CONFIG } from '../shared/gameConfig.js';
-import { PowerupType, MessageType} from '../shared/constants.js';
-import { Client } from '../network/Client.js'
-import { ServerMessage } from '../shared/types.js';
+import { LEFT, RIGHT, GAME_CONFIG } from '../shared/gameConfig.js';
+import { PowerupType, PowerupState} from '../shared/constants.js';
+import { Powerup } from '../shared/types.js';
 
 export class Slot {
 	type: PowerupType;
 	index: number;
 	side: number;
-	is_active: boolean = false; // true when powerup is currently in use
-	is_spent: boolean = false;	// true when a powerup has been used up
+	state: PowerupState = PowerupState.UNUSED;
 
 	constructor(type: PowerupType, side: number, index: number) {
 		this.type = type;
@@ -25,12 +23,10 @@ export class PowerupManager {
 	slots = [this.left_slots, this.right_slots];
 	paddles: Paddle[];
 	ball: Ball;
-	private _broadcast: (message: ServerMessage, clients?: Client[]) => void;
 
-	constructor(paddles: Paddle[], ball: Ball, broadcast_callback: (message: ServerMessage, clients?: Client[]) => void) {
+	constructor(paddles: Paddle[], ball: Ball) {
 		this.paddles = paddles;
 		this.ball = ball;
-		this._broadcast = broadcast_callback;
 		this._init_powerups();
 	}
 
@@ -38,16 +34,29 @@ export class PowerupManager {
 		// generates 3 random powerups in each player's slots
 		const num_powerups = Object.keys(PowerupType).length / 2;
 		for (let i = 0; i < GAME_CONFIG.slot_count; i++) {
-			this.left_slots[i] = new Slot(Math.floor(Math.random() * num_powerups), LEFT_PADDLE, i);
-			this.right_slots[i] = new Slot(Math.floor(Math.random() * num_powerups), RIGHT_PADDLE, i);
+			this.left_slots[i] = new Slot(Math.floor(Math.random() * num_powerups), LEFT, i);
+			this.right_slots[i] = new Slot(Math.floor(Math.random() * num_powerups), RIGHT, i);
+			// this.left_slots[i] = new Slot(PowerupType.POWERSHOT, LEFT, i
+			// this.right_slots[i] = new Slot(PowerupType.POWERSHOT, RIGHT, i);
 		}
 	}
 
+	get_state(side: number): Powerup[] {
+		let state: Powerup[] = [];
+		for (let i = 0; i < GAME_CONFIG.slot_count; i++) {
+			state.push({
+				type: this.slots[side][i].type,
+				state: this.slots[side][i].state,
+			})
+		}
+		return (state);
+	}
+
 	activate(slot: Slot) {
-		if (slot.is_active || slot.is_spent) return ;
+		if (slot.state === (PowerupState.ACTIVE || PowerupState.SPENT)) return ;
 		
-		const opponent_side: number = slot.side === LEFT_PADDLE ? RIGHT_PADDLE : LEFT_PADDLE;
-		let timeout: number  = GAME_CONFIG.powerupDuration;
+		const opponent_side: number = slot.side === LEFT ? RIGHT : LEFT;
+		let timeout: number = GAME_CONFIG.powerupDuration;
 
 		switch (slot.type) {
 			case PowerupType.SLOW_OPPONENT:
@@ -57,7 +66,7 @@ export class PowerupManager {
 				timeout = this.shrink(opponent_side);
 				break ;
 			case PowerupType.INVERT_OPPONENT:
-				this.paddles[opponent_side].is_inverted = true;
+				timeout = this.invert(opponent_side);
 				break ;				
 			case PowerupType.INCREASE_PADDLE_SPEED:
 				timeout = this.speed_up(slot.side);
@@ -66,28 +75,31 @@ export class PowerupManager {
 				timeout = this.grow(slot.side);
 				break ;
 			case PowerupType.FREEZE:
-				timeout = GAME_CONFIG.freezeDuration;
-				this.ball.isPaused = true;
+				timeout = this.freeze_ball();
+				break ;
+			case PowerupType.POWERSHOT:
+				timeout = this.powershot(slot.side);
+				break ;
+			case PowerupType.INVISIBLE_BALL:
+				timeout = GAME_CONFIG.invisibilityTimeLimit; // implementation handled on front
+				break ;
+			case PowerupType.RESET_RALLY:
+				timeout = this.reset_rally();
+				break ;
+			case PowerupType.DOUBLE_POINTS:
+				timeout = this.double_points();
 				break ;
 			default:
 				console.error(`Error: cannot activate unknown Powerup "${slot.type}`);
 				return ;
 		}
-
-		this._broadcast({
-			type: MessageType.POWERUP_ACTIVATED,
-			powerup: slot.type,
-			side: slot.side,
-			slot: slot.index,
-		})
-
-		slot.is_active = true;
+		slot.state = PowerupState.ACTIVE;
 		setTimeout(() => this.deactivate(slot), timeout);
 	}
 
 	deactivate(slot: Slot) {
-		if (slot.is_spent) return ;
-		const opponent_side: number = slot.side === LEFT_PADDLE ? RIGHT_PADDLE : LEFT_PADDLE;
+		if (slot.state === PowerupState.SPENT) return ;
+		const opponent_side: number = slot.side === LEFT ? RIGHT : LEFT;
 
 		switch (slot.type) {
 			case PowerupType.SLOW_OPPONENT:
@@ -108,31 +120,35 @@ export class PowerupManager {
 			case PowerupType.FREEZE:
 				this.ball.isPaused = false;
 				break ;
+			case PowerupType.POWERSHOT:
+				this.paddles[slot.side].powershot_activated = false;
+				break ;
+			case PowerupType.INVISIBLE_BALL:
+				// handled on front
+				break ;
+			case PowerupType.RESET_RALLY:
+				// nothing to handle
+				break ;
+			case PowerupType.DOUBLE_POINTS:
+				this.ball.double_points_active = false;
+				break ;
 			default:
 				console.error(`Error: cannot deactivate unknown Powerup "${slot.type}`);
 				return ;
 		}
-		
-		this._broadcast({
-			type: MessageType.POWERUP_DEACTIVATED,
-			powerup: slot.type,
-			side: slot.side,
-			slot: slot.index,
-		})
-
-		slot.is_active = false;
-		slot.is_spent = true;
+		slot.state = PowerupState.SPENT;
 	}
 
 	find_active_powerup(type: PowerupType, side: number) {
 		for (const slot of this.slots[side]) {
-			if (slot.type === type && slot.is_active) {
+			if (slot.type === type && slot.state === PowerupState.ACTIVE) {
 				return (slot);
 			}
 		}
 		return (null);
 	}
 
+	// POWERUPS 
 	slow_down(opponent_side: number): number {
 		const opponent = this.paddles[opponent_side];
 		
@@ -151,7 +167,7 @@ export class PowerupManager {
 
 	speed_up(side: number): number {
 		const caller = this.paddles[side];
-		const opponent_side = side === LEFT_PADDLE ? RIGHT_PADDLE : LEFT_PADDLE;
+		const opponent_side = side === LEFT ? RIGHT : LEFT;
 		
 		if (caller.speed === GAME_CONFIG.paddleSpeed) {
 			caller.speed = GAME_CONFIG.increasedPaddleSpeed;
@@ -169,7 +185,7 @@ export class PowerupManager {
 
 	grow(side: number): number {
 		const caller = this.paddles[side];
-		const opponent_side = side === LEFT_PADDLE ? RIGHT_PADDLE : LEFT_PADDLE;
+		const opponent_side = side === LEFT ? RIGHT : LEFT;
 		
 		if (caller.rect.width === GAME_CONFIG.paddleWidth) {
 			caller.rect.width = GAME_CONFIG.increasedPaddleWidth;
@@ -197,6 +213,31 @@ export class PowerupManager {
 			}
 			return (0);
 		}
+		return (GAME_CONFIG.powerupDuration);
+	}
+
+	invert(side: number): number {
+		this.paddles[side].is_inverted = true;
+		return (GAME_CONFIG.powerupDuration);
+	}
+
+	freeze_ball(): number {
+		this.ball.isPaused = true;
+		return (GAME_CONFIG.freezeDuration);
+	}
+
+	powershot(side: number): number {
+		this.paddles[side].powershot_activated = true;
+		return (GAME_CONFIG.powershotTimeLimit); // fix timer for this
+	}
+
+	reset_rally() {
+		this.ball.current_rally = 1;
+		return (0);
+	}
+
+	double_points() {
+		this.ball.double_points_active = true;
 		return (GAME_CONFIG.powerupDuration);
 	}
 }
