@@ -21,14 +21,20 @@ export interface Powerup {
 	state: PowerupState,
 }
 
+export interface BallState {
+	x: number,
+	z: number,
+}
+
 // Represents the state of the game (paddles and ball positions)
 export interface GameStateData {
 	state: GameState,
 	winner?: string,
 	loser?: string,
+	rally: number,
 	paddleLeft: { x: number; score: number, powerups: Powerup[] }; // Left paddle position and score
 	paddleRight: { x: number; score: number, powerups: Powerup[] }; // Right paddle position and score
-	ball: { x: number; z: number, current_rally: number }; // Ball position
+	ball_states: BallState[]; // Ball positions
 }
 
 // Represents input from a player

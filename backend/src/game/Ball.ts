@@ -12,7 +12,6 @@ export class Ball {
     paddles: (Paddle)[]; // Array of players (paddles) in the game.
     isPaused: Boolean = false;
     updateScore: (side: number, score: number) => void; // Callback to update the score.
-    current_rally = 1;
     speed_cache: number = GAME_CONFIG.ballInitialSpeed;
     
     powershot_active: boolean = false;       // whether ball is currently at superspeed

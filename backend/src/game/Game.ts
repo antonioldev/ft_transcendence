@@ -18,17 +18,18 @@ export class Game {
 	winner!: Player | CPU;
 	loser!: Player | CPU;
 	paddles: (Paddle | CPUBot)[] = [new Paddle(LEFT), new Paddle(RIGHT)];
-	ball: Ball;
+	balls: Ball[];
 	powerup_manager: PowerupManager;
 	private _broadcast: (message: ServerMessage, clients?: Set<Client>) => void;
+    current_rally = 1;
 
 	constructor(id: string, players: (Player | CPU)[], broadcast_callback: (message: ServerMessage, clients?: Set<Client>) => void) {
 		this.id = id;
 		this.clock = new Clock();
 		this._broadcast = broadcast_callback;
 		this.players = players;
-		this.ball = new Ball(this.paddles, this._update_score.bind(this));
-		this.powerup_manager = new PowerupManager(this.paddles, this.ball)
+		this.balls = [ new Ball(this.paddles, this._update_score.bind(this)) ];
+		this.powerup_manager = new PowerupManager(this.paddles, this.balls)
 		this._init_CPUs();
 		this.send_side_assignment();
 	}
@@ -38,7 +39,7 @@ export class Game {
 			const player: Player | CPU = this.players[side];
 			if (player instanceof CPU) {
 				const noiseFactor =  CPUDifficultyMap[player.difficulty];
-				this.paddles[side] = new CPUBot(side, this.ball, noiseFactor, GAME_CONFIG.paddleSpeed, 0, (s, slot) => this.activate(s, slot) );
+				this.paddles[side] = new CPUBot(side, this.balls, noiseFactor, GAME_CONFIG.paddleSpeed, 0, (s, slot) => this.activate(s, slot) );
 			}
 		}
 	}
@@ -56,10 +57,10 @@ export class Game {
 	}
 
 	// Update the score for the specified side
-	private _update_score(side: number, score: number): void {
+	private _update_score(side: number): void {
 		if (!this.is_running()) return ;
 
-		this.paddles[side].score += score;
+		this.paddles[side].score += this.current_rally;
 		if (this.paddles[side].score >= GAME_CONFIG.scoreToWin) {
 			this.assign_winner(this.players[side]);
 			this.stop();
@@ -72,7 +73,9 @@ export class Game {
 		this.paddles[LEFT].cacheRect();
 		this.paddles[RIGHT].cacheRect();
 		this._handle_input(dt);
-		this.ball.update(dt);
+		for (const ball of this.balls) {
+			ball.update(dt);
+		}
 	}
 
 	// Process the input queue and apply player movements
@@ -94,10 +97,18 @@ export class Game {
 
 	// Retrieve the current game state as a data object
 	get_state(): GameStateData {
+		let ball_states = [];
+		for (const ball of this.balls) {
+			ball_states.push({
+				x: ball.rect.centerx,
+				z: ball.rect.centerz,
+			})
+		}
 		return {
 			state: this.state,
 			...(this.winner?.name && { winner: this.winner.name }),
 			...(this.loser?.name && { loser: this.loser.name }),
+			// current_rally: this.current_rally,
 			paddleLeft: {
 				x:     this.paddles[LEFT].rect.centerx,
 				score: this.paddles[LEFT].score,
@@ -108,11 +119,7 @@ export class Game {
 				score: this.paddles[RIGHT].score,
 				powerups: this.powerup_manager.get_state(RIGHT),
 			},
-			ball: {
-				x: this.ball.rect.centerx,
-				z: this.ball.rect.centerz,
-				current_rally: this.ball.current_rally,
-			},
+			// balls: ball_states,
 		}
 	}
 
@@ -225,7 +232,6 @@ export class Game {
 		this.powerup_manager.activate(slot);
         console.log(`Powerup ${slot.type} activated by ${this.players[side].name}`);
 	}
-
 
 	assign_winner(winner: Player | CPU) {
 		this.winner = winner;

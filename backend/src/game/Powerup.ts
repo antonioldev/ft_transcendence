@@ -22,11 +22,11 @@ export class PowerupManager {
 	right_slots: Slot[] = [];
 	slots = [this.left_slots, this.right_slots];
 	paddles: Paddle[];
-	ball: Ball;
+	balls: Ball[];
 
-	constructor(paddles: Paddle[], ball: Ball) {
+	constructor(paddles: Paddle[], balls: Ball[]) {
 		this.paddles = paddles;
-		this.ball = ball;
+		this.balls = balls;
 		this._init_powerups();
 	}
 
@@ -75,7 +75,7 @@ export class PowerupManager {
 				timeout = this.grow(slot.side);
 				break ;
 			case PowerupType.FREEZE:
-				timeout = this.freeze_ball();
+				timeout = this.freeze_balls();
 				break ;
 			case PowerupType.POWERSHOT:
 				timeout = this.powershot(slot.side);
@@ -118,7 +118,7 @@ export class PowerupManager {
 				this.paddles[slot.side].rect.width = GAME_CONFIG.paddleWidth;
 				break ;
 			case PowerupType.FREEZE:
-				this.ball.isPaused = false;
+				this.unfreeze_balls();
 				break ;
 			case PowerupType.POWERSHOT:
 				this.paddles[slot.side].powershot_activated = false;
@@ -221,9 +221,17 @@ export class PowerupManager {
 		return (GAME_CONFIG.powerupDuration);
 	}
 
-	freeze_ball(): number {
-		this.ball.isPaused = true;
+	freeze_balls(): number {
+		for (const ball of this.balls) {
+			ball.isPaused = true;
+		}
 		return (GAME_CONFIG.freezeDuration);
+	}
+
+	unfreeze_balls() {
+		for (const ball of this.balls) {
+			ball.isPaused = false;
+		}
 	}
 
 	powershot(side: number): number {
@@ -232,12 +240,14 @@ export class PowerupManager {
 	}
 
 	reset_rally() {
-		this.ball.current_rally = 1;
+		this.balls.current_rally = 1;
 		return (0);
 	}
 
 	double_points() {
-		this.ball.double_points_active = true;
+		for (const ball of this.balls) {
+			ball.double_points_active = true;
+		}
 		return (GAME_CONFIG.powerupDuration);
 	}
 }
