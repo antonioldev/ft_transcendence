@@ -48,12 +48,10 @@ await fastify.register(fastifyJwt, {
 
 // Enable CORS for the frontend application
 await fastify.register(fastifyCors, {
-    origin: (origin, cb) => {
-    // aceitar se origin === 'https://c1r2s1.42london.com:8443'
-    // (ou usa uma lista/regex se tiveres mais origins)
+    origin: (origin: string | undefined, cb: (err: Error | null, allow: boolean) => void) => {
     if (!origin) return cb(null, true); // allow non-browser requests (curl)
-    const allowed = ['https://c1r2s1.42london.com:8443'];
-    if (allowed.includes(origin)) cb(null, true);
+    const allowed = [/^https:\/\/c1r2s\d+\.42london\.com:8443$/];
+    if (allowed.some(regexp => regexp.test(origin))) cb(null, true);
     else cb(new Error('Not allowed'), false);
   },
     // origin: "https://localhost",
