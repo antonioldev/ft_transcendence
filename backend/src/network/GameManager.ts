@@ -32,8 +32,10 @@ class GameManager extends EventEmitter {
         console.log(`Client disconnected: ${client.username}:${client.id}`);
         
         gameSession.handlePlayerQuit(client);
-        if (gameSession instanceof TournamentRemote && gameSession.clients.size === 0) {
-            this.endGame(gameSession);
+        if (gameSession instanceof TournamentRemote) {
+            if (gameSession.clients.size === 0) {
+                this.endGame(gameSession);
+            }
         }
         else {
             this.endGame(gameSession);
@@ -121,7 +123,7 @@ class GameManager extends EventEmitter {
         return (this.clientGamesMap.get(client.id));
     }
 
-    
+
 
 }
 
