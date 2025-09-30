@@ -8,7 +8,7 @@ const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // Session cookie settings
 const COOKIE_NAME = 'sid';
-const COOKIE_MAX_AGE = 60 * 60; // 1hours
+const COOKIE_MAX_AGE = 60 * 60; // 1 hour
 
 export async function authRoutes(fastify: FastifyInstance) {
 	// Route: Google login
@@ -38,8 +38,9 @@ export async function authRoutes(fastify: FastifyInstance) {
 			const COOKIE_OPTS = {
 				httpOnly: true,
 				secure: true,
-				sameSite: 'lax' as const,
+				sameSite: 'none' as const,
 				path: '/',
+				domain: '.42london.com',
 				maxAge: COOKIE_MAX_AGE,
 			};
 			reply.setCookie(COOKIE_NAME, sid, COOKIE_OPTS);
