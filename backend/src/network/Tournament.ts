@@ -230,6 +230,7 @@ export class TournamentLocal extends AbstractTournament {
 export class TournamentRemote extends AbstractTournament {
 	client_match_map: Map<string, Match> = new Map();	// Maps client id to the match they are in, CONTAINS ONLY ACTIVE PLAYERS
 	active_matches: Match[] = [];			// list of all active matches in a round
+	defeated_clients: Set<Client> = new Set();
 
 	constructor(mode: GameMode, capacity: number) {
 		super(mode, capacity);
@@ -252,16 +253,13 @@ export class TournamentRemote extends AbstractTournament {
 		for (const player of this.players) {
 			if (player instanceof Player && player.client === client) {
 				this.players.delete(player);
-				this.full = false;
 				if (this.in_lobby()) {
 					this.broadcast({
 						type: MessageType.TOURNAMENT_LOBBY,
 						lobby: [...this.players].map(player => player.name)
 					});
 				}
-			} 
-			if (this.players.size === 0) {
-				this.stop();
+				return ;
 			}
 		}
 	}
@@ -271,7 +269,6 @@ export class TournamentRemote extends AbstractTournament {
 		this.active_matches = []; // reset each round just to be safe
 		let round_winners: Promise<Player | CPU>[] = [];
 
-		// this.reassign_clients(matches);
 		let index = 0;
 		for (const match of matches) {
 			if (!this.is_running()) {
@@ -285,14 +282,19 @@ export class TournamentRemote extends AbstractTournament {
 			this.active_matches.push(match);
 			
 			let winner_promise: Promise<Player | CPU> = match.game.run();
-			winner_promise.then((winner) => this.assign_winner(match, winner));
+			winner_promise.then((winner) => this.handle_match_end(match, winner));
 			round_winners.push(winner_promise);
 			index++;
+		}
+
+		for (const client of this.defeated_clients) {
+			if (!client) continue ;
+			this.assign_spectator(client);
 		}
 		await Promise.all(round_winners);
 	}
 
-	assign_winner(match: Match, winner: Player | CPU) {
+	handle_match_end(match: Match, winner: Player | CPU) {
 		if (match.players[LEFT] instanceof Player && match.players[RIGHT] instanceof Player) {
 			match.game.save_to_db();
 		}
@@ -307,9 +309,17 @@ export class TournamentRemote extends AbstractTournament {
 		if (winner instanceof Player) {
 			this.readyClients.delete(winner.client.id);
 			this.client_match_map.set(winner.client.id, match.next);
+			match.clients.delete(winner.client);
 		}
 		if (match.game.loser instanceof Player) {
 			this.client_match_map.delete(match.game.loser.client.id);
+			this.defeated_clients.add(match.game.loser.client);
+			match.clients.delete(match.game?.loser.client);
+		}
+
+		// assign spectators to next available match
+		for (const client of match.clients) {
+			this.assign_spectator(client);
 		}
 
 		// remove match from active_matches[]
@@ -402,7 +412,7 @@ export class TournamentRemote extends AbstractTournament {
 			match.game?.setOtherPlayerWinner(quitter);
 			match.game?.stop();
 			this.client_match_map.delete(quitter.id);
-			// this.defeated_clients.delete(quitter);
+			this.defeated_clients.delete(quitter);
 		}
 	}
 

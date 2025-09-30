@@ -10,6 +10,7 @@ export class Paddle {
 	oldRect: Rect;
 	speed: number = GAME_CONFIG.paddleSpeed;
 	is_inverted: boolean = false;
+	powershot_activated = false;
 
 	constructor(side: number) {
 		this.side = side;

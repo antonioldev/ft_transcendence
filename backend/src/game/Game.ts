@@ -12,7 +12,7 @@ import { PowerupManager, Slot } from './Powerup.js';
 export class Game {
 	id: string;
 	clock: Clock;
-	queue: PlayerInput[] = [];
+	input_queue: PlayerInput[] = [];
 	state: GameState = GameState.INIT;
 	players: readonly (Player | CPU)[]
 	winner!: Player | CPU;
@@ -43,18 +43,13 @@ export class Game {
 		}
 	}
 
-	private isBot(paddle: Paddle | CPUBot): paddle is CPUBot {
-		return typeof (paddle as any).update === 'function';
-	}
-
 	private _handle_input(dt: number): void {
 		if (!this.is_running) return ;
 
-		this._process_queue(dt);
+		this._process_input_queue(dt);
 
-		// call .update() only on bot paddles
 		for (const paddle of this.paddles) {
-			if (this.isBot(paddle)) {
+			if (paddle instanceof CPUBot) {
 				paddle.update(dt);
 			}
 		}
@@ -67,7 +62,6 @@ export class Game {
 		this.paddles[side].score += score;
 		if (this.paddles[side].score >= GAME_CONFIG.scoreToWin) {
 			this.assign_winner(this.players[side]);
-			// this.winner = this.players[side];
 			this.stop();
 		}
 	}
@@ -82,9 +76,9 @@ export class Game {
 	}
 
 	// Process the input queue and apply player movements
-	private _process_queue(dt: number): void {
-		while (this.queue.length > 0) {
-			const input = this.queue.shift();
+	private _process_input_queue(dt: number): void {
+		while (this.input_queue.length > 0) {
+			const input = this.input_queue.shift();
 			if (input) {
 				this.paddles[input.side].move(dt, input.dx);
 			}
@@ -94,7 +88,7 @@ export class Game {
 	// Add a new input to the queue
 	enqueue(input: PlayerInput): void {
 		if (this.is_running()) {
-			this.queue.push(input);
+			this.input_queue.push(input);
 		}
 	}
 
@@ -178,7 +172,7 @@ export class Game {
 	// Pause the game
 	pause(): void {
 		this.state = GameState.PAUSED;
-		this.queue = []
+		this.input_queue = []
 	}
 
 	// Resume the game

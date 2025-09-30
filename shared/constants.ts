@@ -78,6 +78,9 @@ export enum PowerupType {
 	GROW_PADDLE,
 	FREEZE,
 	POWERSHOT,
+	INVISIBLE_BALL,
+	DOUBLE_POINTS,
+	RESET_RALLY,
 }
 export enum PowerupState {
 	UNUSED,
@@ -176,9 +179,3 @@ export enum UserManagement {
 	REQUEST_USER_PROFILE,	// Type for back to frontend comm
 	UPDATE_USER_PROFILE	 // Request to update user information 
 }
-
-// export enum PowerUpAction {
-// 	CREATED = "created",
-// 	ACTIVATED = "activated", 
-// 	DEACTIVATED = "deactivated"
-// }
