@@ -12,7 +12,8 @@ export class Ball {
     paddles: (Paddle)[]; // Array of players (paddles) in the game.
     isPaused: Boolean = false;
     updateScore: (side: number, score: number) => void; // Callback to update the score.
-    current_rally = 1; 
+    current_rally = 1;
+    speed_cache: number = GAME_CONFIG.ballInitialSpeed;
     
     powershot_active: boolean = false;       // whether ball is currently at superspeed
     double_points_active: boolean = false;    // whether double points powerup activated
@@ -82,33 +83,34 @@ export class Ball {
             else { // Collision with front of paddle
                 if (this.rect.bottom >= this.paddles[side].rect.top && this.oldRect.bottom <= this.paddles[side].oldRect.top) {
                     this.rect.bottom = this.paddles[side].rect.top;
-                    this.calculate_spin(this.paddles[side]);
-                    this.speed *= GAME_CONFIG.ballSpeedIncrease;
-                    this.current_rally += this.double_points_active ? 2 : 1;
-                    this.handle_powershot(side);
+                    this.update_ball_trajectory(side);
                 }
                 else if (this.rect.top <= this.paddles[side].rect.bottom && this.oldRect.top >= this.paddles[side].oldRect.bottom) {
                     this.rect.top = this.paddles[side].rect.bottom;
-                    this.calculate_spin(this.paddles[side]);
-                    this.speed *= GAME_CONFIG.ballSpeedIncrease;
-                    this.current_rally += this.double_points_active ? 2 : 1;
-                    this.handle_powershot(side);
+                    this.update_ball_trajectory(side);
                 }
             }
         }
     }
 
+    update_ball_trajectory(side: number) {
+        this.calculate_spin(this.paddles[side]);
+        this.speed *= (this.speed < GAME_CONFIG.maxBallSpeed) ? GAME_CONFIG.ballSpeedIncrease : 1;
+        this.current_rally += this.double_points_active ? 2 : 1;
+        this.handle_powershot(side);
+    }
+
     handle_powershot(collision_side: number) {
         if (this.paddles[collision_side].powershot_activated) {
+            this.speed_cache = this.speed;
             this.speed = GAME_CONFIG.ballPowerShotSpeed;
             this.paddles[collision_side].powershot_activated = false;
             this.powershot_active = true;
         }
         else if (this.powershot_active) {
-            this.speed = GAME_CONFIG.ballInitialSpeed;
+            this.speed = this.speed_cache;
             this.powershot_active = false;
         }
-
     }
 
     // Handles collisions with walls and detects goals to update the score.

@@ -51,8 +51,8 @@ export const GAME_CONFIG = {
 	ballInitialSpeed: 6, // Initial speed of the ball
 	ballMaxAngle: Math.PI / 4, // Maximum angle of the ball trajectory
 	ballMinAngle: Math.PI / 12, // Minimum angle of the ball trajectory
-	ballSpeedIncrease: 1.05, // Speed multiplier after paddle hit
-	ballPowerShotSpeed: 12, // Speed multiplier after paddle hit
+	ballSpeedIncrease: 1.07, // Speed multiplier after paddle hit
+	ballPowerShotSpeed: 18, // Speed multiplier after paddle hit
 	maxBallSpeed: 12,	   // Maximum ball speed
 	
 	// Wall collision boundaries (accounting for ball radius)
@@ -68,7 +68,7 @@ export const GAME_CONFIG = {
 	},
 
 	// Game mechanics
-	scoreToWin: 1,		  // Points needed to win
+	scoreToWin: 50,		  // Points needed to win
 	
 	// Input mappings
 	input2D: {
