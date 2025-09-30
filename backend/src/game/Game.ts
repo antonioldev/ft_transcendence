@@ -21,14 +21,14 @@ export class Game {
 	balls: Ball[];
 	powerup_manager: PowerupManager;
 	private _broadcast: (message: ServerMessage, clients?: Set<Client>) => void;
-    current_rally = 1;
+    rally = { current: 1 };
 
 	constructor(id: string, players: (Player | CPU)[], broadcast_callback: (message: ServerMessage, clients?: Set<Client>) => void) {
 		this.id = id;
 		this.clock = new Clock();
 		this._broadcast = broadcast_callback;
 		this.players = players;
-		this.balls = [ new Ball(this.paddles, this._update_score.bind(this)) ];
+		this.balls = [ new Ball(this.paddles, this.rally, this._update_score.bind(this)) ];
 		this.powerup_manager = new PowerupManager(this.paddles, this.balls)
 		this._init_CPUs();
 		this.send_side_assignment();
@@ -60,7 +60,7 @@ export class Game {
 	private _update_score(side: number): void {
 		if (!this.is_running()) return ;
 
-		this.paddles[side].score += this.current_rally;
+		this.paddles[side].score += this.rally.current;
 		if (this.paddles[side].score >= GAME_CONFIG.scoreToWin) {
 			this.assign_winner(this.players[side]);
 			this.stop();
@@ -108,7 +108,7 @@ export class Game {
 			state: this.state,
 			...(this.winner?.name && { winner: this.winner.name }),
 			...(this.loser?.name && { loser: this.loser.name }),
-			// current_rally: this.current_rally,
+			rally: this.rally.current,
 			paddleLeft: {
 				x:     this.paddles[LEFT].rect.centerx,
 				score: this.paddles[LEFT].score,
@@ -119,7 +119,7 @@ export class Game {
 				score: this.paddles[RIGHT].score,
 				powerups: this.powerup_manager.get_state(RIGHT),
 			},
-			// balls: ball_states,
+			ball_states: ball_states,
 		}
 	}
 

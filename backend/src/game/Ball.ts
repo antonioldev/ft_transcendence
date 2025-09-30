@@ -11,19 +11,22 @@ export class Ball {
     speed: number = GAME_CONFIG.ballInitialSpeed; // Initial speed of the ball.
     paddles: (Paddle)[]; // Array of players (paddles) in the game.
     isPaused: Boolean = false;
-    updateScore: (side: number, score: number) => void; // Callback to update the score.
+    updateScore: (side: number) => void; // Callback to update the score.
     speed_cache: number = GAME_CONFIG.ballInitialSpeed;
+    rally: { current: number };
     
     powershot_active: boolean = false;       // whether ball is currently at superspeed
     double_points_active: boolean = false;    // whether double points powerup activated
 
     // Initializes the ball with players and a score update callback.
-    constructor(paddles: any[], updateScoreCallback: (side: number, score: number) => void) {
+    constructor(paddles: any[], rally: any, updateScoreCallback: (side: number) => void) {
+        this.paddles = paddles;
+        this.rally = rally;
+        this.updateScore = updateScoreCallback;
+
         const ballPos = getBallStartPosition();
         this.rect = new Rect(ballPos.x, ballPos.z, GAME_CONFIG.ballRadius * 2, GAME_CONFIG.ballRadius * 2);
         this.oldRect = this.rect.instance();
-        this.paddles = paddles;
-        this.updateScore = updateScoreCallback;
         this.direction = this.randomDirection();
     }
 
@@ -83,10 +86,12 @@ export class Ball {
                 if (this.rect.bottom >= this.paddles[side].rect.top && this.oldRect.bottom <= this.paddles[side].oldRect.top) {
                     this.rect.bottom = this.paddles[side].rect.top;
                     this.update_ball_trajectory(side);
+                    this.rally.current += this.double_points_active ? 2 : 1;
                 }
                 else if (this.rect.top <= this.paddles[side].rect.bottom && this.oldRect.top >= this.paddles[side].oldRect.bottom) {
                     this.rect.top = this.paddles[side].rect.bottom;
                     this.update_ball_trajectory(side);
+                    this.rally.current += this.double_points_active ? 2 : 1;
                 }
             }
         }
@@ -95,7 +100,6 @@ export class Ball {
     update_ball_trajectory(side: number) {
         this.calculate_spin(this.paddles[side]);
         this.speed *= (this.speed < GAME_CONFIG.maxBallSpeed) ? GAME_CONFIG.ballSpeedIncrease : 1;
-        this.current_rally += this.double_points_active ? 2 : 1;
         this.handle_powershot(side);
     }
 
@@ -126,11 +130,11 @@ export class Ball {
         
         // Goal detection (top/bottom goals)
         if (this.rect.centerz <= GAME_CONFIG.goalBounds.rightGoal) {
-            this.updateScore(RIGHT, this.current_rally);
+            this.updateScore(RIGHT);
             this.reset();
         }
         if (this.rect.centerz >= GAME_CONFIG.goalBounds.leftGoal) {
-            this.updateScore(LEFT, this.current_rally);
+            this.updateScore(LEFT);
             this.reset();
         }
     }
@@ -142,7 +146,7 @@ export class Ball {
         this.rect.z = ballPos.z;
         this.direction = this.randomDirection();
         this.speed = GAME_CONFIG.ballInitialSpeed;
-        this.current_rally = 1;
+        this.rally.current = 1;
     }
 
     // Updates the ball's state, including movement, collisions, and scoring.
