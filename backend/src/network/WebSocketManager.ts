@@ -70,13 +70,13 @@ export class WebSocketManager {
 
         socket.on('close', () => {
             console.log(`WebSocket closed for client ${client.id}:`);
-            this.removeFromGameSession(client);
+            gameManager.removeClient(client);
             // logout user from db
         });
 
         socket.on('error', (error: any) => {
             console.error(`❌ WebSocket error for client ${client.id}:`, error);
-            this.removeFromGameSession(client);
+            gameManager.removeClient(client);
             // logout user from db
         });
     }
@@ -136,8 +136,7 @@ export class WebSocketManager {
                     this.toggleSpectator(client, data);
                     break;
                 case MessageType.QUIT_GAME:
-                    console.log(`QUIT_GAME received from ${client.username}:${client.id}`);
-                    this.removeFromGameSession(client);
+                    gameManager.removeClient(client);
                     break;
                 default:
                     this.send(client.websocket, {
@@ -166,7 +165,7 @@ export class WebSocketManager {
             if (!data.gameMode) {
                 throw new Error(`Game mode missing`);
             }
-            const gameSession = gameManager.findOrCreateGame(data.gameMode, client, data.capacity ?? undefined);
+            const gameSession = gameManager.findOrCreateGame(data.gameMode, data.capacity ?? undefined);
             gameManager.addClient(client, gameSession);
 
             if (data.aiDifficulty !== undefined && gameSession.ai_difficulty === undefined) {
@@ -274,22 +273,6 @@ export class WebSocketManager {
             return;
         }
         gameSession.resume(client.id);
-    }
-
-    /**
-     * Handles the disconnection of a client, removing them from games and cleaning up resources.
-     * @param client - The client that disconnected.
-     */
-    private removeFromGameSession(client: Client): void {
-        const gameSession = gameManager.findClientGameSession(client);
-        if (!gameSession) {
-            console.warn(`Cannot disconnect: Client ${client.id} not in any game`);
-            return;
-        }
-
-        gameSession.handlePlayerQuit(client);
-        gameManager.removeClientFromGames(client);
-        console.log(`Client disconnected: ${client.username}:${client.id}`);
     }
 
     private activatePowerup(client: Client, data: ClientMessage) {

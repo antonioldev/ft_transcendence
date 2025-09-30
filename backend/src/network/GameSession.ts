@@ -59,7 +59,7 @@ export abstract class AbstractGameSession {
 		if (!this.clients.has(client)) return ;
 
 		this.clients.delete(client);
-		// this.readyClients.delete(client.id);
+		this.handlePlayerQuit(client);
 		this.full = false;
 
 		if (this.clients.size === 0) {

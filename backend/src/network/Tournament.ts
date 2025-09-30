@@ -418,7 +418,7 @@ export class TournamentRemote extends AbstractTournament {
 
 	// The opposing player wins their current match and the tournament continues
 	handlePlayerQuit(quitter: Client): void {
-		this.remove_client(quitter);
+		this.remove_client(quitter); // maybe double call
 		this.remove_player(quitter);
 		if (this.is_running()) {
 			const match = this.findMatch(quitter.id);
