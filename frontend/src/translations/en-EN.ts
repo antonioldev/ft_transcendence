@@ -63,5 +63,7 @@ export const english: Translation = {
 	winner: 'Winner',
 	continue: 'Press SPACE to continue',
 	tournamentTitle: 'Bracket',
-	escToClose: 'Press ESC to close'
+	escToClose: 'Press ESC to close',
+	spectator: '🎮 SPECTATOR MODE',
+	spectatorInstruction: '← Previous Match | → Next Match | Space: Toggle Bracket | Y: Exit'
 };

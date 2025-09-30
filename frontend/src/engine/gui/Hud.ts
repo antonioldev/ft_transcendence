@@ -1,9 +1,9 @@
-import { AdvancedDynamicTexture, TextBlock, Grid} from "@babylonjs/gui";
+import { AdvancedDynamicTexture, TextBlock, Grid, Rectangle} from "@babylonjs/gui";
 import { GameConfig } from '../GameConfig.js';
 import { GameMode, ViewMode} from '../../shared/constants.js';
 import { getCurrentTranslation } from '../../translations/translations.js';
 import { AnimationManager, Motion } from "../services/AnimationManager.js";
-import { HUD_STYLES, createTextBlock, createGrid,} from "./GuiStyle.js";
+import { HUD_STYLES, createTextBlock, createGrid, createRect, createStackPanel, SPECTATOR_STYLE} from "./GuiStyle.js";
 
 export class Hud {
 	private hudGrid!: Grid;
@@ -15,8 +15,17 @@ export class Hud {
 	private rallyText!: TextBlock;
 	private rally!: TextBlock;
 	private previousRally: number = 1;
+	private spectatorOverlay!: Rectangle;
+	private spectatorBanner!: Rectangle;
+	private spectatorText!: TextBlock;
+	private spectatorControls!: TextBlock;
 
 	constructor(private adt: AdvancedDynamicTexture, private animationManager: AnimationManager, config: GameConfig) {
+		this.createHud(config);
+		this.createSpectatorBanner();
+	}
+
+	private createHud(config: GameConfig): void {
 		this.hudGrid = createGrid("hudGrid", HUD_STYLES.hudGrid);
 		this.adt!.addControl(this.hudGrid);
 
@@ -76,6 +85,24 @@ export class Hud {
 		this.rally.transformCenterY = 0.5;
 	}
 
+	private createSpectatorBanner(): void {
+		const t = getCurrentTranslation();
+
+		this.spectatorOverlay= createRect("spectatorOverlay", SPECTATOR_STYLE.spectatorOverlay);
+		this.adt!.addControl(this.spectatorOverlay);
+		this.spectatorBanner = createRect("spectatorBanner", SPECTATOR_STYLE.spectatorBanner);
+		this.spectatorOverlay.addControl(this.spectatorBanner);
+
+		const bannerContent = createStackPanel("bannerContent", SPECTATOR_STYLE.bannerContent);
+		this.spectatorBanner.addControl(bannerContent);
+
+		this.spectatorText = createTextBlock("spectatorText", SPECTATOR_STYLE.spectatorText, t.spectator);
+		bannerContent.addControl(this.spectatorText);
+
+		this.spectatorControls = createTextBlock("spectatorControls", SPECTATOR_STYLE.spectatorControls, t.spectatorInstruction);
+		bannerContent.addControl(this.spectatorControls);
+	}
+
 	show(show: boolean): void {
 		this.hudGrid.isVisible = show;
 	}
@@ -123,6 +150,12 @@ export class Hud {
 			return player === 1 ? move + "\nP1: A / D" : move + "\nP2: ← / →";
 	}
 
+	async setSpectatorMode(): Promise<void> {
+		this.spectatorOverlay.isVisible = true;
+		this.animationManager.fade(this.spectatorBanner, 'in', Motion.F.base);
+		this.animationManager.twinkle(this.spectatorOverlay, Motion.F.fast);
+	}
+
 	updateScores(leftScore: number, rightScore: number): void {
 		const oldLeft = parseInt(this.score1Text.text);
 		const oldRight = parseInt(this.score2Text.text);
@@ -151,5 +184,7 @@ export class Hud {
 		this.player2Label.dispose();
 		this.fpsText.dispose();
 		this.hudGrid.dispose();
+		this.spectatorText.dispose();
+		this.spectatorBanner.dispose();
 	}
 }

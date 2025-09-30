@@ -63,5 +63,7 @@ export const french: Translation = {
 	winner: 'Vainqueur du match',
 	continue: 'Appuyez sur ESPACE pour continuer',
 	tournamentTitle: 'Classement du Tournoi',
-	escToClose: 'Appuyez sur ESC pour fermer'
+	escToClose: 'Appuyez sur ESC pour fermer',
+	spectator: '🎮 MODE SPECTATEUR',
+	spectatorInstruction: '← Match Précédent | → Match Suivant | Espace: Afficher/Masquer le Bracket | Y: Quitter'
 };

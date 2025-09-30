@@ -66,6 +66,8 @@ export interface Translation {
 	continue: string;
 	tournamentTitle: string;
 	escToClose: string;
+	spectator: string,
+	spectatorInstruction: string;
 }
 
 export type TranslationKey = keyof Translation;

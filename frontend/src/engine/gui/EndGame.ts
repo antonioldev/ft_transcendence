@@ -102,6 +102,7 @@ export class EndGame {
 
 		this.partialEndGameOverlay.isPointerBlocker = false;
 		this.partialEndGameOverlay.isVisible = false;
+		this.continueText.isVisible = false;
 	}
 
 	async showFinal(winner: string): Promise<void> {

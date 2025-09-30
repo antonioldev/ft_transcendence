@@ -31,8 +31,59 @@ export const COLORS = {
     BLACK_STRING: "#000000",
     BLUE_LIGHT_STRING: "#8db1f0ff",
     CYAN_LIGHT_STRING: "#79d7eeff",
+
+    SPECTATOR_BLUE: "rgba(0, 100, 255, 0.3)",
+    SPECTATOR_RED: "rgba(255, 0, 0, 0.3)",
+    SPECTATOR_YELLOW: "rgba(255, 255, 0, 1)",
 } as const;
 
+
+export const SPECTATOR_STYLE = {
+    spectatorOverlay: {
+        width: "100%",
+        height: "100%",
+        background: COLORS.TRANSPARENT,
+        thickness: 3,
+        color: COLORS.SPECTATOR_RED,
+        zIndex: 19,
+        isVisible: false
+    },
+
+    spectatorBanner: {
+        width: "100%",
+        height: "40px",
+        background: COLORS.SPECTATOR_RED,
+        alpha: 1,
+        horizontalAlignment: H_CENTER,
+        verticalAlignment: V_TOP,
+    },
+
+    spectatorText: {
+        fontFamily: FONT_FAMILY,
+        color: COLORS.WHITE,
+        fontSize: 18,
+        fontWeight: "bold",
+        textHorizontalAlignment: H_LEFT,
+        textVerticalAlignment: V_CENTER,
+        paddingLeft: "20px",
+        width: "300px"
+    },
+
+    spectatorControls: {
+        fontFamily: FONT_FAMILY,
+        color: COLORS.SPECTATOR_YELLOW,
+        fontSize: 14,
+        textHorizontalAlignment: H_RIGHT,
+        textVerticalAlignment: V_CENTER,
+        width: "600px"
+    },
+
+    bannerContent: {
+        width: "100%",
+        height: "100%",
+        isVertical: false
+    }
+} as const;
 
 export const LOADING_STYLE = {
     overlay: {
@@ -198,6 +249,7 @@ export const POWER_UP_STYLES = {
     powerUpSlot: {
         width: "110px",
         height: "280px",
+        top: "50px",
         background: COLORS.TRANSPARENT,
         verticalAlignment: V_TOP,
         thickness: 0,
@@ -438,6 +490,7 @@ export const PARTIAL_END_GAME_STYLES = {
         textVerticalAlignment: V_CENTER,
         outlineWidth: 2,
         outlineColor: COLORS.GOLD,
+        isVisible: false,
         zIndex: 10
     }
 } as const;
@@ -469,10 +522,11 @@ export const END_GAME_STYLES = {
 export const BRACKET_STYLES = {
     bracketOverlay: {
         width: "560px",
-        height: "85%",
+        height: "650px",
+        top: "40px",
         background: COLORS.TRANSPARENT_BLACK_98,
         horizontalAlignment: H_RIGHT,
-        verticalAlignment: V_CENTER,
+        verticalAlignment: V_BOTTOM,
         cornerRadius: 12,
         isVisible: false,
         isPointerBlocker: true,

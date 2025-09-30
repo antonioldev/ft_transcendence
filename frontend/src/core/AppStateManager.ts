@@ -1,5 +1,5 @@
 import { uiManager } from '../ui/UIManager.js';
-import { ViewMode, AppState, GameMode } from '../shared/constants.js';
+import { ViewMode, AppState, GameMode, GameState } from '../shared/constants.js';
 import { authManager } from './AuthManager.js';
 import { Game } from '../engine/Game.js';
 import { webSocketClient } from './WebSocketClient.js';
@@ -34,10 +34,10 @@ export class AppStateManager {
 	private setupEventListeners(): void {
 		// Listen for browser back/forward button clicks
 		window.addEventListener('popstate', (event) => {
-			if (this.currentGame?.state.isInGame()) {
-				this.currentGame.pause();
+			if (this.currentGame?.getState() === GameState.RUNNING ) {
+				this.currentGame.requestExitToMenu(); // TODO should open th menu pause
 				return;
-			} else if (this.currentGame?.state.isPaused()) {
+			} else if (this.currentGame?.getState() === GameState.PAUSED) {
 				this.currentGame.requestExitToMenu();
 				return;
 			}

@@ -14,6 +14,7 @@ export class MatchTree {
 	private tabButtonsBg: Image[] = [];
 	private tabLabels: TextBlock[] = [];
 	private currentRound: number = 0;
+	private isAnimating: boolean = false;
 
 	constructor(private adt: AdvancedDynamicTexture, private animationManager: AnimationManager) {
 		const t = getCurrentTranslation();
@@ -111,8 +112,16 @@ export class MatchTree {
 		if (nextTb) nextTb.text = winner;
 	}
 
+	toggle(): void {
+		if (this.isAnimating) return;
+		
+		const isCurrentlyVisible = this.bracketOverlay.isVisible;
+		this.show(!isCurrentlyVisible);
+	}
+
 	show(show: boolean): void {
-		if (!this.bracketOverlay || !this.animationManager) return;
+		if (!this.bracketOverlay || !this.animationManager || this.isAnimating) return;
+		this.isAnimating = true;
 		if (show) {
 			this.activateRound(this.currentRound);
 			this.bracketOverlay.isVisible = true;
@@ -125,6 +134,7 @@ export class MatchTree {
 				this.bracketOverlay.isVisible = false;
 			});
 		}
+		this.isAnimating = false;
 	}
 
 	dispose(): void {

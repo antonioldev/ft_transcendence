@@ -63,5 +63,7 @@ export const italian: Translation = {
 	winner: 'Vincitore della partita',
 	continue: 'Premi SPAZIO per continuare',
 	tournamentTitle: 'Classifica del Torneo',
-	escToClose: 'Premere ESC per chiudere'
+	escToClose: 'Premere ESC per chiudere',
+	spectator: '🎮 MODALITÀ SPETTATORE',
+	spectatorInstruction: '← Partita Precedente | → Partita Successiva | Spazio: Mostra/Nascondi Tabellone | Y: Esci'
 };

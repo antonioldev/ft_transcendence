@@ -101,7 +101,17 @@ export class AnimationManager {
 		return this.play(target, frames, loop);
 	}
 
-	// Add this to your AnimationManager class
+	resize( target: Control, widthTo: number, heightTo: number, frames = Motion.F.slow): Promise<void> {
+		const currentWidth = target.widthInPixels;
+		const currentHeight = target.heightInPixels;
+		
+		target.animations = [
+			this.createFloat("widthInPixels", currentWidth, widthTo, frames, false, Motion.ease.quadOut()),
+			this.createFloat("heightInPixels", currentHeight, heightTo, frames, false, Motion.ease.quadOut())
+		];
+		return this.play(target, frames, false);
+	}
+
 	fade(
 		target: Control, 
 		type: 'in' | 'out' = 'in',
@@ -196,6 +206,8 @@ export class AnimationManager {
 		];
 		return this.play(target, frames, true);
 	}
+
+
 
 	// Slide in from any direction with custom distance
 	slideFromDirection(

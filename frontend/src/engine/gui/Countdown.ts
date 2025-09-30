@@ -37,13 +37,15 @@ export class Countdown {
 		this.countdownText.text = "GO!";
 		this.countdownText.animations = [];
 
-		await this.animationManager.scale(this.countdownText, 3, Motion.F.base)
-		await this.animationManager?.slideFromDirection(this.countdownText, 'up', 'out', 400, Motion.F.base);
-
+		await Promise.all ([
+			this.animationManager.scale(this.countdownText, 1, 4, Motion.F.slow),
+			this.animationManager.slideFromDirection(this.countdownContainer, 'up', 'out', 400, Motion.F.slow)
+		]);
+		
 		this.countdownText.scaleX = 1;
 		this.countdownText.scaleY = 1;
-		this.countdownText.topInPixels = 0;
-		this.countdownText.alpha = 1;
+		this.countdownContainer.topInPixels = 0;
+		this.countdownContainer.alpha = 1;
 		this.countdownContainer.isVisible = false;
 	}
 

@@ -1,7 +1,7 @@
 import { DeviceSourceManager, DeviceType, Scene } from "@babylonjs/core";
 import { Logger } from '../../utils/LogManager.js';
 import { GameConfig } from '../GameConfig.js';
-import { Direction, GameMode, ViewMode} from '../../shared/constants.js';
+import { Direction, ViewMode} from '../../shared/constants.js';
 import { GameObjects } from '../../shared/types.js';
 import { getPlayerBoundaries } from '../../shared/gameConfig.js';
 import { PlayerSide, PlayerState } from "../utils.js";
@@ -14,7 +14,7 @@ export const Keys = {
   W: 87, S: 83, A: 65, D: 68,
   C: 67, V: 86, B: 66, I: 73, O: 79, P: 80,
   UP: 38, DOWN: 40, LEFT: 37, RIGHT: 39,
-  ESC: 27, Y: 89, N: 78,
+  ESC: 27, Y: 89, N: 78, SPACE: 32,
   ONE: 49, TWO: 50, THREE: 51
 } as const;
 
@@ -42,9 +42,10 @@ export const PROFILES_3D = {
 export class KeyboardManager {
 	private deviceSourceManager: DeviceSourceManager | null = null;
 	private globalKeyDownHandler: (event: KeyboardEvent) => void;
-	// private activeProfiles!: { P1: KeysProfile; P2: KeysProfile; DEFAULT: KeysProfile, DEFAULT_RIGHT: KeysProfile };
-	private activeProfiles!: { P1: KeysProfile; P2: KeysProfile;};
+	private activeProfiles!: { P1: KeysProfile; P2: KeysProfile; DEFAULT: KeysProfile, DEFAULT_RIGHT: KeysProfile };
+	// private activeProfiles!: { P1: KeysProfile; P2: KeysProfile;};
 	private isInitialized: boolean = false;
+	private isSpectator: boolean = false;
 
 	constructor(
 		scene: Scene,
@@ -68,42 +69,61 @@ export class KeyboardManager {
 		document.addEventListener('keydown', this.globalKeyDownHandler);
 	}
 
-	mapModeAndAssignment(mode: GameMode, controlledSides?: PlayerSide[]) {
-		controlledSides?.forEach((side, index) => {
-			const player = this.players.get(side);
-			if (!player) return;
+	// mapModeAndAssignment(mode: GameMode, controlledSides?: PlayerSide[]) {
+	// 	controlledSides?.forEach((side, index) => {
+	// 		const player = this.players.get(side);
+	// 		if (!player) return;
 
-			player.keyboardProfile = (side === PlayerSide.LEFT) ?
-					this.activeProfiles.P1 : this.activeProfiles.P2;
+	// 		player.keyboardProfile = (side === PlayerSide.LEFT) ?
+	// 				this.activeProfiles.P1 : this.activeProfiles.P2;
 
-			// if (this.config.isLocalMultiplayer) {
-			// 	player.keyboardProfile = (side === PlayerSide.LEFT) ?
-			// 		this.activeProfiles.P1 : this.activeProfiles.P2;
-			// } else {
-			// 	player.keyboardProfile = (side === PlayerSide.LEFT) ?
-			// 		this.activeProfiles.DEFAULT : this.activeProfiles.DEFAULT_RIGHT;
-			// }
-		});
-	}
+	// 		// if (this.config.isLocalMultiplayer) {
+	// 		// 	player.keyboardProfile = (side === PlayerSide.LEFT) ?
+	// 		// 		this.activeProfiles.P1 : this.activeProfiles.P2;
+	// 		// } else {
+	// 		// 	player.keyboardProfile = (side === PlayerSide.LEFT) ?
+	// 		// 		this.activeProfiles.DEFAULT : this.activeProfiles.DEFAULT_RIGHT;
+	// 		// }
+	// 	});
+	// }
 
 	assignLocalControls() {
 		this.players.forEach((player, side) => {
 			if (!player.isControlled) return;
 			
-			player.keyboardProfile = (side === PlayerSide.LEFT) ?
-				this.activeProfiles.P1 : this.activeProfiles.P2;
-			// if (this.config.isLocalMultiplayer) {
-			// 	player.keyboardProfile = (side === PlayerSide.LEFT) ?
-			// 		this.activeProfiles.P1 : this.activeProfiles.P2;
-			// } else {
-			// 	player.keyboardProfile = (side === PlayerSide.LEFT) ?
-			// 		this.activeProfiles.DEFAULT : this.activeProfiles.DEFAULT_RIGHT;
-			// }
+			// player.keyboardProfile = (side === PlayerSide.LEFT) ?
+			// 	this.activeProfiles.P1 : this.activeProfiles.P2;
+			if (this.config.isLocalMultiplayer) {
+				player.keyboardProfile = (side === PlayerSide.LEFT) ?
+					this.activeProfiles.P1 : this.activeProfiles.P2;
+			} else {
+				player.keyboardProfile = (side === PlayerSide.LEFT) ?
+					this.activeProfiles.DEFAULT : this.activeProfiles.DEFAULT_RIGHT;
+			}
 		});
+	}
+
+	setSpectator(isSpectator: boolean): void {
+		this.isSpectator = isSpectator;
 	}
 
 	private handleGlobalKeyDown(event: KeyboardEvent): void {
 		const key = event.keyCode;
+
+		if (key === 70) { // F key - Open
+			this.gui.curtain.start();
+			return;
+		}
+		
+		if (key === 71) { // G key - Close
+			this.gui.curtain.stop();
+			return;
+		}
+
+		if (this.isSpectator) {
+			this.handleSpectatorInteraciot(key);
+			return;
+		}
 
 		if (key === Keys.ESC) {
 			this.handleEscapeKey();
@@ -114,6 +134,23 @@ export class KeyboardManager {
 			this.handlePauseMenuKeys(key);
 		else
 			this.handlePowerupKeys(key);
+	}
+
+	private handleSpectatorInteraciot(key: number) {
+		switch (key) {
+			case Keys.Y:
+				document.dispatchEvent(new CustomEvent('game:exitToMenu'));
+				break;
+			case Keys.LEFT:
+					webSocketClient.sendSwitchGame(Direction.LEFT);
+				break;
+			case Keys.RIGHT:
+					webSocketClient.sendSwitchGame(Direction.RIGHT);
+				break;
+			case Keys.SPACE:
+				this.gui.matchTree.toggle();
+				break;
+		}
 	}
 
 	// Updated escape key handler
@@ -127,24 +164,24 @@ export class KeyboardManager {
 	}
 
 	private handlePauseMenuKeys(key: number): void {
-		const isSpectators = !this.players.get(PlayerSide.LEFT)?.isControlled
-						&& !this.players.get(PlayerSide.RIGHT)?.isControlled;
+		// const isSpectators = !this.players.get(PlayerSide.LEFT)?.isControlled
+		// 				&& !this.players.get(PlayerSide.RIGHT)?.isControlled;
 		switch (key) {
 			case Keys.Y:
-				webSocketClient.sendQuitGame();
+				document.dispatchEvent(new CustomEvent('game:exitToMenu'));
 				break;
 			case Keys.N:
 			case Keys.ESC:
 				webSocketClient.sendResumeRequest();
 				break;
-			case Keys.LEFT:
-				if (isSpectators)
-					webSocketClient.sendSwitchGame(Direction.LEFT);
-				break;
-			case Keys.RIGHT:
-				if (isSpectators)
-					webSocketClient.sendSwitchGame(Direction.RIGHT);
-				break;
+			// case Keys.LEFT:
+			// 	if (isSpectators)
+			// 		webSocketClient.sendSwitchGame(Direction.LEFT);
+			// 	break;
+			// case Keys.RIGHT:
+			// 	if (isSpectators)
+			// 		webSocketClient.sendSwitchGame(Direction.RIGHT);
+			// 	break;
 		}
 	}
 

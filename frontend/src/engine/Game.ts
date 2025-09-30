@@ -35,6 +35,9 @@ export class Game {
 			[PlayerSide.RIGHT, { name: "", isControlled: false, keyboardProfile: undefined,
 				size: GAME_CONFIG.paddleWidth, score: 0, powerUpsAssigned: false, powerUps: [], inverted: false,}]
 		]);
+	private exitHandler = () => {
+		this.requestExitToMenu();
+	};
 
 // ====================			CONSTRUCTOR			   ====================
 	constructor(private config: GameConfig) {
@@ -139,6 +142,10 @@ export class Game {
 		});
 	}
 
+	getState(): GameState {
+		return this.serverState;
+	}
+
 // ====================			GAME CONTROL			 ====================
 	private async handleCountdown(countdown: number): Promise<void> {
 		try {
@@ -200,6 +207,8 @@ export class Game {
 		
 		if (showLoser){
 			await this.services?.gui?.showTournamentMatchLoser();
+			this.services?.input.setSpectator(true);
+			this.services?.gui.hud.setSpectatorMode();
 		}
 		else {
 			const waitForSpace = controlledSides.length !== 0 ? true : false;
@@ -326,11 +335,9 @@ export class Game {
 		this.serverState = state.state;
 		switch (this.serverState){
 			case GameState.PAUSED:
-				console.error("gamePaused");
 				this.onServerPausedGame();
 				break;
 			case GameState.RUNNING:
-				console.error("gameResumed");
 				this.onServerResumedGame();
 				break;
 			case GameState.ENDED:
@@ -393,6 +400,7 @@ export class Game {
 		webSocketClient.registerCallback(WebSocketEvent.MATCH_RESULT, (message: any) => { this.services?.gui?.updateTournamentGame(message);});
 		webSocketClient.registerCallback(WebSocketEvent.TOURNAMENT_LOBBY, (message: any) => {this.services?.gui?.updateTournamentLobby(message); uiManager.setLoadingScreenVisible(false); });
 		webSocketClient.registerCallback(WebSocketEvent.COUNTDOWN, (message: any) => { this.handleCountdown(message.countdown); });
+		document.addEventListener('game:exitToMenu', this.exitHandler);
 	}
 
 	private unregisterCallbacks(): void {
@@ -413,6 +421,7 @@ export class Game {
 	private async dispose(): Promise<void> {
 		if (!this.isInitialized) return;
 		try {
+			document.removeEventListener('game:exitToMenu', this.exitHandler);
 			this.isInitialized = false;
 			clearInterval(this.gameLoopObserver);
 			this.gameLoopObserver = null;
