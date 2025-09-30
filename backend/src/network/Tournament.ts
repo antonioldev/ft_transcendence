@@ -104,6 +104,13 @@ abstract class AbstractTournament extends AbstractGameSession{
 
 			match.add_player(player_left);
 			match.add_player(player_right);
+
+			if (!this.client_match_map) continue ;
+			for (const player of [player_left, player_right]) {
+				if (!(player instanceof CPU)) {
+					this.client_match_map.set(player.client.id, match);
+				}
+			}
 		}
 	}
 
@@ -129,13 +136,14 @@ abstract class AbstractTournament extends AbstractGameSession{
 		this.state = TournamentState.RUNNING;
 
 		this._match_players([...this.players]);
+		
 		for (this.current_round = 1; this.current_round <= this.num_rounds; this.current_round++) {
 			if (!this.is_running()) {
 				console.log(`Tournament ${this.id} ended prematurely on round ${this.current_round}`);
 				return ;
 			}
-
-			await this.waitForPlayersReady();
+			
+			await this.waitForClientsReady();
 			this.broadcastRoundSchedule(this.current_round);
 			
 			const matches = this.rounds.get(this.current_round);
@@ -177,7 +185,7 @@ export class TournamentLocal extends AbstractTournament {
 			if (!this.is_running()) return ;
 			this.current_match = match;
 			
-			await this.waitForPlayersReady();
+			await this.waitForClientsReady();
 			match.index = index;
 			match.game = new Game(match.id, match.players, this.broadcast.bind(this));
 			await match.game.run();

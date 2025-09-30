@@ -98,23 +98,11 @@ export abstract class AbstractGameSession {
 		this.client_capacity = this.clients.size;
     }
 
-	// remove_player(player: Player) {
-	// 	const index = this.players.indexOf(player);
-	// 	if (index !== -1) {
-	// 		console.log(`Player ${player.name} removed from game ${this.id}`);
-	// 		this.players.splice(index, 1);
-	// 		this.full = false;
-	// 	}
-	// 	if (this.players.length === 0) {
-	// 		this.stop();
-	// 	}
-	// }
-
 	allClientsReady(): boolean {
 		return (this.readyClients.size === this.clients.size && this.clients.size > 0);
 	}
 
-	async waitForPlayersReady() {
+	async waitForClientsReady() {
 		if (this.allClientsReady()) return ;
 		await new Promise(resolve => {
 			gameManager.once(`all-ready-${this.id}`, resolve);
@@ -187,7 +175,7 @@ export class OneOffGame extends AbstractGameSession{
 		if (this.running) return;
 		this.running = true;
 		
-		await this.waitForPlayersReady();
+		await this.waitForClientsReady();
 		this.game = new Game(this.id, [...this.players], this.broadcast.bind(this))
 		await this.game.run();
 		if (this.mode === GameMode.TWO_PLAYER_REMOTE) {

@@ -147,6 +147,7 @@ export class Game {
 
 	// Main game loop 
 	async run(): Promise<Player | CPU> {
+		console.log(`Game ${this.id} started with players: ${this.players[LEFT].name}, ${this.players[RIGHT].name}`)
 		// if both are CPU then choose a random winner
 		if (this.paddles[LEFT] instanceof CPUBot && this.paddles[RIGHT] instanceof CPUBot) {
 			const random_index = (Math.random() > 0.5) ? 0 : 1;

@@ -198,14 +198,14 @@ export class WebSocketManager {
      * @param client - The client that is ready
      */
     private handlePlayerReady(client: Client): void {
-        console.log(`Client ${client.id} is ready`);
-
+        
         const gameSession = gameManager.findClientGameSession(client);
         if (!gameSession) {
             console.warn(`Client ${client.username}:${client.id} not in any game for ready signal`);
             return;
         }
         gameSession.setClientReady(client.id);
+        console.log(`Client ${client.id} is ready`);
     }
 
     /**

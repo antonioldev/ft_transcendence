@@ -82,6 +82,7 @@ export enum PowerupType {
 	DOUBLE_POINTS,
 	RESET_RALLY,
 }
+
 export enum PowerupState {
 	UNUSED,
 	ACTIVE,
@@ -126,7 +127,7 @@ export enum TournamentState {
 
 // View modes for the game
 export enum ViewMode {
-	MODE_2D = 0,		   // 2D view
+	MODE_2D = 0,		// 2D view
 	MODE_3D = 1			// 3D view
 }
 
