@@ -288,13 +288,13 @@ export const POWER_UP_STYLES = {
     },
 
     powerUpHd: {
-        widthInPixels: 300,
-        heightInPixels: 300,
+        widthInPixels: 200,
+        heightInPixels: 200,
         stretch: Image.STRETCH_UNIFORM,
         horizontalAlignment: H_CENTER,
-        verticalAlignment: V_CENTER,
+        verticalAlignment: V_TOP,
         isVisible: false,
-        top: -100,
+        top: 100,
         alpha: 0,
         zIndex: 15
     }

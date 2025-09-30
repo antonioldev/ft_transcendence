@@ -180,7 +180,7 @@ export class Game {
 				this.services?.audio?.stopCountdown();
 				this.services?.audio?.startGameMusic();
 				this.services?.render?.stopCameraAnimation();
-				await this.services?.gui?.countdown.finishCountdown();
+				this.services?.gui?.countdown.finishCountdown();
 				await this.services?.gui?.animateBackground(false);
 				this.startGameLoop();
 			}
