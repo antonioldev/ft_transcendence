@@ -10,11 +10,11 @@ export abstract class AbstractGameSession {
 	mode: GameMode;
 	id: string = generateGameId();
 	clients: Set<Client> = new Set();
-	players: (Player | CPU)[] = [];
+	players: Set<Player | CPU> = new Set();
+
 	player_capacity: number = 2;
 	client_capacity: number = 1;
 	full: boolean = false;
-	running: boolean = false;
 	ai_difficulty: AiDifficulty = AiDifficulty.MEDIUM;
 	readyClients: Set<string> = new Set(); // Keep track of clients that finish loading
 
@@ -53,7 +53,7 @@ export abstract class AbstractGameSession {
 		if (this.clients.size === this.client_capacity) {
 			this.full = true;
 		}
-}
+	}
 
 	remove_client(client: Client) {
 		if (!this.clients.has(client)) return ;
@@ -68,14 +68,14 @@ export abstract class AbstractGameSession {
 	}
 	
 	add_player(player: Player | CPU) {
-		if (this.players.length < this.player_capacity) {
+		if (this.players.size < this.player_capacity) {
 			console.log(`Player ${player.name} added to game ${this.id}`);
-			this.players.push(player);
+			this.players.add(player);
 		}
 	}
 
 	get_cpu_name(): string {
-		const unavailable_names: string[] = this.players.map(player => player.name);
+		const unavailable_names: string[] = [...this.players].map(player => player.name);
 		let name: string;
 
 		do {
@@ -87,7 +87,7 @@ export abstract class AbstractGameSession {
 	}
 
 	add_CPUs() {
-		for (let i = 1; this.players.length < this.player_capacity; i++) {
+		for (let i = 1; this.players.size < this.player_capacity; i++) {
 			this.add_player(new CPU(`CPU_${i}`, this.get_cpu_name(), this.ai_difficulty));
 		}
 
@@ -98,17 +98,17 @@ export abstract class AbstractGameSession {
 		this.client_capacity = this.clients.size;
     }
 
-	remove_player(player: Player) {
-		const index = this.players.indexOf(player);
-		if (index !== -1) {
-			console.log(`Player ${player.name} removed from game ${this.id}`);
-			this.players.splice(index, 1);
-			this.full = false;
-		}
-		if (this.players.length === 0) {
-			this.stop();
-		}
-	}
+	// remove_player(player: Player) {
+	// 	const index = this.players.indexOf(player);
+	// 	if (index !== -1) {
+	// 		console.log(`Player ${player.name} removed from game ${this.id}`);
+	// 		this.players.splice(index, 1);
+	// 		this.full = false;
+	// 	}
+	// 	if (this.players.length === 0) {
+	// 		this.stop();
+	// 	}
+	// }
 
 	allClientsReady(): boolean {
 		return (this.readyClients.size === this.clients.size && this.clients.size > 0);
@@ -133,7 +133,7 @@ export abstract class AbstractGameSession {
 
 	resume(client_id?: string): void {
 		const game = this.findGame(client_id);
-		if (!this.running || !game) {
+		if (!game) {
 			console.log(`Game ${this.id} is not running, cannot resume`);
 			return ;
 		}
@@ -148,7 +148,7 @@ export abstract class AbstractGameSession {
 
 	pause(client_id?: string): void {
 		const game = this.findGame(client_id);
-		if (!this.running || !game || !game.is_running()) {
+		if (!game || !game.is_running()) {
 			console.log(`Game ${this.id} is not running, cannot pause`);
 			return ;
 		}
@@ -172,9 +172,11 @@ export abstract class AbstractGameSession {
 	abstract handlePlayerQuit(quitter: Client): void;
 	abstract canClientControlGame(client: Client): boolean;
 	abstract findGame(client_id?: string): Game | undefined;
+	abstract is_running(): boolean;
 }
 
 export class OneOffGame extends AbstractGameSession{
+	running: boolean = false;
 	game!: Game;
 
 	constructor (mode: GameMode) {
@@ -185,10 +187,8 @@ export class OneOffGame extends AbstractGameSession{
 		if (this.running) return;
 		this.running = true;
 		
-		this.add_CPUs(); // add any CPU's if necessary
 		await this.waitForPlayersReady();
-		
-		this.game = new Game(this.id, this.players, this.broadcast.bind(this))
+		this.game = new Game(this.id, [...this.players], this.broadcast.bind(this))
 		await this.game.run();
 		if (this.mode === GameMode.TWO_PLAYER_REMOTE) {
 			this.game.save_to_db();
@@ -220,5 +220,9 @@ export class OneOffGame extends AbstractGameSession{
 
 	findGame() {
 		return (this.game);
+	}
+
+	is_running(): boolean {
+		return (this.running);
 	}
 }

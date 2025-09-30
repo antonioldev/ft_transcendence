@@ -3,7 +3,6 @@ import { Ball } from './Ball.js'
 import { GAME_CONFIG, getBallStartPosition, getPlayerLeftPosition, 
          getPlayerRightPosition, LEFT, RIGHT, getPlayerBoundaries } from '../shared/gameConfig.js';
 
-
 export class Paddle {
 	side: number;
 	score: number = 0;

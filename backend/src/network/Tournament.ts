@@ -1,10 +1,11 @@
 import { AbstractGameSession } from './GameSession.js'
 import { Game } from '../game/Game.js';
 import { Client, Player, CPU } from './Client.js';
-import { GameMode, MessageType, Direction } from '../shared/constants.js';
+import { GameMode, MessageType, Direction, TournamentState } from '../shared/constants.js';
 import { addPlayer2, registerNewGame } from '../data/validation.js';
 import { LEFT, RIGHT } from '../shared/gameConfig.js';
 import { generateGameId } from '../data/database.js';
+import { randomize } from './utils.js';
 
 export class Match {
 	id: string = generateGameId();
@@ -12,7 +13,7 @@ export class Match {
 	players: (Player | CPU)[] = [];
 	clients: Set<Client> = new Set();
 	game!: Game;
-	spectators_allowed: Boolean = false;
+	// spectators_allowed: Boolean = false;
 	
 	index!: number;
 	left?: Match;
@@ -44,6 +45,7 @@ abstract class AbstractTournament extends AbstractGameSession{
 	num_rounds: number;
 	current_round: number = 1;
 	tournamentWinner?: Player | CPU;
+	state: TournamentState = TournamentState.INIT;
 
 	constructor(mode: GameMode, capacity: number) {
 		super(mode);
@@ -69,13 +71,6 @@ abstract class AbstractTournament extends AbstractGameSession{
 		return (round_count);
 	}
 
-	private _randomize_players() {
-		for (let i = this.players.length - 1; i > 0; i--) { 
-			const j = Math.floor(Math.random() * (i + 1)); 
-			[this.players[i], this.players[j]] = [this.players[j], this.players[i]]; 
-		} 
-	}
-
 	// creates the tournament tree structure and assigns each match to the rounds map
 	private _create_match_tree(current_match: Match) {
 		this.rounds.get(current_match.round)?.push(current_match);
@@ -93,8 +88,8 @@ abstract class AbstractTournament extends AbstractGameSession{
 	}
 
 	// assigns players to the matches in round_1
-	private _match_players(): void {
-		this._randomize_players();
+	private _match_players(players: (Player | CPU)[]): void {
+		randomize(players);
 
 		const round_one = this.rounds.get(1);
 		if (!round_one) {
@@ -103,8 +98,8 @@ abstract class AbstractTournament extends AbstractGameSession{
 		}
 
 		for (let i = 0, j = 0; j < this.player_capacity; i++, j+=2) {
-			let player_left = this.players[j];
-			let player_right = this.players[j + 1];
+			let player_left = players[j];
+			let player_right = players[j + 1];
 			const match = round_one[i];
 
 			match.add_player(player_left);
@@ -130,24 +125,37 @@ abstract class AbstractTournament extends AbstractGameSession{
 	}
 				
 	async start(): Promise<void> {
-		if (this.running) return ;
-		this.running = true;
+		if (this.is_running()) return ;
+		this.state = TournamentState.RUNNING;
 
-		this.add_CPUs();
-		this._match_players();
+		this._match_players([...this.players]);
 		for (this.current_round = 1; this.current_round <= this.num_rounds; this.current_round++) {
-			if (!this.running) {
+			if (!this.is_running()) {
 				console.log(`Tournament ${this.id} ended prematurely on round ${this.current_round}`);
 				return ;
 			}
+
 			await this.waitForPlayersReady();
-			this.broadcastRoundSchedule(this.current_round); // TODO added here so we get update info from server
+			this.broadcastRoundSchedule(this.current_round);
 			
 			const matches = this.rounds.get(this.current_round);
 			if (!matches) return ; // maybe throw err
 			await this.run(matches);
 		}
+		this.stop();
 		console.log(`Game ${this.id} ended naturally`);
+	}
+
+	is_running(): boolean {
+		return (this.state === TournamentState.RUNNING);
+	}
+
+	in_lobby(): Boolean {
+		return (this.state === TournamentState.LOBBY);
+	}
+
+	is_ended(): Boolean {
+		return (this.state === TournamentState.ENDED);
 	}
 
 	abstract run(matches: Match[]): Promise<void>;
@@ -166,7 +174,7 @@ export class TournamentLocal extends AbstractTournament {
 	async run(matches: Match[]): Promise<void> {
 		let index = 0;
 		for (const match of matches) {
-			if (!this.running) return ;
+			if (!this.is_running()) return ;
 			this.current_match = match;
 			
 			await this.waitForPlayersReady();
@@ -183,7 +191,7 @@ export class TournamentLocal extends AbstractTournament {
 	assign_winner(match: Match) {
 		if (!match.game.winner) return ;
 		if (!match.next) {
-			this.stop(); 
+			this.tournamentWinner = match.game?.winner;
 			return ;
 		}
 		match.next.add_player(match.game.winner);
@@ -196,13 +204,13 @@ export class TournamentLocal extends AbstractTournament {
 	}
 
 	stop() {
-		if (!this.running) return ;
+		if (this.is_ended()) return ;
 
-		this.running = false;
+		this.state = TournamentState.ENDED;
 		this.current_match?.game?.stop();
 		this.broadcast({
 			type: MessageType.SESSION_ENDED,
-			...(this.current_match?.game?.winner?.name && { winner: this.current_match?.game?.winner?.name }),
+			...(this.tournamentWinner?.name && { winner: this.tournamentWinner?.name }),
 		});
 	}
 
@@ -220,8 +228,7 @@ export class TournamentLocal extends AbstractTournament {
 }
 
 export class TournamentRemote extends AbstractTournament {
-	client_match_map: Map<string, Match> = new Map();	// Maps client id to the match they are in
-	spectators: Set<Client> = new Set();	// List of defeated players watching the rest of the games
+	client_match_map: Map<string, Match> = new Map();	// Maps client id to the match they are in, CONTAINS ONLY ACTIVE PLAYERS
 	active_matches: Match[] = [];			// list of all active matches in a round
 
 	constructor(mode: GameMode, capacity: number) {
@@ -230,50 +237,49 @@ export class TournamentRemote extends AbstractTournament {
 	}
 
 	add_player(player: Player) {
-		if (this.players.length < this.player_capacity) {
-			this.players.push(player);
-			this.broadcast({
-				type: MessageType.TOURNAMENT_LOBBY,
-				lobby: this.players.map(player => player.name)
-			});
-		}
-	}
-
-	remove_player(player: Player) {
-		const index = this.players.indexOf(player);
-		if (index !== -1) {
-			this.players.splice(index, 1);
-			this.full = false;
-			if (!this.running) {
+		if (this.players.size < this.player_capacity) {
+			this.players.add(player);
+			if (this.in_lobby()) {
 				this.broadcast({
 					type: MessageType.TOURNAMENT_LOBBY,
-					lobby: this.players.map(player => player.name)
+					lobby: [...this.players].map(player => player.name)
 				});
 			}
 		}
-		if (this.players.length === 0) {
-			this.stop();
+	}
+
+	remove_player(client: Client) {
+		for (const player of this.players) {
+			if (player instanceof Player && player.client === client) {
+				this.players.delete(player);
+				this.full = false;
+				if (this.in_lobby()) {
+					this.broadcast({
+						type: MessageType.TOURNAMENT_LOBBY,
+						lobby: [...this.players].map(player => player.name)
+					});
+				}
+			} 
+			if (this.players.size === 0) {
+				this.stop();
+			}
 		}
 	}
 
 	// run each match in parallel and await [] of winner promises
 	async run(matches: Match[]): Promise<void> {
-		this.active_matches = []; // just to be safe
+		this.active_matches = []; // reset each round just to be safe
 		let round_winners: Promise<Player | CPU>[] = [];
 
-		this.assign_clients(matches);
+		// this.reassign_clients(matches);
 		let index = 0;
 		for (const match of matches) {
-			if (!this.running) {
+			if (!this.is_running()) {
 				console.warn(`Tournament ${this.id}: round ${this.current_round} ended prematurely`);
 				return ;
 			}
 
 			match.index = index;
-			if (match.players.length !== 2) {
-				console.error(`Incorrect number of players in match ${match.id}`);
-				return ;
-			}
 			match.game = new Game(match.id, match.players, (message) => this.broadcast(message, match.clients));
 			this.register_database(match);
 			this.active_matches.push(match);
@@ -292,24 +298,23 @@ export class TournamentRemote extends AbstractTournament {
 		}
 		if (!match.next) {
 			this.tournamentWinner = match.game?.winner;
-			this.stop();
+			// this.stop();
 			return ;
 		}
 		match.next.add_player(winner);
 
-		// update readyClients to wait for the winner before starting next round
+		// update readyClients to wait for the winner ready signal before next round
 		if (winner instanceof Player) {
 			this.readyClients.delete(winner.client.id);
+			this.client_match_map.set(winner.client.id, match.next);
+		}
+		if (match.game.loser instanceof Player) {
+			this.client_match_map.delete(match.game.loser.client.id);
 		}
 
 		// remove match from active_matches[]
 		const index = this.active_matches.indexOf(match);
 		if (index !== -1) this.active_matches.splice(index, 1);
-		
-		// add clients as spectators to an active match
-		for (const client of match.clients) {
-			this.assign_spectator(client, this.active_matches[0]);
-		}
 
 		this.broadcast({
 			type: MessageType.MATCH_RESULT,
@@ -320,71 +325,20 @@ export class TournamentRemote extends AbstractTournament {
 	}
 
 	assign_spectator(client: Client, match?: Match) {
-		this.spectators.add(client);
-		if (!match || !match.spectators_allowed) {
-			console.log(`Failed to add spectator to match ${match?.id}: spectators not allowed`)
-			return ;
+		const spectator_match = match ?? this.active_matches[0] ?? undefined;
+		if (!spectator_match) {
+			console.log("Cannot assign spectator: no active game");
 		}
-		match.clients.add(client);
-		this.client_match_map.set(client.id, match);
-		match.game?.send_side_assignment(new Set([client]));
-	}
-
-	assign_clients(matches: Match[]) {
-		// add clients who are still playing to their match
-		for (const match of matches) {
-			for (const player of [match.players[LEFT], match.players[RIGHT]]) {
-				if (player instanceof Player) {
-					this.client_match_map.set(player.client.id, match);
-					this.spectators.delete(player.client);
-				}
-			}
-			match.spectators_allowed = true;
-		}
-		// add all defeated players to the first match in a round
-		for (const client of this.spectators) {
-			this.assign_spectator(client, matches[0]);
-		}
-	}
-
-	register_database(match: Match) {
-		console.log(`Match id in the tournament: ${match.id}, for P1:${match.players[LEFT].name}, P2: ${match.players[RIGHT].name}`);
-		registerNewGame(match.id, match.players[LEFT].name, 1);
-		addPlayer2(match.id, match.players[RIGHT].name);
-	}
-
-	canClientControlGame(client: Client) {
-		if (this.spectators.has(client)) {
-			console.error(`Client ${client.id} is a spectator`);
-			return false;
-		}
-		const match = this.findMatch(client.id);
-		if (!match) {
-			console.error(`Client ${client.id} not in any active match`);
-			return false;
-		}
-		return true;
-	}
-
-	stop() {
-		if (!this.running) return ;
-		this.running = false;
-		
-		for (const match of this.active_matches) {
-			match.game?.stop();
-		}
-		this.broadcast({
-			type: MessageType.SESSION_ENDED,
-			...(this.tournamentWinner?.name && { winner: this.tournamentWinner?.name }),
-		});
+		spectator_match.clients.add(client);
+		spectator_match.game?.send_side_assignment(new Set([client]));
 	}
 
 	toggle_spectator_game(client: Client, direction: Direction) {
 		if (this.active_matches.length <= 1) return ;
 
-		const old_match = this.client_match_map.get(client.id);
+		const old_match = this.find_spectator_match(client);
 		if (!old_match) {
-			console.error(`Client ${client.id} is not in any game`);
+			console.error(`Client ${client.id} is not spectating any game`);
 			return ;
 		}
 		const old_index = this.active_matches.indexOf(old_match);
@@ -398,17 +352,58 @@ export class TournamentRemote extends AbstractTournament {
 		this.assign_spectator(client, this.active_matches[new_index]);
 	}
 
+	find_spectator_match(client: Client): Match | undefined {
+		for (const match of this.active_matches) {
+			if (match.clients.has(client)) {
+				return (match);
+			}
+		}
+		return (undefined);
+	}
+
+	register_database(match: Match) {
+		console.log(`Match id in the tournament: ${match.id}, for P1:${match.players[LEFT].name}, P2: ${match.players[RIGHT].name}`);
+		registerNewGame(match.id, match.players[LEFT].name, 1);
+		addPlayer2(match.id, match.players[RIGHT].name);
+	}
+
+	canClientControlGame(client: Client) {
+		const match = this.findMatch(client.id);
+		if (!match || !this.active_matches.includes(match)) {
+			console.error(`Client ${client.id} not in any active match`);
+			return false;
+		}
+		return true;
+	}
+
+	stop() {
+		if (this.is_ended()) return ;
+		this.state = TournamentState.ENDED
+		
+		for (const match of this.active_matches) {
+			match.game?.stop();
+		}
+		this.broadcast({
+			type: MessageType.SESSION_ENDED,
+			...(this.tournamentWinner?.name && { winner: this.tournamentWinner?.name }),
+		});
+	}
+
 	// The opposing player wins their current match and the tournament continues
 	handlePlayerQuit(quitter: Client): void {
-		const match = this.findMatch(quitter.id);
-		if (!match) {
-			console.error(`Cannot quit: "${quitter.username}" not in any match`);
-			return ;
+		this.remove_client(quitter);
+		this.remove_player(quitter);
+		if (this.is_running()) {
+			const match = this.findMatch(quitter.id);
+			if (!match) {
+				console.error(`Cannot quit: "${quitter.username}" not in any match`);
+				return ;
+			}
+			match.game?.setOtherPlayerWinner(quitter);
+			match.game?.stop();
+			this.client_match_map.delete(quitter.id);
+			// this.defeated_clients.delete(quitter);
 		}
-		match.game?.setOtherPlayerWinner(quitter);
-		match.game?.stop();
-		this.client_match_map.delete(quitter.id);
-		this.spectators.delete(quitter);
 	}
 
 	findMatch(client_id: string): Match | undefined {
