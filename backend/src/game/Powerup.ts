@@ -83,6 +83,12 @@ export class PowerupManager {
 			case PowerupType.INVISIBLE_BALL:
 				timeout = GAME_CONFIG.invisibilityTimeLimit; // implementation handled on front
 				break ;
+			case PowerupType.RESET_RALLY:
+				timeout = this.reset_rally();
+				break ;
+			case PowerupType.DOUBLE_POINTS:
+				timeout = this.double_points();
+				break ;
 			default:
 				console.error(`Error: cannot activate unknown Powerup "${slot.type}`);
 				return ;
@@ -119,6 +125,12 @@ export class PowerupManager {
 				break ;
 			case PowerupType.INVISIBLE_BALL:
 				// handled on front
+				break ;
+			case PowerupType.RESET_RALLY:
+				// nothing to handle
+				break ;
+			case PowerupType.DOUBLE_POINTS:
+				this.ball.double_points_active = false;
 				break ;
 			default:
 				console.error(`Error: cannot deactivate unknown Powerup "${slot.type}`);
@@ -217,5 +229,15 @@ export class PowerupManager {
 	powershot(side: number): number {
 		this.paddles[side].powershot_activated = true;
 		return (GAME_CONFIG.powershotTimeLimit); // fix timer for this
+	}
+
+	reset_rally() {
+		this.ball.current_rally = 1;
+		return (0);
+	}
+
+	double_points() {
+		this.ball.double_points_active = true;
+		return (GAME_CONFIG.powerupDuration);
 	}
 }

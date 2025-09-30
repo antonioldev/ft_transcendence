@@ -79,6 +79,8 @@ export enum PowerupType {
 	FREEZE,
 	POWERSHOT,
 	INVISIBLE_BALL,
+	DOUBLE_POINTS,
+	RESET_RALLY,
 }
 export enum PowerupState {
 	UNUSED,
