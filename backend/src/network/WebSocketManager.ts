@@ -71,11 +71,13 @@ export class WebSocketManager {
         socket.on('close', () => {
             console.log(`WebSocket closed for client ${client.id}:`);
             this.removeFromGameSession(client);
+            // logout user from db
         });
 
         socket.on('error', (error: any) => {
             console.error(`❌ WebSocket error for client ${client.id}:`, error);
             this.removeFromGameSession(client);
+            // logout user from db
         });
     }
 

@@ -286,6 +286,12 @@ export class TournamentRemote extends AbstractTournament {
 
 			match.index = index;
 			match.game = new Game(match.id, match.players, (message) => this.broadcast(message, match.clients));
+
+			if (match.players[LEFT] instanceof Player && match.players[RIGHT] instanceof Player) {
+				registerNewGame(match.id, match.players[LEFT].client.username, 1);
+				addPlayer2(match.id, match.players[RIGHT].client.username);
+			}
+
 			this.register_database(match);
 			this.active_matches.push(match);
 			
@@ -308,6 +314,9 @@ export class TournamentRemote extends AbstractTournament {
 		}
 		if (!match.next) {
 			this.tournamentWinner = match.game?.winner;
+			
+			// save tournament winner to db
+
 			// this.stop();
 			return ;
 		}

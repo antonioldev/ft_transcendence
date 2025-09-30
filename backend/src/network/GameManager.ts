@@ -41,13 +41,14 @@ class GameManager extends EventEmitter {
             gameSession = new OneOffGame(mode);
         }
         
-        // Create a new game in DB with 1st player as client only if the game is remote
-        if (mode === GameMode.TWO_PLAYER_REMOTE) {
-            registerNewGame(gameSession.id, client.username, 0);
-        }
-        else if (mode === GameMode.TOURNAMENT_REMOTE) {
-            registerNewGame(gameSession.id, client.username, 1);
-        }
+        // // Create a new game in DB with 1st player as client only if the game is remote
+        // if (mode === GameMode.TWO_PLAYER_REMOTE) {
+        //     registerNewGame(gameSession.id, client.username, 0);
+        // }
+        // else if (mode === GameMode.TOURNAMENT_REMOTE) {
+        //     registerNewGame(gameSession.id, client.username, 1);
+        // }
+        
         console.log(`Created ${mode} game: ${gameSession.id}`);
         return gameSession;
     }

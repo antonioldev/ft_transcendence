@@ -176,11 +176,18 @@ export class OneOffGame extends AbstractGameSession{
 		this.running = true;
 		
 		await this.waitForClientsReady();
+
+		// if (this.mode === GameMode.TWO_PLAYER_REMOTE) {
+		// 	registerNewGame(this.game.id, match.players[LEFT].client.username, 0);
+		// 	addPlayer2(this.id, match.players[RIGHT].client.username);
+		// }
+
 		this.game = new Game(this.id, [...this.players], this.broadcast.bind(this))
 		await this.game.run();
-		if (this.mode === GameMode.TWO_PLAYER_REMOTE) {
-			this.game.save_to_db();
-		}
+		
+		// if (this.mode === GameMode.TWO_PLAYER_REMOTE) {
+		// 	this.game.save_to_db();
+		// }
 	}
 
 	stop(): void {
