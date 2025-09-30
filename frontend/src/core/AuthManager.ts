@@ -570,11 +570,6 @@ export class AuthManager {
                     throw new Error(`Backend authentication failed: ${errorData.message || errorData.error || 'Unknown error'}`);
                 }
 
-                // Parses the response to get the session token from your application
-                // const { sessionToken } = await authRes.json();
-                // console.log("Backend responded with session token:", sessionToken);
-
-                // // TODO: Store the sessionToken
                 
                 // // Decodes the session token and updates the current user and authentication state
                 // const decodedToken = JSON.parse(atob(sessionToken.split('.')[1]));
@@ -699,8 +694,13 @@ export class AuthManager {
 
 	// Checks the current authentication state and updates UI accordingly. Should be called after page loads or state changes to ensure UI consistency.
 	checkAuthState(): void {
-		if (this.authState === AuthState.LOGGED_IN && this.currentUser)
+		if (this.authState === AuthState.LOGGED_IN && this.currentUser) {
 			uiManager.showUserInfo(this.currentUser.username);
+            uiManager.setButtonState(
+					[EL.BUTTONS.LOGIN, EL.BUTTONS.REGISTER],
+					'disabled'
+				);
+        }
 		else
 			uiManager.showAuthButtons();
 	}
