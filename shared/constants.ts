@@ -78,9 +78,9 @@ export enum PowerupType {
 	GROW_PADDLE,
 	FREEZE,
 	POWERSHOT,
-	// INVISIBLE_BALL,
-	// DOUBLE_POINTS,
-	// RESET_RALLY,
+	INVISIBLE_BALL,
+	DOUBLE_POINTS,
+	RESET_RALLY,
 }
 
 export enum PowerupState {

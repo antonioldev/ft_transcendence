@@ -317,6 +317,44 @@ export class AnimationManager {
 		return anim;
 	}
 
+	async blinkInvisibility(target: any, duration: number = 3000, blinkInterval:number = 600): Promise<void> {
+		const blinkDuration: number = 100;
+
+		if (!target.material) return;
+
+		const start = Date.now();
+		let lastBlink = 0;
+
+		return new Promise<void>((resolve) => {
+			const animationLoop = () => {
+				const elapsed = Date.now() - start;
+
+				if (elapsed >= duration) {
+					target.material.alpha = 1;
+					resolve();
+					return;
+				}
+
+				const timeSinceLastBlink = elapsed - lastBlink;
+				if (timeSinceLastBlink >= blinkInterval) {
+					target.material.alpha = 1;
+					lastBlink = elapsed;
+
+					setTimeout(() => {
+						if (Date.now() - start < duration) {
+							target.material.alpha = 0;
+						}
+					}, blinkDuration);
+				}
+				
+				requestAnimationFrame(animationLoop);
+			};
+			
+			target.material.alpha = 0;
+			animationLoop();
+		});
+	}
+
 	scaleWidth(
 		target: any,
 		from: number,
