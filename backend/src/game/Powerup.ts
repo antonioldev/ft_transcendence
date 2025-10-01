@@ -76,7 +76,7 @@ export class PowerupManager {
 				timeout = this.grow(slot.side);
 				break ;
 			case PowerupType.FREEZE:
-				timeout = this.freeze_balls(true);
+				timeout = this.freeze(true);
 				break ;
 			case PowerupType.POWERSHOT:
 				timeout = this.powershot(slot.side);
@@ -122,7 +122,7 @@ export class PowerupManager {
 				this.paddles[slot.side].rect.width = GAME_CONFIG.paddleWidth;
 				break ;
 			case PowerupType.FREEZE:
-				this.freeze_balls(false);
+				this.freeze(false);
 				break ;
 			case PowerupType.POWERSHOT:
 				this.paddles[slot.side].powershot_activated = false;
@@ -228,7 +228,7 @@ export class PowerupManager {
 		return (GAME_CONFIG.powerupDuration);
 	}
 
-	freeze_balls(active: boolean): number {
+	freeze(active: boolean): number {
 		for (const ball of this.balls) {
 			ball.isFrozen = active;
 		}
