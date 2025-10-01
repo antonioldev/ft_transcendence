@@ -121,7 +121,7 @@ export class Rect {
 	}
 }
 
-export function rotate(vec: [number, number], angleRad: number) {
+export function rotate(vec: [number, number], angleRad: number): [number, number] {
 	const cos = Math.cos(angleRad);
 	const sin = Math.sin(angleRad);
 

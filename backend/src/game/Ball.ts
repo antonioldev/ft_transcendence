@@ -48,9 +48,8 @@ export class Ball {
         this.collision(CollisionDirection.HORIZONTAL);
         this.rect.z += this.direction[1] * this.speed * deltaSeconds;
         this.collision(CollisionDirection.FRONT);
-        rotate(this.direction, this.curve_angle);
-        this.curve_angle += 3 * this.curve_angle;
-    }
+        this.direction = rotate(this.direction, -this.curve_angle);
+``    }
 
     calculate_direction(paddle: Paddle) {
         // calculate how far along the paddle the ball hits
