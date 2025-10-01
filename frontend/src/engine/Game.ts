@@ -180,7 +180,7 @@ export class Game {
 				this.services?.audio?.stopCountdown();
 				this.services?.audio?.startGameMusic();
 				this.services?.render?.stopCameraAnimation();
-				await this.services?.gui?.countdown.finishCountdown();
+				this.services?.gui?.countdown.finishCountdown();
 				await this.services?.gui?.animateBackground(false);
 				this.startGameLoop();
 			}
@@ -215,7 +215,7 @@ export class Game {
 			await this.services?.gui?.showTournamentMatchLoser();
 			const wantsToSpectate = await this.services?.input.waitForSpectatorChoice();
 			if (wantsToSpectate) {
-				this.services?.input.setSpectator(true);
+				this.services?.input.setSpectator('yes');
 				this.services?.gui.hud.setSpectatorMode();
 				webSocketClient.sendSpectatorReady();
 			} else

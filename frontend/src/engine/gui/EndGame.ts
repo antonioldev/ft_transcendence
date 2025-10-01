@@ -110,10 +110,21 @@ export class EndGame {
 		this.continueText.isVisible = true;
 		timerText.isVisible = true;
 		this.animationManager?.twinkle(this.continueText, Motion.F.slow);
-		setTimeout(resizeBy, 2000);
-		
-		return(true);
-        
+
+		return new Promise<boolean>((resolve) => {
+			let timeLeft = 10;
+			
+			const timerInterval = setInterval(() => {
+				timeLeft--;
+				timerText.text = timeLeft.toString();
+				if (timeLeft <= 0) {
+					clearInterval(timerInterval);
+					timerText.dispose();
+					this.continueText.isVisible = false;
+					resolve(false);
+				}
+			}, 1000);
+		});
 	}
 
 	async hidePartial(): Promise<void> {
