@@ -2,7 +2,7 @@ import { Rect } from './utils.js';
 import { Paddle } from './Paddle.js'
 import { CollisionDirection } from '../shared/constants.js'
 import { GAME_CONFIG, getBallStartPosition, LEFT, RIGHT } from '../shared/gameConfig.js';
-
+import { rotate } from './utils.js';
 
 // Represents the ball in the game, handling its movement, collisions, and scoring logic.
 export class Ball {
@@ -18,7 +18,7 @@ export class Ball {
     
     powershot_active: boolean = false;       // whether ball is currently at superspeed
     double_points_active: boolean = false;    // whether double points powerup activated
-    curve_factor: number = GAME_CONFIG.curve_factor;
+    curve_angle: number = GAME_CONFIG.curve_angle;
 
     // Initializes the ball with players and a score update callback.
     constructor(paddles: any[], updateScoreCallback: (side: number, score: number) => void) {
@@ -48,7 +48,8 @@ export class Ball {
         this.collision(CollisionDirection.HORIZONTAL);
         this.rect.z += this.direction[1] * this.speed * deltaSeconds;
         this.collision(CollisionDirection.FRONT);
-        this.direction[0] *= this.curve_factor;
+        rotate(this.direction, this.curve_angle);
+        this.curve_angle += 3 * this.curve_angle;
     }
 
     calculate_direction(paddle: Paddle) {
@@ -88,14 +89,14 @@ export class Ball {
                     this.rect.bottom = this.paddles[side].rect.top;
                     this.current_rally += this.double_points_active ? 2 : 1;
                     this.update_ball_trajectory(side);
-                    this.curve_factor = GAME_CONFIG.curve_factor;
+                    this.curve_angle = GAME_CONFIG.curve_angle;
 
                 }
                 else if (this.rect.top <= this.paddles[side].rect.bottom && this.oldRect.top >= this.paddles[side].oldRect.bottom) {
                     this.rect.top = this.paddles[side].rect.bottom;
                     this.current_rally += this.double_points_active ? 2 : 1;
                     this.update_ball_trajectory(side);
-                    this.curve_factor = GAME_CONFIG.curve_factor;
+                    this.curve_angle = GAME_CONFIG.curve_angle;
                 }
             }
         }
@@ -128,12 +129,12 @@ export class Ball {
         if (this.rect.left <= GAME_CONFIG.wallBounds.minX) {
             this.rect.left = GAME_CONFIG.wallBounds.minX;
             this.direction[0] *= -1; // Reverse X direction
-            this.curve_factor = GAME_CONFIG.curve_factor;
+            this.curve_angle = GAME_CONFIG.curve_angle;
         }
         else if (this.rect.right >= GAME_CONFIG.wallBounds.maxX) {
             this.rect.right = GAME_CONFIG.wallBounds.maxX;
             this.direction[0] *= -1; // Reverse X direction
-            this.curve_factor = GAME_CONFIG.curve_factor;
+            this.curve_angle = GAME_CONFIG.curve_angle;
         }
         
         // Goal detection (top/bottom goals)

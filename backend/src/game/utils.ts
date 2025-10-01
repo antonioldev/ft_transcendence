@@ -120,3 +120,11 @@ export class Rect {
 		return new Rect(this.x, this.z, this.width, this.depth);
 	}
 }
+
+export function rotate(vec: [number, number], angleRad: number) {
+	const cos = Math.cos(angleRad);
+	const sin = Math.sin(angleRad);
+
+	return [(vec[0] * cos - vec[1] * sin), (vec[0] * sin + vec[1] * cos)];
+
+}
