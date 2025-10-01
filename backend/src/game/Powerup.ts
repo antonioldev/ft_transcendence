@@ -3,6 +3,7 @@ import { Paddle} from './Paddle.js';
 import { LEFT, RIGHT, GAME_CONFIG } from '../shared/gameConfig.js';
 import { PowerupType, PowerupState} from '../shared/constants.js';
 import { Powerup } from '../shared/types.js';
+import { rotate } from './utils.js';
 
 export class Slot {
 	type: PowerupType;
@@ -229,16 +230,25 @@ export class PowerupManager {
 
 	freeze_balls(active: boolean): number {
 		for (const ball of this.balls) {
-			ball.isPaused = active;
+			ball.isFrozen = active;
 		}
 		return (GAME_CONFIG.freezeDuration);
 	}
 
 	triple_shot() {
-		while (this.balls.length < 3) {
-			this.balls.push( new Ball(this.paddles, this.balls[0].rally.current, this.balls[0].updateScore) )
+		if (this.balls.length === 3) return ;
+
+		const first_ball = this.balls[0].duplicate();
+		rotate(first_ball.direction, Math.PI / 6);
+
+		if (this.balls.length === 2) {
+			this.balls.push( first_ball )
 		}
-		return (0);
+		else if (this.balls.length === 1) {
+			const second_ball = this.balls[0].duplicate();
+			rotate(second_ball.direction, -(Math.PI / 6));
+			this.balls.push( second_ball )
+		}
 	}
 
 	powershot(side: number): number {

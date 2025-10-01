@@ -7,6 +7,7 @@ import { PlayerInput, GameStateData, ServerMessage } from '../shared/types.js';
 import { Client, Player, CPU} from '../network/Client.js'
 import { saveGameResult } from '../data/validation.js';
 import { PowerupManager, Slot } from './Powerup.js';
+import { remove_elem } from './utils.js';
 
 // The Game class runs the core game logic for all game modes.
 export class Game {
@@ -57,13 +58,16 @@ export class Game {
 	}
 
 	// Update the score for the specified side
-	private _update_score(side: number): void {
+	private _update_score(side: number, ball: Ball): void {
 		if (!this.is_running()) return ;
 
 		this.paddles[side].score += this.rally.current;
 		if (this.paddles[side].score >= GAME_CONFIG.scoreToWin) {
 			this.assign_winner(this.players[side]);
 			this.stop();
+		}
+		if (this.balls.length > 1) {
+			remove_elem(this.balls, ball);
 		}
 	}
 

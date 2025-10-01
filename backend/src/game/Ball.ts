@@ -5,21 +5,22 @@ import { GAME_CONFIG, getBallStartPosition, LEFT, RIGHT } from '../shared/gameCo
 
 // Represents the ball in the game, handling its movement, collisions, and scoring logic.
 export class Ball {
+    paddles: (Paddle)[]; // Array of players (paddles) in the game.
+    rally: { current: number };
+    updateScore: (side: number, ball: Ball) => void; // Callback to update the score.
     rect: Rect; // Current position and size of the ball.
     oldRect: Rect; // Previous position and size of the ball.
     direction: [number, number]; // Direction vector of the ball's movement.
     speed: number = GAME_CONFIG.ballInitialSpeed; // Initial speed of the ball.
-    paddles: (Paddle)[]; // Array of players (paddles) in the game.
-    isPaused: Boolean = false;
-    updateScore: (side: number) => void; // Callback to update the score.
-    speed_cache: number = GAME_CONFIG.ballInitialSpeed;
-    rally: { current: number };
     
+    //Powerups
+    isFrozen: Boolean = false;
+    speed_cache: number = GAME_CONFIG.ballInitialSpeed; // used to remember speed before powershot activated
     powershot_active: boolean = false;       // whether ball is currently at superspeed
     double_points_active: boolean = false;    // whether double points powerup activated
 
     // Initializes the ball with players and a score update callback.
-    constructor(paddles: any[], rally: any, updateScoreCallback: (side: number) => void) {
+    constructor(paddles: any[], rally: any, updateScoreCallback: (side: number, ball: Ball) => void) {
         this.paddles = paddles;
         this.rally = rally;
         this.updateScore = updateScoreCallback;
@@ -130,11 +131,11 @@ export class Ball {
         
         // Goal detection (top/bottom goals)
         if (this.rect.centerz <= GAME_CONFIG.goalBounds.rightGoal) {
-            this.updateScore(RIGHT);
+            this.updateScore(RIGHT, this);
             this.reset();
         }
         if (this.rect.centerz >= GAME_CONFIG.goalBounds.leftGoal) {
-            this.updateScore(LEFT);
+            this.updateScore(LEFT, this);
             this.reset();
         }
     }
@@ -151,9 +152,22 @@ export class Ball {
 
     // Updates the ball's state, including movement, collisions, and scoring.
     update(dt: number): void {
-        if (this.isPaused) return ;
+        if (this.isFrozen) return ;
         this.oldRect.copy(this.rect);
         this.move(dt);
         this.wallCollision();
+    }
+
+    duplicate(): Ball {
+        let new_ball = new Ball(this.paddles, this.rally, this.updateScore);
+        new_ball.rect.copy(this.rect);
+        new_ball.oldRect.copy(this.oldRect);
+        new_ball.direction = this.direction;
+        new_ball.speed = this.speed;
+        new_ball.isFrozen = this.isFrozen;
+        new_ball.speed_cache = this.speed_cache
+        new_ball.powershot_active = this.powershot_active;
+        new_ball.double_points_active = this.double_points_active;
+        return (new_ball);
     }
 }
