@@ -101,7 +101,8 @@ export class GUIManager {
 		await this.animateBackground(true);
 		this.powerUp.show(false);
 		await this.endGame.showPartialLoser();
-		await this.endGame.showSpectatorPrompt();
+		this.endGame.startSpectatorCountdown();
+		// await this.endGame.showSpectatorPrompt();
 		// await this.endGame.waitForContinue(2000, false);
 		await this.endGame.hidePartial();
 	}

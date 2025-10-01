@@ -38,7 +38,6 @@ export const COLORS = {
     SPECTATOR_BLUE: "#143D60",
     SPECTATOR_RED: "rgba(255, 0, 0, 0.3)",
     SPECTATOR_YELLOW: "rgba(255, 255, 0, 1)",
-    ORANGE: "#EB5B00", 
     GREEN: "#A0C878"
 } as const;
 

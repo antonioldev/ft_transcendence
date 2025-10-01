@@ -118,19 +118,24 @@ export class KeyboardManager {
 
 	waitForSpectatorChoice(): Promise<boolean> {
 		this.setSpectator('deciding');
+		this.gui.endGame.startSpectatorCountdown();
+		
 		return new Promise<boolean>((resolve) => {
 			this.spectatorChoiceResolver = resolve;
 
+			// Timeout after 10 seconds
 			setTimeout(() => {
 				if (this.spectatorStatus === 'deciding') {
+					this.gui.endGame.hideSpectatorPrompt();
 					this.setSpectator('no');
 					this.spectatorChoiceResolver = null;
-					resolve(false);
+					document.dispatchEvent(new CustomEvent('game:exitToMenu'));
+					resolve(false); // Still return false for completeness
 				}
 			}, 10000);
 		});
 	}
-
+	
 	private handleGlobalKeyDown(event: KeyboardEvent): void {
 		const key = event.keyCode;
 
@@ -169,16 +174,18 @@ export class KeyboardManager {
 		if (this.spectatorStatus !== 'deciding') return;
 		
 		if (key === Keys.Y) {
+			this.gui.endGame.hideSpectatorPrompt();
 			this.setSpectator('yes');
 			this.spectatorChoiceResolver?.(true);
 			this.spectatorChoiceResolver = null;
 		} else if (key === Keys.N) {
+			this.gui.endGame.hideSpectatorPrompt();
 			this.setSpectator('no');
 			this.spectatorChoiceResolver?.(false);
 			this.spectatorChoiceResolver = null;
+			document.dispatchEvent(new CustomEvent('game:exitToMenu'));
 		}
 	}
-
 	private handleSpectatorInteraciot(key: number) {
 		switch (key) {
 			case Keys.Y:

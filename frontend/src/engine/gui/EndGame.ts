@@ -9,11 +9,12 @@ export class EndGame {
 	private partialEndGameOverlay!: Rectangle;
 	private partialWinnerLabel!: TextBlock;
 	private partialWinnerName!: TextBlock;
-	private spectatorText!: TextBlock;
+	private spectatorTimerText!: TextBlock;
 
 	private continueText!: TextBlock;
 	private endGameOverlay!: Grid;
 	private endGameWinnerText!: TextBlock;
+	private spectatorTimerInterval: ReturnType<typeof setInterval> | null = null;
 
 	constructor(private adt: AdvancedDynamicTexture, private animationManager: AnimationManager) {
 		const t = getCurrentTranslation();
@@ -36,6 +37,9 @@ export class EndGame {
 
 		this.continueText = createTextBlock( "continue_text", PARTIAL_END_GAME_STYLES.continueText, t.continue );
 		centerColumn.addControl(this.continueText, 2, 0);
+
+		this.spectatorTimerText = createTextBlock("spectatorTimer", PARTIAL_END_GAME_STYLES.continueText, "10");
+		this.partialEndGameOverlay.addControl(this.spectatorTimerText);
 
 		this.endGameOverlay = createGrid("endGameOverlay", END_GAME_STYLES.endGameOverlay);
 		this.endGameOverlay.addColumnDefinition(1.0);
@@ -96,35 +100,36 @@ export class EndGame {
 		await new Promise(r => setTimeout(r, 250));
 	}
 
-	async showSpectatorPrompt(): Promise<boolean> {
+	startSpectatorCountdown(): void {
 		const t = getCurrentTranslation();
 
 		this.continueText.text = t.spectatorQuestion;
-		const timerText = createTextBlock(
-			"spectatorTimer", PARTIAL_END_GAME_STYLES.continueText, "10");
-		timerText.fontSize = "20px";
-		timerText.top = "120px";
-		
-		this.partialEndGameOverlay.addControl(timerText);
+		this.spectatorTimerText.fontSize = "20px";
+		this.spectatorTimerText.top = "120px";
 
 		this.continueText.isVisible = true;
-		timerText.isVisible = true;
+		this.spectatorTimerText.isVisible = true;
 		this.animationManager?.twinkle(this.continueText, Motion.F.slow);
 
-		return new Promise<boolean>((resolve) => {
-			let timeLeft = 10;
-			
-			const timerInterval = setInterval(() => {
-				timeLeft--;
-				timerText.text = timeLeft.toString();
-				if (timeLeft <= 0) {
-					clearInterval(timerInterval);
-					timerText.dispose();
-					this.continueText.isVisible = false;
-					resolve(false);
-				}
-			}, 1000);
-		});
+		let timeLeft = 10;
+		
+		this.spectatorTimerInterval = setInterval(() => {
+			timeLeft--;
+			this.spectatorTimerText.text = timeLeft.toString();
+			if (timeLeft <= 0 && this.spectatorTimerInterval) {
+				clearInterval(this.spectatorTimerInterval);
+				this.spectatorTimerInterval = null;
+			}
+		}, 1000);
+	}
+
+	hideSpectatorPrompt(): void {
+		if (this.spectatorTimerInterval) {
+			clearInterval(this.spectatorTimerInterval);
+			this.spectatorTimerInterval = null;
+		}
+		this.continueText.isVisible = false;
+		this.spectatorTimerText.isVisible = false;
 	}
 
 	async hidePartial(): Promise<void> {
@@ -185,5 +190,10 @@ export class EndGame {
 		this.partialWinnerLabel.dispose();
 		this.partialWinnerName.dispose();
 		this.continueText.dispose();
+		this.spectatorTimerText.dispose();
+		if (this.spectatorTimerInterval) {
+			clearInterval(this.spectatorTimerInterval);
+			this.spectatorTimerInterval = null;
+		}
 	}
 }
