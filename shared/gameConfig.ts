@@ -33,11 +33,11 @@ export const GAME_CONFIG = {
 	decreasedPaddleWidth: 1.5, // Width of the paddle when SHRINK_PADDLE activated
 	increasedPaddleSpeed: 22, // Speed of the paddle when INCREASE_PADDLE_SPEED activated
 	decreasedPaddleSpeed: 4, // Speed of the paddle when SLOW_PADDLE activated
-	powerupDuration: 6000,	   // time elapsed before powerup is deactivated
+	powerupDuration: 7000,	   // time elapsed before powerup is deactivated
 	freezeDuration: 1500.0, // duration of ball freeze
 	powershotTimeLimit: 3000.0, // time limit to use powershot after activating
-	invisibilityTimeLimit: 3000.0, // time limit to use powershot after activating
-	curve_angle: (-Math.PI / 1500),
+	invisibilityTimeLimit: 5000.0, // time limit to use powershot after activating
+	curve_angle: -Math.PI / 1500,
 
 	// Camera settings (mainly for frontend)
 	camera2DHeight: 25, // Camera height in 2D mode
