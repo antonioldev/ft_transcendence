@@ -8,7 +8,7 @@ export class Ball {
     rect: Rect; // Current position and size of the ball.
     oldRect: Rect; // Previous position and size of the ball.
     direction: [number, number]; // Direction vector of the ball's movement.
-    speed: number = GAME_CONFIG.ballInitialSpeed; // Initial speed of the ball.
+    speed: number = GAME_CONFIG.ballServeSpeed; // Initial speed of the ball.
     paddles: (Paddle)[]; // Array of players (paddles) in the game.
     isPaused: Boolean = false;
     updateScore: (side: number, score: number) => void; // Callback to update the score.
@@ -94,6 +94,8 @@ export class Ball {
     }
 
     update_ball_trajectory(side: number) {
+        if (this.speed === GAME_CONFIG.ballServeSpeed) this.speed = GAME_CONFIG.ballInitialSpeed;
+
         this.calculate_spin(this.paddles[side]);
         this.speed *= (this.speed < GAME_CONFIG.maxBallSpeed) ? GAME_CONFIG.ballSpeedIncrease : 1;
         this.current_rally += this.double_points_active ? 2 : 1;
@@ -142,7 +144,7 @@ export class Ball {
         this.rect.x = ballPos.x;
         this.rect.z = ballPos.z;
         this.direction = this.randomDirection();
-        this.speed = GAME_CONFIG.ballInitialSpeed;
+        this.speed = GAME_CONFIG.ballServeSpeed;
         this.current_rally = 1;
     }
 
