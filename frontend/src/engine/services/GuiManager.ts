@@ -104,7 +104,7 @@ export class GUIManager {
 		this.endGame.startSpectatorCountdown();
 		// await this.endGame.showSpectatorPrompt();
 		// await this.endGame.waitForContinue(2000, false);
-		await this.endGame.hidePartial();
+		// await this.endGame.hidePartial();
 	}
 
 	

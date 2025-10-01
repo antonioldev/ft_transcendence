@@ -175,11 +175,13 @@ export class KeyboardManager {
 		
 		if (key === Keys.Y) {
 			this.gui.endGame.hideSpectatorPrompt();
+			this.gui.endGame.hidePartial();
 			this.setSpectator('yes');
 			this.spectatorChoiceResolver?.(true);
 			this.spectatorChoiceResolver = null;
 		} else if (key === Keys.N) {
 			this.gui.endGame.hideSpectatorPrompt();
+			this.gui.endGame.hidePartial();
 			this.setSpectator('no');
 			this.spectatorChoiceResolver?.(false);
 			this.spectatorChoiceResolver = null;
