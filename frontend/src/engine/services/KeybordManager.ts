@@ -134,15 +134,15 @@ export class KeyboardManager {
 	private handleGlobalKeyDown(event: KeyboardEvent): void {
 		const key = event.keyCode;
 
-		// if (key === 70) { // F key - Open
-		// 	this.gui.curtain.start();
-		// 	return;
-		// }
+		if (key === 70) { // F key - Open
+			this.gui.curtain.start();
+			return;
+		}
 		
-		// if (key === 71) { // G key - Close
-		// 	this.gui.curtain.stop();
-		// 	return;
-		// }
+		if (key === 71) { // G key - Close
+			this.gui.curtain.stop();
+			return;
+		}
 
 		if (this.isAwaitingSpectatorChoice) {
 			this.handleSpectatorChoiceKeys(key);
