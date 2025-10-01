@@ -222,7 +222,7 @@ export class Game {
 				this.requestExitToMenu();
 		}
 		else {
-			const waitForSpace = controlledSides.length !== 0 && this.config.gameMode === GameMode.TOURNAMENT_REMOTE;
+			const waitForSpace = controlledSides.length !== 0 || this.config.gameMode === GameMode.TOURNAMENT_REMOTE;
 			await this.services?.gui?.showTournamentMatchWinner(winner, waitForSpace);
 			this.resetForNextMatch();
 			webSocketClient.sendPlayerReady();

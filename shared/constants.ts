@@ -118,7 +118,7 @@ export enum GameState {
 }
 
 // States the game can be in
-export enum TournamentState {
+export enum GameSessionState {
 	INIT,
 	LOBBY,
 	RUNNING,
