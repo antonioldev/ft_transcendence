@@ -46,15 +46,20 @@ await fastify.register(fastifyJwt, {
 
 // Enable CORS for the frontend application
 await fastify.register(fastifyCors, {
-    origin: (origin: string | undefined, cb: (err: Error | null, allow: boolean) => void) => {
-    if (!origin) return cb(null, true); // allow non-browser requests (curl)
-    const allowed = [/^https:\/\/c1r2s\d+\.42london\.com:8443$/];
-    if (allowed.some(regexp => regexp.test(origin))) cb(null, true);
-    else cb(new Error('Not allowed'), false);
-  },
+//     origin: (origin: string | undefined, cb: (err: Error | null, allow: boolean) => void) => {
+//     if (!origin) return cb(null, true); // allow non-browser requests (curl)
+//     const allowed = [/^https:\/\/c1r2s\d+\.42london\.com:8443$/];
+//     if (allowed.some(regexp => regexp.test(origin))) cb(null, true);
+//     else cb(new Error('Not allowed'), false);
+//   },
     // origin: "https://localhost",
     // origin: "10.11.1.3",
     // origin: process.env.LAN_IP,
+    origin: [
+        "https://battlepong.co.uk",
+        "http://localhost:8080",
+        "https://localhost:8443"
+    ],
     methods: ['GET', 'POST', 'OPTIONS'],
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization'],
