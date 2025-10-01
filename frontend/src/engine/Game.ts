@@ -180,7 +180,7 @@ export class Game {
 				this.services?.audio?.stopCountdown();
 				this.services?.audio?.startGameMusic();
 				this.services?.render?.stopCameraAnimation();
-				await this.services?.gui?.countdown.finishCountdown();
+				this.services?.gui?.countdown.finishCountdown();
 				await this.services?.gui?.animateBackground(false);
 				this.startGameLoop();
 			}
@@ -215,14 +215,14 @@ export class Game {
 			await this.services?.gui?.showTournamentMatchLoser();
 			const wantsToSpectate = await this.services?.input.waitForSpectatorChoice();
 			if (wantsToSpectate) {
-				this.services?.input.setSpectator(true);
+				this.services?.input.setSpectator('yes');
 				this.services?.gui.hud.setSpectatorMode();
 				webSocketClient.sendSpectatorReady();
 			} else
 				this.requestExitToMenu();
 		}
 		else {
-			const waitForSpace = controlledSides.length !== 0 && this.config.gameMode === GameMode.TOURNAMENT_REMOTE;
+			const waitForSpace = controlledSides.length !== 0 || this.config.gameMode === GameMode.TOURNAMENT_REMOTE;
 			await this.services?.gui?.showTournamentMatchWinner(winner, waitForSpace);
 			this.resetForNextMatch();
 			webSocketClient.sendPlayerReady();

@@ -80,15 +80,18 @@ export class PowerupManager {
 			case PowerupType.POWERSHOT:
 				timeout = this.powershot(slot.side);
 				break ;
-			// case PowerupType.INVISIBLE_BALL:
-			// 	timeout = GAME_CONFIG.invisibilityTimeLimit; // implementation handled on front
-			// 	break ;
-			// case PowerupType.RESET_RALLY:
-			// 	timeout = this.reset_rally();
-			// 	break ;
-			// case PowerupType.DOUBLE_POINTS:
-			// 	timeout = this.double_points();
-			// 	break ;
+			case PowerupType.INVISIBLE_BALL:
+				timeout = GAME_CONFIG.invisibilityTimeLimit; // implementation handled on front
+				break ;
+			case PowerupType.RESET_RALLY:
+				timeout = this.reset_rally();
+				break ;
+			case PowerupType.DOUBLE_POINTS:
+				timeout = this.double_points();
+				break ;
+			case PowerupType.CURVE_BALL:
+				timeout = this.set_curve_ball(true);
+				break ;
 			default:
 				console.error(`Error: cannot activate unknown Powerup "${slot.type}`);
 				return ;
@@ -123,15 +126,18 @@ export class PowerupManager {
 			case PowerupType.POWERSHOT:
 				this.paddles[slot.side].powershot_activated = false;
 				break ;
-			// case PowerupType.INVISIBLE_BALL:
-			// 	// handled on front
-			// 	break ;
-			// case PowerupType.RESET_RALLY:
-			// 	// nothing to handle
-			// 	break ;
-			// case PowerupType.DOUBLE_POINTS:
-			// 	this.ball.double_points_active = false;
-			// 	break ;
+			case PowerupType.INVISIBLE_BALL:
+				// handled on front
+				break ;
+			case PowerupType.RESET_RALLY:
+				// nothing to handle
+				break ;
+			case PowerupType.DOUBLE_POINTS:
+				this.ball.double_points_active = false;
+				break ;
+			case PowerupType.CURVE_BALL:
+				this.set_curve_ball(false);
+				break ;
 			default:
 				console.error(`Error: cannot deactivate unknown Powerup "${slot.type}`);
 				return ;
@@ -238,6 +244,11 @@ export class PowerupManager {
 
 	double_points() {
 		this.ball.double_points_active = true;
+		return (GAME_CONFIG.powerupDuration);
+	}
+
+	set_curve_ball(active: boolean) {
+		this.ball.curve_ball_active = active;
 		return (GAME_CONFIG.powerupDuration);
 	}
 }
