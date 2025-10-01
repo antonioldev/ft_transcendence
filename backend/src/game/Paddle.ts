@@ -54,16 +54,32 @@ export class CPUBot extends Paddle {
 	private _wiggleDir = -1;
 	private _wiggleSteps = 0;
 	private _wiggleActive = false;
+	private closest_ball: Ball;
 
 	constructor(
 		side: number,
-		public ball: Ball,
+		public balls: Ball[],
 		public noiseFactor: number = 1.5, // 0=impossible, 1.5=hard, 2=medium, 3=easy
 		public speed: number = GAME_CONFIG.paddleSpeed,
 		public direction: number = 0,
 		private _trigger?: (side: number, slot: number) => void,
 	) {
 		super(side);
+		this.closest_ball = this.balls[0];
+	}
+
+	private _find_closest_ball() {
+		if (this.balls.length === 1) return this.balls[0];
+		let shortest_distance = 10000; // maybe set to better value
+		for (const ball of this.balls) {
+			const dx = this.rect.x - ball.rect.x;
+			const dz = this.rect.z - ball.rect.z;
+			const distance = Math.sqrt((dx * dx) + (dz * dz));
+			if (distance < shortest_distance) {
+				shortest_distance = distance;
+				this.closest_ball = ball;
+			}
+		}
 	}
 
 	private _center_x(): number {
@@ -71,17 +87,17 @@ export class CPUBot extends Paddle {
 	}
 
 	private _ballMovingTowards(): boolean {
-		return this.side ? this.ball.direction[1] > 0 : this.ball.direction[1] < 0;
+		return this.side ? this.closest_ball.direction[1] > 0 : this.closest_ball.direction[1] < 0;
 	}
 
 	protected _predict_intercept_x(): number {
 		const r   = GAME_CONFIG.ballRadius;
 
 		// current ball state
-		const x0  = this.ball.rect.centerx;
-		const z0  = this.ball.rect.centerz;
-		const vx  = this.ball.direction[0] * this.ball.speed;
-		const vz  = this.ball.direction[1] * this.ball.speed;
+		const x0  = this.closest_ball.rect.centerx;
+		const z0  = this.closest_ball.rect.centerz;
+		const vx  = this.closest_ball.direction[0] * this.closest_ball.speed;
+		const vz  = this.closest_ball.direction[1] * this.closest_ball.speed;
 
 		// where ball centre meets paddle front
 		const zFront = this.side                    // side 1 = bottom paddle
@@ -106,17 +122,17 @@ export class CPUBot extends Paddle {
 
 	private handlePowerups(dt: number) {
 		if (this._ballMovingTowards()) {
-			const rally = this.ball.current_rally;
+			const rally = this.closest_ball.rally.current;
 			const opp = this.side ? 0 : 1;
 			const botScore = this.score;
-			const oppScore = (this.ball as any)?.paddles?.[opp]?.score ?? 0;
+			const oppScore = (this.closest_ball as any)?.paddles?.[opp]?.score ?? 0;
 
 			if (this._waitScoreChange && (botScore + oppScore !== this._snapBot + this._snapOpp)) {
 				this._waitScoreChange = false;
 			}
 
 			const zFront = this.side ? this.rect.top : this.rect.bottom;
-			const dz = Math.abs(this.ball.rect.centerz - zFront);
+			const dz = Math.abs(this.closest_ball.rect.centerz - zFront);
 
 			if (this._powerup < GAME_CONFIG.slot_count - 1 && !this._waitScoreChange && this.score < oppScore && dz <= GAME_CONFIG.paddleDepth * 15) {
 				this._trigger?.(this.side, this._powerup);
@@ -154,6 +170,7 @@ export class CPUBot extends Paddle {
 		if (this.is_inverted) { this.handleInversion(dt); return; }
 
 		// refresh once per second
+		this._find_closest_ball();
 		this._view_timer += dt;
 		if (this._view_timer >= 1000.0) {
 			this.handlePowerups(dt);

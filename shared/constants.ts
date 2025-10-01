@@ -81,6 +81,7 @@ export enum PowerupType {
 	INVISIBLE_BALL,
 	DOUBLE_POINTS,
 	RESET_RALLY,
+	TRIPLE_SHOT,
 }
 
 export enum PowerupState {

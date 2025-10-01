@@ -378,7 +378,7 @@ export class WebSocketManager {
             console.error('Error in logout user');
         }
     }
-    
+
     /**
      * Handles the disconnection of a client, removing them from games and cleaning up resources.
      * @param data - The user information that are used to confirm login

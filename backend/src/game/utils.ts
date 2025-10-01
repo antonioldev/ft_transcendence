@@ -120,3 +120,19 @@ export class Rect {
 		return new Rect(this.x, this.z, this.width, this.depth);
 	}
 }
+
+export function remove_elem(list: any[], elem: any): boolean {
+	const index = list.indexOf(elem);
+	if (index === -1) return false;
+	
+	list.splice(index, 1);
+	return true;
+}
+
+export function rotate(vec: [number, number], angleRad: number) {
+	const cos = Math.cos(angleRad);
+	const sin = Math.sin(angleRad);
+
+	return [(vec[0] * cos - vec[1] * sin), (vec[0] * sin + vec[1] * cos)];
+
+}
