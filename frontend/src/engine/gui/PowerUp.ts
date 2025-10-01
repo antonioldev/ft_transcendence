@@ -22,7 +22,8 @@ export class PowerUp {
 		[PowerupType.POWERSHOT]:		"assets/icons/powerup/shot.png",
 		[PowerupType.RESET_RALLY]:		"assets/icons/powerup/rallyReset.png",
 		[PowerupType.DOUBLE_POINTS]:	"assets/icons/powerup/rallyMultiplier.png",
-		[PowerupType.INVISIBLE_BALL]:	"assets/icons/powerup/ghost.png"
+		[PowerupType.INVISIBLE_BALL]:	"assets/icons/powerup/ghost.png",
+		[PowerupType.CURVE_BALL]:			"assets/icons/powerup/curve.png"
 	};
 
 	private POWERUP_ICON_HD: Record<number, string> = {
@@ -35,7 +36,8 @@ export class PowerUp {
 		[PowerupType.POWERSHOT]: "assets/icons/powerupHD/shot.png",
 		[PowerupType.RESET_RALLY]:		"assets/icons/powerupHD/rallyReset.png",
 		[PowerupType.DOUBLE_POINTS]:	"assets/icons/powerupHD/rallyMultiplier.png",
-		[PowerupType.INVISIBLE_BALL]:	"assets/icons/powerupHD/ghost.png"
+		[PowerupType.INVISIBLE_BALL]:	"assets/icons/powerupHD/ghost.png",
+		[PowerupType.CURVE_BALL]:			"assets/icons/powerupHD/curve.png"
 	};
 
 	constructor(private adt: AdvancedDynamicTexture, private animationManager: AnimationManager, config: GameConfig) {
