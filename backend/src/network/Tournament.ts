@@ -36,7 +36,7 @@ export class Match {
 		}
 	}
 
-	remove_client(client: Client) {
+	remove_player(client: Client) {
 		const index = this.players.findIndex(
 			(p): p is Player => p instanceof Player && p.client === client
 		)
@@ -285,6 +285,7 @@ export class TournamentRemote extends AbstractTournament {
 				this.assign_winner(match, match.players[0]);
 				continue ;
 			}
+
 			match.game = new Game(match.id, match.players, (message) => this.broadcast(message, match.clients));
 			this.active_matches.push(match);
 
@@ -353,6 +354,7 @@ export class TournamentRemote extends AbstractTournament {
 		const spectator_match = match ?? this.active_matches[0] ?? undefined;
 		if (!spectator_match) {
 			console.log("Cannot assign spectator: no active game");
+			return ;
 		}
 		spectator_match.clients.add(client);
 		spectator_match.game?.send_side_assignment(new Set([client]));
@@ -425,18 +427,18 @@ export class TournamentRemote extends AbstractTournament {
 				this.client_match_map.delete(quitter.id);
 
 				if (match.game?.is_running()) {
+					console.log(`Removed active player: ${quitter.username}`)
 					match.game.setOtherPlayerWinner(quitter);
 					match.game.stop();
-					console.log(`Removed active player: ${quitter.username}`)
 				}
 				else { // game in next round and hasn't been created yet
-					match.remove_client(quitter);
 					console.log(`Removed player from pending game: ${quitter.username}`)
+					match.remove_player(quitter);
 				}
 			}
 			else {
-				this.defeated_clients.delete(quitter);
 				console.log(`Removed spectator: ${quitter.username}`)
+				this.defeated_clients.delete(quitter);
 			}
 		}
 		this.remove_client(quitter);

@@ -31,7 +31,6 @@ export class Player {
     name: string;         // Display name shown in game
     client: Client;    // Which client connection controls this player (undefined for AI)
     side: number = 0;         // Which paddle this player controls (LEFT/RIGHT)
-    disconnected: boolean = false; // used to indicate that player has disconnected for online tournament
 
     constructor(id: string, name: string, client: Client) {
         this.id = id;
