@@ -78,10 +78,10 @@ export enum PowerupType {
 	GROW_PADDLE,
 	FREEZE,
 	POWERSHOT,
+	INVISIBLE_BALL,
+	DOUBLE_POINTS,
+	RESET_RALLY,
 	TRIPLE_SHOT,
-	// INVISIBLE_BALL,
-	// DOUBLE_POINTS,
-	// RESET_RALLY,
 }
 
 export enum PowerupState {
@@ -119,7 +119,7 @@ export enum GameState {
 }
 
 // States the game can be in
-export enum TournamentState {
+export enum GameSessionState {
 	INIT,
 	LOBBY,
 	RUNNING,

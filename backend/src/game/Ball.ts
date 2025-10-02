@@ -11,7 +11,7 @@ export class Ball {
     rect: Rect; // Current position and size of the ball.
     oldRect: Rect; // Previous position and size of the ball.
     direction: [number, number]; // Direction vector of the ball's movement.
-    speed: number = GAME_CONFIG.ballInitialSpeed; // Initial speed of the ball.
+    speed: number = GAME_CONFIG.ballServeSpeed; // Initial speed of the ball.
     
     //Powerups
     isFrozen: Boolean = false;
@@ -99,6 +99,8 @@ export class Ball {
     }
 
     update_ball_trajectory(side: number) {
+        if (this.speed === GAME_CONFIG.ballServeSpeed) this.speed = GAME_CONFIG.ballInitialSpeed;
+
         this.calculate_spin(this.paddles[side]);
         this.speed *= (this.speed < GAME_CONFIG.maxBallSpeed) ? GAME_CONFIG.ballSpeedIncrease : 1;
         this.handle_powershot(side);
@@ -146,7 +148,7 @@ export class Ball {
         this.rect.x = ballPos.x;
         this.rect.z = ballPos.z;
         this.direction = this.randomDirection();
-        this.speed = GAME_CONFIG.ballInitialSpeed;
+        this.speed = GAME_CONFIG.ballServeSpeed;
         this.rally.current = 1;
     }
 
@@ -160,6 +162,7 @@ export class Ball {
 
     duplicate(): Ball {
         let new_ball = new Ball(this.paddles, this.rally, this.updateScore);
+        
         new_ball.rect.copy(this.rect);
         new_ball.oldRect.copy(this.oldRect);
         new_ball.direction = this.direction;
@@ -168,6 +171,7 @@ export class Ball {
         new_ball.speed_cache = this.speed_cache
         new_ball.powershot_active = this.powershot_active;
         new_ball.double_points_active = this.double_points_active;
+
         return (new_ball);
     }
 }

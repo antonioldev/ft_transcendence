@@ -1,7 +1,7 @@
 import { AbstractGameSession } from './GameSession.js'
 import { Game } from '../game/Game.js';
 import { Client, Player, CPU } from './Client.js';
-import { GameMode, MessageType, Direction, TournamentState } from '../shared/constants.js';
+import { GameMode, MessageType, Direction, GameSessionState } from '../shared/constants.js';
 import { addPlayer2, registerNewGame } from '../data/validation.js';
 import { LEFT, RIGHT } from '../shared/gameConfig.js';
 import { generateGameId } from '../data/database.js';
@@ -45,7 +45,6 @@ abstract class AbstractTournament extends AbstractGameSession{
 	num_rounds: number;
 	current_round: number = 1;
 	tournamentWinner?: Player | CPU;
-	state: TournamentState = TournamentState.INIT;
 
 	constructor(mode: GameMode, capacity: number) {
 		super(mode);
@@ -133,7 +132,7 @@ abstract class AbstractTournament extends AbstractGameSession{
 				
 	async start(): Promise<void> {
 		if (this.is_running()) return ;
-		this.state = TournamentState.RUNNING;
+		this.state = GameSessionState.RUNNING;
 
 		this._match_players([...this.players]);
 		
@@ -152,18 +151,6 @@ abstract class AbstractTournament extends AbstractGameSession{
 		}
 		this.stop();
 		console.log(`Game ${this.id} ended naturally`);
-	}
-
-	is_running(): boolean {
-		return (this.state === TournamentState.RUNNING);
-	}
-
-	in_lobby(): Boolean {
-		return (this.state === TournamentState.LOBBY);
-	}
-
-	is_ended(): Boolean {
-		return (this.state === TournamentState.ENDED);
 	}
 
 	abstract run(matches: Match[]): Promise<void>;
@@ -214,7 +201,7 @@ export class TournamentLocal extends AbstractTournament {
 	stop() {
 		if (this.is_ended()) return ;
 
-		this.state = TournamentState.ENDED;
+		this.state = GameSessionState.ENDED;
 		this.current_match?.game?.stop();
 		this.broadcast({
 			type: MessageType.SESSION_ENDED,
@@ -258,15 +245,15 @@ export class TournamentRemote extends AbstractTournament {
 	}
 
 	remove_player(client: Client) {
+		if (!this.in_lobby()) return ;
+
 		for (const player of this.players) {
 			if (player instanceof Player && player.client === client) {
 				this.players.delete(player);
-				if (this.in_lobby()) {
-					this.broadcast({
-						type: MessageType.TOURNAMENT_LOBBY,
-						lobby: [...this.players].map(player => player.name)
-					});
-				}
+				this.broadcast({
+					type: MessageType.TOURNAMENT_LOBBY,
+					lobby: [...this.players].map(player => player.name)
+				});
 				return ;
 			}
 		}
@@ -405,7 +392,7 @@ export class TournamentRemote extends AbstractTournament {
 
 	stop() {
 		if (this.is_ended()) return ;
-		this.state = TournamentState.ENDED
+		this.state = GameSessionState.ENDED
 		
 		for (const match of this.active_matches) {
 			match.game?.stop();
@@ -418,21 +405,25 @@ export class TournamentRemote extends AbstractTournament {
 
 	// The opposing player wins their current match and the tournament continues
 	handlePlayerQuit(quitter: Client): void {
-		this.remove_client(quitter); // maybe double call
-		this.remove_player(quitter);
-		if (this.is_running()) {
-			const match = this.findMatch(quitter.id);
-			if (!match) {
-				console.error(`Cannot quit: "${quitter.username}" not in any match`);
-				return ;
-			}
-			match.game?.setOtherPlayerWinner(quitter);
-			match.game?.stop();
-			this.client_match_map.delete(quitter.id);
-			this.defeated_clients.delete(quitter);
+		if (this.in_lobby()) {
+			this.remove_player(quitter);
 		}
+		else if (this.is_running()) {
+			const match = this.findMatch(quitter.id);
+			if (match) {
+				match.game?.setOtherPlayerWinner(quitter);
+				match.game?.stop();
+				this.client_match_map.delete(quitter.id);
+				console.log(`Removed active player: ${quitter.username}`)
+			}
+			else {
+				this.defeated_clients.delete(quitter);
+				console.log(`Removed spectator: ${quitter.username}`)
+			}
+		}
+		this.remove_client(quitter);
 	}
-
+	
 	findMatch(client_id: string): Match | undefined {
 		return (this.client_match_map.get(client_id));
 	}

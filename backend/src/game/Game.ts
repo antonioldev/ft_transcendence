@@ -3,7 +3,7 @@ import { Paddle, CPUBot } from './Paddle.js';
 import { Clock } from './utils.js';
 import { GAME_CONFIG, CPUDifficultyMap, LEFT, RIGHT } from '../shared/gameConfig.js';
 import { MessageType, GameState} from '../shared/constants.js';
-import { PlayerInput, GameStateData, ServerMessage } from '../shared/types.js';
+import { PlayerInput, GameStateData, ServerMessage, BallState } from '../shared/types.js';
 import { Client, Player, CPU} from '../network/Client.js'
 import { saveGameResult } from '../data/validation.js';
 import { PowerupManager, Slot } from './Powerup.js';
@@ -12,25 +12,25 @@ import { remove_elem } from './utils.js';
 // The Game class runs the core game logic for all game modes.
 export class Game {
 	id: string;
-	clock: Clock;
-	input_queue: PlayerInput[] = [];
 	state: GameState = GameState.INIT;
+	clock: Clock = new Clock();
+	input_queue: PlayerInput[] = [];
+	
 	players: readonly (Player | CPU)[]
 	winner!: Player | CPU;
 	loser!: Player | CPU;
 	paddles: (Paddle | CPUBot)[] = [new Paddle(LEFT), new Paddle(RIGHT)];
-	balls: Ball[];
-	powerup_manager: PowerupManager;
+    
+	rally = { current: 1 };
+	balls: Ball[] = [ new Ball(this.paddles, this.rally, this._update_score.bind(this)) ];
+	powerup_manager: PowerupManager = new PowerupManager(this.paddles, this.balls);
 	private _broadcast: (message: ServerMessage, clients?: Set<Client>) => void;
-    rally = { current: 1 };
 
 	constructor(id: string, players: (Player | CPU)[], broadcast_callback: (message: ServerMessage, clients?: Set<Client>) => void) {
 		this.id = id;
-		this.clock = new Clock();
-		this._broadcast = broadcast_callback;
 		this.players = players;
-		this.balls = [ new Ball(this.paddles, this.rally, this._update_score.bind(this)) ];
-		this.powerup_manager = new PowerupManager(this.paddles, this.balls)
+		this._broadcast = broadcast_callback;
+
 		this._init_CPUs();
 		this.send_side_assignment();
 	}
@@ -99,8 +99,7 @@ export class Game {
 		}
 	}
 
-	// Retrieve the current game state as a data object
-	get_state(): GameStateData {
+	get_ball_states(): BallState[] {
 		let ball_states = [];
 		for (const ball of this.balls) {
 			ball_states.push({
@@ -108,6 +107,11 @@ export class Game {
 				z: ball.rect.centerz,
 			})
 		}
+		return ball_states;
+	}
+
+	// Retrieve the current game state as a data object
+	get_state(): GameStateData {
 		return {
 			state: this.state,
 			...(this.winner?.name && { winner: this.winner.name }),
@@ -123,7 +127,7 @@ export class Game {
 				score: this.paddles[RIGHT].score,
 				powerups: this.powerup_manager.get_state(RIGHT),
 			},
-			ball_states: ball_states,
+			ball_states: this.get_ball_states(),
 		}
 	}
 

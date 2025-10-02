@@ -30,16 +30,8 @@ class GameManager extends EventEmitter {
             return;
         }
         console.log(`Client disconnected: ${client.username}:${client.id}`);
-        
+        this.clientGamesMap.delete(client.id);
         gameSession.handlePlayerQuit(client);
-        if (gameSession instanceof TournamentRemote) {
-            if (gameSession.clients.size === 0) {
-                this.endGame(gameSession);
-            }
-        }
-        else {
-            this.endGame(gameSession);
-        }
     }
 
     /**
@@ -122,9 +114,6 @@ class GameManager extends EventEmitter {
     findGameSession(client: Client): AbstractGameSession | undefined {
         return (this.clientGamesMap.get(client.id));
     }
-
-
-
 }
 
 export const gameManager = new GameManager();
