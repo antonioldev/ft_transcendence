@@ -209,28 +209,32 @@ class UIManager {
 	// CONNECTION STATUS
 	// ========================================
 	updateConnectionStatus(status: ConnectionStatus): void {
-		const statusElement = requireElementById(EL.DISPLAY.CONNECTION_STATUS);
-		statusElement.style.display = 'block';
+		const statusElements = document.querySelectorAll('.connection-status');
+
+		let emoji = '🟡'
+		let buttonState: 'enabled' | 'disabled' = 'disabled';
 
 		switch (status) {
 			case ConnectionStatus.CONNECTING:
-				statusElement.textContent = '🟡';
-				this.setButtonState([EL.BUTTONS.PLAY, EL.BUTTONS.LOGIN,
-					EL.BUTTONS.REGISTER ], 'disabled');
+				emoji = '🟡';
+				buttonState = 'disabled';
 				break;
-				
 			case ConnectionStatus.CONNECTED:
-				statusElement.textContent = '🟢';
-				this.setButtonState([EL.BUTTONS.PLAY, EL.BUTTONS.LOGIN,
-					EL.BUTTONS.REGISTER ], 'enabled');
+				emoji = '🟢';
+				buttonState = 'enabled';
 				break;
-				
 			case ConnectionStatus.FAILED:
-				statusElement.textContent = '🔴';
-				this.setButtonState([EL.BUTTONS.PLAY, EL.BUTTONS.LOGIN,
-					EL.BUTTONS.REGISTER ], 'disabled');
+				emoji = '🔴';
+				buttonState = 'disabled';
 				break;
 		}
+
+		statusElements.forEach(element => {
+			element.textContent = emoji;
+			(element as HTMLElement).style.display = 'block';
+		});
+
+		this.setButtonState([EL.BUTTONS.PLAY, EL.BUTTONS.LOGIN, EL.BUTTONS.REGISTER], buttonState);
 	}
 
 	// ========================================

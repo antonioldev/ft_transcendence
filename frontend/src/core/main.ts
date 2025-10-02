@@ -31,6 +31,12 @@ function loadPage(): void {
 	webSocketClient.registerCallback(WebSocketEvent.STATUS_CHANGE, (status: ConnectionStatus) => {
 		uiManager.updateConnectionStatus(status);
 	});
+
+	if (webSocketClient.isConnected()) {
+        uiManager.updateConnectionStatus(ConnectionStatus.CONNECTED);
+    } else {
+        uiManager.updateConnectionStatus(ConnectionStatus.CONNECTING);
+    }
 }
 
 /**
