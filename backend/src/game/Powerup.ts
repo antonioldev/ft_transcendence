@@ -89,6 +89,9 @@ export class PowerupManager {
 			case PowerupType.DOUBLE_POINTS:
 				timeout = this.double_points();
 				break ;
+			case PowerupType.CURVE_BALL:
+				timeout = this.set_curve_ball(true);
+				break ;
 			default:
 				console.error(`Error: cannot activate unknown Powerup "${slot.type}`);
 				return ;
@@ -131,6 +134,9 @@ export class PowerupManager {
 				break ;
 			case PowerupType.DOUBLE_POINTS:
 				this.ball.double_points_active = false;
+				break ;
+			case PowerupType.CURVE_BALL:
+				this.set_curve_ball(false);
 				break ;
 			default:
 				console.error(`Error: cannot deactivate unknown Powerup "${slot.type}`);
@@ -238,6 +244,11 @@ export class PowerupManager {
 
 	double_points() {
 		this.ball.double_points_active = true;
+		return (GAME_CONFIG.powerupDuration);
+	}
+
+	set_curve_ball(active: boolean) {
+		this.ball.curve_ball_active = active;
 		return (GAME_CONFIG.powerupDuration);
 	}
 }

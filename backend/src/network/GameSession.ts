@@ -1,6 +1,6 @@
 import { Game } from '../game/Game.js';
 import { Client, Player, CPU } from './Client.js';
-import { MessageType, GameMode, AiDifficulty } from '../shared/constants.js';
+import { MessageType, GameMode, AiDifficulty, GameSessionState } from '../shared/constants.js';
 import { PlayerInput, ServerMessage } from '../shared/types.js';
 import { gameManager } from './GameManager.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
@@ -11,6 +11,7 @@ export abstract class AbstractGameSession {
 	id: string = generateGameId();
 	clients: Set<Client> = new Set();
 	players: Set<Player | CPU> = new Set();
+	state: GameSessionState = GameSessionState.INIT;
 
 	player_capacity: number = 2;
 	client_capacity: number = 1;
@@ -54,23 +55,20 @@ export abstract class AbstractGameSession {
 			this.full = true;
 		}
 	}
-
-	remove_client(client: Client) {
-		if (!this.clients.has(client)) return ;
-
-		this.clients.delete(client);
-		// this.readyClients.delete(client.id);
-		this.full = false;
-
-		if (this.clients.size === 0) {
-			this.stop();
-		}
-	}
 	
 	add_player(player: Player | CPU) {
 		if (this.players.size < this.player_capacity) {
 			console.log(`Player ${player.name} added to game ${this.id}`);
 			this.players.add(player);
+		}
+	}
+
+	remove_client(client: Client): void {
+		if (!this.clients.has(client)) return ;
+
+		this.clients.delete(client);
+		if (this.clients.size === 0) {
+			this.stop();
 		}
 	}
 
@@ -120,7 +118,7 @@ export abstract class AbstractGameSession {
 	}
 
 	resume(client_id?: string): void {
-		const game = this.findGame(client_id);
+		const game = this.getGame(client_id);
 		if (!game) {
 			console.log(`Game ${this.id} is not running, cannot resume`);
 			return ;
@@ -135,7 +133,7 @@ export abstract class AbstractGameSession {
 	}
 
 	pause(client_id?: string): void {
-		const game = this.findGame(client_id);
+		const game = this.getGame(client_id);
 		if (!game || !game.is_running()) {
 			console.log(`Game ${this.id} is not running, cannot pause`);
 			return ;
@@ -150,8 +148,20 @@ export abstract class AbstractGameSession {
 	}
 
 	enqueue(input: PlayerInput, client_id?: string): void  {
-		const game = this.findGame(client_id);
+		const game = this.getGame(client_id);
 		game?.enqueue(input);
+	}
+
+	is_running(): boolean {
+		return (this.state === GameSessionState.RUNNING);
+	}
+
+	in_lobby(): Boolean {
+		return (this.state === GameSessionState.LOBBY);
+	}
+
+	is_ended(): Boolean {
+		return (this.state === GameSessionState.ENDED);
 	}
 
 	abstract start(): Promise<void>; 
@@ -159,12 +169,10 @@ export abstract class AbstractGameSession {
 	
 	abstract handlePlayerQuit(quitter: Client): void;
 	abstract canClientControlGame(client: Client): boolean;
-	abstract findGame(client_id?: string): Game | undefined;
-	abstract is_running(): boolean;
+	abstract getGame(client_id?: string): Game | undefined;
 }
 
 export class OneOffGame extends AbstractGameSession{
-	running: boolean = false;
 	game!: Game;
 
 	constructor (mode: GameMode) {
@@ -172,21 +180,28 @@ export class OneOffGame extends AbstractGameSession{
 	}
 
 	async start(): Promise<void> {
-		if (this.running) return;
-		this.running = true;
+		if (this.is_running()) return;
+		this.state = GameSessionState.RUNNING;
 		
 		await this.waitForClientsReady();
+
+		// if (this.mode === GameMode.TWO_PLAYER_REMOTE) {
+		// 	registerNewGame(this.game.id, match.players[LEFT].client.username, 0);
+		// 	addPlayer2(this.id, match.players[RIGHT].client.username);
+		// }
+
 		this.game = new Game(this.id, [...this.players], this.broadcast.bind(this))
 		await this.game.run();
-		if (this.mode === GameMode.TWO_PLAYER_REMOTE) {
-			this.game.save_to_db();
-		}
+		
+		// if (this.mode === GameMode.TWO_PLAYER_REMOTE) {
+		// 	this.game.save_to_db();
+		// }
 	}
 
 	stop(): void {
-		if (!this.running || !this.game) return;
+		if (!this.is_running() || !this.game) return;
 		
-		this.running = false;
+		this.state = GameSessionState.ENDED;
 		this.game.stop();
 		
 		this.broadcast({ 
@@ -196,7 +211,7 @@ export class OneOffGame extends AbstractGameSession{
 	}
 	
 	handlePlayerQuit(quitter: Client): void {
-		if (this.game && this.mode == GameMode.TWO_PLAYER_REMOTE) {
+		if (this.mode == GameMode.TWO_PLAYER_REMOTE && this.game && this.game.is_running()) {
 			this.game.setOtherPlayerWinner(quitter);
 		}
 		this.stop();
@@ -206,11 +221,7 @@ export class OneOffGame extends AbstractGameSession{
 		return (this.clients.has(client))
 	}
 
-	findGame() {
+	getGame() {
 		return (this.game);
-	}
-
-	is_running(): boolean {
-		return (this.running);
 	}
 }

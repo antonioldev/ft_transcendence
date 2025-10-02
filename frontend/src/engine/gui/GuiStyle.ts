@@ -38,7 +38,6 @@ export const COLORS = {
     SPECTATOR_BLUE: "#143D60",
     SPECTATOR_RED: "rgba(255, 0, 0, 0.3)",
     SPECTATOR_YELLOW: "rgba(255, 255, 0, 1)",
-    ORANGE: "#EB5B00", 
     GREEN: "#A0C878"
 } as const;
 
@@ -293,13 +292,13 @@ export const POWER_UP_STYLES = {
     },
 
     powerUpHd: {
-        widthInPixels: 300,
-        heightInPixels: 300,
+        widthInPixels: 200,
+        heightInPixels: 200,
         stretch: Image.STRETCH_UNIFORM,
         horizontalAlignment: H_CENTER,
-        verticalAlignment: V_CENTER,
+        verticalAlignment: V_TOP,
         isVisible: false,
-        top: -100,
+        top: 100,
         alpha: 0,
         zIndex: 15
     }
@@ -855,6 +854,8 @@ export const BRACKET_STYLES = {
 export const CURTAIN_STYLES = {
     leftBackground: {
         background: '#143D60',
+        height: "100%",
+        width: "100%",
         thickness: 0,
         horizontalAlignment: H_LEFT,
         verticalAlignment: V_TOP,
@@ -864,6 +865,8 @@ export const CURTAIN_STYLES = {
     
     rightBackground: {
         background: '#143D60',
+        height: "100%",
+        width: "100%",
         thickness: 0,
         horizontalAlignment: H_LEFT,
         verticalAlignment: V_TOP,
@@ -874,18 +877,26 @@ export const CURTAIN_STYLES = {
     leftPaddle: {
         background: '#EB5B00',
         thickness: 0,
+        widthInPixels: 80,
+        height: "100%",
         horizontalAlignment: H_RIGHT,
         verticalAlignment: V_TOP,
         isVisible: false,
+        shadowBlur: 60,
+	    shadowColor: "rgba(245, 204, 179, 0.87)",
         zIndex: 1
     },
     
     rightPaddle: {
         background: '#EB5B00',
         thickness: 0,
+        widthInPixels: 80,
+        height: "100%",
         horizontalAlignment: H_LEFT,
         verticalAlignment: V_TOP,
         isVisible: false,
+        shadowBlur: 60,
+	    shadowColor: "rgba(245, 204, 179, 0.87)",
         zIndex: 1
     }
 } as const;

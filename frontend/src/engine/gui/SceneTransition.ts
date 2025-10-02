@@ -2,43 +2,34 @@ import { AdvancedDynamicTexture, Rectangle } from "@babylonjs/gui";
 import { AnimationManager, Motion } from "../services/AnimationManager.js";
 import { createRect, CURTAIN_STYLES } from "./GuiStyle.js";
 
-export class TransitionEffect {
+export class SceneTransition {
 	private leftPaddle!: Rectangle;
 	private rightPaddle!: Rectangle;
 	private leftBackground!: Rectangle;
 	private rightBackground!: Rectangle;
 	
 	constructor(private adt: AdvancedDynamicTexture, private animationManager: AnimationManager) {
-		const { width, height } = this.adt.getSize();
+		const { width } = this.adt.getSize();
 		
 		this.leftBackground = createRect("leftBackground", CURTAIN_STYLES.leftBackground);
 		this.rightBackground = createRect("rightBackground", CURTAIN_STYLES.rightBackground);
+
 		this.leftPaddle = createRect("leftPaddle", CURTAIN_STYLES.leftPaddle);
 		this.rightPaddle = createRect("rightPaddle", CURTAIN_STYLES.rightPaddle);
+
 		this.adt.addControl(this.leftBackground);
 		this.adt.addControl(this.rightBackground);
 		this.adt.addControl(this.leftPaddle);
 		this.adt.addControl(this.rightPaddle);
-
-
-		this.leftBackground.widthInPixels = width;
-		this.leftBackground.heightInPixels = height;
+		
 		this.leftBackground.leftInPixels = -width;
-
-		this.rightBackground.widthInPixels = width;
-		this.rightBackground.heightInPixels = height;
 		this.rightBackground.leftInPixels = width;
-
-		this.leftPaddle.widthInPixels = 80;
-		this.leftPaddle.heightInPixels = height;
 		this.leftPaddle.leftInPixels = -80;
-
-		this.rightPaddle.widthInPixels = 80;
-		this.rightPaddle.heightInPixels = height;
 		this.rightPaddle.leftInPixels = width;
 	}
 
-	async start(): Promise<void> {
+	async show(): Promise<void> {
+
 		this.leftPaddle.isVisible = true;
 		this.rightPaddle.isVisible = true;
 		this.leftBackground.isVisible = true;
@@ -46,7 +37,6 @@ export class TransitionEffect {
 		
 		const { width } = this.adt.getSize();
 		
-		// Set the final positions first
 		this.leftBackground.leftInPixels = 0;
 		this.rightBackground.leftInPixels = width / 2;
 		this.leftPaddle.leftInPixels = width / 2 - 40;
@@ -60,7 +50,7 @@ export class TransitionEffect {
 		]);
 	}
 
-	async stop(): Promise<void> {
+	async hide(): Promise<void> {
 		const { width } = this.adt.getSize();
 		
 		await Promise.all([
@@ -86,13 +76,6 @@ export class TransitionEffect {
 		this.rightPaddle.leftInPixels = width;
 		this.leftBackground.leftInPixels = -width;
 		this.rightBackground.leftInPixels = width;
-	}
-	
-	dispose(): void {
-		this.leftPaddle.dispose();
-		this.rightPaddle.dispose();
-		this.leftBackground.dispose();
-		this.rightBackground.dispose();
 	}
 }
 

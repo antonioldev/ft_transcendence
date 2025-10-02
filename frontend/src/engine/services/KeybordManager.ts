@@ -36,17 +36,13 @@ export const PROFILES_3D = {
   DEFAULT_RIGHT: { move: { left: Keys.RIGHT, right: Keys.LEFT }, power: { k1: Keys.ONE, k2: Keys.TWO, k3: Keys.THREE } }
 } as const;
 
-
-
 // Manages all keyboard input handling for the game
 export class KeyboardManager {
 	private deviceSourceManager: DeviceSourceManager | null = null;
 	private globalKeyDownHandler: (event: KeyboardEvent) => void;
 	private activeProfiles!: { P1: KeysProfile; P2: KeysProfile; DEFAULT: KeysProfile, DEFAULT_RIGHT: KeysProfile };
-	// private activeProfiles!: { P1: KeysProfile; P2: KeysProfile;};
 	private isInitialized: boolean = false;
 	private isSpectator: boolean = false;
-	private isAwaitingSpectatorChoice: boolean = false;
 	private spectatorChoiceResolver: ((choice: boolean) => void) | null = null;
 
 	constructor(
@@ -71,30 +67,10 @@ export class KeyboardManager {
 		document.addEventListener('keydown', this.globalKeyDownHandler);
 	}
 
-	// mapModeAndAssignment(mode: GameMode, controlledSides?: PlayerSide[]) {
-	// 	controlledSides?.forEach((side, index) => {
-	// 		const player = this.players.get(side);
-	// 		if (!player) return;
-
-	// 		player.keyboardProfile = (side === PlayerSide.LEFT) ?
-	// 				this.activeProfiles.P1 : this.activeProfiles.P2;
-
-	// 		// if (this.config.isLocalMultiplayer) {
-	// 		// 	player.keyboardProfile = (side === PlayerSide.LEFT) ?
-	// 		// 		this.activeProfiles.P1 : this.activeProfiles.P2;
-	// 		// } else {
-	// 		// 	player.keyboardProfile = (side === PlayerSide.LEFT) ?
-	// 		// 		this.activeProfiles.DEFAULT : this.activeProfiles.DEFAULT_RIGHT;
-	// 		// }
-	// 	});
-	// }
-
 	assignLocalControls() {
 		this.players.forEach((player, side) => {
 			if (!player.isControlled) return;
-			
-			// player.keyboardProfile = (side === PlayerSide.LEFT) ?
-			// 	this.activeProfiles.P1 : this.activeProfiles.P2;
+
 			if (this.config.isLocalMultiplayer) {
 				player.keyboardProfile = (side === PlayerSide.LEFT) ?
 					this.activeProfiles.P1 : this.activeProfiles.P2;
@@ -105,39 +81,35 @@ export class KeyboardManager {
 		});
 	}
 
-	setSpectator(isSpectator: boolean): void {
-		this.isSpectator = isSpectator;
-	}
-
 	waitForSpectatorChoice(): Promise<boolean> {
-		this.isAwaitingSpectatorChoice = true;
 		return new Promise<boolean>((resolve) => {
 			this.spectatorChoiceResolver = resolve;
 
 			setTimeout(() => {
-				if (this.isAwaitingSpectatorChoice) {
-					this.isAwaitingSpectatorChoice = false;
-					this.spectatorChoiceResolver = null;
-					resolve(false);
-				}
-			}, 15000);
+					if (this.spectatorChoiceResolver !== null) {
+						this.gui.endGame.hidePartial();
+						this.spectatorChoiceResolver = null;
+						document.dispatchEvent(new CustomEvent('game:exitToMenu'));
+						resolve(false);
+					}
+				}, 10000);
 		});
 	}
-
+	
 	private handleGlobalKeyDown(event: KeyboardEvent): void {
 		const key = event.keyCode;
 
-		// if (key === 70) { // F key - Open
-		// 	this.gui.curtain.start();
-		// 	return;
-		// }
+		if (key === 70) { // F key - Open
+			this.gui.curtain.show();
+			return;
+		}
 		
-		// if (key === 71) { // G key - Close
-		// 	this.gui.curtain.stop();
-		// 	return;
-		// }
+		if (key === 71) { // G key - Close
+			this.gui.curtain.hide();
+			return;
+		}
 
-		if (this.isAwaitingSpectatorChoice) {
+		if (this.spectatorChoiceResolver !== null) {
 			this.handleSpectatorChoiceKeys(key);
 			return;
 		}
@@ -160,23 +132,16 @@ export class KeyboardManager {
 
 	private handleSpectatorChoiceKeys(key: number): void {
 		if (key === Keys.Y) {
-			this.isAwaitingSpectatorChoice = false;
+			this.gui.endGame.hidePartial();
 			this.isSpectator = true;
-			
-			if (this.spectatorChoiceResolver) {
-				this.spectatorChoiceResolver(true);
-				this.spectatorChoiceResolver = null;
-			}
+			this.spectatorChoiceResolver?.(true);
+			this.spectatorChoiceResolver = null;
 		} else if (key === Keys.N) {
-			this.isAwaitingSpectatorChoice = false;
-			
-			if (this.spectatorChoiceResolver) {
-				this.spectatorChoiceResolver(false);
-				this.spectatorChoiceResolver = null;
-			}
+			this.spectatorChoiceResolver?.(false);
+			this.spectatorChoiceResolver = null;
+			document.dispatchEvent(new CustomEvent('game:exitToMenu'));
 		}
 	}
-
 	private handleSpectatorInteraciot(key: number) {
 		switch (key) {
 			case Keys.Y:
@@ -215,14 +180,6 @@ export class KeyboardManager {
 			case Keys.ESC:
 				webSocketClient.sendResumeRequest();
 				break;
-			// case Keys.LEFT:
-			// 	if (isSpectators)
-			// 		webSocketClient.sendSwitchGame(Direction.LEFT);
-			// 	break;
-			// case Keys.RIGHT:
-			// 	if (isSpectators)
-			// 		webSocketClient.sendSwitchGame(Direction.RIGHT);
-			// 	break;
 		}
 	}
 

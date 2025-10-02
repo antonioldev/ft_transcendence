@@ -171,7 +171,9 @@ export class Particles {
 		}
 	}
 
-	spawnFireworksInFrontOfCameras( scene: Scene, activeCameras: any[] | any): void {
+	spawnFireworksInFrontOfCameras( scene: Scene | null, activeCameras: any[] | any): void {
+		if (!scene) return;
+
 		let cameras: any[] = [];
 		if (Array.isArray(activeCameras) && activeCameras.length)
 			cameras = activeCameras;

@@ -26,7 +26,7 @@ export const english: Translation = {
     alertPlayer1: 'Please enter a name for Player 1',
     alertPlayer2: 'Please enter a name for Player 2',
     registerTitle: 'Create a New Account',
-    register: '/ register',
+    register: '/ register', 
     loginTitle: 'Sign in to Your Account',
     login: '/ login',
     loginSubmit: 'Login',

@@ -33,10 +33,11 @@ export const GAME_CONFIG = {
 	decreasedPaddleWidth: 1.5, // Width of the paddle when SHRINK_PADDLE activated
 	increasedPaddleSpeed: 22, // Speed of the paddle when INCREASE_PADDLE_SPEED activated
 	decreasedPaddleSpeed: 4, // Speed of the paddle when SLOW_PADDLE activated
-	powerupDuration: 6000,	   // time elapsed before powerup is deactivated
+	powerupDuration: 7000,	   // time elapsed before powerup is deactivated
 	freezeDuration: 1500.0, // duration of ball freeze
 	powershotTimeLimit: 3000.0, // time limit to use powershot after activating
-	invisibilityTimeLimit: 3000.0, // time limit to use powershot after activating
+	invisibilityTimeLimit: 5000.0, // time limit to use powershot after activating
+	curve_angle: -Math.PI / 1500,
 
 	// Camera settings (mainly for frontend)
 	camera2DHeight: 25, // Camera height in 2D mode
@@ -48,11 +49,12 @@ export const GAME_CONFIG = {
 
 	// Ball settings
 	ballRadius: 0.3, // Radius of the ball
-	ballInitialSpeed: 6, // Initial speed of the ball
+	ballServeSpeed: 4, // Initial speed of the ball
+	ballInitialSpeed: 7, // Initial speed of the ball
 	ballMaxAngle: Math.PI / 4, // Maximum angle of the ball trajectory
 	ballMinAngle: Math.PI / 12, // Minimum angle of the ball trajectory
-	ballSpeedIncrease: 1.05, // Speed multiplier after paddle hit
-	ballPowerShotSpeed: 12, // Speed multiplier after paddle hit
+	ballSpeedIncrease: 1.1, // Speed multiplier after paddle hit
+	ballPowerShotSpeed: 18, // Speed multiplier after paddle hit
 	maxBallSpeed: 12,	   // Maximum ball speed
 	
 	// Wall collision boundaries (accounting for ball radius)
@@ -68,7 +70,7 @@ export const GAME_CONFIG = {
 	},
 
 	// Game mechanics
-	scoreToWin: 1,		  // Points needed to win
+	scoreToWin: 2,		  // Points needed to win
 	
 	// Input mappings
 	input2D: {

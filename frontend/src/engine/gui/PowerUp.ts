@@ -19,7 +19,11 @@ export class PowerUp {
 		[PowerupType.INCREASE_PADDLE_SPEED]:"assets/icons/powerup/fast.png",
 		[PowerupType.GROW_PADDLE]:		 "assets/icons/powerup/larger.png",
 		[PowerupType.FREEZE]:			"assets/icons/powerup/stop.png",
-		[PowerupType.POWERSHOT]:		"assets/icons/powerup/shot.png"
+		[PowerupType.POWERSHOT]:		"assets/icons/powerup/shot.png",
+		[PowerupType.RESET_RALLY]:		"assets/icons/powerup/rallyReset.png",
+		[PowerupType.DOUBLE_POINTS]:	"assets/icons/powerup/rallyMultiplier.png",
+		[PowerupType.INVISIBLE_BALL]:	"assets/icons/powerup/ghost.png",
+		[PowerupType.CURVE_BALL]:			"assets/icons/powerup/curve.png"
 	};
 
 	private POWERUP_ICON_HD: Record<number, string> = {
@@ -29,7 +33,11 @@ export class PowerUp {
 		[PowerupType.INCREASE_PADDLE_SPEED]: "assets/icons/powerupHD/fast.png",
 		[PowerupType.GROW_PADDLE]: "assets/icons/powerupHD/larger.png",
 		[PowerupType.FREEZE]: "assets/icons/powerupHD/stop.png",
-		[PowerupType.POWERSHOT]: "assets/icons/powerupHD/shot.png"
+		[PowerupType.POWERSHOT]: "assets/icons/powerupHD/shot.png",
+		[PowerupType.RESET_RALLY]:		"assets/icons/powerupHD/rallyReset.png",
+		[PowerupType.DOUBLE_POINTS]:	"assets/icons/powerupHD/rallyMultiplier.png",
+		[PowerupType.INVISIBLE_BALL]:	"assets/icons/powerupHD/ghost.png",
+		[PowerupType.CURVE_BALL]:			"assets/icons/powerupHD/curve.png"
 	};
 
 	constructor(private adt: AdvancedDynamicTexture, private animationManager: AnimationManager, config: GameConfig) {
@@ -124,7 +132,7 @@ export class PowerUp {
 			cell.root.scaleY = 1;
 			cell.root.alpha = 0;
 			cell.root.color = "rgba(255, 255, 255, 0.5)";
-			cell.root.background = "rgba(0, 0, 0, 1)";                    
+			cell.root.background = "rgba(0, 0, 0, 1)";
 			
 			if (powerUpType !== null && this.POWERUP_ICON[powerUpType]) {
 				if (!cell.icon) {
@@ -151,7 +159,6 @@ export class PowerUp {
 		}
 	}
 
-	// Update the existing update method to only handle state changes
 	update(player: PlayerSide, slotIndex: number, action: PowerupState): void {
 		const scene = this.adt.getScene();
 		const cells = player === 0 ? this.powerUpCellsP1 : this.powerUpCellsP2;
@@ -190,7 +197,7 @@ export class PowerUp {
 		if (!imageHD) return;
 
 		imageHD.isVisible = true;
-		imageHD.alpha = 1;
+		imageHD.alpha = 0.6;
 		imageHD.scaleX = 0.1;
 		imageHD.scaleY = 0.1;
 		imageHD.rotation = 0;
@@ -238,22 +245,5 @@ export class PowerUp {
 		});
 
 		this.show(false);
-	}
-
-	dispose(): void {
-		this.powerUpSlotP1?.dispose();
-		this.powerUpSlotP2?.dispose();
-		this.powerUpCellsP1.forEach((cell) => {
-			cell.root.dispose();
-			cell.icon?.dispose();
-			cell.letter?.dispose();
-		});
-		this.powerUpCellsP2.forEach((cell) => {
-			cell.root.dispose();
-			cell.icon?.dispose();
-			cell.letter?.dispose();
-		});
-		this.powerUpCellsP1 = [];
-		this.powerUpCellsP2 = [];
 	}
 }

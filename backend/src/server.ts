@@ -52,7 +52,7 @@ await fastify.register(fastifyCors, {
 //     if (allowed.some(regexp => regexp.test(origin))) cb(null, true);
 //     else cb(new Error('Not allowed'), false);
 //   },
-    // origin: "https://localhost",
+    origin: "https://localhost",
     // origin: "10.11.1.3",
     // origin: process.env.LAN_IP,
     origin: [
