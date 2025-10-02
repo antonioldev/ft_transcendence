@@ -131,7 +131,7 @@ abstract class AbstractTournament extends AbstractGameSession{
 				round_index: roundIndex,
 				match_index: i,
 				match_total: matches.length,
-				left:  match.players[LEFT]?.name ?? "TBD",
+				left: match.players[LEFT]?.name ?? "TBD",
 				right: match.players[RIGHT]?.name ?? "TBD",
 			});
 		});
@@ -139,15 +139,12 @@ abstract class AbstractTournament extends AbstractGameSession{
 				
 	async start(): Promise<void> {
 		if (this.is_running()) return ;
-		this.state = GameSessionState.RUNNING;
-
-		this._match_players([...this.players]);
 		
+		this.state = GameSessionState.RUNNING;
+		this._match_players([...this.players]);
+
 		for (this.current_round = 1; this.current_round <= this.num_rounds; this.current_round++) {
-			if (!this.is_running()) {
-				console.log(`Tournament ${this.id} ended prematurely on round ${this.current_round}`);
-				return ;
-			}
+			if (!this.is_running()) return ;
 			
 			await this.waitForClientsReady();
 			this.broadcastRoundSchedule(this.current_round);
@@ -157,7 +154,6 @@ abstract class AbstractTournament extends AbstractGameSession{
 			await this.run(matches);
 		}
 		this.stop();
-		console.log(`Game ${this.id} ended naturally`);
 	}
 
 	abstract run(matches: Match[]): Promise<void>;
@@ -207,8 +203,8 @@ export class TournamentLocal extends AbstractTournament {
 
 	stop() {
 		if (this.is_ended()) return ;
-
 		this.state = GameSessionState.ENDED;
+
 		this.current_match?.game?.stop();
 		this.broadcast({
 			type: MessageType.SESSION_ENDED,
@@ -270,35 +266,27 @@ export class TournamentRemote extends AbstractTournament {
 	async run(matches: Match[]): Promise<void> {
 		this.active_matches = []; // reset each round just to be safe
 		let round_winners: Promise<Player | CPU>[] = [];
-
 		let index = 0;
+
 		for (const match of matches) {
-			if (!this.is_running()) {
-				console.warn(`Tournament ${this.id}: round ${this.current_round} ended prematurely`);
-				return ;
-			}
+			if (!this.is_running())	return ;
 			match.index = index++;
 
-			// handles cases where match players have quit early
-			if (match.players.length === 0) continue ;
-			if (match.players.length === 1) {
+			if (match.players.length === 0) {
+				// need to handle more precisely
+			}
+			else if (match.players.length === 1) {
 				this.assign_winner(match, match.players[0]);
-				continue ;
 			}
-
-			match.game = new Game(match.id, match.players, (message) => this.broadcast(message, match.clients));
-			this.active_matches.push(match);
-
-			// add game to db if both are non-CPU
-			if (match.players[LEFT] instanceof Player && match.players[RIGHT] instanceof Player) {
-				registerNewGame(match.id, match.players[LEFT].client.username, 1);
-				addPlayer2(match.id, match.players[RIGHT].client.username);
+			else {
+				match.game = new Game(match.id, match.players, (message) => this.broadcast(message, match.clients));
+				this.active_matches.push(match);
+				this.register_database(match);
+				
+				let winner_promise = match.game.run();
+				winner_promise.then((winner) => this.handle_match_end(match, winner));
+				round_winners.push(winner_promise);
 			}
-			this.register_database(match);
-			
-			let winner_promise: Promise<Player | CPU> = match.game.run();
-			winner_promise.then((winner) => this.handle_match_end(match, winner));
-			round_winners.push(winner_promise);
 		}
 		
 		for (const client of this.defeated_clients) {
@@ -389,9 +377,11 @@ export class TournamentRemote extends AbstractTournament {
 	}
 
 	register_database(match: Match) {
-		console.log(`Match id in the tournament: ${match.id}, for P1:${match.players[LEFT].name}, P2: ${match.players[RIGHT].name}`);
-		registerNewGame(match.id, match.players[LEFT].name, 1);
-		addPlayer2(match.id, match.players[RIGHT].name);
+		if (match.players[LEFT] instanceof Player && match.players[RIGHT] instanceof Player) {
+			console.log(`Match ${match.id}: P1:${match.players[LEFT].name}, P2: ${match.players[RIGHT].name} added to db`);
+			registerNewGame(match.id, match.players[LEFT].name, 1);
+			addPlayer2(match.id, match.players[RIGHT].name);
+		}
 	}
 
 	canClientControlGame(client: Client) {
