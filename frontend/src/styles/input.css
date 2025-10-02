@@ -82,7 +82,7 @@
     }
   }
 
-  /* Custom PONG bounce animation */
+  /* Custom Battle Pong bounce animation */
   @keyframes bounce-text {
     0% {
       transform: translateY(0);
@@ -102,21 +102,51 @@
 
   .animate-bounce-letter-1 {
     display: inline-block;
-    animation: bounce-text 1s ease infinite alternate;
-  }
+    animation: bounce-text 1.2s ease infinite alternate;
+  } /* B */
 
   .animate-bounce-letter-2 {
     display: inline-block;
-    animation: bounce-text 1s ease infinite alternate 0.3s;
-  }
+    animation: bounce-text 1.2s ease infinite alternate 0.2s;
+  } /* A */
 
   .animate-bounce-letter-3 {
     display: inline-block;
-    animation: bounce-text 1s ease infinite alternate 0.4s;
-  }
+    animation: bounce-text 1.2s ease infinite alternate 0.4s;
+  } /* T */
 
   .animate-bounce-letter-4 {
     display: inline-block;
-    animation: bounce-text 1s ease infinite alternate 0.5s;
-  }
+    animation: bounce-text 1.2s ease infinite alternate 0.6s;
+  } /* T */
+
+  .animate-bounce-letter-5 {
+    display: inline-block;
+    animation: bounce-text 1.2s ease infinite alternate 0.8s;
+  } /* L */
+
+  .animate-bounce-letter-6 {
+    display: inline-block;
+    animation: bounce-text 1.2s ease infinite alternate 1s;
+  } /* E */
+
+  .animate-bounce-letter-7 {
+    display: inline-block;
+    animation: bounce-text 1.2s ease infinite alternate 0.1s;
+  } /* P */
+
+  .animate-bounce-letter-8 {
+    display: inline-block;
+    animation: bounce-text 1.2s ease infinite alternate 0.3s;
+  } /* O */
+
+  .animate-bounce-letter-9 {
+    display: inline-block;
+    animation: bounce-text 1.2s ease infinite alternate 0.5s;
+  } /* N */
+
+  .animate-bounce-letter-10 {
+    display: inline-block;
+    animation: bounce-text 1.2s ease infinite alternate 0.7s;
+  } /* G */
 }
