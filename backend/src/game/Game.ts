@@ -210,11 +210,14 @@ export class Game {
 	}
 
 	save_to_db() {
-		const player1 = this.players[LEFT];
-		const player2 = this.players[RIGHT];
-		const player1_score = this.paddles[LEFT].score;
-		const player2_score = this.paddles[RIGHT].score;
-		saveGameResult(this.id, player1.name, player2.name, player1_score, player2_score, Date.now()) // add check for error
+		saveGameResult(
+			this.id, 
+			this.players[LEFT].name, 
+			this.players[RIGHT].name, 
+			this.paddles[LEFT].score, 
+			this.paddles[RIGHT].score, 
+			Date.now()
+		);
 		console.log(`Game ${this.id} saved to db`);
 	}
 	
