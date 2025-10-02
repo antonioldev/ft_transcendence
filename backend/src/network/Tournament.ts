@@ -229,6 +229,7 @@ export class TournamentRemote extends AbstractTournament {
 	client_match_map: Map<string, Match> = new Map();	// Maps client id to the match they are in, CONTAINS ONLY ACTIVE PLAYERS
 	active_matches: Match[] = [];			// list of all active matches in a round
 	defeated_clients: Set<Client> = new Set();
+	state: GameSessionState = GameSessionState.LOBBY;
 
 	constructor(mode: GameMode, capacity: number) {
 		super(mode, capacity);
