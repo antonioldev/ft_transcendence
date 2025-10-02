@@ -2,7 +2,7 @@ import { AdvancedDynamicTexture, Rectangle } from "@babylonjs/gui";
 import { AnimationManager, Motion } from "../services/AnimationManager.js";
 import { createRect, CURTAIN_STYLES } from "./GuiStyle.js";
 
-export class TransitionEffect {
+export class SceneTransition {
 	private leftPaddle!: Rectangle;
 	private rightPaddle!: Rectangle;
 	private leftBackground!: Rectangle;
@@ -28,7 +28,7 @@ export class TransitionEffect {
 		this.rightPaddle.leftInPixels = width;
 	}
 
-	async start(): Promise<void> {
+	async show(): Promise<void> {
 
 		this.leftPaddle.isVisible = true;
 		this.rightPaddle.isVisible = true;
@@ -50,7 +50,7 @@ export class TransitionEffect {
 		]);
 	}
 
-	async stop(): Promise<void> {
+	async hide(): Promise<void> {
 		const { width } = this.adt.getSize();
 		
 		await Promise.all([
@@ -76,13 +76,6 @@ export class TransitionEffect {
 		this.rightPaddle.leftInPixels = width;
 		this.leftBackground.leftInPixels = -width;
 		this.rightBackground.leftInPixels = width;
-	}
-	
-	dispose(): void {
-		this.leftPaddle.dispose();
-		this.rightPaddle.dispose();
-		this.leftBackground.dispose();
-		this.rightBackground.dispose();
 	}
 }
 

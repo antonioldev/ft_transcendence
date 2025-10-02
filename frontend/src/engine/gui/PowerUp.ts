@@ -159,7 +159,6 @@ export class PowerUp {
 		}
 	}
 
-	// Update the existing update method to only handle state changes
 	update(player: PlayerSide, slotIndex: number, action: PowerupState): void {
 		const scene = this.adt.getScene();
 		const cells = player === 0 ? this.powerUpCellsP1 : this.powerUpCellsP2;
@@ -246,22 +245,5 @@ export class PowerUp {
 		});
 
 		this.show(false);
-	}
-
-	dispose(): void {
-		this.powerUpSlotP1?.dispose();
-		this.powerUpSlotP2?.dispose();
-		this.powerUpCellsP1.forEach((cell) => {
-			cell.root.dispose();
-			cell.icon?.dispose();
-			cell.letter?.dispose();
-		});
-		this.powerUpCellsP2.forEach((cell) => {
-			cell.root.dispose();
-			cell.icon?.dispose();
-			cell.letter?.dispose();
-		});
-		this.powerUpCellsP1 = [];
-		this.powerUpCellsP2 = [];
 	}
 }

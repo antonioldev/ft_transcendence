@@ -137,27 +137,6 @@ export class MatchTree {
 		this.isAnimating = false;
 	}
 
-	dispose(): void {
-		this.roundPanels.forEach(panel => panel.dispose());
-		this.tabButtons.forEach(button => button.dispose());
-		this.tabButtonsBg.forEach(bg => bg.dispose());
-		this.tabLabels.forEach(label => label.dispose());
-
-		this.roundPanels = [];
-		this.tabButtons = [];
-		this.tabButtonsBg = [];
-		this.tabLabels = [];
-
-		if (this.tabsBar) this.tabsBar.dispose();
-		this.bracketGrid.dispose();
-		this.bracketOverlay.dispose();
-
-		this.isCreated = false;
-		this.playerTotal = 0;
-		this.roundsCount = 0;
-		this.currentRound = 0;
-	}
-
 	private initializeTabs(matchTotal: number, roundsTotal: number): void {
 		this.playerTotal = matchTotal * 2;
 		this.roundsCount = roundsTotal;
@@ -234,7 +213,6 @@ export class MatchTree {
 		this.applyTabActiveStyles(this.currentRound - 1);
 		this.isCreated = true;
 	}
-
 
 	private applyTabActiveStyles(activeIdx: number): void {
 		for (let i = 0; i < this.tabButtons.length; i++) {

@@ -19,6 +19,7 @@ export class AudioManager {
 		countdown: 0.6,
 		paddle: 0.6,
 		score: 0.7,
+		powerup: 0.7
 	};
 
 	// Sound effects
@@ -197,6 +198,7 @@ export class AudioManager {
 		this.countdownSound?.setVolume(base * this.volumes.countdown);
 		this.paddleHitSound?.setVolume(base * this.volumes.paddle);
 		this.scoreSound?.setVolume(base * this.volumes.score);
+		this.powerup?.setVolume(base * this.volumes.powerup)
 	}
 
 	dispose(): void {

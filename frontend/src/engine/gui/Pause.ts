@@ -1,14 +1,7 @@
 import { AdvancedDynamicTexture, Rectangle, TextBlock, Grid, Image} from "@babylonjs/gui";
 import { getCurrentTranslation } from '../../translations/translations.js';
 import { AnimationManager, Motion } from "../services/AnimationManager.js";
-import {
-  H_LEFT,
-  PAUSE_MENU_STYLES,
-  createRect,
-  createTextBlock,
-  createGrid,
-  createImage,
-} from "./GuiStyle.js";
+import { H_LEFT, PAUSE_MENU_STYLES, createRect, createTextBlock, createGrid, createImage} from "./GuiStyle.js";
 
 export class Pause {
 	private pauseOverlay!: Rectangle;
