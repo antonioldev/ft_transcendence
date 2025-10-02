@@ -213,10 +213,10 @@ export class Game {
 	// If someone quits a remote game, the opposing player wins
 	setOtherPlayerWinner(quitter: Client) {
 		if (this.players[LEFT] instanceof CPU) {
-			this.winner = this.players[LEFT];
+			this.assign_winner(this.players[LEFT]);
 		}
 		else {
-			this.winner = (this.players[LEFT].client === quitter) ? this.players[RIGHT] : this.players[LEFT];
+			this.assign_winner((this.players[LEFT].client === quitter) ? this.players[RIGHT] : this.players[LEFT]);
 		}
 	}
 

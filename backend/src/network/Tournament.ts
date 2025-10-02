@@ -13,7 +13,6 @@ export class Match {
 	players: (Player | CPU)[] = [];
 	clients: Set<Client> = new Set();
 	game!: Game;
-	// spectators_allowed: Boolean = false;
 	
 	index!: number;
 	left?: Match;
@@ -35,7 +34,15 @@ export class Match {
 			console.log(`Client ${player.client.id} added to match ${this.id}`)
 			this.clients.add(player.client);
 		}
+	}
 
+	remove_client(client: Client) {
+		const index = this.players.findIndex(
+			(p): p is Player => p instanceof Player && p.client === client
+		)
+		if (index >= 0) this.players.splice(index);
+
+		this.clients.delete(client);
 	}
 }
 
@@ -245,15 +252,15 @@ export class TournamentRemote extends AbstractTournament {
 	}
 
 	remove_player(client: Client) {
-		if (!this.in_lobby()) return ;
-
 		for (const player of this.players) {
 			if (player instanceof Player && player.client === client) {
 				this.players.delete(player);
-				this.broadcast({
-					type: MessageType.TOURNAMENT_LOBBY,
-					lobby: [...this.players].map(player => player.name)
-				});
+				if (this.in_lobby()) {
+					this.broadcast({
+						type: MessageType.TOURNAMENT_LOBBY,
+						lobby: [...this.players].map(player => player.name)
+					});
+				}
 				return ;
 			}
 		}
@@ -270,66 +277,70 @@ export class TournamentRemote extends AbstractTournament {
 				console.warn(`Tournament ${this.id}: round ${this.current_round} ended prematurely`);
 				return ;
 			}
+			match.index = index++;
 
-			match.index = index;
+			// handles cases where match players have quit early
+			if (match.players.length === 0) continue ;
+			if (match.players.length === 1) {
+				this.assign_winner(match, match.players[0]);
+				continue ;
+			}
 			match.game = new Game(match.id, match.players, (message) => this.broadcast(message, match.clients));
+			this.active_matches.push(match);
 
+			// add game to db if both are non-CPU
 			if (match.players[LEFT] instanceof Player && match.players[RIGHT] instanceof Player) {
 				registerNewGame(match.id, match.players[LEFT].client.username, 1);
 				addPlayer2(match.id, match.players[RIGHT].client.username);
 			}
-
 			this.register_database(match);
-			this.active_matches.push(match);
 			
 			let winner_promise: Promise<Player | CPU> = match.game.run();
 			winner_promise.then((winner) => this.handle_match_end(match, winner));
 			round_winners.push(winner_promise);
-			index++;
 		}
-
+		
 		for (const client of this.defeated_clients) {
-			if (!client) continue ;
 			this.assign_spectator(client);
 		}
 		await Promise.all(round_winners);
 	}
 
 	handle_match_end(match: Match, winner: Player | CPU) {
+		// remove match from active_matches[]
+		const index = this.active_matches.indexOf(match);
+		if (index !== -1) this.active_matches.splice(index, 1);
+
 		if (match.players[LEFT] instanceof Player && match.players[RIGHT] instanceof Player) {
 			match.game.save_to_db();
 		}
+		this.assign_winner(match, winner);
+
+		// reassign spectators to next available match
+		for (const client of match.clients) {
+			this.assign_spectator(client);
+		}
+	}
+
+	assign_winner(match: Match, winner: Player | CPU) {
 		if (!match.next) {
-			this.tournamentWinner = match.game?.winner;
+			this.tournamentWinner = winner;
 			
 			// save tournament winner to db
-
-			// this.stop();
 			return ;
 		}
 		match.next.add_player(winner);
 
-		// update readyClients to wait for the winner ready signal before next round
 		if (winner instanceof Player) {
 			this.readyClients.delete(winner.client.id);
 			this.client_match_map.set(winner.client.id, match.next);
 			match.clients.delete(winner.client);
 		}
-		if (match.game.loser instanceof Player) {
+		if (match.game?.loser instanceof Player) {
 			this.client_match_map.delete(match.game.loser.client.id);
 			this.defeated_clients.add(match.game.loser.client);
 			match.clients.delete(match.game?.loser.client);
 		}
-
-		// assign spectators to next available match
-		for (const client of match.clients) {
-			this.assign_spectator(client);
-		}
-
-		// remove match from active_matches[]
-		const index = this.active_matches.indexOf(match);
-		if (index !== -1) this.active_matches.splice(index, 1);
-
 		this.broadcast({
 			type: MessageType.MATCH_RESULT,
 			winner: winner?.name,
@@ -411,10 +422,17 @@ export class TournamentRemote extends AbstractTournament {
 		else if (this.is_running()) {
 			const match = this.findMatch(quitter.id);
 			if (match) {
-				match.game?.setOtherPlayerWinner(quitter);
-				match.game?.stop();
 				this.client_match_map.delete(quitter.id);
-				console.log(`Removed active player: ${quitter.username}`)
+
+				if (match.game?.is_running()) {
+					match.game.setOtherPlayerWinner(quitter);
+					match.game.stop();
+					console.log(`Removed active player: ${quitter.username}`)
+				}
+				else { // game in next round and hasn't been created yet
+					match.remove_client(quitter);
+					console.log(`Removed player from pending game: ${quitter.username}`)
+				}
 			}
 			else {
 				this.defeated_clients.delete(quitter);
