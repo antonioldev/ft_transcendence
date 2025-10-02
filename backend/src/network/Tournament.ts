@@ -281,8 +281,8 @@ export class TournamentRemote extends AbstractTournament {
 			}
 			else {
 				match.game = new Game(match.id, match.players, (message) => this.broadcast(message, match.clients));
+				match.game.register_database();
 				this.active_matches.push(match);
-				this.register_database(match);
 				
 				let winner_promise = match.game.run();
 				winner_promise.then((winner) => this.handle_match_end(match, winner));
@@ -375,14 +375,6 @@ export class TournamentRemote extends AbstractTournament {
 			}
 		}
 		return (undefined);
-	}
-
-	register_database(match: Match) {
-		if (match.players[LEFT] instanceof Player && match.players[RIGHT] instanceof Player) {
-			console.log(`Match ${match.id}: P1:${match.players[LEFT].name}, P2: ${match.players[RIGHT].name} added to db`);
-			registerNewGame(match.id, match.players[LEFT].name, 1);
-			addPlayer2(match.id, match.players[RIGHT].name);
-		}
 	}
 
 	canClientControlGame(client: Client) {

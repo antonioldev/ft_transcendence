@@ -5,7 +5,7 @@ import { GAME_CONFIG, CPUDifficultyMap, LEFT, RIGHT } from '../shared/gameConfig
 import { MessageType, GameState} from '../shared/constants.js';
 import { PlayerInput, GameStateData, ServerMessage } from '../shared/types.js';
 import { Client, Player, CPU} from '../network/Client.js'
-import { saveGameResult } from '../data/validation.js';
+import { saveGameResult, registerNewGame, addPlayer2  } from '../data/validation.js';
 import { PowerupManager, Slot } from './Powerup.js';
 
 // The Game class runs the core game logic for all game modes.
@@ -199,6 +199,14 @@ export class Game {
 	stop() {
 		if (this.state === GameState.ENDED) return ;
 		this.state = GameState.ENDED;
+	}
+
+	register_database() {
+		if (this.players[LEFT] instanceof Player && this.players[RIGHT] instanceof Player) {
+			console.log(`Game ${this.id} added to db: P1:${this.players[LEFT].name}, P2: ${this.players[RIGHT].name}`);
+			registerNewGame(this.id, this.players[LEFT].name, 1);
+			addPlayer2(this.id, this.players[RIGHT].name);
+		}
 	}
 
 	save_to_db() {

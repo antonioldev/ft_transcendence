@@ -5,6 +5,7 @@ import { PlayerInput, ServerMessage } from '../shared/types.js';
 import { gameManager } from './GameManager.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
 import { generateGameId } from '../data/database.js';
+import { LEFT, RIGHT } from '../shared/gameConfig.js';
 
 export abstract class AbstractGameSession {
 	mode: GameMode;
@@ -184,18 +185,17 @@ export class OneOffGame extends AbstractGameSession{
 		this.state = GameSessionState.RUNNING;
 		
 		await this.waitForClientsReady();
+		const players = [...this.players];
 
-		// if (this.mode === GameMode.TWO_PLAYER_REMOTE) {
-		// 	registerNewGame(this.game.id, match.players[LEFT].client.username, 0);
-		// 	addPlayer2(this.id, match.players[RIGHT].client.username);
-		// }
-
-		this.game = new Game(this.id, [...this.players], this.broadcast.bind(this))
+		this.game = new Game(this.id, players, this.broadcast.bind(this));
+		if (this.mode === GameMode.TWO_PLAYER_REMOTE) {
+			this.game.register_database()
+		}
 		await this.game.run();
 		
-		// if (this.mode === GameMode.TWO_PLAYER_REMOTE) {
-		// 	this.game.save_to_db();
-		// }
+		if (this.mode === GameMode.TWO_PLAYER_REMOTE) {
+			this.game.save_to_db();
+		}
 	}
 
 	stop(): void {
