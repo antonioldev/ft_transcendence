@@ -55,7 +55,7 @@ await fastify.register(fastifyCors, {
     if (!origin) return cb(null, true); // allow non-browser requests (curl)
     const allowed = [
         /^https:\/\/c\d+r\d+s\d+\.42london\.com(:8443)?$/,
-        /^https:\/\/10\.11\.\d+\.\d+(:8443)?$/,
+        /^https:\/\/\d+\d\.\d+\d+\.\d+\.\d+(:8443)?$/,
         /^https:\/\/localhost$/,
         /^http:\/\/localhost:\d+$/
     ];
