@@ -22,6 +22,11 @@ const fastify = Fastify({
 fastify.register(cookie, {
   secret: process.env.COOKIE_SECRET,
   hook: 'onRequest',
+  parseOptions: {
+    secure: true,
+    sameSite: 'none',
+    httpOnly: true
+  }
 });
 
 fastify.register(sessionBindRoutes);
@@ -46,18 +51,21 @@ await fastify.register(fastifyJwt, {
 
 // Enable CORS for the frontend application
 await fastify.register(fastifyCors, {
-//     origin: (origin: string | undefined, cb: (err: Error | null, allow: boolean) => void) => {
-//     if (!origin) return cb(null, true); // allow non-browser requests (curl)
-//     const allowed = [/^https:\/\/c1r2s\d+\.42london\.com:8443$/];
-//     if (allowed.some(regexp => regexp.test(origin))) cb(null, true);
-//     else cb(new Error('Not allowed'), false);
-//   },
-    origin: "https://localhost",
-    // origin: "10.11.1.3",
+    origin: (origin: string | undefined, cb: (err: Error | null, allow: boolean) => void) => {
+    if (!origin) return cb(null, true); // allow non-browser requests (curl)
+    const allowed = [
+        /^https:\/\/c\d+r\d+s\d+\.42london\.com(:8443)?$/,
+        /^https:\/\/10\.11\.\d+\.\d+(:8443)?$/,
+        /^https:\/\/localhost$/,
+        /^http:\/\/localhost:\d+$/
+    ];
+    if (allowed.some(regexp => regexp.test(origin))) cb(null, true);
+    else cb(new Error('Not allowed'), false);
+  },
     // origin: process.env.LAN_IP,
     methods: ['GET', 'POST', 'OPTIONS'],
     credentials: true,
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'Set-Cookie'],
 });
 
 // Register the authentication routes
