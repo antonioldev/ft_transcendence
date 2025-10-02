@@ -55,11 +55,6 @@ await fastify.register(fastifyCors, {
     origin: "https://localhost",
     // origin: "10.11.1.3",
     // origin: process.env.LAN_IP,
-    origin: [
-        "https://battlepong.co.uk",
-        "http://localhost:8080",
-        "https://localhost:8443"
-    ],
     methods: ['GET', 'POST', 'OPTIONS'],
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization'],
