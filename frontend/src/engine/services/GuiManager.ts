@@ -44,7 +44,7 @@ export class GUIManager {
 			this.matchTree = new MatchTree(this.adt, this.animationManager);
 			this.hud = new Hud(this.adt, this.animationManager,config);
 			this.endGame = new EndGame(this.adt, this.animationManager);
-			this.pause = new Pause(this.adt, this.animationManager, config.isTournament, () => audioManager.toggleMute());
+			this.pause = new Pause(this.adt, this.animationManager, config, () => audioManager.toggleMute());
 			this.lobby = new Lobby(this.adt, this.animationManager);
 			this.curtain = new SceneTransition(this.adt, this.animationManager);
 

@@ -136,17 +136,8 @@ export const HUD_STYLES = {
         background: COLORS.DARK_BLUE,
         verticalAlignment: V_BOTTOM,
         horizontalAlignment: H_CENTER,
-        // cornerRadius: 50,
         zIndex: 8
     },
-
-    // fpsText: {
-    //     fontFamily: FONT_FAMILY,
-    //     color: COLORS.WHITE,
-    //     textHorizontalAlignment: H_CENTER,
-    //     textVerticalAlignment: V_CENTER,
-    //     fontSize: 18
-    // },
 
     player1Label: {
         fontFamily: FONT_FAMILY,
@@ -155,9 +146,9 @@ export const HUD_STYLES = {
         textVerticalAlignment: V_CENTER,
         fontSize: 48,
         fontWeight: "bold",
-        shadowOffsetX: 1,
-        shadowOffsetY: 1,
-        shadowBlur: 8,
+        shadowOffsetX: 2,
+        shadowOffsetY: 2,
+        shadowBlur: 0,
         shadowColor: COLORS.GOLD_SHADOW,
         outlineWidth: 2,
         outlineColor: COLORS.TRANSPARENT_BLACK_66,
@@ -171,8 +162,8 @@ export const HUD_STYLES = {
         textVerticalAlignment: V_CENTER,
         fontSize: 48,
         fontWeight: "bold",
-        shadowOffsetX: 3,
-        shadowOffsetY: 3,
+        shadowOffsetX: 2,
+        shadowOffsetY: 2,
         shadowBlur: 0,
         shadowColor: COLORS.GOLD_SHADOW,
         outlineWidth: 2,
@@ -186,9 +177,9 @@ export const HUD_STYLES = {
         textVerticalAlignment: V_BOTTOM,
         fontSize: 56,
         fontWeight: "bold",
-        shadowOffsetX: 1,
-        shadowOffsetY: 1,
-        shadowBlur: 8,
+        shadowOffsetX: 2,
+        shadowOffsetY: 2,
+        shadowBlur: 0,
         shadowColor: COLORS.GOLD_SHADOW,
         outlineWidth: 2,
         outlineColor: COLORS.TRANSPARENT_BLACK_66
@@ -232,23 +223,23 @@ export const HUD_STYLES = {
         shadowColor: "rgba(235, 91, 0, 0.6)"
     },
 
-    playerControlsP1: {
-        fontFamily: FONT_FAMILY,
-        color: COLORS.TRANSPARENT_BLACK_55,
-        textHorizontalAlignment: H_CENTER,
-        textVerticalAlignment: V_CENTER,
-        fontSize: 30,
-        lineSpacing: "10px"
-    },
+    // playerControlsP1: {
+    //     fontFamily: FONT_FAMILY,
+    //     color: COLORS.TRANSPARENT_BLACK_55,
+    //     textHorizontalAlignment: H_CENTER,
+    //     textVerticalAlignment: V_CENTER,
+    //     fontSize: 30,
+    //     lineSpacing: "10px"
+    // },
 
-    playerControlsP2: {
-        fontFamily: FONT_FAMILY,
-        color: COLORS.TRANSPARENT_BLACK_55,
-        textHorizontalAlignment: H_CENTER,
-        textVerticalAlignment: V_CENTER,
-        fontSize: 30,
-        lineSpacing: "10px"
-    }
+    // playerControlsP2: {
+    //     fontFamily: FONT_FAMILY,
+    //     color: COLORS.TRANSPARENT_BLACK_55,
+    //     textHorizontalAlignment: H_CENTER,
+    //     textVerticalAlignment: V_CENTER,
+    //     fontSize: 30,
+    //     lineSpacing: "10px"
+    // }
 } as const;
 
 export const POWER_UP_STYLES = {
@@ -286,8 +277,6 @@ export const POWER_UP_STYLES = {
         width: "100%",
         height: "15%",
         paddingTop: "2%",
-        // top: 10,
-        // paddingTop: "4px",
         fontSize: 20,
         fontWeight: "bold",
         color: COLORS.WHITE,
@@ -320,8 +309,8 @@ export const PAUSE_MENU_STYLES = {
     },
 
     pauseGrid: {
-        width: "100%", //changes
-        height: "60%",
+        width: "100%",
+        height: "90%",
         horizontalAlignment: H_CENTER,
         verticalAlignment: V_CENTER
     },
@@ -335,10 +324,18 @@ export const PAUSE_MENU_STYLES = {
         fontWeight: "bold"
     },
 
+    gameInstruction: {
+        fontFamily: FONT_FAMILY,
+        color: COLORS.LIGHT_GREEN,
+        fontSize: 24,
+        textHorizontalAlignment: H_CENTER,
+        textVerticalAlignment: V_CENTER
+    },
+
     pauseInstruction: {
         fontFamily: FONT_FAMILY,
         color: COLORS.WHITE,
-        fontSize: 24,
+        fontSize: 20,
         textHorizontalAlignment: H_CENTER,
         textVerticalAlignment: V_CENTER
     },
@@ -346,7 +343,7 @@ export const PAUSE_MENU_STYLES = {
     pauseHint: {
         fontFamily: FONT_FAMILY,
         color: COLORS.WHITE,
-        fontSize: 20,
+        fontSize: 16,
         textHorizontalAlignment: H_CENTER,
         textVerticalAlignment: V_CENTER
     },
@@ -357,8 +354,9 @@ export const PAUSE_MENU_STYLES = {
     },
 
     gridRows: {
-        title: 0.5,
-        instruction: 0.3,
+        title: 0.2,
+        gameInstructions: 0.5,
+        instruction: 0.1,
         hint: 0.1,
         muteIcon: 0.1
     }
