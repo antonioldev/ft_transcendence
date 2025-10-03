@@ -192,7 +192,7 @@ export class Game {
 	// Handle server ending the game
 	private async onServerEndedGame(winner: string, loser: string): Promise<void> {
 		if (!this.isInitialized || !this.config.isTournament) return;
-		
+		console.error(`[${new Date().toISOString()}] start ON SERVER ENDED GAME`);
 		this.services?.gui?.setPauseVisible(false);
 		const controlledSides = this.getControlledSides();
 
@@ -212,6 +212,7 @@ export class Game {
 			webSocketClient.sendPlayerReady();
 			this.services?.audio?.stopGameMusic();
 		}
+		console.error(`[${new Date().toISOString()}] finish ON SERVER ENDED GAME`);
 	}
 
 	private async onServerEndedSession(winner: string): Promise<void> {
@@ -249,7 +250,7 @@ export class Game {
 	private resetForNextMatch(): void {
 		if (!this.isInitialized) return;
 
-		this.services?.gui?.powerUp.reset();
+		this.services?.gui?.hud.resetPowerUps();
 		this.resetPlayersState();
 
 		if (this.gameObjects) {
@@ -333,6 +334,7 @@ export class Game {
 				this.services?.audio?.resumeGameMusic();
 				break;
 			case GameState.ENDED:
+				console.error(`[${new Date().toISOString()}] received state GAME ENDED`);
 				const winner = state.winner;
 				const loser = state.loser;
 				if (winner && loser)
@@ -343,6 +345,7 @@ export class Game {
 
 // ====================			INPUT HANDLING		   ====================
 	private handlePlayerAssignment(leftPlayerName: string, rightPlayerName: string): void {
+		console.error(`[${new Date().toISOString()}] handlePlayerAssignment START - left: ${leftPlayerName}, right: ${rightPlayerName}`);
 		this.services?.gui?.hud.updatePlayerNames(leftPlayerName, rightPlayerName);
 
 		const leftPlayer = this.players?.get(PlayerSide.LEFT);
@@ -365,6 +368,7 @@ export class Game {
 			leftPlayer?.isControlled || false, 
 			rightPlayer?.isControlled || false
 		);
+		console.error(`[${new Date().toISOString()}] handlePlayerAssignment FINISH - left: ${leftPlayerName}, right: ${rightPlayerName}`);
 	}
 
 	private getControlledSides(): PlayerSide[] {
