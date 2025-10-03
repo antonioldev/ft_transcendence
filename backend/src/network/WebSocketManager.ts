@@ -264,7 +264,7 @@ export class WebSocketManager {
         gameSession.resume(client.id);
     }
 
-    private activatePowerup(client: Client, data: ClientMessage) {
+    private async activatePowerup(client: Client, data: ClientMessage) {
         if (data.powerup_type === undefined || data.powerup_type === null || 
             data.slot === undefined || data.slot === null || 
             data.side === undefined || data.side === null) {
@@ -286,7 +286,7 @@ export class WebSocketManager {
             console.error("Error: cannot activate powerup, game does not exist");
             return ;
         }
-        game.activate(data.side, data.slot);
+        await game.activate(data.side, data.slot);
     }
 
     private toggleSpectator(client: Client, data: ClientMessage) {

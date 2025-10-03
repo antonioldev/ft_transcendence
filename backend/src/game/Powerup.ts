@@ -3,6 +3,7 @@ import { Paddle} from './Paddle.js';
 import { LEFT, RIGHT, GAME_CONFIG } from '../shared/gameConfig.js';
 import { PowerupType, PowerupState} from '../shared/constants.js';
 import { Powerup } from '../shared/types.js';
+import { eventManager } from '../network/utils.js';
 
 export class Slot {
 	type: PowerupType;
@@ -37,7 +38,7 @@ export class PowerupManager {
 			// this.left_slots[i] = new Slot(Math.floor(Math.random() * num_powerups), LEFT, i);
 			// this.right_slots[i] = new Slot(Math.floor(Math.random() * num_powerups), RIGHT, i);
 			this.left_slots[i] = new Slot(PowerupType.CURVE_BALL, LEFT, i);
-			this.right_slots[i] = new Slot(PowerupType.CURVE_BALL, RIGHT, i);
+			this.right_slots[i] = new Slot(PowerupType.POWERSHOT, RIGHT, i);
 		}
 	}
 
@@ -51,12 +52,13 @@ export class PowerupManager {
 		}
 		return (state);
 	}
-
-	activate(slot: Slot) {
+	
+	async activate(slot: Slot) {
 		if (slot.state === (PowerupState.ACTIVE || PowerupState.SPENT)) return ;
 		
 		const opponent_side: number = slot.side === LEFT ? RIGHT : LEFT;
 		let timeout: number = GAME_CONFIG.powerupDuration;
+		slot.state = PowerupState.ACTIVE;
 
 		switch (slot.type) {
 			case PowerupType.SLOW_OPPONENT:
@@ -78,10 +80,13 @@ export class PowerupManager {
 				timeout = this.freeze_ball();
 				break ;
 			case PowerupType.POWERSHOT:
-				timeout = this.powershot(slot.side);
+				timeout = await this.set_powershot(slot.side, opponent_side);
 				break ;
 			case PowerupType.INVISIBLE_BALL:
-				timeout = GAME_CONFIG.invisibilityTimeLimit; // implementation handled on front
+				timeout = this.set_invisible(slot.side, false);
+				break ;
+			case PowerupType.CURVE_BALL:
+				timeout = this.set_curve_ball(true);
 				break ;
 			case PowerupType.RESET_RALLY:
 				timeout = this.reset_rally();
@@ -89,21 +94,17 @@ export class PowerupManager {
 			case PowerupType.DOUBLE_POINTS:
 				timeout = this.double_points();
 				break ;
-			case PowerupType.CURVE_BALL:
-				timeout = this.set_curve_ball(true);
-				break ;
 			default:
 				console.error(`Error: cannot activate unknown Powerup "${slot.type}`);
 				return ;
 		}
-		slot.state = PowerupState.ACTIVE;
 		setTimeout(() => this.deactivate(slot), timeout);
 	}
 
 	deactivate(slot: Slot) {
 		if (slot.state === PowerupState.SPENT) return ;
 		const opponent_side: number = slot.side === LEFT ? RIGHT : LEFT;
-
+		
 		switch (slot.type) {
 			case PowerupType.SLOW_OPPONENT:
 				this.paddles[opponent_side].speed = GAME_CONFIG.paddleSpeed;
@@ -124,19 +125,19 @@ export class PowerupManager {
 				this.ball.isPaused = false;
 				break ;
 			case PowerupType.POWERSHOT:
-				this.paddles[slot.side].powershot_activated = false;
+				this.unset_powershot(slot.side, opponent_side);
 				break ;
 			case PowerupType.INVISIBLE_BALL:
-				// handled on front
+				this.set_invisible(slot.side, false);
+				break ;
+			case PowerupType.CURVE_BALL:
+				this.set_curve_ball(false);
 				break ;
 			case PowerupType.RESET_RALLY:
 				// nothing to handle
 				break ;
 			case PowerupType.DOUBLE_POINTS:
 				this.ball.double_points_active = false;
-				break ;
-			case PowerupType.CURVE_BALL:
-				this.set_curve_ball(false);
 				break ;
 			default:
 				console.error(`Error: cannot deactivate unknown Powerup "${slot.type}`);
@@ -232,9 +233,38 @@ export class PowerupManager {
 		return (GAME_CONFIG.freezeDuration);
 	}
 
-	powershot(side: number): number {
-		this.paddles[side].powershot_activated = true;
-		return (GAME_CONFIG.powershotTimeLimit); // fix timer for this
+	async set_powershot(side: number, opponent_side: number) {
+		this.paddles[side].powershot_activate = true;
+
+		await new Promise(resolve => {
+			eventManager.once(`paddle-collision-${side}`, resolve);
+		});
+
+		this.paddles[side].powershot_activate = false;
+		this.paddles[opponent_side].powershot_deactivate = true;
+		this.ball.speed_cache = this.ball.speed;
+		this.ball.speed = GAME_CONFIG.ballPowerShotSpeed;
+
+		return (0);
+	}
+
+	async unset_powershot(side: number, opponent_side: number) {
+		await new Promise(resolve => {
+			eventManager.once(`paddle-collision-${opponent_side}`, resolve);
+		});
+		
+		this.paddles[side].powershot_deactivate = false;
+		this.ball.speed = this.ball.speed_cache;
+	}
+
+	set_invisible(side: number, active: boolean) {
+		this.paddles[side].invisible_activated = active;
+		return GAME_CONFIG.invisibilityTimeLimit; // implementation handled on front
+	}
+
+	set_curve_ball(active: boolean) {
+		this.ball.curve_ball_active = active;
+		return (GAME_CONFIG.powerupDuration);
 	}
 
 	reset_rally() {
@@ -244,11 +274,6 @@ export class PowerupManager {
 
 	double_points() {
 		this.ball.double_points_active = true;
-		return (GAME_CONFIG.powerupDuration);
-	}
-
-	set_curve_ball(active: boolean) {
-		this.ball.curve_ball_active = active;
 		return (GAME_CONFIG.powerupDuration);
 	}
 }

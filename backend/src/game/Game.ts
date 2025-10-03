@@ -201,15 +201,13 @@ export class Game {
 		this.state = GameState.ENDED;
 	}
 
-	register_database() {
-		if (this.players[LEFT] instanceof Player && this.players[RIGHT] instanceof Player) {
-			console.log(`Game ${this.id} added to db: P1:${this.players[LEFT].name}, P2: ${this.players[RIGHT].name}`);
-			registerNewGame(this.id, this.players[LEFT].name, 1);
-			addPlayer2(this.id, this.players[RIGHT].name);
-		}
-	}
-
 	save_to_db() {
+		if (this.players[LEFT] instanceof CPU || this.players[RIGHT] instanceof CPU) return ;
+
+		registerNewGame(this.id, this.players[LEFT].name, 1);
+		addPlayer2(this.id, this.players[RIGHT].name);
+		console.log(`Game ${this.id} added to db: P1:${this.players[LEFT].name}, P2: ${this.players[RIGHT].name}`);
+
 		saveGameResult(
 			this.id, 
 			this.players[LEFT].name, 
@@ -231,9 +229,9 @@ export class Game {
 		}
 	}
 
-	activate(side: number, slot_index: number) {
+	async activate(side: number, slot_index: number) {
 		const slot: Slot = this.powerup_manager.slots[side][slot_index];
-		this.powerup_manager.activate(slot);
+		await this.powerup_manager.activate(slot);
         console.log(`Powerup ${slot.type} activated by ${this.players[side].name}`);
 	}
 

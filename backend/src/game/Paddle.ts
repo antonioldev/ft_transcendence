@@ -10,7 +10,11 @@ export class Paddle {
 	oldRect: Rect;
 	speed: number = GAME_CONFIG.paddleSpeed;
 	is_inverted: boolean = false;
-	powershot_activated = false;
+
+	powershot_activate = false;
+	powershot_deactivate = false;
+    invisible_activated: boolean = false;
+    triple_shot_activated: boolean = false;
 
 	constructor(side: number) {
 		this.side = side;
@@ -35,7 +39,8 @@ export class Paddle {
 						Math.max(
 							this.rect.x + _deltaMove, 
 							getPlayerBoundaries(this.rect.width).left), 
-						getPlayerBoundaries(this.rect.width).right);
+							getPlayerBoundaries(this.rect.width).right
+						);
 	}
 
 	cacheRect() {

@@ -162,8 +162,6 @@ wipe-images:
 #################################    REBUILD    #################################
 
 re: fclean run
-	# docker-compose down
-	# docker-compose up -d --build
 
 restart:
 	docker-compose restart
