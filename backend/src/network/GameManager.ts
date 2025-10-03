@@ -26,12 +26,12 @@ class GameManager extends EventEmitter {
     removeClient(client: Client): void {
         const gameSession = this.clientGamesMap.get(client.id);
         if (!gameSession) {
-            console.warn(`Cannot disconnect: Client ${client.username}:${client.id} not in any game`);
+            console.warn(`Cannot disconnect: Client ${client.username}:${client.username} not in any game`);
             return;
         }
-        console.log(`Client disconnected: ${client.username}:${client.id}`);
-        this.clientGamesMap.delete(client.id);
         gameSession.handlePlayerQuit(client);
+        this.clientGamesMap.delete(client.id);
+        console.log(`Client disconnected: ${client.username}:${client.username}`);
     }
 
     /**
