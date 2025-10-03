@@ -29,6 +29,7 @@ export class Game {
 	private canvas: HTMLCanvasElement | null = null;
 	private gameObjects: GameObjects | null = null;
 	private gameLoopObserver: any = null;
+	private isSpectator: boolean = false;
 	private players: Map<PlayerSide, PlayerState> = new Map([
 			[PlayerSide.LEFT, { name: "", isControlled: false, keyboardProfile: undefined,
 				size: GAME_CONFIG.paddleWidth, score: 0, powerUpsAssigned: false, powerUps: [], inverted: false,}],
@@ -202,8 +203,10 @@ export class Game {
 		if (showLoser){
 			await this.services?.gui?.showTournamentMatchLoser();
 			await this.services?.input.waitForSpectatorChoice();
+			await this.services?.gui.curtain.show();
 			this.services?.gui.hud.setSpectatorMode();
 			webSocketClient.sendSpectatorReady();
+			this.isSpectator = true;
 		}
 		else {
 			const waitForSpace = controlledSides.length !== 0 && this.config.gameMode !== GameMode.TOURNAMENT_REMOTE;
@@ -323,6 +326,8 @@ export class Game {
 	private handleChangeServerState(state: GameStateData): void {
 		if (this.serverState === state.state) return;
 
+		if (this.isSpectator)
+			this.services?.gui.curtain.hide();
 		this.serverState = state.state;
 		switch (this.serverState){
 			case GameState.PAUSED:

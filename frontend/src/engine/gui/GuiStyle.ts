@@ -56,6 +56,7 @@ export const SPECTATOR_STYLE = {
     spectatorBanner: {
         width: "100%",
         height: "40px",
+        thickness: 0,
         background: COLORS.SPECTATOR_RED,
         alpha: 1,
         horizontalAlignment: H_CENTER,

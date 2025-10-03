@@ -7,6 +7,7 @@ export class SceneTransition {
 	private rightPaddle!: Rectangle;
 	private leftBackground!: Rectangle;
 	private rightBackground!: Rectangle;
+	private isActive: boolean = false;
 	
 	constructor(private adt: AdvancedDynamicTexture, private animationManager: AnimationManager) {
 		const { width } = this.adt.getSize();
@@ -29,6 +30,7 @@ export class SceneTransition {
 	}
 
 	async show(): Promise<void> {
+		this.isActive = true;
 
 		this.leftPaddle.isVisible = true;
 		this.rightPaddle.isVisible = true;
@@ -51,6 +53,9 @@ export class SceneTransition {
 	}
 
 	async hide(): Promise<void> {
+		if (!this.isActive) return;
+
+		this.isActive = false;
 		const { width } = this.adt.getSize();
 		
 		await Promise.all([
