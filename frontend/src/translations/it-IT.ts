@@ -82,5 +82,20 @@ export const italian: Translation = {
     errorPasswordsDoNotMatch: 'Le password non corrispondono',
 	spectator: '🎮 MODALITÀ SPETTATORE',
 	spectatorInstruction: '← Partita Precedente | → Partita Successiva | Spazio: Mostra/Nascondi Tabellone | Y: Esci',
-	spectatorQuestion: 'Vuoi guardere il resto del torneo? Premi Y, oppure premi N per uscire'
+	spectatorQuestion: 'Vuoi guardere il resto del torneo? Premi Y, oppure premi N per uscire',
+
+    pauseControlsTitle: '🎮 CONTROLLI',
+    pauseMovementTitle: '🚀 MOVIMENTO',
+    pausePowerupsTitle: '⚡ POWER-UP',
+    pauseObjectiveTitle: '🎯 OBIETTIVO',
+    pauseMovementP1_2D: 'G1: W (Su) / S (Giù)',
+    pauseMovementP2_2D: 'G2: ↑ (Su) / ↓ (Giù)',
+    pauseMovementP1_3D: 'G1: A (Sinistra) / D (Destra)',
+    pauseMovementP2_3D: 'G2: ← (Sinistra) / → (Destra)',
+    pauseMovementSolo_2D: 'Usa: ↑ (Su) / ↓ (Giù)',
+    pauseMovementSolo_3D: 'Usa: ← (Sinistra) / → (Destra)',
+    pausePowerupsMulti_P1: 'Giocatore 1: C / V / B',
+    pausePowerupsMulti_P2: 'Giocatore 2: I / O / P',
+    pausePowerupsSolo: 'Attiva: 1 / 2 / 3',
+    pauseObjectiveText: 'Segna {points} punti colpendo\nla palla oltre l\'avversario!'
 };

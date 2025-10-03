@@ -324,17 +324,10 @@ export const PAUSE_MENU_STYLES = {
         fontWeight: "bold"
     },
 
-    gameInstruction: {
-        fontFamily: FONT_FAMILY,
-        color: COLORS.LIGHT_GREEN,
-        fontSize: 24,
-        textHorizontalAlignment: H_CENTER,
-        textVerticalAlignment: V_CENTER
-    },
-
     pauseInstruction: {
         fontFamily: FONT_FAMILY,
         color: COLORS.WHITE,
+        height: "30px",
         fontSize: 20,
         textHorizontalAlignment: H_CENTER,
         textVerticalAlignment: V_CENTER
@@ -343,6 +336,7 @@ export const PAUSE_MENU_STYLES = {
     pauseHint: {
         fontFamily: FONT_FAMILY,
         color: COLORS.WHITE,
+        height: "30px",
         fontSize: 16,
         textHorizontalAlignment: H_CENTER,
         textVerticalAlignment: V_CENTER
@@ -355,14 +349,58 @@ export const PAUSE_MENU_STYLES = {
 
     gridRows: {
         title: 0.2,
-        gameInstructions: 0.5,
+        gameInstructions: 0.6,
         exitInstruction: 0.15,
-        hint: 0.05,
         muteIcon: 0.05
-    }
+    },
 
-    instructionContainer: {
-        
+    gameInstructionContainer: {
+        width: "50%",
+        cornerRadius: 12,
+        thickness: 2,
+        horizontalAlignment: H_CENTER,
+        verticalAlignment: V_CENTER,
+        color: COLORS.WHITE
+
+    },
+
+    instructionsStack: {
+        width: "90%",
+        height: "100%",
+        horizontalAlignment: H_CENTER,
+        verticalAlignment: V_CENTER,
+        isVertical: true,
+        spacing: 10,
+        paddingTop: "50px",
+        paddingBottom: "50px"
+    },
+
+    instructionTitle: {
+        fontFamily: FONT_FAMILY,
+        color: COLORS.LIGHT_GREEN,
+        fontSize: 36,
+        fontWeight: "bold",
+        textHorizontalAlignment: H_CENTER,
+        height: "40px"
+    },
+
+    instructionSectionHeader: {
+        fontFamily: FONT_FAMILY,
+        color: COLORS.WHITE,
+        fontSize: 22,
+        fontWeight: "bold",
+        textHorizontalAlignment: H_CENTER,
+        height: "35px",
+        paddingTop: "10px"
+    },
+
+    instructionDetails: {
+        fontFamily: FONT_FAMILY,
+        color: COLORS.WHITE,
+        fontSize: 18,
+        textHorizontalAlignment: H_CENTER,
+        height: "60px",
+        textWrapping: true
     }
 } as const;
 export const LOBBY_STYLES = {

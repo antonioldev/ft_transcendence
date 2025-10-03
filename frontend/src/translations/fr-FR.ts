@@ -82,5 +82,20 @@ export const french: Translation = {
     errorPasswordsDoNotMatch: 'Les mots de passe ne correspondent pas',
 	spectator: '🎮 MODE SPECTATEUR',
 	spectatorInstruction: '← Match Précédent | → Match Suivant | Espace: Afficher/Masquer le Bracket | Y: Quitter',
-	spectatorQuestion: 'Veux-tu regarder le reste du tournoi ? Appuie sur O, ou appuie sur N pour quitter'
+	spectatorQuestion: 'Veux-tu regarder le reste du tournoi ? Appuie sur O, ou appuie sur N pour quitter',
+
+    pauseControlsTitle: '🎮 CONTRÔLES',
+    pauseMovementTitle: '🚀 MOUVEMENT',
+    pausePowerupsTitle: '⚡ POWER-UPS',
+    pauseObjectiveTitle: '🎯 OBJECTIF',
+    pauseMovementP1_2D: 'J1: W (Haut) / S (Bas)',
+    pauseMovementP2_2D: 'J2: ↑ (Haut) / ↓ (Bas)',
+    pauseMovementP1_3D: 'J1: A (Gauche) / D (Droite)',
+    pauseMovementP2_3D: 'J2: ← (Gauche) / → (Droite)',
+    pauseMovementSolo_2D: 'Utiliser: ↑ (Haut) / ↓ (Bas)',
+    pauseMovementSolo_3D: 'Utiliser: ← (Gauche) / → (Droite)',
+    pausePowerupsMulti_P1: 'Joueur 1: C / V / B',
+    pausePowerupsMulti_P2: 'Joueur 2: I / O / P',
+    pausePowerupsSolo: 'Activer: 1 / 2 / 3',
+    pauseObjectiveText: 'Marquez {points} points en frappant\nla balle au-delà de votre adversaire!'
 };

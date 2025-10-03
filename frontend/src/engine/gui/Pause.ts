@@ -1,19 +1,13 @@
-import { AdvancedDynamicTexture, Rectangle, TextBlock, Grid, Image} from "@babylonjs/gui";
+import { AdvancedDynamicTexture, Rectangle, Image} from "@babylonjs/gui";
 import { getCurrentTranslation } from '../../translations/translations.js';
 import { AnimationManager, Motion } from "../services/AnimationManager.js";
-import { H_LEFT, PAUSE_MENU_STYLES, createRect, createTextBlock, createGrid, createImage} from "./GuiStyle.js";
+import { H_LEFT, PAUSE_MENU_STYLES, createRect, createTextBlock, createGrid, createImage, createStackPanel} from "./GuiStyle.js";
 import { GameConfig } from "../GameConfig.js";
-import { Translation } from "../../translations/Translation.js";
 import { ViewMode } from "../../shared/constants.js";
 import { GAME_CONFIG } from "../../shared/gameConfig.js";
 
 export class Pause {
 	private pauseOverlay!: Rectangle;
-	private pauseGrid!: Grid;
-	private pauseTitle!: TextBlock;
-	private pauseInstruction!: TextBlock;
-	private gameInstructions!: TextBlock;
-	private pauseHint!: TextBlock;
 	private muteIcon?: Image;
 
 	constructor(private adt: AdvancedDynamicTexture, private animationManager: AnimationManager, config: GameConfig, private onToggleMute?: () => boolean) {
@@ -22,31 +16,34 @@ export class Pause {
 		this.pauseOverlay = createRect("pauseOverlay", PAUSE_MENU_STYLES.pauseOverlay);
 		this.adt.addControl(this.pauseOverlay);
 
-		this.pauseGrid = createGrid("pauseGrid", PAUSE_MENU_STYLES.pauseGrid);
+		const pauseGrid = createGrid("pauseGrid", PAUSE_MENU_STYLES.pauseGrid);
 		if (config.isTournament) {
-			this.pauseGrid.width = "50%";
-			this.pauseGrid.horizontalAlignment = H_LEFT;
+			pauseGrid.width = "50%";
+			pauseGrid.horizontalAlignment = H_LEFT;
 		}
-		this.pauseOverlay.addControl(this.pauseGrid);
+		this.pauseOverlay.addControl(pauseGrid);
 
-		this.pauseGrid.addRowDefinition(PAUSE_MENU_STYLES.gridRows.title, false);
-		this.pauseGrid.addRowDefinition(PAUSE_MENU_STYLES.gridRows.gameInstructions, false);
-		this.pauseGrid.addRowDefinition(PAUSE_MENU_STYLES.gridRows.exitInstruction, false);
-		this.pauseGrid.addRowDefinition(PAUSE_MENU_STYLES.gridRows.hint, false);
-		this.pauseGrid.addRowDefinition(PAUSE_MENU_STYLES.gridRows.muteIcon, false);
+		pauseGrid.addRowDefinition(PAUSE_MENU_STYLES.gridRows.title, false);
+		pauseGrid.addRowDefinition(PAUSE_MENU_STYLES.gridRows.gameInstructions, false);
+		pauseGrid.addRowDefinition(PAUSE_MENU_STYLES.gridRows.exitInstruction, false);
+		pauseGrid.addRowDefinition(PAUSE_MENU_STYLES.gridRows.muteIcon, false);
 
-		this.pauseTitle = createTextBlock( "pauseTitle", PAUSE_MENU_STYLES.pauseTitle, t.gamePaused);
-		this.pauseGrid.addControl(this.pauseTitle, 0, 0);
+		const pauseTitle = createTextBlock( "pauseTitle", PAUSE_MENU_STYLES.pauseTitle, t.gamePaused);
+		pauseGrid.addControl(pauseTitle, 0, 0);
 
-		const instructionsText = this.getGameInstructions(t, config);
-		this.gameInstructions = createTextBlock("gameInstructions", PAUSE_MENU_STYLES.gameInstruction, instructionsText);
-		this.pauseGrid.addControl(this.gameInstructions, 1, 0);
+		const gameInstructions = createRect("gameInstructions", PAUSE_MENU_STYLES.gameInstructionContainer);
+		pauseGrid.addControl(gameInstructions, 1, 0);
+		this.buildInstructions(gameInstructions, config);
 
-		this.pauseInstruction = createTextBlock( "pauseInstruction", PAUSE_MENU_STYLES.pauseInstruction, t.exitGame);
-		this.pauseGrid.addControl(this.pauseInstruction, 2, 0);
+		const exitStack = createStackPanel("exitStack", PAUSE_MENU_STYLES.instructionsStack);
+        exitStack.paddingBottom = "0px"
+		pauseGrid.addControl(exitStack, 2, 0);
 
-		this.pauseHint = createTextBlock( "pauseHint", PAUSE_MENU_STYLES.pauseHint, t.pauseControls);
-		this.pauseGrid.addControl(this.pauseHint, 3, 0);
+		const pauseInstruction = createTextBlock("pauseInstruction", PAUSE_MENU_STYLES.pauseInstruction, t.exitGame);
+		exitStack.addControl(pauseInstruction);
+
+		const pauseHint = createTextBlock("pauseHint", PAUSE_MENU_STYLES.pauseHint, t.pauseControls);
+		exitStack.addControl(pauseHint);
 
 		this.muteIcon = createImage( "muteIcon", PAUSE_MENU_STYLES.muteIcon, "assets/icons/sound_on.png");
 		this.muteIcon.onPointerClickObservable.add(() => {
@@ -57,7 +54,7 @@ export class Pause {
 					this.muteIcon.source = isMuted ? "assets/icons/sound_off.png" : "assets/icons/sound_on.png";
 			}
 		});
-		this.pauseGrid.addControl(this.muteIcon, 4, 0);
+		pauseGrid.addControl(this.muteIcon, 3, 0);
 	}
 
 	private async animateMuteIcon(): Promise<void> {
@@ -65,46 +62,64 @@ export class Pause {
 		await this.animationManager?.scale(this.muteIcon, 1, 0.9, Motion.F.xFast, true);
 	}
 
-	private getGameInstructions(t: Translation, config: GameConfig): string {
-		const viewModeText = config.viewMode === ViewMode.MODE_2D ? "2D VIEW" : "3D VIEW";
-		let instructions = `🎮 CONTROLS (${viewModeText})\n\n`;
+	private buildInstructions(gameInstructions: Rectangle, config: GameConfig): void {
+		const t = getCurrentTranslation();
 
-		// Movement controls section
-		if (config.isLocalMultiplayer) {
-			if (config.viewMode === ViewMode.MODE_2D) {
-				instructions += "🚀 MOVEMENT:\n";
-				instructions += "   P1: W (Up) / S (Down)\n";
-				instructions += "   P2: ↑ (Up) / ↓ (Down)\n\n";
-			} else {
-				instructions += "🚀 MOVEMENT:\n";
-				instructions += "   P1: A (Left) / D (Right)\n";
-				instructions += "   P2: ← (Left) / → (Right)\n\n";
-			}
-		} else {
-			if (config.viewMode === ViewMode.MODE_2D) {
-				instructions += "🚀 MOVEMENT:\n";
-				instructions += "   Use: ↑ (Up) / ↓ (Down)\n\n";
-			} else {
-				instructions += "🚀 MOVEMENT:\n";
-				instructions += "   Use: ← (Left) / → (Right)\n\n";
-			}
-		}
+		const instructionsStack = createStackPanel("instructionsStack", PAUSE_MENU_STYLES.instructionsStack);
+		gameInstructions.addControl(instructionsStack);
+		
+		const controlsTitle = createTextBlock("controlsTitle", PAUSE_MENU_STYLES.instructionTitle, t.pauseControlsTitle);
+		instructionsStack.addControl(controlsTitle);
 
-		// Power-up controls section
-		instructions += "⚡ POWER-UPS:\n";
-		if (config.isLocalMultiplayer) {
-			instructions += "   Player 1: C / V / B\n";
-			instructions += "   Player 2: I / O / P\n\n";
-		} else {
-			instructions += "   Activate: 1 / 2 / 3\n\n";
-		}
+		const movementHeader = createTextBlock("movementHeader", PAUSE_MENU_STYLES.instructionSectionHeader, t.pauseMovementTitle);
+		instructionsStack.addControl(movementHeader);
 
-		// Game objective
+		const movementText = this.getMovementText(config);
+		const movementDetails = createTextBlock("movementDetails", PAUSE_MENU_STYLES.instructionDetails, movementText);
+		instructionsStack.addControl(movementDetails);
+
+		const powerupsHeader = createTextBlock("powerupsHeader", PAUSE_MENU_STYLES.instructionSectionHeader, t.pausePowerupsTitle);
+		instructionsStack.addControl(powerupsHeader);
+
+		const powerupsText = this.getPowerupsText(config);
+		const powerupsDetails = createTextBlock("powerupsDetails", PAUSE_MENU_STYLES.instructionDetails, powerupsText);
+		instructionsStack.addControl(powerupsDetails);
+
+		const objectiveHeader = createTextBlock("objectiveHeader", PAUSE_MENU_STYLES.instructionSectionHeader, t.pauseObjectiveTitle);
+		instructionsStack.addControl(objectiveHeader);
+
 		const points = GAME_CONFIG.scoreToWin;
-		instructions += "🎯 OBJECTIVE:\n";
-		instructions += `   Score ${points} points by hitting\nthe ball past your opponent!`;
+		const objectiveText = t.pauseObjectiveText.replace('{points}', points.toString());
+		const objectiveDetails = createTextBlock("objectiveDetails", PAUSE_MENU_STYLES.instructionDetails, objectiveText);
+		instructionsStack.addControl(objectiveDetails);
+	}
 
-		return instructions;
+	private getMovementText(config: GameConfig): string {
+		const t = getCurrentTranslation();
+		
+		if (config.isLocalMultiplayer) {
+			if (config.viewMode === ViewMode.MODE_2D) {
+				return `${t.pauseMovementP1_2D}\n${t.pauseMovementP2_2D}`;
+			} else {
+				return `${t.pauseMovementP1_3D}\n${t.pauseMovementP2_3D}`;
+			}
+		} else {
+			if (config.viewMode === ViewMode.MODE_2D) {
+				return t.pauseMovementSolo_2D;
+			} else {
+				return t.pauseMovementSolo_3D;
+			}
+		}
+	}
+
+	private getPowerupsText(config: GameConfig): string {
+		const t = getCurrentTranslation();
+		
+		if (config.isLocalMultiplayer) {
+			return `${t.pausePowerupsMulti_P1}\n${t.pausePowerupsMulti_P2}`;
+		} else {
+			return t.pausePowerupsSolo;
+		}
 	}
 
 	show(show: boolean): void {
@@ -128,12 +143,12 @@ export class Pause {
 	}
 
 	dispose(): void {
-		this.muteIcon?.onPointerClickObservable.clear();
-		this.muteIcon?.dispose()
-		this.pauseHint.dispose();
-		this.pauseInstruction.dispose();
-		this.pauseTitle.dispose();
-		this.pauseGrid.dispose();
-		this.pauseOverlay.dispose();
+		this.muteIcon?.onPointerClickObservable.clear(); // TODO
+		// this.muteIcon?.dispose()
+		// this.pauseHint.dispose();
+		// this.pauseInstruction.dispose();
+		// this.pauseTitle.dispose();
+		// pauseGrid.dispose();
+		// this.pauseOverlay.dispose();
 	}
 }

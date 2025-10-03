@@ -82,6 +82,21 @@ export const portuguese: Translation = {
     errorPasswordsDoNotMatch: 'As senhas não coincidem',
 	spectator: '🎮 MODO ESPECTADOR',
 	spectatorInstruction: '← Partida Anterior | → Próxima Partida | Espaço: Mostrar/Ocultar Chave | Y: Sair',
-	spectatorQuestion: 'Quer assistir ao resto do torneio? Pressione S, ou pressione N para sair.'
+	spectatorQuestion: 'Quer assistir ao resto do torneio? Pressione S, ou pressione N para sair.',
+
+    pauseControlsTitle: '🎮 CONTROLES',
+    pauseMovementTitle: '🚀 MOVIMENTO',
+    pausePowerupsTitle: '⚡ POWER-UPS',
+    pauseObjectiveTitle: '🎯 OBJETIVO',
+    pauseMovementP1_2D: 'J1: W (Cima) / S (Baixo)',
+    pauseMovementP2_2D: 'J2: ↑ (Cima) / ↓ (Baixo)',
+    pauseMovementP1_3D: 'J1: A (Esquerda) / D (Direita)',
+    pauseMovementP2_3D: 'J2: ← (Esquerda) / → (Direita)',
+    pauseMovementSolo_2D: 'Use: ↑ (Cima) / ↓ (Baixo)',
+    pauseMovementSolo_3D: 'Use: ← (Esquerda) / → (Direita)',
+    pausePowerupsMulti_P1: 'Jogador 1: C / V / B',
+    pausePowerupsMulti_P2: 'Jogador 2: I / O / P',
+    pausePowerupsSolo: 'Ativar: 1 / 2 / 3',
+    pauseObjectiveText: 'Marque {points} pontos acertando\na bola além do seu oponente!'
 
 };

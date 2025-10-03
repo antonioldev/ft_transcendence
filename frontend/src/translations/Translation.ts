@@ -3,7 +3,7 @@
  * Each property corresponds to a translatable string in the application.
  */
 export interface Translation {
-    appTitle: string;
+    // appTitle: string;
 	classicMode: string;
     immersiveMode: string;
     selectGameMode: string;
@@ -86,6 +86,23 @@ export interface Translation {
 	spectator: string,
 	spectatorInstruction: string;
 	spectatorQuestion: string;
+
+
+    //PAUSE MENU TRANSLATION
+    pauseControlsTitle: string;
+    pauseMovementTitle: string;
+    pausePowerupsTitle: string;
+    pauseObjectiveTitle: string;
+    pauseMovementP1_2D: string;
+    pauseMovementP2_2D: string;
+    pauseMovementP1_3D: string;
+    pauseMovementP2_3D: string;
+    pauseMovementSolo_2D: string;
+    pauseMovementSolo_3D: string;
+    pausePowerupsMulti_P1: string;
+    pausePowerupsMulti_P2: string;
+    pausePowerupsSolo: string;
+    pauseObjectiveText: string;
 }
 
 export type TranslationKey = keyof Translation;
