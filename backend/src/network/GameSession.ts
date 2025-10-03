@@ -68,6 +68,8 @@ export abstract class AbstractGameSession {
 		if (!this.clients.has(client)) return ;
 
 		this.clients.delete(client);
+		this.readyClients.delete(client.id);
+		
 		if (this.clients.size === 0) {
 			this.stop();
 		}
@@ -102,9 +104,13 @@ export abstract class AbstractGameSession {
 	}
 
 	async waitForClientsReady() {
-		if (this.allClientsReady()) return ;
-		await new Promise(resolve => {
+		if (this.allClientsReady()) {
+			console.log(`All clients ready: ready size: ${this.readyClients.size}`)
+			return ;
+		}
+			await new Promise(resolve => {
 			gameManager.once(`all-ready-${this.id}`, resolve);
+			console.log(`Event triggered ALL READY`);
 		});
 	}
 
@@ -114,7 +120,7 @@ export abstract class AbstractGameSession {
 		
 		if (this.allClientsReady()) {
 			gameManager.emit(`all-ready-${this.id}`);
-			console.log(`GameSession ${this.id}: all clients ready.`);
+			console.log(`GameSession ${this.id}: all clients ready signal emitted`);
 		}
 	}
 

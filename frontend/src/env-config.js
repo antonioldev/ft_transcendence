@@ -1,2 +1,2 @@
-// Configurações de ambiente para o frontend
+// Configuration for environment variables
 window.GOOGLE_CLIENT_ID = '';

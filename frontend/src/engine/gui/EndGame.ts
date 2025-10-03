@@ -59,7 +59,7 @@ export class EndGame {
 		}
 	}
 
-	async showPartial(name: string): Promise<void> {
+	async showPartialWinner(name: string, waitForSpace: boolean = true, duration: number = 2000): Promise<void> {
 		if (!this.adt) return;
 
 		this.partialWinnerName.text = name;
@@ -77,6 +77,30 @@ export class EndGame {
 		this.animationManager?.scale(this.partialWinnerName, 1, 1.5, Motion.F.breath, true, true);
 
 		await new Promise(r => setTimeout(r, 180));
+
+		const scene = this.adt.getScene();
+
+		await new Promise<void>(res => setTimeout(res, duration));
+		if (waitForSpace) {
+			this.continueText.isVisible = true;
+			this.animationManager?.twinkle(this.continueText, Motion.F.slow);
+
+			return new Promise<void>((resolve) => {
+				const sub = scene?.onKeyboardObservable.add((kbInfo: any) => {
+					if (kbInfo.type === KeyboardEventTypes.KEYDOWN) {
+						const e = kbInfo.event as KeyboardEvent;
+						if (e.code === "Space" || e.key === " ") {
+							scene.onKeyboardObservable.remove(sub);
+							this.continueText.isVisible = false;
+							this.partialWinnerLabel.isVisible = false;
+							this.partialWinnerName.isVisible = false;
+							resolve();
+						}
+					}
+				}) ?? null;
+			});
+		}
+		return Promise.resolve();
 	}
 
 	async showPartialLoser(): Promise<void> {
@@ -98,9 +122,7 @@ export class EndGame {
 		await this.animationManager?.slideFromDirection(this.partialWinnerName, 'down', 'in', 50, Motion.F.base);
 
 		await new Promise(r => setTimeout(r, 250));
-	}
 
-	startSpectatorCountdown(): void {
 		const t = getCurrentTranslation();
 
 		this.continueText.text = t.spectatorQuestion;
@@ -123,15 +145,6 @@ export class EndGame {
 		}, 1000);
 	}
 
-	hideSpectatorPrompt(): void {
-		if (this.spectatorTimerInterval) {
-			clearInterval(this.spectatorTimerInterval);
-			this.spectatorTimerInterval = null;
-		}
-		this.continueText.isVisible = false;
-		this.spectatorTimerText.isVisible = false;
-	}
-
 	async hidePartial(): Promise<void> {
 		await Promise.all([
 			this.animationManager?.slideFromDirection(this.partialWinnerLabel, 'up', 'out', 50, Motion.F.fast),
@@ -141,9 +154,15 @@ export class EndGame {
 		this.partialEndGameOverlay.isPointerBlocker = false;
 		this.partialEndGameOverlay.isVisible = false;
 		this.continueText.isVisible = false;
+		if (this.spectatorTimerInterval) {
+			clearInterval(this.spectatorTimerInterval);
+			this.spectatorTimerInterval = null;
+		}
+		this.continueText.isVisible = false;
+		this.spectatorTimerText.isVisible = false;
 	}
 
-	async showFinal(winner: string): Promise<void> {
+	async showFinalWinner(winner: string): Promise<void> {
 		this.endGameWinnerText.text = `🏆 ${winner} WINS! 🏆`;
 		this.endGameWinnerText.color = "rgba(255, 255, 255, 1)";
 		this.endGameOverlay.isVisible = true;
@@ -153,47 +172,5 @@ export class EndGame {
 		await new Promise(r => setTimeout(r, 5000));
 
 		this.endGameOverlay.isVisible = false;
-	}
-
-	async waitForContinue(ms: number, requireSpace: boolean = true): Promise<void> {
-		if (!this.adt) return;
-
-		const scene = this.adt.getScene();
-
-		await new Promise<void>(res => setTimeout(res, ms));
-		if (requireSpace) {
-			this.continueText.isVisible = true;
-			this.animationManager?.twinkle(this.continueText, Motion.F.slow);
-
-			return new Promise<void>((resolve) => {
-				const sub = scene?.onKeyboardObservable.add((kbInfo: any) => {
-					if (kbInfo.type === KeyboardEventTypes.KEYDOWN) {
-						const e = kbInfo.event as KeyboardEvent;
-						if (e.code === "Space" || e.key === " ") {
-							scene.onKeyboardObservable.remove(sub);
-							this.continueText.isVisible = false;
-							this.partialWinnerLabel.isVisible = false;
-							this.partialWinnerName.isVisible = false;
-							resolve();
-						}
-					}
-				}) ?? null;
-			});
-		}
-		return Promise.resolve();
-	}
-
-	dispose(): void {
-		this.endGameWinnerText.dispose();
-		this.endGameOverlay.dispose();
-		this.partialEndGameOverlay.dispose();
-		this.partialWinnerLabel.dispose();
-		this.partialWinnerName.dispose();
-		this.continueText.dispose();
-		this.spectatorTimerText.dispose();
-		if (this.spectatorTimerInterval) {
-			clearInterval(this.spectatorTimerInterval);
-			this.spectatorTimerInterval = null;
-		}
 	}
 }

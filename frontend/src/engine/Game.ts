@@ -160,7 +160,7 @@ export class Game {
 			if (countdown === GAME_CONFIG.startDelay) {
 				const controlledSides = this.getControlledSides();
 				await Promise.all([
-					this.services?.gui.countdown.introduceNames(playerLeft!, playerRight!),
+					this.services?.gui.countdown.showPlayersName(playerLeft!, playerRight!),
 					this.services?.render?.startCameraAnimation(
 						this.gameObjects?.cameras, 
 						this.config.viewMode,
@@ -170,17 +170,17 @@ export class Game {
 				]);
 			}
 			else if (countdown === 4) {
-				this.services?.gui.countdown.hideNames();
+				this.services?.gui.countdown.hidePlayersName();
 			}
 			else if (countdown === 3 || countdown === 2 || countdown === 1) {
-				this.services?.gui?.countdown.set(true, countdown);
+				this.services?.gui?.countdown.show(countdown);
 				this.services?.audio?.playCountdown();
 			}
 			else if (countdown === 0) {
 				this.services?.audio?.stopCountdown();
 				this.services?.audio?.startGameMusic();
 				this.services?.render?.stopCameraAnimation();
-				this.services?.gui?.countdown.finishCountdown();
+				this.services?.gui?.countdown.finish();
 				await this.services?.gui?.animateBackground(false);
 				this.startGameLoop();
 			}
@@ -189,22 +189,10 @@ export class Game {
 		}
 	}
 
-	// Handle server confirming game is paused
-	private onServerPausedGame(): void {
-		this.services?.gui?.setPauseVisible(true);
-		this.services?.audio?.pauseGameMusic();
-	}
-
-	// Handle server confirming game is resumed
-	private onServerResumedGame(): void {
-		this.services?.gui?.setPauseVisible(false);
-		this.services?.audio?.resumeGameMusic();
-	}
-
 	// Handle server ending the game
 	private async onServerEndedGame(winner: string, loser: string): Promise<void> {
 		if (!this.isInitialized || !this.config.isTournament) return;
-		
+		console.error(`[${new Date().toISOString()}] start ON SERVER ENDED GAME`);
 		this.services?.gui?.setPauseVisible(false);
 		const controlledSides = this.getControlledSides();
 
@@ -213,37 +201,29 @@ export class Game {
 		
 		if (showLoser){
 			await this.services?.gui?.showTournamentMatchLoser();
-			
-			this.services?.input.setSpectator('deciding');
-			const wantsToSpectate = await this.services?.input.waitForSpectatorChoice();
-			
-			if (wantsToSpectate) {
-				this.services?.gui.hud.setSpectatorMode();
-				webSocketClient.sendSpectatorReady();
-			}
+			await this.services?.input.waitForSpectatorChoice();
+			this.services?.gui.hud.setSpectatorMode();
+			webSocketClient.sendSpectatorReady();
 		}
 		else {
-			const waitForSpace = controlledSides.length !== 0 || this.config.gameMode !== GameMode.TOURNAMENT_REMOTE;
+			const waitForSpace = controlledSides.length !== 0 && this.config.gameMode !== GameMode.TOURNAMENT_REMOTE;
 			await this.services?.gui?.showTournamentMatchWinner(winner, waitForSpace);
 			this.resetForNextMatch();
 			webSocketClient.sendPlayerReady();
 			this.services?.audio?.stopGameMusic();
 		}
+		console.error(`[${new Date().toISOString()}] finish ON SERVER ENDED GAME`);
 	}
 
 	private async onServerEndedSession(winner: string): Promise<void> {
 		if (!this.isInitialized) return;
 
-		if (!this.services?.render?.isRunning)
-			this.services?.render?.startRendering();
+		this.services?.render?.startRendering();
 
 		this.services?.gui?.setPauseVisible(false);
-		if (this.scene) {
-			const cams = this.scene.activeCameras?.length ? this.scene.activeCameras : this.scene.activeCamera;
-			this.services?.particles?.spawnFireworksInFrontOfCameras(this.scene, cams);
-		}
-		if (winner !== undefined)
-			await this.services?.gui?.showWinner(winner);
+		const cams = this.scene?.activeCameras?.length ? this.scene.activeCameras : this.scene?.activeCamera;
+		this.services?.particles?.spawnFireworksInFrontOfCameras(this.scene, cams);
+		await this.services?.gui?.showWinner(winner);
 
 		this.services?.audio?.stopGameMusic();
 		this.dispose();
@@ -270,7 +250,7 @@ export class Game {
 	private resetForNextMatch(): void {
 		if (!this.isInitialized) return;
 
-		this.services?.gui?.powerUp.reset();
+		this.services?.gui?.hud.resetPowerUps();
 		this.resetPlayersState();
 
 		if (this.gameObjects) {
@@ -300,11 +280,10 @@ export class Game {
 
 		try {
 			this.handleChangeServerState(state)
-			// Update paddle positions
+
 			this.gameObjects.players.left.position.x = state.paddleLeft.x;
 			this.gameObjects.players.right.position.x = state.paddleRight.x;
 
-			// Update ball position
 			this.gameObjects.ball.position.x = state.ball.x;
 			this.gameObjects.ball.position.z = state.ball.z;
 			this.gameObjects.ball.rotation.x += 0.1;
@@ -347,12 +326,15 @@ export class Game {
 		this.serverState = state.state;
 		switch (this.serverState){
 			case GameState.PAUSED:
-				this.onServerPausedGame();
+				this.services?.gui?.setPauseVisible(true);
+				this.services?.audio?.pauseGameMusic();
 				break;
 			case GameState.RUNNING:
-				this.onServerResumedGame();
+				this.services?.gui?.setPauseVisible(false);
+				this.services?.audio?.resumeGameMusic();
 				break;
 			case GameState.ENDED:
+				console.error(`[${new Date().toISOString()}] received state GAME ENDED`);
 				const winner = state.winner;
 				const loser = state.loser;
 				if (winner && loser)
@@ -363,6 +345,7 @@ export class Game {
 
 // ====================			INPUT HANDLING		   ====================
 	private handlePlayerAssignment(leftPlayerName: string, rightPlayerName: string): void {
+		console.error(`[${new Date().toISOString()}] handlePlayerAssignment START - left: ${leftPlayerName}, right: ${rightPlayerName}`);
 		this.services?.gui?.hud.updatePlayerNames(leftPlayerName, rightPlayerName);
 
 		const leftPlayer = this.players?.get(PlayerSide.LEFT);
@@ -385,6 +368,7 @@ export class Game {
 			leftPlayer?.isControlled || false, 
 			rightPlayer?.isControlled || false
 		);
+		console.error(`[${new Date().toISOString()}] handlePlayerAssignment FINISH - left: ${leftPlayerName}, right: ${rightPlayerName}`);
 	}
 
 	private getControlledSides(): PlayerSide[] {

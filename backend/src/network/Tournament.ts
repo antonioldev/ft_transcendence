@@ -31,7 +31,7 @@ export class Match {
 			this.players.push(player);
 		}
 		if (player instanceof Player) {
-			console.log(`Client ${player.client.id} added to match ${this.id}`)
+			console.log(`Client ${player.client.username} added to match ${this.id}`)
 			this.clients.add(player.client);
 		}
 	}
@@ -146,8 +146,9 @@ abstract class AbstractTournament extends AbstractGameSession{
 		for (this.current_round = 1; this.current_round <= this.num_rounds; this.current_round++) {
 			if (!this.is_running()) return ;
 			
-			await this.waitForClientsReady();
 			this.broadcastRoundSchedule(this.current_round);
+			await this.waitForClientsReady();
+			console.log(" ALL CLIENTS READY ");
 			
 			const matches = this.rounds.get(this.current_round);
 			if (!matches) return ; // maybe throw err
@@ -329,7 +330,7 @@ export class TournamentRemote extends AbstractTournament {
 		if (match.game?.loser instanceof Player) {
 			this.client_match_map.delete(match.game.loser.client.id);
 			this.defeated_clients.add(match.game.loser.client);
-			match.clients.delete(match.game?.loser.client);
+			match.clients.delete(match.game?.loser?.client);
 		}
 		this.broadcast({
 			type: MessageType.MATCH_RESULT,
@@ -354,7 +355,7 @@ export class TournamentRemote extends AbstractTournament {
 
 		const old_match = this.find_spectator_match(client);
 		if (!old_match) {
-			console.error(`Client ${client.id} is not spectating any game`);
+			console.error(`Client ${client.username} is not spectating any game`);
 			return ;
 		}
 		const old_index = this.active_matches.indexOf(old_match);
@@ -380,7 +381,7 @@ export class TournamentRemote extends AbstractTournament {
 	canClientControlGame(client: Client) {
 		const match = this.findMatch(client.id);
 		if (!match || !this.active_matches.includes(match)) {
-			console.error(`Client ${client.id} not in any active match`);
+			console.error(`Client ${client.username} not in any active match`);
 			return false;
 		}
 		return true;

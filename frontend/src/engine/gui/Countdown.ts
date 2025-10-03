@@ -2,7 +2,6 @@ import { AdvancedDynamicTexture, Rectangle, TextBlock} from "@babylonjs/gui";
 import { AnimationManager, Motion } from "../services/AnimationManager.js";
 import { COUNTDOWN_STYLES, createRect, createTextBlock,} from "./GuiStyle.js";
 
-
 export class Countdown {
 	private countdownText!: TextBlock;
 	private countdownContainer!: Rectangle;
@@ -28,7 +27,7 @@ export class Countdown {
 		this.adt.addControl(this.vsText);
 	}
 
-	async introduceNames(left: string, right: string): Promise<void> {
+	async showPlayersName(left: string, right: string): Promise<void> {
 		this.readyText.isVisible = true;
 		await this.animationManager.zoomIn(this.readyText, Motion.F.base);
 		await new Promise(r => setTimeout(r, 400));
@@ -52,28 +51,22 @@ export class Countdown {
 		await new Promise(r => setTimeout(r, 1200));
 	}
 
-	hideNames(): void {
+	async hidePlayersName(): Promise<void> {
 		this.animationManager.slideFromDirection(this.leftPlayer, 'left', 'out', 400, Motion.F.base);
 			this.animationManager.slideFromDirection(this.rightPlayer, 'right', 'out', 400, Motion.F.base);
 			this.animationManager.fade(this.vsText, 'out', Motion.F.xFast);
 	}
 
-	set(show: boolean, count?: number): void {
+	async show(count: number): Promise<void> {
 
-		if (show && !this.countdownContainer.isVisible)
+		if (!this.countdownContainer.isVisible)
 			this.countdownContainer.isVisible = true;
-		else if (!show && this.countdownContainer.isVisible)
-			this.countdownContainer.isVisible = false;
 
-		if (show && count !== undefined) {
-			this.countdownText.text = count.toString();
-			this.animationManager?.scale(this.countdownText, 1, 1.8, Motion.F.xSlow, true, false);
-			return;
-		}
-		this.countdownText.animations = [];
+		this.countdownText.text = count.toString();
+		await this.animationManager?.scale(this.countdownText, 1, 1.8, Motion.F.xSlow, true, false);
 	}
 
-	async finishCountdown() {
+	async finish(): Promise<void> {
 		this.countdownText.text = "GO!";
 		this.countdownText.animations = [];
 
@@ -87,10 +80,5 @@ export class Countdown {
 		this.countdownContainer.topInPixels = 0;
 		this.countdownContainer.alpha = 1;
 		this.countdownContainer.isVisible = false;
-	}
-
-	dispose(): void {
-		this.countdownText.dispose();
-		this.countdownContainer.dispose();
 	}
 }

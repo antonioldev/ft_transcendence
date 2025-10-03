@@ -28,7 +28,7 @@ export class PowerupManager {
 			player.powerUpsAssigned = true;
 			player.powerUps = [...serverPowerups];
 			for (let i = 0; i < serverPowerups.length; i++)
-				this.guiManager?.powerUp.assign(side, i, serverPowerups[i].type);
+				this.guiManager?.hud.assignPowerUp(side, i, serverPowerups[i].type);
 			return;
 		}
 
@@ -47,7 +47,7 @@ export class PowerupManager {
 				powerUpStateChanged = true;
 			}
 			if (powerUpStateChanged)
-				this.guiManager?.powerUp.update(side, i, serverPowerup.state);
+				this.guiManager?.hud.updatePowerUp(side, i, serverPowerup.state);
 		}
 	}
 
@@ -81,7 +81,7 @@ export class PowerupManager {
 		const lrg = GAME_CONFIG.increasedPaddleWidth;
 		const sml = GAME_CONFIG.decreasedPaddleWidth;
 		
-		this.guiManager?.powerUp.activateAnimationHD(side, powerupType);
+		this.guiManager?.hud.activatePowerUpAnimationHD(side, powerupType);
 		switch (powerupType) {
 			case PowerupType.SHRINK_OPPONENT:
 				if (side === PlayerSide.LEFT) {
@@ -111,7 +111,7 @@ export class PowerupManager {
 				this.animationManager?.blinkInvisibility(this.gameObjects.ball);
 				break;
 		}
-		this.guiManager?.powerUp.update(side, slot, PowerupState.ACTIVE);
+		this.guiManager?.hud.updatePowerUp(side, slot, PowerupState.ACTIVE);
 	}
 
 	deactivate(side: PlayerSide, slot: number, powerupType: PowerupType): void {
@@ -145,7 +145,7 @@ export class PowerupManager {
 					this.players.get(PlayerSide.LEFT)!.inverted = false;
 				break;
 		}
-		this.guiManager?.powerUp.update(side, slot, PowerupState.SPENT);
+		this.guiManager?.hud.updatePowerUp(side, slot, PowerupState.SPENT);
 	}
 
 	dispose(): void {

@@ -7,13 +7,13 @@ import { AnimationManager } from "./AnimationManager.js";
 import { AudioManager } from "./AudioManager.js";
 import { VIEW_MODE_STYLES, createRect} from "../gui/GuiStyle.js";
 import { Countdown } from "../gui/Countdown.js";
-import { PowerUp } from "../gui/PowerUp.js";
+// import { PowerUp } from "../gui/PowerUp.js";
 import { MatchTree } from "../gui/MatchTree.js"
 import { Hud } from "../gui/Hud.js";
 import { EndGame } from "../gui/EndGame.js";
 import { Pause } from "../gui/Pause.js"
 import { Lobby } from "../gui/Lobby.js";
-import { TransitionEffect } from "../gui/Curtains.js";
+import { SceneTransition } from "../gui/SceneTransition.js";
 
 /**
  * Manages all GUI elements for the game
@@ -22,17 +22,16 @@ export class GUIManager {
 	private adt: AdvancedDynamicTexture | null = null;
 	private isInitialized: boolean = false;
 	private isTournament: boolean = false;
-	private isLocal: boolean = false;
 	private isLastMatch: boolean = false;
 	private pauseVisible: boolean = false;
 	countdown!: Countdown;
-	powerUp!: PowerUp;
+	// powerUp!: PowerUp;
 	matchTree!: MatchTree;
 	hud!: Hud;
 	endGame!: EndGame;
 	pause!: Pause;
 	lobby!: Lobby;
-	curtain!: TransitionEffect;
+	curtain!: SceneTransition;
 
 
 	constructor(private scene: Scene, config: GameConfig, private animationManager: AnimationManager, audioManager: AudioManager) {
@@ -40,15 +39,14 @@ export class GUIManager {
 			this.adt = AdvancedDynamicTexture.CreateFullscreenUI("UI", true, this.scene);
 			this.adt!.layer!.layerMask = 0x20000000;
 			this.isTournament = config.isTournament;
-			this.isLocal = config.isLocalMultiplayer;
 			this.countdown = new Countdown(this.adt, this.animationManager);
-			this.powerUp = new PowerUp(this.adt, this.animationManager, config);
+			// this.powerUp = new PowerUp(this.adt, this.animationManager, config);
 			this.matchTree = new MatchTree(this.adt, this.animationManager);
 			this.hud = new Hud(this.adt, this.animationManager,config);
 			this.endGame = new EndGame(this.adt, this.animationManager);
-			this.pause = new Pause(this.adt, this.animationManager, config.isTournament, () => audioManager.toggleMute());
+			this.pause = new Pause(this.adt, this.animationManager, config, () => audioManager.toggleMute());
 			this.lobby = new Lobby(this.adt, this.animationManager);
-			this.curtain = new TransitionEffect(this.adt, this.animationManager);
+			this.curtain = new SceneTransition(this.adt, this.animationManager);
 
 			this.createViewModeDivider(config);
 			this.isInitialized = true;
@@ -89,9 +87,8 @@ export class GUIManager {
 		if (!this.isReady || this.isLastMatch) return;
 		
 		await this.animateBackground(true);
-		this.powerUp.show(false);
-		await this.endGame.showPartial(winner);
-		await this.endGame.waitForContinue(2000, waitForSpace);
+		this.hud.showPowerUps(false);
+		await this.endGame.showPartialWinner(winner, waitForSpace);
 		await this.endGame.hidePartial();
 	}
 
@@ -99,12 +96,14 @@ export class GUIManager {
 		if (!this.isReady || this.isLastMatch) return;
 		
 		await this.animateBackground(true);
-		this.powerUp.show(false);
+		this.hud.showPowerUps(false);
 		await this.endGame.showPartialLoser();
-		this.endGame.startSpectatorCountdown();
+		// this.endGame.startSpectatorCountdown();
+
+
 		// await this.endGame.showSpectatorPrompt();
 		// await this.endGame.waitForContinue(2000, false);
-		await this.endGame.hidePartial();
+		// await this.endGame.hidePartial();
 	}
 
 	
@@ -112,8 +111,8 @@ export class GUIManager {
 	async showWinner(winner: string): Promise<void> {
 		if (!this.isReady) return;
 		this.hud.show(false);
-		this.powerUp.show(false);
-		await this.endGame.showFinal(winner);
+		this.hud.showPowerUps(false);
+		await this.endGame.showFinalWinner(winner);
 		this.hud.show(true);
 	}
 
@@ -170,14 +169,14 @@ export class GUIManager {
 		if (!this.isReady()) return;
 		
 		try {
-			this.lobby.dispose();
-			this.countdown.dispose();
-			this.powerUp.dispose();
-			this.matchTree.dispose();
-			this.hud.dispose();
-			this.endGame.dispose();
-			this.pause.dispose();
-			this.curtain.dispose();
+			// this.lobby.dispose();
+			// this.countdown.dispose();
+			// this.powerUp.dispose();
+			// this.matchTree.dispose();
+			// this.hud.dispose();
+			// this.endGame.dispose();
+			// this.pause.dispose();
+			// this.curtain.dispose();
 			this.adt?.dispose();
 			this.adt = null;
 

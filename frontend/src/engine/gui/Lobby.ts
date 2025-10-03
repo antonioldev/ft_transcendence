@@ -41,15 +41,13 @@ export class Lobby {
 	show(players: string[]): void {
 		if (!this.adt) return;
 		const t = getCurrentTranslation();
-		if (this.overlay && this.overlay.isVisible === false) {
+		if (this.overlay.isVisible === false) {
 			this.overlay!.isVisible = true;
 			this.animationManager?.fade(this.overlay!, 'in');
 		}
 
-		if (!this.subtitle) return;
-			this.startDots();
+		this.startDots();
 
-		if (!this.listPanel || !this.countText) return;
 		const children = [...this.listPanel.children];
 		children.forEach(c => this.listPanel!.removeControl(c));
 
@@ -80,10 +78,18 @@ export class Lobby {
 		this.countText.text = `${t.countPlayer}: ${players.length}`;
 	}
 
+	hide(): void {
+		if (!this.overlay) return;
+		this.animationManager?.fade(this.overlay!, 'out').then(() => {
+			this.overlay!.isVisible = false;
+		});
+		this.stopDots();
+	}
+
 	private startDots(): void {
 		if (!this.subtitle) return;
 		this.stopDots();
-		const base = this.subtitle.text?.replace(/\.*$/, "") || ""; // strip trailing dots once
+		const base = this.subtitle.text?.replace(/\.*$/, "") || "";
 		let step = 0;
 		this.dotsTimer = window.setInterval(() => {
 			step = (step + 1) % 4; // 0..3
@@ -97,21 +103,4 @@ export class Lobby {
 			this.dotsTimer = undefined;
 		}
 	}
-
-	hide(): void {
-		if (!this.overlay) return;
-		this.animationManager?.fade(this.overlay!, 'out').then(() => {
-			this.overlay!.isVisible = false;
-		});
-		this.stopDots();
-	}
-
-	dispose(): void {
-		this.stopDots();
-		this.subtitle?.dispose();
-		this.countText.dispose();
-		this.listPanel.dispose();
-		this.overlay.dispose();
-	}
-
 }
