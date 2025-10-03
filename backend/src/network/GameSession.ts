@@ -5,6 +5,8 @@ import { PlayerInput, ServerMessage } from '../shared/types.js';
 import { gameManager } from './GameManager.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
 import { generateGameId } from '../data/database.js';
+import { LEFT, RIGHT } from '../shared/gameConfig.js';
+import { eventManager } from './utils.js';
 
 export abstract class AbstractGameSession {
 	mode: GameMode;
@@ -67,6 +69,8 @@ export abstract class AbstractGameSession {
 		if (!this.clients.has(client)) return ;
 
 		this.clients.delete(client);
+		this.readyClients.delete(client.id);
+		
 		if (this.clients.size === 0) {
 			this.stop();
 		}
@@ -101,10 +105,14 @@ export abstract class AbstractGameSession {
 	}
 
 	async waitForClientsReady() {
-		if (this.allClientsReady()) return ;
+		if (this.allClientsReady()) {
+			console.log(`All clients ready: ready size: ${this.readyClients.size}`)
+			return ;
+		}
 		await new Promise(resolve => {
-			gameManager.once(`all-ready-${this.id}`, resolve);
+			eventManager.once(`all-ready-${this.id}`, resolve);
 		});
+		console.log(`Event triggered ALL READY`);
 	}
 
 	setClientReady(client_id: string): void {
@@ -112,8 +120,8 @@ export abstract class AbstractGameSession {
 		console.log(`Client ${client_id} marked as ready.}`);
 		
 		if (this.allClientsReady()) {
-			gameManager.emit(`all-ready-${this.id}`);
-			console.log(`GameSession ${this.id}: all clients ready.`);
+			eventManager.emit(`all-ready-${this.id}`);
+			console.log(`GameSession ${this.id}: all clients ready signal emitted`);
 		}
 	}
 
@@ -184,18 +192,14 @@ export class OneOffGame extends AbstractGameSession{
 		this.state = GameSessionState.RUNNING;
 		
 		await this.waitForClientsReady();
+		const players = [...this.players];
 
-		// if (this.mode === GameMode.TWO_PLAYER_REMOTE) {
-		// 	registerNewGame(this.game.id, match.players[LEFT].client.username, 0);
-		// 	addPlayer2(this.id, match.players[RIGHT].client.username);
-		// }
-
-		this.game = new Game(this.id, [...this.players], this.broadcast.bind(this))
+		this.game = new Game(this.id, players, this.broadcast.bind(this));
 		await this.game.run();
 		
-		// if (this.mode === GameMode.TWO_PLAYER_REMOTE) {
-		// 	this.game.save_to_db();
-		// }
+		if (this.mode === GameMode.TWO_PLAYER_REMOTE) {
+			this.game.save_to_db();
+		}
 	}
 
 	stop(): void {

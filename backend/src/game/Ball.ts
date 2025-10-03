@@ -4,30 +4,34 @@ import { CollisionDirection } from '../shared/constants.js'
 import { GAME_CONFIG, getBallStartPosition, LEFT, RIGHT } from '../shared/gameConfig.js';
 import { rotate } from './utils.js';
 import { PowerupType } from '../shared/constants.js';
+import { eventManager } from '../network/utils.js';
 
 // Represents the ball in the game, handling its movement, collisions, and scoring logic.
 export class Ball {
+    paddles: (Paddle)[]; // Array of players (paddles) in the game.
+    rally: { current: number };
+    updateScore: (side: number, ball: Ball) => void; // Callback to update the score.
     rect: Rect; // Current position and size of the ball.
     oldRect: Rect; // Previous position and size of the ball.
     direction: [number, number]; // Direction vector of the ball's movement.
     speed: number = GAME_CONFIG.ballServeSpeed; // Initial speed of the ball.
-    paddles: (Paddle)[]; // Array of players (paddles) in the game.
-    isPaused: Boolean = false;
-    updateScore: (side: number, score: number) => void; // Callback to update the score.
-    current_rally = 1;
     
+    //Powerups
+    isFrozen: Boolean = false;
+    speed_cache: number = GAME_CONFIG.ballInitialSpeed; // used to remember speed before powershot activated
     powershot_active: boolean = false;       // whether ball is currently at superspeed
     double_points_active: boolean = false;    // whether double points powerup activated
     curve_ball_active: boolean = false;
-    speed_cache: number = GAME_CONFIG.ballInitialSpeed; 
-
+    
     // Initializes the ball with players and a score update callback.
-    constructor(paddles: any[], updateScoreCallback: (side: number, score: number) => void) {
+    constructor(paddles: any[], rally: any, updateScoreCallback: (side: number, ball: Ball) => void) {
+        this.paddles = paddles;
+        this.rally = rally;
+        this.updateScore = updateScoreCallback;
+
         const ballPos = getBallStartPosition();
         this.rect = new Rect(ballPos.x, ballPos.z, GAME_CONFIG.ballRadius * 2, GAME_CONFIG.ballRadius * 2);
         this.oldRect = this.rect.instance();
-        this.paddles = paddles;
-        this.updateScore = updateScoreCallback;
         this.direction = this.randomDirection();
     }
 
@@ -52,7 +56,7 @@ export class Ball {
         if (this.curve_ball_active) {
             this.direction = rotate(this.direction, GAME_CONFIG.curve_angle);
         }
-``    }
+    }
 
     calculate_direction(paddle: Paddle) {
         // calculate how far along the paddle the ball hits
@@ -89,13 +93,15 @@ export class Ball {
             else { // Collision with front of paddle
                 if (this.rect.bottom >= this.paddles[side].rect.top && this.oldRect.bottom <= this.paddles[side].oldRect.top) {
                     this.rect.bottom = this.paddles[side].rect.top;
-                    this.current_rally += this.double_points_active ? 2 : 1;
+                    this.rally.current += this.double_points_active ? 2 : 1;
                     this.update_ball_trajectory(side);
+                    this.activate_powerups_on_collision(side);
                 }
                 else if (this.rect.top <= this.paddles[side].rect.bottom && this.oldRect.top >= this.paddles[side].oldRect.bottom) {
                     this.rect.top = this.paddles[side].rect.bottom;
-                    this.current_rally += this.double_points_active ? 2 : 1;
+                    this.rally.current += this.double_points_active ? 2 : 1;
                     this.update_ball_trajectory(side);
+                    this.activate_powerups_on_collision(side);
                 }
             }
         }
@@ -106,19 +112,11 @@ export class Ball {
 
         this.calculate_direction(this.paddles[side]);
         this.speed *= (this.speed < GAME_CONFIG.maxBallSpeed) ? GAME_CONFIG.ballSpeedIncrease : 1;
-        this.handle_powershot(side);
     }
 
-    handle_powershot(collision_side: number) {
-        if (this.paddles[collision_side].powershot_activated) {
-            this.speed_cache = this.speed;
-            this.speed = GAME_CONFIG.ballPowerShotSpeed;
-            this.paddles[collision_side].powershot_activated = false;
-            this.powershot_active = true;
-        }
-        else if (this.powershot_active) {
-            this.speed = this.speed_cache;
-            this.powershot_active = false;
+    activate_powerups_on_collision(side: number) {
+        if (this.paddles[side].powershot_activate || this.paddles[side].powershot_deactivate || this.paddles[side].triple_shot_activated) {
+            eventManager.emit(`paddle-collision-${side}`, this );
         }
     }
 
@@ -136,11 +134,11 @@ export class Ball {
         
         // Goal detection (top/bottom goals)
         if (this.rect.centerz <= GAME_CONFIG.goalBounds.rightGoal) {
-            this.updateScore(RIGHT, this.current_rally);
+            this.updateScore(RIGHT, this);
             this.reset();
         }
-        else if (this.rect.centerz >= GAME_CONFIG.goalBounds.leftGoal) {
-            this.updateScore(LEFT, this.current_rally);
+        if (this.rect.centerz >= GAME_CONFIG.goalBounds.leftGoal) {
+            this.updateScore(LEFT, this);
             this.reset();
         }
     }
@@ -152,14 +150,29 @@ export class Ball {
         this.rect.z = ballPos.z;
         this.direction = this.randomDirection();
         this.speed = GAME_CONFIG.ballServeSpeed;
-        this.current_rally = 1;
+        this.rally.current = 1;
     }
 
     // Updates the ball's state, including movement, collisions, and scoring.
     update(dt: number): void {
-        if (this.isPaused) return ;
+        if (this.isFrozen) return ;
         this.oldRect.copy(this.rect);
         this.move(dt);
         this.wallCollision();
+    }
+
+    duplicate(new_speed?: number, rotation?: number): Ball {
+        let new_ball = new Ball(this.paddles, this.rally, this.updateScore);
+        
+        new_ball.rect.copy(this.rect);
+        new_ball.oldRect.copy(this.oldRect);
+        new_ball.direction = rotation ? rotate(this.direction, rotation) : this.direction;
+        new_ball.speed = new_speed ? new_speed : this.speed;
+        new_ball.isFrozen = this.isFrozen;
+        new_ball.speed_cache = this.speed_cache
+        new_ball.powershot_active = this.powershot_active;
+        new_ball.double_points_active = this.double_points_active;
+
+        return (new_ball);
     }
 }

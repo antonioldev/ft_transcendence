@@ -8,10 +8,8 @@ import { PowerupManager } from "./services/PowerUpManager";
 import { Engine, Scene} from "@babylonjs/core";
 import { GameConfig } from './GameConfig.js';
 import { GameObjects } from '../shared/types.js';
-import { GameStateManager } from "./GameStateManager";
-
 import { PlayerSide, PlayerState } from "./utils.js"
-import { GameState } from "../shared/constants";
+
 export interface IGameServices {
 	audio: AudioManager;
 	render: RenderManager;
@@ -37,13 +35,6 @@ export class GameServices implements IGameServices {
 		config: GameConfig,
 		gameObjects: GameObjects,
 		players: Map<PlayerSide, PlayerState>,
-		// gameState: GameStateManager,
-		// gameState: GameState,
-		// gameCallbacks: {
-		// 	onPause: () => void;
-		// 	onResume: () => void;
-		// 	onExitToMenu: () => void;
-		// }
 	) {
 		this.animation = new AnimationManager(scene);
 		this.audio = new AudioManager(scene);

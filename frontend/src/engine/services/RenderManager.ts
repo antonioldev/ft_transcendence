@@ -55,7 +55,7 @@ export class RenderManager {
 					if (this.scene && this.scene.activeCamera) {
 						this.scene.render();
 					}
-					this.updateFPSDisplay(deltaTime);
+					// this.updateFPSDisplay(deltaTime);
 					this.lastFrameTime = currentTime;
 				} catch (error) {
 					Logger.error('Error in render loop', 'RenderManager', error);
@@ -73,12 +73,12 @@ export class RenderManager {
 
 	}
 
-	private updateFPSDisplay(deltaTime: number): void {
-		if (this.guiManager && this.guiManager.isReady()) {
-			const fps = 1000 / deltaTime;
-			this.guiManager.hud.updateFPS(fps);
-		}
-	}
+	// private updateFPSDisplay(deltaTime: number): void {
+	// 	if (this.guiManager && this.guiManager.isReady()) {
+	// 		const fps = 1000 / deltaTime;
+	// 		this.guiManager.hud.updateFPS(fps);
+	// 	}
+	// }
 
 // ====================			CAMERA MANAGEMENT		 ====================
 	updateActiveCameras(viewMode: ViewMode, controlledSides: number[], isLocalMultiplayer: boolean): void {

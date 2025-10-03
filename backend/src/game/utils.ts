@@ -121,6 +121,14 @@ export class Rect {
 	}
 }
 
+export function remove_elem(list: any[], elem: any): boolean {
+	const index = list.indexOf(elem);
+	if (index === -1) return false;
+	
+	list.splice(index, 1);
+	return true;
+}
+
 export function rotate(vec: [number, number], angleRad: number): [number, number] {
 	const cos = Math.cos(angleRad);
 	const sin = Math.sin(angleRad);

@@ -69,13 +69,13 @@ export class WebSocketManager {
         });
 
         socket.on('close', () => {
-            console.log(`WebSocket closed for client ${client.id}:`);
+            console.log(`WebSocket closed for client ${client.username}:`);
             gameManager.removeClient(client);
             // logout user from db
         });
 
         socket.on('error', (error: any) => {
-            console.error(`❌ WebSocket error for client ${client.id}:`, error);
+            console.error(`❌ WebSocket error for client ${client.username}:`, error);
             gameManager.removeClient(client);
             // logout user from db
         });
@@ -121,6 +121,7 @@ export class WebSocketManager {
                     this.toggleSpectator(client, data);
                     break;
                 case MessageType.QUIT_GAME:
+                    console.log(`PLAYER_QUIT received from ${client.username}`);
                     gameManager.removeClient(client);
                     break;
                 case MessageType.LOGIN_USER:
@@ -190,11 +191,11 @@ export class WebSocketManager {
     private handlePlayerReady(client: Client): void {
         const gameSession = gameManager.findGameSession(client);
         if (!gameSession) {
-            console.warn(`Client ${client.username}:${client.id} not in any game for ready signal`);
+            console.warn(`Client ${client.username}:${client.username} not in any game for ready signal`);
             return;
         }
         gameSession.setClientReady(client.id);
-        console.log(`Client ${client.id} is ready`);
+        console.log(`Client ${client.username} is ready`);
     }
 
     /**
@@ -210,11 +211,11 @@ export class WebSocketManager {
 
         const gameSession = gameManager.findGameSession(client);
         if (!gameSession) {
-            console.warn(`Client ${client.id} not in any game`);
+            console.warn(`Client ${client.username} not in any game`);
             return;
         }
         if (!gameSession.canClientControlGame(client)){
-            console.warn(`Client ${client.id} not authorized to control game`);
+            console.warn(`Client ${client.username} not authorized to control game`);
             return;
         }
 
@@ -234,12 +235,12 @@ export class WebSocketManager {
     private handlePauseRequest(client: Client): void {
         const gameSession = gameManager.findGameSession(client);
         if (!gameSession) {
-            console.warn(`Client ${client.id} not in any game for pause request`);
+            console.warn(`Client ${client.username} not in any game for pause request`);
             return;
         }
 
         if (!gameSession.canClientControlGame(client)){
-            console.warn(`Client ${client.id} not authorized to pause game`);
+            console.warn(`Client ${client.username} not authorized to pause game`);
             return;
         }
 
@@ -253,17 +254,17 @@ export class WebSocketManager {
     private handleResumeRequest(client: Client): void {
         const gameSession = gameManager.findGameSession(client);
         if (!gameSession) {
-            console.warn(`Client ${client.id} not in any game for resume request`);
+            console.warn(`Client ${client.username} not in any game for resume request`);
             return;
         }
         if (!gameSession.canClientControlGame(client)){
-            console.warn(`Client ${client.id} not authorized to resume game`);
+            console.warn(`Client ${client.username} not authorized to resume game`);
             return;
         }
         gameSession.resume(client.id);
     }
 
-    private activatePowerup(client: Client, data: ClientMessage) {
+    private async activatePowerup(client: Client, data: ClientMessage) {
         if (data.powerup_type === undefined || data.powerup_type === null || 
             data.slot === undefined || data.slot === null || 
             data.side === undefined || data.side === null) {
@@ -277,7 +278,7 @@ export class WebSocketManager {
             return ;
         }
         if (!gameSession.canClientControlGame(client)){
-            console.warn(`Client ${client.id} not authorized to control game`);
+            console.warn(`Client ${client.username} not authorized to control game`);
             return;
         }
         const game = gameSession.getGame(client.id);
@@ -285,13 +286,13 @@ export class WebSocketManager {
             console.error("Error: cannot activate powerup, game does not exist");
             return ;
         }
-        game.activate(data.side, data.slot);
+        await game.activate(data.side, data.slot);
     }
 
     private toggleSpectator(client: Client, data: ClientMessage) {
         const gameSession = gameManager.findGameSession(client);
         if (!gameSession) {
-            console.warn(`Client ${client.id} not in any GameSession to toggle`);
+            console.warn(`Client ${client.username} not in any GameSession to toggle`);
             return;
         }
         if (gameSession instanceof TournamentRemote && data.direction) {
@@ -302,7 +303,7 @@ export class WebSocketManager {
     spectateGame(client: Client) {
         const gameSession = gameManager.findGameSession(client);
         if (!gameSession) {
-            console.warn(`Client ${client.id} not in any GameSession to toggle`);
+            console.warn(`Client ${client.username} not in any GameSession to toggle`);
             return;
         }
         if (gameSession instanceof TournamentRemote) {
@@ -378,7 +379,7 @@ export class WebSocketManager {
             console.error('Error in logout user');
         }
     }
-    
+
     /**
      * Handles the disconnection of a client, removing them from games and cleaning up resources.
      * @param data - The user information that are used to confirm login
@@ -467,7 +468,7 @@ export class WebSocketManager {
     }
 
     handleLobbyRequest(client: Client) {
-        console.log(`Lobby request received from ${client.username}:${client.id}`)
+        console.log(`Lobby request received from ${client.username}:${client.username}`)
     
         const gameSession = gameManager.findGameSession(client);
         if (!gameSession) return ;
@@ -476,7 +477,7 @@ export class WebSocketManager {
             lobby: [...gameSession.players].map(player => player.name)
         });
 
-        console.log(`Lobby sent to ${client.username}:${client.id}`)
+        console.log(`Lobby sent to ${client.username}:${client.username}`)
     }
 
     private parseCookie(cookieHeader: string): Record<string, string> {

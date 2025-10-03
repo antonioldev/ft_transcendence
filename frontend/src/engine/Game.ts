@@ -192,7 +192,7 @@ export class Game {
 	// Handle server ending the game
 	private async onServerEndedGame(winner: string, loser: string): Promise<void> {
 		if (!this.isInitialized || !this.config.isTournament) return;
-		
+		console.error(`[${new Date().toISOString()}] start ON SERVER ENDED GAME`);
 		this.services?.gui?.setPauseVisible(false);
 		const controlledSides = this.getControlledSides();
 
@@ -212,6 +212,7 @@ export class Game {
 			webSocketClient.sendPlayerReady();
 			this.services?.audio?.stopGameMusic();
 		}
+		console.error(`[${new Date().toISOString()}] finish ON SERVER ENDED GAME`);
 	}
 
 	private async onServerEndedSession(winner: string): Promise<void> {
@@ -249,7 +250,7 @@ export class Game {
 	private resetForNextMatch(): void {
 		if (!this.isInitialized) return;
 
-		this.services?.gui?.powerUp.reset();
+		this.services?.gui?.hud.resetPowerUps();
 		this.resetPlayersState();
 
 		if (this.gameObjects) {
@@ -261,9 +262,16 @@ export class Game {
 				this.gameObjects.players.right.position.x = 0;
 				this.gameObjects.players.right.scaling.x = 1;
 			}
-			if (this.gameObjects.ball) {
-				this.gameObjects.ball.position.x = 0;
-				this.gameObjects.ball.position.z = 0;
+			// if (this.gameObjects.ball) {
+			// 	this.gameObjects.ball.position.x = 0;
+			// 	this.gameObjects.ball.position.z = 0;
+			// }
+			for (let i = 0; i < this.gameObjects.balls.length; i++) {
+				const ball = this.gameObjects.balls[i];
+				// ball.position.x = 0;
+				// ball.position.z = 0;
+				// ball.visibility = i === 0 ? 1 : 0;
+				ball.visibility = 0;
 			}
 		}
 
@@ -283,14 +291,27 @@ export class Game {
 			this.gameObjects.players.left.position.x = state.paddleLeft.x;
 			this.gameObjects.players.right.position.x = state.paddleRight.x;
 
-			this.gameObjects.ball.position.x = state.ball.x;
-			this.gameObjects.ball.position.z = state.ball.z;
-			this.gameObjects.ball.rotation.x += 0.1;
-			this.gameObjects.ball.rotation.y += 0.05;
+			// Update ball position
+			const ballStates = state.ball_states || [];
+			for (let i = 0; i < this.gameObjects.balls.length; i++) {
+				const ball = this.gameObjects.balls[i];
+				const ballState = ballStates[i];
+				
+				if (ballState) {
+					ball.position.x = ballState.x;
+					ball.position.z = ballState.z;
+					ball.rotation.x += 0.1;
+					ball.rotation.y += 0.05;
+					ball.visibility = 1;
+				} else {
+					ball.visibility = 0;
+				}
+			}
 
-			if (this.services?.gui?.hud.updateRally(state.ball.current_rally))
+			const currentRally = state.rally || 0;
+			if (this.services?.gui?.hud.updateRally(currentRally))
 				this.services?.audio?.playPaddleHit();
-			this.services?.audio?.updateMusicSpeed(state.ball.current_rally);
+			this.services?.audio?.updateMusicSpeed(currentRally);
 
 			const leftPlayer = this.players.get(PlayerSide.LEFT)!;
 			const rightPlayer = this.players.get(PlayerSide.RIGHT)!;
@@ -333,6 +354,7 @@ export class Game {
 				this.services?.audio?.resumeGameMusic();
 				break;
 			case GameState.ENDED:
+				console.error(`[${new Date().toISOString()}] received state GAME ENDED`);
 				const winner = state.winner;
 				const loser = state.loser;
 				if (winner && loser)
@@ -343,6 +365,7 @@ export class Game {
 
 // ====================			INPUT HANDLING		   ====================
 	private handlePlayerAssignment(leftPlayerName: string, rightPlayerName: string): void {
+		console.error(`[${new Date().toISOString()}] handlePlayerAssignment START - left: ${leftPlayerName}, right: ${rightPlayerName}`);
 		this.services?.gui?.hud.updatePlayerNames(leftPlayerName, rightPlayerName);
 
 		const leftPlayer = this.players?.get(PlayerSide.LEFT);
@@ -365,6 +388,7 @@ export class Game {
 			leftPlayer?.isControlled || false, 
 			rightPlayer?.isControlled || false
 		);
+		console.error(`[${new Date().toISOString()}] handlePlayerAssignment FINISH - left: ${leftPlayerName}, right: ${rightPlayerName}`);
 	}
 
 	private getControlledSides(): PlayerSide[] {
