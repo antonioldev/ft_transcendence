@@ -47,7 +47,7 @@ export const SPECTATOR_STYLE = {
         width: "100%",
         height: "100%",
         background: COLORS.TRANSPARENT,
-        thickness: 3,
+        thickness: 10,
         color: COLORS.SPECTATOR_RED,
         zIndex: 19,
         isVisible: false
@@ -136,16 +136,7 @@ export const HUD_STYLES = {
         background: COLORS.DARK_BLUE,
         verticalAlignment: V_BOTTOM,
         horizontalAlignment: H_CENTER,
-        // cornerRadius: 50,
         zIndex: 8
-    },
-
-    fpsText: {
-        fontFamily: FONT_FAMILY,
-        color: COLORS.WHITE,
-        textHorizontalAlignment: H_CENTER,
-        textVerticalAlignment: V_CENTER,
-        fontSize: 18
     },
 
     player1Label: {
@@ -155,12 +146,13 @@ export const HUD_STYLES = {
         textVerticalAlignment: V_CENTER,
         fontSize: 48,
         fontWeight: "bold",
-        shadowOffsetX: 1,
-        shadowOffsetY: 1,
-        shadowBlur: 8,
+        shadowOffsetX: 2,
+        shadowOffsetY: 2,
+        shadowBlur: 0,
         shadowColor: COLORS.GOLD_SHADOW,
         outlineWidth: 2,
-        outlineColor: COLORS.TRANSPARENT_BLACK_66
+        outlineColor: COLORS.TRANSPARENT_BLACK_66,
+        thickness: 2,
     },
 
     player2Label: {
@@ -170,9 +162,9 @@ export const HUD_STYLES = {
         textVerticalAlignment: V_CENTER,
         fontSize: 48,
         fontWeight: "bold",
-        shadowOffsetX: 1,
-        shadowOffsetY: 1,
-        shadowBlur: 8,
+        shadowOffsetX: 2,
+        shadowOffsetY: 2,
+        shadowBlur: 0,
         shadowColor: COLORS.GOLD_SHADOW,
         outlineWidth: 2,
         outlineColor: COLORS.TRANSPARENT_BLACK_66
@@ -185,9 +177,9 @@ export const HUD_STYLES = {
         textVerticalAlignment: V_BOTTOM,
         fontSize: 56,
         fontWeight: "bold",
-        shadowOffsetX: 1,
-        shadowOffsetY: 1,
-        shadowBlur: 8,
+        shadowOffsetX: 2,
+        shadowOffsetY: 2,
+        shadowBlur: 0,
         shadowColor: COLORS.GOLD_SHADOW,
         outlineWidth: 2,
         outlineColor: COLORS.TRANSPARENT_BLACK_66
@@ -200,9 +192,9 @@ export const HUD_STYLES = {
         textVerticalAlignment: V_BOTTOM,
         fontSize: 56,
         fontWeight: "bold",
-        shadowOffsetX: 1,
-        shadowOffsetY: 1,
-        shadowBlur: 8,
+        shadowOffsetX: 3,
+        shadowOffsetY: 3,
+        shadowBlur: 0,
         shadowColor: COLORS.GOLD_SHADOW,
         outlineWidth: 2,
         outlineColor: COLORS.TRANSPARENT_BLACK_66
@@ -210,85 +202,87 @@ export const HUD_STYLES = {
 
     rallyText: {
         fontFamily: FONT_FAMILY,
-        color: COLORS.WHITE,
+        color: COLORS.TRANSPARENT_WHITE_50,
         textHorizontalAlignment: H_CENTER,
-        textVerticalAlignment: V_CENTER,
-        fontSize: 48
+        textVerticalAlignment: V_BOTTOM,
+        fontSize: 16,
+        top: "-8px" 
     },
 
     rallyValue: {
         fontFamily: FONT_FAMILY,
         color: COLORS.WHITE,
         textHorizontalAlignment: H_CENTER,
-        textVerticalAlignment: V_BOTTOM,
-        fontSize: 56
+        textVerticalAlignment: V_TOP,
+        fontSize: 40,
+        fontWeight: "bold",
+        top: "4px",
+        shadowOffsetX: 1,
+        shadowOffsetY: 1,
+        shadowBlur: 6,
+        shadowColor: "rgba(235, 91, 0, 0.6)"
     },
 
-    playerControlsP1: {
-        fontFamily: FONT_FAMILY,
-        color: COLORS.TRANSPARENT_BLACK_55,
-        textHorizontalAlignment: H_CENTER,
-        textVerticalAlignment: V_CENTER,
-        fontSize: 30,
-        lineSpacing: "10px"
-    },
+    // playerControlsP1: {
+    //     fontFamily: FONT_FAMILY,
+    //     color: COLORS.TRANSPARENT_BLACK_55,
+    //     textHorizontalAlignment: H_CENTER,
+    //     textVerticalAlignment: V_CENTER,
+    //     fontSize: 30,
+    //     lineSpacing: "10px"
+    // },
 
-    playerControlsP2: {
-        fontFamily: FONT_FAMILY,
-        color: COLORS.TRANSPARENT_BLACK_55,
-        textHorizontalAlignment: H_CENTER,
-        textVerticalAlignment: V_CENTER,
-        fontSize: 30,
-        lineSpacing: "10px"
-    },
-
-    gridColumns: {
-        fps: 0.10,
-        p1Controls: 0.15,
-        p1Score: 0.25,
-        p2Score: 0.25,
-        p2Controls: 0.15,
-        rally: 0.10
-    }
+    // playerControlsP2: {
+    //     fontFamily: FONT_FAMILY,
+    //     color: COLORS.TRANSPARENT_BLACK_55,
+    //     textHorizontalAlignment: H_CENTER,
+    //     textVerticalAlignment: V_CENTER,
+    //     fontSize: 30,
+    //     lineSpacing: "10px"
+    // }
 } as const;
+
 export const POWER_UP_STYLES = {
     powerUpSlot: {
-        width: "110px",
-        height: "280px",
-        top: "50px",
         background: COLORS.TRANSPARENT,
-        verticalAlignment: V_TOP,
+        verticalAlignment: V_CENTER,
+        horizontalAlignment: H_CENTER,
         thickness: 0,
-        isVisible: false
+        width: "100%",
+        height: "100%",
     },
 
     powerUpCell: {
-        width: "100px",
-        height: "80px",
-        background: COLORS.BLACK,
-        color: COLORS.TRANSPARENT_WHITE_50,
+        width: "33%",
+        height: "90%",
+        color: COLORS.WHITE,
         thickness: 1,
         cornerRadius: 8,
+        verticalAlignment: V_CENTER,
         horizontalAlignment: H_LEFT,
-        verticalAlignment: V_TOP,
-        zIndex: 6
+        zIndex: 6,
+        alpha: 0
     },
 
     powerUpIcon: {
         stretch: Image.STRETCH_UNIFORM,
-        width: "75px",
-        height: "75px",
-        verticalAlignment: V_CENTER,
-        isVisible: false
+        width: "90%",
+        height: "85%",
+        verticalAlignment: V_TOP,
+        horizontalAlignment: H_CENTER,
+        top: "15%"
     },
 
     powerUpLetter: {
         width: "100%",
+        height: "15%",
+        paddingTop: "2%",
         fontSize: 20,
         fontWeight: "bold",
         color: COLORS.WHITE,
-        verticalAlignment: V_CENTER,
-        textHorizontalAlignment: H_LEFT
+        verticalAlignment: V_TOP,
+        horizontalAlignment: H_CENTER,
+        textHorizontalAlignment: H_CENTER,
     },
 
     powerUpHd: {
@@ -315,8 +309,8 @@ export const PAUSE_MENU_STYLES = {
     },
 
     pauseGrid: {
-        width: "100%", //changes
-        height: "60%",
+        width: "100%",
+        height: "90%",
         horizontalAlignment: H_CENTER,
         verticalAlignment: V_CENTER
     },
@@ -330,10 +324,18 @@ export const PAUSE_MENU_STYLES = {
         fontWeight: "bold"
     },
 
+    gameInstruction: {
+        fontFamily: FONT_FAMILY,
+        color: COLORS.LIGHT_GREEN,
+        fontSize: 24,
+        textHorizontalAlignment: H_CENTER,
+        textVerticalAlignment: V_CENTER
+    },
+
     pauseInstruction: {
         fontFamily: FONT_FAMILY,
         color: COLORS.WHITE,
-        fontSize: 24,
+        fontSize: 20,
         textHorizontalAlignment: H_CENTER,
         textVerticalAlignment: V_CENTER
     },
@@ -341,7 +343,7 @@ export const PAUSE_MENU_STYLES = {
     pauseHint: {
         fontFamily: FONT_FAMILY,
         color: COLORS.WHITE,
-        fontSize: 20,
+        fontSize: 16,
         textHorizontalAlignment: H_CENTER,
         textVerticalAlignment: V_CENTER
     },
@@ -352,8 +354,9 @@ export const PAUSE_MENU_STYLES = {
     },
 
     gridRows: {
-        title: 0.5,
-        instruction: 0.3,
+        title: 0.2,
+        gameInstructions: 0.5,
+        instruction: 0.1,
         hint: 0.1,
         muteIcon: 0.1
     }
@@ -433,7 +436,7 @@ export const COUNTDOWN_STYLES = {
         fontSize: 72,
         shadowOffsetX: 1,
         shadowOffsetY: 1,
-        shadowBlur: 8,
+        shadowBlur: 5,
         shadowColor: COLORS.GOLD_SHADOW,
         fontWeight: "bold",
         outlineWidth: 2,
@@ -446,10 +449,10 @@ export const COUNTDOWN_STYLES = {
         textHorizontalAlignment: H_CENTER,
         textVerticalAlignment: V_CENTER,
         fontSize: 100,
-        shadowOffsetX: 2,
-        shadowOffsetY: 2,
-        shadowBlur: 12,
-        shadowColor: COLORS.GOLD_SHADOW,
+        shadowOffsetX: 6,
+        shadowOffsetY: 6,
+        shadowBlur: 0,
+        shadowColor: COLORS.GREEN,
         fontWeight: "bold",
         outlineWidth: 3,
         outlineColor: COLORS.TRANSPARENT_BLACK_66,
@@ -468,9 +471,9 @@ export const COUNTDOWN_STYLES = {
         textHorizontalAlignment: H_CENTER,
         textVerticalAlignment: V_CENTER,
         fontSize: 60,
-        shadowOffsetX: 3,
-        shadowOffsetY: 3,
-        shadowBlur: 20,
+        shadowOffsetX: 1,
+        shadowOffsetY: 1,
+        shadowBlur: 0,
         shadowColor: "rgba(255, 0, 0, 0.8)",
         fontWeight: "bold",
         outlineWidth: 5,
@@ -489,10 +492,10 @@ export const COUNTDOWN_STYLES = {
         textHorizontalAlignment: H_CENTER,
         textVerticalAlignment: V_CENTER,
         fontSize: 100,
-        shadowOffsetX: 2,
-        shadowOffsetY: 2,
-        shadowBlur: 12,
-        shadowColor: COLORS.GOLD_SHADOW,
+        shadowOffsetX: 6,
+        shadowOffsetY: 6,
+        shadowBlur: 0,
+        shadowColor: COLORS.GREEN,
         fontWeight: "bold",
         outlineWidth: 3,
         outlineColor: COLORS.TRANSPARENT_BLACK_66,

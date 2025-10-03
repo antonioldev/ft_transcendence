@@ -5,7 +5,7 @@ import { GAME_CONFIG, CPUDifficultyMap, LEFT, RIGHT } from '../shared/gameConfig
 import { MessageType, GameState} from '../shared/constants.js';
 import { PlayerInput, GameStateData, ServerMessage } from '../shared/types.js';
 import { Client, Player, CPU} from '../network/Client.js'
-import { saveGameResult } from '../data/validation.js';
+import { saveGameResult, registerNewGame, addPlayer2  } from '../data/validation.js';
 import { PowerupManager, Slot } from './Powerup.js';
 
 // The Game class runs the core game logic for all game modes.
@@ -201,22 +201,33 @@ export class Game {
 		this.state = GameState.ENDED;
 	}
 
+	register_database() {
+		if (this.players[LEFT] instanceof Player && this.players[RIGHT] instanceof Player) {
+			console.log(`Game ${this.id} added to db: P1:${this.players[LEFT].name}, P2: ${this.players[RIGHT].name}`);
+			registerNewGame(this.id, this.players[LEFT].name, 1);
+			addPlayer2(this.id, this.players[RIGHT].name);
+		}
+	}
+
 	save_to_db() {
-		const player1 = this.players[LEFT];
-		const player2 = this.players[RIGHT];
-		const player1_score = this.paddles[LEFT].score;
-		const player2_score = this.paddles[RIGHT].score;
-		saveGameResult(this.id, player1.name, player2.name, player1_score, player2_score, Date.now()) // add check for error
+		saveGameResult(
+			this.id, 
+			this.players[LEFT].name, 
+			this.players[RIGHT].name, 
+			this.paddles[LEFT].score, 
+			this.paddles[RIGHT].score, 
+			Date.now()
+		);
 		console.log(`Game ${this.id} saved to db`);
 	}
 	
 	// If someone quits a remote game, the opposing player wins
 	setOtherPlayerWinner(quitter: Client) {
 		if (this.players[LEFT] instanceof CPU) {
-			this.winner = this.players[LEFT];
+			this.assign_winner(this.players[LEFT]);
 		}
 		else {
-			this.winner = (this.players[LEFT].client === quitter) ? this.players[RIGHT] : this.players[LEFT];
+			this.assign_winner((this.players[LEFT].client === quitter) ? this.players[RIGHT] : this.players[LEFT]);
 		}
 	}
 
