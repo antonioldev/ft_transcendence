@@ -31,7 +31,7 @@ export class Pause {
 
 		this.pauseGrid.addRowDefinition(PAUSE_MENU_STYLES.gridRows.title, false);
 		this.pauseGrid.addRowDefinition(PAUSE_MENU_STYLES.gridRows.gameInstructions, false);
-		this.pauseGrid.addRowDefinition(PAUSE_MENU_STYLES.gridRows.instruction, false);
+		this.pauseGrid.addRowDefinition(PAUSE_MENU_STYLES.gridRows.exitInstruction, false);
 		this.pauseGrid.addRowDefinition(PAUSE_MENU_STYLES.gridRows.hint, false);
 		this.pauseGrid.addRowDefinition(PAUSE_MENU_STYLES.gridRows.muteIcon, false);
 

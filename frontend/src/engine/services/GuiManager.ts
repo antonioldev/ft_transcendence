@@ -25,7 +25,6 @@ export class GUIManager {
 	private isLastMatch: boolean = false;
 	private pauseVisible: boolean = false;
 	countdown!: Countdown;
-	// powerUp!: PowerUp;
 	matchTree!: MatchTree;
 	hud!: Hud;
 	endGame!: EndGame;
@@ -40,7 +39,6 @@ export class GUIManager {
 			this.adt!.layer!.layerMask = 0x20000000;
 			this.isTournament = config.isTournament;
 			this.countdown = new Countdown(this.adt, this.animationManager);
-			// this.powerUp = new PowerUp(this.adt, this.animationManager, config);
 			this.matchTree = new MatchTree(this.adt, this.animationManager);
 			this.hud = new Hud(this.adt, this.animationManager,config);
 			this.endGame = new EndGame(this.adt, this.animationManager);
@@ -169,14 +167,6 @@ export class GUIManager {
 		if (!this.isReady()) return;
 		
 		try {
-			// this.lobby.dispose();
-			// this.countdown.dispose();
-			// this.powerUp.dispose();
-			// this.matchTree.dispose();
-			// this.hud.dispose();
-			// this.endGame.dispose();
-			// this.pause.dispose();
-			// this.curtain.dispose();
 			this.adt?.dispose();
 			this.adt = null;
 

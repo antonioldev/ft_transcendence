@@ -310,7 +310,7 @@ export const PAUSE_MENU_STYLES = {
 
     pauseGrid: {
         width: "100%",
-        height: "90%",
+        height: "95%",
         horizontalAlignment: H_CENTER,
         verticalAlignment: V_CENTER
     },
@@ -356,9 +356,13 @@ export const PAUSE_MENU_STYLES = {
     gridRows: {
         title: 0.2,
         gameInstructions: 0.5,
-        instruction: 0.1,
-        hint: 0.1,
-        muteIcon: 0.1
+        exitInstruction: 0.15,
+        hint: 0.05,
+        muteIcon: 0.05
+    }
+
+    instructionContainer: {
+        
     }
 } as const;
 export const LOBBY_STYLES = {
