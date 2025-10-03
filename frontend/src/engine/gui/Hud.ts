@@ -251,7 +251,6 @@ export class Hud {
 	assignPowerUp(player: PlayerSide, slotIndex: number, powerUpType: PowerupType): void {
 		const scene = this.adt.getScene();
 		const cells = player === 0 ? this.powerUpCellsP1 : this.powerUpCellsP2;
-		console.error(`Player ${player}, Slot ${slotIndex}, powerup type ${powerUpType}`);	
 		if (slotIndex >= 0 && slotIndex < cells.length) {
 			const cell = cells[slotIndex];
 			scene?.stopAnimation(cell.root);
