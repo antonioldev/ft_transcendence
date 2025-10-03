@@ -284,9 +284,16 @@ export class Game {
 				this.gameObjects.players.right.position.x = 0;
 				this.gameObjects.players.right.scaling.x = 1;
 			}
-			if (this.gameObjects.ball) {
-				this.gameObjects.ball.position.x = 0;
-				this.gameObjects.ball.position.z = 0;
+			// if (this.gameObjects.ball) {
+			// 	this.gameObjects.ball.position.x = 0;
+			// 	this.gameObjects.ball.position.z = 0;
+			// }
+			for (let i = 0; i < this.gameObjects.balls.length; i++) {
+				const ball = this.gameObjects.balls[i];
+				// ball.position.x = 0;
+				// ball.position.z = 0;
+				// ball.visibility = i === 0 ? 1 : 0;
+				ball.visibility = 0;
 			}
 		}
 
@@ -307,14 +314,33 @@ export class Game {
 			this.gameObjects.players.right.position.x = state.paddleRight.x;
 
 			// Update ball position
-			this.gameObjects.ball.position.x = state.ball.x;
-			this.gameObjects.ball.position.z = state.ball.z;
-			this.gameObjects.ball.rotation.x += 0.1;
-			this.gameObjects.ball.rotation.y += 0.05;
+			// this.gameObjects.ball.position.x = state.ball.x;
+			// this.gameObjects.ball.position.z = state.ball.z;
+			// this.gameObjects.ball.rotation.x += 0.1;
+			// this.gameObjects.ball.rotation.y += 0.05;
+			const ballStates = state.ball_states || [];
+			for (let i = 0; i < this.gameObjects.balls.length; i++) {
+				const ball = this.gameObjects.balls[i];
+				const ballState = ballStates[i];
+				
+				if (ballState) {
+					ball.position.x = ballState.x;
+					ball.position.z = ballState.z;
+					ball.rotation.x += 0.1;
+					ball.rotation.y += 0.05;
+					ball.visibility = 1;
+				} else {
+					ball.visibility = 0;
+				}
+			}
 
-			if (this.services?.gui?.hud.updateRally(state.ball.current_rally))
+			const currentRally = state.rally || 0;
+			if (this.services?.gui?.hud.updateRally(currentRally))
 				this.services?.audio?.playPaddleHit();
-			this.services?.audio?.updateMusicSpeed(state.ball.current_rally);
+			this.services?.audio?.updateMusicSpeed(currentRally);
+			// if (this.services?.gui?.hud.updateRally(state.ball[0].current_rally))
+			// 	this.services?.audio?.playPaddleHit();
+			// this.services?.audio?.updateMusicSpeed(state.ball[0].current_rally);
 
 			const leftPlayer = this.players.get(PlayerSide.LEFT)!;
 			const rightPlayer = this.players.get(PlayerSide.RIGHT)!;

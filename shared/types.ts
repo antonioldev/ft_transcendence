@@ -170,7 +170,7 @@ export interface GameObjects {
 		left: any;
 		right: any;
 	};
-	ball: any;
+	balls: any[];
 	gameField: any;
 	walls: any;
 	cameras: any[];

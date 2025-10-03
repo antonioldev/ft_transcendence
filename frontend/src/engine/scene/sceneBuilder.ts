@@ -25,7 +25,12 @@ export async function buildScene2D(
 	onProgress?.(25);
 	const walls = createWalls(scene, "walls", viewMode, undefined);
 	onProgress?.(30);
-	const ball = createBall(scene, "ball", getBallStartPosition(), COLORS.ball2D, viewMode, undefined);
+	const balls: any[] = [];
+	for (let i = 0; i < 3; i++){
+		const ball = createBall(scene, `ball${i}`, getBallStartPosition(), COLORS.ball2D, viewMode, undefined);
+		ball.visibility = 0;
+		balls.push(ball);
+	}
 	onProgress?.(40);
 	
 	cameras = createCameras(scene, "camera", viewMode, gameMode);
@@ -40,7 +45,7 @@ export async function buildScene2D(
 	onProgress?.(100);
 	return {
 		players: { left: playerLeft, right: playerRight },
-		ball,
+		balls,
 		gameField,
 		walls,
 		cameras,
@@ -68,7 +73,13 @@ export async function buildScene3D(
 	onProgress?.(25);
 	const walls = createWalls(scene, "walls", viewMode, map_asset.textures.walls);
 	onProgress?.(30);
-	const ball = createBall(scene, "ball", getBallStartPosition(), COLORS.ball3D, viewMode, map_asset.textures.ball);
+	const balls: any[] = [];
+	for (let i = 0; i < 3; i++){
+		const ball = createBall(scene, `ball${i}`, getBallStartPosition(), COLORS.ball3D, viewMode, map_asset.textures.ball);
+		ball.visibility = 0;
+		balls.push(ball);
+	}
+	// const ball = createBall(scene, "ball", getBallStartPosition(), COLORS.ball3D, viewMode, map_asset.textures.ball);
 	onProgress?.(40);
 	
 	cameras = createCameras(scene, "camera", viewMode, gameMode);
@@ -91,7 +102,7 @@ export async function buildScene3D(
 	onProgress?.(100);
 	return {
 		players: { left: playerLeft, right: playerRight },
-		ball,
+		balls,
 		gameField,
 		walls,
 		cameras,
