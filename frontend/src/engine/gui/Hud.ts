@@ -37,7 +37,8 @@ export class Hud {
 		[PowerupType.RESET_RALLY]: "assets/icons/powerup/rallyReset.png",
 		[PowerupType.DOUBLE_POINTS]: "assets/icons/powerup/rallyMultiplier.png",
 		[PowerupType.INVISIBLE_BALL]: "assets/icons/powerup/ghost.png",
-		[PowerupType.CURVE_BALL]: "assets/icons/powerup/curve.png"
+		[PowerupType.CURVE_BALL]: "assets/icons/powerup/curve.png",
+		[PowerupType.TRIPLE_SHOT]: "assets/icons/powerupHD/ballMultiplier.png"
 	};
 
 	private POWERUP_ICON_HD: Record<number, string> = {
@@ -51,7 +52,9 @@ export class Hud {
 		[PowerupType.RESET_RALLY]: "assets/icons/powerupHD/rallyReset.png",
 		[PowerupType.DOUBLE_POINTS]: "assets/icons/powerupHD/rallyMultiplier.png",
 		[PowerupType.INVISIBLE_BALL]: "assets/icons/powerupHD/ghost.png",
-		[PowerupType.CURVE_BALL]: "assets/icons/powerupHD/curve.png"
+		[PowerupType.CURVE_BALL]: "assets/icons/powerupHD/curve.png",
+		[PowerupType.TRIPLE_SHOT]: "assets/icons/powerupHD/ballMultiplier.png"
+		
 	};
 
 	constructor(private adt: AdvancedDynamicTexture, private animationManager: AnimationManager, config: GameConfig) {
