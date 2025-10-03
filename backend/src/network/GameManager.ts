@@ -102,7 +102,7 @@ class GameManager {
         for (const client of gameSession.clients) {
             this.clientGamesMap.delete(client.id);
         }
-        console.log(`Game ended: ${gameSession.id}`);
+        console.log(`GameSession ended: ${gameSession.id}`);
     }
 
     /**
