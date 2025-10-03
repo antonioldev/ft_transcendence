@@ -7,6 +7,7 @@ import { Logger } from '../../utils/LogManager.js';
  */
 export class AudioManager {
 	private gameMusic: Sound | null = null;
+	private gameMusicEntrance: Sound | null = null;
 	private isInitialized: boolean = false;
 	private basePlaybackRate: number = 1.0;
 	private maxPlaybackRate: number = 1.8;
@@ -16,10 +17,12 @@ export class AudioManager {
 	private muted = false;
 	private volumes = {
 		music: 0.5,
+		gameMusicEntrance: 0.4,
 		countdown: 0.6,
 		paddle: 0.6,
 		score: 0.7,
-		powerup: 0.7
+		powerup: 0.7,
+		entrance: 1.0
 	};
 
 	// Sound effects
@@ -27,6 +30,8 @@ export class AudioManager {
 	private paddleHitSound: Sound | null = null;
 	private scoreSound: Sound | null = null;
 	private powerup: Sound | null = null;
+	private entrance: Sound | null = null;
+
 
 	constructor(private scene: Scene) {
 	}
@@ -43,6 +48,19 @@ export class AudioManager {
 					autoplay: false,
 					volume: this.volumes.music,
 					playbackRate: this.basePlaybackRate
+				}
+			);
+
+			this.gameMusicEntrance = new Sound(
+				"gameMusicEntrance",
+				"/assets/audio/bg/retro8.mp3",
+				this.scene,
+				null,
+				{
+					loop: true,
+					autoplay: true,
+					volume: this.volumes.gameMusicEntrance,
+					playbackRate: 1.2
 				}
 			);
 
@@ -99,37 +117,49 @@ export class AudioManager {
 				}
 			);
 
+			this.entrance = new Sound(
+				"entrance",
+				"/assets/audio/entrance.mp3",
+				this.scene,
+				null,
+				{
+					loop: false,
+					autoplay: false,
+					volume: this.volumes.entrance,
+					playbackRate: this.basePlaybackRate
+				}
+			);
+
 			this.isInitialized = true;
 		} catch (error) {
 			Logger.errorAndThrow('Error initializing Babylon audio', 'BabylonAudioManager', error);
 		}
 	}
 
-	// Start playing the game music
 	startGameMusic(): void {
-		if (!this.gameMusic || !this.isInitialized) {
+		if (!this.gameMusic || !this.isInitialized)
 			return;
-		}
 
 		try {
+			this.countdownSound?.stop();
 			if (this.gameMusic.isPlaying !== true )
 				this.gameMusic.play();
+			setTimeout(() => {
+				this.gameMusicEntrance?.stop();
+			}, 500);
 		} catch (error) {
 			Logger.errorAndThrow('Error starting game music', 'BabylonAudioManager', error);
 		}
 	}
 
-	// Stop the game music
 	stopGameMusic(): void {
 		this.gameMusic?.stop();
 	}
 
-	// Pause the game music
 	pauseGameMusic(): void {
 		this.gameMusic?.pause();
 	}
 
-	// Resume the game music
 	resumeGameMusic(): void {
 		if (this.gameMusic?.isPlaying !== true )
 			this.gameMusic?.play();
@@ -172,8 +202,8 @@ export class AudioManager {
 		this.powerup?.play();
 	}
 
-	stopCountdown(): void {
-		this.countdownSound?.stop();
+	playEntrance(): void {
+		this.entrance?.play();
 	}
 
 	isMuted(): boolean {
@@ -195,16 +225,21 @@ export class AudioManager {
 		const base = this.muted ? 0 : 1;
 
 		this.gameMusic?.setVolume(base * this.volumes.music);
+		this.gameMusicEntrance?.setVolume(base * this.volumes.music);
 		this.countdownSound?.setVolume(base * this.volumes.countdown);
 		this.paddleHitSound?.setVolume(base * this.volumes.paddle);
 		this.scoreSound?.setVolume(base * this.volumes.score);
 		this.powerup?.setVolume(base * this.volumes.powerup)
+		this.entrance?.setVolume(base * this.volumes.entrance)
 	}
 
 	dispose(): void {
 		try {
 			this.gameMusic?.dispose();
 			this.gameMusic = null;
+
+			this.gameMusicEntrance?.dispose();
+			this.gameMusicEntrance = null;
 
 			this.paddleHitSound?.dispose();
 			this.paddleHitSound = null;
@@ -217,6 +252,9 @@ export class AudioManager {
 
 			this.powerup?.dispose();
 			this.powerup = null;
+
+			this.entrance?.dispose();
+			this.entrance = null;
 
 			this.isInitialized = false;
 
