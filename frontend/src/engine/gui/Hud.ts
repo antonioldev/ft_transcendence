@@ -140,8 +140,7 @@ export class Hud {
 
 	private createPowerUpCell(index: number, player: PlayerSide, config: GameConfig): {root: Rectangle; icon?: Image; letter?: TextBlock} {
 		const cell = createRect(`powerUpCell_${player}_${index}`, POWER_UP_STYLES.powerUpCell);
-		// cell.left = `${5 + (index * 32)}%`;
-		cell.left = `${index * 33}%`;
+		cell.left = `${index * 32}%`;
 
 		let letterKeys = ['1', '2', '3'];
 		if (config.isLocalMultiplayer)
@@ -194,6 +193,7 @@ export class Hud {
 
 	show(show: boolean): void {
 		this.hudGrid.isVisible = show;
+		this.showPowerUps(true);
 	}
 
 	showPowerUps(show: boolean): void {
@@ -251,7 +251,7 @@ export class Hud {
 	assignPowerUp(player: PlayerSide, slotIndex: number, powerUpType: PowerupType): void {
 		const scene = this.adt.getScene();
 		const cells = player === 0 ? this.powerUpCellsP1 : this.powerUpCellsP2;
-		
+		console.error(`Player ${player}, Slot ${slotIndex}, powerup type ${powerUpType}`);	
 		if (slotIndex >= 0 && slotIndex < cells.length) {
 			const cell = cells[slotIndex];
 			scene?.stopAnimation(cell.root);
@@ -273,7 +273,7 @@ export class Hud {
 					cell.icon.source = this.POWERUP_ICON[powerUpType];
 				}
 				cell.icon.alpha = 1;
-				cell.icon.isVisible = true;
+				// cell.icon.isVisible = true;
 
 				cell.root.alpha = 0;
 				const delay = slotIndex * 100;
@@ -345,18 +345,19 @@ export class Hud {
 				cell.root.scaleX = 1;
 				cell.root.scaleY = 1;
 				cell.root.alpha = 0;
+				cell.root.topInPixels = 0;
 				cell.root.color = "rgba(255, 255, 255, 0.5)";
 				// cell.root.background = "rgba(0, 0, 0, 1)";
 				
 				if (cell.icon) {
 					cell.icon.alpha = 0;
-					cell.icon.isVisible = false;
+					// cell.icon.isVisible = false;
 					cell.icon.source = "";
+					// cell.icon.dispose();
 				}
 			});
 		});
 	}
-
 	dispose(): void {
 		this.rallyText.dispose();
 		this.rally.dispose();

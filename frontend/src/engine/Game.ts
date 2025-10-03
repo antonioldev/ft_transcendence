@@ -203,6 +203,7 @@ export class Game {
 		if (showLoser){
 			await this.services?.gui?.showTournamentMatchLoser();
 			await this.services?.input.waitForSpectatorChoice();
+			this.resetForNextMatch();
 			await this.services?.gui.curtain.show();
 			this.services?.gui.hud.setSpectatorMode();
 			webSocketClient.sendSpectatorReady();

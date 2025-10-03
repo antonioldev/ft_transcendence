@@ -257,7 +257,7 @@ export const POWER_UP_STYLES = {
         width: "33%",
         height: "90%",
         color: COLORS.WHITE,
-        thickness: 1,
+        thickness: 0,
         cornerRadius: 8,
         verticalAlignment: V_CENTER,
         horizontalAlignment: H_LEFT,
