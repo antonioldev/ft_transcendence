@@ -41,6 +41,17 @@ export const COLORS = {
     GREEN: "#A0C878"
 } as const;
 
+export const Z_INDEX = { 
+    GAMEPLAY: 5, // countdown
+    HUD: 10,
+    POWERUPS: 12,
+    ENDGAME: 15, //Partial winner, late winner
+    MODAL: 20,  // pause
+    BRACKET: 25,
+    LOBBY: 30,
+    CURTAIN: 35
+
+} as const;
 
 export const SPECTATOR_STYLE = {
     spectatorOverlay: {
@@ -49,10 +60,9 @@ export const SPECTATOR_STYLE = {
         background: COLORS.TRANSPARENT,
         thickness: 10,
         color: COLORS.SPECTATOR_RED,
-        zIndex: 19,
+        zIndex: Z_INDEX.HUD,
         isVisible: false
     },
-
     spectatorBanner: {
         width: "100%",
         height: "40px",
@@ -60,9 +70,8 @@ export const SPECTATOR_STYLE = {
         background: COLORS.SPECTATOR_RED,
         alpha: 1,
         horizontalAlignment: H_CENTER,
-        verticalAlignment: V_TOP,
+        verticalAlignment: V_TOP
     },
-
     spectatorText: {
         fontFamily: FONT_FAMILY,
         color: COLORS.WHITE,
@@ -73,7 +82,6 @@ export const SPECTATOR_STYLE = {
         paddingLeft: "20px",
         width: "300px"
     },
-
     spectatorControls: {
         fontFamily: FONT_FAMILY,
         color: COLORS.SPECTATOR_YELLOW,
@@ -82,52 +90,10 @@ export const SPECTATOR_STYLE = {
         textVerticalAlignment: V_CENTER,
         width: "600px"
     },
-
     bannerContent: {
         width: "100%",
         height: "100%",
         isVertical: false
-    }
-} as const;
-
-export const LOADING_STYLE = {
-    overlay: {
-        width: "100%",
-        height: "100%",
-        thickness: 1,
-        verticalAlignment: V_CENTER,
-        horizontalAlignment: H_CENTER,
-        zIndex: 20
-    },
-
-    title: {
-        text: "Loading",
-        fontSize: 56,
-        color:" #FFFFFF",
-        top: "-50px"
-    },
-
-    bar: {
-        width: "40%",
-        height: "12px",
-        thickness: 0,
-        background: "rgba(255,255,255,0.15)",
-        cornerRadius: 4
-    },
-
-    fill: {
-        height: "100%",
-        width: "0%",
-        thickness: 0,
-        background: "#22C55E",
-        horizontalAlignment: H_LEFT,
-        // left: 0
-    },
-
-    percentege: {
-        fontSize: 18,
-        color: "#FFFFFF",
-        top: "24px"
     }
 } as const;
 export const HUD_STYLES = {
@@ -137,7 +103,7 @@ export const HUD_STYLES = {
         background: COLORS.DARK_BLUE,
         verticalAlignment: V_BOTTOM,
         horizontalAlignment: H_CENTER,
-        zIndex: 8
+        zIndex: Z_INDEX.HUD
     },
 
     player1Label: {
@@ -223,24 +189,6 @@ export const HUD_STYLES = {
         shadowBlur: 6,
         shadowColor: "rgba(235, 91, 0, 0.6)"
     },
-
-    // playerControlsP1: {
-    //     fontFamily: FONT_FAMILY,
-    //     color: COLORS.TRANSPARENT_BLACK_55,
-    //     textHorizontalAlignment: H_CENTER,
-    //     textVerticalAlignment: V_CENTER,
-    //     fontSize: 30,
-    //     lineSpacing: "10px"
-    // },
-
-    // playerControlsP2: {
-    //     fontFamily: FONT_FAMILY,
-    //     color: COLORS.TRANSPARENT_BLACK_55,
-    //     textHorizontalAlignment: H_CENTER,
-    //     textVerticalAlignment: V_CENTER,
-    //     fontSize: 30,
-    //     lineSpacing: "10px"
-    // }
 } as const;
 
 export const POWER_UP_STYLES = {
@@ -261,7 +209,7 @@ export const POWER_UP_STYLES = {
         cornerRadius: 8,
         verticalAlignment: V_CENTER,
         horizontalAlignment: H_LEFT,
-        zIndex: 6,
+        zIndex: Z_INDEX.POWERUPS,
         alpha: 0
     },
 
@@ -294,8 +242,8 @@ export const POWER_UP_STYLES = {
         verticalAlignment: V_TOP,
         isVisible: false,
         top: 100,
-        alpha: 0,
-        zIndex: 15
+        alpha: 0
+        // zIndex: 15
     }
 } as const;
 export const PAUSE_MENU_STYLES = {
@@ -304,7 +252,7 @@ export const PAUSE_MENU_STYLES = {
         height: "100%",
         background: COLORS.TRANSPARENT_BLACK_98,
         verticalAlignment: V_CENTER,
-        zIndex: 11,
+        zIndex: Z_INDEX.MODAL,
         color: COLORS.WHITE,
         isVisible: false
     },
@@ -412,7 +360,7 @@ export const LOBBY_STYLES = {
     background: COLORS.TRANSPARENT_BLACK_90,
     horizontalAlignment: H_CENTER,
     verticalAlignment: V_CENTER,
-    zIndex: 50,
+    zIndex: Z_INDEX.LOBBY,
     isVisible: false
   },
   title: {
@@ -466,7 +414,7 @@ export const COUNTDOWN_STYLES = {
         height: "100%",
         thickness: 0,
         isVisible: false,
-        zIndex: 10,
+        zIndex: Z_INDEX.GAMEPLAY,
         horizontalAlignment: H_CENTER,
         verticalAlignment: V_CENTER
     },
@@ -504,8 +452,7 @@ export const COUNTDOWN_STYLES = {
         leftInPixels: -300,
         topInPixels: -150,
         isVisible: false,
-        alpha: 0,
-        zIndex: 11
+        alpha: 0
     },
 
     vsText: {
@@ -525,8 +472,7 @@ export const COUNTDOWN_STYLES = {
         verticalAlignment: V_CENTER,
         topInPixels: -50,
         isVisible: false,
-        alpha: 0,
-        zIndex: 11
+        alpha: 0
     },
 
     namePlayerRight: {
@@ -547,8 +493,7 @@ export const COUNTDOWN_STYLES = {
         leftInPixels: 300,
         topInPixels: 50,
         isVisible: false,
-        alpha: 0,
-        zIndex: 11
+        alpha: 0
     },
 
     readyText: {
@@ -568,8 +513,7 @@ export const COUNTDOWN_STYLES = {
         verticalAlignment: V_CENTER,
         topInPixels: -50,
         isVisible: false,
-        alpha: 0,
-        zIndex: 11
+        alpha: 0
     }
 
 } as const;
@@ -580,7 +524,7 @@ export const VIEW_MODE_STYLES = {
         background: COLORS.BLACK,
         horizontalAlignment: H_CENTER,
         verticalAlignment: V_CENTER,
-        zIndex: 6,
+        zIndex: Z_INDEX.HUD,
         thickness: 0
     }
 } as const;
@@ -590,14 +534,14 @@ export const PARTIAL_END_GAME_STYLES = {
         height: "100%",
         background: COLORS.BLACK,
         verticalAlignment: V_BOTTOM,
-        zIndex: 8,
+        zIndex: Z_INDEX.ENDGAME,
         isVisible: false
     },
 
     winnerGrid: {
         width: "100%",
         height: "100%",
-        zIndex: 9,
+        // zIndex: 9,
         horizontalAlignment: H_CENTER,
         verticalAlignment: V_CENTER
     },
@@ -615,7 +559,7 @@ export const PARTIAL_END_GAME_STYLES = {
         textVerticalAlignment: V_CENTER,
         fontSize: 80,
         outlineWidth: 2,
-        zIndex: 10,
+        // zIndex: 10,
         alpha: 0
     },
 
@@ -628,7 +572,7 @@ export const PARTIAL_END_GAME_STYLES = {
         fontWeight: "bold",
         outlineWidth: 2,
         outlineColor: COLORS.WHITE,
-        zIndex: 10,
+        // zIndex: 10,
         alpha: 0,
         shadowBlur: 20,
         shadowColor: COLORS.GOLD_GLOW
@@ -642,7 +586,7 @@ export const PARTIAL_END_GAME_STYLES = {
         outlineWidth: 2,
         outlineColor: COLORS.GOLD,
         isVisible: false,
-        zIndex: 10
+        // zIndex: 10
     }
 } as const;
 export const END_GAME_STYLES = {
@@ -652,6 +596,7 @@ export const END_GAME_STYLES = {
         background: COLORS.TRANSPARENT_BLACK_90,
         verticalAlignment: V_BOTTOM,
         isVisible: false,
+        zIndex: Z_INDEX.ENDGAME,
         horizontalAlignment: H_CENTER
     },
 
@@ -681,7 +626,7 @@ export const BRACKET_STYLES = {
         cornerRadius: 12,
         isVisible: false,
         isPointerBlocker: true,
-        zIndex: 20,
+        zIndex: Z_INDEX.BRACKET,
         padding: "8px",
         thickness: 0
     },
@@ -708,7 +653,7 @@ export const BRACKET_STYLES = {
         width: "100%", height: "100%",
 		stretch: Image.STRETCH_FILL,
 		isPointerBlocker: false,
-		zIndex: 0,
+		// zIndex: 0,
     },
 
     bracketTitle: {
@@ -906,7 +851,7 @@ export const CURTAIN_STYLES = {
         horizontalAlignment: H_LEFT,
         verticalAlignment: V_TOP,
         isVisible: false,
-        zIndex: 0
+        zIndex: Z_INDEX.CURTAIN
     },
     
     rightBackground: {
@@ -917,7 +862,6 @@ export const CURTAIN_STYLES = {
         horizontalAlignment: H_LEFT,
         verticalAlignment: V_TOP,
         isVisible: false,
-        zIndex: 0
     },
     
     leftPaddle: {
@@ -929,8 +873,8 @@ export const CURTAIN_STYLES = {
         verticalAlignment: V_TOP,
         isVisible: false,
         shadowBlur: 60,
-	    shadowColor: "rgba(245, 204, 179, 0.87)",
-        zIndex: 1
+        shadowColor: "rgba(245, 204, 179, 0.87)",
+        zIndex: Z_INDEX.CURTAIN + 1
     },
     
     rightPaddle: {
@@ -942,8 +886,8 @@ export const CURTAIN_STYLES = {
         verticalAlignment: V_TOP,
         isVisible: false,
         shadowBlur: 60,
-	    shadowColor: "rgba(245, 204, 179, 0.87)",
-        zIndex: 1
+        shadowColor: "rgba(245, 204, 179, 0.87)",
+        zIndex: Z_INDEX.CURTAIN + 1
     }
 } as const;
 export function applyStyles(control: any, styles: any): void {
