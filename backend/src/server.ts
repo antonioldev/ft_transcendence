@@ -54,10 +54,14 @@ await fastify.register(fastifyCors, {
     origin: (origin: string | undefined, cb: (err: Error | null, allow: boolean) => void) => {
     if (!origin) return cb(null, true); // allow non-browser requests (curl)
     const allowed = [
+        // 42 London hostname pattern
         /^https:\/\/c\d+r\d+s\d+\.42london\.com(:8443)?$/,
+
+        // Local network IP ranges A, B, and C with optional port 8443
         /^https?:\/\/10\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(:8443)?$/,
         /^https?:\/\/172\.(?:1[6-9]|2[0-9]|3[01])\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(:8443)?$/,
         /^https?:\/\/192\.168\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(:8443)?$/,
+    
         /^https:\/\/localhost$/,
         /^http:\/\/localhost:\d+$/
     ];

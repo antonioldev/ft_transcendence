@@ -25,7 +25,6 @@ export function updateLanguageDisplay(): void {
     const langDisplay = requireElementById(EL.DISPLAY.LANGUAGE_SELECT);
     langDisplay.textContent = langs[currentLang];
 
-
 	// Auth buttons
 	const registerBtn = requireElementById(EL.BUTTONS.REGISTER);
 	registerBtn.textContent = t.register;
@@ -45,7 +44,6 @@ export function updateLanguageDisplay(): void {
     
     const loginTitle = requireElementById(EL.BUTTONS.LOGIN_TITLE);
     loginTitle.textContent = t.loginTitle;
-
 
 	const loginPasswordLabel = document.querySelector('#login-modal label[for="login-password"]');
 	if (loginPasswordLabel) loginPasswordLabel.textContent = t.password;
@@ -76,7 +74,6 @@ export function updateLanguageDisplay(): void {
     const registerTitle = requireElementById(EL.BUTTONS.REGISTER_TITLE);
     registerTitle.textContent = t.registerTitle;
 
-
     const registerEmailLabel = document.querySelector('#register-modal label[for="register-email"]');
     if (registerEmailLabel) registerEmailLabel.textContent = t.email;
 
@@ -105,8 +102,8 @@ export function updateLanguageDisplay(): void {
 	const modeTitle = requireElementById(EL.DISPLAY.MODE_TITLE);
 	modeTitle.textContent = t.selectGameMode;
 
-	const viewModeDisplay = requireElementById(EL.DISPLAY.VIEW_MODE_DISPLAY);
-	viewModeDisplay.textContent = t.classicMode;
+	// const viewModeDisplay = requireElementById(EL.DISPLAY.VIEW_MODE_DISPLAY);
+	// viewModeDisplay.textContent = t.classicMode;
 
 	const soloBtn = requireElementById(EL.GAME_MODES.SOLO);
 	soloBtn.textContent = t.soloMode + t.easy;
@@ -130,44 +127,27 @@ export function updateLanguageDisplay(): void {
 	const setupTitle = requireElementById(EL.DISPLAY.SETUP_TITLE);
 	setupTitle.textContent = t.playerSetup;
 
-	// const soloLabel = document.querySelector('#solo-setup label[for="player1-name"]');
-	// if (soloLabel) soloLabel.textContent = t.playerName;
-
-    // const soloInput = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER1_NAME);
+    const playerLabel = requireElementById(EL.PLAYER_COLLECTION.LABEL);
+	playerLabel.textContent = t.playerName;
 
     const localLabel1 = document.querySelector('#two-players-setup label[for="player1-name-local"]');
     if (localLabel1) localLabel1.textContent = t.player1Name;
 
-    // const localInput1 = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER1_NAME_LOCAL);
-
     const localLabel2 = document.querySelector('#two-players-setup label[for="player2-name-local"]');
     if (localLabel2) localLabel2.textContent = t.player2Name;
-
-    // const localInput2 = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER2_NAME_LOCAL);
 
     // Tournament labels
     const tournamentLabel1 = document.querySelector('#tournament-setup label[for="player1-name-tournament"]');
     if (tournamentLabel1) tournamentLabel1.textContent = t.player1Name;
 
-    // const tournamentInput1 = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER1_NAME_TOURNAMENT);
-
     const tournamentLabel2 = document.querySelector('#tournament-setup label[for="player2-name-tournament"]');
     if (tournamentLabel2) tournamentLabel2.textContent = t.player2Name;
-
-    // const tournamentInput2 = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER2_NAME_TOURNAMENT);
-    // const tournamentInput2 = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER2_NAME_TOURNAMENT);
 
     const tournamentLabel3 = document.querySelector('#tournament-setup label[for="player3-name-tournament"]');
     if (tournamentLabel3) tournamentLabel3.textContent = "Player 3 Name:"; // TODO: Add translation key for player3Name
 
-    // const tournamentInput3 = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER3_NAME_TOURNAMENT);
-    // const tournamentInput3 = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER3_NAME_TOURNAMENT);
-
     const tournamentLabel4 = document.querySelector('#tournament-setup label[for="player4-name-tournament"]');
     if (tournamentLabel4) tournamentLabel4.textContent = "Player 4 Name:"; // TODO: Add translation key for player4Name
-
-	// const tournamentInput4 = requireElementById<HTMLInputElement>(EL.PLAYER_SETUP.PLAYER4_NAME_TOURNAMENT);
-	// tournamentInput4.placeholder = "Enter Player 4 name";
 
 	const playerName = requireElementById<HTMLInputElement>(EL.PLAYER_COLLECTION.INPUT);
 	playerName.placeholder = t.enterName;
