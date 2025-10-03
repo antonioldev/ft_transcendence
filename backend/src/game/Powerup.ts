@@ -239,12 +239,12 @@ export class PowerupManager {
 		if (this.balls.length === 3) return (0);
 
 		const second_ball = this.balls[0].duplicate();
-		rotate(second_ball.direction, Math.PI / 6);
+		second_ball.direction = rotate(second_ball.direction, Math.PI / 9);
 		this.balls.push( second_ball );
 		
 		if (this.balls.length !== 3) {
 			const third_ball = this.balls[0].duplicate();
-			rotate(third_ball.direction, -Math.PI / 6);
+			third_ball.direction = rotate(third_ball.direction, -Math.PI / 9);
 			this.balls.push( third_ball )
 		}
 		return (0);
