@@ -125,8 +125,6 @@ export class MatchTree {
 		if (show) {
 			this.activateRound(this.currentRound);
 			this.bracketOverlay.isVisible = true;
-			this.bracketOverlay.horizontalAlignment = H_RIGHT;
-			this.bracketOverlay.paddingRight = "5px";
 			this.bracketOverlay.leftInPixels = 400;
 			this.animationManager.slideFromDirection(this.bracketOverlay, 'left', 'in', 400, Motion.F.base);
 		} else {

@@ -74,6 +74,12 @@ export class SceneTransition {
 		this.resetPositions();
 	}
 
+	async play(duration: number = 100): Promise<void> {
+		await this.show();
+		await new Promise(resolve => setTimeout(resolve, duration));
+		await this.hide();
+	}
+
 	private resetPositions(): void {
 		const { width } = this.adt.getSize();
 		

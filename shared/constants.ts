@@ -82,6 +82,7 @@ export enum PowerupType {
 	DOUBLE_POINTS,
 	RESET_RALLY,
 	CURVE_BALL,
+	TRIPLE_SHOT,
 }
 
 export enum PowerupState {

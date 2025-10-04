@@ -1,6 +1,7 @@
 import { ParticleSystem, Texture, Color4, Vector3, Scene} from "@babylonjs/core";
 import { Animation} from "@babylonjs/core/Animations/animation";
 import { AdvancedDynamicTexture, Image} from "@babylonjs/gui";
+import { Z_INDEX } from "../gui/GuiStyle";
 
 interface FireworkDetails {
 	bursts: number;
@@ -226,7 +227,7 @@ export interface SparkleDetails {
 
 export const PARTIAL_GUI_SPARKLES: SparkleDetails = {
 	asset: "assets/textures/particle/flare_transparent.png",
-	count: 48,
+	count: 80,
 	duration: 3000,
 	size: { min: 5, max: 40 },
 	colors: [
@@ -242,7 +243,7 @@ export const PARTIAL_GUI_SPARKLES: SparkleDetails = {
 
 export const PARTIAL_GUI_SPARKLES_LOSER: SparkleDetails = {
 	asset: "assets/textures/particle/flare_red.png",
-	count: 32,
+	count: 60,
 	duration: 2000,
 	size: { min: 3, max: 25 },
 	colors: [
@@ -280,7 +281,7 @@ function createSparkleElement(config: SparkleDetails, winner: boolean): Image {
 	sparkle.scaleX = 0;
 	sparkle.scaleY = 0;
 
-	sparkle.zIndex = Math.floor(randomInRange(7, 9));
+	sparkle.zIndex = Math.floor(randomInRange(Z_INDEX.ENDGAME, Z_INDEX.MODAL - 1));
 
 	return sparkle;
 }
@@ -311,9 +312,8 @@ function animateSparkle(sparkle: Image, animationManager: any, delay: number, du
 						sparkle.dispose();
 					});
 				} else {
-					// Loser sparkles fall faster and start falling immediately
-					const fallDistance = 300 + Math.random() * 200; // Increased fall distance
-					const fallDuration = 40 + Math.random() * 20; // Faster fall
+					const fallDistance = 300 + Math.random() * 200;
+					const fallDuration = 40 + Math.random() * 20;
 					
 					sparkle.animations = [
 						animationManager.createFloat("alpha", 1, 0, fallDuration, false, animationManager.Motion?.ease.sine()),
@@ -326,7 +326,7 @@ function animateSparkle(sparkle: Image, animationManager: any, delay: number, du
 						sparkle.dispose();
 					});
 				}
-			}, Math.max(0, duration - (winner ? 500 : 300))); // Shorter delay for loser sparkles
+			}, Math.max(0, duration - (winner ? 500 : 300)));
 		});
 	}, delay);
 }
@@ -340,8 +340,6 @@ export function spawnGUISparkles(
 	for (let i = 0; i < config.count; i++) {
 		const sparkle = createSparkleElement(config, winner);
 		advancedTexture.addControl(sparkle);
-		
-		// Stagger the sparkles
 		const delay = Math.random() * (winner ? 800 : 100);
 		animateSparkle(sparkle, animationManager, delay, config.duration, winner);
 	}

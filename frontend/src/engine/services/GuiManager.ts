@@ -23,7 +23,6 @@ export class GUIManager {
 	private isInitialized: boolean = false;
 	private isTournament: boolean = false;
 	private isLastMatch: boolean = false;
-	private pauseVisible: boolean = false;
 	countdown!: Countdown;
 	matchTree!: MatchTree;
 	hud!: Hud;
@@ -38,7 +37,7 @@ export class GUIManager {
 			this.adt = AdvancedDynamicTexture.CreateFullscreenUI("UI", true, this.scene);
 			this.adt!.layer!.layerMask = 0x20000000;
 			this.isTournament = config.isTournament;
-			this.countdown = new Countdown(this.adt, this.animationManager);
+			this.countdown = new Countdown(this.adt, this.animationManager, audioManager);
 			this.matchTree = new MatchTree(this.adt, this.animationManager);
 			this.hud = new Hud(this.adt, this.animationManager,config);
 			this.endGame = new EndGame(this.adt, this.animationManager);
@@ -62,30 +61,20 @@ export class GUIManager {
 		}
 	}
 
-	setPauseVisible(visible: boolean): void {
+	setPauseVisible(visible: boolean, isSpectator: boolean): void {
 		if (!this.isReady || !this.animationManager) return;
 
-		this.pause.show(visible);
-		if (this.isTournament)
+		this.pause.show(visible, isSpectator);
+		if (this.isTournament && !isSpectator)
 			this.matchTree.show(visible);
-	}
-
-	async animateBackground(show: boolean): Promise<void> {
-		if (!this.isReady) return;
-		if (show) {
-			this.hud.show(false);
-			await this.endGame.fadeBackground(true);
-		} else {
-			await this.endGame.fadeBackground(false);
-			this.hud.show(true);
-		}
 	}
 
 	async showTournamentMatchWinner(winner: string, waitForSpace: boolean): Promise<void> {
 		if (!this.isReady || this.isLastMatch) return;
 		
-		await this.animateBackground(true);
-		this.hud.showPowerUps(false);
+		this.hud.show(false);
+		// this.hud.showPowerUps(false);
+		await this.endGame.fadeBackground(true);
 		await this.endGame.showPartialWinner(winner, waitForSpace);
 		await this.endGame.hidePartial();
 	}
@@ -93,15 +82,10 @@ export class GUIManager {
 	async showTournamentMatchLoser(): Promise<void> {
 		if (!this.isReady || this.isLastMatch) return;
 		
-		await this.animateBackground(true);
-		this.hud.showPowerUps(false);
+		this.hud.show(false);
+		// this.hud.showPowerUps(false);
+		await this.endGame.fadeBackground(true);
 		await this.endGame.showPartialLoser();
-		// this.endGame.startSpectatorCountdown();
-
-
-		// await this.endGame.showSpectatorPrompt();
-		// await this.endGame.waitForContinue(2000, false);
-		// await this.endGame.hidePartial();
 	}
 
 	
@@ -109,7 +93,7 @@ export class GUIManager {
 	async showWinner(winner: string): Promise<void> {
 		if (!this.isReady) return;
 		this.hud.show(false);
-		this.hud.showPowerUps(false);
+		// this.hud.showPowerUps(false);
 		await this.endGame.showFinalWinner(winner);
 		this.hud.show(true);
 	}
@@ -152,15 +136,6 @@ export class GUIManager {
 	
 	isReady(): boolean {
 		return this.isInitialized;
-	}
-
-	isPauseMenuVisible(): boolean {
-		return this.pauseVisible;
-	}
-
-	togglePauseMenu(): void {
-		this.pauseVisible = !this.pauseVisible;
-		this.setPauseVisible(this.pauseVisible)
 	}
 
 	dispose(): void {

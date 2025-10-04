@@ -59,7 +59,7 @@ export const french: Translation = {
     tournamentOnline: 'Tournoi en ligne',
     play: '/ jouer',
     loading: 'Chargement...',
-    waiting: 'Recherche d’adversaires...',
+    waiting: 'Recherche d’adversaires',
 	countPlayer: 'Joueurs rejoints: ',
     controls: 'Contrôles',
     easy: ' (Facile)',
@@ -81,7 +81,7 @@ export const french: Translation = {
     errorConfirmPassword: 'Veuillez confirmer mot de passe',
     errorPasswordsDoNotMatch: 'Les mots de passe ne correspondent pas',
 	spectator: '🎮 MODE SPECTATEUR',
-	spectatorInstruction: '← Match Précédent | → Match Suivant | Espace: Afficher/Masquer le Bracket | Y: Quitter',
+	spectatorInstruction: '← Match Précédent  |  → Match Suivant  |  Espace: Afficher/Masquer le Bracket  |  Y: Quitter',
 	spectatorQuestion: 'Veux-tu regarder le reste du tournoi ? Appuie sur O, ou appuie sur N pour quitter',
 
     pauseControlsTitle: '🎮 CONTRÔLES',

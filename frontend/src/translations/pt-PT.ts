@@ -59,7 +59,7 @@ export const portuguese: Translation = {
     tournamentOnline: 'Torneio Online',
     play: '/ jogar',
     loading: 'Carregando...',
-    waiting: 'Procurando adversários...',
+    waiting: 'Procurando adversários',
 	countPlayer: 'Jogadores conectados: ',
     controls: 'Controles',
     easy: ' (Fácil)',
@@ -81,7 +81,7 @@ export const portuguese: Translation = {
     errorConfirmPassword: 'Por favor, confirme senha',
     errorPasswordsDoNotMatch: 'As senhas não coincidem',
 	spectator: '🎮 MODO ESPECTADOR',
-	spectatorInstruction: '← Partida Anterior | → Próxima Partida | Espaço: Mostrar/Ocultar Chave | Y: Sair',
+	spectatorInstruction: '← Partida Anterior  |  → Próxima Partida  |  Espaço: Mostrar/Ocultar Chave  |  Y: Sair',
 	spectatorQuestion: 'Quer assistir ao resto do torneio? Pressione S, ou pressione N para sair.',
 
     pauseControlsTitle: '🎮 CONTROLES',

@@ -89,13 +89,14 @@ export class Lobby {
 	private startDots(): void {
 		if (!this.subtitle) return;
 		this.stopDots();
-		const base = this.subtitle.text?.replace(/\.*$/, "") || "";
+		const base = this.subtitle.text + "   ";
 		let step = 0;
 		this.dotsTimer = window.setInterval(() => {
-			step = (step + 1) % 4; // 0..3
-			this.subtitle!.text = base + ".".repeat(step);
+			step = (step + 1) % 4;
+			const dotPatterns = ["   ", ".  ", ".. ", "..."];
+			this.subtitle!.text = base + dotPatterns[step];
 		}, 500);
-		}
+	}
 
 	private stopDots(): void {
 		if (this.dotsTimer) {

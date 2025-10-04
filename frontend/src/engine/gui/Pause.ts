@@ -8,6 +8,7 @@ import { GAME_CONFIG } from "../../shared/gameConfig.js";
 
 export class Pause {
 	private pauseOverlay!: Rectangle;
+	private spectatorPauseBox!: Rectangle;
 	private muteIcon?: Image;
 
 	constructor(private adt: AdvancedDynamicTexture, private animationManager: AnimationManager, config: GameConfig, private onToggleMute?: () => boolean) {
@@ -36,7 +37,7 @@ export class Pause {
 		this.buildInstructions(gameInstructions, config);
 
 		const exitStack = createStackPanel("exitStack", PAUSE_MENU_STYLES.instructionsStack);
-        exitStack.paddingBottom = "0px"
+		exitStack.paddingBottom = "0px"
 		pauseGrid.addControl(exitStack, 2, 0);
 
 		const pauseInstruction = createTextBlock("pauseInstruction", PAUSE_MENU_STYLES.pauseInstruction, t.exitGame);
@@ -55,6 +56,12 @@ export class Pause {
 			}
 		});
 		pauseGrid.addControl(this.muteIcon, 3, 0);
+
+		this.spectatorPauseBox = createRect("spectatorPauseBox", PAUSE_MENU_STYLES.spectatorPauseBox);
+		this.adt.addControl(this.spectatorPauseBox);
+		
+		const spectatorPauseText = createTextBlock("spectatorPauseText", PAUSE_MENU_STYLES.spectatorPauseText, t.gamePaused);
+		this.spectatorPauseBox.addControl(spectatorPauseText);
 	}
 
 	private async animateMuteIcon(): Promise<void> {
@@ -122,16 +129,31 @@ export class Pause {
 		}
 	}
 
-	show(show: boolean): void {
+	show(show: boolean, isSpectator: boolean = false): void {
 		if (show) {
-			if(!this.pauseOverlay.isVisible) {
-				this.pauseOverlay.isVisible = true;
-				this.pauseOverlay.alpha = 0;
-				this.pauseOverlay.thickness = 0;
+			if (isSpectator) {
+				if (!this.spectatorPauseBox.isVisible) {
+					this.spectatorPauseBox.isVisible = true;
+					this.spectatorPauseBox.alpha = 0;
+					this.animationManager.fade(this.spectatorPauseBox, 'in', Motion.F.base);
+				}
+			} else {
+				if(!this.pauseOverlay.isVisible) {
+					this.pauseOverlay.isVisible = true;
+					this.pauseOverlay.alpha = 0;
+					this.pauseOverlay.thickness = 0;
 
-				this.animationManager.fadeInWithBorder(this.pauseOverlay, Motion.F.base, 0, 4);
+					this.animationManager.fadeInWithBorder(this.pauseOverlay, Motion.F.base, 0, 4);
+				}
 			}
 		} else {
+			if (this.spectatorPauseBox.isVisible) {
+				this.animationManager.fade(this.spectatorPauseBox, 'out', Motion.F.fast).then(() => {
+					this.spectatorPauseBox.isVisible = false;
+					this.spectatorPauseBox.alpha = 0;
+				});
+			}
+			
 			if (this.pauseOverlay.isVisible) {
 				this.animationManager.fadeOutWithBorder(this.pauseOverlay, Motion.F.fast, 4, 0).then(() => {
 					this.pauseOverlay.isVisible = false;
@@ -144,11 +166,5 @@ export class Pause {
 
 	dispose(): void {
 		this.muteIcon?.onPointerClickObservable.clear(); // TODO
-		// this.muteIcon?.dispose()
-		// this.pauseHint.dispose();
-		// this.pauseInstruction.dispose();
-		// this.pauseTitle.dispose();
-		// pauseGrid.dispose();
-		// this.pauseOverlay.dispose();
 	}
 }

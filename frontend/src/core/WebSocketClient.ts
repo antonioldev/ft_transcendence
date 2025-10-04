@@ -1,5 +1,5 @@
 import { Logger } from '../utils/LogManager.js';
-import { ConnectionStatus, MessageType, GameMode, Direction, WebSocketEvent, PowerupType } from '../shared/constants.js'
+import { ConnectionStatus, MessageType, GameMode, Direction, WebSocketEvent, PowerupType, AppState } from '../shared/constants.js'
 import { ClientMessage, ServerMessage, PlayerInfo, RegisterUser, LoginUser } from '../shared/types.js'
 import { AppStateManager } from './AppStateManager.js';
 
@@ -74,7 +74,7 @@ export class WebSocketClient {
         this.ws.onclose = () => {
             clearTimeout(timeout);
             Logger.warn('Disconnected from game server', 'WebSocketClient');
-            // TODO back to main menu
+            AppStateManager.getInstance().navigateTo(AppState.MAIN_MENU);
             this.connectionStatus = ConnectionStatus.FAILED;
             this.notifyStatus(ConnectionStatus.FAILED);
         };
@@ -82,6 +82,7 @@ export class WebSocketClient {
         this.ws.onerror = (error) => {
             clearTimeout(timeout);
             Logger.error('WebSocket error', 'WebSocketClient', error);
+            AppStateManager.getInstance().navigateTo(AppState.MAIN_MENU);
             this.connectionStatus = ConnectionStatus.FAILED;
             this.notifyStatus(ConnectionStatus.FAILED);
         };

@@ -48,8 +48,8 @@ export const Z_INDEX = {
     ENDGAME: 15, //Partial winner, late winner
     MODAL: 20,  // pause
     BRACKET: 25,
-    LOBBY: 30,
-    CURTAIN: 35
+    LOBBY: 35,
+    CURTAIN: 30
 
 } as const;
 
@@ -75,7 +75,7 @@ export const SPECTATOR_STYLE = {
     spectatorText: {
         fontFamily: FONT_FAMILY,
         color: COLORS.WHITE,
-        fontSize: 18,
+        fontSize: 20,
         fontWeight: "bold",
         textHorizontalAlignment: H_LEFT,
         textVerticalAlignment: V_CENTER,
@@ -85,10 +85,10 @@ export const SPECTATOR_STYLE = {
     spectatorControls: {
         fontFamily: FONT_FAMILY,
         color: COLORS.SPECTATOR_YELLOW,
-        fontSize: 14,
+        fontSize: 18,
         textHorizontalAlignment: H_RIGHT,
         textVerticalAlignment: V_CENTER,
-        width: "600px"
+        width: "1000px"
     },
     bannerContent: {
         width: "100%",
@@ -350,63 +350,104 @@ export const PAUSE_MENU_STYLES = {
         textHorizontalAlignment: H_CENTER,
         height: "60px",
         textWrapping: true
+    },
+    spectatorPauseBox: {
+        widthInPixels: 400,
+        heightInPixels: 100,
+        background: COLORS.TRANSPARENT_BLACK_90,
+        thickness: 3,
+        color: COLORS.SPECTATOR_RED,
+        cornerRadius: 12,
+        horizontalAlignment: H_CENTER,
+        verticalAlignment: V_CENTER,
+        zIndex: Z_INDEX.MODAL -1,
+        isVisible: false,
+        shadowBlur: 20,
+        shadowColor: COLORS.SPECTATOR_RED
+    },
+    
+    spectatorPauseText: {
+        fontFamily: FONT_FAMILY,
+        color: COLORS.WHITE,
+        fontSize: 36,
+        fontWeight: "bold",
+        textHorizontalAlignment: H_CENTER,
+        textVerticalAlignment: V_CENTER,
+        outlineWidth: 2,
+        outlineColor: COLORS.BLACK
     }
 } as const;
 export const LOBBY_STYLES = {
-  overlay: {
-    width: "100%",
-    height: "100%",
-    color: COLORS.WHITE,
-    background: COLORS.TRANSPARENT_BLACK_90,
-    horizontalAlignment: H_CENTER,
-    verticalAlignment: V_CENTER,
-    zIndex: Z_INDEX.LOBBY,
-    isVisible: false
-  },
-  title: {
-    fontSize: 36,
-    color: "white",
-    height: "40px",
-    fontWeight: "bold",
-    shadowOffsetX: 1,
-    shadowOffsetY: 1,
-    shadowBlur: 4,
-    shadowColor: COLORS.GOLD_SHADOW,
-    textHorizontalAlignment: H_CENTER,
-  },
-  subtitle: {
-    fontSize: 32,
-    color: "#AAB",
-    fontWeight: "bold",
-    width: "30%",
-    textHorizontalAlignment: H_LEFT,
-  },
-  count: {
-    text: "",
-    fontSize: 26,
-    color: "#8A8",
-    textHorizontalAlignment: H_CENTER,
-  },
-  lobbyList: {
-    isVertical: true,
-    width: "100%",
-    spacing: 6,
-    verticalAlignment: V_TOP,
-    adaptHeightToChildren: true
-  },
-  rowRect: {
-    height: "34px",
-    width: "100%",
-    thickness: 0,
-    paddingLeft: "10px",
-  },
-  rowText: {
-    width: "40%",
-    fontSize: 20,
-    color: "white",
-    alpha: 0,
-    textHorizontalAlignment: H_RIGHT
-  },
+    overlay: {
+        width: "50%",
+        height: "80%",
+        color: COLORS.WHITE,
+        background: "rgba(255, 255, 255, 0.09)",
+        horizontalAlignment: H_CENTER,
+        verticalAlignment: V_CENTER,
+        zIndex: Z_INDEX.LOBBY,
+        isVisible: false,
+        thickness: 2,
+        cornerRadius: 12
+    },
+    
+    title: {
+        fontFamily: FONT_FAMILY,
+        fontSize: 42,
+        color: '#EB5B00',
+        height: "60px",
+        fontWeight: "bold",
+        textHorizontalAlignment: H_CENTER,
+        outlineWidth: 2,
+        outlineColor: COLORS.WHITE
+    },
+    
+    subtitle: {
+        fontFamily: FONT_FAMILY,
+        fontSize: 24,
+        color: COLORS.LIGHT_GREEN,
+        fontWeight: "bold",
+        height: "40px",
+        textHorizontalAlignment: H_CENTER,
+    },
+    
+    count: {
+        fontFamily: FONT_FAMILY,
+        fontSize: 20,
+        color: COLORS.WHITE,
+        height: "30px",
+        textHorizontalAlignment: H_CENTER,
+    },
+    
+    lobbyList: {
+        isVertical: true,
+        width: "85%",
+        spacing: 6,
+        verticalAlignment: V_CENTER,
+        horizontalAlignment: H_CENTER,
+        adaptHeightToChildren: true
+    },
+    
+    rowRect: {
+        height: "38px",
+        width: "100%",
+        thickness: 1,
+        cornerRadius: 6,
+        color: COLORS.WHITE,
+    },
+    
+    rowText: {
+        fontFamily: FONT_FAMILY,
+        width: "90%",
+        fontSize: 22,
+        // color: COLORS.WHITE,
+        alpha: 0,
+        textHorizontalAlignment: H_CENTER,
+        textVerticalAlignment: V_CENTER,
+        outlineWidth: 1,
+        outlineColor: COLORS.BLACK,
+        textWrapping: true
+    },
 };
 export const COUNTDOWN_STYLES = {
     countdownContainer: {
@@ -620,9 +661,10 @@ export const BRACKET_STYLES = {
         width: "560px",
         height: "650px",
         top: "40px",
+        right: "20px",
         background: COLORS.TRANSPARENT_BLACK_98,
         horizontalAlignment: H_RIGHT,
-        verticalAlignment: V_BOTTOM,
+        verticalAlignment: V_CENTER,
         cornerRadius: 12,
         isVisible: false,
         isPointerBlocker: true,
