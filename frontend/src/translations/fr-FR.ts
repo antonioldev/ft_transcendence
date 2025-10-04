@@ -69,6 +69,7 @@ export const french: Translation = {
     winner: 'VAINQUEUR',
     continue: 'Appuyez sur ESPACE pour continuer',
 	tournamentTitle: 'Classement du Tournoi',
+    spectatorWaitingmessage: 'Recherche de matchs en cours',
 	escToClose: 'Appuyez sur ESC pour fermer',
     
     // Validation error messages

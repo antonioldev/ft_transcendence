@@ -69,6 +69,7 @@ export const portuguese: Translation = {
     winner: 'VENCEDOR',
     continue: 'Pressione ESPAÇO para continuar',
 	tournamentTitle: 'Classificação do Torneio de Pong',
+    spectatorWaitingmessage: 'Procurando partidas em andamento',
 	escToClose: 'Pressione ESC para fechar',
     
     // Validation error messages

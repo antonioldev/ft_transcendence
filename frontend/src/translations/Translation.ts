@@ -72,6 +72,7 @@ export interface Translation {
     winner: string;
     continue: string;
 	tournamentTitle: string;
+    spectatorWaitingmessage: string;
 	escToClose: string;
     
     // Validation error messages

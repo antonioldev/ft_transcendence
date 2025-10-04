@@ -69,6 +69,7 @@ export const russian: Translation = {
     winner: 'ПОБЕДИТЕЛЬ МАТЧА',
     continue: 'Нажмите ПРОБЕЛ, чтобы продолжить',
 	tournamentTitle: 'Турнирное Дерево',
+    spectatorWaitingmessage: 'Поиск активных матчей',
 	escToClose: 'Нажмите ESC для закрытия',
     
     // Validation error messages

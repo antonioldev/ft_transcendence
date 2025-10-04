@@ -69,6 +69,7 @@ export const italian: Translation = {
     winner: 'VINCITORE',
     continue: 'Premi SPAZIO per continuare',
 	tournamentTitle: 'Classifica del Torneo',
+    spectatorWaitingmessage: 'Cercando partite in corso',
 	escToClose: 'Premere ESC per chiudere',
     
     // Validation error messages

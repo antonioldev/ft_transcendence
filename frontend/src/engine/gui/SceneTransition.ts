@@ -1,6 +1,7 @@
 import { AdvancedDynamicTexture, Rectangle, TextBlock } from "@babylonjs/gui";
 import { AnimationManager, Motion } from "../services/AnimationManager.js";
 import { createRect, createTextBlock, CURTAIN_STYLES } from "./GuiStyle.js";
+import { getCurrentTranslation } from "../../translations/translations.js";
 
 export class SceneTransition {
 	private leftPaddle!: Rectangle;
@@ -9,12 +10,13 @@ export class SceneTransition {
 	private rightBackground!: Rectangle;
 	private isActive: boolean = false;
 	private spectatorWaitingRect!: Rectangle;
-	private spectatorWaitingText!: TextBlock;
-	
-	
+
 	constructor(private adt: AdvancedDynamicTexture, private animationManager: AnimationManager) {
 		const { width } = this.adt.getSize();
 		
+
+		const t = getCurrentTranslation();
+
 		this.leftBackground = createRect("leftBackground", CURTAIN_STYLES.leftBackground);
 		this.rightBackground = createRect("rightBackground", CURTAIN_STYLES.rightBackground);
 
@@ -32,8 +34,8 @@ export class SceneTransition {
 		this.rightPaddle.leftInPixels = width;
 
 		this.spectatorWaitingRect = createRect("spectatorWaitingBox", CURTAIN_STYLES.spectatorWaitingBox);
-		this.spectatorWaitingText = createTextBlock("spectatorWaitingText", CURTAIN_STYLES.spectatorWaitingText, "Waiting for match to watch");
-		this.spectatorWaitingRect.addControl(this.spectatorWaitingText);
+		const spectatorWaitingText = createTextBlock("spectatorWaitingText", CURTAIN_STYLES.spectatorWaitingText, t.spectatorWaitingmessage);
+		this.spectatorWaitingRect.addControl(spectatorWaitingText);
 		this.adt.addControl(this.spectatorWaitingRect);
 	}
 
