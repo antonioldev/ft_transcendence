@@ -9,18 +9,24 @@ export const V_BOTTOM = Control.VERTICAL_ALIGNMENT_BOTTOM;
 const FONT_FAMILY = 'Poppins, Tiny5, sans-serif';
 
 export const COLORS = {
-    WHITE: "rgba(255, 255, 255, 1)",
     BLACK: "rgba(0, 0, 0, 1)",
-    TRANSPARENT_BLACK: "rgba(0, 0, 0, 0.66)",
+    TRANSPARENT_BLACK_DARK: "rgba(0, 0, 0, 0.9)",
+    TRANSPARENT_BLACK: "rgba(0, 0, 0, 0.6)",
+
+    WHITE: "rgba(255, 255, 255, 1)",
     TRANSPARENT_WHITE_50: "rgba(255, 255, 255, 0.5)",
+    TRANSPARENT_WHITE_15: "rgba(255, 255, 255, 0.15)",
+    TRANSPARENT: "transparent",
+
     DARK_BLUE: "rgba(20, 61, 96, 1)",
-    LIGHT_GREEN: "rgba(160, 200, 120, 1)",
-    ORANGE: "rgba(235, 91, 0, 1)",
+    
+    
     GOLD: "rgba(255, 215, 0, 1)",
     GOLD_SHADOW: "rgba(255, 217, 0, 0.80)",
-    TRANSPARENT: "transparent",
-    WINNER_GREEN: "#22C55E",
-    LOSER_GRAY: "#999999",
+    GREEN: "#22C55E",
+    LIGHT_GREEN: "rgba(160, 200, 120, 1)",
+    GRAY: "#999999",
+    ORANGE: "rgba(235, 91, 0, 1)",
     SPECTATOR_RED: "rgba(255, 0, 0, 0.3)",
 
 } as const;
@@ -236,7 +242,7 @@ export const PAUSE_MENU_STYLES = {
     pauseOverlay: {
         width: "100%",
         height: "100%",
-        background: COLORS.TRANSPARENT_BLACK,
+        background: COLORS.TRANSPARENT_BLACK_DARK,
         verticalAlignment: V_CENTER,
         zIndex: Z_INDEX.MODAL,
         color: COLORS.WHITE,
@@ -368,7 +374,7 @@ export const LOBBY_STYLES = {
         width: "50%",
         height: "80%",
         color: COLORS.WHITE,
-        background: COLORS.WHITE,
+        background: COLORS.TRANSPARENT_WHITE_15,
         horizontalAlignment: H_CENTER,
         verticalAlignment: V_CENTER,
         zIndex: Z_INDEX.LOBBY,
@@ -705,7 +711,7 @@ export const BRACKET_STYLES = {
     winnerCell: {
         background: COLORS.LIGHT_GREEN,
         thickness: 2,
-        color: COLORS.WINNER_GREEN
+        color: COLORS.GREEN
     },
     
     winnerText: {
@@ -728,7 +734,7 @@ export const BRACKET_STYLES = {
     
     loserText: {
         alpha: 0.6,
-        color: COLORS.LOSER_GRAY
+        color: COLORS.GRAY
     },
 
     tabsRoot: {
@@ -758,7 +764,7 @@ export const BRACKET_STYLES = {
     tabHeaderRect: {
         width: "100%",
         heightInPixels: 30,
-        background: COLORS.LOSER_GRAY,
+        background: COLORS.GRAY,
         thickness: 0
     },
 
@@ -775,7 +781,7 @@ export const BRACKET_STYLES = {
     tabButton: {
         height: "85%",
         thickness: 0,
-        background: COLORS.LOSER_GRAY,
+        background: COLORS.GRAY,
         isPointerBlocker: true,
         cornerRadiusW: 8,
         cornerRadiusZ: 8,
@@ -785,7 +791,7 @@ export const BRACKET_STYLES = {
     tabButtonActive: {
         height: "100%",
         thickness: 0,
-        background: COLORS.LOSER_GRAY,
+        background: COLORS.GRAY,
         isPointerBlocker: true,
         cornerRadiusW: 8,
         cornerRadiusZ: 8,
@@ -861,7 +867,7 @@ export const BRACKET_STYLES = {
         widthInPixels: 70,
         height: "100%",
         text: "← vs →",
-        color: COLORS.LOSER_GRAY,
+        color: COLORS.GRAY,
         fontSize: 16,
         fontWeight: "bold",
         textHorizontalAlignment: Control.HORIZONTAL_ALIGNMENT_CENTER,

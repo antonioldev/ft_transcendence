@@ -1,6 +1,6 @@
 import { AdvancedDynamicTexture, Rectangle, TextBlock, Grid, StackPanel, Image } from "@babylonjs/gui";
 import { AnimationManager, Motion } from "../services/AnimationManager.js";
-import { H_RIGHT, BRACKET_STYLES, applyStyles,createImage, createRect, createTextBlock, createGrid, createStackPanel } from "./GuiStyle.js";
+import { BRACKET_STYLES, applyStyles,createImage, createRect, createTextBlock, createGrid, createStackPanel } from "./GuiStyle.js";
 import { getCurrentTranslation } from "../../translations/translations.js";
 export class MatchTree {
 	private playerTotal: number = 0;

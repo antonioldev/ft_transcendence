@@ -30,6 +30,7 @@ export class Game {
 	private gameObjects: GameObjects | null = null;
 	private gameLoopObserver: any = null;
 	private isSpectator: boolean = false;
+	private isGameEnded: boolean = false;
 	private players: Map<PlayerSide, PlayerState> = new Map([
 			[PlayerSide.LEFT, { name: "", isControlled: false, keyboardProfile: undefined,
 				size: GAME_CONFIG.paddleWidth, score: 0, powerUpsAssigned: false, powerUps: [], inverted: false,}],
@@ -93,7 +94,7 @@ export class Game {
 		this.services.render.startRendering();
 		this.registerCallbacks();
 		this.isInitialized = true;
-		if (this.config.isTournament)
+		if (this.config.isRemoteMultiplayer)
 			webSocketClient.requestLobby();
 		webSocketClient.sendPlayerReady();
 		uiManager.setLoadingScreenVisible(false);
@@ -161,6 +162,7 @@ export class Game {
 			const playerRight = this.players.get(PlayerSide.RIGHT)?.name;
 
 			if (countdown === GAME_CONFIG.startDelay - 1) {
+				this.services?.audio?.restoreMusicVolume();
 				const controlledSides = this.getControlledSides();
 				await Promise.all([
 					this.services?.gui.countdown.showPlayersName(playerLeft!, playerRight!),
@@ -193,6 +195,7 @@ export class Game {
 	// Handle server ending the game
 	private async onServerEndedGame(winner: string, loser: string): Promise<void> {
 		if (!this.isInitialized || !this.config.isTournament) return;
+		this.services?.audio?.lowerMusicVolume();
 		this.services?.gui?.setPauseVisible(false, false);
 		const controlledSides = this.getControlledSides();
 
@@ -207,14 +210,13 @@ export class Game {
 			this.services?.gui.hud.setSpectatorMode();
 			webSocketClient.sendSpectatorReady();
 			this.isSpectator = true;
+			return;
 		}
-		else {
-			const waitForSpace = controlledSides.length !== 0 && this.config.gameMode !== GameMode.TOURNAMENT_REMOTE;
-			await this.services?.gui?.showTournamentMatchWinner(winner, waitForSpace);
-			this.resetForNextMatch();
-			webSocketClient.sendPlayerReady();
-			this.services?.audio?.stopGameMusic();
-		}
+
+		const waitForSpace = controlledSides.length !== 0 && this.config.gameMode !== GameMode.TOURNAMENT_REMOTE;
+		await this.services?.gui?.showTournamentMatchWinner(winner, waitForSpace);
+		this.resetForNextMatch();
+		webSocketClient.sendPlayerReady();
 	}
 
 	private async onServerEndedSession(winner: string): Promise<void> {
@@ -337,8 +339,11 @@ export class Game {
 			case GameState.RUNNING:
 				this.services?.gui?.setPauseVisible(false, this.isSpectator);
 				this.services?.audio?.resumeGameMusic();
+				this.isGameEnded = false;
 				break;
 			case GameState.ENDED:
+				if (this.isGameEnded) return;
+				this.isGameEnded = true;
 				const winner = state.winner;
 				const loser = state.loser;
 				if (winner && loser)

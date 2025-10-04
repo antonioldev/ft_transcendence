@@ -22,7 +22,9 @@ export class AudioManager {
 		paddle: 0.6,
 		score: 0.7,
 		powerup: 0.7,
-		entrance: 1.0
+		entrance: 1.0,
+		winner: 1.0,
+		loser: 1.0
 	};
 
 	// Sound effects
@@ -31,6 +33,8 @@ export class AudioManager {
 	private scoreSound: Sound | null = null;
 	private powerup: Sound | null = null;
 	private entrance: Sound | null = null;
+	private winner: Sound | null = null;
+	private loser: Sound | null = null;
 
 
 	constructor(private scene: Scene) {
@@ -130,6 +134,32 @@ export class AudioManager {
 				}
 			);
 
+			this.winner = new Sound(
+				"winner",
+				"/assets/audio/winner.mp3",
+				this.scene,
+				null,
+				{
+					loop: false,
+					autoplay: false,
+					volume: this.volumes.winner,
+					playbackRate: this.basePlaybackRate
+				}
+			);
+
+			this.loser = new Sound(
+				"loser",
+				"/assets/audio/loser.mp3",
+				this.scene,
+				null,
+				{
+					loop: false,
+					autoplay: false,
+					volume: this.volumes.loser,
+					playbackRate: this.basePlaybackRate
+				}
+			);
+
 			this.isInitialized = true;
 		} catch (error) {
 			Logger.errorAndThrow('Error initializing Babylon audio', 'BabylonAudioManager', error);
@@ -154,6 +184,14 @@ export class AudioManager {
 
 	stopGameMusic(): void {
 		this.gameMusic?.stop();
+	}
+
+	lowerMusicVolume(factor: number = 0.5): void {
+		this.gameMusic?.setVolume(this.volumes.music * factor);
+	}
+
+	restoreMusicVolume(): void {
+		this.gameMusic?.setVolume(this.volumes.music);
 	}
 
 	pauseGameMusic(): void {
@@ -206,6 +244,14 @@ export class AudioManager {
 		this.entrance?.play();
 	}
 
+	playWinner(): void {
+		this.winner?.play();
+	}
+
+	playLoser(): void {
+		this.loser?.play();
+	}
+
 	isMuted(): boolean {
 		return this.muted;
 	}
@@ -229,8 +275,11 @@ export class AudioManager {
 		this.countdownSound?.setVolume(base * this.volumes.countdown);
 		this.paddleHitSound?.setVolume(base * this.volumes.paddle);
 		this.scoreSound?.setVolume(base * this.volumes.score);
-		this.powerup?.setVolume(base * this.volumes.powerup)
-		this.entrance?.setVolume(base * this.volumes.entrance)
+		this.powerup?.setVolume(base * this.volumes.powerup);
+		this.entrance?.setVolume(base * this.volumes.entrance);
+		this.winner?.setVolume(base * this.volumes.winner)
+		this.loser?.setVolume(base * this.volumes.loser)
+
 	}
 
 	dispose(): void {
@@ -254,6 +303,12 @@ export class AudioManager {
 			this.powerup = null;
 
 			this.entrance?.dispose();
+			this.entrance = null;
+
+			this.winner?.dispose();
+			this.entrance = null;
+
+			this.loser?.dispose();
 			this.entrance = null;
 
 			this.isInitialized = false;

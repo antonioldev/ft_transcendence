@@ -32,7 +32,7 @@ export class GUIManager {
 	curtain!: SceneTransition;
 
 
-	constructor(private scene: Scene, config: GameConfig, private animationManager: AnimationManager, audioManager: AudioManager) {
+	constructor(private scene: Scene, config: GameConfig, private animationManager: AnimationManager, private audioManager: AudioManager) {
 		try {
 			this.adt = AdvancedDynamicTexture.CreateFullscreenUI("UI", true, this.scene);
 			this.adt!.layer!.layerMask = 0x20000000;
@@ -85,6 +85,7 @@ export class GUIManager {
 		this.hud.show(false);
 		// this.hud.showPowerUps(false);
 		await this.endGame.fadeBackground(true);
+		this.audioManager.playLoser();
 		await this.endGame.showPartialLoser();
 	}
 
@@ -94,6 +95,7 @@ export class GUIManager {
 		if (!this.isReady) return;
 		this.hud.show(false);
 		// this.hud.showPowerUps(false);
+		this.audioManager.playWinner();
 		await this.endGame.showFinalWinner(winner);
 		this.hud.show(true);
 	}
