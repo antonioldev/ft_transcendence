@@ -66,7 +66,7 @@ export const english: Translation = {
     medium: ' (Medium)',
     hard: ' (Hard)',
     impossible: ' (Impossible)',
-    winner: 'Winner',
+    winner: 'WINNER',
     continue: 'Press SPACE to continue',
     tournamentTitle: 'Bracket',
 	escToClose: 'Press ESC to close',

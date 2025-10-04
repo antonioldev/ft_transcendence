@@ -66,7 +66,7 @@ export const italian: Translation = {
     medium: ' (Medio)',
     hard: ' (Difficile)',
     impossible: ' (Impossibile)',
-    winner: 'Vincitore della partita',
+    winner: 'VINCITORE',
     continue: 'Premi SPAZIO per continuare',
 	tournamentTitle: 'Classifica del Torneo',
 	escToClose: 'Premere ESC per chiudere',

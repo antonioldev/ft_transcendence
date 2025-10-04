@@ -66,7 +66,7 @@ export const portuguese: Translation = {
     medium: ' (Médio)',
     hard: ' (Difícil)',
     impossible: ' (Impossível)',
-    winner: 'Vencedor da partida',
+    winner: 'VENCEDOR',
     continue: 'Pressione ESPAÇO para continuar',
 	tournamentTitle: 'Classificação do Torneio de Pong',
 	escToClose: 'Pressione ESC para fechar',

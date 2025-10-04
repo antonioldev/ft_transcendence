@@ -66,7 +66,7 @@ export const russian: Translation = {
     medium: ' (Средний)',
     hard: ' (Сложный)',
     impossible: ' (Невозможный)',
-    winner: 'Победитель матча',
+    winner: 'ПОБЕДИТЕЛЬ МАТЧА',
     continue: 'Нажмите ПРОБЕЛ, чтобы продолжить',
 	tournamentTitle: 'Турнирное Дерево',
 	escToClose: 'Нажмите ESC для закрытия',
