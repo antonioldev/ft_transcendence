@@ -206,7 +206,7 @@ export class Game {
 			await this.services?.gui?.showTournamentMatchLoser();
 			await this.services?.input.waitForSpectatorChoice();
 			this.resetForNextMatch();
-			await this.services?.gui.curtain.show();
+			await this.services?.gui.curtain.show(showLoser);
 			this.services?.gui.hud.setSpectatorMode();
 			webSocketClient.sendSpectatorReady();
 			this.isSpectator = true;
@@ -327,8 +327,8 @@ export class Game {
 	private handleChangeServerState(state: GameStateData): void {
 		if (this.serverState === state.state) return;
 
-		if (this.isSpectator)
-			this.services?.gui.curtain.hide();
+		// if (this.isSpectator)
+		// 	this.services?.gui.curtain.hide();
 		this.serverState = state.state;
 
 		switch (this.serverState){

@@ -395,11 +395,12 @@ export const LOBBY_STYLES = {
     },
     
     subtitle: {
-        fontFamily: FONT_FAMILY,
+        fontFamily: "monospace",
         fontSize: 24,
         color: COLORS.LIGHT_GREEN,
         fontWeight: "bold",
         height: "40px",
+        width: "100%",
         textHorizontalAlignment: H_CENTER,
     },
     
@@ -922,6 +923,31 @@ export const CURTAIN_STYLES = {
         shadowBlur: 60,
         shadowColor: COLORS.WHITE,
         zIndex: Z_INDEX.CURTAIN + 1
+    },
+    spectatorWaitingBox: {
+        widthInPixels: 500,
+        heightInPixels: 120,
+        background: COLORS.TRANSPARENT_BLACK,
+        thickness: 2,
+        color: COLORS.SPECTATOR_RED,
+        cornerRadius: 12,
+        horizontalAlignment: H_CENTER,
+        verticalAlignment: V_CENTER,
+        zIndex: Z_INDEX.CURTAIN + 2,
+        isVisible: false,
+        shadowBlur: 20,
+        shadowColor: COLORS.SPECTATOR_RED
+    },
+    
+    spectatorWaitingText: {
+        fontFamily: "monospace",
+        color: COLORS.WHITE,
+        fontSize: 28,
+        fontWeight: "bold",
+        textHorizontalAlignment: H_CENTER,
+        textVerticalAlignment: V_CENTER,
+        outlineWidth: 2,
+        outlineColor: COLORS.BLACK
     }
 } as const;
 export function applyStyles(control: any, styles: any): void {

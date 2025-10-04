@@ -162,8 +162,6 @@ export class KeyboardManager {
 	}
 
 	private handlePauseMenuKeys(key: number): void {
-		// const isSpectators = !this.players.get(PlayerSide.LEFT)?.isControlled
-		// 				&& !this.players.get(PlayerSide.RIGHT)?.isControlled;
 		switch (key) {
 			case Keys.Y:
 				document.dispatchEvent(new CustomEvent('game:exitToMenu'));

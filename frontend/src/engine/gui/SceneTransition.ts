@@ -1,6 +1,6 @@
-import { AdvancedDynamicTexture, Rectangle } from "@babylonjs/gui";
+import { AdvancedDynamicTexture, Rectangle, TextBlock } from "@babylonjs/gui";
 import { AnimationManager, Motion } from "../services/AnimationManager.js";
-import { createRect, CURTAIN_STYLES } from "./GuiStyle.js";
+import { createRect, createTextBlock, CURTAIN_STYLES } from "./GuiStyle.js";
 
 export class SceneTransition {
 	private leftPaddle!: Rectangle;
@@ -8,6 +8,9 @@ export class SceneTransition {
 	private leftBackground!: Rectangle;
 	private rightBackground!: Rectangle;
 	private isActive: boolean = false;
+	private spectatorWaitingRect!: Rectangle;
+	private spectatorWaitingText!: TextBlock;
+	
 	
 	constructor(private adt: AdvancedDynamicTexture, private animationManager: AnimationManager) {
 		const { width } = this.adt.getSize();
@@ -27,9 +30,14 @@ export class SceneTransition {
 		this.rightBackground.leftInPixels = width;
 		this.leftPaddle.leftInPixels = -80;
 		this.rightPaddle.leftInPixels = width;
+
+		this.spectatorWaitingRect = createRect("spectatorWaitingBox", CURTAIN_STYLES.spectatorWaitingBox);
+		this.spectatorWaitingText = createTextBlock("spectatorWaitingText", CURTAIN_STYLES.spectatorWaitingText, "Waiting for match to watch");
+		this.spectatorWaitingRect.addControl(this.spectatorWaitingText);
+		this.adt.addControl(this.spectatorWaitingRect);
 	}
 
-	async show(): Promise<void> {
+	async show(isSpectator: boolean = false): Promise<void> {
 		this.isActive = true;
 
 		this.leftPaddle.isVisible = true;
@@ -50,6 +58,9 @@ export class SceneTransition {
 			this.animationManager.slideFromDirection(this.leftPaddle, 'right', 'in', width / 2 + 40, Motion.F.base),
 			this.animationManager.slideFromDirection(this.rightPaddle, 'left', 'in', width / 2 + 40, Motion.F.base)
 		]);
+
+		if(isSpectator)
+			this.spectatorWaitingRect.isVisible = true;
 	}
 
 	async hide(): Promise<void> {
@@ -65,7 +76,7 @@ export class SceneTransition {
 			this.animationManager.slideFromDirection(this.leftBackground, 'left', 'out', width / 2, Motion.F.fast),
 			this.animationManager.slideFromDirection(this.rightBackground, 'right', 'out', width / 2, Motion.F.fast)
 		]);
-		
+		this.spectatorWaitingRect.isVisible = false;
 		this.leftPaddle.isVisible = false;
 		this.rightPaddle.isVisible = false;
 		this.leftBackground.isVisible = false;
