@@ -71,13 +71,13 @@ export class WebSocketManager {
         socket.on('close', () => {
             console.log(`WebSocket closed for client ${client.username}:`);
             gameManager.removeClient(client);
-            // logout user from db
+            // this.handleLogoutUser(client);
         });
 
         socket.on('error', (error: any) => {
             console.error(`❌ WebSocket error for client ${client.username}:`, error);
             gameManager.removeClient(client);
-            // logout user from db
+            this.handleLogoutUser(client);
         });
     }
 
