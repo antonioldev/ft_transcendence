@@ -166,7 +166,7 @@ export class AnimationManager {
 	}
 
 	// Zoom in animation (scale from 0 to 1)
-	zoomIn(target: Control, frames = Motion.F.base): Promise<void> {
+	zoomIn(target: Control, frames = Motion.F.xFast): Promise<void> {
 		target.scaleX = 0;
 		target.scaleY = 0;
 		target.alpha = 0;

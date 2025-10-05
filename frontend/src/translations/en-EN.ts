@@ -59,19 +59,21 @@ export const english: Translation = {
     tournamentOnline: 'Tournament Online',
     play: '/ play',
     loading: 'Loading...',
-    waiting: 'Looking for opponents...',
+    waiting: 'Looking for opponents ',
 	countPlayer: 'Players joined: ',
     controls: 'Controls',
     easy: ' (Easy)',
     medium: ' (Medium)',
     hard: ' (Hard)',
     impossible: ' (Impossible)',
-    winner: 'Winner',
+    winner: 'WINNER',
     continue: 'Press SPACE to continue',
     tournamentTitle: 'Bracket',
+    spectatorWaitingmessage: 'Searching for ongoing matches',
 	escToClose: 'Press ESC to close',
+    miniGameRules: 'Find all matching pairs! Play while others finish their games.',
     spectator: '🎮 SPECTATOR MODE',
-	spectatorInstruction: '← Previous Match | → Next Match | Space: Toggle Bracket | Y: Exit',
+	spectatorInstruction: '← Previous Match  |  → Next Match  |  Space: Toggle Bracket  |  Y: Exit',
 	spectatorQuestion: 'Do you want to watch the rest of the tournament? Press Y, or press N to exit',
     
     // Validation error messages
@@ -82,5 +84,21 @@ export const english: Translation = {
     errorEnterValidEmail: 'Please enter a valid email',
     errorPasswordMinLength: 'Password must be at least 6 characters',
     errorConfirmPassword: 'Please confirm password',
-    errorPasswordsDoNotMatch: 'Passwords do not match'
+    errorPasswordsDoNotMatch: 'Passwords do not match',
+
+
+    pauseControlsTitle: '🎮 CONTROLS',
+    pauseMovementTitle: '🚀 MOVEMENT',
+    pausePowerupsTitle: '⚡ POWER-UPS',
+    pauseObjectiveTitle: '🎯 OBJECTIVE',
+    pauseMovementP1_2D: 'P1: W (Up) / S (Down)',
+    pauseMovementP2_2D: 'P2: ↑ (Up) / ↓ (Down)',
+    pauseMovementP1_3D: 'P1: A (Left) / D (Right)',
+    pauseMovementP2_3D: 'P2: ← (Left) / → (Right)',
+    pauseMovementSolo_2D: 'Use: ↑ (Up) / ↓ (Down)',
+    pauseMovementSolo_3D: 'Use: ← (Left) / → (Right)',
+    pausePowerupsMulti_P1: 'Player 1: C / V / B',
+    pausePowerupsMulti_P2: 'Player 2: I / O / P',
+    pausePowerupsSolo: 'Activate: 1 / 2 / 3',
+    pauseObjectiveText: 'Score {points} points by hitting\nthe ball past your opponent!'
 };
