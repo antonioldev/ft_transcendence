@@ -19,13 +19,14 @@ export const COLORS = {
     TRANSPARENT: "transparent",
 
     DARK_BLUE: "rgba(20, 61, 96, 1)",
+    LIGHT_BLUE: "rgba(90, 125, 184, 1)",
     
     
     GOLD: "rgba(255, 215, 0, 1)",
     GOLD_SHADOW: "rgba(255, 217, 0, 0.80)",
-    GREEN: "#22C55E",
+    GREEN: "rgba(34, 197, 94, 1)",
     LIGHT_GREEN: "rgba(160, 200, 120, 1)",
-    GRAY: "#999999",
+    GRAY: "rgba(153, 153, 153, 1)",
     ORANGE: "rgba(235, 91, 0, 1)",
     SPECTATOR_RED: "rgba(255, 0, 0, 0.3)",
 
@@ -653,10 +654,10 @@ export const END_GAME_STYLES = {
 } as const;
 export const BRACKET_STYLES = {
     bracketOverlay: {
-        width: "560px",
-        height: "650px",
-        top: "40px",
-        right: "20px",
+        width: "580px",
+        height: "700px",
+        // top: "40px",
+        // right: "20px",
         background: COLORS.TRANSPARENT_BLACK,
         horizontalAlignment: H_RIGHT,
         verticalAlignment: V_CENTER,
@@ -689,8 +690,7 @@ export const BRACKET_STYLES = {
     bg: {
         width: "100%", height: "100%",
 		stretch: Image.STRETCH_FILL,
-		isPointerBlocker: false,
-		// zIndex: 0,
+		isPointerBlocker: false
     },
 
     bracketTitle: {
@@ -710,7 +710,6 @@ export const BRACKET_STYLES = {
         paddingLeft: "2px"
     },
 
-    // Winner/Loser states
     winnerCell: {
         background: COLORS.LIGHT_GREEN,
         thickness: 2,
@@ -784,7 +783,7 @@ export const BRACKET_STYLES = {
     tabButton: {
         height: "85%",
         thickness: 0,
-        background: COLORS.GRAY,
+        background: COLORS.LIGHT_BLUE,
         isPointerBlocker: true,
         cornerRadiusW: 8,
         cornerRadiusZ: 8,
@@ -794,7 +793,7 @@ export const BRACKET_STYLES = {
     tabButtonActive: {
         height: "100%",
         thickness: 0,
-        background: COLORS.GRAY,
+        background: COLORS.TRANSPARENT,
         isPointerBlocker: true,
         cornerRadiusW: 8,
         cornerRadiusZ: 8,
@@ -806,6 +805,7 @@ export const BRACKET_STYLES = {
 
     tabLabelInactive: {
         color: COLORS.DARK_BLUE,
+        background: COLORS.TRANSPARENT,
         fontSize: 16,
         textHorizontalAlignment: Control.HORIZONTAL_ALIGNMENT_CENTER,
         textVerticalAlignment: Control.VERTICAL_ALIGNMENT_CENTER
@@ -827,8 +827,8 @@ export const BRACKET_STYLES = {
         heightInPixels: 48,
         paddingLeft: "4px",
         paddingRight: "4px",
-        paddingTop: "2px",
-        paddingBottom: "2px",
+        paddingTop: "1px",
+        paddingBottom: "1px",
         thickness: 0,
         alpha: 0
     },
@@ -843,17 +843,18 @@ export const BRACKET_STYLES = {
 
     matchPlayerRect: {
         widthInPixels: 240,
-        height: "100%",
-        paddingTop: "6px",
-        paddingBottom: "6px",
-        paddingLeft: "8px",
-        paddingRight: "8px",
+        // height: "95%",
+        // width: "95%",
+        // paddingTop: "6px",
+        // paddingBottom: "6px",
+        // paddingLeft: "8px",
+        // paddingRight: "8px",
         verticalAlignment: Control.VERTICAL_ALIGNMENT_CENTER,
         horizontalAlignment: Control.HORIZONTAL_ALIGNMENT_CENTER,
         cornerRadius: 6,
         thickness: 1,
-        color: COLORS.DARK_BLUE,
-        background: COLORS.WHITE,
+        color: COLORS.WHITE,
+        background: COLORS.TRANSPARENT,
         clipChildren: false
     },
     
@@ -861,7 +862,7 @@ export const BRACKET_STYLES = {
         color: COLORS.WHITE,
         height: "100%",
         resizeToFit: true,
-        textHorizontalAlignment: Control.HORIZONTAL_ALIGNMENT_LEFT,
+        textHorizontalAlignment: Control.HORIZONTAL_ALIGNMENT_CENTER,
         textVerticalAlignment: Control.VERTICAL_ALIGNMENT_CENTER,
         fontSize: 16
     },

@@ -56,11 +56,12 @@ export class Lobby {
 			rowContainer.addColumnDefinition(0.5, false);
 			rowContainer.addColumnDefinition(0.5, false);
 			rowContainer.width = "100%";
-			rowContainer.height = "34px";
+			rowContainer.height = "38px";
 			
 			const leftRow = createRect(`lobbyRow_${i}`, LOBBY_STYLES.rowRect);
 			const leftTb = createTextBlock(`lobbyRowText_${i}`, LOBBY_STYLES.rowText, players[i]);
 			leftRow.addControl(leftTb);
+			leftRow.paddingRight = "4px";
 			rowContainer.addControl(leftRow, 0, 0);
 			setTimeout(() => this.animationManager.fade(leftTb, 'in'), (i * 120));
 

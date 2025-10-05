@@ -106,7 +106,7 @@ export class EndGame {
 	async showPartialLoser(): Promise<void> {
 		if (!this.adt) return;
 
-		this.partialWinnerName.text = "You Lost"; // TODO translate
+		this.partialWinnerName.text = "GAME OVER";
 		this.partialWinnerName.color = "rgba(255, 0, 0, 1)";
 		this.partialWinnerLabel.text = "Match Ended";
 		

@@ -41,9 +41,9 @@ export class MatchTree {
 		container.addControl(headerGrid, 0, 0);
 
 		this.bracketGrid = createGrid("bracketGrid", BRACKET_STYLES.bracketGrid);
-		this.bracketGrid.addRowDefinition(1, false);	// row 0
-		this.bracketGrid.addColumnDefinition(1, false); // col 0
-		container.addControl(this.bracketGrid, 1, 0); // Add to row 1, column 0 of the container
+		this.bracketGrid.addRowDefinition(1, false);
+		this.bracketGrid.addColumnDefinition(1, false);
+		container.addControl(this.bracketGrid, 1, 0);
 	}
 
 	insert(

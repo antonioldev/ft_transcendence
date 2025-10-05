@@ -101,6 +101,7 @@ export class Game {
 		await this.services?.gui.curtain.show();
 	}
 
+
 	// Initialize Babylon.js engine
 	private async initializeBabylonEngine(): Promise<Engine> {
 		const engine = new Engine(this.canvas, true, { 
