@@ -68,11 +68,6 @@ export class CardGame {
 	}
 
 	private setupGrid(): void {
-		// // Clear existing definitions
-		// (this.cardsGrid as any)._rowDefinitions = [];
-		// (this.cardsGrid as any)._columnDefinitions = [];
-
-		// Add fresh definitions
 		for (let i = 0; i < 4; i++)
 			this.cardsGrid.addRowDefinition(1 / 4);
 
@@ -86,11 +81,9 @@ export class CardGame {
 		this.flippedCards = [];
 		this.cards = [];
 
-		// Clear all children
 		while (this.cardsGrid.children.length > 0)
 			this.cardsGrid.removeControl(this.cardsGrid.children[0]);
 
-		// Shuffle and create new cards
 		const cardValues = [...this.iconPaths, ...this.iconPaths];
 		const shuffledCards = this.shuffleArray(cardValues);
 
