@@ -1,11 +1,11 @@
 import { AdvancedDynamicTexture, Rectangle, TextBlock, Grid, StackPanel, Image } from "@babylonjs/gui";
 import { AnimationManager, Motion } from "../services/AnimationManager.js";
-import { BRACKET_STYLES, applyStyles,createImage, createRect, createTextBlock, createGrid, createStackPanel } from "./GuiStyle.js";
+import { BRACKET_STYLES, applyStyles,createImage, createRect, createTextBlock, createGrid, createStackPanel, COLORS } from "./GuiStyle.js";
 import { getCurrentTranslation } from "../../translations/translations.js";
 export class MatchTree {
 	private playerTotal: number = 0;
 	private isCreated: boolean = false;
-	private bracketOverlay!: Rectangle;
+	private overlay!: Rectangle;
 	private bracketGrid!: Grid;
 	private roundsCount = 0;
 	private tabsBar!: Grid;
@@ -19,14 +19,14 @@ export class MatchTree {
 	constructor(private adt: AdvancedDynamicTexture, private animationManager: AnimationManager) {
 		const t = getCurrentTranslation();
 		
-		this.bracketOverlay = createRect("bracketOverlay", BRACKET_STYLES.bracketOverlay);
-		this.adt.addControl(this.bracketOverlay);
+		this.overlay = createRect("bracketOverlay", BRACKET_STYLES.bracketOverlay);
+		this.adt.addControl(this.overlay);
 
 		const container = createGrid("bracketContainer", BRACKET_STYLES.bracketGrid);
 		container.addRowDefinition(BRACKET_STYLES.containerRows.header, false);
 		container.addRowDefinition(BRACKET_STYLES.containerRows.content, false);
 		container.addColumnDefinition(1, false);
-		this.bracketOverlay.addControl(container);
+		this.overlay.addControl(container);
 
 		const headerGrid = createGrid("headerGrid", BRACKET_STYLES.headerGrid);
 		headerGrid.addColumnDefinition(BRACKET_STYLES.gridColumns.icon, true);
@@ -115,21 +115,24 @@ export class MatchTree {
 	toggle(): void {
 		if (this.isAnimating) return;
 		
-		const isCurrentlyVisible = this.bracketOverlay.isVisible;
+		this.overlay.background = COLORS.TRANSPARENT_BLACK;
+		const isCurrentlyVisible = this.overlay.isVisible;
 		this.show(!isCurrentlyVisible);
 	}
 
 	show(show: boolean): void {
-		if (!this.bracketOverlay || !this.animationManager || this.isAnimating) return;
+		if (!this.overlay || !this.animationManager || this.isAnimating) return;
 		this.isAnimating = true;
 		if (show) {
 			this.activateRound(this.currentRound);
-			this.bracketOverlay.isVisible = true;
-			this.bracketOverlay.leftInPixels = 400;
-			this.animationManager.slideFromDirection(this.bracketOverlay, 'left', 'in', 400, Motion.F.base);
+			this.overlay.isVisible = true;
+			this.overlay.leftInPixels = 400;
+			this.animationManager.slideFromDirection(this.overlay, 'left', 'in', 400, Motion.F.base).then(() => {
+				this.overlay.leftInPixels = -20;
+			});
 		} else {
-			this.animationManager.slideFromDirection(this.bracketOverlay, 'right', 'out', 400, Motion.F.xFast).then(() => {
-				this.bracketOverlay.isVisible = false;
+			this.animationManager.slideFromDirection(this.overlay, 'right', 'out', 400, Motion.F.xFast).then(() => {
+				this.overlay.isVisible = false;
 			});
 		}
 		this.isAnimating = false;

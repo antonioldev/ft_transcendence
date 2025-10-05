@@ -378,7 +378,7 @@ export const LOBBY_STYLES = {
     
     rowRect: {
         height: "38px",
-        width: "100%",
+        width: "95%",
         thickness: 1,
         cornerRadius: 6,
         color: COLORS.WHITE,
@@ -571,8 +571,9 @@ export const BRACKET_STYLES = {
     bracketOverlay: {
         width: "580px",
         height: "700px",
-        background: COLORS.TRANSPARENT_BLACK,
+        background: COLORS.TRANSPARENT,
         horizontalAlignment: H_RIGHT,
+        verticalAlignment: V_CENTER,
         cornerRadius: 12,
         isVisible: false,
         zIndex: Z_INDEX.BRACKET,

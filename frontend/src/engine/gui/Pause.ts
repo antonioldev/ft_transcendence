@@ -7,22 +7,22 @@ import { ViewMode } from "../../shared/constants.js";
 import { GAME_CONFIG } from "../../shared/gameConfig.js";
 
 export class Pause {
-	private pauseOverlay!: Rectangle;
+	private overlay!: Rectangle;
 	private spectatorPauseBox!: Rectangle;
 	private muteIcon?: Image;
 
 	constructor(private adt: AdvancedDynamicTexture, private animationManager: AnimationManager, config: GameConfig, private onToggleMute?: () => boolean) {
 		const t = getCurrentTranslation();
 
-		this.pauseOverlay = createRect("pauseOverlay", PAUSE_MENU_STYLES.pauseOverlay);
-		this.adt.addControl(this.pauseOverlay);
+		this.overlay = createRect("pauseOverlay", PAUSE_MENU_STYLES.pauseOverlay);
+		this.adt.addControl(this.overlay);
 
 		const pauseGrid = createGrid("pauseGrid", PAUSE_MENU_STYLES.pauseGrid);
 		if (config.isTournament) {
 			pauseGrid.width = "50%";
 			pauseGrid.horizontalAlignment = H_LEFT;
 		}
-		this.pauseOverlay.addControl(pauseGrid);
+		this.overlay.addControl(pauseGrid);
 
 		pauseGrid.addRowDefinition(PAUSE_MENU_STYLES.gridRows.title, false);
 		pauseGrid.addRowDefinition(PAUSE_MENU_STYLES.gridRows.gameInstructions, false);
@@ -138,12 +138,12 @@ export class Pause {
 					this.animationManager.fade(this.spectatorPauseBox, 'in', Motion.F.base);
 				}
 			} else {
-				if(!this.pauseOverlay.isVisible) {
-					this.pauseOverlay.isVisible = true;
-					this.pauseOverlay.alpha = 0;
-					this.pauseOverlay.thickness = 0;
+				if(!this.overlay.isVisible) {
+					this.overlay.isVisible = true;
+					this.overlay.alpha = 0;
+					this.overlay.thickness = 0;
 
-					this.animationManager.fadeInWithBorder(this.pauseOverlay, Motion.F.base, 0, 4);
+					this.animationManager.fadeInWithBorder(this.overlay, Motion.F.base, 0, 4);
 				}
 			}
 		} else {
@@ -154,11 +154,11 @@ export class Pause {
 				});
 			}
 			
-			if (this.pauseOverlay.isVisible) {
-				this.animationManager.fadeOutWithBorder(this.pauseOverlay, Motion.F.fast, 4, 0).then(() => {
-					this.pauseOverlay.isVisible = false;
-					this.pauseOverlay.alpha = 0;
-					this.pauseOverlay.thickness = 0;
+			if (this.overlay.isVisible) {
+				this.animationManager.fadeOutWithBorder(this.overlay, Motion.F.fast, 4, 0).then(() => {
+					this.overlay.isVisible = false;
+					this.overlay.alpha = 0;
+					this.overlay.thickness = 0;
 				});
 			}
 		}

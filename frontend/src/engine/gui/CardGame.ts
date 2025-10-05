@@ -18,7 +18,7 @@ interface CardElement extends Rectangle {
 }
 
 export class CardGame {
-	private matchGameOverlay!: Rectangle;
+	private overlay!: Rectangle;
 	private cardsGrid!: Grid;
 	private cards: CardElement[] = [];
 	private flippedCards: CardElement[] = [];
@@ -43,17 +43,17 @@ export class CardGame {
 
 	constructor(private adt: AdvancedDynamicTexture, private animationManager: AnimationManager, private audioManager: AudioManager) {
 		const t = getCurrentTranslation();
-		this.matchGameOverlay = createRect("cardGameContainer", CARD_GAME_STYLES.mainContainer);
-		this.adt.addControl(this.matchGameOverlay);
+		this.overlay = createRect("cardGameContainer", CARD_GAME_STYLES.mainContainer);
+		this.adt.addControl(this.overlay);
 
 		const title = createTextBlock("cardGameTitle", CARD_GAME_STYLES.title, "MEMORY MATCH");
-		this.matchGameOverlay.addControl(title);
+		this.overlay.addControl(title);
 
 		const instructions = createTextBlock("instructions", CARD_GAME_STYLES.instructions, t.miniGameRules);
-		this.matchGameOverlay.addControl(instructions);
+		this.overlay.addControl(instructions);
 
 		this.cardsGrid = createGrid("cardsGrid", CARD_GAME_STYLES.cardsGrid);
-		this.matchGameOverlay.addControl(this.cardsGrid);
+		this.overlay.addControl(this.cardsGrid);
 
 		this.startGame();
 	}
@@ -190,10 +190,10 @@ export class CardGame {
 	}
 
 	show(): void {
-		this.matchGameOverlay.isVisible = true;
+		this.overlay.isVisible = true;
 	}
 
 	hide(): void {
-		this.matchGameOverlay.isVisible = false;
+		this.overlay.isVisible = false;
 	}
 }
