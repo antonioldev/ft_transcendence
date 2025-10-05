@@ -71,7 +71,7 @@ export const italian: Translation = {
 	tournamentTitle: 'Classifica del Torneo',
     spectatorWaitingmessage: 'Cercando partite in corso',
 	escToClose: 'Premere ESC per chiudere',
-    
+    miniGameRules: 'Trova tutte le coppie corrispondenti! Gioca mentre gli altri finiscono le loro partite.',
     // Validation error messages
     errorEnterEmailOrUsername: 'Inserisci email o nome utente',
     errorEnterPassword: 'Inserisci password',

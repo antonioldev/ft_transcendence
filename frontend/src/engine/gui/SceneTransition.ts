@@ -1,4 +1,4 @@
-import { AdvancedDynamicTexture, Rectangle, TextBlock } from "@babylonjs/gui";
+import { AdvancedDynamicTexture, Rectangle } from "@babylonjs/gui";
 import { AnimationManager, Motion } from "../services/AnimationManager.js";
 import { createRect, createTextBlock, CURTAIN_STYLES } from "./GuiStyle.js";
 import { getCurrentTranslation } from "../../translations/translations.js";
@@ -72,7 +72,6 @@ export class SceneTransition {
 		const { width } = this.adt.getSize();
 		
 		await Promise.all([
-			// Slide elements back to off-screen positions
 			this.animationManager.slideFromDirection(this.leftPaddle, 'left', 'out', width / 2 + 40, Motion.F.fast),
 			this.animationManager.slideFromDirection(this.rightPaddle, 'right', 'out', width / 2 + 40, Motion.F.fast),
 			this.animationManager.slideFromDirection(this.leftBackground, 'left', 'out', width / 2, Motion.F.fast),

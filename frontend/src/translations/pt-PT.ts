@@ -71,7 +71,7 @@ export const portuguese: Translation = {
 	tournamentTitle: 'Classificação do Torneio de Pong',
     spectatorWaitingmessage: 'Procurando partidas em andamento',
 	escToClose: 'Pressione ESC para fechar',
-    
+    miniGameRules: 'Encontre todos os pares correspondentes! Jogue enquanto outros terminam seus jogos.',
     // Validation error messages
     errorEnterEmailOrUsername: 'Por favor, insira email ou nome de usuário',
     errorEnterPassword: 'Por favor, insira senha',

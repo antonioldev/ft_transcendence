@@ -71,7 +71,7 @@ export const russian: Translation = {
 	tournamentTitle: 'Турнирное Дерево',
     spectatorWaitingmessage: 'Поиск активных матчей',
 	escToClose: 'Нажмите ESC для закрытия',
-    
+    miniGameRules: 'Найдите все подходящие пары! Играйте, пока другие заканчивают свои игры.',
     // Validation error messages
     errorEnterEmailOrUsername: 'Пожалуйста, введите email или имя пользователя',
     errorEnterPassword: 'Пожалуйста, введите пароль',

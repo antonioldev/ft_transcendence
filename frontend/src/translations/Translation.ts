@@ -74,6 +74,7 @@ export interface Translation {
 	tournamentTitle: string;
     spectatorWaitingmessage: string;
 	escToClose: string;
+    miniGameRules: string;
     
     // Validation error messages
     errorEnterEmailOrUsername: string;

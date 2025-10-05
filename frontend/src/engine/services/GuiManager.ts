@@ -14,6 +14,7 @@ import { EndGame } from "../gui/EndGame.js";
 import { Pause } from "../gui/Pause.js"
 import { Lobby } from "../gui/Lobby.js";
 import { SceneTransition } from "../gui/SceneTransition.js";
+import { CardGame } from "../gui/CardGame.js";
 
 /**
  * Manages all GUI elements for the game
@@ -30,6 +31,7 @@ export class GUIManager {
 	pause!: Pause;
 	lobby!: Lobby;
 	curtain!: SceneTransition;
+	cardGame!: CardGame;
 
 
 	constructor(private scene: Scene, config: GameConfig, private animationManager: AnimationManager, private audioManager: AudioManager) {
@@ -44,6 +46,7 @@ export class GUIManager {
 			this.pause = new Pause(this.adt, this.animationManager, config, () => audioManager.toggleMute());
 			this.lobby = new Lobby(this.adt, this.animationManager);
 			this.curtain = new SceneTransition(this.adt, this.animationManager);
+			this.cardGame = new CardGame(this.adt, animationManager, audioManager);
 
 			this.createViewModeDivider(config);
 			this.isInitialized = true;

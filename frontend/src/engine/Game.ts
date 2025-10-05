@@ -156,6 +156,7 @@ export class Game {
 
 			uiManager.setLoadingScreenVisible(false);
 			this.services?.gui.lobby.hide();
+			this.services?.gui.cardGame.hide();
 			this.services?.gui.curtain.hide();
 			this.services?.gui.hud.show(true);
 			const playerLeft = this.players.get(PlayerSide.LEFT)?.name;
@@ -216,6 +217,8 @@ export class Game {
 		const waitForSpace = controlledSides.length !== 0 && this.config.gameMode !== GameMode.TOURNAMENT_REMOTE;
 		await this.services?.gui?.showTournamentMatchWinner(winner, waitForSpace);
 		this.resetForNextMatch();
+		await this.services?.gui.curtain.show();
+		this.services?.gui.cardGame.show();
 		webSocketClient.sendPlayerReady();
 	}
 

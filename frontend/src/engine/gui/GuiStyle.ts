@@ -112,6 +112,7 @@ export const HUD_STYLES = {
         outlineWidth: 2,
         outlineColor: COLORS.TRANSPARENT_BLACK,
         thickness: 2,
+        resizeToFit: true,
     },
 
     player2Label: {
@@ -126,7 +127,8 @@ export const HUD_STYLES = {
         shadowBlur: 0,
         shadowColor: COLORS.GOLD_SHADOW,
         outlineWidth: 2,
-        outlineColor: COLORS.TRANSPARENT_BLACK
+        outlineColor: COLORS.TRANSPARENT_BLACK,
+        resizeToFit: true,
     },
 
     score1Text: {
@@ -948,6 +950,78 @@ export const CURTAIN_STYLES = {
         textVerticalAlignment: V_CENTER,
         outlineWidth: 2,
         outlineColor: COLORS.BLACK
+    }
+} as const;
+export const CARD_GAME_STYLES = {
+    mainContainer: {
+        width: "100%",
+        height: "100%",
+        background: COLORS.TRANSPARENT,
+        horizontalAlignment: H_CENTER,
+        verticalAlignment: V_CENTER,
+        zIndex: Z_INDEX.LOBBY,
+        isVisible: false,
+        thickness: 0
+    },
+
+    title: {
+        fontSize: 36,
+        color: COLORS.ORANGE,
+        height: "60px",
+        top: "-300px",
+        fontWeight: "bold",
+        textHorizontalAlignment: H_CENTER,
+        outlineWidth: 2,
+        outlineColor: COLORS.WHITE,
+    },
+
+    instructions: {
+        fontSize: 18,
+        color: COLORS.WHITE,
+        height: "40px",
+        top: "-260px",
+        textHorizontalAlignment: H_CENTER
+    },
+
+    cardsGrid: {
+        width: "65%",
+        height: "65%",
+        top: "20px",
+        
+        horizontalAlignment: H_CENTER,
+        verticalAlignment: V_CENTER
+    },
+
+    cardRect: {
+        width: `140px`,
+        height: `120px`,
+        padding: "5px",
+        thickness: 0,
+        cornerRadius: 8,
+        background: COLORS.TRANSPARENT
+    },
+
+    cardBack: {
+        width: "100%",
+        height: "100%",
+        background: COLORS.ORANGE,
+        cornerRadius: 8,
+        thickness: 2,
+        color: COLORS.WHITE,
+        shadowBlur: 5,
+        shadowColor: COLORS.BLACK,
+        stretch: Image.STRETCH_FILL
+    },
+
+    cardFront: {
+        width: "100%",
+        height: "100%",
+        background: COLORS.WHITE,
+        cornerRadius: 8,
+        thickness: 2,
+        color: COLORS.DARK_BLUE,
+        stretch: Image.STRETCH_UNIFORM,
+        isVisible: false 
     }
 } as const;
 export function applyStyles(control: any, styles: any): void {

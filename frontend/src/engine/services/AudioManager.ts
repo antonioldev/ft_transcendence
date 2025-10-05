@@ -24,7 +24,9 @@ export class AudioManager {
 		powerup: 0.7,
 		entrance: 1.0,
 		winner: 1.0,
-		loser: 1.0
+		loser: 1.0,
+		miniGameCorrect: 0.7,
+		miniGameNotCorrect: 0.7,
 	};
 
 	// Sound effects
@@ -35,6 +37,8 @@ export class AudioManager {
 	private entrance: Sound | null = null;
 	private winner: Sound | null = null;
 	private loser: Sound | null = null;
+	private miniGameCorrect: Sound | null = null;
+	private miniGameNotCorrect: Sound | null = null;
 
 
 	constructor(private scene: Scene) {
@@ -160,6 +164,32 @@ export class AudioManager {
 				}
 			);
 
+			this.miniGameCorrect = new Sound(
+				"miniGameCorrect",
+				"/assets/audio/minigame_right.mp3",
+				this.scene,
+				null,
+				{
+					loop: false,
+					autoplay: false,
+					volume: this.volumes.miniGameCorrect,
+					playbackRate: this.basePlaybackRate
+				}
+			);
+
+			this.miniGameNotCorrect = new Sound(
+				"miniGameNotCorrect",
+				"/assets/audio/minigame_wrong.mp3",
+				this.scene,
+				null,
+				{
+					loop: false,
+					autoplay: false,
+					volume: this.volumes.miniGameNotCorrect,
+					playbackRate: this.basePlaybackRate
+				}
+			);
+
 			this.isInitialized = true;
 		} catch (error) {
 			Logger.errorAndThrow('Error initializing Babylon audio', 'BabylonAudioManager', error);
@@ -251,6 +281,14 @@ export class AudioManager {
 	playLoser(): void {
 		this.loser?.play();
 	}
+
+	playMiniGame(isCorrect: boolean): void {
+		if (isCorrect)
+			this.miniGameCorrect?.play();
+		else
+			this.miniGameNotCorrect?.play();
+	}
+
 
 	isMuted(): boolean {
 		return this.muted;
