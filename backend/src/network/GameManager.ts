@@ -4,12 +4,11 @@ import { Client } from './Client.js';
 import { GameMode } from '../shared/constants.js';
 import * as db from "../data/validation.js";
 import { GAME_CONFIG } from '../shared/gameConfig.js';
-import { EventEmitter } from 'events';
 
 /**
  * Manages game sessions and player interactions within the game.
  */
-class GameManager extends EventEmitter {
+class GameManager {
     private allGameSessions: Set<AbstractGameSession> = new Set();
     private clientGamesMap: Map<string, AbstractGameSession> = new Map(); // maps client id to gameSession
 
@@ -103,7 +102,7 @@ class GameManager extends EventEmitter {
         for (const client of gameSession.clients) {
             this.clientGamesMap.delete(client.id);
         }
-        console.log(`Game ended: ${gameSession.id}`);
+        console.log(`GameSession ended: ${gameSession.id}`);
     }
 
     /**

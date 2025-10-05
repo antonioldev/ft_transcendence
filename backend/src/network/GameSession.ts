@@ -6,6 +6,7 @@ import { gameManager } from './GameManager.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
 import { generateGameId } from '../data/database.js';
 import { LEFT, RIGHT } from '../shared/gameConfig.js';
+import { eventManager } from './utils.js';
 
 export abstract class AbstractGameSession {
 	mode: GameMode;
@@ -108,10 +109,10 @@ export abstract class AbstractGameSession {
 			console.log(`All clients ready: ready size: ${this.readyClients.size}`)
 			return ;
 		}
-			await new Promise(resolve => {
-			gameManager.once(`all-ready-${this.id}`, resolve);
-			console.log(`Event triggered ALL READY`);
+		await new Promise(resolve => {
+			eventManager.once(`all-ready-${this.id}`, resolve);
 		});
+		console.log(`Event triggered ALL READY`);
 	}
 
 	setClientReady(client_id: string): void {
@@ -119,7 +120,7 @@ export abstract class AbstractGameSession {
 		console.log(`Client ${client_id} marked as ready.}`);
 		
 		if (this.allClientsReady()) {
-			gameManager.emit(`all-ready-${this.id}`);
+			eventManager.emit(`all-ready-${this.id}`);
 			console.log(`GameSession ${this.id}: all clients ready signal emitted`);
 		}
 	}
@@ -194,9 +195,6 @@ export class OneOffGame extends AbstractGameSession{
 		const players = [...this.players];
 
 		this.game = new Game(this.id, players, this.broadcast.bind(this));
-		if (this.mode === GameMode.TWO_PLAYER_REMOTE) {
-			this.game.register_database()
-		}
 		await this.game.run();
 		
 		if (this.mode === GameMode.TWO_PLAYER_REMOTE) {

@@ -51,7 +51,7 @@
         
         <!-- Centered Battle Pong text -->
         <div class="bg-blue-background flex flex-col items-center justify-center h-screen">
-            <h1 id="main-title" class="font-tiny5-regular text-light-green text-6xl sm:text-8xl md:text-9xl lg:text-10xl xl:text-[10rem] 2xl:text-[12rem] text-center">
+            <h1 id="main-title" class="font-tiny5-regular text-light-green text-6xl sm:text-8xl md:text-9xl lg:text-10xl xl:text-[10rem] 2xl:text-[12rem] text-center select-none">
                 <span class="animate-bounce-letter-1">B</span>
                 <span class="animate-bounce-letter-2">A</span>
                 <span class="animate-bounce-letter-3">T</span>
@@ -100,16 +100,6 @@
                 register
             </button>
         </nav>
-
-        <!-- Atari image in bottom right
-        <img 
-            src="/assets/images/atari.png" 
-            src="/assets/images/atari.png" 
-            alt="Atari"
-            class="absolute bottom-1 right-4 md:bottom-2 md:right-4 lg:bottom-2 lg:right-4 
-                   w-48 h-48 sm:w-60 sm:h-60 md:w-72 md:h-72 lg:w-84 lg:h-84 xl:w-96 xl:h-96
-                   object-contain opacity-80"
-        /> -->
     </main>
 
     <!-- Login Page (Hidden) -->
@@ -325,25 +315,25 @@
         </div>
         
         <div class="w-full max-w-2xl mx-auto px-4 py-8">
-            <h2 id="mode-title" class="text-center uppercase text-xl sm:text-2xl font-bold tracking-tight text-light-green font-sans">
+            <h2 id="mode-title" class="text-center uppercase text-xl sm:text-2xl font-bold tracking-tight text-light-green font-sans mb-8">
                 Select Game Mode
             </h2>
             
             <!-- View Mode Selector -->
-            <div class="flex items-center justify-center gap-4 mb-8">
-                <button type="button" id="view-mode-back" 
-                        class="text-light-green hover:text-white transition-colors duration-200 
-                               font-poppins-semibold text-xl px-3">
-                    ←
+             <div class="flex items-center justify-center gap-4 mb-8">
+                <button type="button" id="view-mode-classic" 
+                        class="bg-orange text-blue-background font-poppins-semibold text-lg px-3 py-3 
+                               transition-colors duration-200 border border-orange rounded-sm min-w-[120px]">
+                    <span id="view-mode-display">
+                        Classic Mode
+                    </span>
                 </button>
-                <span id="view-mode-display" 
-                      class="text-light-green font-poppins-semibold text-lg min-w-[150px] text-center">
-                    Classic Mode
-                </span>
-                <button type="button" id="view-mode-forward" 
-                        class="text-light-green hover:text-white transition-colors duration-200 
-                               font-poppins-semibold text-xl px-3">
-                    →
+                <button type="button" id="view-mode-immersive" 
+                        class="bg-transparent text-light-green font-poppins-semibold text-lg px-3 py-3 
+                               transition-colors duration-200 border border-light-green rounded-sm min-w-[120px]">
+                    <span id="view-mode-display">
+                        Immersive Mode
+                    </span>
                 </button>
             </div>
 
@@ -517,10 +507,10 @@
 
     <!-- Game 3D Screen -->
     <div id="game-3d" class="fixed inset-0 bg-blue-background" style="display: none;">
-        <canvas id="game-canvas-3d"
-  class="w-full h-full min-w-[1400px] min-h-[700px]"
-  width="1400" height="700"
-  aria-label="3D Game Canvas" tabindex="0"></canvas>
+        <div class="w-full h-full overflow-auto custom-scrollbar">
+            <canvas id="game-canvas-3d" class="min-w-full min-h-full" width="1400" height="700" 
+                aria-label="3D Game Canvas" tabindex="0"></canvas>
+        </div>
         
         <!-- Pause Dialog -->
         <div id="pause-dialog-3d" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center" style="display: none;">
@@ -553,23 +543,22 @@
         </div>
         
         <div class="w-full max-w-4xl mx-auto px-4 py-8">
-            <h2 class="text-center text-2xl sm:text-3xl font-bold text-light-green font-tiny5-regular mb-8">
+            <h2 class="text-center uppercase text-xl sm:text-2xl font-bold tracking-tight text-light-green font-sans">
                 User Stats
             </h2>
             
             <!-- Stats Chart -->
-            <div class="bg-blue-background border border-light-green p-6 mb-8">
-                <canvas id="user-stats-chart" class="w-full max-h-64"></canvas>
+            <div id="user-stats-chart" class="bg-blue-background border border-light-green p-6 mb-8 w-full max-h-64">
             </div>
 
             <!-- Game History -->
-            <h2 class="text-xl sm:text-2xl font-bold text-light-green font-tiny5-regular mb-4">
+            <h2 class="text-center uppercase text-xl sm:text-2xl font-bold tracking-tight text-light-green font-sans">
                 Game History
             </h2>
             
             <div class="overflow-x-auto border border-light-green">
-                <table id="game-history-table" class="w-full text-light-green font-sans">
-                    <thead class="border-b border-light-green">
+                <div id="game-history-table" class="w-full text-light-green font-sans">
+                    <!-- <thead class="border-b border-light-green">
                         <tr>
                             <th class="px-4 py-2 text-left">Date</th>
                             <th class="px-4 py-2 text-left">Opponent</th>
@@ -578,14 +567,14 @@
                             <th class="px-4 py-2 text-left">Duration</th>
                         </tr>
                     </thead>
-                    <tbody></tbody>
-                </table>
+                    <tbody></tbody> -->
+                </div>
             </div>
 
             <!-- Back Button -->
             <div class="text-center mt-8">
                 <button type="button" id="dashboard-back" 
-                        class="bg-transparent text-light-green font-tiny5-regular text-lg px-6 py-3 
+                        class="bg-transparent text-light-green font-sans text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 
                                hover:bg-light-green hover:text-blue-background transition-colors duration-200
                                border border-light-green rounded-sm">
                     Back

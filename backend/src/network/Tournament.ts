@@ -282,7 +282,6 @@ export class TournamentRemote extends AbstractTournament {
 			}
 			else {
 				match.game = new Game(match.id, match.players, (message) => this.broadcast(message, match.clients));
-				match.game.register_database();
 				this.active_matches.push(match);
 				
 				let winner_promise = match.game.run();
@@ -302,9 +301,7 @@ export class TournamentRemote extends AbstractTournament {
 		const index = this.active_matches.indexOf(match);
 		if (index !== -1) this.active_matches.splice(index, 1);
 
-		if (match.players[LEFT] instanceof Player && match.players[RIGHT] instanceof Player) {
-			match.game.save_to_db();
-		}
+		match.game.save_to_db();
 		this.assign_winner(match, winner);
 
 		// reassign spectators to next available match
