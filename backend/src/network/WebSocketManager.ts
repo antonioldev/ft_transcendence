@@ -12,6 +12,7 @@ import { TournamentRemote } from './Tournament.js';
  * Manages WebSocket connections, client interactions, and game-related messaging.
  */
 export class WebSocketManager {
+    clientMap: Map<string, Client> = new Map(); // sid map to client
     /**
      * Sets up WebSocket routes for the Fastify server.
      * @param fastify - The Fastify instance to configure.
