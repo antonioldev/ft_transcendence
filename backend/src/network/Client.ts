@@ -12,6 +12,7 @@ export class Client {
     email: string;       // email for future authentication (not used yet)
     websocket: any;
     loggedIn: boolean;      // Whether this client is authenticated
+    is_connected: Boolean = true;
 
     constructor(username: string, email: string, websocket: any) {
         this.username = username;       // Keep for future use

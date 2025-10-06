@@ -69,7 +69,7 @@ await fastify.register(fastifyCors, {
 //     else cb(new Error('Not allowed'), false);
 //   },
     // origin: process.env.LAN_IP,
-    origin: "https://localhost",
+    origin: "https://192.168.1.83",
     methods: ['GET', 'POST', 'OPTIONS'],
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'Set-Cookie'],

@@ -70,15 +70,22 @@ export class WebSocketManager {
 
         socket.on('close', () => {
             console.log(`WebSocket closed for client ${client.username}:`);
-            gameManager.removeClient(client);
-            // this.handleLogoutUser(client);
+            client.is_connected = false;
+            setTimeout(() => { this.handleDisconnection(client) }, 5000);
         });
 
         socket.on('error', (error: any) => {
             console.error(`❌ WebSocket error for client ${client.username}:`, error);
+            client.is_connected = false;
+            setTimeout(() => { this.handleDisconnection(client) }, 5000);
+        });
+    }
+
+    handleDisconnection(client:  Client) {
+        if (!client.is_connected) {
             gameManager.removeClient(client);
             this.handleLogoutUser(client);
-        });
+        }
     }
 
     /**
