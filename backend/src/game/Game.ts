@@ -174,9 +174,9 @@ export class Game {
 		// run game loop, updating and broadcasting state to clients until win
 		while (!this.is_ended()) {
 			const dt = await this.clock.tick(60);
-			if (this.is_paused()) continue ;
-
-			this._update_state(dt);
+			if (!this.is_paused()) {
+				this._update_state(dt);
+			}
 			this._broadcast({
 				type: MessageType.GAME_STATE,
 				state: this.get_state()
