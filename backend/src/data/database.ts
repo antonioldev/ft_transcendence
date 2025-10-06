@@ -709,6 +709,7 @@ export function isGameTournament(id: string): number {
 	}
 }
 
+// Google OAuth functions
 export function findUserByGoogleId(googleId: string): UserProfileData | null {
 	googleId = googleId.trim();
 
