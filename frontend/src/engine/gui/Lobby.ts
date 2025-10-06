@@ -1,7 +1,7 @@
 import { AdvancedDynamicTexture, Rectangle, TextBlock, Grid, StackPanel} from "@babylonjs/gui";
 import { getCurrentTranslation } from '../../translations/translations.js';
 import { AnimationManager } from "../services/AnimationManager.js";
-import { H_LEFT, LOBBY_STYLES, createRect, createTextBlock, createStackPanel,} from "./GuiStyle.js";
+import { LOBBY_STYLES, createRect, createTextBlock, createStackPanel,} from "./GuiStyle.js";
 
 export class Lobby {
 	private overlay!: Rectangle;
@@ -56,7 +56,7 @@ export class Lobby {
 			rowContainer.addColumnDefinition(0.5, false);
 			rowContainer.addColumnDefinition(0.5, false);
 			rowContainer.width = "100%";
-			rowContainer.height = "34px";
+			rowContainer.height = "38px";
 			
 			const leftRow = createRect(`lobbyRow_${i}`, LOBBY_STYLES.rowRect);
 			const leftTb = createTextBlock(`lobbyRowText_${i}`, LOBBY_STYLES.rowText, players[i]);
@@ -67,7 +67,6 @@ export class Lobby {
 			if (players[i + 1] !== undefined) {
 				const rightRow = createRect(`lobbyRow_${i+1}`, LOBBY_STYLES.rowRect);
 				const rightTb = createTextBlock(`lobbyRowText_${i+1}`, LOBBY_STYLES.rowText, players[i + 1]);
-				rightTb.textHorizontalAlignment = H_LEFT;
 				rightRow.addControl(rightTb);
 				rowContainer.addControl(rightRow, 0, 1);
 				setTimeout(() => this.animationManager.fade(rightTb, 'in'), ((i + 1) * 120));
@@ -89,13 +88,14 @@ export class Lobby {
 	private startDots(): void {
 		if (!this.subtitle) return;
 		this.stopDots();
-		const base = this.subtitle.text?.replace(/\.*$/, "") || "";
+		const base = this.subtitle.text;
 		let step = 0;
 		this.dotsTimer = window.setInterval(() => {
-			step = (step + 1) % 4; // 0..3
-			this.subtitle!.text = base + ".".repeat(step);
+			step = (step + 1) % 3;
+			const dotPatterns = ["  .", " ..", "..."];
+			this.subtitle!.text = base + dotPatterns[step];
 		}, 500);
-		}
+	}
 
 	private stopDots(): void {
 		if (this.dotsTimer) {

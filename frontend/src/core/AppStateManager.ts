@@ -35,10 +35,10 @@ export class AppStateManager {
 		// Listen for browser back/forward button clicks
 		window.addEventListener('popstate', (event) => {
 			if (this.currentGame?.getState() === GameState.RUNNING ) {
-				this.currentGame.requestExitToMenu(); // TODO should open th menu pause
+				this.currentGame?.requestExitToMenu(); // TODO should open th menu pause
 				return;
 			} else if (this.currentGame?.getState() === GameState.PAUSED) {
-				this.currentGame.requestExitToMenu();
+				this.currentGame?.requestExitToMenu();
 				return;
 			}
 

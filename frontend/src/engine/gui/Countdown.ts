@@ -1,6 +1,7 @@
 import { AdvancedDynamicTexture, Rectangle, TextBlock} from "@babylonjs/gui";
 import { AnimationManager, Motion } from "../services/AnimationManager.js";
 import { COUNTDOWN_STYLES, createRect, createTextBlock,} from "./GuiStyle.js";
+import { AudioManager } from "../services/AudioManager.js";
 
 export class Countdown {
 	private countdownText!: TextBlock;
@@ -10,7 +11,7 @@ export class Countdown {
 	private readyText!: TextBlock;
 	private vsText!: TextBlock;
 
-	constructor(private adt: AdvancedDynamicTexture, private animationManager: AnimationManager) {
+	constructor(private adt: AdvancedDynamicTexture, private animationManager: AnimationManager, private audioManager: AudioManager) {
 		this.countdownContainer = createRect("countdownContainer", COUNTDOWN_STYLES.countdownContainer);
 		this.countdownText = createTextBlock("5", COUNTDOWN_STYLES.countdownText, "5");
 		this.countdownContainer.addControl(this.countdownText);
@@ -36,6 +37,7 @@ export class Countdown {
 
 		this.leftPlayer.text = `◀  ${left}`;
 		this.leftPlayer.isVisible = true;
+		this.audioManager.playEntrance();
 		await this.animationManager.slideFromDirection(this.leftPlayer, 'left', 'in', 500, Motion.F.base, true);
 		this.animationManager.glow(this.leftPlayer, Motion.F.breath);
 
@@ -45,6 +47,7 @@ export class Countdown {
 
 		this.rightPlayer.text = `${right}  ▶`;
 		this.rightPlayer.isVisible = true;
+		this.audioManager.playEntrance();
 		await this.animationManager.slideFromDirection(this.rightPlayer, 'right', 'in', 500, Motion.F.base, true);
 		this.animationManager.glow(this.rightPlayer, Motion.F.breath);
 

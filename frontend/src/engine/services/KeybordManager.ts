@@ -43,6 +43,7 @@ export class KeyboardManager {
 	private activeProfiles!: { P1: KeysProfile; P2: KeysProfile; DEFAULT: KeysProfile, DEFAULT_RIGHT: KeysProfile };
 	private isInitialized: boolean = false;
 	private isSpectator: boolean = false;
+	private isPaused: boolean = false;
 	private spectatorChoiceResolver: ((choice: boolean) => void) | null = null;
 
 	constructor(
@@ -98,17 +99,7 @@ export class KeyboardManager {
 	
 	private handleGlobalKeyDown(event: KeyboardEvent): void {
 		const key = event.keyCode;
-
-		if (key === 70) { // F key - Open
-			this.gui.curtain.show();
-			return;
-		}
 		
-		if (key === 71) { // G key - Close
-			this.gui.curtain.hide();
-			return;
-		}
-
 		if (this.spectatorChoiceResolver !== null) {
 			this.handleSpectatorChoiceKeys(key);
 			return;
@@ -124,7 +115,7 @@ export class KeyboardManager {
 			return;
 		}
 
-		if (this.gui.isPauseMenuVisible())
+		if (this.isPaused)
 			this.handlePauseMenuKeys(key);
 		else
 			this.handlePowerupKeys(key);
@@ -161,17 +152,16 @@ export class KeyboardManager {
 
 	// Updated escape key handler
 	private handleEscapeKey(): void {
-		this.gui.togglePauseMenu();
+		this.isPaused = !this.isPaused;
+		this.gui.setPauseVisible(this.isPaused, false);
 
-		if (this.gui.isPauseMenuVisible())
+		if (this.isPaused)
 			webSocketClient.sendPauseRequest();
 		else
 			webSocketClient.sendResumeRequest();
 	}
 
 	private handlePauseMenuKeys(key: number): void {
-		// const isSpectators = !this.players.get(PlayerSide.LEFT)?.isControlled
-		// 				&& !this.players.get(PlayerSide.RIGHT)?.isControlled;
 		switch (key) {
 			case Keys.Y:
 				document.dispatchEvent(new CustomEvent('game:exitToMenu'));

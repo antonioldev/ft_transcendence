@@ -41,7 +41,7 @@ export class GameServices implements IGameServices {
 		this.gui = new GUIManager(scene, config, this.animation, this.audio);
 		this.particles = new Particles();
 		this.powerup = new PowerupManager(players, this.animation, this.gui, gameObjects);
-		this.input = new KeyboardManager(scene, config, gameObjects, players, this.powerup, this.gui);//, gameCallbacks);
+		this.input = new KeyboardManager(scene, config, gameObjects, players, this.powerup, this.gui);
 		this.render = new RenderManager(engine, scene, this.gui, this.animation, gameObjects);
 	}
 
