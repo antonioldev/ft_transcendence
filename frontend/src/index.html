@@ -11,37 +11,25 @@
     <script src="https://cdn.babylonjs.com/babylon.js"></script>
     <script src="https://cdn.babylonjs.com/gui/babylon.gui.min.js"></script>
     <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindplus/elements@1" type="module"></script>
     <script src="/env-config.js"></script>
 </head>
 <body class="bg-blue-background h-screen relative px-4 py-4">
 
-    <!-- Language selector - Fixed in top right for all screens -->
-    <div id="language-selector" class="fixed top-4 right-4 z-50 flex items-center gap-2">
-        <button type="button" 
-                id="back" 
-                class="text-light-green hover:text-white transition-colors duration-200 
-                    font-tiny5-regular text-lg px-2">
-            ←
-        </button>
-        <span id="language_select" 
-            class="text-light-green font-tiny5-regular text-lg min-w-[80px] text-center">
-            ENGLISH
-        </span>
-        <button type="button" 
-                id="forward" 
-                class="text-light-green hover:text-white transition-colors duration-200 
-                    font-tiny5-regular text-lg px-2">
-            →
+    <div class="fixed top-4 right-5 z-50 flex items-center gap-2">
+        <button type="button"
+                id="settings-btn"
+                class="hover:text-white transition-colors duration-200 text-2xl px-2">
+            ⚙️
         </button>
     </div>
-
-    
     
     <!-- Main Menu -->
     <main id="main-menu" class="contents">
         <!-- ft_transcendence in top left -->
         <div class="absolute top-4 left-5 flex items-center gap-2">
-            <div id="connection-status" class="connection-status text-xs text-light-green opacity-80 min-w-[16px] min-h-[16px] flex items-center justify-center">
+            <div id="connection-status"
+                class="connection-status text-xs text-light-green opacity-80 min-w-[16px] min-h-[16px] flex items-center justify-center">
                 🟡
             </div>
             <h2 class="text-light-green font-tiny5-regular text-sm sm:text-base md:text-lg">
@@ -66,8 +54,6 @@
             </h1>
         </div>
         
-
-        battlepong
         <!-- Main navigation buttons - Bottom Left -->
         <nav class="absolute bottom-8 left-8 flex flex-col gap-2 sm:gap-1 md:gap-2 lg:gap-3 xl:gap-4">
             <!-- PLAY button -->
@@ -101,6 +87,109 @@
             </button>
         </nav>
     </main>
+
+    <!-- Setting Menu (Hidden) -->
+     <div id="setting-menu" class="fixed inset-0 bg-blue-background flex items-center justify-center" style="display: none;">
+        <div class="h-full flex items-center justify-center px-4 sm:px-8 md:px-16 lg:px-40 py-8 sm:py-12">
+            <div class="w-full max-w-sm sm:max-w-md mx-auto space-y-6 sm:space-y-8">
+                <div>
+                    <h1 id="settings-title" class="text-center uppercase text-xl sm:text-2xl font-bold tracking-tight text-light-green font-sans">
+                        Settings
+                    </h1>
+                </div>
+                <form class="max-w-sm mx-auto">
+                    <label for="language_select" class="block mb-2 text-sm font-medium text-light-green font-sans">Language</label>
+                        <select id="language_select" class="block w-full p-2 mb-6 text-sm sm:text-base bg-transparent border border-light-green rounded-sm text-light-green focus:outline-2 focus:outline-orange font-sans">
+                            <option value="UK">🇬🇧 English</option>
+                            <option value="IT">🇮🇹 Italiano</option>
+                            <option value="FR">🇫🇷 Français</option>
+                            <option value="BR">🇧🇷 Brasileiro</option>
+                            <option value="RU">🇷🇺 Русский</option>
+                        </select>
+                    <label for="map-selector" class="block mb-2 text-sm font-medium text-light-green font-sans">3D Scene</label>
+                        <select id="map-selector" class="block w-full p-2 mb-6 text-sm sm:text-base bg-transparent border border-light-green rounded-sm text-light-green focus:outline-2 focus:outline-orange font-sans">
+                          <option value="map1">Scene 01</option> <!-- temporary names-->
+                          <option value="map2">Scene 02</option>
+                          <option value="map3">Scene 03</option>
+                          <option value="random">Random</option>
+                        </select>
+                    <label class="inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="music-toggle" value="" class="sr-only peer" checked>
+                        <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange dark:peer-focus:ring-orange rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-orange dark:peer-checked:bg-orange">
+                        </div>
+                        <span id="music-toggle-label" class="ms-3 text-sm sm:text-base font-medium text-light-green font-sans">
+                            Music
+                        </span>
+                    </label>
+                        
+                    <label class="inline-flex items-center cursor-pointer ml-6">
+                        <input type="checkbox" id="sound-effect-toggle" value="" class="sr-only peer" checked>
+                        <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange dark:peer-focus:ring-orange rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-orange dark:peer-checked:bg-orange">
+                        </div>
+                        <span id="sound-effect-toggle-label" class="ms-3 text-sm sm:text-base font-medium text-light-green font-sans">
+                            Sound Effects
+                        </span>
+                    </label>
+                </form>
+
+                <!-- Back button -->
+                <div class="text-center">
+                    <button type="button" id="settings-back"
+                        class="bg-transparent text-light-green font-sans text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 
+                               hover:bg-light-green hover:text-blue-background transition-colors duration-200
+                               border border-light-green rounded-sm">
+                        Back to Main Menu
+                    </button>
+                </div>
+     </div>
+
+         <!-- Language selector - Fixed in top right for all screens -->
+    <!-- <div id="language-selector" class="fixed top-4 right-4 z-50 flex items-center gap-2">
+        <button type="button" 
+                id="back" 
+                class="text-light-green hover:text-white transition-colors duration-200 
+                    font-tiny5-regular text-lg px-2">
+            ←
+        </button>
+        <span id="language_select" 
+            class="text-light-green font-tiny5-regular text-lg min-w-[80px] text-center">
+            ENGLISH
+        </span>
+        <button type="button" 
+                id="forward" 
+                class="text-light-green hover:text-white transition-colors duration-200 
+                    font-tiny5-regular text-lg px-2">
+            →
+        </button>
+    </div> -->
+
+<!-- <form class="max-w-sm mx-auto">
+  <label for="small" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Small select</label>
+  <select id="small" class="block w-full p-2 mb-6 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+    <option selected>Choose a country</option>
+    <option value="US">United States</option>
+    <option value="CA">Canada</option>
+    <option value="FR">France</option>
+    <option value="DE">Germany</option>
+  </select>
+  <label for="default" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Default select</label>
+  <select id="default" class="bg-gray-50 border border-gray-300 text-gray-900 mb-6 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+    <option selected>Choose a country</option>
+    <option value="US">United States</option>
+    <option value="CA">Canada</option>
+    <option value="FR">France</option>
+    <option value="DE">Germany</option>
+  </select>
+  <label for="large" class="block mb-2 text-base font-medium text-gray-900 dark:text-white">Large select</label>
+  <select id="large" class="block w-full px-4 py-3 text-base text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+    <option selected>Choose a country</option>
+    <option value="US">United States</option>
+    <option value="CA">Canada</option>
+    <option value="FR">France</option>
+    <option value="DE">Germany</option>
+  </select>
+</form> -->
+
 
     <!-- Login Page (Hidden) -->
     <div id="login-modal" class="fixed inset-0 bg-blue-background flex items-center justify-center" style="display: none;">
@@ -526,7 +615,7 @@
             <div class="text-center">
                 <h2 id="loading" class="text-light-green font-tiny5-regular text-3xl mb-6">Loading...</h2>
                 <div class="w-64 h-4 border border-light-green bg-transparent mx-auto">
-                    <div id="progress-fill" class="h-full bg-light-green transition-all duration-300" style="width: 0%;"></div>
+                    <div id="progress-fill" class="h-full font-poppins bg-light-green transition-all duration-300" style="width: 0%;"></div>
                 </div>
                 <span id="progress-text" class="text-light-green font-tiny5-regular text-lg mt-4 block">0%</span>
             </div>

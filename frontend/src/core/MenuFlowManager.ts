@@ -95,6 +95,7 @@ export class MenuFlowManager {
             this.setupGameModeButtons();
             this.setupPlayerSetupListeners();
             this.showDashboard();
+            this.setupSettingsButton();
             
             // Initialize UI displays
             uiManager.updateAIDifficultyDisplay(this.currentAiDifficultyIndex);
@@ -114,6 +115,7 @@ export class MenuFlowManager {
 				viewModeClassic: requireElementById<HTMLButtonElement>(EL.BUTTONS.VIEW_MODE_CLASSIC),
 				viewModeImmersive: requireElementById<HTMLButtonElement>(EL.BUTTONS.VIEW_MODE_IMMERSIVE),
 				backBtn: requireElementById<HTMLButtonElement>(EL.BUTTONS.DASHBOARD_BACK),
+				settingsBackBtn: requireElementById<HTMLButtonElement>(EL.BUTTONS.SETTINGS_BACK),
 				soloDifficultyBack: requireElementById<HTMLButtonElement>(EL.BUTTONS.SOLO_DIFFICULTY_BACK),
 				soloDifficultyForward: requireElementById<HTMLButtonElement>(EL.BUTTONS.SOLO_DIFFICULTY_FORWARD),
 				tournamentNumberBack: requireElementById<HTMLButtonElement>(EL.BUTTONS.TOURNAMENT_NUMBER_BACK),
@@ -132,6 +134,11 @@ export class MenuFlowManager {
 			
 			// Dashboard back button
 			elements.backBtn.addEventListener('click', () => { 
+				appStateManager.navigateTo(AppState.MAIN_MENU);
+			});
+			
+			// Settings back button
+			elements.settingsBackBtn.addEventListener('click', () => { 
 				appStateManager.navigateTo(AppState.MAIN_MENU);
 			});
 			
@@ -178,6 +185,17 @@ export class MenuFlowManager {
 		this.selectedGameMode = null;
 
 		appStateManager.navigateTo(target);
+	}
+
+	// ========================================
+	// SETTINGS BUTTON
+	// ========================================
+	
+	private setupSettingsButton(): void {
+		const settingsBtn = requireElementById<HTMLButtonElement>(EL.BUTTONS.SETTINGS);
+		settingsBtn?.addEventListener('click', () => {
+			appStateManager.navigateTo(AppState.SETTINGS);
+		});
 	}
 
 	// ========================================

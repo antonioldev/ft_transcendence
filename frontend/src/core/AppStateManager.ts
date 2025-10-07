@@ -80,6 +80,9 @@ export class AppStateManager {
 			case AppState.STATS_DASHBOARD:
 				this.showScreen(EL.SCREENS.STATS_DASHBOARD, { hideOverlayss: true });
 				break;
+			case AppState.SETTINGS:
+				this.showScreen(EL.SCREENS.SETTINGS_MENU, { hideOverlayss: true });
+				break;
 			default:
 				Logger.error(`Unknown state: ${state}, redirecting to main menu`, 'HistoryManager');
 				this.navigateTo(AppState.MAIN_MENU);

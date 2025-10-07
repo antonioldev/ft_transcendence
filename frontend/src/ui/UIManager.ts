@@ -25,7 +25,8 @@ class UIManager {
             'game-mode-overlay',
             'player-setup-overlay',
             'game-3d',
-            'stats-dashboard'
+            'stats-dashboard',
+            'setting-menu'
         ];
         
         screensToHide.forEach(id => {
