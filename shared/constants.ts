@@ -83,6 +83,7 @@ export enum PowerupType {
 	RESET_RALLY,
 	CURVE_BALL,
 	TRIPLE_SHOT,
+	SHIELD, 
 }
 
 export enum PowerupState {

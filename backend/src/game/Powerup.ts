@@ -39,7 +39,7 @@ export class PowerupManager {
 			// this.left_slots[i] = new Slot(Math.floor(Math.random() * num_powerups), LEFT, i);
 			// this.right_slots[i] = new Slot(Math.floor(Math.random() * num_powerups), RIGHT, i);
 			this.left_slots[i] = new Slot(PowerupType.TRIPLE_SHOT, LEFT, i);
-			this.right_slots[i] = new Slot(PowerupType.GROW_PADDLE, RIGHT, i);
+			this.right_slots[i] = new Slot(PowerupType.SHIELD, RIGHT, i);
 		}
 	}
 
@@ -98,6 +98,9 @@ export class PowerupManager {
 			case PowerupType.TRIPLE_SHOT:
 				timeout = await this.triple_shot(slot.side);
 				break ;
+			case PowerupType.SHIELD:
+				timeout = this.set_shield(slot.side, true);
+				break ;
 			default:
 				console.error(`Error: cannot activate unknown Powerup "${slot.type}`);
 				return ;
@@ -145,6 +148,9 @@ export class PowerupManager {
 				break ;
 			case PowerupType.TRIPLE_SHOT:
 				// nothing to handle
+				break ;
+			case PowerupType.SHIELD:
+				this.set_shield(slot.side, false);
 				break ;
 			default:
 				console.error(`Error: cannot deactivate unknown Powerup "${slot.type}`);
@@ -308,5 +314,10 @@ export class PowerupManager {
 			ball.double_points_active = active;
 		}
 		return (GAME_CONFIG.powerupDuration);
+	}
+
+	set_shield(side: number, active: boolean): number {
+		this.paddles[side].shield_activated = active;
+		return (GAME_CONFIG.powerupDuration)
 	}
 }

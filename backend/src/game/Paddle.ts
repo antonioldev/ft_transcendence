@@ -15,6 +15,7 @@ export class Paddle {
 	powershot_deactivate = false;
     invisible_activated: boolean = false;
     triple_shot_activated: boolean = false;
+	shield_activated: boolean = false;
 
 	constructor(side: number) {
 		this.side = side;
