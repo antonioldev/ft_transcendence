@@ -30,6 +30,9 @@ class GameManager {
         }
         gameSession.handlePlayerQuit(client);
         this.clientGamesMap.delete(client.id);
+        if (gameSession.clients.size === 0) {
+            this.allGameSessions.delete(gameSession);
+        }
         console.log(`Client disconnected: ${client.username}:${client.username}`);
     }
 

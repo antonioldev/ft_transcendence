@@ -161,27 +161,28 @@ export class Game {
 	}
 
 	// Main game loop 
-	async run(): Promise<Player | CPU> {
+	async run(): Promise<Player | CPU > {
 		console.log(`Game ${this.id} started with players: ${this.players[LEFT].name}, ${this.players[RIGHT].name}`)
+		this.state = GameState.RUNNING;
+
 		// if both are CPU then choose a random winner
 		if (this.paddles[LEFT] instanceof CPUBot && this.paddles[RIGHT] instanceof CPUBot) {
 			const random_index = (Math.random() > 0.5) ? 0 : 1;
 			return (this.players[random_index]);
 		}
 		await this.send_countdown();
-		this.state = GameState.RUNNING;
 
 		// run game loop, updating and broadcasting state to clients until win
-		while (!this.is_ended()) {
+		while (1) {
 			const dt = await this.clock.tick(60);
-			// if (this.is_paused()) continue ;
-			// this._update_state(dt);
-			if (!this.is_paused())
+			if (!this.is_paused()) {
 				this._update_state(dt);
+			}
 			this._broadcast({
 				type: MessageType.GAME_STATE,
 				state: this.get_state()
 			});
+			if (this.is_ended()) break ;
 		}
 		return (this.winner);
 	}
@@ -213,7 +214,7 @@ export class Game {
 
 	// Stop the execution of the game
 	stop() {
-		if (this.state === GameState.ENDED) return ;
+		if (this.is_ended()) return ;
 		this.state = GameState.ENDED;
 	}
 
