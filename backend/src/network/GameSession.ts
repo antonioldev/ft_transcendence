@@ -215,7 +215,7 @@ export class OneOffGame extends AbstractGameSession{
 	}
 	
 	handlePlayerQuit(quitter: Client): void {
-		if (this.mode == GameMode.TWO_PLAYER_REMOTE && this.game && this.game.is_running()) {
+		if (this.mode == GameMode.TWO_PLAYER_REMOTE) {
 			this.game.setOtherPlayerWinner(quitter);
 		}
 		this.stop();

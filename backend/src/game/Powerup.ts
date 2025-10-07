@@ -39,7 +39,7 @@ export class PowerupManager {
 			// this.left_slots[i] = new Slot(Math.floor(Math.random() * num_powerups), LEFT, i);
 			// this.right_slots[i] = new Slot(Math.floor(Math.random() * num_powerups), RIGHT, i);
 			this.left_slots[i] = new Slot(PowerupType.TRIPLE_SHOT, LEFT, i);
-			this.right_slots[i] = new Slot(PowerupType.POWERSHOT, RIGHT, i);
+			this.right_slots[i] = new Slot(PowerupType.GROW_PADDLE, RIGHT, i);
 		}
 	}
 
@@ -198,11 +198,12 @@ export class PowerupManager {
 	}
 
 	grow(side: number): number {
-		const caller = this.paddles[side];
+		const caller: Paddle = this.paddles[side];
 		const opponent_side = side === LEFT ? RIGHT : LEFT;
 		
 		if (caller.rect.width === GAME_CONFIG.paddleWidth) {
 			caller.rect.width = GAME_CONFIG.increasedPaddleWidth;
+			caller.check_boundaries();
 		}
 		else if (caller.rect.width === GAME_CONFIG.decreasedPaddleWidth) {
 			const opponent_slot = this.find_active_powerup(PowerupType.SHRINK_OPPONENT, opponent_side);
