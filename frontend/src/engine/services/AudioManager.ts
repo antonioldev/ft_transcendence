@@ -7,6 +7,7 @@ import { Logger } from '../../utils/LogManager.js';
  */
 export class AudioManager {
 	private gameMusic: Sound | null = null;
+	private gameMusicEntrance: Sound | null = null;
 	private isInitialized: boolean = false;
 	private basePlaybackRate: number = 1.0;
 	private maxPlaybackRate: number = 1.8;
@@ -16,10 +17,16 @@ export class AudioManager {
 	private muted = false;
 	private volumes = {
 		music: 0.5,
+		gameMusicEntrance: 0.4,
 		countdown: 0.6,
 		paddle: 0.6,
 		score: 0.7,
-		powerup: 0.7
+		powerup: 0.7,
+		entrance: 1.0,
+		winner: 1.0,
+		loser: 1.0,
+		miniGameCorrect: 0.7,
+		miniGameNotCorrect: 0.7,
 	};
 
 	// Sound effects
@@ -27,6 +34,12 @@ export class AudioManager {
 	private paddleHitSound: Sound | null = null;
 	private scoreSound: Sound | null = null;
 	private powerup: Sound | null = null;
+	private entrance: Sound | null = null;
+	private winner: Sound | null = null;
+	private loser: Sound | null = null;
+	private miniGameCorrect: Sound | null = null;
+	private miniGameNotCorrect: Sound | null = null;
+
 
 	constructor(private scene: Scene) {
 	}
@@ -43,6 +56,19 @@ export class AudioManager {
 					autoplay: false,
 					volume: this.volumes.music,
 					playbackRate: this.basePlaybackRate
+				}
+			);
+
+			this.gameMusicEntrance = new Sound(
+				"gameMusicEntrance",
+				"/assets/audio/bg/retro8.mp3",
+				this.scene,
+				null,
+				{
+					loop: true,
+					autoplay: true,
+					volume: this.volumes.gameMusicEntrance,
+					playbackRate: 1.2
 				}
 			);
 
@@ -99,37 +125,109 @@ export class AudioManager {
 				}
 			);
 
+			this.entrance = new Sound(
+				"entrance",
+				"/assets/audio/entrance.mp3",
+				this.scene,
+				null,
+				{
+					loop: false,
+					autoplay: false,
+					volume: this.volumes.entrance,
+					playbackRate: this.basePlaybackRate
+				}
+			);
+
+			this.winner = new Sound(
+				"winner",
+				"/assets/audio/winner.mp3",
+				this.scene,
+				null,
+				{
+					loop: false,
+					autoplay: false,
+					volume: this.volumes.winner,
+					playbackRate: this.basePlaybackRate
+				}
+			);
+
+			this.loser = new Sound(
+				"loser",
+				"/assets/audio/loser.mp3",
+				this.scene,
+				null,
+				{
+					loop: false,
+					autoplay: false,
+					volume: this.volumes.loser,
+					playbackRate: this.basePlaybackRate
+				}
+			);
+
+			this.miniGameCorrect = new Sound(
+				"miniGameCorrect",
+				"/assets/audio/minigame_right.mp3",
+				this.scene,
+				null,
+				{
+					loop: false,
+					autoplay: false,
+					volume: this.volumes.miniGameCorrect,
+					playbackRate: this.basePlaybackRate
+				}
+			);
+
+			this.miniGameNotCorrect = new Sound(
+				"miniGameNotCorrect",
+				"/assets/audio/minigame_wrong.mp3",
+				this.scene,
+				null,
+				{
+					loop: false,
+					autoplay: false,
+					volume: this.volumes.miniGameNotCorrect,
+					playbackRate: this.basePlaybackRate
+				}
+			);
+
 			this.isInitialized = true;
 		} catch (error) {
 			Logger.errorAndThrow('Error initializing Babylon audio', 'BabylonAudioManager', error);
 		}
 	}
 
-	// Start playing the game music
 	startGameMusic(): void {
-		if (!this.gameMusic || !this.isInitialized) {
+		if (!this.gameMusic || !this.isInitialized)
 			return;
-		}
 
 		try {
+			this.countdownSound?.stop();
 			if (this.gameMusic.isPlaying !== true )
 				this.gameMusic.play();
+			setTimeout(() => {
+				this.gameMusicEntrance?.stop();
+			}, 500);
 		} catch (error) {
 			Logger.errorAndThrow('Error starting game music', 'BabylonAudioManager', error);
 		}
 	}
 
-	// Stop the game music
 	stopGameMusic(): void {
 		this.gameMusic?.stop();
 	}
 
-	// Pause the game music
+	lowerMusicVolume(factor: number = 0.5): void {
+		this.gameMusic?.setVolume(this.volumes.music * factor);
+	}
+
+	restoreMusicVolume(): void {
+		this.gameMusic?.setVolume(this.volumes.music);
+	}
+
 	pauseGameMusic(): void {
 		this.gameMusic?.pause();
 	}
 
-	// Resume the game music
 	resumeGameMusic(): void {
 		if (this.gameMusic?.isPlaying !== true )
 			this.gameMusic?.play();
@@ -172,9 +270,25 @@ export class AudioManager {
 		this.powerup?.play();
 	}
 
-	stopCountdown(): void {
-		this.countdownSound?.stop();
+	playEntrance(): void {
+		this.entrance?.play();
 	}
+
+	playWinner(): void {
+		this.winner?.play();
+	}
+
+	playLoser(): void {
+		this.loser?.play();
+	}
+
+	playMiniGame(isCorrect: boolean): void {
+		if (isCorrect)
+			this.miniGameCorrect?.play();
+		else
+			this.miniGameNotCorrect?.play();
+	}
+
 
 	isMuted(): boolean {
 		return this.muted;
@@ -195,16 +309,24 @@ export class AudioManager {
 		const base = this.muted ? 0 : 1;
 
 		this.gameMusic?.setVolume(base * this.volumes.music);
+		this.gameMusicEntrance?.setVolume(base * this.volumes.music);
 		this.countdownSound?.setVolume(base * this.volumes.countdown);
 		this.paddleHitSound?.setVolume(base * this.volumes.paddle);
 		this.scoreSound?.setVolume(base * this.volumes.score);
-		this.powerup?.setVolume(base * this.volumes.powerup)
+		this.powerup?.setVolume(base * this.volumes.powerup);
+		this.entrance?.setVolume(base * this.volumes.entrance);
+		this.winner?.setVolume(base * this.volumes.winner)
+		this.loser?.setVolume(base * this.volumes.loser)
+
 	}
 
 	dispose(): void {
 		try {
 			this.gameMusic?.dispose();
 			this.gameMusic = null;
+
+			this.gameMusicEntrance?.dispose();
+			this.gameMusicEntrance = null;
 
 			this.paddleHitSound?.dispose();
 			this.paddleHitSound = null;
@@ -217,6 +339,15 @@ export class AudioManager {
 
 			this.powerup?.dispose();
 			this.powerup = null;
+
+			this.entrance?.dispose();
+			this.entrance = null;
+
+			this.winner?.dispose();
+			this.entrance = null;
+
+			this.loser?.dispose();
+			this.entrance = null;
 
 			this.isInitialized = false;
 

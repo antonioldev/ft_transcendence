@@ -40,7 +40,7 @@ export async function authRoutes(fastify: FastifyInstance) {
 				secure: true,
 				sameSite: 'none' as const,
 				path: '/',
-				domain: '.42london.com',
+				// domain: '.42london.com',			TO CHECK ON 42 COMPUTER
 				maxAge: COOKIE_MAX_AGE,
 			};
 			reply.setCookie(COOKIE_NAME, sid, COOKIE_OPTS);

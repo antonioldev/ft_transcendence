@@ -54,29 +54,6 @@ class UIManager {
         }
     }
 
-    showSetupForm(formType: string): void {
-        // Hide all setup forms
-        const setupForms = [
-            'solo-setup',
-            'two-players-setup', 
-            'offline-tournament-setup'
-        ];
-        
-        setupForms.forEach(id => {
-            const element = document.getElementById(id);
-            if (element) {
-                element.style.display = 'none';
-            }
-        });
-        
-        const targetForm = document.getElementById(`${formType}-setup`);
-        if (targetForm) {
-            targetForm.style.display = 'block';
-        } else {
-            console.error(`Setup form not found: ${targetForm}`);
-        }
-    }
-
 	// ========================================
 	// AUTHENTICATION UI
 	// ========================================

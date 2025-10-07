@@ -29,6 +29,8 @@ export class Game {
 	private canvas: HTMLCanvasElement | null = null;
 	private gameObjects: GameObjects | null = null;
 	private gameLoopObserver: any = null;
+	private isSpectator: boolean = false;
+	private isGameEnded: boolean = false;
 	private players: Map<PlayerSide, PlayerState> = new Map([
 			[PlayerSide.LEFT, { name: "", isControlled: false, keyboardProfile: undefined,
 				size: GAME_CONFIG.paddleWidth, score: 0, powerUpsAssigned: false, powerUps: [], inverted: false,}],
@@ -90,14 +92,15 @@ export class Game {
 		this.services = new GameServices(this.engine, this.scene, this.config, this.gameObjects, this.players);
 		await this.services.initialize();
 		this.services.render.startRendering();
-
 		this.registerCallbacks();
 		this.isInitialized = true;
 		if (this.config.isRemoteMultiplayer)
 			webSocketClient.requestLobby();
 		webSocketClient.sendPlayerReady();
 		uiManager.setLoadingScreenVisible(false);
+		await this.services?.gui.curtain.show();
 	}
+
 
 	// Initialize Babylon.js engine
 	private async initializeBabylonEngine(): Promise<Engine> {
@@ -153,11 +156,15 @@ export class Game {
 				Logger.errorAndThrow('Server sent SIGNAL without countdown parameter', 'Game');
 
 			uiManager.setLoadingScreenVisible(false);
-			this.services?.gui?.lobby.hide();
+			this.services?.gui.lobby.hide();
+			this.services?.gui.cardGame.hide();
+			this.services?.gui.curtain.hide();
+			this.services?.gui.hud.show(true);
 			const playerLeft = this.players.get(PlayerSide.LEFT)?.name;
 			const playerRight = this.players.get(PlayerSide.RIGHT)?.name;
 
-			if (countdown === GAME_CONFIG.startDelay) {
+			if (countdown === GAME_CONFIG.startDelay - 1) {
+				this.services?.audio?.restoreMusicVolume();
 				const controlledSides = this.getControlledSides();
 				await Promise.all([
 					this.services?.gui.countdown.showPlayersName(playerLeft!, playerRight!),
@@ -177,11 +184,9 @@ export class Game {
 				this.services?.audio?.playCountdown();
 			}
 			else if (countdown === 0) {
-				this.services?.audio?.stopCountdown();
 				this.services?.audio?.startGameMusic();
 				this.services?.render?.stopCameraAnimation();
 				this.services?.gui?.countdown.finish();
-				await this.services?.gui?.animateBackground(false);
 				this.startGameLoop();
 			}
 		} catch (error) {
@@ -192,8 +197,8 @@ export class Game {
 	// Handle server ending the game
 	private async onServerEndedGame(winner: string, loser: string): Promise<void> {
 		if (!this.isInitialized || !this.config.isTournament) return;
-		console.error(`[${new Date().toISOString()}] start ON SERVER ENDED GAME`);
-		this.services?.gui?.setPauseVisible(false);
+		this.services?.audio?.lowerMusicVolume();
+		this.services?.gui?.setPauseVisible(false, false);
 		const controlledSides = this.getControlledSides();
 
 		const controlledPlayer = controlledSides.length === 1 ? this.players.get(controlledSides[0]) : null;
@@ -202,17 +207,20 @@ export class Game {
 		if (showLoser){
 			await this.services?.gui?.showTournamentMatchLoser();
 			await this.services?.input.waitForSpectatorChoice();
+			this.resetForNextMatch();
+			await this.services?.gui.curtain.show(showLoser);
 			this.services?.gui.hud.setSpectatorMode();
 			webSocketClient.sendSpectatorReady();
+			this.isSpectator = true;
+			return;
 		}
-		else {
-			const waitForSpace = controlledSides.length !== 0 && this.config.gameMode !== GameMode.TOURNAMENT_REMOTE;
-			await this.services?.gui?.showTournamentMatchWinner(winner, waitForSpace);
-			this.resetForNextMatch();
-			webSocketClient.sendPlayerReady();
-			this.services?.audio?.stopGameMusic();
-		}
-		console.error(`[${new Date().toISOString()}] finish ON SERVER ENDED GAME`);
+
+		const waitForSpace = controlledSides.length !== 0 && this.config.gameMode !== GameMode.TOURNAMENT_REMOTE;
+		await this.services?.gui?.showTournamentMatchWinner(winner, waitForSpace);
+		this.resetForNextMatch();
+		await this.services?.gui.curtain.show();
+		this.services?.gui.cardGame.show();
+		webSocketClient.sendPlayerReady();
 	}
 
 	private async onServerEndedSession(winner: string): Promise<void> {
@@ -220,11 +228,11 @@ export class Game {
 
 		this.services?.render?.startRendering();
 
-		this.services?.gui?.setPauseVisible(false);
+		this.services?.gui?.setPauseVisible(false, false);
 		const cams = this.scene?.activeCameras?.length ? this.scene.activeCameras : this.scene?.activeCamera;
 		this.services?.particles?.spawnFireworksInFrontOfCameras(this.scene, cams);
 		await this.services?.gui?.showWinner(winner);
-
+		await this.services?.gui.curtain.play(200);
 		this.services?.audio?.stopGameMusic();
 		this.dispose();
 
@@ -343,18 +351,23 @@ export class Game {
 	private handleChangeServerState(state: GameStateData): void {
 		if (this.serverState === state.state) return;
 
+		// if (this.isSpectator)
+		// 	this.services?.gui.curtain.hide();
 		this.serverState = state.state;
+
 		switch (this.serverState){
 			case GameState.PAUSED:
-				this.services?.gui?.setPauseVisible(true);
+				this.services?.gui?.setPauseVisible(true, this.isSpectator);
 				this.services?.audio?.pauseGameMusic();
 				break;
 			case GameState.RUNNING:
-				this.services?.gui?.setPauseVisible(false);
+				this.services?.gui?.setPauseVisible(false, this.isSpectator);
 				this.services?.audio?.resumeGameMusic();
+				this.isGameEnded = false;
 				break;
 			case GameState.ENDED:
-				console.error(`[${new Date().toISOString()}] received state GAME ENDED`);
+				if (this.isGameEnded) return;
+				this.isGameEnded = true;
 				const winner = state.winner;
 				const loser = state.loser;
 				if (winner && loser)
@@ -365,7 +378,6 @@ export class Game {
 
 // ====================			INPUT HANDLING		   ====================
 	private handlePlayerAssignment(leftPlayerName: string, rightPlayerName: string): void {
-		console.error(`[${new Date().toISOString()}] handlePlayerAssignment START - left: ${leftPlayerName}, right: ${rightPlayerName}`);
 		this.services?.gui?.hud.updatePlayerNames(leftPlayerName, rightPlayerName);
 
 		const leftPlayer = this.players?.get(PlayerSide.LEFT);
@@ -388,7 +400,6 @@ export class Game {
 			leftPlayer?.isControlled || false, 
 			rightPlayer?.isControlled || false
 		);
-		console.error(`[${new Date().toISOString()}] handlePlayerAssignment FINISH - left: ${leftPlayerName}, right: ${rightPlayerName}`);
 	}
 
 	private getControlledSides(): PlayerSide[] {
@@ -402,6 +413,7 @@ export class Game {
 
 // ====================			GAME LIFECYCLE			   ====================
 	async requestExitToMenu(): Promise<void> {
+		await this.services?.gui.curtain.play(200);
 		webSocketClient.sendQuitGame();
 		this.dispose();
 	}

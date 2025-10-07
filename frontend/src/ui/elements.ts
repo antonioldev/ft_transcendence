@@ -44,8 +44,8 @@ export const EL = {
 
 
 	// View mode navigation
-	VIEW_MODE_BACK: 'view-mode-back',
-	VIEW_MODE_FORWARD: 'view-mode-forward',
+  VIEW_MODE_CLASSIC: 'view-mode-classic',
+  VIEW_MODE_IMMERSIVE: 'view-mode-immersive',
 
   // Form submission buttons
   LOGIN_TITLE: 'login-title',
@@ -117,7 +117,7 @@ export const EL = {
 	// Setup forms
 	SOLO_SETUP: 'solo-setup',
 	TWO_PLAYERS_SETUP: 'two-players-setup',
-	TOURNAMENT_SETUP: 'tournament-setup'
+	TOURNAMENT_SETUP: 'offline-tournament-setup',
   },
 
 	PLAYER_COLLECTION: {

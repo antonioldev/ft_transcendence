@@ -397,7 +397,6 @@ export class TournamentRemote extends AbstractTournament {
 		});
 	}
 
-	// The opposing player wins their current match and the tournament continues
 	handlePlayerQuit(quitter: Client): void {
 		if (this.in_lobby()) {
 			this.remove_player(quitter);
@@ -406,13 +405,17 @@ export class TournamentRemote extends AbstractTournament {
 			const match = this.findMatch(quitter.id);
 			if (match) {
 				this.client_match_map.delete(quitter.id);
-
-				if (match.game?.is_running()) {
-					console.log(`Removed active player: ${quitter.username}`)
+				if (this.client_match_map.size === 0) {
+					console.log(`Last undefeated player quit tournament ${this.id}`);
+					this.stop();
+				}
+				else if (match.game?.is_running()) {
+					// The opposing player wins their current match and the tournament continues
+					console.log(`Removed player from active game: ${quitter.username}`)
 					match.game.setOtherPlayerWinner(quitter);
 					match.game.stop();
 				}
-				else { // game in next round and hasn't been created yet
+				else {
 					console.log(`Removed player from pending game: ${quitter.username}`)
 					match.remove_player(quitter);
 				}
@@ -422,7 +425,7 @@ export class TournamentRemote extends AbstractTournament {
 				this.defeated_clients.delete(quitter);
 			}
 		}
-		this.remove_client(quitter);
+		this.remove_client(quitter); // at end so we can still broadcast to client if necessary
 	}
 	
 	findMatch(client_id: string): Match | undefined {

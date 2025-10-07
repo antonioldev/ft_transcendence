@@ -1,16 +1,22 @@
 import { AdvancedDynamicTexture, Rectangle } from "@babylonjs/gui";
 import { AnimationManager, Motion } from "../services/AnimationManager.js";
-import { createRect, CURTAIN_STYLES } from "./GuiStyle.js";
+import { createRect, createTextBlock, CURTAIN_STYLES } from "./GuiStyle.js";
+import { getCurrentTranslation } from "../../translations/translations.js";
 
 export class SceneTransition {
 	private leftPaddle!: Rectangle;
 	private rightPaddle!: Rectangle;
 	private leftBackground!: Rectangle;
 	private rightBackground!: Rectangle;
-	
+	private isActive: boolean = false;
+	private spectatorWaitingRect!: Rectangle;
+
 	constructor(private adt: AdvancedDynamicTexture, private animationManager: AnimationManager) {
 		const { width } = this.adt.getSize();
 		
+
+		const t = getCurrentTranslation();
+
 		this.leftBackground = createRect("leftBackground", CURTAIN_STYLES.leftBackground);
 		this.rightBackground = createRect("rightBackground", CURTAIN_STYLES.rightBackground);
 
@@ -26,9 +32,15 @@ export class SceneTransition {
 		this.rightBackground.leftInPixels = width;
 		this.leftPaddle.leftInPixels = -80;
 		this.rightPaddle.leftInPixels = width;
+
+		this.spectatorWaitingRect = createRect("spectatorWaitingBox", CURTAIN_STYLES.spectatorWaitingBox);
+		const spectatorWaitingText = createTextBlock("spectatorWaitingText", CURTAIN_STYLES.spectatorWaitingText, t.spectatorWaitingmessage);
+		this.spectatorWaitingRect.addControl(spectatorWaitingText);
+		this.adt.addControl(this.spectatorWaitingRect);
 	}
 
-	async show(): Promise<void> {
+	async show(isSpectator: boolean = false): Promise<void> {
+		this.isActive = true;
 
 		this.leftPaddle.isVisible = true;
 		this.rightPaddle.isVisible = true;
@@ -43,30 +55,41 @@ export class SceneTransition {
 		this.rightPaddle.leftInPixels = width / 2 - 40;
 		
 		await Promise.all([
-			this.animationManager.slideFromDirection(this.leftBackground, 'right', 'in', width / 2, Motion.F.fast),
-			this.animationManager.slideFromDirection(this.rightBackground, 'left', 'in', width / 2, Motion.F.fast),
-			this.animationManager.slideFromDirection(this.leftPaddle, 'right', 'in', width / 2 + 40, Motion.F.fast),
-			this.animationManager.slideFromDirection(this.rightPaddle, 'left', 'in', width / 2 + 40, Motion.F.fast)
+			this.animationManager.slideFromDirection(this.leftBackground, 'right', 'in', width / 2, Motion.F.base),
+			this.animationManager.slideFromDirection(this.rightBackground, 'left', 'in', width / 2, Motion.F.base),
+			this.animationManager.slideFromDirection(this.leftPaddle, 'right', 'in', width / 2 + 40, Motion.F.base),
+			this.animationManager.slideFromDirection(this.rightPaddle, 'left', 'in', width / 2 + 40, Motion.F.base)
 		]);
+
+		if(isSpectator)
+			this.spectatorWaitingRect.isVisible = true;
 	}
 
 	async hide(): Promise<void> {
+		if (!this.isActive) return;
+
+		this.isActive = false;
 		const { width } = this.adt.getSize();
 		
 		await Promise.all([
-			// Slide elements back to off-screen positions
 			this.animationManager.slideFromDirection(this.leftPaddle, 'left', 'out', width / 2 + 40, Motion.F.fast),
 			this.animationManager.slideFromDirection(this.rightPaddle, 'right', 'out', width / 2 + 40, Motion.F.fast),
 			this.animationManager.slideFromDirection(this.leftBackground, 'left', 'out', width / 2, Motion.F.fast),
 			this.animationManager.slideFromDirection(this.rightBackground, 'right', 'out', width / 2, Motion.F.fast)
 		]);
-		
+		this.spectatorWaitingRect.isVisible = false;
 		this.leftPaddle.isVisible = false;
 		this.rightPaddle.isVisible = false;
 		this.leftBackground.isVisible = false;
 		this.rightBackground.isVisible = false;
 		
 		this.resetPositions();
+	}
+
+	async play(duration: number = 100): Promise<void> {
+		await this.show();
+		await new Promise(resolve => setTimeout(resolve, duration));
+		await this.hide();
 	}
 
 	private resetPositions(): void {

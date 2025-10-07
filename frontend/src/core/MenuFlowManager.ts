@@ -72,11 +72,13 @@ export class MenuFlowManager {
             document.addEventListener('DOMContentLoaded', () => {
                 const menuFlowManager = MenuFlowManager.getInstance();
                 menuFlowManager.setupEventListeners();
+				menuFlowManager.updateViewModeButtonStyles();
             });
         } else {
             // DOM is already loaded
             const menuFlowManager = MenuFlowManager.getInstance();
             menuFlowManager.setupEventListeners();
+			menuFlowManager.updateViewModeButtonStyles();
         }
     }
 
@@ -97,6 +99,8 @@ export class MenuFlowManager {
             // Initialize UI displays
             uiManager.updateAIDifficultyDisplay(this.currentAiDifficultyIndex);
             uiManager.updateTournamentSizeDisplay(this.currentTournamentIndex);
+			this.updateTournamentSize(false, 'reset');
+			this.updateTournamentSize(true, 'reset');
             uiManager.updateOnlineTournamentSizeDisplay(this.currentOnlineTournamentIndex);
             
         } catch (error) {
@@ -107,8 +111,8 @@ export class MenuFlowManager {
 	private setupNavigationListeners(): void {
 		try {
 			const elements = {
-				viewModeBack: requireElementById<HTMLButtonElement>(EL.BUTTONS.VIEW_MODE_BACK),
-				viewModeForward: requireElementById<HTMLButtonElement>(EL.BUTTONS.VIEW_MODE_FORWARD),
+				viewModeClassic: requireElementById<HTMLButtonElement>(EL.BUTTONS.VIEW_MODE_CLASSIC),
+				viewModeImmersive: requireElementById<HTMLButtonElement>(EL.BUTTONS.VIEW_MODE_IMMERSIVE),
 				backBtn: requireElementById<HTMLButtonElement>(EL.BUTTONS.DASHBOARD_BACK),
 				soloDifficultyBack: requireElementById<HTMLButtonElement>(EL.BUTTONS.SOLO_DIFFICULTY_BACK),
 				soloDifficultyForward: requireElementById<HTMLButtonElement>(EL.BUTTONS.SOLO_DIFFICULTY_FORWARD),
@@ -117,15 +121,14 @@ export class MenuFlowManager {
 				tournamentOnlineNumberBack: requireElementById<HTMLButtonElement>(EL.BUTTONS.TOURNAMENT_ONLINE_NUMBER_BACK),
 				tournamentOnlineNumberForward: requireElementById<HTMLButtonElement>(EL.BUTTONS.TOURNAMENT_ONLINE_NUMBER_FORWARD)
 			};
-			
-			
+	
 			// View mode navigation
-			elements.viewModeBack.addEventListener('click', () => {
-				this.updateViewMode();
-			});
-			elements.viewModeForward.addEventListener('click', () => {
-				this.updateViewMode();
-			});
+			elements.viewModeClassic.addEventListener('click', () => {
+                this.setViewMode(ViewMode.MODE_2D);
+            });
+            elements.viewModeImmersive.addEventListener('click', () => {
+                this.setViewMode(ViewMode.MODE_3D);
+            });
 			
 			// Dashboard back button
 			elements.backBtn.addEventListener('click', () => { 
@@ -206,15 +209,6 @@ export class MenuFlowManager {
 			if (config.requiresSetup && !authManager.isUserAuthenticated()) {
 				this.beginPlayerCollection(gameMode);
 				appStateManager.navigateTo(AppState.PLAYER_SETUP);
-				
-				// Show appropriate setup form based on game mode
-				if (gameMode === GameMode.SINGLE_PLAYER) {
-					uiManager.showSetupForm('solo');
-				} else if (gameMode === GameMode.TWO_PLAYER_LOCAL) {
-					uiManager.showSetupForm('two-players');
-				} else if (gameMode === GameMode.TOURNAMENT_LOCAL) {
-					uiManager.showSetupForm('offline-tournament');
-				}
 			} else {
 				await this.startGameWithCurrentConfig();
 			}
@@ -248,6 +242,7 @@ export class MenuFlowManager {
 		const currentPlayer = this.playerIndex + 1;
 		const isLastPlayer = currentPlayer >= this.maxPlayersNeeded;
 		const t = getCurrentTranslation();
+
 		const label = requireElementById<HTMLLabelElement>(EL.PLAYER_COLLECTION.LABEL);
 		const input = requireElementById<HTMLInputElement>(EL.PLAYER_COLLECTION.INPUT);
 		const nextButton = requireElementById<HTMLButtonElement>(EL.BUTTONS.START_GAME);
@@ -439,15 +434,17 @@ export class MenuFlowManager {
 	// TOURNAMENT SIZE MANAGEMENT
 	// ========================================
 
-	private updateTournamentSize(isOnline: boolean, direction: 'next' | 'previous'): void {
+	private updateTournamentSize(isOnline: boolean, direction: 'next' | 'previous' | 'reset'): void {
 		const currentIndex = isOnline ? this.currentOnlineTournamentIndex : this.currentTournamentIndex;
 		const currentSizeIndex = this.tournamentSizes.indexOf(currentIndex as 4 | 8 | 16);
 		
 		let newSizeIndex: number;
 		if (direction === 'next')
 			newSizeIndex = (currentSizeIndex + 1) % this.tournamentSizes.length;
-		else
+		else if (direction == 'previous')
 			newSizeIndex = (currentSizeIndex - 1 + this.tournamentSizes.length) % this.tournamentSizes.length;
+		else
+			newSizeIndex = currentSizeIndex;
 		
 		const newSize = this.tournamentSizes[newSizeIndex];
 		
@@ -463,20 +460,27 @@ export class MenuFlowManager {
 	// ========================================
 	// VIEW MODE MANAGEMENT
 	// ========================================
-	private updateViewMode(): void {
-		const t = getCurrentTranslation();
-    
-		this.selectedViewMode = this.selectedViewMode === ViewMode.MODE_2D 
-			? ViewMode.MODE_3D 
-			: ViewMode.MODE_2D;
-		
-		const displayName = this.selectedViewMode === ViewMode.MODE_2D 
-			? t.classicMode 
-			: t.immersiveMode;
-		
-		uiManager.updateViewModeDisplay(displayName);
-	}
+	    private setViewMode(viewMode: ViewMode): void {
+			this.selectedViewMode = viewMode;
+        	this.updateViewModeButtonStyles();
+		}
 
+	private updateViewModeButtonStyles(): void {
+        const classicBtn = requireElementById<HTMLButtonElement>(EL.BUTTONS.VIEW_MODE_CLASSIC);
+        const immersiveBtn = requireElementById<HTMLButtonElement>(EL.BUTTONS.VIEW_MODE_IMMERSIVE);
+        const t = getCurrentTranslation();
+
+        // Reset both buttons to inactive state
+        classicBtn.className = "bg-transparent text-light-green font-poppins-semibold text-lg px-4 py-3 transition-colors duration-200 border border-light-green rounded-sm min-w-[120px]";
+        immersiveBtn.className = "bg-transparent text-light-green font-poppins-semibold text-lg px-4 py-3 transition-colors duration-200 border border-light-green rounded-sm min-w-[120px]";
+        
+        // Set active button style
+        if (this.selectedViewMode === ViewMode.MODE_2D) {
+            classicBtn.className = "bg-orange text-blue-background font-poppins-semibold text-lg px-4 py-3 transition-colors duration-200 border border-orange rounded-sm min-w-[120px]";
+        } else {
+            immersiveBtn.className = "bg-orange text-blue-background font-poppins-semibold text-lg px-4 py-3 transition-colors duration-200 border border-orange rounded-sm min-w-[120px]";
+        }
+    }
 }
 
 export const menuFlowManager = MenuFlowManager.getInstance();
