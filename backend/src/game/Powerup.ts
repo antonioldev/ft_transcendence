@@ -293,9 +293,9 @@ export class PowerupManager {
 		if (this.balls.length === 3) return (0);
 		await new Promise<void>(resolve => {
 			eventManager.once(`paddle-collision-${side}`, (ball: Ball ) => {
-				this.balls.push( ball.duplicate(ball.speed * 0.85, Math.PI / 9) );
+				this.balls.push( ball.duplicate(ball.speed * 0.85, -Math.PI / 9) );
 				if (this.balls.length !== 3) {
-					this.balls.push( ball.duplicate(ball.speed * 0.7, -Math.PI / 9) );
+					this.balls.push( ball.duplicate(ball.speed * 0.7, Math.PI / 9) );
 				}
 				this.paddles[side].triple_shot_activated = false;
 				resolve();
