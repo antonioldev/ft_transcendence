@@ -102,8 +102,11 @@ export function updateLanguageDisplay(): void {
 	const modeTitle = requireElementById(EL.DISPLAY.MODE_TITLE);
 	modeTitle.textContent = t.selectGameMode;
 
-	// const viewModeDisplay = requireElementById(EL.DISPLAY.VIEW_MODE_DISPLAY);
-	// viewModeDisplay.textContent = t.classicMode;
+	const viewModeDisplay = requireElementById(EL.DISPLAY.VIEW_MODE_DISPLAY);
+	viewModeDisplay.textContent = t.classicMode;
+
+    const immersiveModeBtn = requireElementById(EL.BUTTONS.VIEW_MODE_IMMERSIVE);
+    immersiveModeBtn.textContent = t.immersiveMode;
 
 	const soloBtn = requireElementById(EL.GAME_MODES.SOLO);
 	soloBtn.textContent = t.soloMode + t.easy;
