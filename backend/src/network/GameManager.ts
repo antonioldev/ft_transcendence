@@ -9,7 +9,6 @@ import { GAME_CONFIG } from '../shared/gameConfig.js';
  * Manages game sessions and player interactions within the game.
  */
 class GameManager {
-    private allGameSessions: Set<AbstractGameSession> = new Set();
     private clientGamesMap: Map<string, AbstractGameSession> = new Map(); // maps client id to gameSession
 
     addClient(client: Client, gameSession: AbstractGameSession) {
@@ -30,9 +29,6 @@ class GameManager {
         }
         gameSession.handlePlayerQuit(client);
         this.clientGamesMap.delete(client.id);
-        if (gameSession.clients.size === 0) {
-            this.allGameSessions.delete(gameSession);
-        }
         console.log(`Client disconnected: ${client.username}:${client.username}`);
     }
 
@@ -55,8 +51,6 @@ class GameManager {
             gameSession = new OneOffGame(mode);
         }
         console.log(`Created ${mode} game: ${gameSession.id}`);
-
-        this.allGameSessions.add(gameSession);
         return gameSession;
     }
 
@@ -69,7 +63,7 @@ class GameManager {
     findOrCreateGame(mode: GameMode, capacity?: number): AbstractGameSession {
         if (mode === GameMode.TWO_PLAYER_REMOTE || mode === GameMode.TOURNAMENT_REMOTE) /*Remote Games*/{
             // Try to find waiting game
-            for (const gameSession of this.allGameSessions) {
+            for (const gameSession of new Set(this.clientGamesMap.values())) {
                 if (gameSession.mode === mode && !gameSession.full && !gameSession.is_running()) {
                     if (mode === GameMode.TOURNAMENT_REMOTE && gameSession.client_capacity !== capacity) {
                         continue ;
@@ -101,7 +95,6 @@ class GameManager {
      */
     endGame(gameSession: AbstractGameSession): void {
         gameSession.stop();
-        this.allGameSessions.delete(gameSession);
         for (const client of gameSession.clients) {
             this.clientGamesMap.delete(client.id);
         }

@@ -173,7 +173,7 @@ export class Game {
 		await this.send_countdown();
 
 		// run game loop, updating and broadcasting state to clients until win
-		while (1) {
+		while (!this.is_ended()) {
 			const dt = await this.clock.tick(60);
 			if (!this.is_paused()) {
 				this._update_state(dt);
@@ -182,7 +182,6 @@ export class Game {
 				type: MessageType.GAME_STATE,
 				state: this.get_state()
 			});
-			if (this.is_ended()) break ;
 		}
 		return (this.winner);
 	}
