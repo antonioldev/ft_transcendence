@@ -15,6 +15,7 @@ export class Paddle {
 	powershot_deactivate = false;
     invisible_activated: boolean = false;
     triple_shot_activated: boolean = false;
+	shield_activated: boolean = false;
 
 	constructor(side: number) {
 		this.side = side;
@@ -35,12 +36,17 @@ export class Paddle {
 		if (this.is_inverted) {
 			_deltaMove *= -1;
 		}
-		this.rect.x = Math.min(
-						Math.max(
-							this.rect.x + _deltaMove, 
-							getPlayerBoundaries(this.rect.width).left), 
-							getPlayerBoundaries(this.rect.width).right
-						);
+		this.rect.x += _deltaMove;
+		this.check_boundaries();
+	}
+
+	check_boundaries() {
+		this.rect.x = Math.min( 
+				Math.max(
+					this.rect.x, 
+					getPlayerBoundaries(this.rect.width).left
+				), getPlayerBoundaries(this.rect.width).right
+			);
 	}
 
 	cacheRect() {

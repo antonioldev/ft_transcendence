@@ -24,12 +24,12 @@ export const GAME_CONFIG = {
 	paddleDepth: 0.5, // Depth of the paddle
 	paddleOffsetFromEdge: 2, // Distance from the edge of the field
 	paddleSpeed: 15, // Speed of the paddle
-	cpu_names: ["Tom", "Dick", "Harry", "John", "Oliver", "William", "Jack", "Hugo",
+	cpu_names: ["Tom", "Richard", "Harry", "John", "Oliver", "William", "Jack", "Hugo",
 				"Jane", "Sarah", "Suzie", "Sally", "Rebecca", "Rachel", "Karen", "Katie"],
 	
 	// Powerup settings
 	slot_count: 3,				// number of powerup slots each player has
-	increasedPaddleWidth: 4.5, // Width of the paddle when GROW_PADDLE activated
+	increasedPaddleWidth: 6, // Width of the paddle when GROW_PADDLE activated
 	decreasedPaddleWidth: 1.5, // Width of the paddle when SHRINK_PADDLE activated
 	increasedPaddleSpeed: 22, // Speed of the paddle when INCREASE_PADDLE_SPEED activated
 	decreasedPaddleSpeed: 4, // Speed of the paddle when SLOW_PADDLE activated
@@ -70,7 +70,7 @@ export const GAME_CONFIG = {
 	},
 
 	// Game mechanics
-	scoreToWin: 2,		  // Points needed to win
+	scoreToWin: 50,		  // Points needed to win
 	
 	// Input mappings
 	input2D: {
