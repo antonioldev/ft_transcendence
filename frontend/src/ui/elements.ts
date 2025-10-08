@@ -117,7 +117,7 @@ export const EL = {
 	// Setup forms
 	SOLO_SETUP: 'solo-setup',
 	TWO_PLAYERS_SETUP: 'two-players-setup',
-	TOURNAMENT_SETUP: 'tournament-setup'
+	TOURNAMENT_SETUP: 'offline-tournament-setup',
   },
 
 	PLAYER_COLLECTION: {

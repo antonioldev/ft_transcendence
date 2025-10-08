@@ -209,15 +209,6 @@ export class MenuFlowManager {
 			if (config.requiresSetup && !authManager.isUserAuthenticated()) {
 				this.beginPlayerCollection(gameMode);
 				appStateManager.navigateTo(AppState.PLAYER_SETUP);
-				
-				// Show appropriate setup form based on game mode
-				if (gameMode === GameMode.SINGLE_PLAYER) {
-					uiManager.showSetupForm('solo');
-				} else if (gameMode === GameMode.TWO_PLAYER_LOCAL) {
-					uiManager.showSetupForm('two-players');
-				} else if (gameMode === GameMode.TOURNAMENT_LOCAL) {
-					uiManager.showSetupForm('offline-tournament');
-				}
 			} else {
 				await this.startGameWithCurrentConfig();
 			}
@@ -489,14 +480,7 @@ export class MenuFlowManager {
         } else {
             immersiveBtn.className = "bg-orange text-blue-background font-poppins-semibold text-lg px-4 py-3 transition-colors duration-200 border border-orange rounded-sm min-w-[120px]";
         }
-
-		const displayName = this.selectedViewMode === ViewMode.MODE_2D 
-			? t.classicMode 
-			: t.immersiveMode;
-		
-		uiManager.updateViewModeDisplay(displayName);
     }
-
 }
 
 export const menuFlowManager = MenuFlowManager.getInstance();

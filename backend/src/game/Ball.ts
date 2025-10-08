@@ -133,13 +133,23 @@ export class Ball {
         }
         
         // Goal detection (top/bottom goals)
-        if (this.rect.centerz <= GAME_CONFIG.goalBounds.rightGoal) {
-            this.updateScore(RIGHT, this);
-            this.reset();
+        if (this.rect.top <= GAME_CONFIG.goalBounds.left) {
+            if (this.paddles[LEFT].shield_activated) {
+                this.direction[1] *= -1;
+            }
+            else {
+                this.updateScore(RIGHT, this);
+                this.reset();
+            }
         }
-        if (this.rect.centerz >= GAME_CONFIG.goalBounds.leftGoal) {
-            this.updateScore(LEFT, this);
-            this.reset();
+        else if (this.rect.bottom >= GAME_CONFIG.goalBounds.right) {
+            if (this.paddles[RIGHT].shield_activated) {
+                this.direction[1] *= -1;
+            }
+            else {
+                this.updateScore(LEFT, this);
+                this.reset();
+            }
         }
     }
 
