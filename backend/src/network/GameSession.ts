@@ -196,7 +196,7 @@ export class OneOffGame extends AbstractGameSession{
 		await this.game.run();
 		
 		if (this.mode === GameMode.TWO_PLAYER_REMOTE) {
-			this.game.save_to_db();
+			this.game.save_to_db(false);
 		}
 	}
 
