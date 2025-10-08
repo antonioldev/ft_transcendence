@@ -13,6 +13,7 @@ export class WebSocketClient {
     private ws: WebSocket | null = null;
     private connectionStatus: ConnectionStatus = ConnectionStatus.CONNECTING;
     private callbacks: { [event: string]: Function | null } = {};
+    private sid: string | null;
 
     static getInstance(): WebSocketClient {
         if (!WebSocketClient.instance) {
@@ -22,6 +23,11 @@ export class WebSocketClient {
     }
 
     private constructor() {
+        this.sid = sessionStorage.getItem('sid');
+        if (!this.sid) {
+            this.sid = crypto.randomUUID();
+            sessionStorage.setItem('sid', this.sid);
+        }
         this.connect();
     }
 
@@ -35,17 +41,18 @@ export class WebSocketClient {
         this.notifyStatus(ConnectionStatus.CONNECTING);
         
         // In development, connect directly to backend on port 3000
-        let WS_URL: string;
+        let base_url: string;
         if (location.port === '5173') {
             // Development mode - connect directly to backend
-            WS_URL = (location.protocol === 'https:' ? 'wss://' : 'ws://') + 'localhost:3000/ws';
+            base_url = (location.protocol === 'https:' ? 'wss://' : 'ws://') + 'localhost:3000/ws';
         } else {
             // Production mode - use nginx proxy
-            WS_URL = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws';
+            base_url = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws';
         }
         
-        console.log('Connecting to WebSocket:', WS_URL);
+        console.log('Connecting to WebSocket:', base_url);
 
+        const WS_URL = `${base_url}?sid=${encodeURIComponent(this.sid ?? '')}`;
         this.ws = new WebSocket(WS_URL);
 
         const timeout = setTimeout(() => {

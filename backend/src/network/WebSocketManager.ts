@@ -55,36 +55,38 @@ export class WebSocketManager {
      * Handles a new WebSocket connection, initializing the client and setting up event listeners.
      * @param socket - The WebSocket connection object.
      */
-    private handleConnection(socket: any, authenticatedUser?: { username: string; email: string }): void {
-        let client: Client;
-        if (authenticatedUser) { // Google authenticated user
-            client = new Client(authenticatedUser.username, authenticatedUser.email, socket);
-            client.loggedIn = true; // Mark as already authenticated
+    private handleConnection(socket: any, sid: string, authenticatedUser?: { username: string; email: string }): void {
+        let client = this.clientMap.get(sid);
+        if (!client) {
+            if (authenticatedUser) { // Google authenticated user
+                client = new Client(authenticatedUser.username, authenticatedUser.email, socket);
+                client.loggedIn = true; // Mark as already authenticated
+            }
+            else { // Traditional authentication via messages, details updated with login request
+                client = new Client('default', 'default@default', socket);
+            }
         }
-        else { // Traditional authentication via messages, details updated with login request
-            client = new Client('default', 'default@default', socket);
-        }
+        client.is_connected = true;
 
         socket.on('message', async (message: string) => {
-            await this.handleMessage(client, message);
+            await this.handleMessage(client!, message);
         });
 
         socket.on('close', () => {
-            console.log(`WebSocket closed for client ${client.username}:`);
-            client.is_connected = false;
-            setTimeout(() => { this.handleDisconnection(client) }, 5000);
+            console.log(`WebSocket closed for client ${client!.username}:`);
+            client!.is_connected = false;
+            setTimeout(() => { this.logoutAfterTimeout(client!) }, 5000);
         });
 
         socket.on('error', (error: any) => {
-            console.error(`❌ WebSocket error for client ${client.username}:`, error);
-            client.is_connected = false;
-            setTimeout(() => { this.handleDisconnection(client) }, 5000);
+            console.error(`❌ WebSocket error for client ${client!.username}:`, error);
+            client!.is_connected = false;
+            setTimeout(() => { this.logoutAfterTimeout(client!) }, 5000);
         });
     }
 
-    handleDisconnection(client:  Client) {
+    logoutAfterTimeout(client:  Client) {
         if (!client.is_connected) {
-            gameManager.removeClient(client);
             this.handleLogoutUser(client);
         }
     }
@@ -129,7 +131,6 @@ export class WebSocketManager {
                     this.toggleSpectator(client, data);
                     break;
                 case MessageType.QUIT_GAME:
-                    console.log(`PLAYER_QUIT received from ${client.username}`);
                     gameManager.removeClient(client);
                     break;
                 case MessageType.LOGIN_USER:
