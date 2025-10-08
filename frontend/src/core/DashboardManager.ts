@@ -121,7 +121,7 @@ export class DashboardManager {
 						<td style="padding:6px 12px;">${e.opponent}</td>
 						<td style="padding:6px 12px;">${e.score}</td>
 						<td style="padding:6px 12px;">${e.result}</td>
-						<td style="padding:6px 12px;">${e.isTournament ? 'No' : 'Yes'}</td>
+						<td style="padding:6px 12px;">${e.isTournament}</td>
 						<td style="padding:6px 12px;">${e.duration}s</td>
 					</tr>
 				`).join('')}

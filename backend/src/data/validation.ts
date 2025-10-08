@@ -188,7 +188,7 @@ export function getGameHistoryForUser(username: string): GameHistoryEntry[] | un
 		opponent: r.opponent ?? 'error',
 		score: r.yourScore != null && r.opponentScore != null ? `${r.yourScore} - ${r.opponentScore}` : 'error',
 		result: r.didWin == null ? 'error' : r.didWin ? 'Win' : 'Loss',
-		isTournament: r.isTournament ? 'No' : 'Yes',
+		isTournament: r.isTournament ? 'Yes' : 'No',
 		duration: r.durationSeconds ?? 999,
 	}));
 }
