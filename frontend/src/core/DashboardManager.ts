@@ -35,27 +35,26 @@ export class DashboardManager {
 		const container = getElementById(EL.DASHBOARD.USER_STATS_CHART);
 		if (!container) return;
 		container.innerHTML = '';
-
-		(container as HTMLElement).style.display = 'flex';
-		(container as HTMLElement).style.flexDirection = 'column';
-		(container as HTMLElement).style.alignItems = 'center';
+		(container as HTMLElement).style.display = 'block';
 		(container as HTMLElement).style.textAlign = 'center';
-		(container as HTMLElement).style.gap = '16px';
+		(container as HTMLElement).style.color = 'inherit';
 
 		const table = document.createElement('table');
 		table.style.borderCollapse = 'collapse';
-		table.style.width = 'auto';
-		table.style.minWidth = '420px';
+		table.style.width = '100%';
+		table.style.maxWidth = '900px';
+		table.style.margin = '0 auto';
+		table.style.color = 'inherit';
 
 		table.innerHTML = `
 			<thead>
 				<tr>
-					<th style="text-align:center; padding:6px 12px;">Victories</th>
-					<th style="text-align:center; padding:6px 12px;">Defeats</th>
-					<th style="text-align:center; padding:6px 12px;">Games</th>
-					<th style="text-align:center; padding:6px 12px;">Win Ratio</th>
+					<th style="text-align:center; padding:6px 12px;">Overall Victories</th>
+					<th style="text-align:center; padding:6px 12px;">Overall Defeats</th>
+					<th style="text-align:center; padding:6px 12px;">Overall Games</th>
+					<th style="text-align:center; padding:6px 12px;">Overall Win Ratio</th>
 					<th style="text-align:center; padding:6px 12px;">Tournaments Played</th>
-					<th style="text-align:center; padding:6px 12px;">Tournament Wins</th>
+					<th style="text-align:center; padding:6px 12px;">Tournament Victories</th>
 					<th style="text-align:center; padding:6px 12px;">Tournament Win Ratio</th>
 				</tr>
 			</thead>
@@ -77,6 +76,14 @@ export class DashboardManager {
 			{ label: 'Defeats', value: stats.defeats, color: '#f44336' }
 		]);
 
+
+	    const tWins   = stats.tournamentWins ?? 0;
+	    const tLosses = Math.max(0, (stats.tournamentsPlayed ?? 0) - tWins);
+	    const pieChartTournament = this.createPieChart([
+	      { label: 'Tournament Wins',   value: tWins,   color: '#4caf50' },
+	      { label: 'Tournament Losses', value: tLosses, color: '#f44336' }
+	    ]);
+
 		// center & arrange table and pie chart
 		const row = document.createElement('div');
 		row.style.display = 'flex';
@@ -85,7 +92,14 @@ export class DashboardManager {
 		row.style.justifyContent = 'center';
 		row.style.flexWrap = 'wrap';
 		row.appendChild(table);
-		row.appendChild(pieChart);
+    	const pies = document.createElement('div');
+    	pies.style.display = 'flex';
+    	pies.style.gap = '128px';
+    	pies.style.alignItems = 'center';
+    	pies.appendChild(pieChart);
+    	pies.appendChild(pieChartTournament);
+		pies.style.marginBottom = '16px';
+    	row.appendChild(pies);
 		container.appendChild(row);
 	}
 
@@ -140,6 +154,10 @@ export class DashboardManager {
 		svg.setAttribute("width", "120");
 		svg.setAttribute("height", "120");
 		svg.setAttribute("viewBox", "0 0 120 120");
+	    const panelBg =
+	      getComputedStyle(document.documentElement).getPropertyValue('--panel-bg').trim() ||
+	      getComputedStyle(document.body).getPropertyValue('background-color') ||
+	      'transparent';
 
 		// handle 0 or 1 win/loss cases
 		const nonZero = data.filter(d => d.value > 0);
@@ -160,7 +178,8 @@ export class DashboardManager {
 			hole.setAttribute("cx", String(cx));
 			hole.setAttribute("cy", String(cy));
 			hole.setAttribute("r",  String(radius / 3));
-			hole.setAttribute("fill", "#000");
+			// hole.setAttribute("fill", "#000");
+			hole.setAttribute("fill", panelBg);
 			svg.appendChild(hole);
 
 			return svg;
@@ -183,7 +202,8 @@ export class DashboardManager {
 			path.setAttribute("d", dAttr);
 			path.setAttribute("fill", d.color);
 			path.setAttribute("title", d.label);
-			path.setAttribute("stroke", "#000");		// separators
+			// path.setAttribute("stroke", "#000");		// separators
+			path.setAttribute("stroke", panelBg);
 			path.setAttribute("stroke-width", "1");
 			svg.appendChild(path);
 		});
@@ -193,7 +213,8 @@ export class DashboardManager {
 		hole.setAttribute("cx", String(radius + 10));
 		hole.setAttribute("cy", String(radius + 10));
 		hole.setAttribute("r",  String(radius / 3));
-		hole.setAttribute("fill", "#000");
+		// hole.setAttribute("fill", "#000");
+		hole.setAttribute("fill", panelBg);
 		svg.appendChild(hole);
 
 		return svg;
