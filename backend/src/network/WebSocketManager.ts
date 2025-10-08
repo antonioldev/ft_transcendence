@@ -121,7 +121,6 @@ export class WebSocketManager {
                     this.toggleSpectator(client, data);
                     break;
                 case MessageType.QUIT_GAME:
-                    console.log(`PLAYER_QUIT received from ${client.username}`);
                     gameManager.removeClient(client);
                     break;
                 case MessageType.LOGIN_USER:
