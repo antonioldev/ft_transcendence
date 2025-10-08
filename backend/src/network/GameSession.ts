@@ -190,13 +190,14 @@ export class OneOffGame extends AbstractGameSession{
 	async start(): Promise<void> {
 		if (this.is_running()) return;
 		this.state = GameSessionState.RUNNING;
-		
+
 		await this.waitForClientsReady();
 		this.game = new Game(this.id, [...this.players], this.broadcast.bind(this));
 		await this.game.run();
-		
+
+		// Regular remote PvP = non-tournament
 		if (this.mode === GameMode.TWO_PLAYER_REMOTE) {
-			this.game.save_to_db();
+			this.game.save_to_db(false);
 		}
 	}
 

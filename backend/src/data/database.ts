@@ -699,13 +699,14 @@ export function getGameDuration(id: string): number {
 export function isGameTournament(id: string): number {
 	try {
 		id = safeGameId(id);
+		const row = db.prepare('SELECT tournament FROM games WHERE game_id = ?')
+			.get(id) as { tournament: number } | undefined;
 
-		const game = db.prepare('SELECT tournament FROM games WHERE game_id = ?');
-		const ret = game.get(id) as { tournament: number };
-		return ret.tournament;
+		if (!row) return 0;
+		return row.tournament === 1 ? 1 : 0;
 	} catch (err) {
 		console.error('Error in check if game is a tournament: ', err);
-		return -1;
+		return 0;
 	}
 }
 

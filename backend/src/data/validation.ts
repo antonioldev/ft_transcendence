@@ -158,6 +158,8 @@ export function getUserStats(username: string): UserStats | undefined {
 	const tournamentWins = dbFunction.getUserNbTournamentWin(userId);
 	const tournamentWinRatio = tournamentsPlayed > 0 ? tournamentWins / tournamentsPlayed : 0;
 
+	console.log('getUserStats:', { username, victories, defeats, games, winRatio, tournamentsPlayed, tournamentWins, tournamentWinRatio });
+
 	return {
 		victories,
 		defeats,
@@ -188,7 +190,8 @@ export function getGameHistoryForUser(username: string): GameHistoryEntry[] | un
 		opponent: r.opponent ?? 'error',
 		score: r.yourScore != null && r.opponentScore != null ? `${r.yourScore} - ${r.opponentScore}` : 'error',
 		result: r.didWin == null ? 'error' : r.didWin ? 'Win' : 'Loss',
-		isTournament: r.isTournament ? 'No' : 'Yes',
+		// "Yes" only when DB flag is 1
+		isTournament: r.isTournament === 1 ? 'Yes' : 'No',
 		duration: r.durationSeconds ?? 999,
 	}));
 }
@@ -285,6 +288,12 @@ export function saveGameResult(
 	}
 
 	const isTournament = dbFunction.isGameTournament(gameId);
+	// const isTournamentFlag = dbFunction.isGameTournament(gameId); // 0 | 1
+  	// const isTournament = isTournamentFlag === 1;
+	// print if it's a tournament or not
+	console.log('--------------------------------------')
+	console.log('Is tournament:', isTournament);
+	console.log('--------------------------------------')
 	const winnerId = player1Score > player2Score ? player1Id : player2Id;
 	const looserId = winnerId === player1Id ? player2Id : player1Id;
 
@@ -320,8 +329,11 @@ export function updatePlayers(winnerId: number, looserId: number, tournament: nu
 	dbFunction.updateUserGame(looserId, 1);
 	dbFunction.updateUserDefeat(looserId, 1);
 
-	if (tournament) {
+	// Update tournament counters ONLY when the DB flag is exactly 1
+	if (tournament === 1) {
 		dbFunction.updateUserTournament(looserId, 1);
+		dbFunction.updateUserTournament(winnerId, 1);
+		dbFunction.updateUserTournamentWin(winnerId, 1);
 	}
 }
 

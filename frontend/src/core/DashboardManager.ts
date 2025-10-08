@@ -77,6 +77,9 @@ export class DashboardManager {
 			{ label: 'Defeats', value: stats.defeats, color: '#f44336' }
 		]);
 
+		console.log('User stats:', stats.victories, stats.defeats, stats.winRatio);
+
+
 		// center & arrange table and pie chart
 		const row = document.createElement('div');
 		row.style.display = 'flex';

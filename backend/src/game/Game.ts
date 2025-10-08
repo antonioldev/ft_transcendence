@@ -217,19 +217,22 @@ export class Game {
 		this.state = GameState.ENDED;
 	}
 
-	save_to_db() {
-		if (this.players[LEFT] instanceof CPU || this.players[RIGHT] instanceof CPU) return ;
+	save_to_db(tournament: boolean = false) {
+		if (this.players[LEFT] instanceof CPU || this.players[RIGHT] instanceof CPU) return;
 
-		registerNewGame(this.id, this.players[LEFT].name, 1);
+		// Persist 0/1 correctly
+		const t = tournament ? 1 : 0;
+
+		registerNewGame(this.id, this.players[LEFT].name, t);
 		addPlayer2(this.id, this.players[RIGHT].name);
-		console.log(`Game ${this.id} added to db: P1:${this.players[LEFT].name}, P2: ${this.players[RIGHT].name}`);
+		console.log(`Game ${this.id} added to db: P1:${this.players[LEFT].name}, P2:${this.players[RIGHT].name}`);
 
 		saveGameResult(
-			this.id, 
-			this.players[LEFT].name, 
-			this.players[RIGHT].name, 
-			this.paddles[LEFT].score, 
-			this.paddles[RIGHT].score, 
+			this.id,
+			this.players[LEFT].name,
+			this.players[RIGHT].name,
+			this.paddles[LEFT].score,
+			this.paddles[RIGHT].score,
 			Date.now()
 		);
 		console.log(`Game ${this.id} saved to db`);
