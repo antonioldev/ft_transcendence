@@ -43,6 +43,7 @@ export class DashboardManager {
 		table.style.width = '100%';
 		table.style.maxWidth = '900px';
 		table.style.margin = '0 auto';
+		table.style.color = getComputedStyle(container as HTMLElement).color; // TODO black table, blocked upstream?
 
 		table.innerHTML = `
 			<thead>
@@ -96,9 +97,11 @@ export class DashboardManager {
     	pies.style.alignItems = 'center';
     	pies.appendChild(pieChart);
     	pies.appendChild(pieChartTournament);
-		pies.style.marginBottom = '160px';  // TODO this doesn't show
     	row.appendChild(pies);
 		container.appendChild(row);
+		const spacer = document.createElement('div');
+		spacer.style.height = '16px';
+		container.appendChild(spacer);  // TODO this doesn't show
 	}
 
 
