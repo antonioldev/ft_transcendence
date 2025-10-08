@@ -37,14 +37,12 @@ export class DashboardManager {
 		container.innerHTML = '';
 		(container as HTMLElement).style.display = 'block';
 		(container as HTMLElement).style.textAlign = 'center';
-		(container as HTMLElement).style.color = 'inherit';
 
 		const table = document.createElement('table');
 		table.style.borderCollapse = 'collapse';
 		table.style.width = '100%';
 		table.style.maxWidth = '900px';
 		table.style.margin = '0 auto';
-		table.style.color = 'inherit';
 
 		table.innerHTML = `
 			<thead>
@@ -98,7 +96,7 @@ export class DashboardManager {
     	pies.style.alignItems = 'center';
     	pies.appendChild(pieChart);
     	pies.appendChild(pieChartTournament);
-		pies.style.marginBottom = '16px';
+		pies.style.marginBottom = '160px';  // TODO this doesn't show
     	row.appendChild(pies);
 		container.appendChild(row);
 	}
@@ -219,42 +217,6 @@ export class DashboardManager {
 
 		return svg;
 	}
-	
-	// private createBarChart(data: { label: string; value: number; color: string }[]): HTMLElement {
-	//	 const max = Math.max(...data.map(d => d.value));
-	//	 const container = document.createElement('div');
-	//	 container.style.display = 'flex';
-	//	 container.style.alignItems = 'flex-end';
-	//	 container.style.gap = '10px';
-	//	 container.style.height = '150px';
-	//	 container.style.marginBottom = '20px';
-
-	//	 data.forEach(d => {
-	//		 const bar = document.createElement('div');
-	//		 const height = (d.value / max) * 100;
-	//		 bar.style.width = '50px';
-	//		 bar.style.height = `${height}%`;
-	//		 bar.style.backgroundColor = d.color;
-	//		 bar.title = `${d.label}: ${d.value}`;
-
-	//		 const label = document.createElement('div');
-	//		 label.innerText = d.label;
-	//		 label.style.textAlign = 'center';
-	//		 label.style.marginTop = '5px';
-
-	//		 const barWrapper = document.createElement('div');
-	//		 barWrapper.style.display = 'flex';
-	//		 barWrapper.style.flexDirection = 'column';
-	//		 barWrapper.style.alignItems = 'center';
-
-	//		 barWrapper.appendChild(bar);
-	//		 barWrapper.appendChild(label);
-	//		 container.appendChild(barWrapper);
-	//	 });
-
-	//	 return container;
-	// }
-
 }
 
 function polarToCartesian(radius: number, fraction: number): [number, number] {
