@@ -322,6 +322,8 @@ export function updatePlayers(winnerId: number, looserId: number, tournament: nu
 
 	if (tournament) {
 		dbFunction.updateUserTournament(looserId, 1);
+		dbFunction.updateUserTournament(winnerId, 1);
+		dbFunction.updateUserTournamentWin(winnerId, 1);
 	}
 }
 

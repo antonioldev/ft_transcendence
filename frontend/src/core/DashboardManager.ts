@@ -48,23 +48,25 @@ export class DashboardManager {
 		table.innerHTML = `
 			<thead>
 				<tr>
+					<th style="text-align:center; padding:6px 12px;">Overall Games</th>
 					<th style="text-align:center; padding:6px 12px;">Overall Victories</th>
 					<th style="text-align:center; padding:6px 12px;">Overall Defeats</th>
-					<th style="text-align:center; padding:6px 12px;">Overall Games</th>
 					<th style="text-align:center; padding:6px 12px;">Overall Win Ratio</th>
-					<th style="text-align:center; padding:6px 12px;">Tournaments Played</th>
+					<th style="text-align:center; padding:6px 12px;">Tournament Games</th>
 					<th style="text-align:center; padding:6px 12px;">Tournament Victories</th>
+					<th style="text-align:center; padding:6px 12px;">Tournament Defeats</th>
 					<th style="text-align:center; padding:6px 12px;">Tournament Win Ratio</th>
 				</tr>
 			</thead>
 			<tbody>
 				<tr>
+					<td style="padding:6px 12px;">${stats.games}</td>
 					<td style="padding:6px 12px;">${stats.victories}</td>
 					<td style="padding:6px 12px;">${stats.defeats}</td>
-					<td style="padding:6px 12px;">${stats.games}</td>
 					<td style="padding:6px 12px;">${(stats.winRatio * 100).toFixed(1)}%</td>
 					<td style="padding:6px 12px;">${stats.tournamentsPlayed}</td>
 					<td style="padding:6px 12px;">${stats.tournamentWins}</td>
+					<td style="padding:6px 12px;">${stats.tournamentsPlayed - stats.tournamentWins}</td>
 					<td style="padding:6px 12px;">${(stats.tournamentWinRatio * 100).toFixed(1)}%</td>
 				</tr>
 			</tbody>
@@ -86,14 +88,14 @@ export class DashboardManager {
 		// center & arrange table and pie chart
 		const row = document.createElement('div');
 		row.style.display = 'flex';
-		row.style.gap = '24px';
+		row.style.gap = '1px';
 		row.style.alignItems = 'flex-start';
 		row.style.justifyContent = 'center';
 		row.style.flexWrap = 'wrap';
 		row.appendChild(table);
     	const pies = document.createElement('div');
     	pies.style.display = 'flex';
-    	pies.style.gap = '128px';
+    	pies.style.gap = '256px';
     	pies.style.alignItems = 'center';
     	pies.appendChild(pieChart);
     	pies.appendChild(pieChartTournament);
