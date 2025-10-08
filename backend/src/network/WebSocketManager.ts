@@ -445,8 +445,6 @@ export class WebSocketManager {
             return;
         }
 
-        // Recompute "tournament games played" from actual game history.
-        // NOTE: isTournament arrives as 'Yes'/'No' (string), not boolean.
         const history = db.getGameHistoryForUser(message) || [];
         const tournamentGamesPlayed = history.filter(
             (h: any) => h.isTournament === 'Yes' || h.isTournament === 1 || h.isTournament === true

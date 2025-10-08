@@ -88,7 +88,7 @@ export class DashboardManager {
 		// center & arrange table and pie chart
 		const row = document.createElement('div');
 		row.style.display = 'flex';
-		row.style.gap = '1px';
+		// row.style.gap = '1px';
 		row.style.alignItems = 'flex-start';
 		row.style.justifyContent = 'center';
 		row.style.flexWrap = 'wrap';
