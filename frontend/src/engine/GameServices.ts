@@ -2,7 +2,7 @@ import { AudioManager } from "./services/AudioManager";
 import { RenderManager } from "./services/RenderManager";
 import { KeyboardManager } from "./services/KeybordManager";
 import { GUIManager } from "./services/GuiManager";
-import { Particles, clearAllFireworkTimers } from "./scene/fireworks";
+import { Particles, clearAllFireworkTimers } from "./scene/rendering/fireworks";
 import { AnimationManager } from "./services/AnimationManager";
 import { PowerupManager } from "./services/PowerUpManager";
 import { Engine, Scene} from "@babylonjs/core";
@@ -42,7 +42,7 @@ export class GameServices implements IGameServices {
 		this.particles = new Particles();
 		this.powerup = new PowerupManager(players, this.animation, this.gui, gameObjects);
 		this.input = new KeyboardManager(scene, config, gameObjects, players, this.powerup, this.gui);
-		this.render = new RenderManager(engine, scene, this.gui, this.animation, gameObjects);
+		this.render = new RenderManager(engine, scene, this.animation, gameObjects);
 	}
 
 	async initialize(): Promise<void> {

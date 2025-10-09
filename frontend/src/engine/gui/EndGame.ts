@@ -1,7 +1,7 @@
 import { AdvancedDynamicTexture, Rectangle, TextBlock, Grid} from "@babylonjs/gui";
 import { KeyboardEventTypes} from "@babylonjs/core";
 import { getCurrentTranslation } from '../../translations/translations.js';
-import { spawnGUISparkles } from '../scene/fireworks.js';
+import { spawnGUISparkles } from '../scene/rendering/fireworks.js';
 import { AnimationManager, Motion } from "../services/AnimationManager.js";
 import { PARTIAL_END_GAME_STYLES, END_GAME_STYLES, createRect, createTextBlock, createGrid} from "./GuiStyle.js";
 

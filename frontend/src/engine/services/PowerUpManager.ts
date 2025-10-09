@@ -108,7 +108,7 @@ export class PowerupManager {
 					this.players.get(PlayerSide.LEFT)!.inverted = true;
 				break;
 			case PowerupType.INVISIBLE_BALL:
-				this.animationManager?.blinkInvisibility(this.gameObjects.ball);
+				this.animationManager?.blinkInvisibility(this.gameObjects.balls);
 				break;
 		}
 		this.guiManager?.hud.updatePowerUp(side, slot, PowerupState.ACTIVE);

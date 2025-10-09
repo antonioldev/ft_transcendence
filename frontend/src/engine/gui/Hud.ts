@@ -38,7 +38,8 @@ export class Hud {
 		[PowerupType.DOUBLE_POINTS]: "assets/icons/powerup/rallyMultiplier.png",
 		[PowerupType.INVISIBLE_BALL]: "assets/icons/powerup/ghost.png",
 		[PowerupType.CURVE_BALL]: "assets/icons/powerup/curve.png",
-		[PowerupType.TRIPLE_SHOT]: "assets/icons/powerupHD/ballMultiplier.png"
+		[PowerupType.TRIPLE_SHOT]: "assets/icons/powerupHD/ballMultiplier.png",
+		[PowerupType.SHIELD]: "assets/icons/powerupHD/shiled.png"
 	};
 
 	private POWERUP_ICON_HD: Record<number, string> = {
@@ -53,7 +54,8 @@ export class Hud {
 		[PowerupType.DOUBLE_POINTS]: "assets/icons/powerupHD/rallyMultiplier.png",
 		[PowerupType.INVISIBLE_BALL]: "assets/icons/powerupHD/ghost.png",
 		[PowerupType.CURVE_BALL]: "assets/icons/powerupHD/curve.png",
-		[PowerupType.TRIPLE_SHOT]: "assets/icons/powerupHD/ballMultiplier.png"
+		[PowerupType.TRIPLE_SHOT]: "assets/icons/powerupHD/ballMultiplier.png",
+		[PowerupType.SHIELD]: "assets/icons/powerupHD/shiled.png"
 		
 	};
 
@@ -212,10 +214,10 @@ export class Hud {
 			const b = Math.round(255 * (1 - intensity));
 			this.rally.color = `rgb(${r}, ${g}, ${b})`;
 
+			let scale = 1.4;
 			if (rally > 0 && rally % 5 === 0)
-				this.animationManager?.rotatePulse(this.rally, 1, Motion.F.slow);
-			else
-				this.animationManager?.scale(this.rally, 1, 1.4, Motion.F.base, true);
+				scale = 2;
+			this.animationManager?.scale(this.rally, 1, scale, Motion.F.base, true);
 			this.previousRally = rally;
 			return true;
 		}

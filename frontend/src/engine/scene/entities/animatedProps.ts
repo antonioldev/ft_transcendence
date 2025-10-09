@@ -1,0 +1,126 @@
+import { Scene, Vector3, SceneLoader } from "@babylonjs/core";
+import { ActorConfig } from "../config/sceneTypes.js";
+
+let cachedActorModels: Map<string, any> = new Map();
+
+export async function createFlyingActor(
+	scene: Scene, 
+	actor: any,
+	scale: number = 1,
+	flyForward: boolean = false
+): Promise<any> {
+	actor.scaling = new Vector3(scale, scale, scale);
+	
+	const speed = 0.08 + Math.random() * 0.12;
+	const height = 3 + Math.random() * 3;
+	const sidePosition = -30 + Math.random() * 60;
+	let positionZ = flyForward ? -50 : 50;
+	const startOffset = Math.random() * 60;
+	positionZ += flyForward ? -startOffset : startOffset;
+
+	let time = Math.random() * Math.PI * 2;
+	const verticalSpeed = 0.005 + Math.random() * 0.005;
+	const verticalAmplitude = 0.5 + Math.random() * 1.5;
+
+	scene.onBeforeRenderObservable.add(() => {
+		if (flyForward) {
+			positionZ += speed;
+			if (positionZ > 50) positionZ = -70;
+		} else {
+			positionZ -= speed;
+			if (positionZ < -50) positionZ = 70;
+		}
+
+		time += verticalSpeed;
+		const verticalOffset = Math.sin(time) * verticalAmplitude;
+		
+		actor.position.x = sidePosition;
+		actor.position.y = height + verticalOffset;
+		actor.position.z = positionZ;
+		
+		actor.rotation.y = flyForward ? 0 : Math.PI;
+		actor.rotation.z = Math.sin(time) * 0.1;
+	});
+	
+	return actor;
+}
+
+export async function createSwimmingActor(
+	scene: Scene, 
+	actor: any,
+	scale: number = 1,
+	swimLeft: boolean = false
+): Promise<any> {
+	actor.scaling = new Vector3(scale, scale, scale);
+	
+	const speed = 0.02 + Math.random() * 0.03;
+	const height = 1 + Math.random() * 7;
+	const depth = -50 + Math.random() * 100;
+	let positionX = swimLeft ? 30 : -30;
+	const startOffset = Math.random() * 60;
+	positionX += swimLeft ? -startOffset : startOffset;
+
+	let time = Math.random() * Math.PI * 2;
+	const verticalSpeed = 0.005 + Math.random() * 0.005;
+	const verticalAmplitude = 0.1 + Math.random() * 0.5;
+
+	scene.onBeforeRenderObservable.add(() => {
+		if (swimLeft) {
+			positionX -= speed;
+			if (positionX < -30) positionX = 30;
+		} else {
+			positionX += speed;
+			if (positionX > 30) positionX = -30;
+		}
+
+		time += verticalSpeed;
+		const verticalOffset = Math.sin(time) * verticalAmplitude;
+		
+		actor.position.x = positionX;
+		actor.position.y = height + verticalOffset;
+		actor.position.z = depth;
+	});
+	
+	return actor;
+}
+
+async function loadOrCloneActor(
+	scene: Scene, 
+	modelPath: string, 
+	prefix: string
+): Promise<any> {
+	if (cachedActorModels.has(modelPath)) {
+		const cached = cachedActorModels.get(modelPath);
+		const actor = cached.clone(`${prefix}_${Date.now()}`);
+		actor.setEnabled(true);
+		return actor;
+	} else {
+		const result = await SceneLoader.ImportMeshAsync("", "", modelPath, scene);
+		const actor = result.meshes[0];
+		
+		const cacheClone = actor.clone(`cache_${modelPath}`, null);
+		cacheClone?.setEnabled(false);
+		cachedActorModels.set(modelPath, cacheClone);
+		
+		return actor;
+	}
+}
+
+export async function createActor(
+	scene: Scene,
+	config: ActorConfig
+): Promise<any> {
+	const scale = config.scale ?? 1;
+	const actor = await loadOrCloneActor(scene, config.model, config.type);
+	
+	switch (config.type) {
+		case 'flying':
+			const flyLeft = !config.model.includes('bird1');
+			return createFlyingActor(scene, actor, scale, flyLeft);
+		case 'swimming':
+			const swimLeft = config.model.includes('fish1');
+			return createSwimmingActor(scene, actor, scale, swimLeft);
+		default:
+			throw new Error(`Unknown actor type: ${config.type}`);
+	}
+}

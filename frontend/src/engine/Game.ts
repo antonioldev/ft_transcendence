@@ -1,6 +1,6 @@
 import { Engine, Scene, Color4, SceneLoader} from "@babylonjs/core";
 import { GameConfig } from './GameConfig.js';
-import { buildScene2D, buildScene3D } from './scene/sceneBuilder.js';
+import { buildScene2D, buildScene3D } from './scene/builders/sceneBuilder.js';
 import { webSocketClient } from '../core/WebSocketClient.js';
 import { GameStateData, GameObjects } from '../shared/types.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
@@ -11,8 +11,18 @@ import { GameMode } from '../shared/constants.js';
 import { appStateManager } from '../core/AppStateManager.js';
 import { GameConfigFactory } from './GameConfig.js';
 import { PlayerSide, PlayerState } from "./utils.js"
-import { disposeMaterialResources } from "./scene/materialFactory.js";
+import { disposeMaterialResources } from "./scene/rendering/materials.js";
 import { GameServices } from "./GameServices.js";
+
+type ThemeActor = { update: (dt: number) => void; dispose: () => void };
+type ThemeEffect = { dispose: () => void };
+
+type ThemeObject = {
+  props: any[];         // static meshes (trees/bushes now; wreck/rocks later)
+  actors: ThemeActor[]; // moving things later (clouds, fish, bubbles)
+  effects: ThemeEffect[]; // glow layer, particle systems, post-process, etc.
+};
+
 
 /**
  * The Game class serves as the core of the game engine, managing the initialization,
@@ -28,6 +38,7 @@ export class Game {
 	private services: GameServices | null = null;
 	private canvas: HTMLCanvasElement | null = null;
 	private gameObjects: GameObjects | null = null;
+	private themeObjects: ThemeObject | null = null;
 	private gameLoopObserver: any = null;
 	private isSpectator: boolean = false;
 	private isGameEnded: boolean = false;
@@ -44,7 +55,7 @@ export class Game {
 // ====================			CONSTRUCTOR			   ====================
 	constructor(private config: GameConfig) {
 		try {
-			// this.state = new GameStateManager();
+			this.themeObjects = { props: [], actors: [], effects: [] };
 			const element = document.getElementById(config.canvasId);
 			if (element instanceof HTMLCanvasElement) {
 				this.canvas = element;
@@ -252,7 +263,7 @@ export class Game {
 				} catch (error) {
 					Logger.errorAndThrow('Error in game loop', 'Game', error);
 				}
-		}, 16);
+		}, 4);
 	}
 
 	private resetForNextMatch(): void {
@@ -270,15 +281,8 @@ export class Game {
 				this.gameObjects.players.right.position.x = 0;
 				this.gameObjects.players.right.scaling.x = 1;
 			}
-			// if (this.gameObjects.ball) {
-			// 	this.gameObjects.ball.position.x = 0;
-			// 	this.gameObjects.ball.position.z = 0;
-			// }
 			for (let i = 0; i < this.gameObjects.balls.length; i++) {
 				const ball = this.gameObjects.balls[i];
-				// ball.position.x = 0;
-				// ball.position.z = 0;
-				// ball.visibility = i === 0 ? 1 : 0;
 				ball.visibility = 0;
 			}
 		}
@@ -455,6 +459,12 @@ export class Game {
 			this.gameLoopObserver = null;
 			this.services?.dispose();
 			this.services = null;
+			if (this.themeObjects) {
+				for (const e of this.themeObjects.effects) e.dispose();
+				for (const a of this.themeObjects.actors) a.dispose();
+				for (const m of this.themeObjects.props) m.dispose?.();
+			}
+			this.themeObjects = null;
 			disposeMaterialResources();
 			this.gameObjects = null;
 			this.players.clear();
