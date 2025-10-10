@@ -396,7 +396,8 @@ export const LOBBY_STYLES = {
 export const COUNTDOWN_STYLES = {
     countdownContainer: {
         width: "100%",
-        height: "100%",
+        height: "80%",
+        verticalAlignment: V_TOP,
         thickness: 0,
         isVisible: false,
         zIndex: Z_INDEX.HUD,

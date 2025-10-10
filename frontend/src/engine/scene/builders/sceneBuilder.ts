@@ -1,11 +1,10 @@
 import { Scene, GlowLayer } from "@babylonjs/core";
 import { createGameField, createWalls, createPlayer, createBall } from '../entities/gameObjects.js';
-import { createLight } from "../rendering/lights.js";
 import { GameObjects, ThemeObject } from '../../../shared/types.js';
 import { createCameras, createGuiCamera } from "./camerasBuilder.js";
 import { GameMode, ViewMode } from '../../../shared/constants.js';
 import { getPlayerSize, getPlayerLeftPosition, getPlayerRightPosition, getBallStartPosition, PlayerSide } from '../../utils.js';
-import { createEnvironment, createTerrain } from './enviromentBuilder.js';
+import { createEnvironment, createTerrain, createLight } from './enviromentBuilder.js';
 import { createFog, createRainParticles, createUnderwaterParticles, createDustParticleSystem} from '../rendering/effects.js'
 import { createStaticObjects, createStaticObject } from "../entities/staticProps.js";
 import { createActor } from "../entities/animatedProps.js";
@@ -30,8 +29,9 @@ export async function buildScene (
 	let themeObjects: ThemeObject = { props: [], actors: [], effects: [] };
 
 	const map_asset = viewMode === ViewMode.MODE_2D 
-		? MAP_CONFIGS.map : MAP_CONFIGS.map1
+		? MAP_CONFIGS.map : MAP_CONFIGS.map0
 
+	// const lightss = create3DLighting(scene);
 	const lights = createLight(scene, "light1", viewMode, map_asset.light);
 	const gameField = createGameField(scene, "ground", viewMode, map_asset.ground);
 	const walls = createWalls(scene, "walls", viewMode, map_asset.walls);

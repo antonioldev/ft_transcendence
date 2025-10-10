@@ -95,7 +95,7 @@ export const MAP_CONFIGS: Record<string, MapAssetConfig> = {
 			width: fw * 2,
 			height: fh * 2
 		},
-		light: 0.3,
+		light: 0.4,
 		glow: 0.6,
 		actors: []
 	},
@@ -142,7 +142,6 @@ export const MAP_CONFIGS: Record<string, MapAssetConfig> = {
 		particleType: 'underwater',
 		light: 1,
 		glow: 0.5,
-		// glow: 0,
 		actors: [
 			{ model: 'assets/model/map2/fish1.glb', count: 6, type: 'swimming', scale: 1 },
 			{ model: 'assets/model/map2/fish2.glb', count: 6, type: 'swimming', scale: 1 },

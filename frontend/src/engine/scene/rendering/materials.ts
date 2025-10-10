@@ -30,14 +30,12 @@ export function getStandardTextureScale(
 export function createMaterial(
 	scene: Scene, 
 	name: string, 
-	// color: Color3, 
 	mode: ViewMode, 
 	textureSet: TextureSet,
 	textureScale?: { u: number, v: number }
 ): StandardMaterial {
 	const material = new StandardMaterial(name, scene);
 	
-	// Color effect for 2D mode (without lighting)
 	if (mode === ViewMode.MODE_2D) {
 		material.emissiveColor = Color3.FromHexString(textureSet.color);
 		material.disableLighting = true;

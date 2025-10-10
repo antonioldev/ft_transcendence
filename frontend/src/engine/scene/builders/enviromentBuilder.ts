@@ -1,4 +1,4 @@
-import { HDRCubeTexture, MeshBuilder, Scene} from "@babylonjs/core";
+import { HDRCubeTexture, MeshBuilder, Scene, HemisphericLight, Color3, Vector3} from "@babylonjs/core";
 import { ViewMode } from '../../../shared/constants.js';
 import { GAME_CONFIG } from '../../../shared/gameConfig.js';
 import { Logger } from '../../../utils/LogManager.js';
@@ -44,4 +44,13 @@ export function createTerrain(scene: Scene, name: string, texture: TextureSet): 
 	terrain.material = createMaterial(scene, name + "Material", ViewMode.MODE_3D, texture, terrainTextureScale);
 
 	return terrain;
+}
+
+export function createLight(scene: any, name: string, viewMode: ViewMode, intensity: number = 1): any {
+	const position = viewMode === ViewMode.MODE_2D ? new Vector3(0, 10, 0) : new Vector3(100, 400, 0);
+	const light = new HemisphericLight(name, position, scene);
+	light.intensity = intensity;
+	light.diffuse = new Color3(1, 1, 1);
+	light.specular = new Color3(0, 0, 0);
+	return light;
 }
