@@ -1,15 +1,16 @@
 import { Vector3, Scene, GlowLayer } from "@babylonjs/core";
-import { createGameField, createWalls, createPlayer, createBall } from '../entities/gameObjects.js';
+import { createGameField, createWalls, createPlayer, createBall, createFreezeCage } from '../entities/gameObjects.js';
 import { createLight } from "../rendering/lights.js";
 import { GameObjects } from '../../../shared/types.js';
 import { createCameras, createGuiCamera } from "./camerasBuilder.js";
 import { GameMode, ViewMode } from '../../../shared/constants.js';
-import { COLORS, getPlayerSize, getPlayerLeftPosition, getPlayerRightPosition, getBallStartPosition } from '../../utils.js';
+import { COLORS, getPlayerSize, getPlayerLeftPosition, getPlayerRightPosition, getBallStartPosition, PlayerSide } from '../../utils.js';
 import { createEnvironment, createTerrain } from './enviromentBuilder.js';
 import { createFog, createRainParticles, createUnderwaterParticles, createDustParticleSystem} from '../rendering/effects.js'
 import { createStaticObjects, createStaticObject } from "../entities/staticProps.js";
 import { createActor } from "../entities/animatedProps.js";
 import { MAP_CONFIGS } from "../config/mapConfigs.js";
+import { createPaddleGlowEffect, createBallGlowEffect, createWallGlowEffect } from "../entities/gameObjects.js";
 
 export type LoadingProgressCallback = (progress: number) => void;
 
@@ -31,16 +32,37 @@ export async function buildScene2D(
 	const walls = createWalls(scene, "walls", viewMode, undefined);
 	onProgress?.(30);
 	const balls: any[] = [];
+	const ballsGlow: any[] = [];
+	const ballsFreeze: any[] = [];
 	for (let i = 0; i < 3; i++){
 		const ball = createBall(scene, `ball${i}`, getBallStartPosition(), COLORS.ball2D, viewMode, undefined);
 		ball.visibility = 0;
 		balls.push(ball);
+
+		const ballGlow = createBallGlowEffect(scene, `ball${i}Glow`);
+		ballGlow.parent = ball;
+		ballsGlow.push(ballGlow);
+
+		const ballFreeze = createFreezeCage(scene, `ball${i}Glow`);
+		ballFreeze.parent = ball;
+		ballsFreeze.push(ballFreeze);
 	}
 	onProgress?.(40);
 	
 	cameras = createCameras(scene, "camera", viewMode, gameMode);
 	playerLeft = createPlayer(scene, "player1", getPlayerLeftPosition(), getPlayerSize(), COLORS.player1_2D, viewMode, undefined);
 	playerRight = createPlayer(scene, "player2", getPlayerRightPosition(), getPlayerSize(), COLORS.player2_2D, viewMode, undefined);
+
+
+	const leftGlow = createPaddleGlowEffect(scene, "leftGlow", getPlayerSize());
+	leftGlow.parent = playerLeft;
+	const rightGlow = createPaddleGlowEffect(scene, "rightGlow", getPlayerSize());
+	rightGlow.parent = playerRight;
+
+	const leftShield = createWallGlowEffect(scene, "leftShield", PlayerSide.LEFT);
+	const rightShield = createWallGlowEffect(scene, "rightShield", PlayerSide.RIGHT);
+
+
 	onProgress?.(80);
 	await scene.whenReadyAsync();
 	onProgress?.(95);
@@ -55,7 +77,8 @@ export async function buildScene2D(
 		walls,
 		cameras,
 		guiCamera,
-		lights
+		lights,
+		effects: { left: leftGlow, right: rightGlow, balls: ballsGlow, ballsFreeze: ballsFreeze, shieldLeft: leftShield, shieldRight: rightShield }
 	};
 }
 
@@ -70,7 +93,7 @@ export async function buildScene3D(
 	let playerLeft: any;
 	let playerRight: any;
 
-	let map_asset = MAP_CONFIGS.map2;
+	let map_asset = MAP_CONFIGS.map1;
 
 	onProgress?.(5);
 	const lights = createLight(scene, "light1", new Vector3(100, 400, 0), map_asset.light);
@@ -80,10 +103,20 @@ export async function buildScene3D(
 	const walls = createWalls(scene, "walls", viewMode, map_asset.walls, { themeObjects, glow: map_asset.glow ?? 0 });
 	onProgress?.(20);
 	const balls: any[] = [];
+	const ballsGlow: any[] = [];
+	const ballsFreeze: any[] = [];
 	for (let i = 0; i < 3; i++){
 		const ball = createBall(scene, `ball${i}`, getBallStartPosition(), COLORS.ball3D, viewMode, map_asset.ball);
 		ball.visibility = 0;
 		balls.push(ball);
+
+		const ballGlow = createBallGlowEffect(scene, `ball${i}Glow`);
+		ballGlow.parent = ball;
+		ballsGlow.push(ballGlow);
+
+		const ballFreeze = createFreezeCage(scene, `ball${i}Glow`);
+		ballFreeze.parent = ball;
+		ballsFreeze.push(ballFreeze);
 	}
 	onProgress?.(25);
 	
@@ -94,6 +127,17 @@ export async function buildScene3D(
 	playerLeft = createPlayer(scene, "player1", getPlayerLeftPosition(), getPlayerSize(), COLORS.player1_3D, viewMode, map_asset.paddle);
 	playerRight = createPlayer(scene, "player2", getPlayerRightPosition(), getPlayerSize(), COLORS.player2_3D, viewMode, map_asset.paddle);
 	onProgress?.(50);
+
+
+	const leftGlow = createPaddleGlowEffect(scene, "leftGlow", getPlayerSize());
+	leftGlow.parent = playerLeft;
+	const rightGlow = createPaddleGlowEffect(scene, "rightGlow", getPlayerSize());
+	rightGlow.parent = playerRight;
+
+	const leftShield = createWallGlowEffect(scene, "leftShield", PlayerSide.LEFT);
+	const rightShield = createWallGlowEffect(scene, "rightShield", PlayerSide.RIGHT);
+
+
 	createEnvironment(scene, map_asset.skybox);
 	onProgress?.(60);
 
@@ -114,7 +158,6 @@ export async function buildScene3D(
 				const actor = await createActor(scene, actorConfig);
 				if (actor) {
 					themeObjects?.actors.push(actor);
-					console.log(`Actor ${i} created successfully`);
 				}
 			} catch (error) {
 				console.error(`Failed to create actor ${i}:`, error);
@@ -160,6 +203,7 @@ export async function buildScene3D(
 		walls,
 		cameras,
 		guiCamera,
-		lights
+		lights,
+		effects: { left: leftGlow, right: rightGlow, balls: ballsGlow, ballsFreeze: ballsFreeze, shieldLeft: leftShield, shieldRight: rightShield }
 	};
 }

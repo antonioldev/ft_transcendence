@@ -38,8 +38,8 @@ export class PowerupManager {
 		for (let i = 0; i < GAME_CONFIG.slot_count; i++) {
 			// this.left_slots[i] = new Slot(Math.floor(Math.random() * num_powerups), LEFT, i);
 			// this.right_slots[i] = new Slot(Math.floor(Math.random() * num_powerups), RIGHT, i);
-			this.left_slots[i] = new Slot(PowerupType.TRIPLE_SHOT, LEFT, i);
-			this.right_slots[i] = new Slot(PowerupType.SHIELD, RIGHT, i);
+			this.left_slots[i] = new Slot(PowerupType.SHIELD, LEFT, i);
+			this.right_slots[i] = new Slot(PowerupType.GROW_PADDLE, RIGHT, i);
 		}
 	}
 

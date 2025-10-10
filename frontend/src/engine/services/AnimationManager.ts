@@ -6,6 +6,7 @@ import { Vector3 } from "@babylonjs/core/Maths/math.vector";
 import type { Control } from "@babylonjs/gui/2D/controls/control";
 import { getCamera2DPosition, getCamera3DPlayer1Position, getCamera3DPlayer2Position } from '../utils.js';
 import { GAME_CONFIG } from "../../shared/gameConfig.js";
+import { Color3 } from "@babylonjs/core";
 
 type FloatProp =
   | "alpha"
@@ -83,33 +84,12 @@ export class AnimationManager {
 		return this.play(target, frames, true);
 	}
 
-	rotatePulse(target: Control, turns = 1, frames = Motion.F.slow, pulseScale = 1.6) {
-		const to = Math.PI * 2 * turns;
-		target.animations = [
-			this.createFloat("rotation", 0, to, frames, false, Motion.ease.quadInOut()),
-			this.createFloat("scaleX", 1, pulseScale, frames, true, Motion.ease.quadInOut()),
-			this.createFloat("scaleY", 1, pulseScale, frames, true, Motion.ease.quadInOut())
-		];
-		return this.play(target, frames, false);
-	}
-
 	scale(target: Control, from: number, to: number, frames = Motion.F.breath, pingPong: boolean = false, loop: boolean = false): Promise<void> {
 		target.animations = [
 			this.createFloat("scaleX", from, to, frames, pingPong, Motion.ease.sine(), Animation.ANIMATIONLOOPMODE_CYCLE),
 			this.createFloat("scaleY", from, to, frames, pingPong, Motion.ease.sine(), Animation.ANIMATIONLOOPMODE_CYCLE),
 		];
 		return this.play(target, frames, loop);
-	}
-
-	resize( target: Control, widthTo: number, heightTo: number, frames = Motion.F.slow): Promise<void> {
-		const currentWidth = target.widthInPixels;
-		const currentHeight = target.heightInPixels;
-		
-		target.animations = [
-			this.createFloat("widthInPixels", currentWidth, widthTo, frames, false, Motion.ease.quadOut()),
-			this.createFloat("heightInPixels", currentHeight, heightTo, frames, false, Motion.ease.quadOut())
-		];
-		return this.play(target, frames, false);
 	}
 
 	fade(
@@ -145,26 +125,6 @@ export class AnimationManager {
 		return this.play(target, frames, false);
 	}
 
-	// Shake animation (left-right movement)
-	shake(target: Control, frames = Motion.F.fast, intensity = 10): Promise<void> {
-		const originalLeft = target.leftInPixels;
-		target.animations = [
-			this.createFloat("leftInPixels", originalLeft, originalLeft + intensity, Math.floor(frames / 4), true, Motion.ease.sine())
-		];
-		return this.play(target, frames, false);
-	}
-
-	// Jump animation (combined scale and vertical movement)
-	jump(target: Control, frames = Motion.F.base, jumpHeight = -30, scaleAmount = 1.1): Promise<void> {
-		const originalTop = target.topInPixels;
-		target.animations = [
-			this.createFloat("topInPixels", originalTop, originalTop + jumpHeight, frames, true, Motion.ease.quadOut()),
-			this.createFloat("scaleX", 1, scaleAmount, frames, true, Motion.ease.quadOut()),
-			this.createFloat("scaleY", 1, scaleAmount, frames, true, Motion.ease.quadOut()),
-		];
-		return this.play(target, frames, false);
-	}
-
 	// Zoom in animation (scale from 0 to 1)
 	zoomIn(target: Control, frames = Motion.F.xFast): Promise<void> {
 		target.scaleX = 0;
@@ -188,15 +148,6 @@ export class AnimationManager {
 		return this.play(target, frames, false);
 	}
 
-	// Spin animation (continuous rotation)
-	spin(target: Control, frames = Motion.F.base, rotations = 1): Promise<void> {
-		const rotationAmount = Math.PI * 2 * rotations;
-		target.animations = [
-			this.createFloat("rotation", 0, rotationAmount, frames, false, Motion.ease.sine())
-		];
-		return this.play(target, frames, false);
-	}
-
 	// Glow animation (scale with alpha variation)
 	glow(target: Control, frames = Motion.F.breath, glowScale = 1.05): Promise<void> {
 		target.animations = [
@@ -207,12 +158,11 @@ export class AnimationManager {
 		return this.play(target, frames, true);
 	}
 
-	// Add this method to your AnimationManager class
 	async smashEffect(target: Control, frames = Motion.F.fast): Promise<void> {
 		target.animations = [];
 
-		const smashFrames = Math.floor(frames * 0.6);  // 60% of frames for the smash
-		const settleFrames = Math.floor(frames * 0.4); // 40% for settling
+		const smashFrames = Math.floor(frames * 0.6);
+		const settleFrames = Math.floor(frames * 0.4);
 		
 		const smashAnim = this.createFloat("scaleX", 0.1, 1.3, smashFrames, false, Motion.ease.quadOut());
 		const smashAnimY = this.createFloat("scaleY", 0.1, 1.3, smashFrames, false, Motion.ease.quadOut());
@@ -227,8 +177,6 @@ export class AnimationManager {
 			return this.play(target, settleFrames, false);
 		});
 	}
-
-
 
 	// Slide in from any direction with custom distance
 	slideFromDirection(
@@ -249,7 +197,6 @@ export class AnimationManager {
 		property = isVertical ? 'topInPixels' : 'leftInPixels';
 		
 		if (type === 'in') {
-			// Slide IN: from distance to 0
 			endValue = 0;
 			switch (direction) {
 				case 'up': startValue = distance; break;
@@ -260,7 +207,6 @@ export class AnimationManager {
 			if (property === 'topInPixels') target.topInPixels = startValue;
 			else target.leftInPixels = startValue;
 		} else {
-			// Slide OUT: from 0 to distance
 			startValue = 0;
 			switch (direction) {
 				case 'up': endValue = -distance; break;
@@ -284,7 +230,7 @@ export class AnimationManager {
 		return this.play(target, frames, false);
 	}
 
-
+// CAMERA ANIMATION
 	createCameraMoveAnimation(cameraName: string): Animation {
 		const startPosition = getCamera2DPosition();
 		const endPosition = cameraName === "camera1"
@@ -315,6 +261,63 @@ export class AnimationManager {
 			{ frame: 180, value: endTarget },
 		]);
 		return anim;
+	}
+
+// GAME OBJECT ANIMATION
+
+	private animateMesh(target: any, property: string, from: number, to: number,frames: number,
+		ease: EasingFunction = Motion.ease.quadOut(), loop: boolean = false, pingPong: boolean = false): Promise<void> {
+
+		return new Promise((resolve) => {
+			const animation = Animation.CreateAnimation(property, Animation.ANIMATIONTYPE_FLOAT, Motion.fps, ease);
+			if (loop)
+				animation.loopMode = Animation.ANIMATIONLOOPMODE_CYCLE;
+
+			if (pingPong) {
+				const mid = Math.floor(frames / 2);
+				animation.setKeys([
+					{ frame: 0, value: from },
+					{ frame: mid, value: to },
+					{ frame: frames, value: from }
+				]);
+			} else {
+				animation.setKeys([
+					{ frame: 0, value: from },
+					{ frame: frames, value: to }
+				]);
+			}
+
+			target.animations = [animation];
+			this.scene.beginAnimation(target, 0, frames, loop, Motion.fps / frames, () => {
+				this.activeAnimationGroups.delete(animation);
+				resolve();
+			})
+		});
+	}
+
+	async glowEffect(target: any, color: Color3): Promise<void> {
+		if (!target.material) return;
+
+		target.material.emissiveColor = color;
+		target.visibility = 0;
+
+		await this.animateMesh(target, "visibility", 0, 1, Motion.F.fast, Motion.ease.quadOut(), false);
+		return this.animateMesh(target, "visibility", 1, 0.6, Motion.F.xFast, Motion.ease.sine(), true);
+	}
+
+	async stopGlowEffect(target: any): Promise<void> {
+		if (!target.material) return;
+		
+		await this.animateMesh(target, "visibility", target.visibility, 0, Motion.F.fast, Motion.ease.quadOut(), false);
+		target.visibility = 0;
+	}
+
+	scaleWidth(target: any, from: number, to: number, frames = Motion.F.fast, ease: EasingFunction = Motion.ease.quadOut()): Promise<void> {
+		const baseWidth = GAME_CONFIG.paddleWidth;
+		const fromScale = from / baseWidth;
+		const toScale = to / baseWidth;
+		
+		return this.animateMesh(target, "scaling.y", fromScale, toScale, frames, ease, false);
 	}
 
 	async blinkInvisibility(target: any, duration: number = 3000, blinkInterval:number = 600): Promise<void> {
@@ -353,35 +356,6 @@ export class AnimationManager {
 			target.material.alpha = 0;
 			animationLoop();
 		});
-	}
-
-	scaleWidth(
-		target: any,
-		from: number,
-		to: number,
-		frames = Motion.F.fast,
-		ease: EasingFunction = Motion.ease.quadOut()
-	): Promise<void> {
-		const baseWidth = GAME_CONFIG.paddleWidth;
-		const fromScale = from / baseWidth;
-		const toScale = to / baseWidth;
-		
-		const anim = new Animation(
-			"widthAnimation",
-			"scaling.y",
-			Motion.fps,
-			Animation.ANIMATIONTYPE_FLOAT,
-			Animation.ANIMATIONLOOPMODE_CONSTANT
-		);
-		
-		anim.setEasingFunction(ease);
-		anim.setKeys([
-			{ frame: 0, value: fromScale },
-			{ frame: frames, value: toScale }
-		]);
-		
-		target.animations = [anim];
-		return this.play(target, frames, false);
 	}
 
 	dispose(): void {

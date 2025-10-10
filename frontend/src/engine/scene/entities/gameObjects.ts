@@ -4,7 +4,7 @@ import { Size } from '../../../shared/types.js';
 import { ViewMode } from '../../../shared/constants.js';
 import { TextureSet, MAP_OBJECT_TYPE } from "../config/sceneTypes.js";
 import { createMaterial, getStandardTextureScale } from "../rendering/materials.js";
-import { COLORS } from '../../utils.js';
+import { COLORS, PlayerSide } from '../../utils.js';
 
 // Creates the ground for the game field
 export function createGameField(scene: any, name: string, mode: ViewMode, texture?: TextureSet): any {
@@ -188,3 +188,145 @@ export function makeLine(
 
 	return plane;
 }
+
+export function createPaddleGlowEffect(scene: Scene, name: string, size: Vector3): any {
+	const radius = (size.z / 2) * 1.15;
+	const height = size.x * 1.15;
+
+	const material = new StandardMaterial(name + "Material", scene);
+	material.diffuseColor = Color3.Black();
+	material.emissiveColor = Color3.White();
+	material.alpha = 0.6;
+	material.disableLighting = true;
+
+	const shell = MeshBuilder.CreateCapsule(name, {radius: radius, height: height, tessellation: 16}, scene );
+	shell.material = material;
+	shell.isPickable = false;
+	shell.visibility = 0;
+
+	return shell;
+}
+
+export function createPaddleSpeedLines(scene: Scene, name: string, side: PlayerSide): Mesh {
+	const fieldHeight = GAME_CONFIG.fieldHeight;
+	const lineLength = fieldHeight * 0.6;
+	const lineWidth = 0.3;
+	
+	const lines = MeshBuilder.CreatePlane(name, {
+		width: lineLength,
+		height: lineWidth * 3
+	}, scene);
+	
+	const xPos = side === PlayerSide.LEFT ? -GAME_CONFIG.fieldWidth / 2 + 5 : GAME_CONFIG.fieldWidth / 2 - 5;
+	lines.position = new Vector3(xPos, 0.05, 0);
+	lines.rotation.x = Math.PI / 2;
+	
+	const material = new StandardMaterial(name + "Material", scene);
+	material.diffuseColor = Color3.Black();
+	material.emissiveColor = Color3.White();
+	material.alpha = 0.6;
+	material.disableLighting = true;
+	
+	lines.material = material;
+	lines.isPickable = false;
+	lines.visibility = 0;
+	
+	return lines;
+}
+
+export function createBallGlowEffect(scene: Scene, name: string): any {
+
+	const diameter = (GAME_CONFIG.ballRadius * 2) * 1.2;
+	const shell = MeshBuilder.CreateSphere(name, {diameter}, scene);
+
+	const material = new StandardMaterial(name + "Material", scene);
+	material.diffuseColor = Color3.Black();
+	material.emissiveColor = Color3.White();;
+	material.alpha = 0.6;
+	material.disableLighting = true;
+	
+	shell.material = material;
+	shell.isPickable = false;
+	shell.visibility = 0;
+	
+	return shell;
+}
+
+export function createFreezeCage(scene: Scene, name: string): Mesh {
+	const diameter = GAME_CONFIG.ballRadius * 2;
+	const cageSize = diameter * 1.4;
+	
+	// Octahedron looks like a cage/crystal prison
+	const cage = MeshBuilder.CreatePolyhedron(name, {
+		type: 1,  // Octahedron
+		size: cageSize / 2
+	}, scene);
+	
+	const material = new StandardMaterial(name + "Material", scene);
+	material.diffuseColor = Color3.Black();
+	material.emissiveColor = Color3.FromHexString("#87CEEB");
+	material.alpha = 0.4;
+	material.wireframe = true;
+	material.disableLighting = true;
+	
+	cage.material = material;
+	cage.isPickable = false;
+	cage.visibility = 0;
+	
+	return cage;
+}
+
+
+export function createWallGlowEffect(scene: Scene, name: string, side: PlayerSide): any {
+	const w = GAME_CONFIG.fieldWidth;
+	const h = GAME_CONFIG.fieldHeight;
+	const wall_h = GAME_CONFIG.wallHeight;
+	const wall_t = GAME_CONFIG.wallThickness;
+	
+	const shieldWidth = h * 0.8;
+	const shieldHeight = wall_h * 0.8;
+	const shieldDepth = 0.2;
+	
+	// Create thin box instead of plane
+	const shield = MeshBuilder.CreateBox(name, {
+		width: shieldWidth,
+		height: shieldHeight,
+		depth: shieldDepth
+	}, scene);
+	
+	// const topWall = MeshBuilder.CreateBox("topWall", {width: w, height: wall_h, depth: wall_t}, scene);
+	// topWall.position = new Vector3(0, wall_h / 2, h / 2 - (wall_t / 2));
+	// topWall.material = material;
+	// topWall.isPickable = false;
+	// topWall.freezeWorldMatrix();
+	// topWall.alwaysSelectAsActiveMesh = true;
+	// walls.push(topWall);
+
+	// // Bottom wall
+	// const bottomWall = MeshBuilder.CreateBox("bottomWall", {width: w - wall_t, height: wall_h, depth: wall_t}, scene);
+	// bottomWall.position = new Vector3(0, wall_h / 2, - (h / 2) + (wall_t / 2));
+
+	// const offset = 0; // set to 0.05 or -0.05 to nudge inward/outward
+	// const xPosition = side === PlayerSide.LEFT
+	// 	? -(w / 2) + (wall_t / 2) + offset
+	// 	:  (w / 2) - (wall_t / 2) - offset;
+
+	// shield.position = new Vector3(xPosition, wall_h / 2, 0);
+	shield.position = side === PlayerSide.LEFT
+		? new Vector3(0, wall_h / 2, h / 2 - (wall_t / 2))
+		: new Vector3(0, wall_h / 2, - (h / 2) + (wall_t / 2));
+	// shield.rotation.y = Math.PI / 2;
+	
+	const material = new StandardMaterial(name + "Material", scene);
+	material.diffuseColor = Color3.Black();
+	material.emissiveColor = Color3.FromHexString("#00FFFF");
+	material.alpha = 0.3;
+	material.disableLighting = true;
+	
+	shield.material = material;
+	shield.isPickable = false;
+	shield.visibility = 0;
+	
+	return shield;
+}
+

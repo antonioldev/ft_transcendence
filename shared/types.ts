@@ -176,6 +176,14 @@ export interface GameObjects {
 	cameras: any[];
 	guiCamera: any;
 	lights: any[];
+	effects: {
+		left: any;
+		right: any;
+		balls: any[];
+		ballsFreeze: any[];
+		shieldLeft: any;
+		shieldRight: any;
+	}
 	// players: {
 	// 	left: Mesh;
 	// 	right: Mesh;

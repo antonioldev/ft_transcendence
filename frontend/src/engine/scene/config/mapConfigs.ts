@@ -81,7 +81,7 @@ export const MAP_CONFIGS: Record<string, MapAssetConfig> = {
 			height: fh * 2
 		},
 		light: 0.3,
-		glow: 0.6,
+		glow: 0.5,
 		actors: []
 	},
 	
@@ -100,7 +100,8 @@ export const MAP_CONFIGS: Record<string, MapAssetConfig> = {
 		particleType: 'dust',
 		rain: null,
 		light: 0.8,
-		glow: 0,
+		glow: 0.5,
+		// glow: 0,
 		actors: [
 			{ model: 'assets/model/map1/bird1.glb', count: 4, type: 'flying', scale: 1 },
 			{ model: 'assets/model/map1/bird2.glb', count: 4, type: 'flying', scale: 1 },
@@ -125,7 +126,8 @@ export const MAP_CONFIGS: Record<string, MapAssetConfig> = {
 		rain: null,
 		particleType: 'underwater',
 		light: 1,
-		glow: 0,
+		glow: 0.5,
+		// glow: 0,
 		actors: [
 			{ model: 'assets/model/map2/fish1.glb', count: 6, type: 'swimming', scale: 1 },
 			{ model: 'assets/model/map2/fish2.glb', count: 6, type: 'swimming', scale: 1 },

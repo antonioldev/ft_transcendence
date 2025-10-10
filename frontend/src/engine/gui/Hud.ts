@@ -39,7 +39,7 @@ export class Hud {
 		[PowerupType.INVISIBLE_BALL]: "assets/icons/powerup/ghost.png",
 		[PowerupType.CURVE_BALL]: "assets/icons/powerup/curve.png",
 		[PowerupType.TRIPLE_SHOT]: "assets/icons/powerupHD/ballMultiplier.png",
-		[PowerupType.SHIELD]: "assets/icons/powerupHD/shiled.png"
+		[PowerupType.SHIELD]: "assets/icons/powerupHD/shield.png"
 	};
 
 	private POWERUP_ICON_HD: Record<number, string> = {
@@ -55,7 +55,7 @@ export class Hud {
 		[PowerupType.INVISIBLE_BALL]: "assets/icons/powerupHD/ghost.png",
 		[PowerupType.CURVE_BALL]: "assets/icons/powerupHD/curve.png",
 		[PowerupType.TRIPLE_SHOT]: "assets/icons/powerupHD/ballMultiplier.png",
-		[PowerupType.SHIELD]: "assets/icons/powerupHD/shiled.png"
+		[PowerupType.SHIELD]: "assets/icons/powerupHD/shield.png"
 		
 	};
 
