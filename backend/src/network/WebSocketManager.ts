@@ -12,29 +12,30 @@ import { TournamentRemote } from './Tournament.js';
  * Manages WebSocket connections, client interactions, and game-related messaging.
  */
 export class WebSocketManager {
-    clientMap: Map<string, Client> = new Map(); // sid map to client
+    sidClientMap: Map<string, Client> = new Map(); // sid map to client
     /**
      * Sets up WebSocket routes for the Fastify server.
      * @param fastify - The Fastify instance to configure.
      */
     async setupRoutes(fastify: FastifyInstance): Promise<void> {
         fastify.get('/ws', { websocket: true } as any, (socket, req) => { //testing change here
-            // const token = (req.query as { token?: string }).token;
-            const cookieHeader = req.headers.cookie || '';
-            const sidFromCookie = this.parseCookie(cookieHeader)['sid'];
+            // const cookieHeader = req.headers.cookie || '';
+            // const sidFromCookie = this.parseCookie(cookieHeader)['sid'];
+            
+            // // 2) optional fallbacks: ?sid=... or Google ?token=...
+            // const { sid: sidFromQuery, token } = (req.query as { sid?: string; token?: string }) || {};
+            // const sid = sidFromCookie || sidFromQuery;
+            
+            const { sid } = req.query as { sid: string}; 
+            const { token } = req.query as { token?: string };
 
-            // 2) optional fallbacks: ?sid=... or Google ?token=...
-            const { sid: sidFromQuery, token } = (req.query as { sid?: string; token?: string }) || {};
-            const sid = sidFromCookie || sidFromQuery;
-
-            if (sid) {
+            if (sid) { // client reconnected
                 const user = this.safeGetUserBySession(sid);
                 if (user) {
-                    this.handleConnection(socket, { username: user.username, email: user.email ?? '' });
-                    return;
+                    this.handleConnection(socket, sid, { username: user.username, email: user.email ?? '' });
                 }
             }
-            if (token) {
+            else if (token) {
                 try {
                     // Google authentication: verify JWT token
                     const decoded = fastify.jwt.verify(token) as any;
@@ -46,7 +47,7 @@ export class WebSocketManager {
             } else {
                 // Traditional authentication: accept connection without token
                 console.log('Traditional connection (will authenticate via messages)');
-                this.handleConnection(socket);
+                this.handleConnection(socket, sid);
             }
         });
     }
@@ -56,7 +57,7 @@ export class WebSocketManager {
      * @param socket - The WebSocket connection object.
      */
     private handleConnection(socket: any, sid: string, authenticatedUser?: { username: string; email: string }): void {
-        let client = this.clientMap.get(sid);
+        let client = this.sidClientMap.get(sid);
         if (!client) {
             if (authenticatedUser) { // Google authenticated user
                 client = new Client(authenticatedUser.username, authenticatedUser.email, socket);
