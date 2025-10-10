@@ -6,7 +6,7 @@ import { Vector3 } from "@babylonjs/core/Maths/math.vector";
 import type { Control } from "@babylonjs/gui/2D/controls/control";
 import { getCamera2DPosition, getCamera3DPlayer1Position, getCamera3DPlayer2Position } from '../utils.js';
 import { GAME_CONFIG } from "../../shared/gameConfig.js";
-import { Color3 } from "@babylonjs/core";
+import { Color3, Color4 } from "@babylonjs/core";
 
 type FloatProp =
   | "alpha"
@@ -264,7 +264,6 @@ export class AnimationManager {
 	}
 
 // GAME OBJECT ANIMATION
-
 	private animateMesh(target: any, property: string, from: number, to: number,frames: number,
 		ease: EasingFunction = Motion.ease.quadOut(), loop: boolean = false, pingPong: boolean = false): Promise<void> {
 
@@ -295,19 +294,44 @@ export class AnimationManager {
 		});
 	}
 
-	async glowEffect(target: any, color: Color3): Promise<void> {
+	async glowEffect(target: any, color: Color3, edgeColor?: Color4): Promise<void> {
 		if (!target.material) return;
 
 		target.material.emissiveColor = color;
+		if (edgeColor)
+			target.edgesColor = edgeColor;
 		target.visibility = 0;
 
 		await this.animateMesh(target, "visibility", 0, 1, Motion.F.fast, Motion.ease.quadOut(), false);
 		return this.animateMesh(target, "visibility", 1, 0.6, Motion.F.xFast, Motion.ease.sine(), true);
 	}
 
-	async stopGlowEffect(target: any): Promise<void> {
+	async pulse(target: any, color: Color3, edgeColor?: Color4): Promise<void> {
+		if (!target.material) return;
+
+		target.material.emissiveColor = color;
+		if (edgeColor)
+			target.edgesColor = edgeColor;
+		target.visibility = 0;
+
+		await this.animateMesh(target, "visibility", 0, 1, Motion.F.fast, Motion.ease.quadOut(), false);
+		await Promise.all([
+			this.animateMesh(target.scaling, "x", 1, 1.4, Motion.F.fast, Motion.ease.sine(), true, true),
+			this.animateMesh(target.scaling, "y", 1, 1.4, Motion.F.fast, Motion.ease.sine(), true, true),
+			this.animateMesh(target.scaling, "z", 1, 1.4, Motion.F.fast, Motion.ease.sine(), true, true)
+		]);
+	}
+
+	async stopEffect(target: any): Promise<void> {
 		if (!target.material) return;
 		
+		target.animations = [];
+		if (target.scaling) {
+			target.scaling.x = 1;
+			target.scaling.y = 1;
+			target.scaling.z = 1;
+		}
+
 		await this.animateMesh(target, "visibility", target.visibility, 0, Motion.F.fast, Motion.ease.quadOut(), false);
 		target.visibility = 0;
 	}

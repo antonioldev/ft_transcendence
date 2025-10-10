@@ -39,6 +39,7 @@ export class GUIManager {
 			this.adt = AdvancedDynamicTexture.CreateFullscreenUI("UI", true, this.scene);
 			this.adt!.layer!.layerMask = 0x20000000;
 			this.isTournament = config.isTournament;
+			this.createViewModeDivider(config);
 			this.countdown = new Countdown(this.adt, this.animationManager, audioManager);
 			this.matchTree = new MatchTree(this.adt, this.animationManager);
 			this.hud = new Hud(this.adt, this.animationManager,config);
@@ -48,7 +49,6 @@ export class GUIManager {
 			this.curtain = new SceneTransition(this.adt, this.animationManager);
 			this.cardGame = new CardGame(this.adt, animationManager, audioManager);
 
-			this.createViewModeDivider(config);
 			this.isInitialized = true;
 		} catch (error) {
 			Logger.error('Error creating GUI', 'GUIManager', error);

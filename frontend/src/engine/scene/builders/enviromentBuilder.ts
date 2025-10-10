@@ -1,4 +1,4 @@
-import { HDRCubeTexture, MeshBuilder, StandardMaterial, Color3, Scene} from "@babylonjs/core";
+import { HDRCubeTexture, MeshBuilder, Scene} from "@babylonjs/core";
 import { ViewMode } from '../../../shared/constants.js';
 import { GAME_CONFIG } from '../../../shared/gameConfig.js';
 import { Logger } from '../../../utils/LogManager.js';
@@ -18,7 +18,7 @@ export function createEnvironment(scene: Scene, path: string | null): void {
 	}
 }
 
-export function createTerrain(scene: Scene, name: string, mode: ViewMode, texture?: TextureSet): any {
+export function createTerrain(scene: Scene, name: string, texture: TextureSet): any {
 	const terrainWidth = GAME_CONFIG.fieldWidth * 10;
 	const terrainHeight = GAME_CONFIG.fieldHeight * 10;
 
@@ -41,9 +41,7 @@ export function createTerrain(scene: Scene, name: string, mode: ViewMode, textur
 	terrain.position.y = -0.01;
 
 	const terrainTextureScale = getStandardTextureScale(terrainWidth, terrainHeight, MAP_OBJECT_TYPE.GROUND);
-	const material = new StandardMaterial(name + "Material", scene);
-	material.diffuseColor = new Color3(1, 1, 0);
-	terrain.material = createMaterial(scene, name + "Material",  new Color3(1, 1, 0), mode, texture, terrainTextureScale);
+	terrain.material = createMaterial(scene, name + "Material", ViewMode.MODE_3D, texture, terrainTextureScale);
 
 	return terrain;
 }

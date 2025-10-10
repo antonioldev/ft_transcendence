@@ -1,8 +1,8 @@
 import { Engine, Scene, Color4, SceneLoader} from "@babylonjs/core";
 import { GameConfig } from './GameConfig.js';
-import { buildScene2D, buildScene3D } from './scene/builders/sceneBuilder.js';
+import { buildScene } from './scene/builders/sceneBuilder.js';
 import { webSocketClient } from '../core/WebSocketClient.js';
-import { GameStateData, GameObjects } from '../shared/types.js';
+import { GameStateData, GameObjects, ThemeObject } from '../shared/types.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
 import { ViewMode, WebSocketEvent, AppState, GameState } from '../shared/constants.js';
 import { Logger } from '../utils/LogManager.js';
@@ -13,16 +13,7 @@ import { GameConfigFactory } from './GameConfig.js';
 import { PlayerSide, PlayerState } from "./utils.js"
 import { disposeMaterialResources } from "./scene/rendering/materials.js";
 import { GameServices } from "./GameServices.js";
-
-type ThemeActor = { update: (dt: number) => void; dispose: () => void };
-type ThemeEffect = { dispose: () => void };
-
-type ThemeObject = {
-  props: any[];         // static meshes (trees/bushes now; wreck/rocks later)
-  actors: ThemeActor[]; // moving things later (clouds, fish, bubbles)
-  effects: ThemeEffect[]; // glow layer, particle systems, post-process, etc.
-};
-
+// import { PowerupType } from "../shared/constants.js";
 
 /**
  * The Game class serves as the core of the game engine, managing the initialization,
@@ -89,6 +80,7 @@ export class Game {
 	async initialize(): Promise<void> {
 		if (this.isInitialized) return;
 
+		uiManager.updateLoadingProgress(0);
 		SceneLoader.ShowLoadingScreen = false;
 		uiManager.setLoadingScreenVisible(true);
 		Logger.info('Initializing game...', 'Game');
@@ -96,9 +88,11 @@ export class Game {
 		this.engine = await this.initializeBabylonEngine();
 		this.scene = await this.createScene();
 
-		this.gameObjects = this.config.viewMode === ViewMode.MODE_2D
-			? await buildScene2D(this.scene, this.config.gameMode, this.config.viewMode, (progress: number) => uiManager.updateLoadingProgress(progress))
-			: await buildScene3D(this.scene, this.config.gameMode, this.config.viewMode, (progress: number) => uiManager.updateLoadingProgress(progress));
+		const { gameObjects, themeObjects } = await buildScene(this.scene, this.config.gameMode, this.config.viewMode, 
+			(progress: number) => uiManager.updateLoadingProgress(progress));
+
+		this.gameObjects = gameObjects;
+		this.themeObjects = themeObjects;
 
 		this.services = new GameServices(this.engine, this.scene, this.config, this.gameObjects, this.players);
 		await this.services.initialize();
@@ -171,10 +165,12 @@ export class Game {
 			this.services?.gui.cardGame.hide();
 			this.services?.gui.curtain.hide();
 			this.services?.gui.hud.show(true);
-			const playerLeft = this.players.get(PlayerSide.LEFT)?.name;
-			const playerRight = this.players.get(PlayerSide.RIGHT)?.name;
+			// const playerLeft = this.players.get(PlayerSide.LEFT)?.name;
+			// const playerRight = this.players.get(PlayerSide.RIGHT)?.name;
 
 			if (countdown === GAME_CONFIG.startDelay - 1) {
+				const playerLeft = this.players.get(PlayerSide.LEFT)?.name;
+				const playerRight = this.players.get(PlayerSide.RIGHT)?.name;
 				this.services?.audio?.restoreMusicVolume();
 				const controlledSides = this.getControlledSides();
 				await Promise.all([
@@ -199,11 +195,51 @@ export class Game {
 				this.services?.render?.stopCameraAnimation();
 				this.services?.gui?.countdown.finish();
 				this.startGameLoop();
+				// this.testPowerupEffects();
 			}
 		} catch (error) {
 			Logger.error('Error handling countdown', 'Game', error);
 		}
 	}
+
+// private testPowerupEffects(): void {
+// 	const powerupTypes = [
+// 		PowerupType.SHRINK_OPPONENT,
+// 		PowerupType.GROW_PADDLE,
+// 		PowerupType.INVERT_OPPONENT,
+// 		PowerupType.SHIELD,
+// 		PowerupType.SLOW_OPPONENT,
+// 		PowerupType.INCREASE_PADDLE_SPEED,
+// 		PowerupType.FREEZE,
+// 		PowerupType.POWERSHOT,
+// 		PowerupType.CURVE_BALL,
+// 		PowerupType.CURVE_BALL
+// 	];
+
+// 	let currentIndex = 0;
+// 	let previousPowerup: PowerupType | null = null;
+
+// 	const testInterval = setInterval(() => {
+// 		if (!this.isInitialized || !this.services?.powerup) {
+// 			clearInterval(testInterval);
+// 			return;
+// 		}
+
+// 		// Deactivate previous powerup
+// 		if (previousPowerup !== null) {
+// 			this.services.powerup.deactivate(PlayerSide.LEFT, 0, previousPowerup);
+// 			console.error(`   ✅ Deactivated: ${PowerupType[previousPowerup]}`);
+// 		}
+
+// 		// Activate new powerup
+// 		const powerupType = powerupTypes[currentIndex];
+// 		console.error(`🧪 Activating: ${PowerupType[powerupType]}`);
+// 		this.services.powerup.activate(PlayerSide.LEFT, 0, powerupType);
+
+// 		previousPowerup = powerupType;
+// 		currentIndex = (currentIndex + 1) % powerupTypes.length;
+// 	}, 3000);
+// }
 
 	// Handle server ending the game
 	private async onServerEndedGame(winner: string, loser: string): Promise<void> {

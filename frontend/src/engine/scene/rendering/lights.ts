@@ -1,7 +1,9 @@
 import { Vector3,  HemisphericLight, PointLight, Color3 } from "@babylonjs/core";
+import { ViewMode } from "../../../shared/constants";
 
 // Creates a light source for the given scene
-export function createLight(scene: any, name: string, position: any, intensity: number = 1): any {
+export function createLight(scene: any, name: string, viewMode: ViewMode, intensity: number = 1): any {
+	const position = viewMode === ViewMode.MODE_2D ? new Vector3(0, 10, 0) : new Vector3(100, 400, 0);
 	const light = new HemisphericLight(name, position, scene);
 	light.intensity = intensity;
 	light.diffuse = new Color3(1, 1, 1);

@@ -36,11 +36,12 @@ export type MapAssetConfig = {
 	walls: TextureSet;
 	ball: TextureSet;
 	paddle: TextureSet;
-	terrain: TextureSet;
-	staticObjects: StaticObject[];
-	skybox: string | null;
 	light: number;
 	glow: number;
+	
+	terrain: TextureSet | null;
+	staticObjects: StaticObject[];
+	skybox: string | null;
 	fogColor?: Color3 | null;
 	rain?: RainConfig | null;
 	particleType?: 'dust' | 'underwater' | null;

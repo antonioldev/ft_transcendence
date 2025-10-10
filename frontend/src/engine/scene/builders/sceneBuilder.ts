@@ -1,145 +1,117 @@
-import { Vector3, Scene, GlowLayer } from "@babylonjs/core";
-import { createGameField, createWalls, createPlayer, createBall, createFreezeCage } from '../entities/gameObjects.js';
+import { Scene, GlowLayer } from "@babylonjs/core";
+import { createGameField, createWalls, createPlayer, createBall } from '../entities/gameObjects.js';
 import { createLight } from "../rendering/lights.js";
-import { GameObjects } from '../../../shared/types.js';
+import { GameObjects, ThemeObject } from '../../../shared/types.js';
 import { createCameras, createGuiCamera } from "./camerasBuilder.js";
 import { GameMode, ViewMode } from '../../../shared/constants.js';
-import { COLORS, getPlayerSize, getPlayerLeftPosition, getPlayerRightPosition, getBallStartPosition, PlayerSide } from '../../utils.js';
+import { getPlayerSize, getPlayerLeftPosition, getPlayerRightPosition, getBallStartPosition, PlayerSide } from '../../utils.js';
 import { createEnvironment, createTerrain } from './enviromentBuilder.js';
 import { createFog, createRainParticles, createUnderwaterParticles, createDustParticleSystem} from '../rendering/effects.js'
 import { createStaticObjects, createStaticObject } from "../entities/staticProps.js";
 import { createActor } from "../entities/animatedProps.js";
 import { MAP_CONFIGS } from "../config/mapConfigs.js";
-import { createPaddleGlowEffect, createBallGlowEffect, createWallGlowEffect } from "../entities/gameObjects.js";
+import { createPaddleGlowEffect, createPaddleCage, createBallGlowEffect, createBallCage, createWallLineGlowEffect, createWallGlowEffect } from "../entities/gameObjects.js";
+import { MapAssetConfig } from "../config/sceneTypes.js";
 
 export type LoadingProgressCallback = (progress: number) => void;
 
-export async function buildScene2D(
+export async function buildScene (
 	scene: Scene,
 	gameMode: GameMode,
 	viewMode: ViewMode,
 	onProgress?: LoadingProgressCallback
-): Promise<GameObjects> {
+): Promise<{ gameObjects: GameObjects; themeObjects: ThemeObject }> {
 	let cameras: any[];
 	let playerLeft: any;
 	let playerRight: any;
-
-	onProgress?.(5);
-	const lights = createLight(scene, "light1", new Vector3(0, 10, 0));
-	onProgress?.(15);
-	const gameField = createGameField(scene, "ground", viewMode, undefined);
-	onProgress?.(25);
-	const walls = createWalls(scene, "walls", viewMode, undefined);
-	onProgress?.(30);
 	const balls: any[] = [];
 	const ballsGlow: any[] = [];
 	const ballsFreeze: any[] = [];
+	let themeObjects: ThemeObject = { props: [], actors: [], effects: [] };
+
+	const map_asset = viewMode === ViewMode.MODE_2D 
+		? MAP_CONFIGS.map : MAP_CONFIGS.map1
+
+	const lights = createLight(scene, "light1", viewMode, map_asset.light);
+	const gameField = createGameField(scene, "ground", viewMode, map_asset.ground);
+	const walls = createWalls(scene, "walls", viewMode, map_asset.walls);
+	onProgress?.(20);
+	
 	for (let i = 0; i < 3; i++){
-		const ball = createBall(scene, `ball${i}`, getBallStartPosition(), COLORS.ball2D, viewMode, undefined);
-		ball.visibility = 0;
+		const ball = createBall(scene, `ball${i}`, getBallStartPosition(), viewMode, map_asset.ball);
 		balls.push(ball);
-
-		const ballGlow = createBallGlowEffect(scene, `ball${i}Glow`);
-		ballGlow.parent = ball;
-		ballsGlow.push(ballGlow);
-
-		const ballFreeze = createFreezeCage(scene, `ball${i}Glow`);
-		ballFreeze.parent = ball;
-		ballsFreeze.push(ballFreeze);
+		const { glow, freeze } = createBallEffects(scene, ball, i);
+		ballsGlow.push(glow);
+		ballsFreeze.push(freeze);
 	}
-	onProgress?.(40);
 	
 	cameras = createCameras(scene, "camera", viewMode, gameMode);
-	playerLeft = createPlayer(scene, "player1", getPlayerLeftPosition(), getPlayerSize(), COLORS.player1_2D, viewMode, undefined);
-	playerRight = createPlayer(scene, "player2", getPlayerRightPosition(), getPlayerSize(), COLORS.player2_2D, viewMode, undefined);
+	const guiCamera = createGuiCamera(scene, "guiCamera");
 
+	if (viewMode === ViewMode.MODE_2D) {
+		const allCameras = [...cameras, guiCamera];
+		scene.activeCameras = allCameras;
+	}
 
-	const leftGlow = createPaddleGlowEffect(scene, "leftGlow", getPlayerSize());
-	leftGlow.parent = playerLeft;
-	const rightGlow = createPaddleGlowEffect(scene, "rightGlow", getPlayerSize());
-	rightGlow.parent = playerRight;
+	onProgress?.(40);
+	playerLeft = createPlayer(scene, "player1", getPlayerLeftPosition(), getPlayerSize(), viewMode, map_asset.paddle);
+	playerRight = createPlayer(scene, "player2", getPlayerRightPosition(), getPlayerSize(), viewMode, map_asset.paddle);
 
+	const leftPlayerGlow = createPaddleGlowEffect(scene, "leftGlow", getPlayerSize(), playerLeft);
+	const rightPlayerGlow = createPaddleGlowEffect(scene, "rightGlow", getPlayerSize(), playerRight);
+	const leftPlayerCage = createPaddleCage(scene, "leftCage", getPlayerSize(), playerLeft);
+	const rightPlayerCage = createPaddleCage(scene, "rightCage", getPlayerSize(), playerRight);
 	const leftShield = createWallGlowEffect(scene, "leftShield", PlayerSide.LEFT);
 	const rightShield = createWallGlowEffect(scene, "rightShield", PlayerSide.RIGHT);
 
+	onProgress?.(60);
+	if (viewMode === ViewMode.MODE_3D)
+		await build3DThemeObjects(scene, map_asset, themeObjects, onProgress);
 
-	onProgress?.(80);
-	await scene.whenReadyAsync();
-	onProgress?.(95);
-	const guiCamera = createGuiCamera(scene, "guiCamera");
-	const allCameras = [...cameras, guiCamera];
-	scene.activeCameras = allCameras;
+
+	const glow = new GlowLayer("glow", scene);
+	glow.intensity = map_asset.glow ?? 0;
+	themeObjects?.effects.push(glow);
+
 	onProgress?.(100);
+	await scene.whenReadyAsync();
+
 	return {
-		players: { left: playerLeft, right: playerRight },
-		balls,
-		gameField,
-		walls,
-		cameras,
-		guiCamera,
-		lights,
-		effects: { left: leftGlow, right: rightGlow, balls: ballsGlow, ballsFreeze: ballsFreeze, shieldLeft: leftShield, shieldRight: rightShield }
+		gameObjects: {
+			players: { left: playerLeft, right: playerRight },
+			balls,
+			gameField,
+			walls,
+			cameras,
+			guiCamera,
+			lights,
+			effects: { leftGlow: leftPlayerGlow, rightGlow: rightPlayerGlow, leftCage: leftPlayerCage, rightCage: rightPlayerCage,
+				balls: ballsGlow, ballsFreeze: ballsFreeze,
+				shieldLeft: leftShield, shieldRight: rightShield }
+		},
+		themeObjects
 	};
 }
 
-export async function buildScene3D(
-	scene: Scene,
-	gameMode: GameMode,
-	viewMode: ViewMode, 
-	onProgress?: LoadingProgressCallback,
-	themeObjects?: { props: any[]; actors: any[]; effects: any[] }
-): Promise<GameObjects> {
-	let cameras: any[];
-	let playerLeft: any;
-	let playerRight: any;
-
-	let map_asset = MAP_CONFIGS.map1;
-
-	onProgress?.(5);
-	const lights = createLight(scene, "light1", new Vector3(100, 400, 0), map_asset.light);
-	onProgress?.(10);
-	const gameField = createGameField(scene, "ground", viewMode, map_asset.ground);
-	onProgress?.(15);
-	const walls = createWalls(scene, "walls", viewMode, map_asset.walls, { themeObjects, glow: map_asset.glow ?? 0 });
-	onProgress?.(20);
-	const balls: any[] = [];
-	const ballsGlow: any[] = [];
-	const ballsFreeze: any[] = [];
-	for (let i = 0; i < 3; i++){
-		const ball = createBall(scene, `ball${i}`, getBallStartPosition(), COLORS.ball3D, viewMode, map_asset.ball);
-		ball.visibility = 0;
-		balls.push(ball);
-
-		const ballGlow = createBallGlowEffect(scene, `ball${i}Glow`);
-		ballGlow.parent = ball;
-		ballsGlow.push(ballGlow);
-
-		const ballFreeze = createFreezeCage(scene, `ball${i}Glow`);
-		ballFreeze.parent = ball;
-		ballsFreeze.push(ballFreeze);
-	}
-	onProgress?.(25);
+function createBallEffects(scene: Scene, ball: any, index: number) {
+	const ballGlow = createBallGlowEffect(scene, `ball${index}Glow`);
+	ballGlow.parent = ball;
 	
-	cameras = createCameras(scene, "camera", viewMode, gameMode);
-	onProgress?.(30);
-	createTerrain(scene, "terrain", viewMode, map_asset.terrain);
-	onProgress?.(40);
-	playerLeft = createPlayer(scene, "player1", getPlayerLeftPosition(), getPlayerSize(), COLORS.player1_3D, viewMode, map_asset.paddle);
-	playerRight = createPlayer(scene, "player2", getPlayerRightPosition(), getPlayerSize(), COLORS.player2_3D, viewMode, map_asset.paddle);
-	onProgress?.(50);
+	const ballFreeze = createBallCage(scene, `ball${index}Glow`);
+	ballFreeze.parent = ball;
+	
+	return { glow: ballGlow, freeze: ballFreeze };
+}
 
-
-	const leftGlow = createPaddleGlowEffect(scene, "leftGlow", getPlayerSize());
-	leftGlow.parent = playerLeft;
-	const rightGlow = createPaddleGlowEffect(scene, "rightGlow", getPlayerSize());
-	rightGlow.parent = playerRight;
-
-	const leftShield = createWallGlowEffect(scene, "leftShield", PlayerSide.LEFT);
-	const rightShield = createWallGlowEffect(scene, "rightShield", PlayerSide.RIGHT);
-
-
+async function build3DThemeObjects(
+	scene: Scene,
+	map_asset: MapAssetConfig,
+	themeObjects: ThemeObject,
+	onProgress?: LoadingProgressCallback
+): Promise<void> {
 	createEnvironment(scene, map_asset.skybox);
-	onProgress?.(60);
+	if (map_asset.terrain)
+		createTerrain(scene, "terrain", map_asset.terrain);
 
 	if (map_asset === MAP_CONFIGS.map0) {
 		for (const propData of map_asset.staticObjects) {
@@ -149,9 +121,9 @@ export async function buildScene3D(
 	} else {
 		const staticMeshes = await createStaticObjects(scene, map_asset.staticObjects);
 		themeObjects?.props.push(...staticMeshes);
-}
+	}
 
-
+	onProgress?.(80);
 	for (const actorConfig of map_asset.actors) {
 		for (let i = 0; i < actorConfig.count; i++) {
 			try {
@@ -165,7 +137,7 @@ export async function buildScene3D(
 		}
 	}
 
-	onProgress?.(70);
+
 	if (map_asset.particleType === 'underwater'){
 		const bubble = createUnderwaterParticles(scene);
 		themeObjects?.effects.push(bubble);
@@ -175,35 +147,15 @@ export async function buildScene3D(
 		const dust = createDustParticleSystem(scene);
 		themeObjects?.effects.push(dust);
 	}
-	onProgress?.(75);
+
 	if (map_asset.fogColor)
 		createFog(scene, map_asset.fogColor);
 
+	if (map_asset.glow > 0.5)
+		createWallLineGlowEffect(scene, themeObjects);
 		
 	if (map_asset.rain) {
 		const rain = createRainParticles(scene, map_asset.rain);
 		themeObjects?.effects.push(rain);
 	}
-
-	onProgress?.(80);
-	const glow = new GlowLayer("glow", scene);
-	glow.intensity = map_asset.glow ?? 0;
-	themeObjects?.effects.push(glow);
-
-	onProgress?.(90);
-	await scene.whenReadyAsync();
-	onProgress?.(95);
-	const guiCamera = createGuiCamera(scene, "guiCamera");
-
-	onProgress?.(100);
-	return {
-		players: { left: playerLeft, right: playerRight },
-		balls,
-		gameField,
-		walls,
-		cameras,
-		guiCamera,
-		lights,
-		effects: { left: leftGlow, right: rightGlow, balls: ballsGlow, ballsFreeze: ballsFreeze, shieldLeft: leftShield, shieldRight: rightShield }
-	};
 }

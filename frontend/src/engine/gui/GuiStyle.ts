@@ -399,7 +399,7 @@ export const COUNTDOWN_STYLES = {
         height: "100%",
         thickness: 0,
         isVisible: false,
-        zIndex: Z_INDEX.GAMEPLAY,
+        zIndex: Z_INDEX.HUD,
     },
 
     countdownText: {
@@ -488,7 +488,7 @@ export const VIEW_MODE_STYLES = {
         width: "5px",
         height: "100%",
         background: COLORS.BLACK,
-        zIndex: Z_INDEX.HUD,
+        zIndex: Z_INDEX.GAMEPLAY,
         thickness: 0
     }
 } as const;

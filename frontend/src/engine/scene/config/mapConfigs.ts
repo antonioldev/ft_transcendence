@@ -58,11 +58,26 @@ function simpleColor(color: string) {
 }
 
 export const MAP_CONFIGS: Record<string, MapAssetConfig> = {
+	map: {
+		ground: simpleColor("#143D60"),
+		walls: simpleColor("#FFFFFF"),
+		ball: simpleColor("#FFFFFF"),
+		paddle: simpleColor("#A0C878"),
+		terrain: null,
+		staticObjects: [],
+		skybox: null,
+		fogColor: null,
+		particleType: null,
+		rain: null,
+		light: 0.8,
+		glow: 0.2,
+		actors: []
+	},
 	map0: {
 		ground: createTextureSet('map0', 'ground', "#281352"),
 		walls: simpleColor("#281352"),
-		ball: simpleColor("#fffb00"),
-		paddle: simpleColor("#670000"),
+		ball: simpleColor("#cfcfcf"),
+		paddle: simpleColor("#1a4d7a"),
 		terrain: createTextureSet('map0', 'terrain', "#281352"),
 		staticObjects: [
 			...map0Buildings.building1,
@@ -81,7 +96,7 @@ export const MAP_CONFIGS: Record<string, MapAssetConfig> = {
 			height: fh * 2
 		},
 		light: 0.3,
-		glow: 0.5,
+		glow: 0.6,
 		actors: []
 	},
 	

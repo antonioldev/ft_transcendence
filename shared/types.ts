@@ -177,8 +177,10 @@ export interface GameObjects {
 	guiCamera: any;
 	lights: any[];
 	effects: {
-		left: any;
-		right: any;
+		leftGlow: any;
+		rightGlow: any;
+		leftCage: any;
+		rightCage: any;
 		balls: any[];
 		ballsFreeze: any[];
 		shieldLeft: any;
@@ -195,6 +197,15 @@ export interface GameObjects {
 	// guiCamera: Camera;
 	// lights: Light[]; // TODO
 }
+
+type ThemeActor = { update: (dt: number) => void; dispose: () => void };
+type ThemeEffect = { dispose: () => void };
+
+export type ThemeObject = {
+  props: any[];         // static meshes (trees/bushes now; wreck/rocks later)
+  actors: ThemeActor[]; // moving things later (clouds, fish, bubbles)
+  effects: ThemeEffect[]; // glow layer, particle systems, post-process, etc.
+};
 
 // Player control configuration (keyboard mappings)
 export interface PlayerControls {
