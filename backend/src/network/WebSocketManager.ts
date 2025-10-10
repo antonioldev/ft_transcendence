@@ -12,7 +12,6 @@ import { TournamentRemote } from './Tournament.js';
  * Manages WebSocket connections, client interactions, and game-related messaging.
  */
 export class WebSocketManager {
-    sidClientMap: Map<string, Client> = new Map(); // sid map to client
     /**
      * Sets up WebSocket routes for the Fastify server.
      * @param fastify - The Fastify instance to configure.
@@ -104,9 +103,6 @@ export class WebSocketManager {
             const data: ClientMessage = JSON.parse(message.toString());
             
             switch (data.type) {
-                case MessageType.JOIN_GAME:
-                    this.handleJoinGame(client, data);
-                    break;
                 case MessageType.PLAYER_READY:
                     this.handlePlayerReady(client);
                     break;
@@ -134,6 +130,10 @@ export class WebSocketManager {
                 case MessageType.QUIT_GAME:
                     gameManager.removeClient(client);
                     break;
+
+                case MessageType.JOIN_GAME:
+                    this.handleJoinGame(client, data);
+                    break;
                 case MessageType.LOGIN_USER:
                     await this.handleLoginUser(client, data);
                     break;
@@ -149,6 +149,7 @@ export class WebSocketManager {
                 case MessageType.REQUEST_GAME_HISTORY:
                     this.handleUserGameHistory(client, message);
                     break;
+
                 default:
                     throw(new Error("Unknown message type"));
             }
