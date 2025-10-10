@@ -131,25 +131,6 @@ export class WebSocketManager {
                     gameManager.removeClient(client);
                     break;
 
-                case MessageType.JOIN_GAME:
-                    this.handleJoinGame(client, data);
-                    break;
-                case MessageType.LOGIN_USER:
-                    await this.handleLoginUser(client, data);
-                    break;
-                case MessageType.LOGOUT_USER:
-                    await this.handleLogoutUser(client);
-                    break;                    
-                case MessageType.REGISTER_USER:
-                    await this.handleRegisterNewUser(client, data);
-                    break;
-                case MessageType.REQUEST_USER_STATS:
-                    await this.handleUserStats(client, message);
-                    break;
-                case MessageType.REQUEST_GAME_HISTORY:
-                    this.handleUserGameHistory(client, message);
-                    break;
-
                 default:
                     throw(new Error("Unknown message type"));
             }
@@ -384,7 +365,7 @@ export class WebSocketManager {
     private async handleLogoutUser(client: Client): Promise<void> {
         const username = client.username;
         try {
-            await db.logoutUser(username);
+            await db.logoutUser(username); 
             console.log('User successfully logout');
         } catch (err) {
             console.error('Error in logout user');

@@ -1,8 +1,9 @@
-import { Client } from './Client.js';
+import { Client, Player } from './Client.js';
 import { FastifyInstance } from 'fastify';
 import * as db from "../data/validation.js";
-import { AuthCode } from '../shared/constants.js';
-
+import { gameManager } from './GameManager.js';
+import { AuthCode, GameMode, AiDifficulty } from '../shared/constants.js';
+import { GAME_CONFIG } from '../shared/gameConfig.js';
 
 export class APIManager {
 	sidClientMap: Map<string, Client> = new Map();
@@ -31,27 +32,27 @@ export class APIManager {
 			let client = this.findOrCreateClient(sid);
 
 			// get login details from Google Auth token or by default request body
-			let loginInfo: { username: string, email: string, password: string };
+			let clientInfo: { username: string, email: string, password: string };
             const { token } = request.body as { token?: string };
 			if (token) {
 				try {
 					const decoded = this.fastify.jwt.verify(token);
-					loginInfo = decoded.user;
+					clientInfo = decoded.user;
 				}
 				catch (err) {
 					return reply.code(401).send({success: false, message: "Error: Invalid JWT token"});
 				}
 			}
 			else {
-				loginInfo = request.body as { username: string, email: string, password: string };
+				clientInfo = request.body as { username: string, email: string, password: string };
 			}
 			
 			// Verify login with db
-			const result = await db.verifyLogin(loginInfo.username, loginInfo.password);
+			const result = await db.verifyLogin(clientInfo.username, clientInfo.password);
 			let error: string = "";
 			switch (result) {
 				case AuthCode.OK:
-					client.setInfo(loginInfo.username, loginInfo.email);
+					client.setInfo(clientInfo.username, clientInfo.email);
 					client.loggedIn = true;
 					console.log(`User ${client.username} successfully logged in`);
 					return reply.send({ success: true, message: `User '${client.username}' successfully logged in` });
@@ -71,7 +72,7 @@ export class APIManager {
 		});
 
 		// LOGOUT
-		this.fastify.post('/login', async (request, reply) => {
+		this.fastify.post('/logout', async (request, reply) => {
 			const { sid } = request.query as { sid: string};
 			let client = this.getClient(sid);
 			if (!client) {
@@ -82,6 +83,89 @@ export class APIManager {
 			await db.logoutUser(client.username);
 			console.log(`User ${client.username} successfully logged out`);
 			return reply.send({ success: true, message: `User '${client.username}' successfully logged out` })
+		})
+
+		// REGISTER
+		this.fastify.post('/register', async (request, reply) => {
+			const { username, email, password } = request.body as { username: string, email: string, password: string };
+
+			if (!username || !email || !password) {
+				return reply.code(401).send({ success: false, message: 'Missing username, email, or password' })
+			}
+
+			const result = await db.registerNewUser(username, email, password);
+			switch (result) {
+				case AuthCode.OK:
+					console.log(`User ${username} successfully registered`);
+					return reply.send({ success: true, message: 'User registered successfully' })
+
+				case AuthCode.USER_EXISTS:
+					console.log(`Registration failed: user with that email already exists`);
+					return reply.code(401).send({ success: false, message: 'User with that email already exists' })
+
+				case AuthCode.USERNAME_TAKEN:
+					console.log(`Registration failed: username taken`);
+					return reply.code(401).send({ success: false, message: 'Username is already registered' })
+			}
+		})
+
+		// JOIN GAME 
+		this.fastify.post('/join', (request, reply) => {
+			const { sid, mode, players, capacity, aiDifficulty  } = request.body as { sid: string, mode: GameMode, players: Player[], capacity?: number, aiDifficulty?: AiDifficulty };
+			const client = this.findOrCreateClient(sid);
+
+			if (!mode) {
+				return reply.code(401).send({ success: false, message: "Game mode missing"});
+			}
+			const gameSession = gameManager.findOrCreateGame(mode, capacity ?? undefined);
+			gameManager.addClient(client, gameSession);
+	
+			if (aiDifficulty !== undefined && gameSession.ai_difficulty === undefined) {
+				gameSession.set_ai_difficulty(aiDifficulty);
+			}
+	
+			// add players to gameSession
+			for (const player of players ?? []) {
+				gameSession.add_player(new Player(player.id, player.name, client));
+			}
+	
+			// start game if full or local, otherwise wait for players to join
+			if ((gameSession.full) || gameSession.mode === GameMode.TOURNAMENT_LOCAL) {
+				gameManager.runGame(gameSession);
+			}
+			else {
+				setTimeout(() => { gameManager.runGame(gameSession) }, (GAME_CONFIG.maxJoinWaitTime * 1000));
+			}
+
+			return reply.send({ 
+				success: true,
+				wsURL: `wss://${request.hostname}/ws?sid=${encodeURIComponent(sid)}`,
+				message: "",
+			})
+		})
+
+		// USER STATS
+		this.fastify.get('/stats', (request, reply) => {
+			const { username } = request.query as {username: string};
+			const stats = db.getUserStats(username); // from DB
+			if (!stats) {
+				console.log(`Failed to send stats: user '${username}' not found`);
+				return reply.code(401).send({ success: false, message: "User not found" });
+			}
+			console.log(`User stats sent to ${username}`);
+			return reply.send({ success: true, stats: stats });
+		})
+
+		// GAME HISTORY
+		this.fastify.get('/history', (request, reply) => {
+			const { username } = request.query as {username: string};
+			const history = db.getUserStats(username); // from DB
+			if (!history) {
+				console.log(`Failed to send game history: user '${username}' not found`);
+				return reply.code(401).send({ success: false, message: "User not found" });
+			}
+			console.log(`User stats sent to ${username}`);
+			return reply.send({ success: true, history: history });
 		})
 	}
 
