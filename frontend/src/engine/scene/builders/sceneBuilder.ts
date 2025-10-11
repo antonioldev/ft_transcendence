@@ -1,16 +1,15 @@
-import { Scene, GlowLayer } from "@babylonjs/core";
-import { createGameField, createWalls, createPlayer, createBall } from '../entities/gameObjects.js';
-import { GameObjects, ThemeObject } from '../../../shared/types.js';
-import { createCameras, createGuiCamera } from "./camerasBuilder.js";
+import { GlowLayer, Scene } from "@babylonjs/core";
 import { GameMode, ViewMode } from '../../../shared/constants.js';
-import { getPlayerSize, getPlayerLeftPosition, getPlayerRightPosition, getBallStartPosition, PlayerSide } from '../../utils.js';
-import { createEnvironment, createTerrain, createLight } from './enviromentBuilder.js';
-import { createFog, createRainParticles, createUnderwaterParticles, createDustParticleSystem, createSnow} from '../rendering/effects.js'
-import { createStaticObjects, createStaticObject } from "../entities/staticProps.js";
-import { createActor } from "../entities/animatedProps.js";
+import { GameObjects, ThemeObject } from '../../../shared/types.js';
+import { getBallStartPosition, getPlayerLeftPosition, getPlayerRightPosition, getPlayerSize, PlayerSide } from '../../utils.js';
 import { MAP_CONFIGS } from "../config/mapConfigs.js";
-import { createPaddleGlowEffect, createPaddleCage, createBallGlowEffect, createBallCage, createWallLineGlowEffect, createWallGlowEffect } from "../entities/gameObjects.js";
 import { MapAssetConfig } from "../config/sceneTypes.js";
+import { createActor } from "../entities/animatedProps.js";
+import { createBall, createBallCage, createBallGlowEffect, createGameField, createPaddleCage, createPaddleGlowEffect, createPlayer, createWallGlowEffect, createWallLineGlowEffect, createWalls } from '../entities/gameObjects.js';
+import { createStaticObject, createStaticObjects } from "../entities/staticProps.js";
+import { createDustParticleSystem, createFog, createLensFlare, createRainParticles, createSnow, createUnderwaterParticles } from '../rendering/effects.js';
+import { createCameras, createGuiCamera } from "./camerasBuilder.js";
+import { createEnvironment, createLight, createTerrain } from './enviromentBuilder.js';
 
 export type LoadingProgressCallback = (progress: number) => void;
 
@@ -29,7 +28,7 @@ export async function buildScene (
 	let themeObjects: ThemeObject = { props: [], actors: [], effects: [] };
 
 	const map_asset = viewMode === ViewMode.MODE_2D 
-		? MAP_CONFIGS.map : MAP_CONFIGS.map4
+		? MAP_CONFIGS.map : MAP_CONFIGS.map3
 
 	const lights = createLight(scene, "light1", viewMode, map_asset.light);
 	const gameField = createGameField(scene, "ground", viewMode, map_asset.ground);
@@ -150,6 +149,11 @@ async function build3DThemeObjects(
 	if (map_asset.particleType === 'snow') {
 		const snow = createSnow(scene);
 		themeObjects.effects.push(snow);
+	}
+
+	if (map_asset.particleType === 'lensFlare') {
+		const lensFlare = createLensFlare(scene);
+		themeObjects.effects.push(lensFlare);
 	}
 
 	if (map_asset.fogColor)

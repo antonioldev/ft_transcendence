@@ -36,7 +36,7 @@ export type MapAssetConfig = {
 	skybox: string | null;
 	fogColor?: Color3 | null;
 	fogIntensity: number;
-	particleType?: 'dust' | 'underwater' | 'rain' | 'snow' | null;
+	particleType?: 'dust' | 'underwater' | 'rain' | 'snow' | 'lensFlare' | null;
 	actors: ActorConfig[];
 };
 

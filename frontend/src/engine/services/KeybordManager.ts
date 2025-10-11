@@ -164,6 +164,7 @@ export class KeyboardManager {
 	private handlePauseMenuKeys(key: number): void {
 		switch (key) {
 			case Keys.Y:
+				console.error("ciao");
 				document.dispatchEvent(new CustomEvent('game:exitToMenu'));
 				break;
 			case Keys.N:

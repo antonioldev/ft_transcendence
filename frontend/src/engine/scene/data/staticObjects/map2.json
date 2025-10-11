@@ -111,9 +111,9 @@
     { "model": "assets/model/map2/stone2.glb", "pos": [29.25, 16.07, -2.30], "rot": 0.00, "scale": 8.00 }
   ],
   "coral1": [
-    { "model": "assets/model/map2/coral_1.glb", "pos": [-17.02, -2.73, -0.38], "rot": 0.00, "scale": 1.00 },
+    { "model": "assets/model/map2/coral_1.glb", "pos": [-14.02, -2.73, -0.38], "rot": 0.00, "scale": 1.00 },
     { "model": "assets/model/map2/coral_1.glb", "pos": [-16.29, -14.68, 0.19], "rot": 0.00, "scale": 1.00 },
-    { "model": "assets/model/map2/coral_1.glb", "pos": [-17.23, 7.76, 0.83], "rot": 0.00, "scale": 1.00 },
+    { "model": "assets/model/map2/coral_1.glb", "pos": [-13.23, 7.76, 0.0], "rot": 0.00, "scale": 1.00 },
     { "model": "assets/model/map2/coral_1.glb", "pos": [-20.13, 19.29, 1.55], "rot": 0.00, "scale": 1.00 },
     { "model": "assets/model/map2/coral_1.glb", "pos": [23.27, 15.13, 0.06], "rot": 0.00, "scale": 1.00 },
     { "model": "assets/model/map2/coral_1.glb", "pos": [24.53, 12.37, 0.14], "rot": 0.00, "scale": 1.00 },
@@ -198,7 +198,7 @@
   ],
   "wreck": [
     { "model": "assets/model/map2/boat.glb", "pos": [0.00, 30.70, 2.00], "rot": 0.00, "scale": 15.00 },
-    { "model": "assets/model/map2/boat.glb", "pos": [-9.60, -30.06, 2.35], "rot": 0.00, "scale": 15.00 }
+    { "model": "assets/model/map2/boat.glb", "pos": [-7.60, -30.06, 2.35], "rot": 0.00, "scale": 15.00 }
   ]
 }
 

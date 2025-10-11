@@ -1,5 +1,5 @@
-import { Color3, Vector3, Scene} from "@babylonjs/core";
-import { ParticleSystem, Texture, Color4 } from "@babylonjs/core";
+import { Color3, Vector3, Scene, LensFlare, LensFlareSystem} from "@babylonjs/core";
+import { ParticleSystem, Texture, Color4, CreateSphere } from "@babylonjs/core";
 
 export function createDustParticleSystem(scene: Scene): ParticleSystem {
 	const dust = new ParticleSystem("dust", 1000, scene);
@@ -69,10 +69,22 @@ export function createSnow(scene: Scene): ParticleSystem {
 	return snow;
 }
 
+export function createLensFlare(scene: Scene): LensFlareSystem {
+	const emitter = CreateSphere("flareEmitter", { diameter: 0.1 }, scene);
+	emitter.position = new Vector3(8, 3, 0);
+	emitter.isVisible = false;
+	const lensFlareSystem = new LensFlareSystem("lensFlareSystem", emitter, scene);
 
-export function createRainParticles(
-	scene: Scene, 
-): ParticleSystem {
+	const texture = "assets/textures/particle/flare_transparent.png";
+	
+	new LensFlare(0.15, 0, new Color3(0.6, 0.8, 1), texture, lensFlareSystem);
+	new LensFlare(0.1, 0.1, new Color3(0.61, 0.30, 0.86), texture,lensFlareSystem);
+	new LensFlare(0.05, 0.2, new Color3(1, 0.9, 0.6), texture, lensFlareSystem);
+
+	return lensFlareSystem;
+}
+
+export function createRainParticles(scene: Scene): ParticleSystem {
 	const density = 1500;
 	const speed = -50;
 	const color = new Color4(0, 1, 1, 0);
