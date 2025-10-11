@@ -8,7 +8,7 @@ import { setupWebsocket }  from './routes/Websocket.js';
 import config from './config/default.js';
 import { initialisazeDatabase } from './data/db-init.js';
 import { registerDatabaseFunctions } from './data/database.js';
-import { setupRoutes } from './routes/HTTP.js';
+import { setupRoutes } from './routes/apiRoutes.js';
 import { authGoogle, authLocal } from './routes/auth.js';
 
 

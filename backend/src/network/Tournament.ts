@@ -5,6 +5,7 @@ import { GameMode, MessageType, Direction, GameSessionState } from '../shared/co
 import { LEFT, RIGHT } from '../shared/gameConfig.js';
 import { generateGameId } from '../data/database.js';
 import { randomize } from './utils.js';
+import { ClientMessage } from '../shared/types.js';
 
 export class Match {
 	id: string = generateGameId();
@@ -346,7 +347,11 @@ export class TournamentRemote extends AbstractTournament {
 		spectator_match.game?.send_side_assignment(new Set([client]));
 	}
 
-	toggle_spectator_game(client: Client, direction: Direction) {
+	toggle_spectator_game(client: Client, data: ClientMessage) {
+		if (!data.direction) {
+			console.log("Cannot toggle spectator game, direction not specified")
+			return 
+		}
 		if (this.active_matches.length <= 1) return ;
 
 		const old_match = this.find_spectator_match(client);
@@ -357,7 +362,7 @@ export class TournamentRemote extends AbstractTournament {
 		const old_index = this.active_matches.indexOf(old_match);
 		if (old_index === -1) return ; 
 
-		let new_index: number = old_index + direction;
+		let new_index: number = old_index + data.direction;
 		if (new_index < 0) new_index = this.active_matches.length - 1;
 		else if (new_index > this.active_matches.length - 1) new_index = 0;
 		

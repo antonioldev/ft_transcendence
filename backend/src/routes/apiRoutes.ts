@@ -1,10 +1,10 @@
-import { Client, Player } from '../network/Client.js';
+import { Player } from '../network/Client.js';
 import { FastifyInstance } from 'fastify';
 import * as db from "../data/validation.js";
 import { gameManager } from '../network/GameManager.js';
 import { AuthCode, GameMode, AiDifficulty } from '../shared/constants.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
-import { removeClient, findOrCreateClient, getClient } from './utils.js';
+import { removeClient, findOrCreateClient, getClient, addClient } from './utils.js';
 
 // HTTP Endpoints
 export async function setupRoutes(app: FastifyInstance) {
@@ -15,8 +15,22 @@ export async function setupRoutes(app: FastifyInstance) {
 		if (!sid) {
 			return reply.code(400).send({ message: "Error: missing SID"} );
 		}
-		findOrCreateClient(sid);
-		reply.send( { message: "Welcome to Battle Pong!" } );
+		let client = findOrCreateClient(sid);
+		client.is_connected = true;
+		reply.send( { 
+			message: "Welcome to Battle Pong!",
+			wsURL: `wss://${request.hostname}/ws?sid=${encodeURIComponent(sid)}`,
+		});
+
+		// if (authenticatedUser) { // Google authenticated user
+        //     client = new Client(sid);
+        //     client.setInfo(authenticatedUser.username, authenticatedUser.email,)
+        //     client.loggedIn = true; // Mark as already authenticated
+        // }
+        // else { // Traditional authentication via messages, details updated with login request
+        //     client = new Client(sid);
+        // }
+
 	});
 
 	// LOGIN
@@ -104,12 +118,10 @@ export async function setupRoutes(app: FastifyInstance) {
 
 	// JOIN GAME 
 	app.post('/join', (request, reply) => {
-		const { sid, mode, players, capacity, aiDifficulty  } = request.body as { sid: string, mode: GameMode, players: Player[], capacity?: number, aiDifficulty?: AiDifficulty };
+		const { sid, mode, players, capacity, aiDifficulty  } = request.body as 
+			{ sid: string, mode: GameMode, players: Player[], capacity?: number, aiDifficulty?: AiDifficulty };
+		
 		const client = findOrCreateClient(sid);
-
-		if (!mode) {
-			return reply.code(401).send({ success: false, message: "Game mode missing"});
-		}
 		const gameSession = gameManager.findOrCreateGame(mode, capacity ?? undefined);
 		gameManager.addClient(client, gameSession);
 
@@ -130,11 +142,7 @@ export async function setupRoutes(app: FastifyInstance) {
 			setTimeout(() => { gameManager.runGame(gameSession) }, (GAME_CONFIG.maxJoinWaitTime * 1000));
 		}
 
-		return reply.send({ 
-			success: true,
-			wsURL: `wss://${request.hostname}/ws?sid=${encodeURIComponent(sid)}`,
-			message: "",
-		})
+		return reply.send({ success: true, message: `Client joined game ${gameSession.id}` })
 	})
 
 	// USER STATS

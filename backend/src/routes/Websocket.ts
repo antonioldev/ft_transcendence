@@ -2,47 +2,36 @@ import { FastifyInstance } from 'fastify';
 import { gameManager } from '../network/GameManager.js';
 import { Client } from '../network/Client.js';
 import { MessageType } from '../shared/constants.js';
-import { ClientMessage, PlayerInput} from '../shared/types.js';
+import { ClientMessage} from '../shared/types.js';
 import * as db from "../data/validation.js";
 import { getUserBySession } from '../data/validation.js';
 import { TournamentRemote } from '../network/Tournament.js';
-import { getClient, send, setClient } from './utils.js';
+import { getClient, send } from './utils.js';
+
 /**
  * Sets up WebSocket routes for the Fastify server.
  * @param app - The Fastify instance to configure.
  */
 export async function setupWebsocket(app: FastifyInstance): Promise<void> {
-    app.get('/ws', { websocket: true } as any, (socket, request) => { //testing change here
-        // const cookieHeader = req.headers.cookie || '';
-        // const sidFromCookie = this.parseCookie(cookieHeader)['sid'];
-        
-        // // 2) optional fallbacks: ?sid=... or Google ?token=...
-        // const { sid: sidFromQuery, token } = (req.query as { sid?: string; token?: string }) || {};
-        // const sid = sidFromCookie || sidFromQuery;
-        
+    app.get('/ws', { websocket: true } as any, (socket, request) => {
         const { sid } = request.query as { sid: string}; 
-        const { token } = request.query as { token?: string };
+        // const { token } = request.query as { token?: string };
 
-        if (sid) { // client reconnected
-            const user = safeGetUserBySession(sid);
-            if (user) {
-                handleConnection(socket, sid, { username: user.username, email: user.email ?? '' });
-            }
-        }
-        else if (token) {
-            try {
-                // Google authentication: verify JWT token
-                const decoded = app.jwt.verify(token) as any;
-                handleConnection(socket, decoded.user);
-            } catch (err) {
-                socket.close(1008, 'Invalid token');
-                return;
-            }
-        } else {
-            // Traditional authentication: accept connection without token
-            console.log('Traditional connection (will authenticate via messages)');
+        if (!sid) { return socket.close(1008, 'SID missing'); }
+
+        const user = getUserBySession(sid); // do we need this?
+        if (user) {
             handleConnection(socket, sid);
         }
+
+        // try {
+        //     // Google authentication: verify JWT token
+        //     const decoded = app.jwt.verify(token) as any;
+        //     handleConnection(socket, decoded.user);
+        // } catch (err) {
+        //     socket.close(1008, 'Invalid token');
+        //     return;
+        // }
     });
 }
 
@@ -50,21 +39,13 @@ export async function setupWebsocket(app: FastifyInstance): Promise<void> {
  * Handles a new WebSocket connection, initializing the client and setting up event listeners.
  * @param socket - The WebSocket connection object.
  */
-function handleConnection(socket: any, sid: string, authenticatedUser?: { username: string; email: string }): void {
+function handleConnection(socket: any, sid: string): void {
     let client = getClient(sid);
     if (!client) {
-        if (authenticatedUser) { // Google authenticated user
-            client = new Client(sid);
-            client.setInfo(authenticatedUser.username, authenticatedUser.email,)
-            client.loggedIn = true; // Mark as already authenticated
-        }
-        else { // Traditional authentication via messages, details updated with login request
-            client = new Client(sid);
-        }
-        setClient(sid, client);
+        console.log(`Cannot handle Websocket connection, client does not exist`);
+        return ;
     }
     if (!client.websocket) client.websocket = socket;
-    client.is_connected = true;
 
     socket.on('message', async (message: string) => {
         await handleMessage(client!, message);
@@ -72,15 +53,19 @@ function handleConnection(socket: any, sid: string, authenticatedUser?: { userna
 
     socket.on('close', () => {
         console.log(`WebSocket closed for client ${client!.username}:`);
-        client!.is_connected = false;
-        setTimeout(() => { logoutAfterTimeout(client!) }, 5000);
+        handleDisconnection(client!);
     });
 
     socket.on('error', (error: any) => {
         console.error(`❌ WebSocket error for client ${client!.username}:`, error);
-        client!.is_connected = false;
-        setTimeout(() => { logoutAfterTimeout(client!) }, 5000);
+        handleDisconnection(client!);
     });
+}
+
+function handleDisconnection(client: Client) {
+    client!.is_connected = false;
+    gameManager.removeClient(client);
+    setTimeout(() => { logoutAfterTimeout(client!) }, 5000);
 }
 
 async function logoutAfterTimeout(client:  Client) {
@@ -129,8 +114,8 @@ async function handleMessage(client: Client, message: string) {
                     gameSession.assign_spectator(client);
                 } break;
             case MessageType.TOGGLE_SPECTATOR_GAME:
-                if (gameSession instanceof TournamentRemote && data.direction) {
-                    gameSession.toggle_spectator_game(client, data.direction);
+                if (gameSession instanceof TournamentRemote) {
+                    gameSession.toggle_spectator_game(client, data);
                 } break;
             case MessageType.QUIT_GAME:
                 gameManager.removeClient(client);
@@ -156,8 +141,3 @@ async function handleMessage(client: Client, message: string) {
 //     });
 // return out;
 // }
-
-function safeGetUserBySession(sid: string) {
-    try { return getUserBySession(sid); }
-    catch (e) { console.error('getUserBySession error:', e); return null; }
-}

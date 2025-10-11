@@ -21,7 +21,7 @@ export function removeClient(sid: string) {
 	sidClientMap.delete(sid);
 }
 
-export function setClient(sid: string, client: Client) {
+export function addClient(sid: string, client: Client) {
 	sidClientMap.set(sid, client);
 }
 
