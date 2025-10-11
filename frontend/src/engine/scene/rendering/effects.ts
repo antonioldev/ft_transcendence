@@ -31,9 +31,9 @@ export function createDustParticleSystem(scene: Scene): ParticleSystem {
 
 export function createFog(scene: Scene, fogColor: Color3): void {
 	if (fogColor) {
-		scene.fogMode = Scene.FOGMODE_EXP2;
+		scene.fogMode = Scene.FOGMODE_EXP;
 		scene.fogColor = fogColor;
-		scene.fogDensity = 0.02;
+		scene.fogDensity = 0.03;
 	} else {
 		scene.fogMode = Scene.FOGMODE_NONE;
 	}
@@ -53,8 +53,8 @@ export function createRainParticles(
 	rain.direction1 = new Vector3(-1, -rainConfig.speed, -1);
 	rain.direction2 = new Vector3(1, -rainConfig.speed, 1);
 
-	rain.minSize = 0.1;
-	rain.maxSize = 0.2;
+	rain.minSize = 0.2;
+	rain.maxSize = 0.3;
 	rain.minLifeTime = 1;
 	rain.maxLifeTime = 2;
 	

@@ -1,0 +1,43 @@
+{
+  "building1": [
+        { "model": "assets/model/map0/building1.glb", "pos": [-14.27, 18.49, 5.45], "rot": 0.00, "scale": 1.00 },
+        { "model": "assets/model/map0/building1.glb", "pos": [-14.56, 0.44, 5.45], "rot": 0.00, "scale": 1.00 },
+        { "model": "assets/model/map0/building1.glb", "pos": [-14.56, -18.20, 5.45], "rot": 0.00, "scale": 1.00 },
+        { "model": "assets/model/map0/building1.glb", "pos": [14.42, 11.50, 5.45], "rot": 0.00, "scale": 1.00 },
+        { "model": "assets/model/map0/building1.glb", "pos": [14.56, -10.19, 5.45], "rot": 0.00, "scale": 1.00 },
+        { "model": "assets/model/map0/building1.glb", "pos": [-20.24, 9.61, 5.45], "rot": 0.00, "scale": 1.00 },
+        { "model": "assets/model/map0/building1.glb", "pos": [-20.67, -9.03, 5.45], "rot": 0.00, "scale": 1.00 },
+        { "model": "assets/model/map0/building1.glb", "pos": [23.30, 17.62, 5.45], "rot": 0.00, "scale": 1.00 },
+        { "model": "assets/model/map0/building1.glb", "pos": [26.65, -4.08, 5.45], "rot": 0.00, "scale": 1.00 },
+        { "model": "assets/model/map0/building1.glb", "pos": [-11.94, 33.20, 5.45], "rot": 0.00, "scale": 2.00 },
+        { "model": "assets/model/map0/building1.glb", "pos": [-0.73, 31.01, 5.45], "rot": 0.00, "scale": 1.00 },
+        { "model": "assets/model/map0/building1.glb", "pos": [12.52, 28.54, 5.45], "rot": 0.00, "scale": 1.00 },
+        { "model": "assets/model/map0/building1.glb", "pos": [-10.04, -30.29, 5.45], "rot": 0.00, "scale": 2.00 },
+        { "model": "assets/model/map0/building1.glb", "pos": [8.71, -29.56, 5.45], "rot": 0.00, "scale": 1.00 }
+    ],
+    "building2": [
+        { "model": "assets/model/map0/building2.glb", "pos": [-11.36, -11.94, 0.00], "rot": 0.00, "scale": 1.00 },
+        { "model": "assets/model/map0/building2.glb", "pos": [11.06, 0.58, 0.00], "rot": 0.00, "scale": 1.00 }
+    ],
+    "building3": [
+        { "model": "assets/model/map0/building3.glb", "pos": [-11.36, -11.94, 2.29], "rot": 0.00, "scale": 1.00 },
+        { "model": "assets/model/map0/building3.glb", "pos": [11.06, 0.58, 2.29], "rot": 0.00, "scale": 1.00 },
+        { "model": "assets/model/map0/building3.glb", "pos": [-12.45, 8.03, 2.29], "rot": 0.00, "scale": 1.20 },
+        { "model": "assets/model/map0/building3.glb", "pos": [12.01, 18.66, 2.29], "rot": 0.00, "scale": 1.00 },
+        { "model": "assets/model/map0/building3.glb", "pos": [12.16, -3.19, 2.29], "rot": 0.00, "scale": 1.20 },
+        { "model": "assets/model/map0/building3.glb", "pos": [10.70, -21.97, 2.29], "rot": 0.00, "scale": 1.00 }
+    ],
+    "building4": [
+        { "model": "assets/model/map0/building4.glb", "pos": [-11.36, -11.94, 0.00], "rot": 0.00, "scale": 2.00 },
+        { "model": "assets/model/map0/building4.glb", "pos": [11.06, 0.58, 0.00], "rot": 0.00, "scale": 2.00 },
+        { "model": "assets/model/map0/building4.glb", "pos": [-12.45, 8.03, 2.29], "rot": 0.00, "scale": 2.00 },
+        { "model": "assets/model/map0/building4.glb", "pos": [12.01, 18.66, 2.29], "rot": 0.00, "scale": 2.00 },
+        { "model": "assets/model/map0/building4.glb", "pos": [12.16, -3.19, 2.29], "rot": 0.00, "scale": 2.00 },
+        { "model": "assets/model/map0/building4.glb", "pos": [10.70, -21.97, 2.29], "rot": 0.00, "scale": 2.00 },
+        { "model": "assets/model/map0/building4.glb", "pos": [-14.13, -7.84, 2.93], "rot": 0.00, "scale": 2.00 },
+        { "model": "assets/model/map0/building4.glb", "pos": [-13.89, 26.33, 2.93], "rot": 0.00, "scale": 2.00 },
+        { "model": "assets/model/map0/building4.glb", "pos": [-0.87, -28.07, 2.93], "rot": 0.00, "scale": 2.00 },
+        { "model": "assets/model/map0/building4.glb", "pos": [13.68, -17.33, 2.93], "rot": 0.00, "scale": 2.00 },
+        { "model": "assets/model/map0/building4.glb", "pos": [14.24, 4.14, 2.93], "rot": 0.00, "scale": 2.00 }
+    ]
+}

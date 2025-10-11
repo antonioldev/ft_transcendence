@@ -116,7 +116,6 @@ export const MAP_CONFIGS: Record<string, MapAssetConfig> = {
 		rain: null,
 		light: 0.8,
 		glow: 0.5,
-		// glow: 0,
 		actors: [
 			{ model: 'assets/model/map1/bird1.glb', count: 4, type: 'flying', scale: 1 },
 			{ model: 'assets/model/map1/bird2.glb', count: 4, type: 'flying', scale: 1 },
