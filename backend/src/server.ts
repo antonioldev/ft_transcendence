@@ -8,9 +8,8 @@ import { setupWebsocket }  from './routes/Websocket.js';
 import config from './config/default.js';
 import { initialisazeDatabase } from './data/db-init.js';
 import { registerDatabaseFunctions } from './data/database.js';
-import { setupRoutes } from './routes/apiRoutes.js';
+import { APIRoutes } from './routes/apiRoutes.js';
 import { authGoogle, authLocal } from './routes/authRoutes.js';
-
 
 /* --- SETUP DATABASE --- */
 
@@ -65,7 +64,7 @@ await app.register(fastifyCors, {
 
 /* --- SETUP ROUTES --- */
 
-await app.register(setupRoutes);
+await app.register(APIRoutes);
 await app.register(authLocal);
 await app.register(authGoogle);
 await app.register(setupWebsocket);

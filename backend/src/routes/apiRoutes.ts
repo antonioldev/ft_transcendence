@@ -6,8 +6,10 @@ import { AuthCode, GameMode, AiDifficulty } from '../shared/constants.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
 import { removeClient, findOrCreateClient, getClient, addClient } from './utils.js';
 
-// HTTP Endpoints
-export async function setupRoutes(app: FastifyInstance) {
+
+/* --- HTTP Endpoints --- */
+
+export async function APIRoutes(app: FastifyInstance) {
 
 	// ROOT
 	app.get('/', async (request, reply) => {
@@ -160,4 +162,3 @@ export async function setupRoutes(app: FastifyInstance) {
 		return reply.send({ success: true, history: history });
 	})
 }
-
