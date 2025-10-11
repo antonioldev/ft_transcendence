@@ -2,7 +2,7 @@ import Database from 'better-sqlite3';
 import { existsSync, readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { registerNewUser } from './validation.js';
+import { registerNewUser } from './validation';
 
 export async function initialisazeDatabase(dbPath: string): Promise<Database.Database> {
 	const dir = dirname(dbPath);
@@ -31,10 +31,20 @@ export async function initialisazeDatabase(dbPath: string): Promise<Database.Dat
 			console.log('Database initialised successfully');
 			
 		}
+		await seedDefaultUsers(8);
 		return db;
-	} catch (error) {
+	} 
+	catch (error) {
 		db.close();
 		console.error("Error in creating database: ", error);
 		throw error;
 	}
 }
+
+async function seedDefaultUsers(user_count: number) {
+	// pick simple starter passwords; your registerUser should pepper+argon2-hash before insert
+	for (let i = 0; i < user_count; i++) {
+		await registerNewUser(`p${i}`, `player${i}@example.com`, 'p' );
+	}
+	console.log(`Seeded ${user_count} default users via registration flow`);
+  }

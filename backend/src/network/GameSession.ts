@@ -2,11 +2,12 @@ import { Game } from '../game/Game.js';
 import { Client, Player, CPU } from './Client.js';
 import { MessageType, GameMode, AiDifficulty, GameSessionState } from '../shared/constants.js';
 import { PlayerInput, ServerMessage } from '../shared/types.js';
-import { gameManager } from './GameManager.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
 import { generateGameId } from '../data/database.js';
-import { LEFT, RIGHT } from '../shared/gameConfig.js';
 import { eventManager } from './utils.js';
+import { ClientMessage } from '../shared/types.js';
+import { TournamentRemote } from './Tournament.js';
+import { send } from '../routes/utils.js';
 
 export abstract class AbstractGameSession {
 	mode: GameMode;
@@ -125,8 +126,12 @@ export abstract class AbstractGameSession {
 		}
 	}
 
-	resume(client_id?: string): void {
-		const game = this.getGame(client_id);
+	resume(client: Client): void {
+		if (!this.canClientControlGame(client)){
+			console.warn(`Client ${client.username} not authorized to resume game`);
+			return;
+		}
+		const game = this.getGame(client.id);
 		if (!game) {
 			console.log(`Game ${this.id} is not running, cannot resume`);
 			return ;
@@ -136,12 +141,16 @@ export abstract class AbstractGameSession {
 			return ;
 		}
 
-		console.log(`Game ${this.id} resumed by client ${client_id}`);
+		console.log(`Game ${this.id} resumed by client ${client.id}`);
 		game.resume();
 	}
 
-	pause(client_id?: string): void {
-		const game = this.getGame(client_id);
+	pause(client: Client): void {
+		if (!this.canClientControlGame(client)){
+			console.warn(`Client ${client.username} not authorized to pause game`);
+			return;
+		}
+		const game = this.getGame(client.id);
 		if (!game || !game.is_running()) {
 			console.log(`Game ${this.id} is not running, cannot pause`);
 			return ;
@@ -151,8 +160,57 @@ export abstract class AbstractGameSession {
 			return ;
 		}
 
-		console.log(`Game ${this.id} paused by client ${client_id}`);
+		console.log(`Game ${this.id} paused by client ${client.id}`);
 		game.pause();
+	}
+
+	async activate_powerup(client: Client, data: ClientMessage) {
+		if (data.powerup_type === undefined || data.powerup_type === null || 
+			data.slot === undefined || data.slot === null || 
+			data.side === undefined || data.side === null) {
+			console.error("Error: cannot activate powerup, missing data");
+			return;
+		}
+	
+		if (!this.canClientControlGame(client)){
+			console.warn(`Client ${client.username} not authorized to control game`);
+			return;
+		}
+		const game = this.getGame(client.id);
+		if (!game) {
+			console.error("Error: cannot activate powerup, game does not exist");
+			return ;
+		}
+		await game.activate(data.side, data.slot);
+	}
+
+	handlePlayerInput(client: Client, data: ClientMessage): void {
+		if (data.direction === undefined || data.side === undefined) {
+			console.warn('Invalid player input: missing direction or side');
+			return;
+		}
+		if (!this.canClientControlGame(client)){
+			console.warn(`Client ${client.username} not authorized to control game`);
+			return;
+		}
+	
+		const input: PlayerInput = {
+			id: client.id,
+			type: MessageType.PLAYER_INPUT,
+			side: data.side,
+			dx: data.direction
+		}
+		this.enqueue(input, client.id);
+	}
+
+	send_lobby(client: Client) {
+		if (this.mode === GameMode.TOURNAMENT_REMOTE) {
+			send(client.websocket, {
+				type: MessageType.TOURNAMENT_LOBBY,
+				lobby: [...this.players].map(player => player.name)
+			});
+			console.log(`Lobby sent to ${client.username}`)
+		}
 	}
 
 	enqueue(input: PlayerInput, client_id?: string): void  {
