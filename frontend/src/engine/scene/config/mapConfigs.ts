@@ -1,5 +1,4 @@
-import { Color3, Color4 } from "@babylonjs/core";
-import { GAME_CONFIG } from "../../../shared/gameConfig.js";
+import { Color3 } from "@babylonjs/core";
 import { MapAssetConfig, StaticObject, MAP_OBJECT_TYPE } from "./sceneTypes.js"
 
 import map0BuildingsRaw from "../data/staticObjects/map0.json";
@@ -25,8 +24,18 @@ const map2Underwater = map2UnderwaterRaw as {
 	wreck: StaticObject[];
 };
 
-const fw = GAME_CONFIG.fieldWidth;
-const fh = GAME_CONFIG.fieldHeight;
+import map3beachRaw from "../data/staticObjects/map3.json";
+const map3beach = map3beachRaw as {
+	palm: StaticObject[];
+	bush: StaticObject[];
+};
+
+import map4SnowRaw from "../data/staticObjects/map4.json";
+const map4Snow = map4SnowRaw as {
+	castle: StaticObject[];
+	castle2: StaticObject[];
+	tree: StaticObject[];
+}
 
 const ASSET_BASE = "assets";
 const TEXTURE_BASE = `${ASSET_BASE}/textures`;
@@ -67,8 +76,8 @@ export const MAP_CONFIGS: Record<string, MapAssetConfig> = {
 		staticObjects: [],
 		skybox: null,
 		fogColor: null,
+		fogIntensity: 0,
 		particleType: null,
-		rain: null,
 		light: 0.8,
 		glow: 0.2,
 		actors: []
@@ -87,14 +96,8 @@ export const MAP_CONFIGS: Record<string, MapAssetConfig> = {
 		],
 		skybox: AssetPaths.sky('map0', 'sky4'),
 		fogColor: new Color3(0.043, 0.043, 0.122),
-		particleType: null,
-		rain: {
-			density: 1500,
-			speed: 50,
-			color: new Color4(0, 1, 1, 0),
-			width: fw * 2,
-			height: fh * 2
-		},
+		fogIntensity: 0.03,
+		particleType: 'rain',
 		light: 0.4,
 		glow: 0.6,
 		actors: []
@@ -112,8 +115,8 @@ export const MAP_CONFIGS: Record<string, MapAssetConfig> = {
 		],
 		skybox: AssetPaths.sky('map1', 'sky'),
 		fogColor: null,
+		fogIntensity: 0,
 		particleType: 'dust',
-		rain: null,
 		light: 0.8,
 		glow: 0.5,
 		actors: [
@@ -123,11 +126,11 @@ export const MAP_CONFIGS: Record<string, MapAssetConfig> = {
 	},
 	
 	map2: {
-		ground: createTextureSet('map2', 'terrain', "#adb448ff"),
+		ground: createTextureSet('map2', 'terrain', "#adb448"),
 		walls: simpleColor("#5a3818ff"),
 		ball: createTextureSet('map2', 'ball', "#fffb00"),
 		paddle: createTextureSet('map2', 'paddle', "#670000"),
-		terrain: createTextureSet('map2', 'terrain', "#adb448ff", true),
+		terrain: createTextureSet('map2', 'terrain', "#adb448", true),
 		staticObjects: [
 			...map2Underwater.rock1,
 			...map2Underwater.rock2,
@@ -137,7 +140,7 @@ export const MAP_CONFIGS: Record<string, MapAssetConfig> = {
 		],
 		skybox: null,
 		fogColor: new Color3(0.0, 0.2, 0.3),
-		rain: null,
+		fogIntensity: 0.03,
 		particleType: 'underwater',
 		light: 1,
 		glow: 0.5,
@@ -146,15 +149,62 @@ export const MAP_CONFIGS: Record<string, MapAssetConfig> = {
 			{ model: 'assets/model/map2/fish2.glb', count: 6, type: 'swimming', scale: 1 },
 		]
 	},
+	map3: {
+		ground: createTextureSet('map3', 'terrain', "#adb448"),
+		walls: createTextureSet('map3', 'wall', "#9D4EDD"),
+		ball: simpleColor("#00F5FF"),
+		paddle: simpleColor("#FF006E"),
+		terrain: createTextureSet('map3', 'terrain', "#adb448", true),
+		staticObjects: [
+			...map3beach.palm,
+			...map3beach.bush
+		],
+		skybox: AssetPaths.sky('map3', 'sky'),
+		fogColor: new Color3(0.7, 0.4, 0.7),
+		fogIntensity: 0.01,
+		particleType: null,
+		light: 0.7,
+		glow: 0.4,
+		actors: []
+	},
+	map4: {
+		ground: createTextureSet('map4', 'ground', "#ffffff"),
+		walls: createTextureSet('map4', 'terrain', "#ffffff"),
+		ball: simpleColor("#ff4646"),
+		paddle: simpleColor("#405cfd"),
+		terrain: createTextureSet('map4', 'terrain', "#ffffff", true),
+		staticObjects: [
+			...map4Snow.castle,
+			...map4Snow.castle2,
+			...map4Snow.tree
+		],
+		skybox: AssetPaths.sky('map4', 'sky'),
+		fogColor: new Color3(0.8, 0.85, 0.95),
+		fogIntensity: 0.007,
+		particleType: 'snow',
+		light: 0.9,
+		glow: 0.1,
+		actors: []
+	}
 };
 
+// export const TEXTURE_SCALING = {
+// 	standardDivisor: 10,
+// 	multipliers: {
+// 		[MAP_OBJECT_TYPE.GROUND]: 1.0,
+// 		[MAP_OBJECT_TYPE.WALLS]: 1.0,
+// 		[MAP_OBJECT_TYPE.TERRAIN]: 1.0,
+// 		[MAP_OBJECT_TYPE.PLAYER]: 5.0,
+// 		[MAP_OBJECT_TYPE.BALL]: 8.0
+// 	}
+// };
 export const TEXTURE_SCALING = {
 	standardDivisor: 10,
 	multipliers: {
-		[MAP_OBJECT_TYPE.GROUND]: 1.0,
-		[MAP_OBJECT_TYPE.WALLS]: 1.0,
-		[MAP_OBJECT_TYPE.TERRAIN]: 1.0,
-		[MAP_OBJECT_TYPE.PLAYER]: 5.0,
-		[MAP_OBJECT_TYPE.BALL]: 8.0
+		[MAP_OBJECT_TYPE.GROUND]: 1.0,        // 200x400 area = u:20, v:40
+		[MAP_OBJECT_TYPE.WALLS]: 1.0,         // Same as ground scale
+		[MAP_OBJECT_TYPE.TERRAIN]: 0.1,       // 2000x4000 area = u:20, v:40 (same visual density as ground)
+		[MAP_OBJECT_TYPE.PLAYER]: 0.33,       // 3 width paddle = u:0.1, v:0.1
+		[MAP_OBJECT_TYPE.BALL]: 13.33         // 0.3 radius = u:0.4, v:0.4
 	}
 };

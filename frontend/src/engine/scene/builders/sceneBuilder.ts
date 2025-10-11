@@ -5,7 +5,7 @@ import { createCameras, createGuiCamera } from "./camerasBuilder.js";
 import { GameMode, ViewMode } from '../../../shared/constants.js';
 import { getPlayerSize, getPlayerLeftPosition, getPlayerRightPosition, getBallStartPosition, PlayerSide } from '../../utils.js';
 import { createEnvironment, createTerrain, createLight } from './enviromentBuilder.js';
-import { createFog, createRainParticles, createUnderwaterParticles, createDustParticleSystem} from '../rendering/effects.js'
+import { createFog, createRainParticles, createUnderwaterParticles, createDustParticleSystem, createSnow} from '../rendering/effects.js'
 import { createStaticObjects, createStaticObject } from "../entities/staticProps.js";
 import { createActor } from "../entities/animatedProps.js";
 import { MAP_CONFIGS } from "../config/mapConfigs.js";
@@ -29,9 +29,8 @@ export async function buildScene (
 	let themeObjects: ThemeObject = { props: [], actors: [], effects: [] };
 
 	const map_asset = viewMode === ViewMode.MODE_2D 
-		? MAP_CONFIGS.map : MAP_CONFIGS.map2
+		? MAP_CONFIGS.map : MAP_CONFIGS.map4
 
-	// const lightss = create3DLighting(scene);
 	const lights = createLight(scene, "light1", viewMode, map_asset.light);
 	const gameField = createGameField(scene, "ground", viewMode, map_asset.ground);
 	const walls = createWalls(scene, "walls", viewMode, map_asset.walls);
@@ -113,7 +112,7 @@ async function build3DThemeObjects(
 	if (map_asset.terrain)
 		createTerrain(scene, "terrain", map_asset.terrain);
 
-	if (map_asset === MAP_CONFIGS.map0) {
+	if (map_asset === MAP_CONFIGS.map0 || map_asset === MAP_CONFIGS.map4) {
 		for (const propData of map_asset.staticObjects) {
 			const mesh = await createStaticObject(scene, propData); 
 			themeObjects?.props.push(mesh);
@@ -148,14 +147,19 @@ async function build3DThemeObjects(
 		themeObjects?.effects.push(dust);
 	}
 
+	if (map_asset.particleType === 'snow') {
+		const snow = createSnow(scene);
+		themeObjects.effects.push(snow);
+	}
+
 	if (map_asset.fogColor)
-		createFog(scene, map_asset.fogColor);
+		createFog(scene, map_asset.fogColor, map_asset.fogIntensity);
 
 	if (map_asset.glow > 0.5)
 		createWallLineGlowEffect(scene, themeObjects);
 		
-	if (map_asset.rain) {
-		const rain = createRainParticles(scene, map_asset.rain);
+	if (map_asset.particleType === 'rain') {
+		const rain = createRainParticles(scene);
 		themeObjects?.effects.push(rain);
 	}
 }

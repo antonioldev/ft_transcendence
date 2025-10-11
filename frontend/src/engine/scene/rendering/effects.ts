@@ -1,6 +1,5 @@
 import { Color3, Vector3, Scene} from "@babylonjs/core";
 import { ParticleSystem, Texture, Color4 } from "@babylonjs/core";
-import { RainConfig } from '../config/sceneTypes.js';
 
 export function createDustParticleSystem(scene: Scene): ParticleSystem {
 	const dust = new ParticleSystem("dust", 1000, scene);
@@ -29,40 +28,78 @@ export function createDustParticleSystem(scene: Scene): ParticleSystem {
 	return dust;
 }
 
-export function createFog(scene: Scene, fogColor: Color3): void {
+export function createFog(scene: Scene, fogColor: Color3, density: number): void {
 	if (fogColor) {
-		scene.fogMode = Scene.FOGMODE_EXP;
+		scene.fogMode = Scene.FOGMODE_EXP2;
 		scene.fogColor = fogColor;
-		scene.fogDensity = 0.03;
+		scene.fogDensity = density;
 	} else {
 		scene.fogMode = Scene.FOGMODE_NONE;
 	}
 }
 
+export function createSnow(scene: Scene): ParticleSystem {
+	const snow = new ParticleSystem("snow", 5000, scene);
+	snow.particleTexture = new Texture("assets/textures/particle/bubble.png", scene);
+
+	snow.emitter = new Vector3(0, 30, 0);
+	snow.minEmitBox = new Vector3(-50, 0, -50);
+	snow.maxEmitBox = new Vector3(50, 0, 50);
+
+	snow.direction1 = new Vector3(-2, -3, -2);
+	snow.direction2 = new Vector3(2, -6, 2);
+
+	snow.minSize = 0.05;
+	snow.maxSize = 0.1;
+	snow.minLifeTime = 4;
+	snow.maxLifeTime = 8;
+	
+	const snowColor = new Color4(1, 1, 1, 0.8);
+	snow.color1 = snowColor;
+	snow.color2 = snowColor;
+	
+	snow.emitRate = 2000;
+	snow.gravity = new Vector3(0, -2, 0);
+	
+	snow.minAngularSpeed = -0.5;
+	snow.maxAngularSpeed = 0.5;
+	
+	snow.start();
+
+	return snow;
+}
+
+
 export function createRainParticles(
 	scene: Scene, 
-	rainConfig: RainConfig
 ): ParticleSystem {
-	const rain = new ParticleSystem("rain", rainConfig.density, scene);
-	rain.particleTexture = new Texture("assets/textures/map0/raindrop.png", scene);
+	const density = 1500;
+	const speed = -50;
+	const color = new Color4(0, 1, 1, 0);
+
+	const rain = new ParticleSystem("rain", density, scene);
+	rain.particleTexture = new Texture("assets/textures/particle/raindrop.png", scene);
 
 	rain.emitter = new Vector3(0, 20, 0);
-	rain.minEmitBox = new Vector3(-rainConfig.width/2, 0, -rainConfig.height/2);
-	rain.maxEmitBox = new Vector3(rainConfig.width/2, 0, rainConfig.height/2);
+	rain.minEmitBox = new Vector3(-50, 0, -50);
+	rain.maxEmitBox = new Vector3(50, 0, 50);
 
-	rain.direction1 = new Vector3(-1, -rainConfig.speed, -1);
-	rain.direction2 = new Vector3(1, -rainConfig.speed, 1);
+	// rain.minEmitBox = new Vector3(-rainConfig.width/2, 0, -rainConfig.height/2);
+	// rain.maxEmitBox = new Vector3(rainConfig.width/2, 0, rainConfig.height/2);
+
+	rain.direction1 = new Vector3(-1, speed, -1);
+	rain.direction2 = new Vector3(1, speed, 1);
 
 	rain.minSize = 0.2;
 	rain.maxSize = 0.3;
 	rain.minLifeTime = 1;
 	rain.maxLifeTime = 2;
 	
-	const rainColor = rainConfig.color;
+	const rainColor = color;
 	rain.color1 = rainColor;
 	rain.color2 = rainColor;
 	
-	rain.emitRate = rainConfig.density;
+	rain.emitRate = density;
 	rain.gravity = new Vector3(0, -9.81, 0);
 	
 	rain.start();

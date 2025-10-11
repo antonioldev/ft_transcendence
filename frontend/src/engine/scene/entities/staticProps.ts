@@ -1,4 +1,4 @@
-import { AbstractMesh, Matrix, Mesh, Quaternion, Scene, SceneLoader, Vector3, Ray } from "@babylonjs/core";
+import { AbstractMesh, Matrix, Mesh, Quaternion, Scene, SceneLoader, Vector3 } from "@babylonjs/core";
 import { StaticObject } from "../config/sceneTypes.js";
 
 export async function createStaticObject(

@@ -1,4 +1,4 @@
-import { Color3, Color4 } from "@babylonjs/core";
+import { Color3 } from "@babylonjs/core";
 
 export type StaticObject = {
 	model: string;
@@ -23,14 +23,6 @@ export type ActorConfig = {
 	scale?: number;
 };
 
-export type RainConfig = {
-	density: number;
-	speed: number;
-	color: Color4;
-	width: number;
-	height: number;
-};
-
 export type MapAssetConfig = {
 	ground: TextureSet;
 	walls: TextureSet;
@@ -43,8 +35,8 @@ export type MapAssetConfig = {
 	staticObjects: StaticObject[];
 	skybox: string | null;
 	fogColor?: Color3 | null;
-	rain?: RainConfig | null;
-	particleType?: 'dust' | 'underwater' | null;
+	fogIntensity: number;
+	particleType?: 'dust' | 'underwater' | 'rain' | 'snow' | null;
 	actors: ActorConfig[];
 };
 
