@@ -17,20 +17,11 @@ export async function setupRoutes(app: FastifyInstance) {
 		}
 		let client = findOrCreateClient(sid);
 		client.is_connected = true;
+		
 		reply.send( { 
 			message: "Welcome to Battle Pong!",
 			wsURL: `wss://${request.hostname}/ws?sid=${encodeURIComponent(sid)}`,
 		});
-
-		// if (authenticatedUser) { // Google authenticated user
-        //     client = new Client(sid);
-        //     client.setInfo(authenticatedUser.username, authenticatedUser.email,)
-        //     client.loggedIn = true; // Mark as already authenticated
-        // }
-        // else { // Traditional authentication via messages, details updated with login request
-        //     client = new Client(sid);
-        // }
-
 	});
 
 	// LOGIN
@@ -43,7 +34,7 @@ export async function setupRoutes(app: FastifyInstance) {
 		const { token } = request.body as { token?: string };
 		if (token) {
 			try {
-				const decoded = app.jwt.verify(token);
+				const decoded = app.jwt.verify(token) as { user: { username: string; email: string; password: string } };
 				clientInfo = decoded.user;
 			}
 			catch (err) {

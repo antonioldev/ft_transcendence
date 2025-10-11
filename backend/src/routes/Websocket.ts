@@ -133,7 +133,7 @@ async function handleMessage(client: Client, message: string) {
     }
 }
 
-// private parseCookie(cookieHeader: string): Record<string, string> {
+// function parseCookie(cookieHeader: string): Record<string, string> {
 //     const out: Record<string, string> = {};
 //     cookieHeader.split(';').forEach(kv => {
 //         const [k, ...rest] = kv.trim().split('=');
