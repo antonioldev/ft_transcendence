@@ -29,7 +29,7 @@ export async function buildScene (
 	let themeObjects: ThemeObject = { props: [], actors: [], effects: [] };
 
 	const map_asset = viewMode === ViewMode.MODE_2D 
-		? MAP_CONFIGS.map : MAP_CONFIGS.map0
+		? MAP_CONFIGS.map : MAP_CONFIGS.map2
 
 	// const lightss = create3DLighting(scene);
 	const lights = createLight(scene, "light1", viewMode, map_asset.light);
