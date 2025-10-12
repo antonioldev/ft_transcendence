@@ -1,6 +1,6 @@
-import { ParticleSystem, Texture, Color4, Vector3, Scene} from "@babylonjs/core";
-import { Animation} from "@babylonjs/core/Animations/animation";
-import { AdvancedDynamicTexture, Image} from "@babylonjs/gui";
+import { Color4, ParticleSystem, Scene, Texture, Vector3 } from "@babylonjs/core";
+import { Animation } from "@babylonjs/core/Animations/animation";
+import { AdvancedDynamicTexture, Image } from "@babylonjs/gui";
 import { Z_INDEX } from "../../gui/GuiStyle";
 
 interface FireworkDetails {

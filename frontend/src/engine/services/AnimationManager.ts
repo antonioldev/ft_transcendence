@@ -1,12 +1,11 @@
-import type { Scene } from "@babylonjs/core/scene";
-import { Animation } from "@babylonjs/core/Animations/animation";
-import { SineEase } from "@babylonjs/core/Animations/easing";
-import { QuadraticEase, EasingFunction } from "@babylonjs/core/Animations/easing";
-import { Vector3 } from "@babylonjs/core/Maths/math.vector";
-import type { Control } from "@babylonjs/gui/2D/controls/control";
-import { getCamera2DPosition, getCamera3DPlayer1Position, getCamera3DPlayer2Position } from '../utils.js';
-import { GAME_CONFIG } from "../../shared/gameConfig.js";
 import { Color3, Color4 } from "@babylonjs/core";
+import { Animation } from "@babylonjs/core/Animations/animation";
+import { EasingFunction, QuadraticEase, SineEase } from "@babylonjs/core/Animations/easing";
+import { Vector3 } from "@babylonjs/core/Maths/math.vector";
+import type { Scene } from "@babylonjs/core/scene";
+import type { Control } from "@babylonjs/gui/2D/controls/control";
+import { GAME_CONFIG } from "../../shared/gameConfig.js";
+import { getCamera2DPosition, getCamera3DPlayer1Position, getCamera3DPlayer2Position } from '../utils.js';
 
 type FloatProp =
   | "alpha"

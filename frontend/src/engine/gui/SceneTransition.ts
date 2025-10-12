@@ -1,7 +1,7 @@
 import { AdvancedDynamicTexture, Rectangle } from "@babylonjs/gui";
+import { getCurrentTranslation } from "../../translations/translations.js";
 import { AnimationManager, Motion } from "../services/AnimationManager.js";
 import { createRect, createTextBlock, CURTAIN_STYLES } from "./GuiStyle.js";
-import { getCurrentTranslation } from "../../translations/translations.js";
 
 export class SceneTransition {
 	private leftPaddle!: Rectangle;

@@ -1,10 +1,10 @@
-import { Vector3,  Color3, Color4, MeshBuilder, Material, StandardMaterial, Scene, Mesh } from "@babylonjs/core";
+import { Color3, Color4, Material, Mesh, MeshBuilder, Scene, StandardMaterial, Vector3 } from "@babylonjs/core";
+import { ViewMode } from '../../../shared/constants.js';
 import { GAME_CONFIG } from '../../../shared/gameConfig.js';
 import { Size } from '../../../shared/types.js';
-import { ViewMode } from '../../../shared/constants.js';
-import { TextureSet, MAP_OBJECT_TYPE } from "../config/sceneTypes.js";
-import { createMaterial, getStandardTextureScale } from "../rendering/materials.js";
 import { PlayerSide } from '../../utils.js';
+import { MAP_OBJECT_TYPE, TextureSet } from "../config/sceneTypes.js";
+import { createMaterial, getStandardTextureScale } from "../rendering/materials.js";
 
 // Creates the ground for the game field
 export function createGameField(scene: any, name: string, mode: ViewMode, texture: TextureSet): any {

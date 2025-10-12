@@ -1,10 +1,10 @@
-import { AdvancedDynamicTexture, TextBlock, Grid, Rectangle, Control, Image} from "@babylonjs/gui";
-import { GameConfig } from '../GameConfig.js';
-import { PowerupType, PowerupState} from '../../shared/constants.js';
+import { AdvancedDynamicTexture, Control, Grid, Image, Rectangle, TextBlock } from "@babylonjs/gui";
+import { PowerupState, PowerupType } from '../../shared/constants.js';
 import { getCurrentTranslation } from '../../translations/translations.js';
+import { GameConfig } from '../GameConfig.js';
 import { AnimationManager, Motion } from "../services/AnimationManager.js";
-import { HUD_STYLES, createTextBlock, createGrid, createRect, createStackPanel, SPECTATOR_STYLE, POWER_UP_STYLES, createImage} from "./GuiStyle.js";
 import { PlayerSide } from "../utils.js";
+import { HUD_STYLES, POWER_UP_STYLES, SPECTATOR_STYLE, createGrid, createImage, createRect, createStackPanel, createTextBlock } from "./GuiStyle.js";
 
 export class Hud {
 	private hudGrid!: Grid;

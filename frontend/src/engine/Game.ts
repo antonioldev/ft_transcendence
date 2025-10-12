@@ -1,19 +1,16 @@
-import { Engine, Scene, Color4, SceneLoader} from "@babylonjs/core";
-import { GameConfig } from './GameConfig.js';
-import { buildScene } from './scene/builders/sceneBuilder.js';
-import { webSocketClient } from '../core/WebSocketClient.js';
-import { GameStateData, GameObjects, ThemeObject } from '../shared/types.js';
-import { GAME_CONFIG } from '../shared/gameConfig.js';
-import { ViewMode, WebSocketEvent, AppState, GameState } from '../shared/constants.js';
-import { Logger } from '../utils/LogManager.js';
-import { uiManager } from '../ui/UIManager.js';
-import { GameMode } from '../shared/constants.js';
+import { Color4, Engine, Scene, SceneLoader } from "@babylonjs/core";
 import { appStateManager } from '../core/AppStateManager.js';
-import { GameConfigFactory } from './GameConfig.js';
-import { PlayerSide, PlayerState } from "./utils.js"
-import { disposeMaterialResources } from "./scene/rendering/materials.js";
+import { webSocketClient } from '../core/WebSocketClient.js';
+import { AppState, GameMode, GameState, MessageType, ViewMode } from '../shared/constants.js';
+import { GAME_CONFIG } from '../shared/gameConfig.js';
+import { GameObjects, GameStateData, ThemeObject } from '../shared/types.js';
+import { uiManager } from '../ui/UIManager.js';
+import { Logger } from '../utils/LogManager.js';
+import { GameConfig } from './GameConfig.js';
 import { GameServices } from "./GameServices.js";
-// import { PowerupType } from "../shared/constants.js";
+import { buildScene } from './scene/builders/sceneBuilder.js';
+import { disposeMaterialResources } from "./scene/rendering/materials.js";
+import { PlayerSide, PlayerState } from "./utils.js";
 
 /**
  * The Game class serves as the core of the game engine, managing the initialization,
@@ -62,13 +59,11 @@ export class Game {
 		}
 	}
 
-	async create(viewMode: ViewMode, gameMode: GameMode, aiDifficulty: number, capacity?: number): Promise<Game> {
+	async create(aiDifficulty: number, capacity?: number): Promise<Game> {
 		try {
-			const config = GameConfigFactory.createWithAuthCheck(viewMode, gameMode);
-			const game = new Game(config);
 			webSocketClient.joinGame(this.config.gameMode, this.config.players, aiDifficulty, capacity);
-			await game.initialize();
-			return game;
+			await this.initialize();
+			return this;
 		} catch (error) {
 			await this.dispose();
 			Logger.error('Error creating game', 'Game', error);
@@ -160,14 +155,13 @@ export class Game {
 			if (countdown === undefined || countdown === null)
 				Logger.errorAndThrow('Server sent SIGNAL without countdown parameter', 'Game');
 
-			uiManager.setLoadingScreenVisible(false);
-			this.services?.gui.lobby.hide();
-			this.services?.gui.cardGame.hide();
-			this.services?.gui.curtain.hide();
-			this.services?.gui.hud.show(true);
-			// const playerLeft = this.players.get(PlayerSide.LEFT)?.name;
-			// const playerRight = this.players.get(PlayerSide.RIGHT)?.name;
-
+			if (countdown === GAME_CONFIG.startDelay) {
+				uiManager.setLoadingScreenVisible(false);
+				this.services?.gui.lobby.hide();
+				this.services?.gui.cardGame.hide();
+				this.services?.gui.curtain.hide();
+				this.services?.gui.hud.show(true);
+			}
 			if (countdown === GAME_CONFIG.startDelay - 1) {
 				const playerLeft = this.players.get(PlayerSide.LEFT)?.name;
 				const playerRight = this.players.get(PlayerSide.RIGHT)?.name;
@@ -453,44 +447,51 @@ export class Game {
 
 // ====================			GAME LIFECYCLE			   ====================
 	async requestExitToMenu(): Promise<void> {
+		if (!this.isInitialized) return;
 		await this.services?.gui.curtain.play(200);
-		webSocketClient.sendQuitGame();
-		this.dispose();
+		if (webSocketClient.isConnected())
+			webSocketClient.sendQuitGame();
+		await this.dispose();
+		// Navigate to main menu after disposal is complete
+		// appStateManager.navigateTo(AppState.MAIN_MENU);
 	}
 
 // ====================			WEBSOCKET				  ====================
 	private registerCallbacks(): void {
-		webSocketClient.registerCallback(WebSocketEvent.GAME_STATE, (state: GameStateData) => { this.updateGameObjects(state); });
-		webSocketClient.registerCallback(WebSocketEvent.ERROR, (error: string) => { Logger.error('Network error', 'Game', error); });
-		webSocketClient.registerCallback(WebSocketEvent.SESSION_ENDED, (message: any) => { this.onServerEndedSession(message.winner); });
-		webSocketClient.registerCallback(WebSocketEvent.SIDE_ASSIGNMENT, (message: any) => { this.handlePlayerAssignment(message.left, message.right); });
-		webSocketClient.registerCallback(WebSocketEvent.MATCH_ASSIGNMENT, (message: any) => { this.services?.gui?.updateTournamentRound(message); });
-		webSocketClient.registerCallback(WebSocketEvent.MATCH_RESULT, (message: any) => { this.services?.gui?.updateTournamentGame(message);});
-		webSocketClient.registerCallback(WebSocketEvent.TOURNAMENT_LOBBY, (message: any) => {this.services?.gui?.updateTournamentLobby(message); uiManager.setLoadingScreenVisible(false); });
-		webSocketClient.registerCallback(WebSocketEvent.COUNTDOWN, (message: any) => { this.handleCountdown(message.countdown); });
+		webSocketClient.registerCallback(MessageType.GAME_STATE, (state: GameStateData) => { this.updateGameObjects(state); });
+		webSocketClient.registerCallback(MessageType.ERROR, (error: string) => { Logger.error('Network error', 'Game', error); });
+		webSocketClient.registerCallback(MessageType.SESSION_ENDED, (message: any) => { this.onServerEndedSession(message.winner); });
+		webSocketClient.registerCallback(MessageType.SIDE_ASSIGNMENT, (message: any) => { this.handlePlayerAssignment(message.left, message.right); });
+		webSocketClient.registerCallback(MessageType.MATCH_ASSIGNMENT, (message: any) => { this.services?.gui?.updateTournamentRound(message); });
+		webSocketClient.registerCallback(MessageType.MATCH_RESULT, (message: any) => { this.services?.gui?.updateTournamentGame(message);});
+		webSocketClient.registerCallback(MessageType.TOURNAMENT_LOBBY, (message: any) => {this.services?.gui?.updateTournamentLobby(message); uiManager.setLoadingScreenVisible(false); });
+		webSocketClient.registerCallback(MessageType.COUNTDOWN, (message: any) => { this.handleCountdown(message.countdown); });
 		document.addEventListener('game:exitToMenu', this.exitHandler);
 	}
 
 	private unregisterCallbacks(): void {
 		try {
-			webSocketClient.unregisterCallback(WebSocketEvent.GAME_STATE);
-			webSocketClient.unregisterCallback(WebSocketEvent.ERROR);
-			webSocketClient.unregisterCallback(WebSocketEvent.SESSION_ENDED);
-			webSocketClient.unregisterCallback(WebSocketEvent.SIDE_ASSIGNMENT);
-			webSocketClient.unregisterCallback(WebSocketEvent.MATCH_ASSIGNMENT);
-			webSocketClient.unregisterCallback(WebSocketEvent.MATCH_RESULT);
-			webSocketClient.unregisterCallback(WebSocketEvent.TOURNAMENT_LOBBY);
-			webSocketClient.unregisterCallback(WebSocketEvent.COUNTDOWN);
+			webSocketClient.unregisterCallback(MessageType.GAME_STATE);
+			webSocketClient.unregisterCallback(MessageType.ERROR);
+			webSocketClient.unregisterCallback(MessageType.SESSION_ENDED);
+			webSocketClient.unregisterCallback(MessageType.SIDE_ASSIGNMENT);
+			webSocketClient.unregisterCallback(MessageType.MATCH_ASSIGNMENT);
+			webSocketClient.unregisterCallback(MessageType.MATCH_RESULT);
+			webSocketClient.unregisterCallback(MessageType.TOURNAMENT_LOBBY);
+			webSocketClient.unregisterCallback(MessageType.COUNTDOWN);
 		} catch (error) {
 			Logger.error('Error clearing WebSocket callbacks', 'Game', error);
 		}
 	}
 // ====================			CLEANUP				  ====================
 	private async dispose(): Promise<void> {
-		if (!this.isInitialized) return;
 		try {
-			document.removeEventListener('game:exitToMenu', this.exitHandler);
+			if (!this.isInitialized) {
+				Logger.debug('Dispose called but not initialized', 'Game');
+				return;
+			}
 			this.isInitialized = false;
+			document.removeEventListener('game:exitToMenu', this.exitHandler);
 			clearInterval(this.gameLoopObserver);
 			this.gameLoopObserver = null;
 			this.services?.dispose();

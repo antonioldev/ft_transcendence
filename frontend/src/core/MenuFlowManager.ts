@@ -1,13 +1,13 @@
-import { Logger } from '../utils/LogManager.js';
-import { GameMode, ViewMode, AppState, AiDifficulty } from '../shared/constants.js';
-import { uiManager } from '../ui/UIManager.js';
-import { authManager } from './AuthManager.js';
+import { GameConfigFactory } from '../engine/GameConfig.js';
+import { AiDifficulty, AppState, GameMode, ViewMode } from '../shared/constants.js';
 import { getCurrentTranslation } from '../translations/translations.js';
+import { EL, requireElementById } from '../ui/elements.js';
+import { uiManager } from '../ui/UIManager.js';
+import { Logger } from '../utils/LogManager.js';
+import { appStateManager } from './AppStateManager.js';
+import { authManager } from './AuthManager.js';
 import { dashboardManager } from './DashboardManager.js';
 import { webSocketClient } from './WebSocketClient.js';
-import { appStateManager } from './AppStateManager.js';
-import { EL, requireElementById} from '../ui/elements.js';
-import { GameConfigFactory } from '../engine/GameConfig.js';
 
 /**
  * Manages the selection and initialization of game modes and view modes for the application.
@@ -19,7 +19,6 @@ export class MenuFlowManager {
 	private static instance: MenuFlowManager;
 	private selectedViewMode: ViewMode = ViewMode.MODE_2D;
 	private selectedGameMode: GameMode | null = null;
-	// private currentViewModeIndex = 0;
 	private currentAiDifficultyIndex: AiDifficulty = AiDifficulty.EASY;
 	private currentTournamentIndex: number = 4;
 	private currentOnlineTournamentIndex: number = 4;
@@ -482,5 +481,3 @@ export class MenuFlowManager {
         }
     }
 }
-
-export const menuFlowManager = MenuFlowManager.getInstance();

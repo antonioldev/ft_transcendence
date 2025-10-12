@@ -1,5 +1,5 @@
 import { Color3 } from "@babylonjs/core";
-import { MapAssetConfig, StaticObject, MAP_OBJECT_TYPE } from "./sceneTypes.js"
+import { MAP_OBJECT_TYPE, MapAssetConfig, StaticObject } from "./sceneTypes.js";
 
 import map0BuildingsRaw from "../data/staticObjects/map0.json";
 const map0Buildings = map0BuildingsRaw as {
@@ -184,6 +184,22 @@ export const MAP_CONFIGS: Record<string, MapAssetConfig> = {
 		particleType: 'snow',
 		light: 0.9,
 		glow: 0.1,
+		actors: []
+	},
+	map5: {
+		ground: createTextureSet('map4', 'ground', "#ffffff"),
+		walls: createTextureSet('map4', 'terrain', "#ffffff"),
+		ball: simpleColor("#fff9f9ff"),
+		paddle: simpleColor("#ff8c00ff"),
+		terrain: createTextureSet('map4', 'terrain', "#ffffff", true),
+		staticObjects: [
+		],
+		skybox: AssetPaths.sky('map4', 'sky'), // CHANGE
+		fogColor: new Color3(0.8, 0.85, 0.95),
+		fogIntensity: 0.001,
+		particleType: null,
+		light: 0.6,
+		glow: 0.3,
 		actors: []
 	}
 };

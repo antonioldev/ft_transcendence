@@ -1,7 +1,7 @@
+import { Color3, Scene, StandardMaterial, Texture } from "@babylonjs/core";
 import { ViewMode } from '../../../shared/constants.js';
-import { TextureSet, MAP_OBJECT_TYPE } from '../config/sceneTypes.js';
 import { TEXTURE_SCALING } from '../config/mapConfigs.js';
-import { Color3, Scene, StandardMaterial, Texture} from "@babylonjs/core";
+import { MAP_OBJECT_TYPE, TextureSet } from '../config/sceneTypes.js';
 
 const createdMaterials = new Set<StandardMaterial>();
 const createdTextures = new Set<Texture>();

@@ -1,5 +1,4 @@
-import { Color3, Vector3, Scene, LensFlare, LensFlareSystem} from "@babylonjs/core";
-import { ParticleSystem, Texture, Color4, CreateSphere } from "@babylonjs/core";
+import { Color3, Color4, CreateSphere, LensFlare, LensFlareSystem, ParticleSystem, Scene, Texture, Vector3 } from "@babylonjs/core";
 
 export function createDustParticleSystem(scene: Scene): ParticleSystem {
 	const dust = new ParticleSystem("dust", 1000, scene);

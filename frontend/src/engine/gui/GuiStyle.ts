@@ -1,4 +1,4 @@
-import { Control, Image, StackPanel, Grid, TextBlock, Rectangle} from "@babylonjs/gui";
+import { Control, Grid, Image, Rectangle, StackPanel, TextBlock } from "@babylonjs/gui";
 
 export const H_LEFT = Control.HORIZONTAL_ALIGNMENT_LEFT;
 export const H_CENTER = Control.HORIZONTAL_ALIGNMENT_CENTER;

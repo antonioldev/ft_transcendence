@@ -1,5 +1,5 @@
-import { UserStats, GameHistoryEntry } from '../shared/types.js';
-import { WebSocketEvent } from '../shared/constants.js';
+import { MessageType } from '../shared/constants.js';
+import { GameHistoryEntry, UserStats } from '../shared/types.js';
 import { EL, getElementById } from '../ui/elements.js';
 import { webSocketClient } from './WebSocketClient.js';
 
@@ -14,11 +14,11 @@ export class DashboardManager {
 
 	static initialize(): void {
 		const instance = DashboardManager.getInstance();
-		webSocketClient.registerCallback(WebSocketEvent.USER_STATS, (stats: UserStats) => {
+		webSocketClient.registerCallback(MessageType.SEND_USER_STATS, (stats: UserStats) => {
 			instance.renderUserStats(stats);
 		});
 
-		webSocketClient.registerCallback(WebSocketEvent.GAME_HISTORY, (entries: GameHistoryEntry[]) => {
+		webSocketClient.registerCallback(MessageType.SEND_GAME_HISTORY, (entries: GameHistoryEntry[]) => {
 			instance.renderGameHistory(entries);
 		});
 	}

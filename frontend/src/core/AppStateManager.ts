@@ -1,11 +1,11 @@
-import { uiManager } from '../ui/UIManager.js';
-import { ViewMode, AppState, GameMode, GameState } from '../shared/constants.js';
-import { authManager } from './AuthManager.js';
 import { Game } from '../engine/Game.js';
-import { webSocketClient } from './WebSocketClient.js';
-import { EL } from '../ui/elements.js';
-import { Logger } from '../utils/LogManager.js'
 import { GameConfigFactory } from '../engine/GameConfig.js';
+import { AppState, GameMode, GameState, ViewMode } from '../shared/constants.js';
+import { EL } from '../ui/elements.js';
+import { uiManager } from '../ui/UIManager.js';
+import { Logger } from '../utils/LogManager.js';
+import { authManager } from './AuthManager.js';
+import { webSocketClient } from './WebSocketClient.js';
 
 /**
  * Central controller for application state and navigation.
@@ -15,7 +15,7 @@ import { GameConfigFactory } from '../engine/GameConfig.js';
  */
 export class AppStateManager {
 	currentAppState: AppState = AppState.MAIN_MENU;
-	private currentGame: Game | null = null;
+	currentGame: Game | null = null;
 	private static instance: AppStateManager;
 	
 	static getInstance(): AppStateManager {
@@ -59,8 +59,11 @@ export class AppStateManager {
 
 		switch (state) {
 			case AppState.MAIN_MENU:
+				if (this.currentGame) {
+					this.currentGame.requestExitToMenu();
+					this.currentGame = null;
+				}
 				this.showScreen(EL.SCREENS.MAIN_MENU, { hideOverlayss: true, checkAuth: true });
-				this.currentGame = null;
 				break;
 			case AppState.LOGIN:
 				this.showScreen(EL.SCREENS.MAIN_MENU, { modal: EL.SCREENS.LOGIN_MODAL });
@@ -118,13 +121,13 @@ export class AppStateManager {
 			this.navigateTo(AppState.GAME_3D, false);
 			const config = GameConfigFactory.createWithAuthCheck(viewMode, gameMode);
 			this.currentGame = new Game(config);
-			await this.currentGame.create(viewMode, gameMode, aiDifficulty, capacity);
+			await this.currentGame.create(aiDifficulty, capacity);
 		} catch (error) {
 			this.currentGame = null;
 			Logger.error('Error starting game', 'AppStateManager', error);
 			this.navigateTo(AppState.MAIN_MENU);
 		}
-}
+	}
 }
 
 export const appStateManager = AppStateManager.getInstance();

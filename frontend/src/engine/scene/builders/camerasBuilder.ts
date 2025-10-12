@@ -1,6 +1,6 @@
-import { FreeCamera, Vector3, Viewport, Camera, Scene } from "@babylonjs/core";
-import { ViewMode, GameMode } from '../../../shared/constants.js';
-import { getSoloCameraViewport, get3DCamera1Viewport, get3DCamera2Viewport, getCamera2DPosition } from '../../utils.js';
+import { Camera, FreeCamera, Scene, Vector3, Viewport } from "@babylonjs/core";
+import { GameMode, ViewMode } from '../../../shared/constants.js';
+import { get3DCamera1Viewport, get3DCamera2Viewport, getCamera2DPosition, getSoloCameraViewport } from '../../utils.js';
 
 export function createCameras(scene: Scene, name: string, viewMode: ViewMode, gameMode: GameMode): any[] {
 	let cameras = [];

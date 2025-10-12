@@ -1,11 +1,12 @@
-import { PowerupType, PowerupState } from "../../shared/constants.js";
+import { Color3, Color4 } from "@babylonjs/core";
+import { webSocketClient } from '../../core/WebSocketClient.js';
+import { PowerupState, PowerupType } from "../../shared/constants.js";
 import { GAME_CONFIG } from "../../shared/gameConfig.js";
+import { GameObjects, Powerup } from "../../shared/types.js";
+import { PlayerSide, PlayerState } from "../utils.js";
 import { AnimationManager } from "./AnimationManager.js";
 import { GUIManager } from "./GuiManager.js";
-import { GameObjects, Powerup } from "../../shared/types.js";
-import { webSocketClient } from '../../core/WebSocketClient.js';
-import { PlayerSide, PlayerState } from "../utils.js"
-import { Color3, Color4 } from "@babylonjs/core";
+
 // Manages all powerup-related functionality including assignment, activation, deactivation, and visual/audio effects
 export class PowerupManager {
 	constructor(

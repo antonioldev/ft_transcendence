@@ -1,8 +1,8 @@
-import { HDRCubeTexture, MeshBuilder, Scene, HemisphericLight, Color3, Vector3} from "@babylonjs/core";
+import { Color3, HDRCubeTexture, HemisphericLight, MeshBuilder, Scene, Vector3 } from "@babylonjs/core";
 import { ViewMode } from '../../../shared/constants.js';
 import { GAME_CONFIG } from '../../../shared/gameConfig.js';
 import { Logger } from '../../../utils/LogManager.js';
-import { TextureSet, MAP_OBJECT_TYPE } from "../config/sceneTypes.js";
+import { MAP_OBJECT_TYPE, TextureSet } from "../config/sceneTypes.js";
 import { createMaterial, getStandardTextureScale } from '../rendering/materials.js';
 
 // Creates HDRI environment with fallback to default environment

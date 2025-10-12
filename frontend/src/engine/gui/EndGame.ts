@@ -1,9 +1,9 @@
-import { AdvancedDynamicTexture, Rectangle, TextBlock, Grid} from "@babylonjs/gui";
-import { KeyboardEventTypes} from "@babylonjs/core";
+import { KeyboardEventTypes } from "@babylonjs/core";
+import { AdvancedDynamicTexture, Grid, Rectangle, TextBlock } from "@babylonjs/gui";
 import { getCurrentTranslation } from '../../translations/translations.js';
 import { spawnGUISparkles } from '../scene/rendering/fireworks.js';
 import { AnimationManager, Motion } from "../services/AnimationManager.js";
-import { PARTIAL_END_GAME_STYLES, END_GAME_STYLES, createRect, createTextBlock, createGrid} from "./GuiStyle.js";
+import { END_GAME_STYLES, PARTIAL_END_GAME_STYLES, createGrid, createRect, createTextBlock } from "./GuiStyle.js";
 
 export class EndGame {
 	private partialEndGameOverlay!: Rectangle;
