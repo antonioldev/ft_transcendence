@@ -94,19 +94,27 @@ export async function APIRoutes(app: FastifyInstance) {
 		}
 
 		const result = await db.registerNewUser(username, email, password);
+		let message: string;
+		let statusCode: number;
 		switch (result) {
 			case AuthCode.OK:
-				console.log(`User ${username} successfully registered`);
-				return reply.send({ success: true, message: 'User registered successfully' })
-
+				statusCode = 201;
+				message = `User ${username} successfully registered`;
+				break;
 			case AuthCode.USER_EXISTS:
-				console.log(`Registration failed: user with that email already exists`);
-				return reply.code(401).send({ success: false, message: 'User with that email already exists' })
-
+				statusCode = 401;
+				message = `Registration failed: user with that email already exists`;
+				break;
 			case AuthCode.USERNAME_TAKEN:
-				console.log(`Registration failed: username taken`);
-				return reply.code(401).send({ success: false, message: 'Username is already registered' })
+				statusCode = 401;
+				message = `Registration failed: username '${username}' taken`;
+				break;
+			default:
+				statusCode = 404;
+				message = 'Registration failed: db failed';
+				break;
 		}
+		return reply.code(statusCode).send({ result: result, message: message})
 	})
 
 	// JOIN GAME 

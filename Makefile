@@ -43,7 +43,7 @@ stop:
 build: secret-env build-backend build-frontend
 
 build-frontend:
-	@chmod -R u+w frontend/src/shared || true
+	chmod -R u+w frontend/src/shared || true
 	@rm -rf frontend/src/shared || true
 	@mkdir -p frontend/src/shared
 	@cp -rf shared/* frontend/src/shared/
@@ -51,7 +51,7 @@ build-frontend:
 	@docker-compose build frontend
 
 build-backend:
-	@chmod -R u+w backend/src/shared || true
+	chmod -R u+w backend/src/shared || true
 	@rm -rf backend/src/shared || true
 	@mkdir -p backend/src/shared
 	@cp -rf shared/* backend/src/shared/

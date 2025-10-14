@@ -2,6 +2,8 @@ import { Logger } from '../utils/LogManager.js';
 import { ConnectionStatus, MessageType, GameMode, Direction, WebSocketEvent, PowerupType, AppState } from '../shared/constants.js'
 import { ClientMessage, ServerMessage, PlayerInfo, RegisterUser, LoginUser } from '../shared/types.js'
 import { AppStateManager } from './AppStateManager.js';
+import { AuthCode } from '../shared/constants.js';
+import { getSID } from './HTTPRequests.js';
 
 /**
  * WebSocketClient is responsible for managing the WebSocket connection
@@ -9,27 +11,20 @@ import { AppStateManager } from './AppStateManager.js';
  * game state updates, connection events, and errors.
  */
 export class WebSocketClient {
-    private static instance: WebSocketClient;
-    private ws: WebSocket | null = null;
+    // private static instance: WebSocketClient;
+    private ws?: WebSocket;
     private connectionStatus: ConnectionStatus = ConnectionStatus.CONNECTING;
     private callbacks: { [event: string]: Function | null } = {};
-    private sid: string | null;
-    private base_url: string = "https://localhost:8443"; // TEMP
 
-    static getInstance(): WebSocketClient {
-        if (!WebSocketClient.instance) {
-            WebSocketClient.instance = new WebSocketClient();
-        }
-        return WebSocketClient.instance;
-    }
+    // static getInstance(): WebSocketClient {
+    //     if (!WebSocketClient.instance) {
+    //         WebSocketClient.instance = new WebSocketClient();
+    //     }
+    //     return WebSocketClient.instance;
+    // }
 
-    private constructor() {
-        this.sid = sessionStorage.getItem('sid');
-        if (!this.sid) {
-            this.sid = crypto.randomUUID();
-            sessionStorage.setItem('sid', this.sid);
-        }
-        this.connect();
+    createWebsocket(WS_URL:string) { // NEED TO USE THIS WHEN CONNECTING TO ROOT
+        this.ws = new WebSocket(WS_URL);
     }
 
     // ========================================
@@ -37,24 +32,23 @@ export class WebSocketClient {
     // ========================================
 
     // Establishes a WebSocket connection to the specified URL.
-    private connect(): void {
+    connect(): void {
         this.connectionStatus = ConnectionStatus.CONNECTING;
         this.notifyStatus(ConnectionStatus.CONNECTING);
         
-        // In development, connect directly to backend on port 3000
-        let base_url: string;
-        if (location.port === '5173') {
-            // Development mode - connect directly to backend
-            base_url = (location.protocol === 'https:' ? 'wss://' : 'ws://') + 'localhost:3000';
-        } else {
-            // Production mode - use nginx proxy
-            base_url = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host;
-        }
+        // // In development, connect directly to backend on port 3000
+        // let base_url: string;
+        // if (location.port === '5173') {
+        //     // Development mode - connect directly to backend
+        //     base_url = (location.protocol === 'https:' ? 'wss://' : 'ws://') + 'localhost:3000';
+        // } else {
+        //     // Production mode - use nginx proxy
+        //     base_url = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host;
+        // }
         
-        console.log('Connecting to WebSocket:', base_url);
+        // console.log('Connecting to WebSocket:', base_url);
 
-        const WS_URL = `${base_url}/ws?sid=${encodeURIComponent(this.sid ?? '')}`;
-        this.ws = new WebSocket(WS_URL);
+        // const WS_URL = `${base_url}/ws?sid=${encodeURIComponent(getSID() ?? '')}`;
 
         const timeout = setTimeout(() => {
             if (this.connectionStatus === ConnectionStatus.CONNECTING) {
@@ -63,6 +57,7 @@ export class WebSocketClient {
                 this.triggerCallback(WebSocketEvent.ERROR, 'Connection timeout');
             }
         }, 5000);
+        if (!this.ws) return ; // TEMP: HANDLE PROPERLY
 
         this.ws.onopen = () => {
             clearTimeout(timeout);
@@ -100,7 +95,6 @@ export class WebSocketClient {
     disconnect(): void {
         if (this.ws) {
             this.ws.close();
-            this.ws = null;
         }
     }
 
@@ -129,21 +123,21 @@ export class WebSocketClient {
             case MessageType.SUCCESS_LOGIN:
                 this.triggerCallback(WebSocketEvent.LOGIN_SUCCESS, message.message || "✅ Login success");
                 break;
-            case MessageType.SUCCESS_REGISTRATION:
-                this.triggerCallback(WebSocketEvent.REGISTRATION_SUCCESS, message.message || "✅ Registration success");
-                break;
+            // case MessageType.SUCCESS_REGISTRATION:
+                // this.triggerCallback(WebSocketEvent.REGISTRATION_SUCCESS, message.message || "✅ Registration success");
+                // break;
             case MessageType.LOGIN_FAILURE:
                 this.triggerCallback(WebSocketEvent.LOGIN_FAILURE, message.message || "🚫 Login failed: ID/Password not matching");
                 break;
             case MessageType.USER_NOTEXIST:
                 this.triggerCallback(WebSocketEvent.LOGIN_FAILURE, message.message || "User doesn't exist");
                 break;
-            case MessageType.USER_EXIST:
-                this.triggerCallback(WebSocketEvent.REGISTRATION_FAILURE, message.message || "🚫 Registration failed: user exist");
-                break;
-            case MessageType.USERNAME_TAKEN:
-                this.triggerCallback(WebSocketEvent.REGISTRATION_FAILURE, message.message || "Username is already registered");
-                break;
+            // case MessageType.USER_EXIST:
+            //     this.triggerCallback(WebSocketEvent.REGISTRATION_FAILURE, message.message || "🚫 Registration failed: user exist");
+            //     break;
+            // case MessageType.USERNAME_TAKEN:
+                // this.triggerCallback(WebSocketEvent.REGISTRATION_FAILURE, message.message || "Username is already registered");
+                // break;
             case MessageType.SEND_USER_STATS:
                 this.triggerCallback(WebSocketEvent.USER_STATS, message.stats);
                 break;
@@ -219,7 +213,8 @@ export class WebSocketClient {
 
         try {
             this.ws!.send(JSON.stringify(message));
-        } catch (error) {
+        } 
+        catch (error) {
             Logger.error(`Error sending message of type ${type}`, 'WebSocketClient', error);
             this.connectionStatus = ConnectionStatus.FAILED;
             this.notifyStatus(ConnectionStatus.FAILED);
@@ -230,30 +225,7 @@ export class WebSocketClient {
     // LOGIN/REGISTRATION 
     // ========================================
 
-    async registerNewUser(registrationInfo: RegisterUser) {
-        // if (!this.isConnected()) {
-        //     this.triggerCallback(WebSocketEvent.ERROR, 'Not connected to server');
-        //     return;
-        // }
-        // const message: ClientMessage = {
-        //     type: MessageType.REGISTER_USER,
-        //     registerUser: registrationInfo
-        // };
-        // this.ws!.send(JSON.stringify(message));
 
-        try {
-            const response = await fetch(this.base_url, {
-                method: "POST",
-                headers: { "Content-Type": "application/json"},
-                body: JSON.stringify(registrationInfo),
-            })
-
-            const data = await response.json();
-        }
-        catch (err) {
-
-        }
-    }
 
     loginUser(loginInfo: LoginUser): void {
         if (!this.isConnected()) {
@@ -337,5 +309,4 @@ export class WebSocketClient {
         this.triggerCallback(WebSocketEvent.STATUS_CHANGE, status);
     }
 }
-
-export const webSocketClient = WebSocketClient.getInstance();
+export const webSocketClient = new WebSocketClient();

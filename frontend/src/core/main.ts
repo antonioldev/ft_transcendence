@@ -1,5 +1,4 @@
 import "@babylonjs/loaders";
-
 import { updateLanguageDisplay, previousLanguage, nextLanguage } from '../translations/translations.js';
 import { uiManager } from '../ui/UIManager.js';
 import { webSocketClient } from './WebSocketClient.js';
@@ -9,12 +8,13 @@ import { AppStateManager } from './AppStateManager.js';
 import { ConnectionStatus, WebSocketEvent } from '../shared/constants.js';
 import { EL, requireElementById } from '../ui/elements.js';
 import { DashboardManager } from './DashboardManager.js';
+import { sendRootRequest } from "./HTTPRequests.js";
 // import { MemoryLeakDetector } from '../utils/memory.js'
 
 // Initialize the detector
 // const memoryDetector = new MemoryLeakDetector();
 
-function loadPage(): void {
+async function loadPage() {
     // Initialize classes
     AppStateManager.initialize();
     AuthManager.initialize();
@@ -26,6 +26,11 @@ function loadPage(): void {
 	setupLanguageListeners();
 
 	// memoryDetector.startMonitoring(); // Logs memory usage (only google) 
+
+	// send "/" HTTP request and receive WebSocket URL to create ws
+	const wsURL = await sendRootRequest();
+	webSocketClient.createWebsocket(wsURL);
+	webSocketClient.connect();
 
 	// Setup WebSocket monitoring
 	webSocketClient.registerCallback(WebSocketEvent.STATUS_CHANGE, (status: ConnectionStatus) => {

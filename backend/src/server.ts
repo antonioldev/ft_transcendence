@@ -10,12 +10,15 @@ import { initialisazeDatabase } from './data/db-init.js';
 import { registerDatabaseFunctions } from './data/database.js';
 import { APIRoutes } from './routes/apiRoutes.js';
 import { authGoogle, authLocal } from './routes/authRoutes.js';
+import { seedDefaultUsers } from './data/db-init.js';
+import fs from 'fs';
 
 /* --- SETUP DATABASE --- */
 
 dotenv.config();
 const db = await initialisazeDatabase('./database/transcendence.sqlite');
 registerDatabaseFunctions(db);
+await seedDefaultUsers(8);
 
 
 /* --- CREATE FASTIFY APP --- */
@@ -23,6 +26,10 @@ registerDatabaseFunctions(db);
 export const app: FastifyInstance = Fastify({
     logger: config.debug === 'yes' ? true : false,
     trustProxy: true,
+    https: {
+        key: fs.readFileSync('/etc/nginx/ssl/private/key.key'),
+        cert: fs.readFileSync('/etc/nginx/ssl/certs/cert.crt'),
+    }
 });
 
 

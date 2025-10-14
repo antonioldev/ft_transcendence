@@ -7,6 +7,8 @@ import { RegisterUser, LoginUser } from '../shared/types.js';
 import { EL, requireElementById} from '../ui/elements.js';
 import { initializeGoogleSignIn, renderGoogleButton } from './GoogleSignIn.js';
 import { appStateManager } from './AppStateManager.js';
+import { registerNewUser } from './HTTPRequests.js';
+import { AuthCode } from '../shared/constants.js';
 
 // Declare the type for Google Response to avoid TypeScript errors
 type GoogleCredentialResponse = {
@@ -518,20 +520,20 @@ export class AuthManager {
 			}, 500);
 		});
 
-        wsClient.registerCallback(WebSocketEvent.REGISTRATION_SUCCESS, (msg: string) => {
-            this.authState = AuthState.LOGGED_IN;
-            this.currentUser = { username };
-            uiManager.clearForm(this.registrationFields);
-            uiManager.showUserInfo(username);
-            alert(msg || 'Registration successful! Welcome to the game!');
-            setTimeout(() => {
-                appStateManager.navigateTo(AppState.GAME_MODE);
-            }, 500);
-        });
+        // wsClient.registerCallback(WebSocketEvent.REGISTRATION_SUCCESS, (msg: string) => {
+        //     this.authState = AuthState.LOGGED_IN;
+        //     this.currentUser = { username };
+        //     uiManager.clearForm(this.registrationFields);
+        //     uiManager.showUserInfo(username);
+        //     alert(msg || 'Registration successful! Welcome to the game!');
+        //     setTimeout(() => {
+        //         appStateManager.navigateTo(AppState.GAME_MODE);
+        //     }, 500);
+        // });
 
         // Apptempt to register new user
         try {
-            wsClient.registerNewUser(user);
+            registerNewUser(user);
             Logger.info('Register attempt', 'AuthManager', { username, email });
             // Keep the state as GUEST until registration confirmation
         } catch (error) {
@@ -541,6 +543,26 @@ export class AuthManager {
             alert('Registration failed due to connection error.');  
         }
     }
+
+    handleRegistrationResponse(result: AuthCode, message: string) {
+        if (result === AuthCode.OK) {
+            // this.authState = AuthState.LOGGED_IN;
+            // this.currentUser = { username };
+            uiManager.clearForm(this.registrationFields);
+            // uiManager.showUserInfo(username);
+            alert(message || 'Registration successful! Welcome to the game!');
+            setTimeout(() => { appStateManager.navigateTo(AppState.GAME_MODE); }, 500);
+        }
+        else {
+            this.authState = AuthState.LOGGED_FAILED;
+            uiManager.clearForm(this.registrationFields);
+            alert(message);
+            if (result === AuthCode.USERNAME_TAKEN) {
+                setTimeout(() => { appStateManager.navigateTo(AppState.LOGIN); }, 500);
+            }
+        }
+    }
+
 
 	public setupGoogleLoginButton(): void {
 		this.prepareGoogleLogin();

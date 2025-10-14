@@ -1,5 +1,5 @@
-import { Client } from "../network/Client";
-import { ServerMessage } from "../shared/types";
+import { Client } from "../network/Client.js";
+import { ServerMessage } from "../shared/types.js";
 
 export const sidClientMap: Map<string, Client> = new Map();
 
