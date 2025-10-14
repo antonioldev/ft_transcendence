@@ -35,38 +35,38 @@ export class DashboardManager {
 		const container = getElementById(EL.DASHBOARD.USER_STATS_CHART);
 		if (!container) return;
 		container.innerHTML = '';
-
-		(container as HTMLElement).style.display = 'flex';
-		(container as HTMLElement).style.flexDirection = 'column';
-		(container as HTMLElement).style.alignItems = 'center';
+		(container as HTMLElement).style.display = 'block';
 		(container as HTMLElement).style.textAlign = 'center';
-		(container as HTMLElement).style.gap = '16px';
 
 		const table = document.createElement('table');
 		table.style.borderCollapse = 'collapse';
-		table.style.width = 'auto';
-		table.style.minWidth = '420px';
+		table.style.width = '100%';
+		table.style.maxWidth = '900px';
+		table.style.margin = '0 auto';
+		table.style.color = getComputedStyle(container as HTMLElement).color; // TODO black table, blocked upstream?
 
 		table.innerHTML = `
 			<thead>
 				<tr>
-					<th style="text-align:center; padding:6px 12px;">Victories</th>
-					<th style="text-align:center; padding:6px 12px;">Defeats</th>
-					<th style="text-align:center; padding:6px 12px;">Games</th>
-					<th style="text-align:center; padding:6px 12px;">Win Ratio</th>
-					<th style="text-align:center; padding:6px 12px;">Tournaments Played</th>
-					<th style="text-align:center; padding:6px 12px;">Tournament Wins</th>
+					<th style="text-align:center; padding:6px 12px;">Overall Games</th>
+					<th style="text-align:center; padding:6px 12px;">Overall Victories</th>
+					<th style="text-align:center; padding:6px 12px;">Overall Defeats</th>
+					<th style="text-align:center; padding:6px 12px;">Overall Win Ratio</th>
+					<th style="text-align:center; padding:6px 12px;">Tournament Games</th>
+					<th style="text-align:center; padding:6px 12px;">Tournament Victories</th>
+					<th style="text-align:center; padding:6px 12px;">Tournament Defeats</th>
 					<th style="text-align:center; padding:6px 12px;">Tournament Win Ratio</th>
 				</tr>
 			</thead>
 			<tbody>
 				<tr>
+					<td style="padding:6px 12px;">${stats.games}</td>
 					<td style="padding:6px 12px;">${stats.victories}</td>
 					<td style="padding:6px 12px;">${stats.defeats}</td>
-					<td style="padding:6px 12px;">${stats.games}</td>
 					<td style="padding:6px 12px;">${(stats.winRatio * 100).toFixed(1)}%</td>
 					<td style="padding:6px 12px;">${stats.tournamentsPlayed}</td>
 					<td style="padding:6px 12px;">${stats.tournamentWins}</td>
+					<td style="padding:6px 12px;">${stats.tournamentsPlayed - stats.tournamentWins}</td>
 					<td style="padding:6px 12px;">${(stats.tournamentWinRatio * 100).toFixed(1)}%</td>
 				</tr>
 			</tbody>
@@ -77,16 +77,33 @@ export class DashboardManager {
 			{ label: 'Defeats', value: stats.defeats, color: '#f44336' }
 		]);
 
+
+	    const tWins   = stats.tournamentWins ?? 0;
+	    const tLosses = Math.max(0, (stats.tournamentsPlayed ?? 0) - tWins);
+	    const pieChartTournament = this.createPieChart([
+	      { label: 'Tournament Wins',   value: tWins,   color: '#4caf50' },
+	      { label: 'Tournament Losses', value: tLosses, color: '#f44336' }
+	    ]);
+
 		// center & arrange table and pie chart
 		const row = document.createElement('div');
 		row.style.display = 'flex';
-		row.style.gap = '24px';
+		// row.style.gap = '1px';
 		row.style.alignItems = 'flex-start';
 		row.style.justifyContent = 'center';
 		row.style.flexWrap = 'wrap';
 		row.appendChild(table);
-		row.appendChild(pieChart);
+    	const pies = document.createElement('div');
+    	pies.style.display = 'flex';
+    	pies.style.gap = '256px';
+    	pies.style.alignItems = 'center';
+    	pies.appendChild(pieChart);
+    	pies.appendChild(pieChartTournament);
+    	row.appendChild(pies);
 		container.appendChild(row);
+		const spacer = document.createElement('div');
+		spacer.style.height = '16px';
+		container.appendChild(spacer);  // TODO this doesn't show
 	}
 
 
@@ -121,7 +138,7 @@ export class DashboardManager {
 						<td style="padding:6px 12px;">${e.opponent}</td>
 						<td style="padding:6px 12px;">${e.score}</td>
 						<td style="padding:6px 12px;">${e.result}</td>
-						<td style="padding:6px 12px;">${e.isTournament ? 'No' : 'Yes'}</td>
+						<td style="padding:6px 12px;">${e.isTournament}</td>
 						<td style="padding:6px 12px;">${e.duration}s</td>
 					</tr>
 				`).join('')}
@@ -140,6 +157,10 @@ export class DashboardManager {
 		svg.setAttribute("width", "120");
 		svg.setAttribute("height", "120");
 		svg.setAttribute("viewBox", "0 0 120 120");
+	    const panelBg =
+	      getComputedStyle(document.documentElement).getPropertyValue('--panel-bg').trim() ||
+	      getComputedStyle(document.body).getPropertyValue('background-color') ||
+	      'transparent';
 
 		// handle 0 or 1 win/loss cases
 		const nonZero = data.filter(d => d.value > 0);
@@ -160,7 +181,8 @@ export class DashboardManager {
 			hole.setAttribute("cx", String(cx));
 			hole.setAttribute("cy", String(cy));
 			hole.setAttribute("r",  String(radius / 3));
-			hole.setAttribute("fill", "#000");
+			// hole.setAttribute("fill", "#000");
+			hole.setAttribute("fill", panelBg);
 			svg.appendChild(hole);
 
 			return svg;
@@ -183,7 +205,8 @@ export class DashboardManager {
 			path.setAttribute("d", dAttr);
 			path.setAttribute("fill", d.color);
 			path.setAttribute("title", d.label);
-			path.setAttribute("stroke", "#000");		// separators
+			// path.setAttribute("stroke", "#000");		// separators
+			path.setAttribute("stroke", panelBg);
 			path.setAttribute("stroke-width", "1");
 			svg.appendChild(path);
 		});
@@ -193,47 +216,12 @@ export class DashboardManager {
 		hole.setAttribute("cx", String(radius + 10));
 		hole.setAttribute("cy", String(radius + 10));
 		hole.setAttribute("r",  String(radius / 3));
-		hole.setAttribute("fill", "#000");
+		// hole.setAttribute("fill", "#000");
+		hole.setAttribute("fill", panelBg);
 		svg.appendChild(hole);
 
 		return svg;
 	}
-	
-	// private createBarChart(data: { label: string; value: number; color: string }[]): HTMLElement {
-	//	 const max = Math.max(...data.map(d => d.value));
-	//	 const container = document.createElement('div');
-	//	 container.style.display = 'flex';
-	//	 container.style.alignItems = 'flex-end';
-	//	 container.style.gap = '10px';
-	//	 container.style.height = '150px';
-	//	 container.style.marginBottom = '20px';
-
-	//	 data.forEach(d => {
-	//		 const bar = document.createElement('div');
-	//		 const height = (d.value / max) * 100;
-	//		 bar.style.width = '50px';
-	//		 bar.style.height = `${height}%`;
-	//		 bar.style.backgroundColor = d.color;
-	//		 bar.title = `${d.label}: ${d.value}`;
-
-	//		 const label = document.createElement('div');
-	//		 label.innerText = d.label;
-	//		 label.style.textAlign = 'center';
-	//		 label.style.marginTop = '5px';
-
-	//		 const barWrapper = document.createElement('div');
-	//		 barWrapper.style.display = 'flex';
-	//		 barWrapper.style.flexDirection = 'column';
-	//		 barWrapper.style.alignItems = 'center';
-
-	//		 barWrapper.appendChild(bar);
-	//		 barWrapper.appendChild(label);
-	//		 container.appendChild(barWrapper);
-	//	 });
-
-	//	 return container;
-	// }
-
 }
 
 function polarToCartesian(radius: number, fraction: number): [number, number] {

@@ -8,12 +8,12 @@ export const COLORS = {
 	field2D: new Color3(20/255, 61/255, 96/255, 1),
 	field3D: new Color3(0.4, 0.6, 0.4),
 	player1_2D: new Color3(160/255, 200/255, 120/255, 1),
-	player2_2D: Color3.White(),
+	player2_2D: new Color3(160/255, 200/255, 120/255, 1),
 	player1_3D: new Color3(0.89, 0.89, 0),
 	player2_3D: new Color3(1, 0, 0),
 	ball2D: Color3.White(),
 	ball3D: new Color3(0.89, 0.89, 1),
-	walls2D: new Color3(235/255, 91/255, 0, 1),
+	walls2D: Color3.White(),
 	walls3D: new Color3(0.8, 0.8, 0.8),
 };
 

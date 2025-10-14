@@ -65,12 +65,12 @@ export const GAME_CONFIG = {
 	
 	// Goal boundaries (behind paddles)
 	goalBounds: {
-		rightGoal: -(fieldHeight / 2),	// Behind top player
-		leftGoal: (fieldHeight / 2)	  // Behind bottom player  
+		left: -(fieldHeight / 2),	// Behind top player
+		right: (fieldHeight / 2)	  // Behind bottom player  
 	},
 
 	// Game mechanics
-	scoreToWin: 50,		  // Points needed to win
+	scoreToWin: 1,		  // Points needed to win
 	
 	// Input mappings
 	input2D: {

@@ -435,19 +435,27 @@ export class WebSocketManager {
 
     private async handleUserStats(client: Client, message: string) {
         console.log("HandleMessage WSM: calling get User stats");
+
         const stats = db.getUserStats(message); // from DB
         if (!stats) {
             this.send(client.websocket, {
                 type: MessageType.ERROR,
                 message: 'user not recognised'
             });
+            return;
         }
-        else {
-            this.send(client.websocket, {
-                type: MessageType.SEND_USER_STATS,
-                stats: stats
-            });
-        }
+
+        const history = db.getGameHistoryForUser(message) || [];
+        const tournamentGamesPlayed = history.filter(
+            (h: any) => h.isTournament === 'Yes' || h.isTournament === 1 || h.isTournament === true
+        ).length;
+
+        stats.tournamentsPlayed = tournamentGamesPlayed;
+
+        this.send(client.websocket, {
+            type: MessageType.SEND_USER_STATS,
+            stats: stats
+        });
     }
 
     private handleUserGameHistory(client: Client, message: string): void {

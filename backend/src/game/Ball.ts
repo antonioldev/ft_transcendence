@@ -133,7 +133,7 @@ export class Ball {
         }
         
         // Goal detection (top/bottom goals)
-        if (this.rect.centerz <= GAME_CONFIG.goalBounds.rightGoal) {
+        if (this.rect.top <= GAME_CONFIG.goalBounds.left) {
             if (this.paddles[LEFT].shield_activated) {
                 this.direction[1] *= -1;
             }
@@ -142,7 +142,7 @@ export class Ball {
                 this.reset();
             }
         }
-        else if (this.rect.centerz >= GAME_CONFIG.goalBounds.leftGoal) {
+        else if (this.rect.bottom >= GAME_CONFIG.goalBounds.right) {
             if (this.paddles[RIGHT].shield_activated) {
                 this.direction[1] *= -1;
             }

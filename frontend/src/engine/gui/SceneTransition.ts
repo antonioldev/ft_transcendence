@@ -55,10 +55,10 @@ export class SceneTransition {
 		this.rightPaddle.leftInPixels = width / 2 - 40;
 		
 		await Promise.all([
-			this.animationManager.slideFromDirection(this.leftBackground, 'right', 'in', width / 2, Motion.F.base),
-			this.animationManager.slideFromDirection(this.rightBackground, 'left', 'in', width / 2, Motion.F.base),
-			this.animationManager.slideFromDirection(this.leftPaddle, 'right', 'in', width / 2 + 40, Motion.F.base),
-			this.animationManager.slideFromDirection(this.rightPaddle, 'left', 'in', width / 2 + 40, Motion.F.base)
+			this.animationManager.slideFromDirection(this.leftBackground, 'right', 'in', width / 2, Motion.F.slow),
+			this.animationManager.slideFromDirection(this.rightBackground, 'left', 'in', width / 2, Motion.F.slow),
+			this.animationManager.slideFromDirection(this.leftPaddle, 'right', 'in', width / 2 + 40, Motion.F.slow),
+			this.animationManager.slideFromDirection(this.rightPaddle, 'left', 'in', width / 2 + 40, Motion.F.slow)
 		]);
 
 		if(isSpectator)

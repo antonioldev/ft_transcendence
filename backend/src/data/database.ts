@@ -201,6 +201,7 @@ export function updateUserTournamentWin(id: number, tournament_win: number): boo
 		}
 		let newNbTournamentWin = currentTournamentWin + tournament_win;
 		const user = db.prepare('UPDATE users SET tournament_win = ? WHERE id = ?');
+		console.log(`database.ts -- updateUserTournamentWin: Nb of tournament win after update ${currentTournamentWin} + ${tournament_win} = ${newNbTournamentWin}`);
 		user.run(newNbTournamentWin, id);
 		return true;
 	} catch (err) {
