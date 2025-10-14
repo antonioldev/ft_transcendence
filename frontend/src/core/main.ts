@@ -1,6 +1,6 @@
 import "@babylonjs/loaders";
 
-import { updateLanguageDisplay, previousLanguage, nextLanguage } from '../translations/translations.js';
+import { updateLanguageDisplay, setupLanguageSelector } from '../translations/translations.js';
 import { uiManager } from '../ui/UIManager.js';
 import { webSocketClient } from './WebSocketClient.js';
 import { AuthManager } from './AuthManager.js';
@@ -23,7 +23,7 @@ function loadPage(): void {
 
 	// Setup language system
 	updateLanguageDisplay();
-	setupLanguageListeners();
+	setupLanguageSelector();
 
 	// memoryDetector.startMonitoring(); // Logs memory usage (only google) 
 
@@ -37,17 +37,6 @@ function loadPage(): void {
     } else {
         uiManager.updateConnectionStatus(ConnectionStatus.CONNECTING);
     }
-}
-
-/**
- * Sets up language navigation button listeners.
- */
-function setupLanguageListeners() {
-	const backBtn = requireElementById(EL.BUTTONS.BACK);
-	const forwardBtn = requireElementById(EL.BUTTONS.FORWARD);
-
-	backBtn.addEventListener('click', previousLanguage);
-	forwardBtn.addEventListener('click', nextLanguage);
 }
 
 // Initialize the application

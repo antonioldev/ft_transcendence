@@ -15,7 +15,7 @@ export const EL = {
 	PLAYER_SETUP_OVERLAY: 'player-setup-overlay',
 	GAME_3D: 'game-3d',
 	STATS_DASHBOARD: 'stats-dashboard',
-	SETTINGS_MENU: 'setting-menu'
+	SETTINGS_MENU: 'settings-menu'
   },
 
   // ========================================
@@ -29,8 +29,6 @@ export const EL = {
 	LOGOUT: 'logout-btn',
 
 	// Navigation buttons
-	BACK: 'back',
-	FORWARD: 'forward',
 	MODE_BACK: 'mode-back',
 	SETUP_BACK: 'setup-back',
 	LOGIN_BACK: 'login-back',
@@ -139,8 +137,6 @@ export const EL = {
 	MODE_TITLE: 'mode-title',
 	SETUP_TITLE: 'setup-title',
 
-	// Language selector
-	LANGUAGE_SELECT: 'language_select',
 	VIEW_MODE_DISPLAY: 'view-mode-display',
 
   // User info display
