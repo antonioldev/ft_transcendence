@@ -14,6 +14,7 @@ export class WebSocketClient {
     private connectionStatus: ConnectionStatus = ConnectionStatus.CONNECTING;
     private callbacks: { [event: string]: Function | null } = {};
     private sid: string | null;
+    private base_url: string = "https://localhost:8443"; // TEMP
 
     static getInstance(): WebSocketClient {
         if (!WebSocketClient.instance) {
@@ -44,15 +45,15 @@ export class WebSocketClient {
         let base_url: string;
         if (location.port === '5173') {
             // Development mode - connect directly to backend
-            base_url = (location.protocol === 'https:' ? 'wss://' : 'ws://') + 'localhost:3000/ws';
+            base_url = (location.protocol === 'https:' ? 'wss://' : 'ws://') + 'localhost:3000';
         } else {
             // Production mode - use nginx proxy
-            base_url = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws';
+            base_url = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host;
         }
         
         console.log('Connecting to WebSocket:', base_url);
 
-        const WS_URL = `${base_url}?sid=${encodeURIComponent(this.sid ?? '')}`;
+        const WS_URL = `${base_url}/ws?sid=${encodeURIComponent(this.sid ?? '')}`;
         this.ws = new WebSocket(WS_URL);
 
         const timeout = setTimeout(() => {
@@ -229,16 +230,29 @@ export class WebSocketClient {
     // LOGIN/REGISTRATION 
     // ========================================
 
-    registerNewUser(registrationInfo: RegisterUser): void {
-        if (!this.isConnected()) {
-            this.triggerCallback(WebSocketEvent.ERROR, 'Not connected to server');
-            return;
+    async registerNewUser(registrationInfo: RegisterUser) {
+        // if (!this.isConnected()) {
+        //     this.triggerCallback(WebSocketEvent.ERROR, 'Not connected to server');
+        //     return;
+        // }
+        // const message: ClientMessage = {
+        //     type: MessageType.REGISTER_USER,
+        //     registerUser: registrationInfo
+        // };
+        // this.ws!.send(JSON.stringify(message));
+
+        try {
+            const response = await fetch(this.base_url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json"},
+                body: JSON.stringify(registrationInfo),
+            })
+
+            const data = await response.json();
         }
-        const message: ClientMessage = {
-            type: MessageType.REGISTER_USER,
-            registerUser: registrationInfo
-        };
-        this.ws!.send(JSON.stringify(message));
+        catch (err) {
+
+        }
     }
 
     loginUser(loginInfo: LoginUser): void {
