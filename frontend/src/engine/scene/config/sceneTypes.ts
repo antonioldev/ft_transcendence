@@ -19,7 +19,7 @@ export type TextureSet = {
 export type ActorConfig = {
 	model: string;
 	count: number;
-	type: 'flying' | 'swimming' | 'ground' | 'floating';
+	type: 'flying' | 'swimming' | 'floating';
 	scale?: number;
 };
 
@@ -36,7 +36,7 @@ export type MapAssetConfig = {
 	skybox: string | null;
 	fogColor?: Color3 | null;
 	fogIntensity: number;
-	particleType?: 'dust' | 'underwater' | 'rain' | 'snow' | 'lensFlare' | null;
+	particleType?: 'dust' | 'underwater' | 'rain' | 'snow' | 'lensFlare' | 'smoke' | 'stars' | null;
 	actors: ActorConfig[];
 };
 

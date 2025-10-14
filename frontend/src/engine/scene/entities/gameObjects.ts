@@ -1,21 +1,33 @@
 import { Color3, Color4, Material, Mesh, MeshBuilder, Scene, StandardMaterial, Vector3 } from "@babylonjs/core";
+import { GridMaterial } from "@babylonjs/materials";
 import { ViewMode } from '../../../shared/constants.js';
 import { GAME_CONFIG } from '../../../shared/gameConfig.js';
 import { Size } from '../../../shared/types.js';
 import { PlayerSide } from '../../utils.js';
-import { MAP_OBJECT_TYPE, TextureSet } from "../config/sceneTypes.js";
+import { MAP_OBJECT_TYPE, MapAssetConfig, TextureSet } from "../config/sceneTypes.js";
 import { createMaterial, getStandardTextureScale } from "../rendering/materials.js";
+import { MAP_CONFIGS } from "../config/mapConfigs.js";
 
 // Creates the ground for the game field
-export function createGameField(scene: any, name: string, mode: ViewMode, texture: TextureSet): any {
+export function createGameField(scene: any, name: string, mode: ViewMode, map_asset: MapAssetConfig): any {
 
 	const w = GAME_CONFIG.fieldWidth;
 	const h = GAME_CONFIG.fieldHeight;
 	const ground = MeshBuilder.CreateGround(name, { width : w, height : h}, scene);
 	ground.position.y = 0.01;
-	
-	const groundTextureScale = getStandardTextureScale(w, h, MAP_OBJECT_TYPE.GROUND);
-	ground.material = createMaterial(scene, name + "Material", mode, texture, groundTextureScale);
+
+
+	const texture = map_asset.ground;
+	if (map_asset === MAP_CONFIGS.map6) {
+		const material = new GridMaterial(name + "Material");
+		material.opacity = 0.9;
+		material.backFaceCulling = false;
+		material.lineColor = new Color3(1, 0.2, 0);
+		ground.material = material;
+	} else {
+		const groundTextureScale = getStandardTextureScale(w, h, MAP_OBJECT_TYPE.GROUND);
+		ground.material = createMaterial(scene, name + "Material", mode, texture, groundTextureScale);
+	}
 
 	ground.isPickable = false;
 	ground.freezeWorldMatrix();

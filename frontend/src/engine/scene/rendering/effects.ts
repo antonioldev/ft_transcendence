@@ -1,4 +1,4 @@
-import { Color3, Color4, CreateSphere, LensFlare, LensFlareSystem, ParticleSystem, Scene, Texture, Vector3 } from "@babylonjs/core";
+import { Color3, Color4, CreateSphere, LensFlare, LensFlareSystem, ParticleSystem, Scene, Texture, Vector3, SpriteManager, Sprite } from "@babylonjs/core";
 
 export function createDustParticleSystem(scene: Scene): ParticleSystem {
 	const dust = new ParticleSystem("dust", 1000, scene);
@@ -26,6 +26,62 @@ export function createDustParticleSystem(scene: Scene): ParticleSystem {
 
 	return dust;
 }
+
+export function createSmokeSprite(scene: Scene): SpriteManager {
+	const smokeManager = new SpriteManager("playerManager", "assets/textures/particle/candleSmoke.tga", 4, {width: 1024/20, height:512/4}, scene);
+		
+	const positions: [number, number, number][] = [
+		[3, 2, -21],
+		[-4, 2, 21],
+		[-11, 2, 11],
+		[11, 2, -13]
+	];
+
+	for (let i = 0; i < positions.length; i++) {
+		const [x, y, z] = positions[i];
+		const smoke = new Sprite("smoke" + i, smokeManager);
+		smoke.position = new Vector3(x, y, z);
+		smoke.color = new Color4(1, 1, 1, 1);
+		smoke.width = 8;
+		smoke.height = 12;
+		smoke.playAnimation(0, 79, true, 20 * i);
+	}
+
+	return smokeManager;
+}
+
+export function createStarsParticles(scene: Scene): ParticleSystem {
+	const stars = new ParticleSystem("stars", 3000, scene);
+	const texture = "assets/textures/particle/flare_transparent.png";
+	stars.particleTexture = new Texture(texture, scene);
+
+	stars.emitter = new Vector3(0, 0, -50);
+
+	stars.minEmitBox = new Vector3(-20, 0, -10);
+	stars.maxEmitBox = new Vector3(20, 4, 10);
+
+	stars.direction1 = new Vector3(2, 2, 60);
+	stars.direction2 = new Vector3(2, 2, 80);
+
+	stars.minSize = 0.05;
+	stars.maxSize = 0.15;
+	
+	stars.minLifeTime = 4;
+	stars.maxLifeTime = 6;
+
+	stars.emitRate = 500;
+	
+	stars.color1 = new Color4(0.9, 0.95, 1.0, 1.0);
+	stars.color2 = new Color4(0.9, 0.85, 1.0, 0.9); 
+	stars.colorDead = new Color4(1.0, 1.0, 0.0, 1.0);
+
+	stars.blendMode = ParticleSystem.BLENDMODE_ADD;
+
+	stars.start();
+
+	return stars;
+}
+
 
 export function createFog(scene: Scene, fogColor: Color3, density: number): void {
 	if (fogColor) {

@@ -2,6 +2,7 @@ import { Color3, Scene, StandardMaterial, Texture } from "@babylonjs/core";
 import { ViewMode } from '../../../shared/constants.js';
 import { TEXTURE_SCALING } from '../config/mapConfigs.js';
 import { MAP_OBJECT_TYPE, TextureSet } from '../config/sceneTypes.js';
+import { LavaMaterial } from "@babylonjs/materials";
 
 const createdMaterials = new Set<StandardMaterial>();
 const createdTextures = new Set<Texture>();
@@ -61,6 +62,23 @@ export function createMaterial(
 	}
 
 	return material;
+}
+
+export function createLavaMaterial(
+	scene: Scene,
+	name: string
+): LavaMaterial {
+	const lavaMat = new LavaMaterial(name, scene);
+	
+	lavaMat.noiseTexture = new Texture("assets/textures/particle/cloud.png", scene);
+	lavaMat.diffuseTexture = new Texture("assets/textures/particle/lavatile.jpg", scene);
+	lavaMat.fogColor = new Color3(1, 0, 0);
+
+	lavaMat.speed = 0.8;
+	lavaMat.movingSpeed = 0.6;
+	lavaMat.lowFrequencySpeed = 0.2;
+
+	return lavaMat;
 }
 
 export function disposeMaterialResources(): void {

@@ -1,9 +1,11 @@
 import { Color3, HDRCubeTexture, HemisphericLight, MeshBuilder, Scene, Vector3 } from "@babylonjs/core";
+import { GridMaterial } from "@babylonjs/materials";
 import { ViewMode } from '../../../shared/constants.js';
 import { GAME_CONFIG } from '../../../shared/gameConfig.js';
 import { Logger } from '../../../utils/LogManager.js';
-import { MAP_OBJECT_TYPE, TextureSet } from "../config/sceneTypes.js";
-import { createMaterial, getStandardTextureScale } from '../rendering/materials.js';
+import { MAP_OBJECT_TYPE, MapAssetConfig, TextureSet } from "../config/sceneTypes.js";
+import { createLavaMaterial, createMaterial, getStandardTextureScale } from '../rendering/materials.js';
+import { MAP_CONFIGS } from "../config/mapConfigs.js";
 
 // Creates HDRI environment with fallback to default environment
 export function createEnvironment(scene: Scene, path: string | null): void {
@@ -18,7 +20,7 @@ export function createEnvironment(scene: Scene, path: string | null): void {
 	}
 }
 
-export function createTerrain(scene: Scene, name: string, texture: TextureSet): any {
+export function createTerrain(scene: Scene, name: string, texture: TextureSet, map_asset: MapAssetConfig): any {
 	const terrainWidth = GAME_CONFIG.fieldWidth * 10;
 	const terrainHeight = GAME_CONFIG.fieldHeight * 10;
 
@@ -33,15 +35,30 @@ export function createTerrain(scene: Scene, name: string, texture: TextureSet): 
 		}, scene);
 	} else {
 		terrain = MeshBuilder.CreateGround(name, { 
-			width: terrainWidth, 
-			height: terrainHeight 
+			width: terrainWidth,
+			height: terrainHeight,
+			subdivisions: 200
 		}, scene);
 	}
 
-	terrain.position.y = -0.01;
-
-	const terrainTextureScale = getStandardTextureScale(terrainWidth, terrainHeight, MAP_OBJECT_TYPE.GROUND);
-	terrain.material = createMaterial(scene, name + "Material", ViewMode.MODE_3D, texture, terrainTextureScale);
+	if (map_asset === MAP_CONFIGS.map0) {
+		terrain.material = new GridMaterial(name + "Material");
+		terrain.material.backFaceCulling = false;
+	}
+	else if (map_asset === MAP_CONFIGS.map5) {
+		terrain.material = createLavaMaterial(scene, name + "Material");
+		terrain.checkCollisions = false;
+		terrain.doNotComputeBoundingBox = true;
+		terrain.isPickable = false;
+		terrain.position.y = -0.5;
+	}
+	else if (map_asset === MAP_CONFIGS.map6) {
+		terrain.isVisible = false;
+	} else {
+		const terrainTextureScale = getStandardTextureScale(terrainWidth, terrainHeight, MAP_OBJECT_TYPE.TERRAIN);
+		terrain.material = createMaterial(scene, name + "Material", ViewMode.MODE_3D, texture, terrainTextureScale);
+		terrain.position.y = -0.01;
+	}
 
 	return terrain;
 }

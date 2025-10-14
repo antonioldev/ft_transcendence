@@ -106,9 +106,55 @@ async function loadOrCloneActor(
 	}
 }
 
+export async function createFloatingActor(
+	scene: Scene,
+	actor: any,
+	scale: number = 1,
+	floatRight: boolean = false
+): Promise<any> {
+	actor.scaling = new Vector3(scale, scale, scale);
+
+	const speed = 0.03 + Math.random() * 0.04;
+	const height = Math.random() * 1;
+	const positionX = floatRight ? 25 : -20;
+
+	let positionZ = -50;
+
+	const startOffset = Math.random() * 40;
+	positionZ += floatRight ? -startOffset : startOffset;
+
+	let time = Math.random() * Math.PI * 2;
+
+	const floatSpeed = 0.003 + Math.random() * 0.003;
+	const floatAmplitude = 0.2 + Math.random() * 0.3;
+
+	scene.onBeforeRenderObservable.add(() => {
+		positionZ += speed;
+		if (positionZ > 50) positionZ = -50;
+
+		time += floatSpeed;
+		const floatOffset = Math.sin(time) * floatAmplitude;
+
+		const distanceFromCenter = Math.abs(positionZ);
+		const maxDistance = 30;
+		
+		const distanceScale = 1.0 - (distanceFromCenter / maxDistance) * 0.3;
+		const finalScale = 1 * distanceScale;
+
+		actor.position.x = positionX;
+		actor.position.y = height + floatOffset;
+		actor.position.z = positionZ;
+
+		actor.scaling = new Vector3(finalScale, finalScale, finalScale);
+	});
+
+	return actor;
+}
+
 export async function createActor(
 	scene: Scene,
-	config: ActorConfig
+	config: ActorConfig,
+	index: number = 0
 ): Promise<any> {
 	const scale = config.scale ?? 1;
 	const actor = await loadOrCloneActor(scene, config.model, config.type);
@@ -120,6 +166,9 @@ export async function createActor(
 		case 'swimming':
 			const swimLeft = config.model.includes('fish1');
 			return createSwimmingActor(scene, actor, scale, swimLeft);
+		case 'floating':
+			const floatRight = index % 2 === 1;
+			return createFloatingActor(scene, actor, scale, floatRight);
 		default:
 			throw new Error(`Unknown actor type: ${config.type}`);
 	}

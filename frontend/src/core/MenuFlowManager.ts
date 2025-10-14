@@ -65,47 +65,47 @@ export class MenuFlowManager {
 		return MenuFlowManager.instance;
 	}
 
-    static initialize(): void {
-        // Ensure DOM is fully loaded before initializing
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', () => {
-                const menuFlowManager = MenuFlowManager.getInstance();
-                menuFlowManager.setupEventListeners();
+	static initialize(): void {
+		// Ensure DOM is fully loaded before initializing
+		if (document.readyState === 'loading') {
+			document.addEventListener('DOMContentLoaded', () => {
+				const menuFlowManager = MenuFlowManager.getInstance();
+				menuFlowManager.setupEventListeners();
 				menuFlowManager.updateViewModeButtonStyles();
-            });
-        } else {
-            // DOM is already loaded
-            const menuFlowManager = MenuFlowManager.getInstance();
-            menuFlowManager.setupEventListeners();
+			});
+		} else {
+			// DOM is already loaded
+			const menuFlowManager = MenuFlowManager.getInstance();
+			menuFlowManager.setupEventListeners();
 			menuFlowManager.updateViewModeButtonStyles();
-        }
-    }
+		}
+	}
 
 	// ========================================
 	// EVENT LISTENERS SETUP
 	// ========================================
 
-    private setupEventListeners(): void {
-        try {
-            // Setup navigation listeners (includes view mode, difficulty, and tournament navigation)
-            this.setupNavigationListeners();
-            
-            // Game mode selection buttons
-            this.setupGameModeButtons();
-            this.setupPlayerSetupListeners();
-            this.showDashboard();
-            
-            // Initialize UI displays
-            uiManager.updateAIDifficultyDisplay(this.currentAiDifficultyIndex);
-            uiManager.updateTournamentSizeDisplay(this.currentTournamentIndex);
+	private setupEventListeners(): void {
+		try {
+			// Setup navigation listeners (includes view mode, difficulty, and tournament navigation)
+			this.setupNavigationListeners();
+			
+			// Game mode selection buttons
+			this.setupGameModeButtons();
+			this.setupPlayerSetupListeners();
+			this.showDashboard();
+			
+			// Initialize UI displays
+			uiManager.updateAIDifficultyDisplay(this.currentAiDifficultyIndex);
+			uiManager.updateTournamentSizeDisplay(this.currentTournamentIndex);
 			this.updateTournamentSize(false, 'reset');
 			this.updateTournamentSize(true, 'reset');
-            uiManager.updateOnlineTournamentSizeDisplay(this.currentOnlineTournamentIndex);
-            
-        } catch (error) {
-            console.error(`Failed to setup event listeners: ${error}`, 'MenuFlowManager');
-        }
-    }
+			uiManager.updateOnlineTournamentSizeDisplay(this.currentOnlineTournamentIndex);
+			
+		} catch (error) {
+			console.error(`Failed to setup event listeners: ${error}`, 'MenuFlowManager');
+		}
+	}
 
 	private setupNavigationListeners(): void {
 		try {
@@ -123,11 +123,11 @@ export class MenuFlowManager {
 	
 			// View mode navigation
 			elements.viewModeClassic.addEventListener('click', () => {
-                this.setViewMode(ViewMode.MODE_2D);
-            });
-            elements.viewModeImmersive.addEventListener('click', () => {
-                this.setViewMode(ViewMode.MODE_3D);
-            });
+				this.setViewMode(ViewMode.MODE_2D);
+			});
+			elements.viewModeImmersive.addEventListener('click', () => {
+				this.setViewMode(ViewMode.MODE_3D);
+			});
 			
 			// Dashboard back button
 			elements.backBtn.addEventListener('click', () => { 
@@ -459,25 +459,25 @@ export class MenuFlowManager {
 	// ========================================
 	// VIEW MODE MANAGEMENT
 	// ========================================
-	    private setViewMode(viewMode: ViewMode): void {
+		private setViewMode(viewMode: ViewMode): void {
 			this.selectedViewMode = viewMode;
-        	this.updateViewModeButtonStyles();
+			this.updateViewModeButtonStyles();
 		}
 
 	private updateViewModeButtonStyles(): void {
-        const classicBtn = requireElementById<HTMLButtonElement>(EL.BUTTONS.VIEW_MODE_CLASSIC);
-        const immersiveBtn = requireElementById<HTMLButtonElement>(EL.BUTTONS.VIEW_MODE_IMMERSIVE);
-        const t = getCurrentTranslation();
+		const classicBtn = requireElementById<HTMLButtonElement>(EL.BUTTONS.VIEW_MODE_CLASSIC);
+		const immersiveBtn = requireElementById<HTMLButtonElement>(EL.BUTTONS.VIEW_MODE_IMMERSIVE);
+		const t = getCurrentTranslation();
 
-        // Reset both buttons to inactive state
-        classicBtn.className = "bg-transparent text-light-green font-poppins-semibold text-lg px-4 py-3 transition-colors duration-200 border border-light-green rounded-sm min-w-[120px]";
-        immersiveBtn.className = "bg-transparent text-light-green font-poppins-semibold text-lg px-4 py-3 transition-colors duration-200 border border-light-green rounded-sm min-w-[120px]";
-        
-        // Set active button style
-        if (this.selectedViewMode === ViewMode.MODE_2D) {
-            classicBtn.className = "bg-orange text-blue-background font-poppins-semibold text-lg px-4 py-3 transition-colors duration-200 border border-orange rounded-sm min-w-[120px]";
-        } else {
-            immersiveBtn.className = "bg-orange text-blue-background font-poppins-semibold text-lg px-4 py-3 transition-colors duration-200 border border-orange rounded-sm min-w-[120px]";
-        }
-    }
+		// Reset both buttons to inactive state
+		classicBtn.className = "bg-transparent text-light-green font-poppins-semibold text-lg px-4 py-3 transition-colors duration-200 border border-light-green rounded-sm min-w-[120px]";
+		immersiveBtn.className = "bg-transparent text-light-green font-poppins-semibold text-lg px-4 py-3 transition-colors duration-200 border border-light-green rounded-sm min-w-[120px]";
+		
+		// Set active button style
+		if (this.selectedViewMode === ViewMode.MODE_2D) {
+			classicBtn.className = "bg-orange text-blue-background font-poppins-semibold text-lg px-4 py-3 transition-colors duration-200 border border-orange rounded-sm min-w-[120px]";
+		} else {
+			immersiveBtn.className = "bg-orange text-blue-background font-poppins-semibold text-lg px-4 py-3 transition-colors duration-200 border border-orange rounded-sm min-w-[120px]";
+		}
+	}
 }

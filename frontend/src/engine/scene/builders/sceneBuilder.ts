@@ -7,7 +7,7 @@ import { MapAssetConfig } from "../config/sceneTypes.js";
 import { createActor } from "../entities/animatedProps.js";
 import { createBall, createBallCage, createBallGlowEffect, createGameField, createPaddleCage, createPaddleGlowEffect, createPlayer, createWallGlowEffect, createWallLineGlowEffect, createWalls } from '../entities/gameObjects.js';
 import { createStaticObject, createStaticObjects } from "../entities/staticProps.js";
-import { createDustParticleSystem, createFog, createLensFlare, createRainParticles, createSnow, createUnderwaterParticles } from '../rendering/effects.js';
+import { createDustParticleSystem, createFog, createLensFlare, createRainParticles, createSmokeSprite, createSnow, createUnderwaterParticles, createStarsParticles } from '../rendering/effects.js';
 import { createCameras, createGuiCamera } from "./camerasBuilder.js";
 import { createEnvironment, createLight, createTerrain } from './enviromentBuilder.js';
 
@@ -28,10 +28,10 @@ export async function buildScene (
 	let themeObjects: ThemeObject = { props: [], actors: [], effects: [] };
 
 	const map_asset = viewMode === ViewMode.MODE_2D 
-		? MAP_CONFIGS.map : MAP_CONFIGS.map3
+		? MAP_CONFIGS.map : MAP_CONFIGS.map0
 
 	const lights = createLight(scene, "light1", viewMode, map_asset.light);
-	const gameField = createGameField(scene, "ground", viewMode, map_asset.ground);
+	const gameField = createGameField(scene, "ground", viewMode, map_asset);
 	const walls = createWalls(scene, "walls", viewMode, map_asset.walls);
 	onProgress?.(20);
 	
@@ -63,7 +63,7 @@ export async function buildScene (
 	const rightShield = createWallGlowEffect(scene, "rightShield", PlayerSide.RIGHT);
 
 	onProgress?.(60);
-	if (viewMode === ViewMode.MODE_3D)
+	// if (viewMode === ViewMode.MODE_3D)
 		await build3DThemeObjects(scene, map_asset, themeObjects, onProgress);
 
 
@@ -109,9 +109,9 @@ async function build3DThemeObjects(
 ): Promise<void> {
 	createEnvironment(scene, map_asset.skybox);
 	if (map_asset.terrain)
-		createTerrain(scene, "terrain", map_asset.terrain);
+		createTerrain(scene, "terrain", map_asset.terrain, map_asset);
 
-	if (map_asset === MAP_CONFIGS.map0 || map_asset === MAP_CONFIGS.map4) {
+	if (map_asset === MAP_CONFIGS.map0 || map_asset === MAP_CONFIGS.map4 || map_asset === MAP_CONFIGS.map6) {
 		for (const propData of map_asset.staticObjects) {
 			const mesh = await createStaticObject(scene, propData); 
 			themeObjects?.props.push(mesh);
@@ -125,7 +125,7 @@ async function build3DThemeObjects(
 	for (const actorConfig of map_asset.actors) {
 		for (let i = 0; i < actorConfig.count; i++) {
 			try {
-				const actor = await createActor(scene, actorConfig);
+				const actor = await createActor(scene, actorConfig, i);
 				if (actor) {
 					themeObjects?.actors.push(actor);
 				}
@@ -156,10 +156,20 @@ async function build3DThemeObjects(
 		themeObjects.effects.push(lensFlare);
 	}
 
+	if (map_asset.particleType === 'smoke') {
+		const smoke = createSmokeSprite(scene);
+		themeObjects.effects.push(smoke);
+	}
+
+	if (map_asset.particleType === 'stars') {
+		const stars = createStarsParticles(scene);
+		themeObjects.effects.push(stars);
+	}
+
 	if (map_asset.fogColor)
 		createFog(scene, map_asset.fogColor, map_asset.fogIntensity);
 
-	if (map_asset.glow > 0.5)
+	if (map_asset === MAP_CONFIGS.map0)
 		createWallLineGlowEffect(scene, themeObjects);
 		
 	if (map_asset.particleType === 'rain') {

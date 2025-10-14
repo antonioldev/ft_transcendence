@@ -1,6 +1,11 @@
 import { Color3 } from "@babylonjs/core";
 import { MAP_OBJECT_TYPE, MapAssetConfig, StaticObject } from "./sceneTypes.js";
 
+import mapLinesRaw from "../data/staticObjects/map.json";
+const mapLines = mapLinesRaw as {
+	lines: StaticObject[];
+};
+
 import map0BuildingsRaw from "../data/staticObjects/map0.json";
 const map0Buildings = map0BuildingsRaw as {
 	building1: StaticObject[];
@@ -35,6 +40,17 @@ const map4Snow = map4SnowRaw as {
 	castle: StaticObject[];
 	castle2: StaticObject[];
 	tree: StaticObject[];
+}
+
+import map5VolcanoRaw from "../data/staticObjects/map5.json";
+const map5Volcano = map5VolcanoRaw as {
+	stone: StaticObject[];
+	stone2: StaticObject[];
+}
+
+import map6SpaceRaw from "../data/staticObjects/map6.json";
+const map6Space = map6SpaceRaw as {
+	asteroid: StaticObject[];
 }
 
 const ASSET_BASE = "assets";
@@ -73,7 +89,9 @@ export const MAP_CONFIGS: Record<string, MapAssetConfig> = {
 		ball: simpleColor("#FFFFFF"),
 		paddle: simpleColor("#A0C878"),
 		terrain: null,
-		staticObjects: [],
+		staticObjects: [
+			...mapLines.lines
+		],
 		skybox: null,
 		fogColor: null,
 		fogIntensity: 0,
@@ -87,7 +105,7 @@ export const MAP_CONFIGS: Record<string, MapAssetConfig> = {
 		walls: simpleColor("#281352"),
 		ball: simpleColor("#cfcfcf"),
 		paddle: simpleColor("#1a4d7a"),
-		terrain: createTextureSet('map0', 'terrain', "#281352"),
+		terrain: simpleColor("#281352"),
 		staticObjects: [
 			...map0Buildings.building1,
 			...map0Buildings.building2,
@@ -187,40 +205,50 @@ export const MAP_CONFIGS: Record<string, MapAssetConfig> = {
 		actors: []
 	},
 	map5: {
-		ground: createTextureSet('map4', 'ground', "#ffffff"),
-		walls: createTextureSet('map4', 'terrain', "#ffffff"),
-		ball: simpleColor("#fff9f9ff"),
-		paddle: simpleColor("#ff8c00ff"),
-		terrain: createTextureSet('map4', 'terrain', "#ffffff", true),
+		ground: createTextureSet('map5', 'ground', "#490f00"),
+		walls: simpleColor("#8B0000"),
+		ball: simpleColor("#c9ab00ff"),
+		paddle: simpleColor("#b66700"),
+		terrain: simpleColor("#FF4500"),
 		staticObjects: [
+			...map5Volcano.stone,
+			...map5Volcano.stone2
 		],
-		skybox: AssetPaths.sky('map4', 'sky'), // CHANGE
-		fogColor: new Color3(0.8, 0.85, 0.95),
-		fogIntensity: 0.001,
-		particleType: null,
-		light: 0.6,
-		glow: 0.3,
+		skybox:AssetPaths.sky('map5', 'sky2'),
+		fogColor: null,
+		fogIntensity: 0,
+		particleType: 'smoke',
+		light: 0.5,
+		glow: 0.4,
 		actors: []
+	},
+	map6: {
+		ground: simpleColor("#000000"),
+		walls: simpleColor("#000000"),
+		ball: simpleColor("#fd8610"),
+		paddle: simpleColor("#d4d4d4"),
+		terrain: simpleColor("#000000"),
+		staticObjects: [
+			...map6Space.asteroid
+		],
+		skybox:AssetPaths.sky('map6', 'sky'),
+		fogColor: new Color3(0.1, 0.1, 0.1),
+		fogIntensity: 0.01,
+		particleType: 'stars',
+		light: 0.2,
+		glow: 0.4,
+		actors: [
+			{ model: 'assets/model/map6/asteroidGroup.glb', count: 2, type: 'floating', scale: 1 },
+		]
 	}
 };
-
-// export const TEXTURE_SCALING = {
-// 	standardDivisor: 10,
-// 	multipliers: {
-// 		[MAP_OBJECT_TYPE.GROUND]: 1.0,
-// 		[MAP_OBJECT_TYPE.WALLS]: 1.0,
-// 		[MAP_OBJECT_TYPE.TERRAIN]: 1.0,
-// 		[MAP_OBJECT_TYPE.PLAYER]: 5.0,
-// 		[MAP_OBJECT_TYPE.BALL]: 8.0
-// 	}
-// };
 export const TEXTURE_SCALING = {
 	standardDivisor: 10,
 	multipliers: {
-		[MAP_OBJECT_TYPE.GROUND]: 1.0,        // 200x400 area = u:20, v:40
-		[MAP_OBJECT_TYPE.WALLS]: 1.0,         // Same as ground scale
-		[MAP_OBJECT_TYPE.TERRAIN]: 0.1,       // 2000x4000 area = u:20, v:40 (same visual density as ground)
-		[MAP_OBJECT_TYPE.PLAYER]: 0.33,       // 3 width paddle = u:0.1, v:0.1
-		[MAP_OBJECT_TYPE.BALL]: 13.33         // 0.3 radius = u:0.4, v:0.4
+		[MAP_OBJECT_TYPE.GROUND]: 1.0,
+		[MAP_OBJECT_TYPE.WALLS]: 1.0,
+		[MAP_OBJECT_TYPE.TERRAIN]: 1,
+		[MAP_OBJECT_TYPE.PLAYER]: 0.33,
+		[MAP_OBJECT_TYPE.BALL]: 13.33
 	}
 };

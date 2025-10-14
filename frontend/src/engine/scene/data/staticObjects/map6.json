@@ -1,0 +1,5 @@
+{
+    "asteroid": [
+        { "model": "assets/model/map6/asteroid12.glb", "pos": [0, 0, 0], "rot": 0.00, "scale": 1 }
+    ]
+}

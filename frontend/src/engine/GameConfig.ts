@@ -43,7 +43,7 @@ export class GameConfigFactory {
 	}
 
 	// Convert stored player names to PlayerInfo objects
-	static getPlayers(gameMode: GameMode): PlayerInfo[] {
+	static getPlayers(): PlayerInfo[] {
 		return this.playerNames.map(name => ({
 			id: name,
 			name: name,
@@ -65,7 +65,7 @@ export class GameConfigFactory {
 	static createWithAuthCheck(viewMode: ViewMode, gameMode: GameMode): GameConfig {
 		const players = authManager.isUserAuthenticated()
 			? this.getAuthenticatedPlayer()
-			: this.getPlayers(gameMode);
+			: this.getPlayers();
 
 		return this.createConfig(viewMode, gameMode, players);
 	}
