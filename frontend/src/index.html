@@ -25,11 +25,9 @@
     </div>
     
     <!-- Main Menu -->
-    <main id="main-menu" class="contents">
-        <!-- ft_transcendence in top left -->
+    <main id="main-menu" class="screen flex flex-col items-center justify-center h-full text-center">
         <div class="absolute top-4 left-5 flex items-center gap-2">
-            <div id="connection-status"
-                class="connection-status text-xs text-light-green opacity-80 min-w-[16px] min-h-[16px] flex items-center justify-center">
+            <div id="connection-status" class="connection-status text-xs text-light-green opacity-80 min-w-[16px] min-h-[16px] flex items-center justify-center">
                 🟡
             </div>
             <h2 class="text-light-green font-tiny5-regular text-sm sm:text-base md:text-lg">
@@ -38,7 +36,7 @@
         </div>
         
         <!-- Centered Battle Pong text -->
-        <div class="bg-blue-background flex flex-col items-center justify-center h-screen">
+        <div class="flex flex-col items-center justify-center">
             <h1 id="main-title" class="font-tiny5-regular text-light-green text-6xl sm:text-8xl md:text-9xl lg:text-10xl xl:text-[10rem] 2xl:text-[12rem] text-center select-none">
                 <span class="animate-bounce-letter-1">B</span>
                 <span class="animate-bounce-letter-2">A</span>
@@ -88,8 +86,8 @@
         </nav>
     </main>
 
-    <!-- Setting Menu (Hidden) -->
-     <div id="setting-menu" class="fixed inset-0 bg-blue-background flex items-center justify-center" style="display: none;">
+    <!-- Settings Menu (Hidden) -->
+    <div id="settings-menu" class="fixed inset-0 bg-blue-background flex items-center justify-center" style="display: none;">
         <div class="h-full flex items-center justify-center px-4 sm:px-8 md:px-16 lg:px-40 py-8 sm:py-12">
             <div class="w-full max-w-sm sm:max-w-md mx-auto space-y-6 sm:space-y-8">
                 <div>
@@ -141,55 +139,9 @@
                         Back to Main Menu
                     </button>
                 </div>
-     </div>
-
-         <!-- Language selector - Fixed in top right for all screens -->
-    <!-- <div id="language-selector" class="fixed top-4 right-4 z-50 flex items-center gap-2">
-        <button type="button" 
-                id="back" 
-                class="text-light-green hover:text-white transition-colors duration-200 
-                    font-tiny5-regular text-lg px-2">
-            ←
-        </button>
-        <span id="language_select" 
-            class="text-light-green font-tiny5-regular text-lg min-w-[80px] text-center">
-            ENGLISH
-        </span>
-        <button type="button" 
-                id="forward" 
-                class="text-light-green hover:text-white transition-colors duration-200 
-                    font-tiny5-regular text-lg px-2">
-            →
-        </button>
-    </div> -->
-
-<!-- <form class="max-w-sm mx-auto">
-  <label for="small" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Small select</label>
-  <select id="small" class="block w-full p-2 mb-6 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-    <option selected>Choose a country</option>
-    <option value="US">United States</option>
-    <option value="CA">Canada</option>
-    <option value="FR">France</option>
-    <option value="DE">Germany</option>
-  </select>
-  <label for="default" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Default select</label>
-  <select id="default" class="bg-gray-50 border border-gray-300 text-gray-900 mb-6 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-    <option selected>Choose a country</option>
-    <option value="US">United States</option>
-    <option value="CA">Canada</option>
-    <option value="FR">France</option>
-    <option value="DE">Germany</option>
-  </select>
-  <label for="large" class="block mb-2 text-base font-medium text-gray-900 dark:text-white">Large select</label>
-  <select id="large" class="block w-full px-4 py-3 text-base text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-    <option selected>Choose a country</option>
-    <option value="US">United States</option>
-    <option value="CA">Canada</option>
-    <option value="FR">France</option>
-    <option value="DE">Germany</option>
-  </select>
-</form> -->
-
+            </div>
+        </div>
+    </div>
 
     <!-- Login Page (Hidden) -->
     <div id="login-modal" class="fixed inset-0 bg-blue-background flex items-center justify-center" style="display: none;">

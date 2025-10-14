@@ -26,7 +26,7 @@ class UIManager {
             'player-setup-overlay',
             'game-3d',
             'stats-dashboard',
-            'setting-menu'
+            'settings-menu'
         ];
         
         screensToHide.forEach(id => {
@@ -36,22 +36,11 @@ class UIManager {
             }
         });
 
-        const screen = document.getElementById(screenId);
-        if (screen) {
-            const displayValue = screenId === 'main-menu' ? 'block' : 'flex';
-            screen.style.display = displayValue;
+        const screenToShow = document.getElementById(screenId);
+        if (screenToShow) {
+            screenToShow.style.display = 'flex';
         } else {
             console.error(`Screen element not found: ${screenId}`);
-        }
-
-        // Hide language selector during game screens
-        const languageSelector = document.getElementById('language-selector');
-        if (languageSelector) {
-            if (screenId === 'game-3d') {
-                languageSelector.style.display = 'none';
-            } else {
-                languageSelector.style.display = 'flex';
-            }
         }
     }
 
