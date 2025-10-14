@@ -8,16 +8,20 @@ import { generateClientId } from '../data/database.js';
  */
 export class Client {
     id: string = generateClientId();
-    username: string;       // Username for future authentication (not used yet)
-    email: string;       // email for future authentication (not used yet)
-    websocket: any;
-    loggedIn: boolean;      // Whether this client is authenticated
+    sid: string;
+    username: string = "default";       // Username for future authentication (not used yet)
+    email: string = "default@default";          // email for future authentication (not used yet)
+    websocket?: any;        // websocket is assigned when they join their first game
+    loggedIn: boolean = false;      // Whether this client is authenticated
+    is_connected: Boolean = true;
 
-    constructor(username: string, email: string, websocket: any) {
+    constructor(sid: string) {
+        this.sid = sid;
+    }
+
+    setInfo(username: string, email: string) {
         this.username = username;       // Keep for future use
         this.email = email;       // Keep for future use
-        this.websocket = websocket;
-        this.loggedIn = false;          // Default to not logged in
     }
 }
 
