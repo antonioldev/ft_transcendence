@@ -274,7 +274,7 @@ private testPowerupEffects(): void {
 		const cams = this.scene?.activeCameras?.length ? this.scene.activeCameras : this.scene?.activeCamera;
 		this.services?.particles?.spawnFireworksInFrontOfCameras(this.scene, cams);
 		await this.services?.gui?.showWinner(winner);
-		await this.services?.gui.curtain.play(200);
+		await this.services?.gui.curtain.play();
 		this.services?.audio?.stopGameMusic();
 		this.dispose();
 
@@ -449,12 +449,10 @@ private testPowerupEffects(): void {
 // ====================			GAME LIFECYCLE			   ====================
 	async requestExitToMenu(): Promise<void> {
 		if (!this.isInitialized) return;
-		await this.services?.gui.curtain.play(200);
+		await this.services?.gui.curtain.play();
 		if (webSocketClient.isConnected())
 			webSocketClient.sendQuitGame();
 		await this.dispose();
-		// Navigate to main menu after disposal is complete
-		// appStateManager.navigateTo(AppState.MAIN_MENU);
 	}
 
 // ====================			WEBSOCKET				  ====================

@@ -68,6 +68,7 @@ export class SceneTransition {
 	async hide(): Promise<void> {
 		if (!this.isActive) return;
 
+		await new Promise(resolve => setTimeout(resolve, 400));
 		this.isActive = false;
 		const { width } = this.adt.getSize();
 		
@@ -86,9 +87,8 @@ export class SceneTransition {
 		this.resetPositions();
 	}
 
-	async play(duration: number = 100): Promise<void> {
+	async play(): Promise<void> {
 		await this.show();
-		await new Promise(resolve => setTimeout(resolve, duration));
 		await this.hide();
 	}
 
