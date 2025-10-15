@@ -1,7 +1,7 @@
 import { AdvancedDynamicTexture, Rectangle } from "@babylonjs/gui";
+import { getCurrentTranslation } from "../../translations/translations.js";
 import { AnimationManager, Motion } from "../services/AnimationManager.js";
 import { createRect, createTextBlock, CURTAIN_STYLES } from "./GuiStyle.js";
-import { getCurrentTranslation } from "../../translations/translations.js";
 
 export class SceneTransition {
 	private leftPaddle!: Rectangle;
@@ -55,10 +55,10 @@ export class SceneTransition {
 		this.rightPaddle.leftInPixels = width / 2 - 40;
 		
 		await Promise.all([
-			this.animationManager.slideFromDirection(this.leftBackground, 'right', 'in', width / 2, Motion.F.slow),
-			this.animationManager.slideFromDirection(this.rightBackground, 'left', 'in', width / 2, Motion.F.slow),
-			this.animationManager.slideFromDirection(this.leftPaddle, 'right', 'in', width / 2 + 40, Motion.F.slow),
-			this.animationManager.slideFromDirection(this.rightPaddle, 'left', 'in', width / 2 + 40, Motion.F.slow)
+			this.animationManager.slideFromDirection(this.leftBackground, 'right', 'in', width / 2, Motion.F.base),
+			this.animationManager.slideFromDirection(this.rightBackground, 'left', 'in', width / 2, Motion.F.base),
+			this.animationManager.slideFromDirection(this.leftPaddle, 'right', 'in', width / 2 + 40, Motion.F.base),
+			this.animationManager.slideFromDirection(this.rightPaddle, 'left', 'in', width / 2 + 40, Motion.F.base)
 		]);
 
 		if(isSpectator)
@@ -68,6 +68,7 @@ export class SceneTransition {
 	async hide(): Promise<void> {
 		if (!this.isActive) return;
 
+		await new Promise(resolve => setTimeout(resolve, 400));
 		this.isActive = false;
 		const { width } = this.adt.getSize();
 		
@@ -86,9 +87,8 @@ export class SceneTransition {
 		this.resetPositions();
 	}
 
-	async play(duration: number = 100): Promise<void> {
+	async play(): Promise<void> {
 		await this.show();
-		await new Promise(resolve => setTimeout(resolve, duration));
 		await this.hide();
 	}
 

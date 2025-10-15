@@ -1,13 +1,15 @@
-import { Logger } from '../utils/LogManager.js';
-import { GameMode, ViewMode, AppState, AiDifficulty } from '../shared/constants.js';
-import { uiManager } from '../ui/UIManager.js';
-import { authManager } from './AuthManager.js';
+import { GameConfigFactory } from '../engine/GameConfig.js';
+import { AiDifficulty, AppState, GameMode, ViewMode } from '../shared/constants.js';
 import { getCurrentTranslation } from '../translations/translations.js';
+import { EL, requireElementById } from '../ui/elements.js';
+import { uiManager } from '../ui/UIManager.js';
+import { Logger } from '../utils/LogManager.js';
+import { appStateManager } from './AppStateManager.js';
+import { authManager } from './AuthManager.js';
 import { dashboardManager } from './DashboardManager.js';
 import { webSocketClient } from './WebSocketClient.js';
-import { appStateManager } from './AppStateManager.js';
-import { EL, requireElementById} from '../ui/elements.js';
-import { GameConfigFactory } from '../engine/GameConfig.js';
+import { currentSettings } from './AppStateManager.js';
+import { updateLanguageDisplay } from '../translations/translations.js';
 
 /**
  * Manages the selection and initialization of game modes and view modes for the application.
@@ -19,7 +21,6 @@ export class MenuFlowManager {
 	private static instance: MenuFlowManager;
 	private selectedViewMode: ViewMode = ViewMode.MODE_2D;
 	private selectedGameMode: GameMode | null = null;
-	// private currentViewModeIndex = 0;
 	private currentAiDifficultyIndex: AiDifficulty = AiDifficulty.EASY;
 	private currentTournamentIndex: number = 4;
 	private currentOnlineTournamentIndex: number = 4;
@@ -66,21 +67,21 @@ export class MenuFlowManager {
 		return MenuFlowManager.instance;
 	}
 
-    static initialize(): void {
-        // Ensure DOM is fully loaded before initializing
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', () => {
-                const menuFlowManager = MenuFlowManager.getInstance();
-                menuFlowManager.setupEventListeners();
+	static initialize(): void {
+		// Ensure DOM is fully loaded before initializing
+		if (document.readyState === 'loading') {
+			document.addEventListener('DOMContentLoaded', () => {
+				const menuFlowManager = MenuFlowManager.getInstance();
+				menuFlowManager.setupEventListeners();
 				menuFlowManager.updateViewModeButtonStyles();
-            });
-        } else {
-            // DOM is already loaded
-            const menuFlowManager = MenuFlowManager.getInstance();
-            menuFlowManager.setupEventListeners();
+			});
+		} else {
+			// DOM is already loaded
+			const menuFlowManager = MenuFlowManager.getInstance();
+			menuFlowManager.setupEventListeners();
 			menuFlowManager.updateViewModeButtonStyles();
-        }
-    }
+		}
+	}
 
 	// ========================================
 	// EVENT LISTENERS SETUP
@@ -95,18 +96,19 @@ export class MenuFlowManager {
             this.setupGameModeButtons();
             this.setupPlayerSetupListeners();
             this.showDashboard();
+            this.setupSettingsButton();
             
             // Initialize UI displays
             uiManager.updateAIDifficultyDisplay(this.currentAiDifficultyIndex);
             uiManager.updateTournamentSizeDisplay(this.currentTournamentIndex);
 			this.updateTournamentSize(false, 'reset');
 			this.updateTournamentSize(true, 'reset');
-            uiManager.updateOnlineTournamentSizeDisplay(this.currentOnlineTournamentIndex);
-            
-        } catch (error) {
-            console.error(`Failed to setup event listeners: ${error}`, 'MenuFlowManager');
-        }
-    }
+			uiManager.updateOnlineTournamentSizeDisplay(this.currentOnlineTournamentIndex);
+			
+		} catch (error) {
+			console.error(`Failed to setup event listeners: ${error}`, 'MenuFlowManager');
+		}
+	}
 
 	private setupNavigationListeners(): void {
 		try {
@@ -114,6 +116,7 @@ export class MenuFlowManager {
 				viewModeClassic: requireElementById<HTMLButtonElement>(EL.BUTTONS.VIEW_MODE_CLASSIC),
 				viewModeImmersive: requireElementById<HTMLButtonElement>(EL.BUTTONS.VIEW_MODE_IMMERSIVE),
 				backBtn: requireElementById<HTMLButtonElement>(EL.BUTTONS.DASHBOARD_BACK),
+				settingsBackBtn: requireElementById<HTMLButtonElement>(EL.BUTTONS.SETTINGS_BACK),
 				soloDifficultyBack: requireElementById<HTMLButtonElement>(EL.BUTTONS.SOLO_DIFFICULTY_BACK),
 				soloDifficultyForward: requireElementById<HTMLButtonElement>(EL.BUTTONS.SOLO_DIFFICULTY_FORWARD),
 				tournamentNumberBack: requireElementById<HTMLButtonElement>(EL.BUTTONS.TOURNAMENT_NUMBER_BACK),
@@ -124,14 +127,19 @@ export class MenuFlowManager {
 	
 			// View mode navigation
 			elements.viewModeClassic.addEventListener('click', () => {
-                this.setViewMode(ViewMode.MODE_2D);
-            });
-            elements.viewModeImmersive.addEventListener('click', () => {
-                this.setViewMode(ViewMode.MODE_3D);
-            });
+				this.setViewMode(ViewMode.MODE_2D);
+			});
+			elements.viewModeImmersive.addEventListener('click', () => {
+				this.setViewMode(ViewMode.MODE_3D);
+			});
 			
 			// Dashboard back button
 			elements.backBtn.addEventListener('click', () => { 
+				appStateManager.navigateTo(AppState.MAIN_MENU);
+			});
+			
+			// Settings back button
+			elements.settingsBackBtn.addEventListener('click', () => { 
 				appStateManager.navigateTo(AppState.MAIN_MENU);
 			});
 			
@@ -178,6 +186,75 @@ export class MenuFlowManager {
 		this.selectedGameMode = null;
 
 		appStateManager.navigateTo(target);
+	}
+
+	// ========================================
+	// SETTINGS BUTTON
+	// ========================================
+	
+	private setupSettingsButton(): void {
+		const settingsBtn = requireElementById<HTMLButtonElement>(EL.BUTTONS.SETTINGS);
+		settingsBtn?.addEventListener('click', () => {
+			appStateManager.navigateTo(AppState.SETTINGS);
+		});
+
+		this.setupLanguageSelector();
+		this.setupSceneSelector();
+		this.setupGameMusicEnable();
+		this.setupGameEffectsEnabled();
+	}
+
+	private setupSceneSelector(): void {
+		const sceneSelect = document.getElementById('map-selector') as HTMLSelectElement;
+		if (sceneSelect) {
+			sceneSelect.value = currentSettings.scene3D;
+
+			sceneSelect.addEventListener('change', (event) => {
+				const target = event.target as HTMLSelectElement;
+				if (target)
+					currentSettings.scene3D = target.value;
+			});
+		}
+	}
+
+	private setupGameMusicEnable(): void { 
+		const musicToggle = document.getElementById('music-toggle') as HTMLInputElement;
+		if (musicToggle) {
+			musicToggle.checked = currentSettings.musicEnabled;
+
+			musicToggle.addEventListener('change', (event) => {
+				const target = event.target as HTMLInputElement;
+				currentSettings.musicEnabled = target.checked;
+			});
+		}
+	}
+
+	private setupGameEffectsEnabled(): void {
+		const effectsToggle = document.getElementById('sound-effect-toggle') as HTMLInputElement;
+		if (effectsToggle) {
+			effectsToggle.checked = currentSettings.musicEnabled;
+
+			effectsToggle.addEventListener('change', (event) => {
+				const target = event.target as HTMLInputElement;
+				currentSettings.musicEnabled = target.checked;
+			});
+		}
+	}
+
+	private setupLanguageSelector(): void {
+		updateLanguageDisplay();
+		const languageSelect = document.getElementById('language_select') as HTMLSelectElement;
+		if (languageSelect) {
+			languageSelect.addEventListener('change', (event) => {
+				const target = event.target as HTMLSelectElement;
+				const languageMapping = ['UK', 'IT', 'FR', 'BR', 'RU'];
+				const newLangIndex = languageMapping.indexOf(target.value);
+				if (newLangIndex !== -1) {
+					currentSettings.lang = newLangIndex;
+					updateLanguageDisplay();
+				}
+			});
+		}
 	}
 
 	// ========================================
@@ -460,27 +537,24 @@ export class MenuFlowManager {
 	// ========================================
 	// VIEW MODE MANAGEMENT
 	// ========================================
-	    private setViewMode(viewMode: ViewMode): void {
+		private setViewMode(viewMode: ViewMode): void {
 			this.selectedViewMode = viewMode;
-        	this.updateViewModeButtonStyles();
+			this.updateViewModeButtonStyles();
 		}
 
 	private updateViewModeButtonStyles(): void {
-        const classicBtn = requireElementById<HTMLButtonElement>(EL.BUTTONS.VIEW_MODE_CLASSIC);
-        const immersiveBtn = requireElementById<HTMLButtonElement>(EL.BUTTONS.VIEW_MODE_IMMERSIVE);
-        const t = getCurrentTranslation();
+		const classicBtn = requireElementById<HTMLButtonElement>(EL.BUTTONS.VIEW_MODE_CLASSIC);
+		const immersiveBtn = requireElementById<HTMLButtonElement>(EL.BUTTONS.VIEW_MODE_IMMERSIVE);
 
-        // Reset both buttons to inactive state
-        classicBtn.className = "bg-transparent text-light-green font-poppins-semibold text-lg px-4 py-3 transition-colors duration-200 border border-light-green rounded-sm min-w-[120px]";
-        immersiveBtn.className = "bg-transparent text-light-green font-poppins-semibold text-lg px-4 py-3 transition-colors duration-200 border border-light-green rounded-sm min-w-[120px]";
-        
-        // Set active button style
-        if (this.selectedViewMode === ViewMode.MODE_2D) {
-            classicBtn.className = "bg-orange text-blue-background font-poppins-semibold text-lg px-4 py-3 transition-colors duration-200 border border-orange rounded-sm min-w-[120px]";
-        } else {
-            immersiveBtn.className = "bg-orange text-blue-background font-poppins-semibold text-lg px-4 py-3 transition-colors duration-200 border border-orange rounded-sm min-w-[120px]";
-        }
-    }
+		// Reset both buttons to inactive state
+		classicBtn.className = "bg-transparent text-light-green font-poppins-semibold text-lg px-4 py-3 transition-colors duration-200 border border-light-green rounded-sm min-w-[120px]";
+		immersiveBtn.className = "bg-transparent text-light-green font-poppins-semibold text-lg px-4 py-3 transition-colors duration-200 border border-light-green rounded-sm min-w-[120px]";
+		
+		// Set active button style
+		if (this.selectedViewMode === ViewMode.MODE_2D) {
+			classicBtn.className = "bg-orange text-blue-background font-poppins-semibold text-lg px-4 py-3 transition-colors duration-200 border border-orange rounded-sm min-w-[120px]";
+		} else {
+			immersiveBtn.className = "bg-orange text-blue-background font-poppins-semibold text-lg px-4 py-3 transition-colors duration-200 border border-orange rounded-sm min-w-[120px]";
+		}
+	}
 }
-
-export const menuFlowManager = MenuFlowManager.getInstance();

@@ -164,18 +164,30 @@ export interface GameHistoryEntry {
 
 // ============================== FRONTEND-ONLY TYPES ==============================
 
+export interface Players {
+	left: any;
+	right: any;
+}
+
 // Represents the game objects in a Babylon.js scene
 export interface GameObjects {
-	players: {
-		left: any;
-		right: any;
-	};
+	players: Players;
 	balls: any[];
 	gameField: any;
 	walls: any;
 	cameras: any[];
 	guiCamera: any;
 	lights: any[];
+	effects: {
+		leftGlow: any;
+		rightGlow: any;
+		leftCage: any;
+		rightCage: any;
+		balls: any[];
+		ballsFreeze: any[];
+		shieldLeft: any;
+		shieldRight: any;
+	}
 	// players: {
 	// 	left: Mesh;
 	// 	right: Mesh;
@@ -187,6 +199,15 @@ export interface GameObjects {
 	// guiCamera: Camera;
 	// lights: Light[]; // TODO
 }
+
+type ThemeActor = { update: (dt: number) => void; dispose: () => void };
+type ThemeEffect = { dispose: () => void };
+
+export type ThemeObject = {
+  props: any[];         // static meshes (trees/bushes now; wreck/rocks later)
+  actors: ThemeActor[]; // moving things later (clouds, fish, bubbles)
+  effects: ThemeEffect[]; // glow layer, particle systems, post-process, etc.
+};
 
 // Player control configuration (keyboard mappings)
 export interface PlayerControls {

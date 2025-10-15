@@ -1,7 +1,7 @@
-import { AdvancedDynamicTexture, Rectangle, TextBlock} from "@babylonjs/gui";
+import { AdvancedDynamicTexture, Rectangle, TextBlock } from "@babylonjs/gui";
 import { AnimationManager, Motion } from "../services/AnimationManager.js";
-import { COUNTDOWN_STYLES, createRect, createTextBlock,} from "./GuiStyle.js";
 import { AudioManager } from "../services/AudioManager.js";
+import { COUNTDOWN_STYLES, createRect, createTextBlock, } from "./GuiStyle.js";
 
 export class Countdown {
 	private countdownText!: TextBlock;

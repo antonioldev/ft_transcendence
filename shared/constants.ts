@@ -15,6 +15,7 @@ export enum MessageType {
 	PLAYER_READY,	   // CLIENT -> SERVER: Client loaded babylon and is waiting for server
 	REQUEST_LOBBY,		// Client requests the lobby from the server
 	TOURNAMENT_LOBBY,	   // broadcasts the tournament lobby whenever it changes 
+	STATUS_CHANGE,
 	REGISTER_USER,		 // New User want to register --> going to create a new row in db
 	LOGIN_USER,			// User want to connect to their account --> calling function for validate info
 	LOGOUT_USER,
@@ -36,30 +37,30 @@ export enum MessageType {
 	MATCH_ASSIGNMENT,		// Used to send tournament match assignment to all clients
 	ACTIVATE_POWERUP,		// Activates a specified powerup
 	TOGGLE_SPECTATOR_GAME,	// Used to change which game the spectator is watching
-	SPECTATE_GAME,			// Used to change which game the spectator is watching
+	SPECTATE_GAME,			// Used to change which game the spectator is watching,
 }
 
-export enum WebSocketEvent {
-	GAME_STATE = 'gameState',
-	CONNECTION = 'connection',
-	COUNTDOWN = 'countdown',
-	ERROR = 'error',
-	SESSION_ENDED = 'sessionEnded',
-	STATUS_CHANGE = 'statusChange',
-	SIDE_ASSIGNMENT = 'side_assignment',
-	LOGIN_SUCCESS = 'LOGIN_SUCCESS',
-	LOGIN_FAILURE = 'LOGIN_FAILURE',
-	REGISTRATION_SUCCESS = 'REGISTRATION_SUCCESS',
-	REGISTRATION_FAILURE = 'REGISTRATION_FAILURE',
-	USER_STATS = 'USER_STATS',
-	GAME_HISTORY = 'GAME_HISTORY',
-	MATCH_ASSIGNMENT = 'match_assignment',
-	MATCH_RESULT = 'match_result',
-	POWERUP_ASSIGNMENT = 'powerup_assignment',
-	POWERUP_ACTIVATED = 'powerup_activated',
-	POWERUP_DEACTIVATED = 'powerup_deactivated',
-	TOURNAMENT_LOBBY = 'tournament_lobby'
-}
+// export enum WebSocketEvent {
+// 	GAME_STATE = 'gameState',
+// 	CONNECTION = 'connection',
+// 	COUNTDOWN = 'countdown',
+// 	ERROR = 'error',
+// 	SESSION_ENDED = 'sessionEnded',
+// 	STATUS_CHANGE = 'statusChange',
+// 	SIDE_ASSIGNMENT = 'side_assignment',
+// 	LOGIN_SUCCESS = 'LOGIN_SUCCESS',
+// 	LOGIN_FAILURE = 'LOGIN_FAILURE',
+// 	REGISTRATION_SUCCESS = 'REGISTRATION_SUCCESS',
+// 	REGISTRATION_FAILURE = 'REGISTRATION_FAILURE',
+// 	USER_STATS = 'USER_STATS',
+// 	GAME_HISTORY = 'GAME_HISTORY',
+// 	MATCH_ASSIGNMENT = 'match_assignment',
+// 	MATCH_RESULT = 'match_result',
+// 	POWERUP_ASSIGNMENT = 'powerup_assignment',
+// 	POWERUP_ACTIVATED = 'powerup_activated',
+// 	POWERUP_DEACTIVATED = 'powerup_deactivated',
+// 	TOURNAMENT_LOBBY = 'tournament_lobby'
+// }
 
 // Different game modes available
 export enum GameMode {
@@ -168,7 +169,8 @@ export enum AppState {
 	GAME_MODE ,//= 'game-mode',
 	PLAYER_SETUP ,//= 'player-setup',
 	GAME_3D ,//= 'game-3d',
-	STATS_DASHBOARD ,//= 'STATS_DASHBOARD'
+	STATS_DASHBOARD ,//= 'stats-dashboard'
+	SETTINGS ,//= 'settings'
 }
 
 export enum AiDifficulty {

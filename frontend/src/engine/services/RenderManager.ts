@@ -1,10 +1,9 @@
-import { Engine, Scene, Vector3} from "@babylonjs/core";
-import { Logger } from '../../utils/LogManager.js';
-import { GUIManager } from './GuiManager.js';
+import { Engine, Scene, Vector3 } from "@babylonjs/core";
 import { ViewMode } from '../../shared/constants.js';
-import { AnimationManager } from "./AnimationManager.js";
-import { GameObjects } from "../../shared/types.js";
 import { GAME_CONFIG } from '../../shared/gameConfig.js';
+import { GameObjects } from "../../shared/types.js";
+import { Logger } from '../../utils/LogManager.js';
+import { AnimationManager } from "./AnimationManager.js";
 
 /**
  * The RenderManager class is responsible for managing the rendering loop,
@@ -26,7 +25,7 @@ export class RenderManager {
 	constructor(
 		private engine: Engine,
 		private scene: Scene,
-		private guiManager: GUIManager,
+		// private guiManager: GUIManager,
 		private animationManager: AnimationManager,
 		private gameObjects: GameObjects) {
 

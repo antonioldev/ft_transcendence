@@ -1,10 +1,10 @@
-import { AdvancedDynamicTexture, TextBlock, Grid, Rectangle, Control, Image} from "@babylonjs/gui";
-import { GameConfig } from '../GameConfig.js';
-import { PowerupType, PowerupState} from '../../shared/constants.js';
+import { AdvancedDynamicTexture, Control, Grid, Image, Rectangle, TextBlock } from "@babylonjs/gui";
+import { PowerupState, PowerupType } from '../../shared/constants.js';
 import { getCurrentTranslation } from '../../translations/translations.js';
+import { GameConfig } from '../GameConfig.js';
 import { AnimationManager, Motion } from "../services/AnimationManager.js";
-import { HUD_STYLES, createTextBlock, createGrid, createRect, createStackPanel, SPECTATOR_STYLE, POWER_UP_STYLES, createImage} from "./GuiStyle.js";
 import { PlayerSide } from "../utils.js";
+import { HUD_STYLES, POWER_UP_STYLES, SPECTATOR_STYLE, createGrid, createImage, createRect, createStackPanel, createTextBlock } from "./GuiStyle.js";
 
 export class Hud {
 	private hudGrid!: Grid;
@@ -38,7 +38,8 @@ export class Hud {
 		[PowerupType.DOUBLE_POINTS]: "assets/icons/powerup/rallyMultiplier.png",
 		[PowerupType.INVISIBLE_BALL]: "assets/icons/powerup/ghost.png",
 		[PowerupType.CURVE_BALL]: "assets/icons/powerup/curve.png",
-		[PowerupType.TRIPLE_SHOT]: "assets/icons/powerupHD/ballMultiplier.png"
+		[PowerupType.TRIPLE_SHOT]: "assets/icons/powerupHD/ballMultiplier.png",
+		[PowerupType.SHIELD]: "assets/icons/powerupHD/shield.png"
 	};
 
 	private POWERUP_ICON_HD: Record<number, string> = {
@@ -53,7 +54,8 @@ export class Hud {
 		[PowerupType.DOUBLE_POINTS]: "assets/icons/powerupHD/rallyMultiplier.png",
 		[PowerupType.INVISIBLE_BALL]: "assets/icons/powerupHD/ghost.png",
 		[PowerupType.CURVE_BALL]: "assets/icons/powerupHD/curve.png",
-		[PowerupType.TRIPLE_SHOT]: "assets/icons/powerupHD/ballMultiplier.png"
+		[PowerupType.TRIPLE_SHOT]: "assets/icons/powerupHD/ballMultiplier.png",
+		[PowerupType.SHIELD]: "assets/icons/powerupHD/shield.png"
 		
 	};
 
@@ -212,10 +214,10 @@ export class Hud {
 			const b = Math.round(255 * (1 - intensity));
 			this.rally.color = `rgb(${r}, ${g}, ${b})`;
 
+			let scale = 1.4;
 			if (rally > 0 && rally % 5 === 0)
-				this.animationManager?.rotatePulse(this.rally, 1, Motion.F.slow);
-			else
-				this.animationManager?.scale(this.rally, 1, 1.4, Motion.F.base, true);
+				scale = 2;
+			this.animationManager?.scale(this.rally, 1, scale, Motion.F.base, true);
 			this.previousRally = rally;
 			return true;
 		}
