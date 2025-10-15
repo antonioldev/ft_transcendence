@@ -14,10 +14,12 @@ export async function APIRoutes(app: FastifyInstance) {
 	// ROOT
 	app.get('/', async (request, reply) => {
 		const { sid } = request.query as { sid?: string};
+		console.log(`SID = ${sid}`);
 		if (!sid) {
 			return reply.code(400).send({ message: "Error: missing SID"} );
 		}
 		let client = findOrCreateClient(sid);
+		// check for double user
 		client.is_connected = true;
 		
 		reply.send( { 
@@ -57,10 +59,7 @@ export async function APIRoutes(app: FastifyInstance) {
 				client.loggedIn = true;
 				console.log(`User ${client.username} successfully logged in`);
 				return reply.send({ 
-					result: result, 
-					payload: {
-
-					}
+					result: result,
 					message: `User '${client.username}' successfully logged in` });
 			
 			case AuthCode.NOT_FOUND:

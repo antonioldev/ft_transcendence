@@ -47,6 +47,7 @@ export class WebSocketClient {
         // console.log('Connecting to WebSocket:', base_url);
 
         // const WS_URL = `${base_url}/ws?sid=${encodeURIComponent(getSID() ?? '')}`;
+    
 
         const timeout = setTimeout(() => {
             if (this.connectionStatus === ConnectionStatus.CONNECTING) {

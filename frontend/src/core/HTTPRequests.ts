@@ -12,15 +12,19 @@ export function getSID() {
 }
 
 export async function sendRootRequest(): Promise<string> {
+	console.log("SENDING / REQUEST");
 	const url = base_url + '/' + `?sid=${getSID()}`;
+	console.log(`URL = ${url}`);
 	const response = await fetch(url, { method: "GET" })
+	console.log(`FETCH SENT`);
 	const data = await response.json();
+	console.log(`RESPONSE RECEIVED`);
 	console.log(data.message);
 	return (data.wsURL);
 }
 
 export async function sendPOST(endpoint: string, body?: any) {
-	const URL = `${base_url}/${endpoint}?sid=${getSID()}`
+	const URL = `${base_url}/${endpoint}?sid=${getSID()}`;
 
 	const response = await fetch(URL, {
 		method: "POST",

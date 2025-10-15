@@ -231,7 +231,7 @@ export function updateUserGame(id: number, Game: number): boolean {
 }
 
 
-// GET USER INFO 
+// GET USER INFO
 export function userExist(id?: number, username?: string, email?: string): number {
 	try {
 		if (id !== undefined) {
@@ -806,7 +806,6 @@ export function getUserGameHistoryRows(userId: number) {
 }
 
 // Session cookie creation to ensure no double login and refresh doesn't logout user
-
 export function createSession(userId: number): string | undefined {
 	try {
 		userId = nonNegInt(userId, 'user id');

@@ -33,16 +33,16 @@ export const app: FastifyInstance = Fastify({
 // JWT
 await app.register(fastifyJwt, { secret: process.env.JWT_SECRET! });
 
-// Cookies
-await app.register(cookie, {
-    secret: process.env.COOKIE_SECRET,
-    hook: 'onRequest',
-    parseOptions: {
-        secure: true,
-        sameSite: 'none',
-        httpOnly: true
-    }
-});
+// // Cookies
+// await app.register(cookie, {
+//     secret: process.env.COOKIE_SECRET,
+//     hook: 'onRequest',
+//     parseOptions: {
+//         secure: true,
+//         sameSite: 'none',
+//         httpOnly: true
+//     }
+// });
 
 // Websocket options
 await app.register(import('@fastify/websocket'), {
@@ -56,24 +56,24 @@ await app.register(import('@fastify/websocket'), {
 
 // CORS for frontend
 await app.register(fastifyCors, {
-    origin: (origin: string | undefined, cb: (err: Error | null, allow: boolean) => void) => {
-    if (!origin) return cb(null, true); // allow non-browser requests (curl)
-    const allowed = [
-        // 42 London hostname pattern
-        /^https:\/\/c\d+r\d+s\d+\.42london\.com(:8443)?$/,
+    // origin: (origin: string | undefined, cb: (err: Error | null, allow: boolean) => void) => {
+    // if (!origin) return cb(null, true); // allow non-browser requests (curl)
+    // const allowed = [
+    //     // 42 London hostname pattern
+    //     /^https:\/\/c\d+r\d+s\d+\.42london\.com(:8443)?$/,
 
-        // Local network IP ranges A, B, and C with optional port 8443
-        /^https?:\/\/10\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(:8443)?$/,
-        /^https?:\/\/172\.(?:1[6-9]|2[0-9]|3[01])\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(:8443)?$/,
-        /^https?:\/\/192\.168\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(:8443)?$/,
+    //     // Local network IP ranges A, B, and C with optional port 8443
+    //     /^https?:\/\/10\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(:8443)?$/,
+    //     /^https?:\/\/172\.(?:1[6-9]|2[0-9]|3[01])\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(:8443)?$/,
+    //     /^https?:\/\/192\.168\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(:8443)?$/,
     
-        /^https?:\/\/localhost(:\d+)?$/
-    ];
-    if (allowed.some(regexp => regexp.test(origin))) cb(null, true);
-    else cb(new Error('Not allowed'), false); 
-    },
+    //     /^https?:\/\/localhost(:\d+)?$/
+    // ];
+    // if (allowed.some(regexp => regexp.test(origin))) cb(null, true);
+    // else cb(new Error('Not allowed'), false); 
+    // },
     // origin: process.env.LAN_IP,
-    // origin: "https://192.168.1.83",
+    origin: "https://localhost",
     methods: ['GET', 'POST', 'OPTIONS'],
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'Set-Cookie'],

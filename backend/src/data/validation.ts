@@ -41,11 +41,11 @@ export async function verifyLogin(username: string, password: string): Promise<n
 	if (!isMatch) return 2;
 
 	const userId = dbFunction.retrieveUserID(username);
-	const sid = dbFunction.createSession(userId);
-	if (!sid) {
-		console.log(`verifyLogin: failed to create session, sid=${sid}`);
-		return 3;
-	}
+	// const sid = dbFunction.createSession(userId);
+	// if (!sid) {
+	// 	console.log(`verifyLogin: failed to create session, sid=${sid}`);
+	// 	return 3;
+	// }
 
 	return 0;
 }

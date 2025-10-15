@@ -19,7 +19,7 @@ async function loadPage() {
     AppStateManager.initialize();
     AuthManager.initialize();
     MenuFlowManager.initialize();
-    DashboardManager.initialize();
+    // DashboardManager.initialize();
 
 	// Setup language system
 	updateLanguageDisplay();
