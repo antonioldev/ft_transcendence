@@ -4,10 +4,11 @@ import { uiManager } from '../ui/UIManager.js';
 import { authManager } from './AuthManager.js';
 import { getCurrentTranslation } from '../translations/translations.js';
 import { dashboardManager } from './DashboardManager.js';
-import { webSocketClient } from './WebSocketClient.js';
 import { appStateManager } from './AppStateManager.js';
 import { EL, requireElementById} from '../ui/elements.js';
 import { GameConfigFactory } from '../engine/GameConfig.js';
+import { sendUserStatsRequest, sendGameHistoryRequest } from './HTTPRequests.js';
+import { UserStats, GameHistoryEntry } from '../shared/types.js';
 
 /**
  * Manages the selection and initialization of game modes and view modes for the application.
@@ -388,11 +389,11 @@ export class MenuFlowManager {
 	// DASHBOARD MANAGEMENT
 	// ========================================
 
-	private showDashboard(): void {
+	private async showDashboard() {
 		Logger.debug('Dashboard button element', 'MenuFlowManager', EL.BUTTONS.DASHBOARD);
 		const dashboardBtn = requireElementById<HTMLButtonElement>(EL.BUTTONS.DASHBOARD);
 		Logger.debug('Attaching dashboard click handler', 'MenuFlowManager');
-		dashboardBtn?.addEventListener('click', () => {
+		dashboardBtn?.addEventListener('click', async () => {
 			Logger.debug('Dashboard clicked', 'MenuFlowManager');
 			if (!authManager.isUserAuthenticated()) {
 				Logger.warn('authManager is not authenticated, returning', 'MenuFlowManager');
@@ -404,12 +405,18 @@ export class MenuFlowManager {
 				return;
 			}
 			dashboardManager.clear();
-			// Request new stats from backend
 			Logger.debug('clearing the dashboard', 'MenuFlowManager');
-			webSocketClient.requestUserStats(user.username);
+			
+			// Request new stats from backend
+			const stats: UserStats = await sendUserStatsRequest(user.username);
+			dashboardManager.renderUserStats(stats);
 			Logger.debug('request user data was called', 'MenuFlowManager');
-			webSocketClient.requestUserGameHistory(user.username);
+
+			// Request game history from backend
+			const history: GameHistoryEntry[] = await sendGameHistoryRequest(user.username);
+			dashboardManager.renderGameHistory(history);
 			Logger.debug('request user game history was called', 'MenuFlowManager');
+			
 			// Show dashboard panel
 			Logger.info('Navigating to dashboard...', 'MenuFlowManager');
 			appStateManager.navigateTo(AppState.STATS_DASHBOARD);

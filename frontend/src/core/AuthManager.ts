@@ -1,9 +1,7 @@
 import { Logger } from '../utils/LogManager.js';
-import { AuthState, AppState, WebSocketEvent } from '../shared/constants.js';
+import { AppState} from '../shared/constants.js';
 import { uiManager } from '../ui/UIManager.js';
 import { getCurrentTranslation } from '../translations/translations.js';
-import { webSocketClient } from './WebSocketClient.js';
-import { RegisterUser, LoginUser } from '../shared/types.js';
 import { EL, requireElementById} from '../ui/elements.js';
 import { initializeGoogleSignIn, renderGoogleButton } from './GoogleSignIn.js';
 import { appStateManager } from './AppStateManager.js';
@@ -705,9 +703,14 @@ export class AuthManager {
 					'disabled'
 				);
         }
-		else
-			uiManager.showAuthButtons();
+		else {
+            uiManager.showAuthButtons();
+        }
 	}
+
+    isUserAuthenticated() {
+        return (this.currentUser ? true : false);
+    }
 }
 
 export const authManager = AuthManager.getInstance();

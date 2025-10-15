@@ -59,7 +59,7 @@ export async function APIRoutes(app: FastifyInstance) {
 				return reply.send({ 
 					result: result, 
 					payload: {
-						
+
 					}
 					message: `User '${client.username}' successfully logged in` });
 			
@@ -125,8 +125,9 @@ export async function APIRoutes(app: FastifyInstance) {
 
 	// JOIN GAME 
 	app.post('/join', (request, reply) => {
-		const { sid, mode, players, capacity, aiDifficulty  } = request.body as 
-			{ sid: string, mode: GameMode, players: Player[], capacity?: number, aiDifficulty?: AiDifficulty };
+		const { sid } = request.query as { sid: string };
+		const { mode, players, capacity, aiDifficulty  } = request.body as 
+			{ mode: GameMode, players: Player[], capacity?: number, aiDifficulty?: AiDifficulty };
 		
 		const client = findOrCreateClient(sid);
 		const gameSession = gameManager.findOrCreateGame(mode, capacity ?? undefined);
@@ -154,7 +155,7 @@ export async function APIRoutes(app: FastifyInstance) {
 
 	// USER STATS
 	app.get('/stats', (request, reply) => {
-		const { username } = request.query as {username: string};
+		const { username } = request.query as { username: string };
 		const stats = db.getUserStats(username); // from DB
 		if (!stats) {
 			console.log(`Failed to send stats: user '${username}' not found`);
@@ -166,7 +167,7 @@ export async function APIRoutes(app: FastifyInstance) {
 
 	// GAME HISTORY
 	app.get('/history', (request, reply) => {
-		const { username } = request.query as {username: string};
+		const { username } = request.query as { username: string };
 		const history = db.getUserStats(username); // from DB
 		if (!history) {
 			console.log(`Failed to send game history: user '${username}' not found`);

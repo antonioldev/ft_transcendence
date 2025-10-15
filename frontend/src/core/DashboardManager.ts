@@ -1,27 +1,25 @@
 import { UserStats, GameHistoryEntry } from '../shared/types.js';
-import { WebSocketEvent } from '../shared/constants.js';
 import { EL, getElementById } from '../ui/elements.js';
-import { webSocketClient } from './WebSocketClient.js';
 
 export class DashboardManager {
-	private static instance: DashboardManager;
+	// private static instance: DashboardManager;
 
-	static getInstance(): DashboardManager {
-		if (!DashboardManager.instance)
-			DashboardManager.instance = new DashboardManager();
-		return DashboardManager.instance;
-	}
+	// static getInstance(): DashboardManager {
+	// 	if (!DashboardManager.instance)
+	// 		DashboardManager.instance = new DashboardManager();
+	// 	return DashboardManager.instance;
+	// }
 
-	static initialize(): void {
-		const instance = DashboardManager.getInstance();
-		webSocketClient.registerCallback(WebSocketEvent.USER_STATS, (stats: UserStats) => {
-			instance.renderUserStats(stats);
-		});
+	// static initialize(): void {
+	// 	const instance = DashboardManager.getInstance();
+	// 	// webSocketClient.registerCallback(WebSocketEvent.USER_STATS, (stats: UserStats) => {
+	// 	// 	instance.renderUserStats(stats);
+	// 	// });
 
-		webSocketClient.registerCallback(WebSocketEvent.GAME_HISTORY, (entries: GameHistoryEntry[]) => {
-			instance.renderGameHistory(entries);
-		});
-	}
+	// 	// webSocketClient.registerCallback(WebSocketEvent.GAME_HISTORY, (entries: GameHistoryEntry[]) => {
+	// 	// 	instance.renderGameHistory(entries);
+	// 	// });
+	// }
 
 	clear(): void {
 		const statsContainer = getElementById(EL.DASHBOARD.USER_STATS_CHART);
@@ -31,7 +29,7 @@ export class DashboardManager {
 		if (table) table.innerHTML = '';
 	}
 
-	private renderUserStats(stats: UserStats): void {
+	renderUserStats(stats: UserStats): void {
 		const container = getElementById(EL.DASHBOARD.USER_STATS_CHART);
 		if (!container) return;
 		container.innerHTML = '';
@@ -90,7 +88,7 @@ export class DashboardManager {
 	}
 
 
-	private renderGameHistory(history: GameHistoryEntry[]): void {
+	renderGameHistory(history: GameHistoryEntry[]): void {
 		const container = getElementById(EL.DASHBOARD.GAME_HISTORY_TABLE);
 		if (!container) return;
 		container.innerHTML = '';
@@ -241,4 +239,4 @@ function polarToCartesian(radius: number, fraction: number): [number, number] {
 	return [radius + radius * Math.cos(angle), radius + radius * Math.sin(angle)];
 }
 
-export const dashboardManager = DashboardManager.getInstance();
+export const dashboardManager = new DashboardManager();

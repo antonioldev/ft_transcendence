@@ -3,7 +3,7 @@ import { ConnectionStatus, MessageType, GameMode, Direction, WebSocketEvent, Pow
 import { ClientMessage, ServerMessage, PlayerInfo, RegisterUser, LoginUser } from '../shared/types.js'
 import { AppStateManager } from './AppStateManager.js';
 import { AuthCode } from '../shared/constants.js';
-import { getSID } from './HTTPRequests.js';
+import { getSID, sendPOST } from './HTTPRequests.js';
 
 /**
  * WebSocketClient is responsible for managing the WebSocket connection
@@ -135,12 +135,12 @@ export class WebSocketClient {
             // case MessageType.USERNAME_TAKEN:
                 // this.triggerCallback(WebSocketEvent.REGISTRATION_FAILURE, message.message || "Username is already registered");
                 // break;
-            case MessageType.SEND_USER_STATS:
-                this.triggerCallback(WebSocketEvent.USER_STATS, message.stats);
-                break;
-            case MessageType.SEND_GAME_HISTORY:
-                this.triggerCallback(WebSocketEvent.GAME_HISTORY, message.gameHistory);
-                break;
+            // case MessageType.SEND_USER_STATS:
+            //     this.triggerCallback(WebSocketEvent.USER_STATS, message.stats);
+            //     break;
+            // case MessageType.SEND_GAME_HISTORY:
+            //     this.triggerCallback(WebSocketEvent.GAME_HISTORY, message.gameHistory);
+            //     break;
             case MessageType.MATCH_ASSIGNMENT:
                 this.triggerCallback(WebSocketEvent.MATCH_ASSIGNMENT, message);
                 break;
@@ -161,7 +161,8 @@ export class WebSocketClient {
     // ========================================
 
     joinGame(gameMode: GameMode, players: PlayerInfo[], aiDifficulty: number, capacity?: number): void {
-        this.sendMessage(MessageType.JOIN_GAME, { gameMode, players, aiDifficulty, capacity });
+        // this.sendMessage(MessageType.JOIN_GAME, { gameMode, players, aiDifficulty, capacity });
+        sendPOST("join", { gameMode, players, aiDifficulty, capacity })
     }
 
     sendPlayerReady(): void {
@@ -249,25 +250,25 @@ export class WebSocketClient {
     // DASHBOARD
     // ========================================
 
-    requestUserStats(username: string): void {
-        if (this.isConnected()) {
-            const message: ClientMessage = {
-                type: MessageType.REQUEST_USER_STATS,
-                username: username
-            };
-            this.ws!.send(JSON.stringify(message));
-        }
-    }
+    // requestUserStats(username: string): void {
+    //     if (this.isConnected()) {
+    //         const message: ClientMessage = {
+    //             type: MessageType.REQUEST_USER_STATS,
+    //             username: username
+    //         };
+    //         this.ws!.send(JSON.stringify(message));
+    //     }
+    // }
 
-    requestUserGameHistory(username: string): void {
-        if (this.isConnected()) {
-            const message: ClientMessage = {
-                type: MessageType.REQUEST_GAME_HISTORY,
-                username: username
-            };
-            this.ws!.send(JSON.stringify(message));
-        }
-    }
+    // requestUserGameHistory(username: string): void {
+    //     if (this.isConnected()) {
+    //         const message: ClientMessage = {
+    //             type: MessageType.REQUEST_GAME_HISTORY,
+    //             username: username
+    //         };
+    //         this.ws!.send(JSON.stringify(message));
+    //     }
+    // }
 
     // ========================================
     // CALLBACK REGISTRATION
