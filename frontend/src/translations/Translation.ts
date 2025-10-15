@@ -112,4 +112,4 @@ export interface Translation {
     scene3D: string;
 }
 
-export type TranslationKey = keyof Translation;
+// export type TranslationKey = keyof Translation;

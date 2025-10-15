@@ -1,14 +1,14 @@
-import { AudioManager } from "./services/AudioManager";
-import { RenderManager } from "./services/RenderManager";
-import { KeyboardManager } from "./services/KeybordManager";
-import { GUIManager } from "./services/GuiManager";
-import { Particles, clearAllFireworkTimers } from "./scene/fireworks";
-import { AnimationManager } from "./services/AnimationManager";
-import { PowerupManager } from "./services/PowerUpManager";
-import { Engine, Scene} from "@babylonjs/core";
-import { GameConfig } from './GameConfig.js';
+import { Engine, Scene } from "@babylonjs/core";
 import { GameObjects } from '../shared/types.js';
-import { PlayerSide, PlayerState } from "./utils.js"
+import { GameConfig } from './GameConfig.js';
+import { Particles, clearAllFireworkTimers } from "./scene/rendering/fireworks";
+import { AnimationManager } from "./services/AnimationManager";
+import { AudioManager } from "./services/AudioManager";
+import { GUIManager } from "./services/GuiManager";
+import { KeyboardManager } from "./services/KeybordManager";
+import { PowerupManager } from "./services/PowerUpManager";
+import { RenderManager } from "./services/RenderManager";
+import { PlayerSide, PlayerState } from "./utils.js";
 
 export interface IGameServices {
 	audio: AudioManager;
@@ -42,7 +42,7 @@ export class GameServices implements IGameServices {
 		this.particles = new Particles();
 		this.powerup = new PowerupManager(players, this.animation, this.gui, gameObjects);
 		this.input = new KeyboardManager(scene, config, gameObjects, players, this.powerup, this.gui);
-		this.render = new RenderManager(engine, scene, this.gui, this.animation, gameObjects);
+		this.render = new RenderManager(engine, scene, this.animation, gameObjects);
 	}
 
 	async initialize(): Promise<void> {

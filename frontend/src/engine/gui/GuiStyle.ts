@@ -1,4 +1,4 @@
-import { Control, Image, StackPanel, Grid, TextBlock, Rectangle} from "@babylonjs/gui";
+import { Control, Grid, Image, Rectangle, StackPanel, TextBlock } from "@babylonjs/gui";
 
 export const H_LEFT = Control.HORIZONTAL_ALIGNMENT_LEFT;
 export const H_CENTER = Control.HORIZONTAL_ALIGNMENT_CENTER;
@@ -396,10 +396,11 @@ export const LOBBY_STYLES = {
 export const COUNTDOWN_STYLES = {
     countdownContainer: {
         width: "100%",
-        height: "100%",
+        height: "80%",
+        verticalAlignment: V_TOP,
         thickness: 0,
         isVisible: false,
-        zIndex: Z_INDEX.GAMEPLAY,
+        zIndex: Z_INDEX.HUD,
     },
 
     countdownText: {
@@ -488,7 +489,7 @@ export const VIEW_MODE_STYLES = {
         width: "5px",
         height: "100%",
         background: COLORS.BLACK,
-        zIndex: Z_INDEX.HUD,
+        zIndex: Z_INDEX.GAMEPLAY,
         thickness: 0
     }
 } as const;

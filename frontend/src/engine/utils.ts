@@ -1,21 +1,7 @@
-import { Color3, Vector3, Viewport } from "@babylonjs/core";
+import { Vector3, Viewport } from "@babylonjs/core";
 import { GAME_CONFIG } from '../shared/gameConfig.js';
 import { Powerup } from "../shared/types.js";
 import { KeysProfile } from "./services/KeybordManager.js";
-
-// Colors for Babylon.js (frontend only)
-export const COLORS = {
-	field2D: new Color3(20/255, 61/255, 96/255, 1),
-	field3D: new Color3(0.4, 0.6, 0.4),
-	player1_2D: new Color3(160/255, 200/255, 120/255, 1),
-	player2_2D: new Color3(160/255, 200/255, 120/255, 1),
-	player1_3D: new Color3(0.89, 0.89, 0),
-	player2_3D: new Color3(1, 0, 0),
-	ball2D: Color3.White(),
-	ball3D: new Color3(0.89, 0.89, 1),
-	walls2D: Color3.White(),
-	walls3D: new Color3(0.8, 0.8, 0.8),
-};
 
 // Utility functions for Babylon.js game objects
 // They get datas from gameConfig TypeScript and convert them to Babylon.js objects

@@ -1,18 +1,17 @@
-import { Engine, Scene, Color4, SceneLoader} from "@babylonjs/core";
-import { GameConfig } from './GameConfig.js';
-import { buildScene2D, buildScene3D } from './scene/sceneBuilder.js';
-import { webSocketClient } from '../core/WebSocketClient.js';
-import { GameStateData, GameObjects } from '../shared/types.js';
-import { GAME_CONFIG } from '../shared/gameConfig.js';
-import { ViewMode, WebSocketEvent, AppState, GameState } from '../shared/constants.js';
-import { Logger } from '../utils/LogManager.js';
-import { uiManager } from '../ui/UIManager.js';
-import { GameMode } from '../shared/constants.js';
+import { Color4, Engine, Scene, SceneLoader } from "@babylonjs/core";
 import { appStateManager } from '../core/AppStateManager.js';
-import { GameConfigFactory } from './GameConfig.js';
-import { PlayerSide, PlayerState } from "./utils.js"
-import { disposeMaterialResources } from "./scene/materialFactory.js";
+import { webSocketClient } from '../core/WebSocketClient.js';
+import { AppState, GameMode, GameState, MessageType, PowerupType, ViewMode } from '../shared/constants.js';
+import { GAME_CONFIG } from '../shared/gameConfig.js';
+import { GameObjects, GameStateData, ThemeObject } from '../shared/types.js';
+import { uiManager } from '../ui/UIManager.js';
+import { Logger } from '../utils/LogManager.js';
+import { GameConfig } from './GameConfig.js';
 import { GameServices } from "./GameServices.js";
+import { buildScene } from './scene/builders/sceneBuilder.js';
+import { disposeMaterialResources } from "./scene/rendering/materials.js";
+import { PlayerSide, PlayerState } from "./utils.js";
+
 
 /**
  * The Game class serves as the core of the game engine, managing the initialization,
@@ -28,6 +27,7 @@ export class Game {
 	private services: GameServices | null = null;
 	private canvas: HTMLCanvasElement | null = null;
 	private gameObjects: GameObjects | null = null;
+	private themeObjects: ThemeObject | null = null;
 	private gameLoopObserver: any = null;
 	private isSpectator: boolean = false;
 	private isGameEnded: boolean = false;
@@ -44,7 +44,7 @@ export class Game {
 // ====================			CONSTRUCTOR			   ====================
 	constructor(private config: GameConfig) {
 		try {
-			// this.state = new GameStateManager();
+			this.themeObjects = { props: [], actors: [], effects: [] };
 			const element = document.getElementById(config.canvasId);
 			if (element instanceof HTMLCanvasElement) {
 				this.canvas = element;
@@ -60,13 +60,11 @@ export class Game {
 		}
 	}
 
-	async create(viewMode: ViewMode, gameMode: GameMode, aiDifficulty: number, capacity?: number): Promise<Game> {
+	async create(aiDifficulty: number, capacity?: number): Promise<Game> {
 		try {
-			const config = GameConfigFactory.createWithAuthCheck(viewMode, gameMode);
-			const game = new Game(config);
 			webSocketClient.joinGame(this.config.gameMode, this.config.players, aiDifficulty, capacity);
-			await game.initialize();
-			return game;
+			await this.initialize();
+			return this;
 		} catch (error) {
 			await this.dispose();
 			Logger.error('Error creating game', 'Game', error);
@@ -78,6 +76,7 @@ export class Game {
 	async initialize(): Promise<void> {
 		if (this.isInitialized) return;
 
+		uiManager.updateLoadingProgress(0);
 		SceneLoader.ShowLoadingScreen = false;
 		uiManager.setLoadingScreenVisible(true);
 		Logger.info('Initializing game...', 'Game');
@@ -85,9 +84,11 @@ export class Game {
 		this.engine = await this.initializeBabylonEngine();
 		this.scene = await this.createScene();
 
-		this.gameObjects = this.config.viewMode === ViewMode.MODE_2D
-			? await buildScene2D(this.scene, this.config.gameMode, this.config.viewMode, (progress: number) => uiManager.updateLoadingProgress(progress))
-			: await buildScene3D(this.scene, this.config.gameMode, this.config.viewMode, (progress: number) => uiManager.updateLoadingProgress(progress));
+		const { gameObjects, themeObjects } = await buildScene(this.scene, this.config.gameMode, this.config.viewMode, 
+			(progress: number) => uiManager.updateLoadingProgress(progress));
+
+		this.gameObjects = gameObjects;
+		this.themeObjects = themeObjects;
 
 		this.services = new GameServices(this.engine, this.scene, this.config, this.gameObjects, this.players);
 		await this.services.initialize();
@@ -155,15 +156,16 @@ export class Game {
 			if (countdown === undefined || countdown === null)
 				Logger.errorAndThrow('Server sent SIGNAL without countdown parameter', 'Game');
 
-			uiManager.setLoadingScreenVisible(false);
-			this.services?.gui.lobby.hide();
-			this.services?.gui.cardGame.hide();
-			this.services?.gui.curtain.hide();
-			this.services?.gui.hud.show(true);
-			const playerLeft = this.players.get(PlayerSide.LEFT)?.name;
-			const playerRight = this.players.get(PlayerSide.RIGHT)?.name;
-
+			if (countdown === GAME_CONFIG.startDelay) {
+				uiManager.setLoadingScreenVisible(false);
+				this.services?.gui.lobby.hide();
+				this.services?.gui.cardGame.hide();
+				this.services?.gui.curtain.hide();
+				this.services?.gui.hud.show(true);
+			}
 			if (countdown === GAME_CONFIG.startDelay - 1) {
+				const playerLeft = this.players.get(PlayerSide.LEFT)?.name;
+				const playerRight = this.players.get(PlayerSide.RIGHT)?.name;
 				this.services?.audio?.restoreMusicVolume();
 				const controlledSides = this.getControlledSides();
 				await Promise.all([
@@ -188,11 +190,51 @@ export class Game {
 				this.services?.render?.stopCameraAnimation();
 				this.services?.gui?.countdown.finish();
 				this.startGameLoop();
+				this.testPowerupEffects();
 			}
 		} catch (error) {
 			Logger.error('Error handling countdown', 'Game', error);
 		}
 	}
+
+private testPowerupEffects(): void {
+	const powerupTypes = [
+		PowerupType.SHRINK_OPPONENT,
+		PowerupType.GROW_PADDLE,
+		PowerupType.INVERT_OPPONENT,
+		PowerupType.SHIELD,
+		PowerupType.SLOW_OPPONENT,
+		PowerupType.INCREASE_PADDLE_SPEED,
+		PowerupType.FREEZE,
+		PowerupType.POWERSHOT,
+		PowerupType.CURVE_BALL,
+		PowerupType.CURVE_BALL
+	];
+
+	let currentIndex = 0;
+	let previousPowerup: PowerupType | null = null;
+
+	const testInterval = setInterval(() => {
+		if (!this.isInitialized || !this.services?.powerup) {
+			clearInterval(testInterval);
+			return;
+		}
+
+		// Deactivate previous powerup
+		if (previousPowerup !== null) {
+			this.services.powerup.deactivate(PlayerSide.LEFT, 0, previousPowerup);
+			console.error(`   ✅ Deactivated: ${PowerupType[previousPowerup]}`);
+		}
+
+		// Activate new powerup
+		const powerupType = powerupTypes[currentIndex];
+		console.error(`🧪 Activating: ${PowerupType[powerupType]}`);
+		this.services.powerup.activate(PlayerSide.LEFT, 0, powerupType);
+
+		previousPowerup = powerupType;
+		currentIndex = (currentIndex + 1) % powerupTypes.length;
+	}, 3000);
+}
 
 	// Handle server ending the game
 	private async onServerEndedGame(winner: string, loser: string): Promise<void> {
@@ -232,7 +274,7 @@ export class Game {
 		const cams = this.scene?.activeCameras?.length ? this.scene.activeCameras : this.scene?.activeCamera;
 		this.services?.particles?.spawnFireworksInFrontOfCameras(this.scene, cams);
 		await this.services?.gui?.showWinner(winner);
-		await this.services?.gui.curtain.play(200);
+		await this.services?.gui.curtain.play();
 		this.services?.audio?.stopGameMusic();
 		this.dispose();
 
@@ -252,7 +294,7 @@ export class Game {
 				} catch (error) {
 					Logger.errorAndThrow('Error in game loop', 'Game', error);
 				}
-		}, 16);
+		}, 4);
 	}
 
 	private resetForNextMatch(): void {
@@ -270,15 +312,8 @@ export class Game {
 				this.gameObjects.players.right.position.x = 0;
 				this.gameObjects.players.right.scaling.x = 1;
 			}
-			// if (this.gameObjects.ball) {
-			// 	this.gameObjects.ball.position.x = 0;
-			// 	this.gameObjects.ball.position.z = 0;
-			// }
 			for (let i = 0; i < this.gameObjects.balls.length; i++) {
 				const ball = this.gameObjects.balls[i];
-				// ball.position.x = 0;
-				// ball.position.z = 0;
-				// ball.visibility = i === 0 ? 1 : 0;
 				ball.visibility = 0;
 			}
 		}
@@ -413,48 +448,59 @@ export class Game {
 
 // ====================			GAME LIFECYCLE			   ====================
 	async requestExitToMenu(): Promise<void> {
-		await this.services?.gui.curtain.play(200);
-		webSocketClient.sendQuitGame();
-		this.dispose();
+		if (!this.isInitialized) return;
+		await this.services?.gui.curtain.play();
+		if (webSocketClient.isConnected())
+			webSocketClient.sendQuitGame();
+		await this.dispose();
 	}
 
 // ====================			WEBSOCKET				  ====================
 	private registerCallbacks(): void {
-		webSocketClient.registerCallback(WebSocketEvent.GAME_STATE, (state: GameStateData) => { this.updateGameObjects(state); });
-		webSocketClient.registerCallback(WebSocketEvent.ERROR, (error: string) => { Logger.error('Network error', 'Game', error); });
-		webSocketClient.registerCallback(WebSocketEvent.SESSION_ENDED, (message: any) => { this.onServerEndedSession(message.winner); });
-		webSocketClient.registerCallback(WebSocketEvent.SIDE_ASSIGNMENT, (message: any) => { this.handlePlayerAssignment(message.left, message.right); });
-		webSocketClient.registerCallback(WebSocketEvent.MATCH_ASSIGNMENT, (message: any) => { this.services?.gui?.updateTournamentRound(message); });
-		webSocketClient.registerCallback(WebSocketEvent.MATCH_RESULT, (message: any) => { this.services?.gui?.updateTournamentGame(message);});
-		webSocketClient.registerCallback(WebSocketEvent.TOURNAMENT_LOBBY, (message: any) => {this.services?.gui?.updateTournamentLobby(message); uiManager.setLoadingScreenVisible(false); });
-		webSocketClient.registerCallback(WebSocketEvent.COUNTDOWN, (message: any) => { this.handleCountdown(message.countdown); });
+		webSocketClient.registerCallback(MessageType.GAME_STATE, (state: GameStateData) => { this.updateGameObjects(state); });
+		webSocketClient.registerCallback(MessageType.ERROR, (error: string) => { Logger.error('Network error', 'Game', error); });
+		webSocketClient.registerCallback(MessageType.SESSION_ENDED, (message: any) => { this.onServerEndedSession(message.winner); });
+		webSocketClient.registerCallback(MessageType.SIDE_ASSIGNMENT, (message: any) => { this.handlePlayerAssignment(message.left, message.right); });
+		webSocketClient.registerCallback(MessageType.MATCH_ASSIGNMENT, (message: any) => { this.services?.gui?.updateTournamentRound(message); });
+		webSocketClient.registerCallback(MessageType.MATCH_RESULT, (message: any) => { this.services?.gui?.updateTournamentGame(message);});
+		webSocketClient.registerCallback(MessageType.TOURNAMENT_LOBBY, (message: any) => {this.services?.gui?.updateTournamentLobby(message); uiManager.setLoadingScreenVisible(false); });
+		webSocketClient.registerCallback(MessageType.COUNTDOWN, (message: any) => { this.handleCountdown(message.countdown); });
 		document.addEventListener('game:exitToMenu', this.exitHandler);
 	}
 
 	private unregisterCallbacks(): void {
 		try {
-			webSocketClient.unregisterCallback(WebSocketEvent.GAME_STATE);
-			webSocketClient.unregisterCallback(WebSocketEvent.ERROR);
-			webSocketClient.unregisterCallback(WebSocketEvent.SESSION_ENDED);
-			webSocketClient.unregisterCallback(WebSocketEvent.SIDE_ASSIGNMENT);
-			webSocketClient.unregisterCallback(WebSocketEvent.MATCH_ASSIGNMENT);
-			webSocketClient.unregisterCallback(WebSocketEvent.MATCH_RESULT);
-			webSocketClient.unregisterCallback(WebSocketEvent.TOURNAMENT_LOBBY);
-			webSocketClient.unregisterCallback(WebSocketEvent.COUNTDOWN);
+			webSocketClient.unregisterCallback(MessageType.GAME_STATE);
+			webSocketClient.unregisterCallback(MessageType.ERROR);
+			webSocketClient.unregisterCallback(MessageType.SESSION_ENDED);
+			webSocketClient.unregisterCallback(MessageType.SIDE_ASSIGNMENT);
+			webSocketClient.unregisterCallback(MessageType.MATCH_ASSIGNMENT);
+			webSocketClient.unregisterCallback(MessageType.MATCH_RESULT);
+			webSocketClient.unregisterCallback(MessageType.TOURNAMENT_LOBBY);
+			webSocketClient.unregisterCallback(MessageType.COUNTDOWN);
 		} catch (error) {
 			Logger.error('Error clearing WebSocket callbacks', 'Game', error);
 		}
 	}
 // ====================			CLEANUP				  ====================
 	private async dispose(): Promise<void> {
-		if (!this.isInitialized) return;
 		try {
-			document.removeEventListener('game:exitToMenu', this.exitHandler);
+			if (!this.isInitialized) {
+				Logger.debug('Dispose called but not initialized', 'Game');
+				return;
+			}
 			this.isInitialized = false;
+			document.removeEventListener('game:exitToMenu', this.exitHandler);
 			clearInterval(this.gameLoopObserver);
 			this.gameLoopObserver = null;
 			this.services?.dispose();
 			this.services = null;
+			if (this.themeObjects) {
+				for (const e of this.themeObjects.effects) e.dispose();
+				for (const a of this.themeObjects.actors) a.dispose();
+				for (const m of this.themeObjects.props) m.dispose?.();
+			}
+			this.themeObjects = null;
 			disposeMaterialResources();
 			this.gameObjects = null;
 			this.players.clear();

@@ -1,13 +1,13 @@
 import { DeviceSourceManager, DeviceType, Scene } from "@babylonjs/core";
+import { webSocketClient } from '../../core/WebSocketClient.js';
+import { Direction, ViewMode } from '../../shared/constants.js';
+import { getPlayerBoundaries } from '../../shared/gameConfig.js';
+import { GameObjects } from '../../shared/types.js';
 import { Logger } from '../../utils/LogManager.js';
 import { GameConfig } from '../GameConfig.js';
-import { Direction, ViewMode} from '../../shared/constants.js';
-import { GameObjects } from '../../shared/types.js';
-import { getPlayerBoundaries } from '../../shared/gameConfig.js';
 import { PlayerSide, PlayerState } from "../utils.js";
-import { webSocketClient } from '../../core/WebSocketClient.js';
-import { PowerupManager } from "./PowerUpManager.js";
 import { GUIManager } from "./GuiManager.js";
+import { PowerupManager } from "./PowerUpManager.js";
 
 
 export const Keys = {

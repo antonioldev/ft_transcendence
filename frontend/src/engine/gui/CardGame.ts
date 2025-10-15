@@ -1,8 +1,8 @@
-import { AdvancedDynamicTexture, Rectangle, Image, Grid } from "@babylonjs/gui";
-import { AnimationManager } from "../services/AnimationManager";
-import { CARD_GAME_STYLES, COLORS, createRect, createTextBlock, createGrid, createImage } from "./GuiStyle";
+import { AdvancedDynamicTexture, Grid, Image, Rectangle } from "@babylonjs/gui";
 import { getCurrentTranslation } from "../../translations/translations";
+import { AnimationManager } from "../services/AnimationManager";
 import { AudioManager } from "../services/AudioManager";
+import { CARD_GAME_STYLES, COLORS, createGrid, createImage, createRect, createTextBlock } from "./GuiStyle";
 
 interface CardData {
 	value: number;

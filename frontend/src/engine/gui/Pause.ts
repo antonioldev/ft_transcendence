@@ -1,10 +1,10 @@
-import { AdvancedDynamicTexture, Rectangle, Image} from "@babylonjs/gui";
-import { getCurrentTranslation } from '../../translations/translations.js';
-import { AnimationManager, Motion } from "../services/AnimationManager.js";
-import { H_LEFT, PAUSE_MENU_STYLES, createRect, createTextBlock, createGrid, createImage, createStackPanel} from "./GuiStyle.js";
-import { GameConfig } from "../GameConfig.js";
+import { AdvancedDynamicTexture, Image, Rectangle } from "@babylonjs/gui";
 import { ViewMode } from "../../shared/constants.js";
 import { GAME_CONFIG } from "../../shared/gameConfig.js";
+import { getCurrentTranslation } from '../../translations/translations.js';
+import { GameConfig } from "../GameConfig.js";
+import { AnimationManager, Motion } from "../services/AnimationManager.js";
+import { H_LEFT, PAUSE_MENU_STYLES, createGrid, createImage, createRect, createStackPanel, createTextBlock } from "./GuiStyle.js";
 
 export class Pause {
 	private overlay!: Rectangle;
