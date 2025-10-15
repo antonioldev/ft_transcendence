@@ -9,9 +9,8 @@ import config from './config/default.js';
 import { initialisazeDatabase } from './data/db-init.js';
 import { registerDatabaseFunctions } from './data/database.js';
 import { APIRoutes } from './routes/apiRoutes.js';
-import { authGoogle, authLocal } from './routes/authRoutes.js';
+// import { authGoogle, authLocal } from './routes/authRoutes.js';
 import { seedDefaultUsers } from './data/db-init.js';
-import fs from 'fs';
 
 /* --- SETUP DATABASE --- */
 
@@ -26,10 +25,6 @@ await seedDefaultUsers(8);
 export const app: FastifyInstance = Fastify({
     logger: config.debug === 'yes' ? true : false,
     trustProxy: true,
-    https: {
-        key: fs.readFileSync('/etc/nginx/ssl/private/key.key'),
-        cert: fs.readFileSync('/etc/nginx/ssl/certs/cert.crt'),
-    }
 });
 
 
@@ -88,8 +83,8 @@ await app.register(fastifyCors, {
 /* --- SETUP ROUTES --- */
 
 await app.register(APIRoutes);
-await app.register(authLocal);
-await app.register(authGoogle);
+// await app.register(authLocal);
+// await app.register(authGoogle);
 await app.register(setupWebsocket);
 
 

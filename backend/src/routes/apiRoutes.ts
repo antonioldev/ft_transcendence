@@ -24,6 +24,7 @@ export async function APIRoutes(app: FastifyInstance) {
 			message: "Welcome to Battle Pong!",
 			wsURL: `wss://${request.hostname}/ws?sid=${encodeURIComponent(sid)}`,
 		});
+		console.log(`New Client connected: sid = ${sid}`);
 	});
 
 	// LOGIN
@@ -40,7 +41,7 @@ export async function APIRoutes(app: FastifyInstance) {
 				clientInfo = decoded.user;
 			}
 			catch (err) {
-				return reply.code(401).send({success: false, message: "Error: Invalid JWT token"});
+				return reply.code(401).send({result: AuthCode.BAD_CREDENTIALS, message: "Error: Invalid JWT token"});
 			}
 		}
 		else {
@@ -55,7 +56,12 @@ export async function APIRoutes(app: FastifyInstance) {
 				client.setInfo(clientInfo.username, clientInfo.email);
 				client.loggedIn = true;
 				console.log(`User ${client.username} successfully logged in`);
-				return reply.send({ success: true, message: `User '${client.username}' successfully logged in` });
+				return reply.send({ 
+					result: result, 
+					payload: {
+						
+					}
+					message: `User '${client.username}' successfully logged in` });
 			
 			case AuthCode.NOT_FOUND:
 				error = `User '${client.username}' doesn't exist`;
@@ -67,8 +73,8 @@ export async function APIRoutes(app: FastifyInstance) {
 				error = `User already loggin in`;
 				break ;
 		}
-		console.log(error);
-		return reply.code(401).send({ success: false, message: error })
+		console.log(`Cannot login user: ${error}`);
+		return reply.code(401).send({ result: result, message: error })
 	});
 
 	// LOGOUT
@@ -90,7 +96,7 @@ export async function APIRoutes(app: FastifyInstance) {
 		const { username, email, password } = request.body as { username: string, email: string, password: string };
 
 		if (!username || !email || !password) {
-			return reply.code(401).send({ success: false, message: 'Missing username, email, or password' })
+			return reply.code(401).send({ result: AuthCode.BAD_CREDENTIALS, message: 'Missing username, email, or password' })
 		}
 
 		const result = await db.registerNewUser(username, email, password);

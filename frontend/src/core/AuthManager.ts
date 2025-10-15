@@ -2,13 +2,14 @@ import { Logger } from '../utils/LogManager.js';
 import { AuthState, AppState, WebSocketEvent } from '../shared/constants.js';
 import { uiManager } from '../ui/UIManager.js';
 import { getCurrentTranslation } from '../translations/translations.js';
-import { WebSocketClient } from './WebSocketClient.js';
+import { webSocketClient } from './WebSocketClient.js';
 import { RegisterUser, LoginUser } from '../shared/types.js';
 import { EL, requireElementById} from '../ui/elements.js';
 import { initializeGoogleSignIn, renderGoogleButton } from './GoogleSignIn.js';
 import { appStateManager } from './AppStateManager.js';
-import { registerNewUser } from './HTTPRequests.js';
+import { sendPOST } from './HTTPRequests.js';
 import { AuthCode } from '../shared/constants.js';
+import { Translation } from '../translations/Translation.js';
 
 // Declare the type for Google Response to avoid TypeScript errors
 type GoogleCredentialResponse = {
@@ -23,7 +24,6 @@ type GoogleCredentialResponse = {
  */
 export class AuthManager {
 	private static instance: AuthManager;
-	private authState: AuthState = AuthState.GUEST;
 	private currentUser: {username: string} | null = null;
 	private readonly loginFields = [EL.AUTH.LOGIN_USERNAME, EL.AUTH.LOGIN_PASSWORD];
 	private readonly registrationFields = [EL.AUTH.REGISTER_USERNAME, EL.AUTH.REGISTER_EMAIL, EL.AUTH.REGISTER_PASSWORD, EL.AUTH.REGISTER_CONFIRM_PASSWORD];
@@ -39,7 +39,7 @@ export class AuthManager {
 	static initialize(): void {
 		const authManager = AuthManager.getInstance();
 		authManager.setupEventListeners();
-		authManager.restoreSessionOnBoot();
+		// authManager.restoreSessionOnBoot();
 	}
 
 	// ========================================
@@ -297,11 +297,9 @@ export class AuthManager {
             if (res.ok) {
                 const data = await res.json(); // expected: { ok: true, user: {...} }
                 if (data?.ok && data.user?.username) {
-                    this.authState = AuthState.LOGGED_IN;
                     this.currentUser = { username: data.user.username };
                     uiManager.showUserInfo(this.currentUser.username);
                     appStateManager.navigateTo(AppState.MAIN_MENU);
-                    WebSocketClient.getInstance();
                     return;
                 }
             }
@@ -332,11 +330,9 @@ export class AuthManager {
                         const data2 = await res2.json();
                         if (data2?.ok && data2.user?.username) {
                             console.log('Session fully restored via Google');
-                            this.authState = AuthState.LOGGED_IN;
                             this.currentUser = { username: data2.user.username };
                             uiManager.showUserInfo(this.currentUser.username);
                             appStateManager.navigateTo(AppState.MAIN_MENU);
-                            WebSocketClient.getInstance();
                             return;
                         }
                     }
@@ -350,175 +346,170 @@ export class AuthManager {
             }
 
             console.log('No valid session found, remaining in guest mode');
-            this.authState = AuthState.GUEST;
             this.currentUser = null;
         } catch (e) {
             console.log('Session restore failed (expected on first visit)');
-            this.authState = AuthState.GUEST;
             this.currentUser = null;
         }
     }
 
     // Handles the login form submission process. Validates input fields, processes authentication, and updates UI state.
-    private handleLoginSubmit(): void {
+    private async handleLoginSubmit(): void {
         const usernameInput = requireElementById<HTMLInputElement>(EL.AUTH.LOGIN_USERNAME);
         const passwordInput = requireElementById<HTMLInputElement>(EL.AUTH.LOGIN_PASSWORD);
         const username = usernameInput.value.trim();
         const password = passwordInput.value;
-        const t = getCurrentTranslation();
-        const wsClient = WebSocketClient.getInstance(); // or use a shared instance if you already have one
+        const translation = getCurrentTranslation();
         
         // Basic validation
         if (!username || !password) {
-            alert(t.pleaseFilllAllFields);
+            alert(translation.pleaseFilllAllFields);
             uiManager.clearForm(this.loginFields);
             return;
         }    
 
-        const user: LoginUser = { username, password };
-        
+        const responseData = await sendPOST("login", { username, password });
+        this.handleLoginResponse(responseData.result, responseData.message, username, translation);
+
         // --- Helper: set HttpOnly cookie via binder route ---
-        const bindSessionCookie = async (sid: string) => {
-        const res = await fetch('/api/auth/session/bind', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ sid }),
-            credentials: 'include',
-        });
-        if (!res.ok) throw new Error('bind_failed');
-        };
+        // const bindSessionCookie = async (sid: string) => {
+        // const res = await fetch('/api/auth/session/bind', {
+        //     method: 'POST',
+        //     headers: { 'Content-Type': 'application/json' },
+        //     body: JSON.stringify({ sid }),
+        //     credentials: 'include',
+        // });
+        // if (!res.ok) throw new Error('bind_failed');
+        // };
 
-        // --- Helper: parse the server string payload safely ---
-        const parsePayload = (raw: unknown): { text: string; sid?: string; uname?: string } => {
-            let payload: any = raw;
-            if (typeof payload === 'string') {
-                try {
-                    payload = JSON.parse(payload);
-                } catch {
-                    return { text: payload };
-                }
-            }
-            const text  = payload.text ?? payload.message ?? 'Login success';
-            const sid   = payload.sid ?? payload.sessionId ?? payload.data?.sid;
-            const uname = payload.username ?? payload.user?.username;
-            return { text, sid, uname };
-        };
+        // // --- Helper: parse the server string payload safely ---
+        // const parsePayload = (raw: unknown): { text: string; sid?: string; uname?: string } => {
+        //     let payload: any = raw;
+        //     if (typeof payload === 'string') {
+        //         try {
+        //             payload = JSON.parse(payload);
+        //         } catch {
+        //             return { text: payload };
+        //         }
+        //     }
+        //     const text  = payload.text ?? payload.message ?? 'Login success';
+        //     const sid   = payload.sid ?? payload.sessionId ?? payload.data?.sid;
+        //     const uname = payload.username ?? payload.user?.username;
+        //     return { text, sid, uname };
+        // };
 
-        // SUCCESS: the callback still receives a string; we parse it here
-        wsClient.registerCallback(WebSocketEvent.LOGIN_SUCCESS, async (raw: string) => {
-            try {
-                const { text, sid, uname } = parsePayload(raw);
-                if (!sid) {
-                    Logger.error('Missing sid in LOGIN_SUCCESS payload', 'AuthManager', { raw });
-                    alert('Login succeeded but session binding failed (no sid).');
-                    return;
-                }
+        // // SUCCESS: the callback still receives a string; we parse it here
+        // webSocketClient.registerCallback(WebSocketEvent.LOGIN_SUCCESS, async (raw: string) => {
+        //     try {
+        //         const { text, sid, uname } = parsePayload(raw);
+        //         if (!sid) {
+        //             Logger.error('Missing sid in LOGIN_SUCCESS payload', 'AuthManager', { raw });
+        //             alert('Login succeeded but session binding failed (no sid).');
+        //             return;
+        //         }
 
-                await bindSessionCookie(sid);
+        //         await bindSessionCookie(sid);
 
-                this.authState = AuthState.LOGGED_IN;
-                this.currentUser = { username: uname ?? username };
-                uiManager.clearForm(this.loginFields);
-                appStateManager.navigateTo(AppState.MAIN_MENU);
-                uiManager.showUserInfo(this.currentUser.username);
-                Logger.info(text ?? 'Login ok', 'AuthManager');
-            } catch (e) {
-                Logger.error('Binder call failed', 'AuthManager', e);
-                alert('Login succeeded but could not finalize session. Please retry.');
-            }
-        });
+        //         this.authState = AuthState.LOGGED_IN;
+        //         this.currentUser = { username: uname ?? username };
+        //         uiManager.clearForm(this.loginFields);
+        //         appStateManager.navigateTo(AppState.MAIN_MENU);
+        //         uiManager.showUserInfo(this.currentUser.username);
+        //         Logger.info(text ?? 'Login ok', 'AuthManager');
+        //     } catch (e) {
+        //         Logger.error('Binder call failed', 'AuthManager', e);
+        //         alert('Login succeeded but could not finalize session. Please retry.');
+        //     }
+        // });
 
-		wsClient.registerCallback(WebSocketEvent.LOGIN_FAILURE, (msg: string) => {
-			this.authState = AuthState.LOGGED_FAILED;
-			if (msg === "User doesn't exist") {
-				alert(t.dontHaveAccount);
-				uiManager.clearForm(this.loginFields); 
-				setTimeout(() => {
-					appStateManager.navigateTo(AppState.REGISTER);
-				}, 500);
-			} else if (msg === "User already login") {
-				alert(t.alreadyLogin)
-				uiManager.clearForm(this.loginFields); 
-			} else {
-				alert(t.passwordsDoNotMatch);
-				uiManager.clearForm(this.loginFields); 
-			}
-		});
+		// webSocketClient.registerCallback(WebSocketEvent.LOGIN_FAILURE, (msg: string) => {
+		// 	this.authState = AuthState.LOGGED_FAILED;
+		// 	if (msg === "User doesn't exist") {
+		// 		alert(translation.dontHaveAccount);
+		// 		uiManager.clearForm(this.loginFields); 
+		// 		setTimeout(() => {
+		// 			appStateManager.navigateTo(AppState.REGISTER);
+		// 		}, 500);
+		// 	} else if (msg === "User already login") {
+		// 		alert(translation.alreadyLogin)
+		// 		uiManager.clearForm(this.loginFields); 
+		// 	} else {
+		// 		alert(translation.passwordsDoNotMatch);
+		// 		uiManager.clearForm(this.loginFields); 
+		// 	}
+		// });
 
-		try {
-			wsClient.loginUser(user);
-		} catch (error) {
-			this.authState = AuthState.LOGGED_FAILED;
-			alert('Loggin failed due to connection error.');  
-		}
 	}
 
     // Handles the registration form submission process.
     // Validates input fields, processes registration, and provides user feedback.
-    private handleRegisterSubmit(): void {
+    private async handleRegisterSubmit() {
         const username = requireElementById<HTMLInputElement>(EL.AUTH.REGISTER_USERNAME).value.trim();
         const email = requireElementById<HTMLInputElement>(EL.AUTH.REGISTER_EMAIL).value;
         const password = requireElementById<HTMLInputElement>(EL.AUTH.REGISTER_PASSWORD).value;
         const confirmPassword = requireElementById<HTMLInputElement>(EL.AUTH.REGISTER_CONFIRM_PASSWORD).value;
-        const t = getCurrentTranslation();
-        const wsClient = WebSocketClient.getInstance();
+        const translation = getCurrentTranslation();
 
         // Clear previous errors
         this.clearValidationErrors(['register-username', 'register-email', 'register-password', 'register-confirm-password']);
         
         if (!username) {
-            this.showFieldError('register-username', t.errorEnterUsername);
+            this.showFieldError('register-username', translation.errorEnterUsername);
             return;
         }
 
         // Validate email
         if (!email) {
-            this.showFieldError('register-email', t.errorEnterEmail);
+            this.showFieldError('register-email', translation.errorEnterEmail);
             return;
-        } else if (!this.isValidEmail(email)) {
-            this.showFieldError('register-email', t.errorEnterValidEmail);
+        } 
+        else if (!this.isValidEmail(email)) {
+            this.showFieldError('register-email', translation.errorEnterValidEmail);
             return;
         }
 
         // Validate password
         if (!password) {
-            this.showFieldError('register-password', t.errorEnterPassword);
+            this.showFieldError('register-password', translation.errorEnterPassword);
             return;
-        } else if (password.length < 6) {
-            this.showFieldError('register-password', t.errorPasswordMinLength);
+        } 
+        else if (password.length < 6) {
+            this.showFieldError('register-password', translation.errorPasswordMinLength);
             return;
         }
 
         if (password !== confirmPassword) {
-            alert(t.passwordsDoNotMatch);
+            alert(translation.passwordsDoNotMatch);
             uiManager.clearForm(this.registrationFields);
             return;
         }
 
-		const user: RegisterUser = { username, email, password };
+        Logger.info('Register attempt', 'AuthManager', { username, email });
+        const responseData = await sendPOST("register", { username, email, password });
+        this.handleRegistrationResponse(responseData.result, responseData.message);
 
-		// register the callback in case of success or failure
-		wsClient.registerCallback(WebSocketEvent.REGISTRATION_FAILURE, (msg: string) => {
-			this.authState = AuthState.LOGGED_FAILED;
-			uiManager.clearForm(this.registrationFields);
-			if (msg === "Username is already registered") {
-				alert(msg || 'Registration failed. Username already register. Please choose another one');
-			} else {
-				alert(msg || 'Registration failed. User already exist. Please login');
-				setTimeout(() => {
-					appStateManager.navigateTo(AppState.LOGIN);
-				}, 500);
-			}
-		});
+		// // register the callback in case of success or failure
+		// webSocketClient.registerCallback(WebSocketEvent.REGISTRATION_FAILURE, (msg: string) => {
+		// 	this.authState = AuthState.LOGGED_FAILED;
+		// 	uiManager.clearForm(this.registrationFields);
+		// 	if (msg === "Username is already registered") {
+		// 		alert(msg || 'Registration failed. Username already register. Please choose another one');
+		// 	} else {
+		// 		alert(msg || 'Registration failed. User already exist. Please login');
+		// 		setTimeout(() => {
+		// 			appStateManager.navigateTo(AppState.LOGIN);
+		// 		}, 500);
+		// 	}
+		// });
 
-		wsClient.registerCallback(WebSocketEvent.ERROR, (msg: string) => {
-			this.authState = AuthState.LOGGED_FAILED;
-			uiManager.clearForm(this.registrationFields);
-			alert(msg || 'Registration failed. An error occured. Please try again');
-			setTimeout(() => {
-				appStateManager.navigateTo(AppState.LOGIN);
-			}, 500);
-		});
+		// webSocketClient.registerCallback(WebSocketEvent.ERROR, (msg: string) => {
+		// 	this.authState = AuthState.LOGGED_FAILED;
+		// 	uiManager.clearForm(this.registrationFields);
+		// 	alert(msg || 'Registration failed. An error occured. Please try again');
+		// 	setTimeout(() => {
+		// 		appStateManager.navigateTo(AppState.LOGIN);
+		// 	}, 500);
+		// });
 
         // wsClient.registerCallback(WebSocketEvent.REGISTRATION_SUCCESS, (msg: string) => {
         //     this.authState = AuthState.LOGGED_IN;
@@ -532,16 +523,30 @@ export class AuthManager {
         // });
 
         // Apptempt to register new user
-        try {
-            registerNewUser(user);
-            Logger.info('Register attempt', 'AuthManager', { username, email });
-            // Keep the state as GUEST until registration confirmation
-        } catch (error) {
-            Logger.error('Error sending registration request', 'AuthManager', error);
-            this.authState = AuthState.LOGGED_FAILED;
-            uiManager.clearForm(this.registrationFields);
-            alert('Registration failed due to connection error.');  
+    }
+
+    handleLoginResponse(result: AuthCode, message: string, username: string, translation: Translation) {
+        if (result === AuthCode.OK) {
+            // await bindSessionCookie(sid);
+            this.currentUser = { username: username };
+            uiManager.clearForm(this.loginFields);
+            appStateManager.navigateTo(AppState.MAIN_MENU);
+            uiManager.showUserInfo(this.currentUser.username);
+            Logger.info(message, 'AuthManager');
+            return ;
         }
+
+        if (result == AuthCode.NOT_FOUND) {
+            alert(translation.dontHaveAccount);
+            setTimeout(() => { appStateManager.navigateTo(AppState.REGISTER); }, 500);
+        } 
+        else if (AuthCode.ALREADY_LOGIN) {
+            alert(translation.alreadyLogin)
+        }
+        else {
+            alert(translation.passwordsDoNotMatch);
+        }
+        uiManager.clearForm(this.loginFields); 
     }
 
     handleRegistrationResponse(result: AuthCode, message: string) {
@@ -554,7 +559,6 @@ export class AuthManager {
             setTimeout(() => { appStateManager.navigateTo(AppState.GAME_MODE); }, 500);
         }
         else {
-            this.authState = AuthState.LOGGED_FAILED;
             uiManager.clearForm(this.registrationFields);
             alert(message);
             if (result === AuthCode.USERNAME_TAKEN) {
@@ -603,14 +607,10 @@ export class AuthManager {
                 console.log("Backend responded with user data:", user, "success:", success);
 
                 // Updates the current user and authentication state
-                this.authState = AuthState.LOGGED_IN;
                 this.currentUser = { username: user.username };
                 
                 // Store Google token for session restore if needed
                 localStorage.setItem('google_id_token', googleResponse.credential);
-                
-                // Initialize WebSocket connection for authenticated user
-                WebSocketClient.getInstance();
                 
                 // Updates the UI to show user information and navigates to game mode selection
                 uiManager.showUserInfo(this.currentUser.username);
@@ -637,26 +637,10 @@ export class AuthManager {
 	// STATE GETTERS
 	// ========================================
 
-	// Gets the current authentication state.
-	getAuthState(): AuthState {
-		return this.authState;
-	}
-
 	// Gets the current user information.
 	getCurrentUser(): {username: string; email?: string} | null {
 		return this.currentUser;
 	}
-
-	// Checks if the user is currently authenticated.
-	isUserAuthenticated(): boolean {
-		return this.authState === AuthState.LOGGED_IN;
-	}
-
-	// Checks if the user is in guest mode.
-	isGuest(): boolean {
-		return this.authState === AuthState.GUEST;
-
-    }
 
     // ========================================
     // FORM VALIDATION HELPERS
@@ -702,9 +686,7 @@ export class AuthManager {
 
 	// Logs out the current user and returns to guest state. Clears user data and updates UI accordingly.
 	logout(): void {
-		const wsClient = WebSocketClient.getInstance();
-		wsClient.logoutUser();
-		this.authState = AuthState.GUEST;
+        sendPOST("logout");
 		this.currentUser = null;
 		
 		// Clear Google token from localStorage
@@ -716,7 +698,7 @@ export class AuthManager {
 
 	// Checks the current authentication state and updates UI accordingly. Should be called after page loads or state changes to ensure UI consistency.
 	checkAuthState(): void {
-		if (this.authState === AuthState.LOGGED_IN && this.currentUser) {
+		if (this.currentUser) {
 			uiManager.showUserInfo(this.currentUser.username);
             uiManager.setButtonState(
 					[EL.BUTTONS.LOGIN, EL.BUTTONS.REGISTER],

@@ -23,16 +23,14 @@ export class WebSocketClient {
     //     return WebSocketClient.instance;
     // }
 
-    createWebsocket(WS_URL:string) { // NEED TO USE THIS WHEN CONNECTING TO ROOT
-        this.ws = new WebSocket(WS_URL);
-    }
-
     // ========================================
     // CONNECTION MANAGEMENT
     // ========================================
 
     // Establishes a WebSocket connection to the specified URL.
-    connect(): void {
+    connect(WS_URL: string): void {
+        console.log(`Connecting to websocket at '${WS_URL}'`);
+        this.ws = new WebSocket(WS_URL);
         this.connectionStatus = ConnectionStatus.CONNECTING;
         this.notifyStatus(ConnectionStatus.CONNECTING);
         
@@ -57,7 +55,6 @@ export class WebSocketClient {
                 this.triggerCallback(WebSocketEvent.ERROR, 'Connection timeout');
             }
         }, 5000);
-        if (!this.ws) return ; // TEMP: HANDLE PROPERLY
 
         this.ws.onopen = () => {
             clearTimeout(timeout);
@@ -120,18 +117,18 @@ export class WebSocketClient {
             case MessageType.ERROR:
                 this.triggerCallback(WebSocketEvent.ERROR, message.message);
                 break;
-            case MessageType.SUCCESS_LOGIN:
-                this.triggerCallback(WebSocketEvent.LOGIN_SUCCESS, message.message || "✅ Login success");
-                break;
+            // case MessageType.SUCCESS_LOGIN:
+            //     this.triggerCallback(WebSocketEvent.LOGIN_SUCCESS, message.message || "✅ Login success");
+            //     break;
             // case MessageType.SUCCESS_REGISTRATION:
                 // this.triggerCallback(WebSocketEvent.REGISTRATION_SUCCESS, message.message || "✅ Registration success");
                 // break;
-            case MessageType.LOGIN_FAILURE:
-                this.triggerCallback(WebSocketEvent.LOGIN_FAILURE, message.message || "🚫 Login failed: ID/Password not matching");
-                break;
-            case MessageType.USER_NOTEXIST:
-                this.triggerCallback(WebSocketEvent.LOGIN_FAILURE, message.message || "User doesn't exist");
-                break;
+            // case MessageType.LOGIN_FAILURE:
+            //     this.triggerCallback(WebSocketEvent.LOGIN_FAILURE, message.message || "🚫 Login failed: ID/Password not matching");
+            //     break;
+            // case MessageType.USER_NOTEXIST:
+            //     this.triggerCallback(WebSocketEvent.LOGIN_FAILURE, message.message || "User doesn't exist");
+            //     break;
             // case MessageType.USER_EXIST:
             //     this.triggerCallback(WebSocketEvent.REGISTRATION_FAILURE, message.message || "🚫 Registration failed: user exist");
             //     break;
@@ -227,26 +224,26 @@ export class WebSocketClient {
 
 
 
-    loginUser(loginInfo: LoginUser): void {
-        if (!this.isConnected()) {
-            this.triggerCallback(WebSocketEvent.ERROR, 'Not connected to server');
-            return;
-        }
-        const message: ClientMessage = {
-            type: MessageType.LOGIN_USER,
-            loginUser: loginInfo
-        };
-        this.ws!.send(JSON.stringify(message));
-    }
+    // loginUser(loginInfo: LoginUser): void {
+    //     if (!this.isConnected()) {
+    //         this.triggerCallback(WebSocketEvent.ERROR, 'Not connected to server');
+    //         return;
+    //     }
+    //     const message: ClientMessage = {
+    //         type: MessageType.LOGIN_USER,
+    //         loginUser: loginInfo
+    //     };
+    //     this.ws!.send(JSON.stringify(message));
+    // }
 
-    logoutUser(): void {
-        if (this.isConnected()) {
-            const message: ClientMessage = {
-                type: MessageType.LOGOUT_USER,
-            };
-            this.ws!.send(JSON.stringify(message));
-        }          
-    }
+    // logoutUser(): void {
+    //     if (this.isConnected()) {
+    //         const message: ClientMessage = {
+    //             type: MessageType.LOGOUT_USER,
+    //         };
+    //         this.ws!.send(JSON.stringify(message));
+    //     }          
+    // }
 
     // ========================================
     // DASHBOARD

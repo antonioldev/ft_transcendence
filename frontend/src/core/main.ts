@@ -28,9 +28,8 @@ async function loadPage() {
 	// memoryDetector.startMonitoring(); // Logs memory usage (only google) 
 
 	// send "/" HTTP request and receive WebSocket URL to create ws
-	const wsURL = await sendRootRequest();
-	webSocketClient.createWebsocket(wsURL);
-	webSocketClient.connect();
+	const WS_URL = await sendRootRequest();
+	webSocketClient.connect(WS_URL);
 
 	// Setup WebSocket monitoring
 	webSocketClient.registerCallback(WebSocketEvent.STATUS_CHANGE, (status: ConnectionStatus) => {
