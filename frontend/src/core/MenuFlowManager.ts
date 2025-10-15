@@ -19,9 +19,9 @@ import { updateLanguageDisplay } from '../translations/translations.js';
  */
 export class MenuFlowManager {
 	private static instance: MenuFlowManager;
-	private selectedViewMode: ViewMode = ViewMode.MODE_2D;
-	private selectedGameMode: GameMode | null = null;
-	private currentAiDifficultyIndex: AiDifficulty = AiDifficulty.EASY;
+	// private selectedViewMode: ViewMode = ViewMode.MODE_2D;
+	// private selectedGameMode: GameMode | null = null;
+	// private currentAiDifficultyIndex: AiDifficulty = AiDifficulty.EASY;
 	private currentTournamentIndex: number = 4;
 	private currentOnlineTournamentIndex: number = 4;
 	private isCollectingPlayerNames = false;
@@ -99,7 +99,7 @@ export class MenuFlowManager {
             this.setupSettingsButton();
             
             // Initialize UI displays
-            uiManager.updateAIDifficultyDisplay(this.currentAiDifficultyIndex);
+            uiManager.updateAIDifficultyDisplay(currentSettings.AiDifficulty);
             uiManager.updateTournamentSizeDisplay(this.currentTournamentIndex);
 			this.updateTournamentSize(false, 'reset');
 			this.updateTournamentSize(true, 'reset');
@@ -183,7 +183,7 @@ export class MenuFlowManager {
 		this.isCollectingPlayerNames = false;
 		// this.playerIndex = 0;
 		// this.playerNames = [];
-		this.selectedGameMode = null;
+		currentSettings.gameMode = null;
 
 		appStateManager.navigateTo(target);
 	}
@@ -286,7 +286,7 @@ export class MenuFlowManager {
 				return;
 			}
 
-			this.selectedGameMode = gameMode;
+			currentSettings.gameMode = gameMode;
 
 			if (config.requiresSetup && !authManager.isUserAuthenticated()) {
 				this.beginPlayerCollection(gameMode);
@@ -333,7 +333,7 @@ export class MenuFlowManager {
 		label.textContent = `${t.playerName} ${currentPlayer}`;
 		nextButton.textContent = isLastPlayer ? t.startGame : t.next;
 
-		if (this.selectedGameMode === GameMode.TOURNAMENT_LOCAL) {
+		if (currentSettings.gameMode === GameMode.TOURNAMENT_LOCAL) {
 			const canAddCpu = this.playerNames.length >= this.getMinPlayersForCpu();
 			addCpuButton.style.display = 'block';
 			addCpuButton.style.opacity = canAddCpu ? '1' : '0.5';
@@ -385,7 +385,7 @@ export class MenuFlowManager {
 	}
 
 	private getMinPlayersForCpu(): number {
-		if (this.selectedGameMode !== GameMode.TOURNAMENT_LOCAL) return 0;
+		if (currentSettings.gameMode !== GameMode.TOURNAMENT_LOCAL) return 0;
 		
 		switch (this.currentTournamentIndex) {
 			case 4: return 3;
@@ -415,7 +415,7 @@ export class MenuFlowManager {
 
 		if (addCpu) {
 			addCpu.addEventListener('click', () => {
-				if (this.isCollectingPlayerNames && this.selectedGameMode === GameMode.TOURNAMENT_LOCAL) {
+				if (this.isCollectingPlayerNames && currentSettings.gameMode === GameMode.TOURNAMENT_LOCAL) {
 		
 					const minPlayers = this.getMinPlayersForCpu();
 					if (this.playerNames.length < minPlayers) {
@@ -429,14 +429,14 @@ export class MenuFlowManager {
 	}
 
 	private async handleStartGame(): Promise<void> {
-		if (this.selectedGameMode === null) return;
+		if (currentSettings.gameMode === null) return;
 
 		if (this.isCollectingPlayerNames) {
 			this.handlePlayerInputSubmission();
 			return;
 		}
 
-		if (!GameConfigFactory.validatePlayerSetup(this.selectedGameMode)) {
+		if (!GameConfigFactory.validatePlayerSetup(currentSettings.gameMode)) {
 			const t = getCurrentTranslation();
 			alert(t.pleaseFilllAllFields);
 			return;
@@ -450,18 +450,19 @@ export class MenuFlowManager {
 	// ========================================
 
 	private getTournamentCapacity(): number | undefined {
-		if (this.selectedGameMode === GameMode.TOURNAMENT_REMOTE)
+		if (currentSettings.gameMode === GameMode.TOURNAMENT_REMOTE)
 			return this.currentOnlineTournamentIndex;
-		if (this.selectedGameMode === GameMode.TOURNAMENT_LOCAL)
+		if (currentSettings.gameMode === GameMode.TOURNAMENT_LOCAL)
 			return this.currentTournamentIndex;
 		return undefined;
 	}
 
 	private async startGameWithCurrentConfig(): Promise<void> {
 		await appStateManager.startGameWithMode(
-			this.selectedViewMode,
-			this.selectedGameMode!,
-			this.currentAiDifficultyIndex,
+			currentSettings,
+			// this.selectedViewMode,
+			// this.selectedGameMode!,
+			// this.currentAiDifficultyIndex,
 			this.getTournamentCapacity()
 		);
 	}
@@ -505,11 +506,11 @@ export class MenuFlowManager {
 	private updateAIDifficulty(direction: 'next' | 'previous'): void {
 		const len = Object.keys(AiDifficulty).length / 2;
 		if (direction === 'next')
-			this.currentAiDifficultyIndex = (this.currentAiDifficultyIndex + 1) % len;
+			currentSettings.AiDifficulty = (currentSettings.AiDifficulty + 1) % len;
 		else
-			this.currentAiDifficultyIndex = (this.currentAiDifficultyIndex - 1 + len) % len;
+			currentSettings.AiDifficulty = (currentSettings.AiDifficulty - 1 + len) % len;
 
-		uiManager.updateAIDifficultyDisplay(this.currentAiDifficultyIndex);
+		uiManager.updateAIDifficultyDisplay(currentSettings.AiDifficulty);
 	}
 
 	// ========================================
@@ -543,7 +544,7 @@ export class MenuFlowManager {
 	// VIEW MODE MANAGEMENT
 	// ========================================
 		private setViewMode(viewMode: ViewMode): void {
-			this.selectedViewMode = viewMode;
+			currentSettings.viewMode = viewMode;
 			this.updateViewModeButtonStyles();
 		}
 
@@ -556,7 +557,7 @@ export class MenuFlowManager {
 		immersiveBtn.className = "bg-transparent text-light-green font-poppins-semibold text-lg px-4 py-3 transition-colors duration-200 border border-light-green rounded-sm min-w-[120px]";
 		
 		// Set active button style
-		if (this.selectedViewMode === ViewMode.MODE_2D) {
+		if (currentSettings.viewMode === ViewMode.MODE_2D) {
 			classicBtn.className = "bg-orange text-blue-background font-poppins-semibold text-lg px-4 py-3 transition-colors duration-200 border border-orange rounded-sm min-w-[120px]";
 		} else {
 			immersiveBtn.className = "bg-orange text-blue-background font-poppins-semibold text-lg px-4 py-3 transition-colors duration-200 border border-orange rounded-sm min-w-[120px]";

@@ -1,4 +1,4 @@
-import { AdvancedDynamicTexture, Image, Rectangle } from "@babylonjs/gui";
+import { AdvancedDynamicTexture, Control, Image, Rectangle } from "@babylonjs/gui";
 import { ViewMode } from "../../shared/constants.js";
 import { GAME_CONFIG } from "../../shared/gameConfig.js";
 import { getCurrentTranslation } from '../../translations/translations.js';
@@ -9,9 +9,11 @@ import { H_LEFT, PAUSE_MENU_STYLES, createGrid, createImage, createRect, createS
 export class Pause {
 	private overlay!: Rectangle;
 	private spectatorPauseBox!: Rectangle;
-	private muteIcon?: Image;
+	private muteIconMusic?: Image;
+	private muteIconEffects?: Image;
 
-	constructor(private adt: AdvancedDynamicTexture, private animationManager: AnimationManager, config: GameConfig, private onToggleMute?: () => boolean) {
+	constructor(private adt: AdvancedDynamicTexture, private animationManager: AnimationManager,
+	config: GameConfig, private onToggleMusic?: () => boolean, private onToggleEffects?: () => boolean) {
 		const t = getCurrentTranslation();
 
 		this.overlay = createRect("pauseOverlay", PAUSE_MENU_STYLES.pauseOverlay);
@@ -27,6 +29,7 @@ export class Pause {
 		pauseGrid.addRowDefinition(PAUSE_MENU_STYLES.gridRows.title, false);
 		pauseGrid.addRowDefinition(PAUSE_MENU_STYLES.gridRows.gameInstructions, false);
 		pauseGrid.addRowDefinition(PAUSE_MENU_STYLES.gridRows.exitInstruction, false);
+		pauseGrid.addRowDefinition(PAUSE_MENU_STYLES.gridRows.muteIcon, false);
 		pauseGrid.addRowDefinition(PAUSE_MENU_STYLES.gridRows.muteIcon, false);
 
 		const pauseTitle = createTextBlock( "pauseTitle", PAUSE_MENU_STYLES.pauseTitle, t.gamePaused);
@@ -46,27 +49,44 @@ export class Pause {
 		const pauseHint = createTextBlock("pauseHint", PAUSE_MENU_STYLES.pauseHint, t.pauseControls);
 		exitStack.addControl(pauseHint);
 
-		this.muteIcon = createImage( "muteIcon", PAUSE_MENU_STYLES.muteIcon, "assets/icons/sound_on.png");
-		this.muteIcon.onPointerClickObservable.add(() => {
-			this.animateMuteIcon();
-			if (this.onToggleMute) {
-				const isMuted = this.onToggleMute();
-				if (this.muteIcon)
-					this.muteIcon.source = isMuted ? "assets/icons/sound_off.png" : "assets/icons/sound_on.png";
+
+		const musicLabel = createTextBlock("musicLabel", PAUSE_MENU_STYLES.pauseHint, t.music);
+		musicLabel.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
+		pauseGrid.addControl(musicLabel, 3, 0);
+		this.muteIconMusic = createImage("muteIcon", PAUSE_MENU_STYLES.muteIcon, 
+			config.musicEnabled ? "assets/icons/sound_on.png" : "assets/icons/sound_off.png");
+		this.muteIconMusic.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_RIGHT;
+		pauseGrid.addControl(this.muteIconMusic, 3, 1);
+		this.muteIconMusic.onPointerClickObservable.add(() => {
+			if (this.onToggleMusic) {
+				const isEnabled = this.onToggleMusic();
+				if (this.muteIconMusic) {
+					this.animationManager?.scale(this.muteIconMusic, 1, 0.9, Motion.F.xFast, true);
+					this.muteIconMusic.source = isEnabled ? "assets/icons/sound_on.png" : "assets/icons/sound_off.png";
+				}
 			}
 		});
-		pauseGrid.addControl(this.muteIcon, 3, 0);
+		
+		const effectsLabel = createTextBlock("effectsLabel", PAUSE_MENU_STYLES.pauseHint, t.soundEffects);
+		pauseGrid.addControl(effectsLabel, 4, 0);
+		this.muteIconEffects = createImage("muteIcon", PAUSE_MENU_STYLES.muteIcon, 
+			config.soundEffectsEnabled ? "assets/icons/sound_on.png" : "assets/icons/sound_off.png");
+		pauseGrid.addControl(this.muteIconEffects, 4, 1);
+		this.muteIconEffects.onPointerClickObservable.add(() => {
+			if (this.onToggleEffects) {
+				const isEnabled = this.onToggleEffects();
+				if (this.muteIconEffects) {
+					this.animationManager?.scale(this.muteIconEffects, 1, 0.9, Motion.F.xFast, true);
+					this.muteIconEffects.source = isEnabled ? "assets/icons/sound_on.png" : "assets/icons/sound_off.png";
+				}  
+			}
+		});
 
 		this.spectatorPauseBox = createRect("spectatorPauseBox", PAUSE_MENU_STYLES.spectatorPauseBox);
 		this.adt.addControl(this.spectatorPauseBox);
 		
 		const spectatorPauseText = createTextBlock("spectatorPauseText", PAUSE_MENU_STYLES.spectatorPauseText, t.gamePaused);
 		this.spectatorPauseBox.addControl(spectatorPauseText);
-	}
-
-	private async animateMuteIcon(): Promise<void> {
-		if (!this.muteIcon) return;
-		await this.animationManager?.scale(this.muteIcon, 1, 0.9, Motion.F.xFast, true);
 	}
 
 	private buildInstructions(gameInstructions: Rectangle, config: GameConfig): void {
@@ -165,6 +185,7 @@ export class Pause {
 	}
 
 	dispose(): void {
-		this.muteIcon?.onPointerClickObservable.clear(); // TODO
+		this.muteIconMusic?.onPointerClickObservable.clear(); // TODO
+		this.muteIconEffects?.onPointerClickObservable.clear();
 	}
 }

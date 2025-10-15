@@ -83,11 +83,13 @@ export class Hud {
 
 		// P1 Score Cell
 		const p1Cell = new Grid();
+		p1Cell.width = "100%";
 		p1Cell.addRowDefinition(1, false);
 		p1Cell.addRowDefinition(1, false);
 		p1Cell.addColumnDefinition(1, false);
 
 		this.player1Label = createTextBlock("player1Label", HUD_STYLES.player1Label, "Player 1");
+		this.player1Label
 		this.score1Text = createTextBlock("score1Text", HUD_STYLES.score1Text, "0");
 		
 		p1Cell.addControl(this.player1Label, 0, 0);
@@ -112,6 +114,7 @@ export class Hud {
 
 		// P2 Score Cell
 		const p2Cell = new Grid();
+		p2Cell.width = "100%";
 		p2Cell.addRowDefinition(1, false);
 		p2Cell.addRowDefinition(1, false);
 		p2Cell.addColumnDefinition(1, false);
