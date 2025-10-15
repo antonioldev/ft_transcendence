@@ -14,7 +14,8 @@ export const EL = {
 	GAME_MODE_OVERLAY: 'game-mode-overlay',
 	PLAYER_SETUP_OVERLAY: 'player-setup-overlay',
 	GAME_3D: 'game-3d',
-	STATS_DASHBOARD: 'stats-dashboard'
+	STATS_DASHBOARD: 'stats-dashboard',
+	SETTINGS_MENU: 'settings-menu'
   },
 
   // ========================================
@@ -28,13 +29,12 @@ export const EL = {
 	LOGOUT: 'logout-btn',
 
 	// Navigation buttons
-	BACK: 'back',
-	FORWARD: 'forward',
 	MODE_BACK: 'mode-back',
 	SETUP_BACK: 'setup-back',
 	LOGIN_BACK: 'login-back',
 	REGISTER_BACK: 'register-back',
 	DASHBOARD_BACK: 'dashboard-back',
+	SETTINGS_BACK: 'settings-back',
 	SOLO_DIFFICULTY_BACK: 'solo-difficulty-back',
 	SOLO_DIFFICULTY_FORWARD: 'solo-difficulty-forward',
 	TOURNAMENT_NUMBER_BACK: 'tournament-number-back',
@@ -63,7 +63,8 @@ export const EL = {
 	SHOW_LOGIN: 'show-login',
 
 	// Dashboard view
-	DASHBOARD: 'dashboard-btn'
+	DASHBOARD: 'dashboard-btn',
+	SETTINGS: 'settings-btn'
   },
 
   // ========================================
@@ -136,8 +137,6 @@ export const EL = {
 	MODE_TITLE: 'mode-title',
 	SETUP_TITLE: 'setup-title',
 
-	// Language selector
-	LANGUAGE_SELECT: 'language_select',
 	VIEW_MODE_DISPLAY: 'view-mode-display',
 
   // User info display

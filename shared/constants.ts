@@ -169,7 +169,8 @@ export enum AppState {
 	GAME_MODE ,//= 'game-mode',
 	PLAYER_SETUP ,//= 'player-setup',
 	GAME_3D ,//= 'game-3d',
-	STATS_DASHBOARD ,//= 'STATS_DASHBOARD'
+	STATS_DASHBOARD ,//= 'stats-dashboard'
+	SETTINGS ,//= 'settings'
 }
 
 export enum AiDifficulty {

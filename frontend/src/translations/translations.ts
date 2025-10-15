@@ -21,9 +21,13 @@ export function getCurrentTranslation(): Translation {
 export function updateLanguageDisplay(): void {
 	const t = getCurrentTranslation();
 
-    // Language selector
-    const langDisplay = requireElementById(EL.DISPLAY.LANGUAGE_SELECT);
-    langDisplay.textContent = langs[currentLang];
+    // Update language selector in settings if it exists
+    const languageSelect = document.getElementById('language_select') as HTMLSelectElement;
+    if (languageSelect) {
+        // Set the selected option based on current language
+        const languageMapping = ['UK', 'IT', 'FR', 'BR', 'RU'];
+        languageSelect.value = languageMapping[currentLang];
+    }
 
 	// Auth buttons
 	const registerBtn = requireElementById(EL.BUTTONS.REGISTER);
@@ -95,6 +99,25 @@ export function updateLanguageDisplay(): void {
     const alreadyRegistered = document.getElementById('already-registered');
     if (alreadyRegistered) alreadyRegistered.textContent = t.alreadyHaveAccount;
 
+    // Settings menu
+    const settingsTitle = document.getElementById('settings-title');
+    if (settingsTitle) settingsTitle.textContent = t.settings;
+
+    const languageLabel = document.querySelector('label[for="language_select"]');
+    if (languageLabel) languageLabel.textContent = t.language;
+
+    const mapSelectorLabel = document.querySelector('label[for="map-selector"]');
+    if (mapSelectorLabel) mapSelectorLabel.textContent = t.scene3D;
+
+    const musicToggleLabel = document.getElementById('music-toggle-label');
+    if (musicToggleLabel) musicToggleLabel.textContent = t.music;
+
+    const soundEffectToggleLabel = document.getElementById('sound-effect-toggle-label');
+    if (soundEffectToggleLabel) soundEffectToggleLabel.textContent = t.soundEffects;
+
+    const settingsBack = document.getElementById('settings-back');
+    if (settingsBack) settingsBack.textContent = t.back;
+
     const registerFooter = document.querySelector('#register-modal .modal-footer .info-text');
     if (registerFooter) registerFooter.textContent = t.alreadyHaveAccount;
 
@@ -102,8 +125,11 @@ export function updateLanguageDisplay(): void {
 	const modeTitle = requireElementById(EL.DISPLAY.MODE_TITLE);
 	modeTitle.textContent = t.selectGameMode;
 
-	// const viewModeDisplay = requireElementById(EL.DISPLAY.VIEW_MODE_DISPLAY);
-	// viewModeDisplay.textContent = t.classicMode;
+	const viewModeDisplay = requireElementById(EL.DISPLAY.VIEW_MODE_DISPLAY);
+	viewModeDisplay.textContent = t.classicMode;
+
+    const immersiveModeBtn = requireElementById(EL.BUTTONS.VIEW_MODE_IMMERSIVE);
+    immersiveModeBtn.textContent = t.immersiveMode;
 
 	const soloBtn = requireElementById(EL.GAME_MODES.SOLO);
 	soloBtn.textContent = t.soloMode + t.easy;
@@ -204,4 +230,20 @@ export function previousLanguage(): void {
 export function getText(key: TranslationKey): string {
 	const t = getCurrentTranslation();
 	return t[key];
+}
+
+// Setup language selector event listener in settings
+export function setupLanguageSelector(): void {
+    const languageSelect = document.getElementById('language_select') as HTMLSelectElement;
+    if (languageSelect) {
+        languageSelect.addEventListener('change', (event) => {
+            const target = event.target as HTMLSelectElement;
+            const languageMapping = ['UK', 'IT', 'FR', 'BR', 'RU'];
+            const newLangIndex = languageMapping.indexOf(target.value);
+            if (newLangIndex !== -1) {
+                currentLang = newLangIndex;
+                updateLanguageDisplay();
+            }
+        });
+    }
 }
