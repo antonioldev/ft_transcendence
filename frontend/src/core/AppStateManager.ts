@@ -6,6 +6,7 @@ import { uiManager } from '../ui/UIManager.js';
 import { Logger } from '../utils/LogManager.js';
 import { authManager } from './AuthManager.js';
 import { webSocketClient } from './WebSocketClient.js';
+import { AiDifficulty } from '../shared/constants.js';
 
 /**
  * Central controller for application state and navigation.
@@ -14,9 +15,23 @@ import { webSocketClient } from './WebSocketClient.js';
  * Does not implement game logic; focuses on lifecycle and state management.
  */
 
-export let currentSettings = {
+export interface Setting {
+	lang: number;
+	viewMode: ViewMode;
+	scene3D: string;
+	gameMode: GameMode | null;
+	AiDifficulty: AiDifficulty;
+	musicEnabled: boolean;
+	soundEffectsEnabled: boolean;
+
+}
+
+export let currentSettings: Setting = {
 	lang: 0,
+	viewMode: ViewMode.MODE_2D,
     scene3D: 'random',
+	gameMode: null,
+	AiDifficulty: AiDifficulty.EASY,
     musicEnabled: true,
     soundEffectsEnabled: true
 };
@@ -127,12 +142,24 @@ export class AppStateManager {
 		}
 	}
 
-	async startGameWithMode(viewMode: ViewMode, gameMode: GameMode, aiDifficulty: number, capacity?: number): Promise<void> {
+	// async startGameWithMode(viewMode: ViewMode, gameMode: GameMode, aiDifficulty: number, capacity?: number): Promise<void> {
+	// 	try {
+	// 		this.navigateTo(AppState.GAME_3D, false);
+	// 		const config = GameConfigFactory.createWithAuthCheck(viewMode, gameMode);
+	// 		this.currentGame = new Game(config);
+	// 		await this.currentGame.create(aiDifficulty, capacity);
+	// 	} catch (error) {
+	// 		this.currentGame = null;
+	// 		Logger.error('Error starting game', 'AppStateManager', error);
+	// 		this.navigateTo(AppState.MAIN_MENU);
+	// 	}
+	// }
+	async startGameWithMode(settings: Setting, capacity?: number): Promise<void> {
 		try {
 			this.navigateTo(AppState.GAME_3D, false);
-			const config = GameConfigFactory.createWithAuthCheck(viewMode, gameMode);
+			const config = GameConfigFactory.createWithAuthCheck(settings);
 			this.currentGame = new Game(config);
-			await this.currentGame.create(aiDifficulty, capacity);
+			await this.currentGame.create(settings.AiDifficulty, capacity);
 		} catch (error) {
 			this.currentGame = null;
 			Logger.error('Error starting game', 'AppStateManager', error);

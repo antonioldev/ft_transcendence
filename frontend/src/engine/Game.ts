@@ -84,7 +84,7 @@ export class Game {
 		this.engine = await this.initializeBabylonEngine();
 		this.scene = await this.createScene();
 
-		const { gameObjects, themeObjects } = await buildScene(this.scene, this.config.gameMode, this.config.viewMode, 
+		const { gameObjects, themeObjects } = await buildScene(this.scene, this.config, 
 			(progress: number) => uiManager.updateLoadingProgress(progress));
 
 		this.gameObjects = gameObjects;

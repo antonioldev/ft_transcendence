@@ -11,20 +11,22 @@ import { createStaticObject, createStaticObjects } from "../entities/staticProps
 import { createDustParticleSystem, createFog, createLensFlare, createRainParticles, createSmokeSprite, createSnow, createUnderwaterParticles, createStarsParticles } from '../rendering/effects.js';
 import { createCameras, createGuiCamera } from "./camerasBuilder.js";
 import { createSky, createLight, createTerrain } from './enviromentBuilder.js';
+import { GameConfig } from '../../GameConfig.js';
 
 export type LoadingProgressCallback = (progress: number) => void;
 
 export async function buildScene(
 	scene: Scene,
-	gameMode: GameMode,
-	viewMode: ViewMode,
+	config: GameConfig,
 	onProgress?: LoadingProgressCallback
 ): Promise<{ gameObjects: GameObjects; themeObjects: ThemeObject }> {
 	onProgress?.(0);
+
+	const viewMode = config.viewMode;
+	const gameMode = config.gameMode;
     let themeObjects: ThemeObject = { props: [], actors: [], effects: [] };
 
-	const map_asset = viewMode === ViewMode.MODE_2D 
-		? MAP_CONFIGS.map : MAP_CONFIGS.map0
+	const map_asset = getMap(viewMode, config.scene3D);
     
     const coreObjects = await buildCoreGameObjects(scene, gameMode, viewMode, map_asset);
     onProgress?.(20);
@@ -42,6 +44,18 @@ export async function buildScene(
         },
         themeObjects
     };
+}
+
+function getMap(viewMode: ViewMode, scene3D: string): any {
+	if (viewMode === ViewMode.MODE_2D)
+		return MAP_CONFIGS.map;
+
+	if (scene3D === 'random') {
+		const randomIndex = Math.floor(Math.random() * 7);
+		return MAP_CONFIGS[`map${randomIndex}`];
+	}
+
+	return MAP_CONFIGS[scene3D];
 }
 
 async function buildCoreGameObjects(scene: Scene, gameMode: GameMode, viewMode: ViewMode, map_asset: MapAssetConfig): Promise<any> {

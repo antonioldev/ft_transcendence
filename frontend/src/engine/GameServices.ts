@@ -10,17 +10,7 @@ import { PowerupManager } from "./services/PowerUpManager";
 import { RenderManager } from "./services/RenderManager";
 import { PlayerSide, PlayerState } from "./utils.js";
 
-export interface IGameServices {
-	audio: AudioManager;
-	render: RenderManager;
-	input: KeyboardManager;
-	gui: GUIManager;
-	particles: Particles;
-	animation: AnimationManager;
-	powerup: PowerupManager;
-}
-
-export class GameServices implements IGameServices {
+export class GameServices {
 	audio: AudioManager;
 	render: RenderManager;
 	input: KeyboardManager;
@@ -37,7 +27,7 @@ export class GameServices implements IGameServices {
 		players: Map<PlayerSide, PlayerState>,
 	) {
 		this.animation = new AnimationManager(scene);
-		this.audio = new AudioManager(scene);
+		this.audio = new AudioManager(scene, config);
 		this.gui = new GUIManager(scene, config, this.animation, this.audio);
 		this.particles = new Particles();
 		this.powerup = new PowerupManager(players, this.animation, this.gui, gameObjects);

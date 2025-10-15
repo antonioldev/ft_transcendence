@@ -104,7 +104,7 @@ export const HUD_STYLES = {
         outlineWidth: 2,
         outlineColor: COLORS.TRANSPARENT_BLACK,
         thickness: 2,
-        resizeToFit: true,
+        resizeToFit: true
     },
 
     player2Label: {
@@ -262,7 +262,7 @@ export const PAUSE_MENU_STYLES = {
 
     gridRows: {
         title: 0.15,
-        gameInstructions: 0.65,
+        gameInstructions: 0.60,
         exitInstruction: 0.15,
         muteIcon: 0.05
     },

@@ -43,7 +43,7 @@ export class GUIManager {
 			this.matchTree = new MatchTree(this.adt, this.animationManager);
 			this.hud = new Hud(this.adt, this.animationManager,config);
 			this.endGame = new EndGame(this.adt, this.animationManager);
-			this.pause = new Pause(this.adt, this.animationManager, config, () => audioManager.toggleMute());
+			this.pause = new Pause(this.adt, this.animationManager, config, () => audioManager.toggleMusic(), () => audioManager.toggleEffects());
 			this.lobby = new Lobby(this.adt, this.animationManager);
 			this.curtain = new SceneTransition(this.adt, this.animationManager);
 			this.cardGame = new CardGame(this.adt, animationManager, audioManager);
