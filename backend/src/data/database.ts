@@ -126,6 +126,23 @@ export function updateUserInfo(field: UserField, newInfo: string, email: string)
 	}
 }
 
+export async function updateUserSettings(username: string, newSettings: object): Promise<boolean> {
+	try {
+		const currentSettings = await getUserSettings(username);
+		const mergedSettings = { ...currentSettings, ...newSettings };
+
+		const settingsJson = JSON.stringify(mergedSettings);
+		const result = await db.run(
+			'UPDATE users SET settings = ? WHERE username = ?',
+			[settingsJson, username]
+		);
+		return result.changes > 0;
+	} catch (err) {
+		console.error('Error in updating user settings: ', err);
+		return false;
+	}
+}
+
 export function updateUserVictory(id: number, victory: number): boolean {
 	try {
 		id = nonNegInt(id, 'user id');
@@ -303,6 +320,21 @@ export function getUserPwd(email: string): string {
 		console.error('Error in get User Email:', err);
 		return "";
 	}
+}
+
+async function getUserSettings(username: string): Promise<any> {
+	try {
+		const row: { settings: string } | undefined = await db.get(
+			'SELECT settings FROM users WHERE username = ?',
+			[username]
+		);
+		if (row && row.settings) {
+			return JSON.parse(row.settings);
+		}
+	} catch (err) {
+		console.error('Error in getUserSettings:', err);
+	}
+	return {};
 }
 
 export function retrieveUserID(username: string): number {
