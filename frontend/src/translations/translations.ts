@@ -5,16 +5,17 @@ import { portuguese } from './pt-PT.js';
 import { russian } from './ru-RU.js';
 import type { Translation } from './Translation.js';
 import { EL, requireElementById } from '../ui/elements.js';
-import { TranslationKey } from './Translation.js';
+// import { TranslationKey } from './Translation.js';
+import { currentSettings } from '../core/AppStateManager.js';
 
-export let currentLang = 0;
+// export let currentLang = 0;
 export const langs: string[] = ['🇬🇧 English', '🇮🇹 Italiano', '🇫🇷 Français', '🇧🇷 Brasileiro', '🇷🇺 Русский'];
 
 const allTranslations = [english, italian, french, portuguese, russian];
 
 // Retrieves the current translation object based on the selected language.
 export function getCurrentTranslation(): Translation {
-	return allTranslations[currentLang];
+	return allTranslations[currentSettings.lang];
 }
 
 // Updates the text content of various elements in the UI to match the current language.
@@ -26,7 +27,7 @@ export function updateLanguageDisplay(): void {
     if (languageSelect) {
         // Set the selected option based on current language
         const languageMapping = ['UK', 'IT', 'FR', 'BR', 'RU'];
-        languageSelect.value = languageMapping[currentLang];
+        languageSelect.value = languageMapping[currentSettings.lang];
     }
 
 	// Auth buttons
@@ -214,36 +215,36 @@ export function updateLanguageDisplay(): void {
 
 }
 
-// Cycles to the next language in the list and updates the UI accordingly.
-export function nextLanguage(): void {
-	currentLang = (currentLang + 1) % langs.length;
-	updateLanguageDisplay();
-}
+// // Cycles to the next language in the list and updates the UI accordingly.
+// export function nextLanguage(): void {
+// 	currentSettings.lang = (currentSettings.lang + 1) % langs.length;
+// 	updateLanguageDisplay();
+// }
 
-// Cycles to the previous language in the list and updates the UI accordingly.
-export function previousLanguage(): void {
-	currentLang = (currentLang - 1 + langs.length) % langs.length;
-	updateLanguageDisplay();
-}
+// // Cycles to the previous language in the list and updates the UI accordingly.
+// export function previousLanguage(): void {
+// 	currentSettings.lang = (currentSettings.lang - 1 + langs.length) % langs.length;
+// 	updateLanguageDisplay();
+// }
 
-// Retrieves a specific item based on current language
-export function getText(key: TranslationKey): string {
-	const t = getCurrentTranslation();
-	return t[key];
-}
+// // Retrieves a specific item based on current language
+// export function getText(key: TranslationKey): string {
+// 	const t = getCurrentTranslation();
+// 	return t[key];
+// }
 
 // Setup language selector event listener in settings
-export function setupLanguageSelector(): void {
-    const languageSelect = document.getElementById('language_select') as HTMLSelectElement;
-    if (languageSelect) {
-        languageSelect.addEventListener('change', (event) => {
-            const target = event.target as HTMLSelectElement;
-            const languageMapping = ['UK', 'IT', 'FR', 'BR', 'RU'];
-            const newLangIndex = languageMapping.indexOf(target.value);
-            if (newLangIndex !== -1) {
-                currentLang = newLangIndex;
-                updateLanguageDisplay();
-            }
-        });
-    }
-}
+// export function setupLanguageSelector(): void {
+//     const languageSelect = document.getElementById('language_select') as HTMLSelectElement;
+//     if (languageSelect) {
+//         languageSelect.addEventListener('change', (event) => {
+//             const target = event.target as HTMLSelectElement;
+//             const languageMapping = ['UK', 'IT', 'FR', 'BR', 'RU'];
+//             const newLangIndex = languageMapping.indexOf(target.value);
+//             if (newLangIndex !== -1) {
+//                 currentSettings.lang = newLangIndex;
+//                 updateLanguageDisplay();
+//             }
+//         });
+//     }
+// }

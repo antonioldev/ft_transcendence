@@ -13,6 +13,14 @@ import { webSocketClient } from './WebSocketClient.js';
  * and delegates actions to authentication, history, and networking managers.
  * Does not implement game logic; focuses on lifecycle and state management.
  */
+
+export let currentSettings = {
+	lang: 0,
+    scene3D: 'random',
+    musicEnabled: true,
+    soundEffectsEnabled: true
+};
+
 export class AppStateManager {
 	currentAppState: AppState = AppState.MAIN_MENU;
 	currentGame: Game | null = null;

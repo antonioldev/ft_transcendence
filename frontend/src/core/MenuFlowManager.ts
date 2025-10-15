@@ -8,6 +8,8 @@ import { appStateManager } from './AppStateManager.js';
 import { authManager } from './AuthManager.js';
 import { dashboardManager } from './DashboardManager.js';
 import { webSocketClient } from './WebSocketClient.js';
+import { currentSettings } from './AppStateManager.js';
+import { updateLanguageDisplay } from '../translations/translations.js';
 
 /**
  * Manages the selection and initialization of game modes and view modes for the application.
@@ -195,6 +197,64 @@ export class MenuFlowManager {
 		settingsBtn?.addEventListener('click', () => {
 			appStateManager.navigateTo(AppState.SETTINGS);
 		});
+
+		this.setupLanguageSelector();
+		this.setupSceneSelector();
+		this.setupGameMusicEnable();
+		this.setupGameEffectsEnabled();
+	}
+
+	private setupSceneSelector(): void {
+		const sceneSelect = document.getElementById('map-selector') as HTMLSelectElement;
+		if (sceneSelect) {
+			sceneSelect.value = currentSettings.scene3D;
+
+			sceneSelect.addEventListener('change', (event) => {
+				const target = event.target as HTMLSelectElement;
+				if (target)
+					currentSettings.scene3D = target.value;
+			});
+		}
+	}
+
+	private setupGameMusicEnable(): void { 
+		const musicToggle = document.getElementById('music-toggle') as HTMLInputElement;
+		if (musicToggle) {
+			musicToggle.checked = currentSettings.musicEnabled;
+
+			musicToggle.addEventListener('change', (event) => {
+				const target = event.target as HTMLInputElement;
+				currentSettings.musicEnabled = target.checked;
+			});
+		}
+	}
+
+	private setupGameEffectsEnabled(): void {
+		const effectsToggle = document.getElementById('sound-effect-toggle') as HTMLInputElement;
+		if (effectsToggle) {
+			effectsToggle.checked = currentSettings.musicEnabled;
+
+			effectsToggle.addEventListener('change', (event) => {
+				const target = event.target as HTMLInputElement;
+				currentSettings.musicEnabled = target.checked;
+			});
+		}
+	}
+
+	private setupLanguageSelector(): void {
+		updateLanguageDisplay();
+		const languageSelect = document.getElementById('language_select') as HTMLSelectElement;
+		if (languageSelect) {
+			languageSelect.addEventListener('change', (event) => {
+				const target = event.target as HTMLSelectElement;
+				const languageMapping = ['UK', 'IT', 'FR', 'BR', 'RU'];
+				const newLangIndex = languageMapping.indexOf(target.value);
+				if (newLangIndex !== -1) {
+					currentSettings.lang = newLangIndex;
+					updateLanguageDisplay();
+				}
+			});
+		}
 	}
 
 	// ========================================
@@ -485,7 +545,6 @@ export class MenuFlowManager {
 	private updateViewModeButtonStyles(): void {
 		const classicBtn = requireElementById<HTMLButtonElement>(EL.BUTTONS.VIEW_MODE_CLASSIC);
 		const immersiveBtn = requireElementById<HTMLButtonElement>(EL.BUTTONS.VIEW_MODE_IMMERSIVE);
-		const t = getCurrentTranslation();
 
 		// Reset both buttons to inactive state
 		classicBtn.className = "bg-transparent text-light-green font-poppins-semibold text-lg px-4 py-3 transition-colors duration-200 border border-light-green rounded-sm min-w-[120px]";

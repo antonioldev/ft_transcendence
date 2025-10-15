@@ -1,7 +1,8 @@
 import "@babylonjs/loaders";
 
 import { ConnectionStatus } from '../shared/constants.js';
-import { setupLanguageSelector, updateLanguageDisplay } from '../translations/translations.js';
+// import { setupLanguageSelector, updateLanguageDisplay } from '../translations/translations.js';
+// import { updateLanguageDisplay } from '../translations/translations.js';
 import { uiManager } from '../ui/UIManager.js';
 import { AppStateManager } from './AppStateManager.js';
 import { AuthManager } from './AuthManager.js';
@@ -24,8 +25,8 @@ function loadPage(): void {
 	DashboardManager.initialize();
 
 	// Setup language system
-	updateLanguageDisplay();
-	setupLanguageSelector();
+	// updateLanguageDisplay();
+	// setupLanguageSelector();
 
 	// memoryDetector.startMonitoring(); // Logs memory usage (only google) 
 
