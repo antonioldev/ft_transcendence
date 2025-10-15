@@ -161,23 +161,23 @@ export class Game {
 	}
 
 	// Main game loop 
-	async run(): Promise<Player | CPU> {
+	async run(): Promise<Player | CPU > {
 		console.log(`Game ${this.id} started with players: ${this.players[LEFT].name}, ${this.players[RIGHT].name}`)
+		this.state = GameState.RUNNING;
+
 		// if both are CPU then choose a random winner
 		if (this.paddles[LEFT] instanceof CPUBot && this.paddles[RIGHT] instanceof CPUBot) {
 			const random_index = (Math.random() > 0.5) ? 0 : 1;
 			return (this.players[random_index]);
 		}
 		await this.send_countdown();
-		this.state = GameState.RUNNING;
 
 		// run game loop, updating and broadcasting state to clients until win
 		while (!this.is_ended()) {
 			const dt = await this.clock.tick(60);
-			// if (this.is_paused()) continue ;
-			// this._update_state(dt);
-			if (!this.is_paused())
+			if (!this.is_paused()) {
 				this._update_state(dt);
+			}
 			this._broadcast({
 				type: MessageType.GAME_STATE,
 				state: this.get_state()
@@ -213,14 +213,14 @@ export class Game {
 
 	// Stop the execution of the game
 	stop() {
-		if (this.state === GameState.ENDED) return ;
+		if (this.is_ended()) return ;
 		this.state = GameState.ENDED;
 	}
 
-	save_to_db() {
+	save_to_db(tournament: boolean = false) {
 		if (this.players[LEFT] instanceof CPU || this.players[RIGHT] instanceof CPU) return ;
 
-		registerNewGame(this.id, this.players[LEFT].name, 1);
+		registerNewGame(this.id, this.players[LEFT].name, tournament ? 1 : 0);
 		addPlayer2(this.id, this.players[RIGHT].name);
 		console.log(`Game ${this.id} added to db: P1:${this.players[LEFT].name}, P2: ${this.players[RIGHT].name}`);
 

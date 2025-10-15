@@ -192,21 +192,19 @@ export class OneOffGame extends AbstractGameSession{
 		this.state = GameSessionState.RUNNING;
 		
 		await this.waitForClientsReady();
-		const players = [...this.players];
-
-		this.game = new Game(this.id, players, this.broadcast.bind(this));
+		this.game = new Game(this.id, [...this.players], this.broadcast.bind(this));
 		await this.game.run();
 		
 		if (this.mode === GameMode.TWO_PLAYER_REMOTE) {
-			this.game.save_to_db();
+			this.game.save_to_db(false);
 		}
 	}
 
 	stop(): void {
-		if (!this.is_running() || !this.game) return;
+		if (this.is_ended()) return;
 		
 		this.state = GameSessionState.ENDED;
-		this.game.stop();
+		this.game?.stop();
 		
 		this.broadcast({ 
 			type: MessageType.SESSION_ENDED,
@@ -215,10 +213,11 @@ export class OneOffGame extends AbstractGameSession{
 	}
 	
 	handlePlayerQuit(quitter: Client): void {
-		if (this.mode == GameMode.TWO_PLAYER_REMOTE && this.game && this.game.is_running()) {
+		if (this.mode == GameMode.TWO_PLAYER_REMOTE && this.is_running()) {
 			this.game.setOtherPlayerWinner(quitter);
 		}
 		this.stop();
+		this.clients.delete(quitter);
 	}
 
 	canClientControlGame(client: Client) {
