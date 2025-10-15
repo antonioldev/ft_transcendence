@@ -71,3 +71,4 @@ export async function createStaticObjects(
 	
 	return createdObjects;
 }
+

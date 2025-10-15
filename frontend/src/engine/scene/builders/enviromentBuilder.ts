@@ -8,7 +8,7 @@ import { createLavaMaterial, createMaterial, getStandardTextureScale } from '../
 import { MAP_CONFIGS } from "../config/mapConfigs.js";
 
 // Creates HDRI environment with fallback to default environment
-export function createEnvironment(scene: Scene, path: string | null): void {
+export function createSky(scene: Scene, path: string | null): void {
 	if (!path) return;
 	try {
 		const hdrTexture = new HDRCubeTexture(path, scene, 1024);

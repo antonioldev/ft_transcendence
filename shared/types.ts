@@ -164,12 +164,14 @@ export interface GameHistoryEntry {
 
 // ============================== FRONTEND-ONLY TYPES ==============================
 
+export interface Players {
+	left: any;
+	right: any;
+}
+
 // Represents the game objects in a Babylon.js scene
 export interface GameObjects {
-	players: {
-		left: any;
-		right: any;
-	};
+	players: Players;
 	balls: any[];
 	gameField: any;
 	walls: any;
