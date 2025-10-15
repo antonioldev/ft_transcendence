@@ -7,6 +7,8 @@ import { Logger } from '../utils/LogManager.js';
 import { appStateManager } from './AppStateManager.js';
 import { initializeGoogleSignIn, renderGoogleButton } from './GoogleSignIn.js';
 import { WebSocketClient } from './WebSocketClient.js';
+import { updateCurrentSettings } from './AppStateManager.js';
+import { MenuFlowManager } from './MenuFlowManager.js';
 
 // Declare the type for Google Response to avoid TypeScript errors
 type GoogleCredentialResponse = {
@@ -295,8 +297,16 @@ export class AuthManager {
 			if (res.ok) {
 				const data = await res.json(); // expected: { ok: true, user: {...} }
 				if (data?.ok && data.user?.username) {
-					this.authState = AuthState.LOGGED_IN;
 					this.currentUser = { username: data.user.username };
+                    // if (data.user.settings) {
+                    //     try {
+                    //         const parsedSettings = JSON.parse(data.user.settings);
+                    //         updateCurrentSettings(parsedSettings);
+                    //         MenuFlowManager.getInstance().updateSettingsUIFromState();
+                    //     } catch (error) {
+                    //         console.error('Error parsing user settings:', error);
+                    //     }
+                    // }
 					uiManager.showUserInfo(this.currentUser.username);
 					appStateManager.navigateTo(AppState.MAIN_MENU);
 					WebSocketClient.getInstance();
@@ -416,6 +426,31 @@ export class AuthManager {
 
 				this.authState = AuthState.LOGGED_IN;
 				this.currentUser = { username: uname ?? username };
+				
+				// Load user settings after successful login
+				// try {
+				// 	const settingsRes = await fetch('/api/auth/session/me', {
+				// 		method: 'GET',
+				// 		credentials: 'include',
+				// 		cache: 'no-store',
+				// 	});
+					
+				// 	if (settingsRes.ok) {
+				// 		const settingsData = await settingsRes.json();
+				// 		if (settingsData?.ok && settingsData.user?.settings) {
+				// 			try {
+				// 				const parsedSettings = JSON.parse(settingsData.user.settings);
+				// 				updateCurrentSettings(parsedSettings);
+				// 				MenuFlowManager.getInstance().updateSettingsUIFromState();
+				// 			} catch (error) {
+				// 				console.error('Error parsing user settings after login:', error);
+				// 			}
+				// 		}
+				// 	}
+				// } catch (error) {
+				// 	console.error('Error loading user settings after login:', error);
+				// }
+				
 				uiManager.clearForm(this.loginFields);
 				appStateManager.navigateTo(AppState.MAIN_MENU);
 				uiManager.showUserInfo(this.currentUser.username);
@@ -583,8 +618,17 @@ export class AuthManager {
 				console.log("Backend responded with user data:", user, "success:", success);
 
 				// Updates the current user and authentication state
-				this.authState = AuthState.LOGGED_IN;
 				this.currentUser = { username: user.username };
+
+                // if (user.settings) {
+                //     try {
+                //         const parsedSettings = JSON.parse(user.settings);
+                //         updateCurrentSettings(parsedSettings);
+                //         MenuFlowManager.getInstance().updateSettingsUIFromState();
+                //     } catch (error) {
+                //         console.error('Error parsing user settings:', error);
+                //     }
+                // }
 				
 				// Store Google token for session restore if needed
 				localStorage.setItem('google_id_token', googleResponse.credential);

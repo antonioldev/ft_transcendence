@@ -126,22 +126,22 @@ export function updateUserInfo(field: UserField, newInfo: string, email: string)
 	}
 }
 
-// export async function updateUserSettings(username: string, newSettings: object): Promise<boolean> {
-// 	try {
-// 		const currentSettings = await getUserSettings(username);
-// 		const mergedSettings = { ...currentSettings, ...newSettings };
+export async function updateUserSettings(username: string, newSettings: object): Promise<boolean> {
+	try {
+		const currentSettings = await getUserSettings(username);
+		const mergedSettings = { ...currentSettings, ...newSettings };
 
-// 		const settingsJson = JSON.stringify(mergedSettings);
-// 		const result = await db.run(
-// 			'UPDATE users SET settings = ? WHERE username = ?',
-// 			[settingsJson, username]
-// 		);
-// 		return result.changes > 0;
-// 	} catch (err) {
-// 		console.error('Error in updating user settings: ', err);
-// 		return false;
-// 	}
-// }
+		const settingsJson = JSON.stringify(mergedSettings);
+		const stmt = db.prepare('UPDATE users SET settings = ? WHERE username = ?');
+		const result = stmt.run(settingsJson, username);
+
+		console.log(`Updated settings for user ${username}: ${settingsJson}`);
+		return result.changes > 0;
+	} catch (err) {
+		console.error('Error in updating user settings: ', err);
+		return false;
+	}
+}
 
 export function updateUserVictory(id: number, victory: number): boolean {
 	try {
@@ -322,20 +322,18 @@ export function getUserPwd(email: string): string {
 	}
 }
 
-// async function getUserSettings(username: string): Promise<any> {
-// 	try {
-// 		const row: { settings: string } | undefined = await db.get(
-// 			'SELECT settings FROM users WHERE username = ?',
-// 			[username]
-// 		);
-// 		if (row && row.settings) {
-// 			return JSON.parse(row.settings);
-// 		}
-// 	} catch (err) {
-// 		console.error('Error in getUserSettings:', err);
-// 	}
-// 	return {};
-// }
+export async function getUserSettings(username: string): Promise<any> {
+	try {
+		const row = await db.prepare('SELECT settings FROM users WHERE username = ?');
+		const rowData = row.get(username) as { settings: string } | undefined;
+		if (rowData && rowData.settings) {
+			return JSON.parse(rowData.settings);
+		}
+	} catch (err) {
+		console.error('Error in getUserSettings:', err);
+	}
+	return {};
+}
 
 export function retrieveUserID(username: string): number {
 	try {
@@ -905,12 +903,12 @@ export function getSessionInfo(userId: number): SessionUser | null {
 	}
 }
 
-export function getUserBySession(sid: string): { id: number; username: string, email?: string} | null {
+export function getUserBySession(sid: string): { id: number; username: string, email?: string, settings?: object } | null {
 	try {
 		sid = safeSid(sid);
 		const userId = db.prepare('SELECT user_id FROM sessions WHERE id = ?').get(sid) as { user_id: number } | undefined;
 		if (!userId) return null;
-		const row = db.prepare('SELECT id, username, email FROM users WHERE id = ?').get(userId.user_id) as { id:number; username:string; email?:string } | undefined;
+		const row = db.prepare('SELECT id, username, email, settings FROM users WHERE id = ?').get(userId.user_id) as { id:number; username:string; email?:string, settings?: object } | undefined;
 		if (!row) return null;
 		console.log(`in database.ts we found the session by user: ${row.username}, ${row.email}, ${row.id} where userId: ${userId.user_id}`);
 		return row;

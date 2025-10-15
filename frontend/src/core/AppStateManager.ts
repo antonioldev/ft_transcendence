@@ -21,6 +21,12 @@ export let currentSettings = {
     soundEffectsEnabled: true
 };
 
+export function updateCurrentSettings(newSettings: Partial<typeof currentSettings>): void {
+    if (newSettings) {
+        currentSettings = { ...currentSettings, ...newSettings };
+    }
+}
+
 export class AppStateManager {
 	currentAppState: AppState = AppState.MAIN_MENU;
 	currentGame: Game | null = null;

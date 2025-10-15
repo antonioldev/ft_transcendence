@@ -1,6 +1,7 @@
 // Session routes for binding a client-side token to a server-side session
 import { FastifyInstance } from 'fastify';
 import { getUserBySession } from '../data/validation.js';
+import { updateUserSettings } from '../data/database.js';
 
 // Cookie settings
 const COOKIE_NAME = 'sid';
@@ -84,4 +85,27 @@ export default async function sessionBindRoutes(fastify: FastifyInstance) {
 		// Send authenticated user info
 		return reply.send({ ok: true, user });
 	});
+
+	fastify.post('/api/user/settings', async (req, reply) => {
+        const sid = (req as any).cookies?.[COOKIE_NAME];
+        const user = getUserBySession(sid);
+		
+        if (!user) {
+            return reply.code(401).send({ ok: false, error: 'unauthorized_invalid_session' });
+        }
+
+        const newSettings = req.body as object;
+        if (!newSettings || Object.keys(newSettings).length === 0) {
+            return reply.code(400).send({ ok: false, error: 'invalid_settings_payload' });
+        }
+
+		console.log(`Updating settings for user ${user.username}:`, newSettings);
+        const success = await updateUserSettings(user.username, newSettings);
+
+        if (success) {
+            return reply.send({ ok: true, message: 'Settings saved.' });
+        } else {
+            return reply.code(500).send({ ok: false, error: 'failed_to_save_settings' });
+        }
+    });
 }

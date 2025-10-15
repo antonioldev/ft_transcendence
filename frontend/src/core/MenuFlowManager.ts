@@ -211,8 +211,10 @@ export class MenuFlowManager {
 
 			sceneSelect.addEventListener('change', (event) => {
 				const target = event.target as HTMLSelectElement;
-				if (target)
+				if (target) {
 					currentSettings.scene3D = target.value;
+					// this.handleSettingsChange({ scene3D: target.value });
+				}
 			});
 		}
 	}
@@ -225,6 +227,7 @@ export class MenuFlowManager {
 			musicToggle.addEventListener('change', (event) => {
 				const target = event.target as HTMLInputElement;
 				currentSettings.musicEnabled = target.checked;
+				// this.handleSettingsChange({ musicEnabled: target.checked });
 			});
 		}
 	}
@@ -232,11 +235,12 @@ export class MenuFlowManager {
 	private setupGameEffectsEnabled(): void {
 		const effectsToggle = document.getElementById('sound-effect-toggle') as HTMLInputElement;
 		if (effectsToggle) {
-			effectsToggle.checked = currentSettings.musicEnabled;
+			effectsToggle.checked = currentSettings.soundEffectsEnabled;
 
 			effectsToggle.addEventListener('change', (event) => {
 				const target = event.target as HTMLInputElement;
-				currentSettings.musicEnabled = target.checked;
+				currentSettings.soundEffectsEnabled = target.checked;
+				// this.handleSettingsChange({ soundEffectsEnabled: target.checked });
 			});
 		}
 	}
@@ -252,6 +256,7 @@ export class MenuFlowManager {
 				if (newLangIndex !== -1) {
 					currentSettings.lang = newLangIndex;
 					updateLanguageDisplay();
+					// this.handleSettingsChange({ lang: newLangIndex });
 				}
 			});
 		}
@@ -557,4 +562,58 @@ export class MenuFlowManager {
 			immersiveBtn.className = "bg-orange text-blue-background font-poppins-semibold text-lg px-4 py-3 transition-colors duration-200 border border-orange rounded-sm min-w-[120px]";
 		}
 	}
+
+	// =======================================
+	// SETTINGS MANAGER
+	// =======================================
+	// private async handleSettingsChange(setting: object): Promise<void> {
+	// 	if (!authManager.isUserAuthenticated()) {
+	// 		console.log('User not authenticated, skipping settings save');
+	// 		return;
+	// 	}
+		
+	// 	try {
+	// 		const response = await fetch('/api/user/settings', {
+	// 			method: 'POST',
+	// 			headers: {
+	// 				'Content-Type': 'application/json',
+	// 			},
+	// 			credentials: 'include',
+	// 			body: JSON.stringify(setting),
+	// 		});
+
+	// 		if (!response.ok) {
+	// 			const errorData = await response.json();
+	// 			console.error('Failed to save settings:', errorData);
+	// 		} else {
+	// 			console.log('Settings saved successfully:', setting);
+	// 		}
+	// 	} catch (error) {
+	// 		console.error('Error saving settings:', error);
+	// 	}
+	// }
+
+	// public updateSettingsUIFromState() : void {
+	// 	const languageSelect = document.getElementById('language_select') as HTMLSelectElement;
+	// 	if (languageSelect) {
+	// 		const languageMapping = ['UK', 'IT', 'FR', 'BR', 'RU'];
+	// 		languageSelect.value = languageMapping[currentSettings.lang] || 'UK';
+	// 		updateLanguageDisplay();
+	// 	}
+
+	// 	const sceneSelect = document.getElementById('map-selector') as HTMLSelectElement;
+	// 	if (sceneSelect) {
+	// 		sceneSelect.value = currentSettings.scene3D;
+	// 	}
+
+	// 	const musicToggle = document.getElementById('music-toggle') as HTMLInputElement;
+	// 	if (musicToggle) {
+	// 		musicToggle.checked = currentSettings.musicEnabled;
+	// 	}
+
+	// 	const effectsToggle = document.getElementById('sound-effect-toggle') as HTMLInputElement;
+	// 	if (effectsToggle) {
+	// 		effectsToggle.checked = currentSettings.soundEffectsEnabled;
+	// 	}
+	// }
 }
