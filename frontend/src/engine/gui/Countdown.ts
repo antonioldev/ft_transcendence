@@ -30,9 +30,9 @@ export class Countdown {
 
 	async showPlayersName(left: string, right: string): Promise<void> {
 		this.readyText.isVisible = true;
-		await this.animationManager.zoomIn(this.readyText, Motion.F.base);
+		await this.animationManager.zoom(this.readyText, "in", Motion.F.base);
 		await new Promise(r => setTimeout(r, 400));
-		await this.animationManager.zoomOut(this.readyText, Motion.F.base);
+		await this.animationManager.zoom(this.readyText, "out", Motion.F.base);
 		this.readyText.isVisible = false;
 
 		this.leftPlayer.text = `◀  ${left}`;
@@ -42,7 +42,7 @@ export class Countdown {
 		this.animationManager.glow(this.leftPlayer, Motion.F.breath);
 
 		this.vsText.isVisible = true;
-		await this.animationManager.zoomIn(this.vsText, Motion.F.base);
+		await this.animationManager.zoom(this.vsText, "in", Motion.F.base);
 		this.animationManager.glow(this.vsText, Motion.F.breath);
 
 		this.rightPlayer.text = `${right}  ▶`;

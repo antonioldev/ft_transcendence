@@ -150,7 +150,6 @@ export class KeyboardManager {
 		}
 	}
 
-	// Updated escape key handler
 	private handleEscapeKey(): void {
 		this.isPaused = !this.isPaused;
 		this.gui.setPauseVisible(this.isPaused, false);

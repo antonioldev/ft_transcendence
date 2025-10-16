@@ -1,4 +1,4 @@
-import { Control, Grid, Image, Rectangle, StackPanel, TextBlock } from "@babylonjs/gui";
+import { Control, Grid, Image, Rectangle, StackPanel, TextBlock, Checkbox } from "@babylonjs/gui";
 
 export const H_LEFT = Control.HORIZONTAL_ALIGNMENT_LEFT;
 export const H_CENTER = Control.HORIZONTAL_ALIGNMENT_CENTER;
@@ -255,16 +255,33 @@ export const PAUSE_MENU_STYLES = {
         fontSize: 16,
     },
 
-    muteIcon: {
-        stretch: Image.STRETCH_UNIFORM,
-        paddingTop: "16px"
+    audioGrid:{
+        width: "50%"
+    },
+
+    audioStack: {
+        // width: "90%",
+        // height: "100%",
+        isVertical: true,
+        paddingTop: "10px",
+        paddingBottom: "10px"
+    },
+
+    muteCheckbox: {
+        width: "20px",
+        height: "20px",
+        horizontalAlignment: H_CENTER,
+        color: COLORS.LIGHT_GREEN,
+        background: COLORS.TRANSPARENT,
+        thickness: 1,
+        checkSizeRatio: 0.6
     },
 
     gridRows: {
         title: 0.15,
         gameInstructions: 0.60,
         exitInstruction: 0.15,
-        muteIcon: 0.05
+        audio: 0.10
     },
 
     gameInstructionContainer: {
@@ -945,4 +962,11 @@ export function createStackPanel(name: string, styles: any): StackPanel {
     const stackPanel = new StackPanel(name);
     applyStyles(stackPanel, styles);
     return stackPanel;
+}
+
+export function createCheckbox(name: string, styles: any, isChecked: boolean = false): Checkbox {
+    const checkbox = new Checkbox(name);
+    checkbox.isChecked = isChecked;
+    applyStyles(checkbox, styles);
+    return checkbox;
 }

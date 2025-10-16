@@ -1,16 +1,16 @@
-import { AdvancedDynamicTexture, Control, Image, Rectangle } from "@babylonjs/gui";
+import { AdvancedDynamicTexture, Rectangle, Checkbox } from "@babylonjs/gui";
 import { ViewMode } from "../../shared/constants.js";
 import { GAME_CONFIG } from "../../shared/gameConfig.js";
 import { getCurrentTranslation } from '../../translations/translations.js';
 import { GameConfig } from "../GameConfig.js";
 import { AnimationManager, Motion } from "../services/AnimationManager.js";
-import { H_LEFT, PAUSE_MENU_STYLES, createGrid, createImage, createRect, createStackPanel, createTextBlock } from "./GuiStyle.js";
+import { H_LEFT, PAUSE_MENU_STYLES, createGrid, createRect, createStackPanel, createTextBlock, createCheckbox } from "./GuiStyle.js";
 
 export class Pause {
 	private overlay!: Rectangle;
 	private spectatorPauseBox!: Rectangle;
-	private muteIconMusic?: Image;
-	private muteIconEffects?: Image;
+	private checkboxMusic?: Checkbox;
+	private checkboxEffects?: Checkbox;
 
 	constructor(private adt: AdvancedDynamicTexture, private animationManager: AnimationManager,
 	config: GameConfig, private onToggleMusic?: () => boolean, private onToggleEffects?: () => boolean) {
@@ -29,8 +29,7 @@ export class Pause {
 		pauseGrid.addRowDefinition(PAUSE_MENU_STYLES.gridRows.title, false);
 		pauseGrid.addRowDefinition(PAUSE_MENU_STYLES.gridRows.gameInstructions, false);
 		pauseGrid.addRowDefinition(PAUSE_MENU_STYLES.gridRows.exitInstruction, false);
-		pauseGrid.addRowDefinition(PAUSE_MENU_STYLES.gridRows.muteIcon, false);
-		pauseGrid.addRowDefinition(PAUSE_MENU_STYLES.gridRows.muteIcon, false);
+		pauseGrid.addRowDefinition(PAUSE_MENU_STYLES.gridRows.audio, false);
 
 		const pauseTitle = createTextBlock( "pauseTitle", PAUSE_MENU_STYLES.pauseTitle, t.gamePaused);
 		pauseGrid.addControl(pauseTitle, 0, 0);
@@ -49,35 +48,45 @@ export class Pause {
 		const pauseHint = createTextBlock("pauseHint", PAUSE_MENU_STYLES.pauseHint, t.pauseControls);
 		exitStack.addControl(pauseHint);
 
+		const audioGrid = createGrid("audioGrid", PAUSE_MENU_STYLES.audioGrid);
+		audioGrid.addColumnDefinition(0.5, false);
+		audioGrid.addColumnDefinition(0.5, false);
+		pauseGrid.addControl(audioGrid, 3, 0);
 
+		const musicStack = createStackPanel("musicStack", PAUSE_MENU_STYLES.audioStack);
+		audioGrid.addControl(musicStack, 0, 0);
+		
 		const musicLabel = createTextBlock("musicLabel", PAUSE_MENU_STYLES.pauseHint, t.music);
-		musicLabel.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
-		pauseGrid.addControl(musicLabel, 3, 0);
-		this.muteIconMusic = createImage("muteIcon", PAUSE_MENU_STYLES.muteIcon, 
-			config.musicEnabled ? "assets/icons/sound_on.png" : "assets/icons/sound_off.png");
-		this.muteIconMusic.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_RIGHT;
-		pauseGrid.addControl(this.muteIconMusic, 3, 1);
-		this.muteIconMusic.onPointerClickObservable.add(() => {
+		musicStack.addControl(musicLabel);
+
+		this.checkboxMusic = createCheckbox("musicCheckbox", PAUSE_MENU_STYLES.muteCheckbox, config.musicEnabled);
+		musicStack.addControl(this.checkboxMusic);
+		
+		this.checkboxMusic.onIsCheckedChangedObservable.add(() => {
 			if (this.onToggleMusic) {
 				const isEnabled = this.onToggleMusic();
-				if (this.muteIconMusic) {
-					this.animationManager?.scale(this.muteIconMusic, 1, 0.9, Motion.F.xFast, true);
-					this.muteIconMusic.source = isEnabled ? "assets/icons/sound_on.png" : "assets/icons/sound_off.png";
+				if (this.checkboxMusic) {
+					this.animationManager?.scale(this.checkboxMusic, 1, 0.9, Motion.F.xFast, true);
+					this.checkboxMusic.isChecked = isEnabled;
 				}
 			}
 		});
 		
+		const effectsStack = createStackPanel("effectsStack", PAUSE_MENU_STYLES.audioStack);
+		audioGrid.addControl(effectsStack, 0, 1);
+		
 		const effectsLabel = createTextBlock("effectsLabel", PAUSE_MENU_STYLES.pauseHint, t.soundEffects);
-		pauseGrid.addControl(effectsLabel, 4, 0);
-		this.muteIconEffects = createImage("muteIcon", PAUSE_MENU_STYLES.muteIcon, 
-			config.soundEffectsEnabled ? "assets/icons/sound_on.png" : "assets/icons/sound_off.png");
-		pauseGrid.addControl(this.muteIconEffects, 4, 1);
-		this.muteIconEffects.onPointerClickObservable.add(() => {
+		effectsStack.addControl(effectsLabel);
+
+		this.checkboxEffects = createCheckbox("effectsCheckbox", PAUSE_MENU_STYLES.muteCheckbox, config.soundEffectsEnabled);
+		effectsStack.addControl(this.checkboxEffects);
+		
+		this.checkboxEffects.onIsCheckedChangedObservable.add(() => {
 			if (this.onToggleEffects) {
 				const isEnabled = this.onToggleEffects();
-				if (this.muteIconEffects) {
-					this.animationManager?.scale(this.muteIconEffects, 1, 0.9, Motion.F.xFast, true);
-					this.muteIconEffects.source = isEnabled ? "assets/icons/sound_on.png" : "assets/icons/sound_off.png";
+				if (this.checkboxEffects) {
+					this.animationManager?.scale(this.checkboxEffects, 1, 0.9, Motion.F.xFast, true);
+					this.checkboxEffects.isChecked = isEnabled;
 				}  
 			}
 		});
@@ -163,7 +172,7 @@ export class Pause {
 					this.overlay.alpha = 0;
 					this.overlay.thickness = 0;
 
-					this.animationManager.fadeInWithBorder(this.overlay, Motion.F.base, 0, 4);
+					this.animationManager.fade(this.overlay, "in", Motion.F.base, true);
 				}
 			}
 		} else {
@@ -175,7 +184,7 @@ export class Pause {
 			}
 			
 			if (this.overlay.isVisible) {
-				this.animationManager.fadeOutWithBorder(this.overlay, Motion.F.fast, 4, 0).then(() => {
+				this.animationManager.fade(this.overlay, "out", Motion.F.base, true).then(() => {
 					this.overlay.isVisible = false;
 					this.overlay.alpha = 0;
 					this.overlay.thickness = 0;
@@ -185,7 +194,7 @@ export class Pause {
 	}
 
 	dispose(): void {
-		this.muteIconMusic?.onPointerClickObservable.clear(); // TODO
-		this.muteIconEffects?.onPointerClickObservable.clear();
+		this.checkboxMusic?.onIsCheckedChangedObservable.clear();
+		this.checkboxEffects?.onIsCheckedChangedObservable.clear();
 	}
 }

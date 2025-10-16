@@ -3,7 +3,6 @@ import { ViewMode } from '../../shared/constants.js';
 import { GAME_CONFIG } from '../../shared/gameConfig.js';
 import { GameObjects } from "../../shared/types.js";
 import { Logger } from '../../utils/LogManager.js';
-import { AnimationManager } from "./AnimationManager.js";
 
 /**
  * The RenderManager class is responsible for managing the rendering loop,
@@ -13,11 +12,9 @@ import { AnimationManager } from "./AnimationManager.js";
  */
 export class RenderManager {
 	private isInitialized: boolean = false;
-	isRunning: boolean = false;
+	private isRunning: boolean = false;
 	private lastFrameTime: number = 0;
 	private fpsLimit: number = 60;
-	private camerasAnimation: any[] = [];
-	private resizeHandler: (() => void) | null = null;
 	private targetLeft: Vector3 = new Vector3();
 	private targetRight: Vector3 = new Vector3();
 
@@ -25,11 +22,7 @@ export class RenderManager {
 	constructor(
 		private engine: Engine,
 		private scene: Scene,
-		// private guiManager: GUIManager,
-		private animationManager: AnimationManager,
 		private gameObjects: GameObjects) {
-
-		this.attachResizeHandler();
 		this.isInitialized = true;
 	}
 
@@ -54,7 +47,6 @@ export class RenderManager {
 					if (this.scene && this.scene.activeCamera) {
 						this.scene.render();
 					}
-					// this.updateFPSDisplay(deltaTime);
 					this.lastFrameTime = currentTime;
 				} catch (error) {
 					Logger.error('Error in render loop', 'RenderManager', error);
@@ -62,22 +54,6 @@ export class RenderManager {
 			}
 		});
 	}
-
-	stopRendering(): void {
-		if (!this.isRunning) return;
-
-		this.isRunning = false;
-		if (this.engine)
-			this.engine.stopRenderLoop();
-
-	}
-
-	// private updateFPSDisplay(deltaTime: number): void {
-	// 	if (this.guiManager && this.guiManager.isReady()) {
-	// 		const fps = 1000 / deltaTime;
-	// 		this.guiManager.hud.updateFPS(fps);
-	// 	}
-	// }
 
 // ====================			CAMERA MANAGEMENT		 ====================
 	updateActiveCameras(viewMode: ViewMode, controlledSides: number[], isLocalMultiplayer: boolean): void {
@@ -99,34 +75,11 @@ export class RenderManager {
 			this.scene.activeCameras = [activeGameCamera, guiCamera];
 	}
 
-	startCameraAnimation(cameras: any, viewMode: ViewMode, controlledSides: number[] = [], isLocalMultiplayer: boolean = false) {
-		if (!this.scene || !cameras || viewMode === ViewMode.MODE_2D)
-			return;
-
-		const gameCameras = cameras;
-		gameCameras.forEach((camera: any, index: number) => {
-			if (!camera) return;
-
-			if (isLocalMultiplayer || controlledSides.includes(index) || controlledSides.length === 0) {
-				const positionAnimation = this.animationManager.createCameraMoveAnimation(camera.name);
-				const targetAnimation   = this.animationManager.createCameraTargetAnimation();
-				camera.animations = [positionAnimation, targetAnimation];
-				const animationGroup = this.scene?.beginAnimation(camera, 0, 180, false);
-				this.camerasAnimation.push(animationGroup);
-			}
-		});
-	}
-
-	stopCameraAnimation(): void {
-		this.camerasAnimation.forEach(animation => {
-			animation?.stop();
-		});
-		this.camerasAnimation = [];
-	}
-
 	// Update 3D camera targets to follow players
-	update3DCameras(): void {
+	update3DCameras(viewMode: ViewMode): void {
 		if (!this.isInitialized || !this.gameObjects?.cameras) return;
+
+		if (viewMode === ViewMode.MODE_2D) return;
 
 		try {
 			const [camera1, camera2] = this.gameObjects.cameras;
@@ -148,31 +101,13 @@ export class RenderManager {
 		}
 	}
 
-// ====================			RESIZE HANDLING		   ====================
-	attachResizeHandler(): void {
-		if (this.resizeHandler) return;
-		this.resizeHandler = () => {
-			if (this.engine && !this.engine.isDisposed)
-				this.engine.resize();
-		};
-		window.addEventListener("resize", this.resizeHandler);
-	}
-
-	private detachResizeHandler(): void {
-		if (this.resizeHandler) {
-			window.removeEventListener("resize", this.resizeHandler);
-			this.resizeHandler = null;
-		}
-	}
-
 // ====================			CLEANUP				   ====================
 	dispose(): void {
-		if (!this.isInitialized) return;
+		if (!this.isInitialized || !this.isRunning) return;
 
-		// Stop rendering if active
-		this.stopRendering();
-		this.stopCameraAnimation();
-		this.detachResizeHandler();
+		this.isRunning = false;
+		if (this.engine)
+			this.engine.stopRenderLoop();
 
 		this.isInitialized = false;
 

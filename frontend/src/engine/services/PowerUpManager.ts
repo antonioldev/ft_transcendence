@@ -88,22 +88,22 @@ export class PowerupManager {
 		switch (powerupType) {
 			case PowerupType.SHRINK_OPPONENT:
 				if (side === PlayerSide.LEFT) {
-					this.animationManager?.scaleWidth(this.gameObjects?.players.right, med, sml);
+					this.animationManager?.scaleWidthPaddle(this.gameObjects?.players.right, med, sml);
 					this.players.get(PlayerSide.RIGHT)!.size = GAME_CONFIG.decreasedPaddleWidth;
 					this.animationManager?.glowEffect(this.gameObjects?.effects?.rightGlow, Color3.Red());
 				} else {
-					this.animationManager?.scaleWidth(this.gameObjects?.players.left, med, sml);
+					this.animationManager?.scaleWidthPaddle(this.gameObjects?.players.left, med, sml);
 					this.players.get(PlayerSide.LEFT)!.size = GAME_CONFIG.decreasedPaddleWidth;
 					this.animationManager?.glowEffect(this.gameObjects?.effects?.leftGlow, Color3.Red());
 				}
 				break;
 			case PowerupType.GROW_PADDLE:
 				if (side === PlayerSide.LEFT) {
-					this.animationManager?.scaleWidth(this.gameObjects?.players.left, med, lrg);
+					this.animationManager?.scaleWidthPaddle(this.gameObjects?.players.left, med, lrg);
 					this.players.get(PlayerSide.LEFT)!.size = GAME_CONFIG.increasedPaddleWidth;
 					this.animationManager?.glowEffect(this.gameObjects?.effects?.leftGlow, Color3.Green());
 				} else {
-					this.animationManager?.scaleWidth(this.gameObjects?.players.right, med, lrg);
+					this.animationManager?.scaleWidthPaddle(this.gameObjects?.players.right, med, lrg);
 					this.players.get(PlayerSide.RIGHT)!.size = GAME_CONFIG.increasedPaddleWidth;
 					this.animationManager?.glowEffect(this.gameObjects?.effects?.rightGlow, Color3.Green());
 				}
@@ -125,8 +125,7 @@ export class PowerupManager {
 			
 			case PowerupType.SHIELD:
 				const shieldGlow = side === PlayerSide.LEFT 
-				? this.gameObjects?.effects?.leftShield
-				: this.gameObjects?.effects?.rightShield;
+					? this.gameObjects?.effects?.leftShield : this.gameObjects?.effects?.rightShield;
 				glowColor = new Color3(2, 2, 0);
 				if (shieldGlow)
 					this.animationManager?.glowEffect(shieldGlow, glowColor);
@@ -137,7 +136,7 @@ export class PowerupManager {
 					if (ball.visibility > 0) {
 						const ballFreeze = this.gameObjects?.effects?.ballsFreeze[index];
 						if (ballFreeze)
-							this.animationManager?.pulse(ballFreeze, glowColor);
+							this.animationManager?.glowEffect(ballFreeze, glowColor);
 					}
 				});
 				break;
@@ -195,89 +194,83 @@ export class PowerupManager {
 	}
 
 	deactivate(side: PlayerSide, slot: number, powerupType: PowerupType): void {
-	const med = GAME_CONFIG.paddleWidth;
-	const lrg = GAME_CONFIG.increasedPaddleWidth;
-	const sml = GAME_CONFIG.decreasedPaddleWidth;
-	
-	switch (powerupType) {
-		case PowerupType.SHRINK_OPPONENT:
-			if (side === PlayerSide.LEFT) {
-				this.animationManager?.scaleWidth(this.gameObjects?.players.right, sml, med);
-				this.players.get(PlayerSide.RIGHT)!.size = GAME_CONFIG.paddleWidth;
-				this.animationManager?.stopEffect(this.gameObjects?.effects?.rightGlow);
-			} else {
-				this.animationManager?.scaleWidth(this.gameObjects?.players.left, sml, med);
-				this.players.get(PlayerSide.LEFT)!.size = GAME_CONFIG.paddleWidth;
-				this.animationManager?.stopEffect(this.gameObjects?.effects?.leftGlow);
-			}
-			break;
-		case PowerupType.GROW_PADDLE:
-			if (side === PlayerSide.LEFT) {
-				this.animationManager?.scaleWidth(this.gameObjects?.players.left, lrg, med);
-				this.players.get(PlayerSide.LEFT)!.size = GAME_CONFIG.paddleWidth;
-				this.animationManager?.stopEffect(this.gameObjects?.effects?.leftGlow);
-			} else {
-				this.animationManager?.scaleWidth(this.gameObjects?.players.right, lrg, med);
-				this.players.get(PlayerSide.RIGHT)!.size = GAME_CONFIG.paddleWidth;
-				this.animationManager?.stopEffect(this.gameObjects?.effects?.rightGlow);
-			}
-			break;
-		case PowerupType.INVERT_OPPONENT:
-			if (side === PlayerSide.LEFT) {
-				this.players.get(PlayerSide.RIGHT)!.inverted = false;
-				this.animationManager?.stopEffect(this.gameObjects?.effects?.rightGlow);
-			} else {
-				this.players.get(PlayerSide.LEFT)!.inverted = false;
-				this.animationManager?.stopEffect(this.gameObjects?.effects?.leftGlow);
-			}
-			break;
+		const med = GAME_CONFIG.paddleWidth;
+		const lrg = GAME_CONFIG.increasedPaddleWidth;
+		const sml = GAME_CONFIG.decreasedPaddleWidth;
 		
-		case PowerupType.SHIELD:
-			const shieldGlow = side === PlayerSide.LEFT 
-			? this.gameObjects?.effects?.leftShield
-			: this.gameObjects?.effects?.rightShield;
-			if (shieldGlow)
-				this.animationManager?.stopEffect(shieldGlow);
-			break;
-		case PowerupType.FREEZE:
-			this.gameObjects?.effects?.ballsFreeze.forEach((ballFreeze: any) => {
-				this.animationManager?.stopEffect(ballFreeze);
-			});
-			break;
-		case PowerupType.SLOW_OPPONENT:
-			if (side === PlayerSide.LEFT) {
-				this.players.get(PlayerSide.RIGHT)!.inverted = false;
-				this.animationManager?.stopEffect(this.gameObjects?.effects?.rightCage);
-			} else {
-				this.players.get(PlayerSide.LEFT)!.inverted = false;
-				this.animationManager?.stopEffect(this.gameObjects?.effects?.leftCage);
-			}
-			break;
-		case PowerupType.INCREASE_PADDLE_SPEED:
-			if (side === PlayerSide.LEFT)
-				this.animationManager?.stopEffect(this.gameObjects?.effects?.leftCage);
-			else
-				this.animationManager?.stopEffect(this.gameObjects?.effects?.rightCage);
-			break;
+		switch (powerupType) {
+			case PowerupType.SHRINK_OPPONENT:
+				if (side === PlayerSide.LEFT) {
+					this.animationManager?.scaleWidthPaddle(this.gameObjects?.players.right, sml, med);
+					this.players.get(PlayerSide.RIGHT)!.size = GAME_CONFIG.paddleWidth;
+					this.animationManager?.stopEffect(this.gameObjects?.effects?.rightGlow);
+				} else {
+					this.animationManager?.scaleWidthPaddle(this.gameObjects?.players.left, sml, med);
+					this.players.get(PlayerSide.LEFT)!.size = GAME_CONFIG.paddleWidth;
+					this.animationManager?.stopEffect(this.gameObjects?.effects?.leftGlow);
+				}
+				break;
+			case PowerupType.GROW_PADDLE:
+				if (side === PlayerSide.LEFT) {
+					this.animationManager?.scaleWidthPaddle(this.gameObjects?.players.left, lrg, med);
+					this.players.get(PlayerSide.LEFT)!.size = GAME_CONFIG.paddleWidth;
+					this.animationManager?.stopEffect(this.gameObjects?.effects?.leftGlow);
+				} else {
+					this.animationManager?.scaleWidthPaddle(this.gameObjects?.players.right, lrg, med);
+					this.players.get(PlayerSide.RIGHT)!.size = GAME_CONFIG.paddleWidth;
+					this.animationManager?.stopEffect(this.gameObjects?.effects?.rightGlow);
+				}
+				break;
+			case PowerupType.INVERT_OPPONENT:
+				if (side === PlayerSide.LEFT) {
+					this.players.get(PlayerSide.RIGHT)!.inverted = false;
+					this.animationManager?.stopEffect(this.gameObjects?.effects?.rightGlow);
+				} else {
+					this.players.get(PlayerSide.LEFT)!.inverted = false;
+					this.animationManager?.stopEffect(this.gameObjects?.effects?.leftGlow);
+				}
+				break;
+			
+			case PowerupType.SHIELD:
+				const shieldGlow = side === PlayerSide.LEFT 
+				? this.gameObjects?.effects?.leftShield
+				: this.gameObjects?.effects?.rightShield;
+				if (shieldGlow)
+					this.animationManager?.stopEffect(shieldGlow);
+				break;
+			case PowerupType.FREEZE:
+				this.gameObjects?.effects?.ballsFreeze.forEach((ballFreeze: any) => {
+					this.animationManager?.stopEffect(ballFreeze);
+				});
+				break;
+			case PowerupType.SLOW_OPPONENT:
+				if (side === PlayerSide.LEFT) {
+					this.players.get(PlayerSide.RIGHT)!.inverted = false;
+					this.animationManager?.stopEffect(this.gameObjects?.effects?.rightCage);
+				} else {
+					this.players.get(PlayerSide.LEFT)!.inverted = false;
+					this.animationManager?.stopEffect(this.gameObjects?.effects?.leftCage);
+				}
+				break;
+			case PowerupType.INCREASE_PADDLE_SPEED:
+				if (side === PlayerSide.LEFT)
+					this.animationManager?.stopEffect(this.gameObjects?.effects?.leftCage);
+				else
+					this.animationManager?.stopEffect(this.gameObjects?.effects?.rightCage);
+				break;
 
-		case PowerupType.POWERSHOT:
-		case PowerupType.CURVE_BALL:
-			this.gameObjects?.effects?.ballsGlow.forEach((ballGlow: any) => {
-				this.animationManager?.stopEffect(ballGlow);
-			});
-			break;
-		case PowerupType.INVISIBLE_BALL:
-		case PowerupType.TRIPLE_SHOT:
-		case PowerupType.RESET_RALLY:
-		case PowerupType.DOUBLE_POINTS:
-			break;
-	}
-	
-	this.guiManager?.hud.updatePowerUp(side, slot, PowerupState.SPENT);
-}
-
-
-	dispose(): void {
-		
+			case PowerupType.POWERSHOT:
+			case PowerupType.CURVE_BALL:
+				this.gameObjects?.effects?.ballsGlow.forEach((ballGlow: any) => {
+					this.animationManager?.stopEffect(ballGlow);
+				});
+				break;
+			case PowerupType.INVISIBLE_BALL:
+			case PowerupType.TRIPLE_SHOT:
+			case PowerupType.RESET_RALLY:
+			case PowerupType.DOUBLE_POINTS:
+				break;
+		}
+		this.guiManager?.hud.updatePowerUp(side, slot, PowerupState.SPENT);
 	}
 }
