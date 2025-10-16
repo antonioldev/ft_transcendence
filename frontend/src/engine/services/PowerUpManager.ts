@@ -136,7 +136,7 @@ export class PowerupManager {
 					if (ball.visibility > 0) {
 						const ballFreeze = this.gameObjects?.effects?.ballsFreeze[index];
 						if (ballFreeze)
-							this.animationManager?.pulse(ballFreeze, glowColor);
+							this.animationManager?.glowEffect(ballFreeze, glowColor);
 					}
 				});
 				break;

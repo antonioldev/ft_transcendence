@@ -150,7 +150,7 @@ export class CardGame {
 			card.cardImage.isVisible = toFront;
 		}
 		if (toFront && card.cardImage)
-			await this.animationManager.zoomIn(card.cardImage);
+			await this.animationManager.zoom(card.cardImage, "in");
 	}
 
 	private async checkForMatch(): Promise<void> {

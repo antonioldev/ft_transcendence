@@ -75,7 +75,6 @@ export class GUIManager {
 		if (!this.isReady || this.isLastMatch) return;
 		
 		this.hud.show(false);
-		// this.hud.showPowerUps(false);
 		await this.endGame.fadeBackground(true);
 		await this.endGame.showPartialWinner(winner, waitForSpace);
 		await this.endGame.hidePartial();
@@ -85,7 +84,6 @@ export class GUIManager {
 		if (!this.isReady || this.isLastMatch) return;
 		
 		this.hud.show(false);
-		// this.hud.showPowerUps(false);
 		await this.endGame.fadeBackground(true);
 		this.audioManager.playLoser();
 		await this.endGame.showPartialLoser();
@@ -95,8 +93,8 @@ export class GUIManager {
 
 	async showWinner(winner: string): Promise<void> {
 		if (!this.isReady) return;
+
 		this.hud.show(false);
-		// this.hud.showPowerUps(false);
 		this.audioManager.playWinner();
 		await this.endGame.showFinalWinner(winner);
 		this.hud.show(true);

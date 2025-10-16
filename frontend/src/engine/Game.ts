@@ -1,7 +1,7 @@
 import { Color4, Engine, Scene, SceneLoader } from "@babylonjs/core";
 import { appStateManager } from '../core/AppStateManager.js';
 import { webSocketClient } from '../core/WebSocketClient.js';
-import { AppState, GameMode, GameState, MessageType, PowerupType, ViewMode } from '../shared/constants.js';
+import { AppState, GameMode, GameState, MessageType, PowerupType } from '../shared/constants.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
 import { GameObjects, GameStateData, ThemeObject } from '../shared/types.js';
 import { uiManager } from '../ui/UIManager.js';
@@ -171,7 +171,6 @@ export class Game {
 				await Promise.all([
 					this.services?.gui.countdown.showPlayersName(playerLeft!, playerRight!),
 					this.services?.animation?.startCameraAnimations(
-						this.scene!,
 						this.gameObjects?.cameras, 
 						this.config.viewMode,
 						controlledSides,

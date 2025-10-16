@@ -79,7 +79,7 @@ export class RenderManager {
 	update3DCameras(viewMode: ViewMode): void {
 		if (!this.isInitialized || !this.gameObjects?.cameras) return;
 
-		if (viewMode === ViewMode.MODE_3D) return
+		if (viewMode === ViewMode.MODE_2D) return;
 
 		try {
 			const [camera1, camera2] = this.gameObjects.cameras;

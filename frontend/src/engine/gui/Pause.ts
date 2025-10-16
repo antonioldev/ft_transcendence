@@ -163,7 +163,7 @@ export class Pause {
 					this.overlay.alpha = 0;
 					this.overlay.thickness = 0;
 
-					this.animationManager.fadeInWithBorder(this.overlay, Motion.F.base, 0, 4);
+					this.animationManager.fade(this.overlay, "in", Motion.F.base, true);
 				}
 			}
 		} else {
@@ -175,7 +175,7 @@ export class Pause {
 			}
 			
 			if (this.overlay.isVisible) {
-				this.animationManager.fadeOutWithBorder(this.overlay, Motion.F.fast, 4, 0).then(() => {
+				this.animationManager.fade(this.overlay, "out", Motion.F.base, true).then(() => {
 					this.overlay.isVisible = false;
 					this.overlay.alpha = 0;
 					this.overlay.thickness = 0;

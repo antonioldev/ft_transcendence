@@ -32,7 +32,7 @@ export class GameServices {
 		this.particles = new Particles();
 		this.powerup = new PowerupManager(players, this.animation, this.gui, gameObjects);
 		this.input = new KeyboardManager(scene, config, gameObjects, players, this.powerup, this.gui);
-		this.render = new RenderManager(engine, scene, this.animation, gameObjects);
+		this.render = new RenderManager(engine, scene, gameObjects);
 	}
 
 	async initialize(): Promise<void> {
