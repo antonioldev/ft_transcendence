@@ -6,6 +6,7 @@ import type { Scene } from "@babylonjs/core/scene";
 import type { Control } from "@babylonjs/gui/2D/controls/control";
 import { GAME_CONFIG } from "../../shared/gameConfig.js";
 import { getCamera2DPosition, getCamera3DPlayer1Position, getCamera3DPlayer2Position } from '../utils.js';
+import { ViewMode } from "../../shared/constants.js";
 
 type FloatProp =
   | "alpha"
@@ -38,6 +39,7 @@ export const Motion = {
  */
 export class AnimationManager {
 	private activeAnimationGroups: Set<any> = new Set();
+	private activeCameraAnimations: any[] = [];
 	constructor(private scene: Scene) {}
 
 	// ==================== LOW-LEVEL ANIMATION CREATION ====================
@@ -262,6 +264,36 @@ export class AnimationManager {
 		return anim;
 	}
 
+	startCameraAnimations(scene: Scene, cameras: any, viewMode: ViewMode, controlledSides: number[] = [], isLocalMultiplayer: boolean = false): void {
+		if (!scene || !cameras || viewMode === ViewMode.MODE_2D) return;
+
+		this.stopCameraAnimations();
+
+		cameras.forEach((camera: any, index: number) => {
+			if (!camera) return;
+
+			if (isLocalMultiplayer || controlledSides.includes(index) || controlledSides.length === 0) {
+				const positionAnimation = this.createCameraMoveAnimation(camera.name);
+				const targetAnimation = this.createCameraTargetAnimation();
+				
+				camera.animations = [positionAnimation, targetAnimation];
+				const animationGroup = scene.beginAnimation(camera, 0, 180, false);
+				this.activeCameraAnimations.push(animationGroup);
+			}
+		});
+	}
+
+	stopCameraAnimations(): void {
+		this.activeCameraAnimations.forEach(animation => {
+			try {
+				animation?.stop();
+			} catch (error) {
+				console.warn('Error stopping camera animation:', error);
+			}
+		});
+		this.activeCameraAnimations = [];
+	}
+
 // GAME OBJECT ANIMATION
 	private animateMesh(target: any, property: string, from: number, to: number,frames: number,
 		ease: EasingFunction = Motion.ease.quadOut(), loop: boolean = false, pingPong: boolean = false): Promise<void> {
@@ -335,7 +367,7 @@ export class AnimationManager {
 		target.visibility = 0;
 	}
 
-	scaleWidth(target: any, from: number, to: number, frames = Motion.F.fast, ease: EasingFunction = Motion.ease.quadOut()): Promise<void> {
+	scaleWidthPaddle(target: any, from: number, to: number, frames = Motion.F.fast, ease: EasingFunction = Motion.ease.quadOut()): Promise<void> {
 		const baseWidth = GAME_CONFIG.paddleWidth;
 		const fromScale = from / baseWidth;
 		const toScale = to / baseWidth;
@@ -382,6 +414,7 @@ export class AnimationManager {
 	}
 
 	dispose(): void {
+		this.stopCameraAnimations();
 		this.activeAnimationGroups.forEach(group => {
 			try {
 				group.stop();

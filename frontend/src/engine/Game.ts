@@ -170,7 +170,8 @@ export class Game {
 				const controlledSides = this.getControlledSides();
 				await Promise.all([
 					this.services?.gui.countdown.showPlayersName(playerLeft!, playerRight!),
-					this.services?.render?.startCameraAnimation(
+					this.services?.animation?.startCameraAnimations(
+						this.scene!,
 						this.gameObjects?.cameras, 
 						this.config.viewMode,
 						controlledSides,
@@ -187,7 +188,7 @@ export class Game {
 			}
 			else if (countdown === 0) {
 				this.services?.audio?.startGameMusic();
-				this.services?.render?.stopCameraAnimation();
+				this.services?.animation?.stopCameraAnimations();
 				this.services?.gui?.countdown.finish();
 				this.startGameLoop();
 				this.testPowerupEffects();
@@ -289,8 +290,7 @@ private testPowerupEffects(): void {
 					uiManager.setLoadingScreenVisible(false);
 					this.services?.gui?.lobby.hide();
 					this.services?.input?.update();
-					if (this.config.viewMode === ViewMode.MODE_3D)
-						this.services?.render?.update3DCameras();
+					this.services?.render?.update3DCameras(this.config.viewMode);
 				} catch (error) {
 					Logger.errorAndThrow('Error in game loop', 'Game', error);
 				}

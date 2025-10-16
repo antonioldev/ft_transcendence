@@ -40,9 +40,7 @@ export class GameServices {
 	}
 
 	dispose(): void {
-		this.render?.stopRendering();
 		this.input?.dispose();
-		this.powerup?.dispose();
 		this.gui?.dispose();
 		this.render?.dispose();
 		clearAllFireworkTimers();
