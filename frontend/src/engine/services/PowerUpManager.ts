@@ -125,8 +125,8 @@ export class PowerupManager {
 			
 			case PowerupType.SHIELD:
 				const shieldGlow = side === PlayerSide.LEFT 
-				? this.gameObjects?.effects?.shieldLeft
-				: this.gameObjects?.effects?.shieldRight;
+				? this.gameObjects?.effects?.leftShield
+				: this.gameObjects?.effects?.rightShield;
 				glowColor = new Color3(2, 2, 0);
 				if (shieldGlow)
 					this.animationManager?.glowEffect(shieldGlow, glowColor);
@@ -169,29 +169,26 @@ export class PowerupManager {
 				glowColor = new Color3(2, 2, 0);
 				this.gameObjects?.balls.forEach((ball: any, index: number) => {
 					if (ball.visibility > 0) {
-						const ballGlow = this.gameObjects?.effects?.balls[index];
+						const ballGlow = this.gameObjects?.effects?.ballsGlow[index];
 						if (ballGlow)
 							this.animationManager?.glowEffect(ballGlow, glowColor);
 					}
 				});
-				break;
-			case PowerupType.INVISIBLE_BALL: // NOTHING already visible effect
 				break;
 			case PowerupType.CURVE_BALL:
 				glowColor = new Color3(1.5, 0, 0);
 				this.gameObjects?.balls.forEach((ball: any, index: number) => {
 					if (ball.visibility > 0) {
-						const ballGlow = this.gameObjects?.effects?.balls[index];
+						const ballGlow = this.gameObjects?.effects?.ballsGlow[index];
 						if (ballGlow)
 							this.animationManager?.glowEffect(ballGlow, glowColor);
 					}
 				});
 				break;
+			case PowerupType.INVISIBLE_BALL:
 			case PowerupType.TRIPLE_SHOT:
-				break;
-			case PowerupType.RESET_RALLY: // NOTHING
-				break;
-			case PowerupType.DOUBLE_POINTS: // NOTHING
+			case PowerupType.RESET_RALLY:
+			case PowerupType.DOUBLE_POINTS:
 				break;
 		}
 		this.guiManager?.hud.updatePowerUp(side, slot, PowerupState.ACTIVE);
@@ -237,8 +234,8 @@ export class PowerupManager {
 		
 		case PowerupType.SHIELD:
 			const shieldGlow = side === PlayerSide.LEFT 
-			? this.gameObjects?.effects?.shieldLeft
-			: this.gameObjects?.effects?.shieldRight;
+			? this.gameObjects?.effects?.leftShield
+			: this.gameObjects?.effects?.rightShield;
 			if (shieldGlow)
 				this.animationManager?.stopEffect(shieldGlow);
 			break;
@@ -265,7 +262,7 @@ export class PowerupManager {
 
 		case PowerupType.POWERSHOT:
 		case PowerupType.CURVE_BALL:
-			this.gameObjects?.effects?.balls.forEach((ballGlow: any) => {
+			this.gameObjects?.effects?.ballsGlow.forEach((ballGlow: any) => {
 				this.animationManager?.stopEffect(ballGlow);
 			});
 			break;

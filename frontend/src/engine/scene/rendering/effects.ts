@@ -151,9 +151,6 @@ export function createRainParticles(scene: Scene): ParticleSystem {
 	rain.minEmitBox = new Vector3(-50, 0, -50);
 	rain.maxEmitBox = new Vector3(50, 0, 50);
 
-	// rain.minEmitBox = new Vector3(-rainConfig.width/2, 0, -rainConfig.height/2);
-	// rain.maxEmitBox = new Vector3(rainConfig.width/2, 0, rainConfig.height/2);
-
 	rain.direction1 = new Vector3(-1, speed, -1);
 	rain.direction2 = new Vector3(1, speed, 1);
 

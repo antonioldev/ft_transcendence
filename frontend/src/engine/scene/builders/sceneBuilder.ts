@@ -1,6 +1,6 @@
 import { GlowLayer, Scene } from "@babylonjs/core";
 import { GameMode, ViewMode } from '../../../shared/constants.js';
-import { GameObjects, Players, ThemeObject } from '../../../shared/types.js';
+import { Effects, GameObjects, Players, ThemeObject } from '../../../shared/types.js';
 import { getBallStartPosition, getPlayerLeftPosition, getPlayerRightPosition, getPlayerSize, PlayerSide } from '../../utils.js';
 import { MAP_CONFIGS } from "../config/mapConfigs.js";
 import { MapAssetConfig } from "../config/sceneTypes.js";
@@ -30,7 +30,7 @@ export async function buildScene(
     
     const coreObjects = await buildCoreGameObjects(scene, gameMode, viewMode, map_asset);
     onProgress?.(20);
-    const powerUpEffects = createPowerUpEffects(scene, coreObjects.players, coreObjects.balls);
+    const powerUpEffects = await createPowerUpEffects(scene, coreObjects.players, coreObjects.balls);
     onProgress?.(40);
     await buildThematicEnvironment(scene, map_asset, themeObjects, onProgress);
 
@@ -86,7 +86,7 @@ async function buildCoreGameObjects(scene: Scene, gameMode: GameMode, viewMode: 
 	return { lights, gameField, walls, balls, players, cameras, guiCamera };
 }
 
-async function createPowerUpEffects(scene: Scene, players: Players, balls: any): Promise<any> {
+async function createPowerUpEffects(scene: Scene, players: Players, balls: any): Promise<Effects> {
 
 	const ballsGlow: any[] = [];
 	const ballsFreeze: any[] = [];
@@ -97,15 +97,20 @@ async function createPowerUpEffects(scene: Scene, players: Players, balls: any):
 		ballsFreeze.push(freeze);
 	}
 
-	const leftPlayerGlow = createPaddleGlow(scene, "leftGlow", getPlayerSize(), players.left);
-	const rightPlayerGlow = createPaddleGlow(scene, "rightGlow", getPlayerSize(), players.right);
-	const leftPlayerCage = createPaddleCage(scene, "leftCage", getPlayerSize(), players.left);
-	const rightPlayerCage = createPaddleCage(scene, "rightCage", getPlayerSize(), players.right);
+	const leftGlow = createPaddleGlow(scene, "leftGlow", getPlayerSize(), players.left);
+	const rightGlow = createPaddleGlow(scene, "rightGlow", getPlayerSize(), players.right);
+	const leftCage = createPaddleCage(scene, "leftCage", getPlayerSize(), players.left);
+	const rightCage = createPaddleCage(scene, "rightCage", getPlayerSize(), players.right);
 	const leftShield = createWallGlowEffect(scene, "leftShield", PlayerSide.LEFT);
 	const rightShield = createWallGlowEffect(scene, "rightShield", PlayerSide.RIGHT);
 
-	return {ballsGlow, ballsFreeze, leftPlayerGlow, rightPlayerGlow, leftPlayerCage, rightPlayerCage, leftShield, rightShield };
-	
+	 const effects: Effects = {
+		leftGlow, rightGlow,
+		leftCage, rightCage,
+		ballsGlow, ballsFreeze,
+		leftShield, rightShield
+	};
+	return effects;
 }
 
 async function buildThematicEnvironment(

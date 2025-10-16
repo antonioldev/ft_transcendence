@@ -169,6 +169,17 @@ export interface Players {
 	right: any;
 }
 
+export interface Effects {
+	leftGlow: any;
+	rightGlow: any;
+	leftCage: any;
+	rightCage: any;
+	ballsGlow: any[];
+	ballsFreeze: any[];
+	leftShield: any;
+	rightShield: any;
+}
+
 // Represents the game objects in a Babylon.js scene
 export interface GameObjects {
 	players: Players;
@@ -178,16 +189,7 @@ export interface GameObjects {
 	cameras: any[];
 	guiCamera: any;
 	lights: any[];
-	effects: {
-		leftGlow: any;
-		rightGlow: any;
-		leftCage: any;
-		rightCage: any;
-		balls: any[];
-		ballsFreeze: any[];
-		shieldLeft: any;
-		shieldRight: any;
-	}
+	effects: Effects;
 	// players: {
 	// 	left: Mesh;
 	// 	right: Mesh;
