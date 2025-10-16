@@ -2,7 +2,7 @@ import { Engine, Scene, Color4, SceneLoader} from "@babylonjs/core";
 import { GameConfig } from './GameConfig.js';
 import { buildScene2D, buildScene3D } from './scene/sceneBuilder.js';
 import { webSocketClient } from '../core/WebSocketClient.js';
-import { GameStateData, GameObjects } from '../shared/types.js';
+import { GameStateData, GameObjects, PlayerInfo } from '../shared/types.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
 import { ViewMode, WebSocketEvent, AppState, GameState } from '../shared/constants.js';
 import { Logger } from '../utils/LogManager.js';
@@ -13,6 +13,7 @@ import { GameConfigFactory } from './GameConfig.js';
 import { PlayerSide, PlayerState } from "./utils.js"
 import { disposeMaterialResources } from "./scene/materialFactory.js";
 import { GameServices } from "./GameServices.js";
+import { sendPOST } from "../core/HTTPRequests.js";
 
 /**
  * The Game class serves as the core of the game engine, managing the initialization,
@@ -64,7 +65,8 @@ export class Game {
 		try {
 			const config = GameConfigFactory.createWithAuthCheck(viewMode, gameMode);
 			const game = new Game(config);
-			webSocketClient.joinGame(this.config.gameMode, this.config.players, aiDifficulty, capacity);
+			const players: PlayerInfo[] = this.config.players;
+			await sendPOST("join", { gameMode, players, aiDifficulty, capacity })
 			await game.initialize();
 			return game;
 		} catch (error) {

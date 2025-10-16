@@ -4,7 +4,7 @@ import * as db from "../data/validation.js";
 import { gameManager } from '../network/GameManager.js';
 import { AuthCode, GameMode, AiDifficulty } from '../shared/constants.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
-import { removeClient, findOrCreateClient, getClient, addClient } from './utils.js';
+import { removeClient, findOrCreateClient, getClient } from './utils.js';
 
 
 /* --- HTTP Endpoints --- */
@@ -12,26 +12,33 @@ import { removeClient, findOrCreateClient, getClient, addClient } from './utils.
 export async function APIRoutes(app: FastifyInstance) {
 
 	// ROOT
-	app.get('/', async (request, reply) => {
+	app.get('/api/root', async (request, reply) => {
+		
 		const { sid } = request.query as { sid?: string};
-		console.log(`SID = ${sid}`);
 		if (!sid) {
+			console.log(`ROOT request failed: missing SID`);
 			return reply.code(400).send({ message: "Error: missing SID"} );
 		}
+		console.log(`ROOT request received from: ${sid}`);
 		let client = findOrCreateClient(sid);
 		// check for double user
 		client.is_connected = true;
 		
 		reply.send( { 
 			message: "Welcome to Battle Pong!",
-			wsURL: `wss://${request.hostname}/ws?sid=${encodeURIComponent(sid)}`,
+			wsURL: `ws://${request.hostname}/ws?sid=${encodeURIComponent(sid)}`,
 		});
 		console.log(`New Client connected: sid = ${sid}`);
 	});
 
 	// LOGIN
-	app.post('/login', async (request, reply) => {
+	app.post('/api/login', async (request, reply) => {
 		const { sid } = request.query as { sid: string};
+		if (!sid) {
+			console.log(`/login request failed: missing SID`);
+			return reply.code(400).send({ message: "Error: missing SID"} );
+		}
+		console.log(`/login request received from: ${sid}`);
 		let client = findOrCreateClient(sid);
 
 		// get login details from Google Auth token or by default request body
@@ -77,8 +84,13 @@ export async function APIRoutes(app: FastifyInstance) {
 	});
 
 	// LOGOUT
-	app.post('/logout', async (request, reply) => {
+	app.post('/api/logout', async (request, reply) => {
 		const { sid } = request.query as { sid: string};
+		if (!sid) {
+			console.log(`/logout request failed: missing SID`);
+			return reply.code(400).send({ message: "Error: missing SID"} );
+		}
+		console.log(`/logout request received from: ${sid}`);
 		let client = getClient(sid);
 		if (!client) {
 			return reply.code(401).send( {success: false, message: "Logout failed: user not logged in"});
@@ -91,12 +103,18 @@ export async function APIRoutes(app: FastifyInstance) {
 	})
 
 	// REGISTER
-	app.post('/register', async (request, reply) => {
+	app.post('/api/register', async (request, reply) => {
+		const { sid } = request.query as { sid: string};
+		if (!sid) {
+			console.log(`/register request failed: missing SID`);
+			return reply.code(400).send({ message: "Error: missing SID"} );
+		}
 		const { username, email, password } = request.body as { username: string, email: string, password: string };
-
 		if (!username || !email || !password) {
+			console.log(`/register request failed: missing user info`);
 			return reply.code(401).send({ result: AuthCode.BAD_CREDENTIALS, message: 'Missing username, email, or password' })
 		}
+		console.log(`/register request received from: ${sid}`);
 
 		const result = await db.registerNewUser(username, email, password);
 		let message: string;
@@ -123,11 +141,18 @@ export async function APIRoutes(app: FastifyInstance) {
 	})
 
 	// JOIN GAME 
-	app.post('/join', (request, reply) => {
+	app.post('/api/join', (request, reply) => {
 		const { sid } = request.query as { sid: string };
+		if (!sid) {
+			console.log(`/join request failed: missing SID`);
+			return reply.code(400).send({ success: false, message: "Error: missing SID"} );
+		}
 		const { mode, players, capacity, aiDifficulty  } = request.body as 
 			{ mode: GameMode, players: Player[], capacity?: number, aiDifficulty?: AiDifficulty };
-		
+		if (!mode || !players ) {
+			console.log(`/join request failed: missing game info`);
+			return reply.code(401).send({ success: false, message: 'Missing username, email, or password' })
+		}
 		const client = findOrCreateClient(sid);
 		const gameSession = gameManager.findOrCreateGame(mode, capacity ?? undefined);
 		gameManager.addClient(client, gameSession);
@@ -153,7 +178,7 @@ export async function APIRoutes(app: FastifyInstance) {
 	})
 
 	// USER STATS
-	app.get('/stats', (request, reply) => {
+	app.get('/api/stats', (request, reply) => {
 		const { username } = request.query as { username: string };
 		const stats = db.getUserStats(username); // from DB
 		if (!stats) {
@@ -165,7 +190,7 @@ export async function APIRoutes(app: FastifyInstance) {
 	})
 
 	// GAME HISTORY
-	app.get('/history', (request, reply) => {
+	app.get('/api/history', (request, reply) => {
 		const { username } = request.query as { username: string };
 		const history = db.getUserStats(username); // from DB
 		if (!history) {

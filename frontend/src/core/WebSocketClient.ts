@@ -1,9 +1,7 @@
 import { Logger } from '../utils/LogManager.js';
-import { ConnectionStatus, MessageType, GameMode, Direction, WebSocketEvent, PowerupType, AppState } from '../shared/constants.js'
-import { ClientMessage, ServerMessage, PlayerInfo, RegisterUser, LoginUser } from '../shared/types.js'
+import { ConnectionStatus, MessageType, Direction, WebSocketEvent, PowerupType, AppState } from '../shared/constants.js'
+import { ClientMessage, ServerMessage } from '../shared/types.js'
 import { AppStateManager } from './AppStateManager.js';
-import { AuthCode } from '../shared/constants.js';
-import { getSID, sendPOST } from './HTTPRequests.js';
 
 /**
  * WebSocketClient is responsible for managing the WebSocket connection
@@ -11,17 +9,9 @@ import { getSID, sendPOST } from './HTTPRequests.js';
  * game state updates, connection events, and errors.
  */
 export class WebSocketClient {
-    // private static instance: WebSocketClient;
     private ws?: WebSocket;
     private connectionStatus: ConnectionStatus = ConnectionStatus.CONNECTING;
     private callbacks: { [event: string]: Function | null } = {};
-
-    // static getInstance(): WebSocketClient {
-    //     if (!WebSocketClient.instance) {
-    //         WebSocketClient.instance = new WebSocketClient();
-    //     }
-    //     return WebSocketClient.instance;
-    // }
 
     // ========================================
     // CONNECTION MANAGEMENT
@@ -33,21 +23,6 @@ export class WebSocketClient {
         this.ws = new WebSocket(WS_URL);
         this.connectionStatus = ConnectionStatus.CONNECTING;
         this.notifyStatus(ConnectionStatus.CONNECTING);
-        
-        // // In development, connect directly to backend on port 3000
-        // let base_url: string;
-        // if (location.port === '5173') {
-        //     // Development mode - connect directly to backend
-        //     base_url = (location.protocol === 'https:' ? 'wss://' : 'ws://') + 'localhost:3000';
-        // } else {
-        //     // Production mode - use nginx proxy
-        //     base_url = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host;
-        // }
-        
-        // console.log('Connecting to WebSocket:', base_url);
-
-        // const WS_URL = `${base_url}/ws?sid=${encodeURIComponent(getSID() ?? '')}`;
-    
 
         const timeout = setTimeout(() => {
             if (this.connectionStatus === ConnectionStatus.CONNECTING) {
@@ -91,9 +66,7 @@ export class WebSocketClient {
 
     // Disconnects the WebSocket connection.
     disconnect(): void {
-        if (this.ws) {
-            this.ws.close();
-        }
+        this.ws?.close();
     }
 
     // ========================================
@@ -160,11 +133,6 @@ export class WebSocketClient {
     // ========================================
     // GAME COMMUNICATION
     // ========================================
-
-    joinGame(gameMode: GameMode, players: PlayerInfo[], aiDifficulty: number, capacity?: number): void {
-        // this.sendMessage(MessageType.JOIN_GAME, { gameMode, players, aiDifficulty, capacity });
-        sendPOST("join", { gameMode, players, aiDifficulty, capacity })
-    }
 
     sendPlayerReady(): void {
         this.sendMessage(MessageType.PLAYER_READY);

@@ -1,15 +1,10 @@
 // Session routes for binding a client-side token to a server-side session
 import { FastifyInstance } from 'fastify';
-import { getUserBySession } from '../data/validation.js';
 import { OAuth2Client } from 'google-auth-library';
 import * as validation from '../data/validation.js';
 
 // Google OAuth2 client
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
-
-// Cookie settings
-// const COOKIE_NAME = 'sid';
-const COOKIE_MAX_AGE = 60 * 60; // 1 hour in seconds
 
 // export async function authLocal(app: FastifyInstance) {
 // 	/**
@@ -111,20 +106,9 @@ export async function authGoogle(app: FastifyInstance) {
 			const user = validation.findOrCreateGoogleUser(payload as any);
 			if (!user) return reply.code(500).send({ error: 'Could not find or create user' });
 
-			// Create a session for the user
-			const sid = validation.getSessionByUsername(user.username); // string | undefined
-			if (!sid) return reply.code(409).send({ error: 'Active session already exists' });
-
-			// Set session cookie
-			const COOKIE_OPTS = {
-				httpOnly: true,
-				secure: true,
-				sameSite: 'none' as const,
-				path: '/',
-				// domain: '.42london.com',			TO CHECK ON 42 COMPUTER
-				maxAge: COOKIE_MAX_AGE,
-			};
-			reply.setCookie(COOKIE_NAME, sid, COOKIE_OPTS);
+			// // Create a session for the user
+			// const sid = validation.getSessionByUsername(user.username); // string | undefined
+			// if (!sid) return reply.code(409).send({ error: 'Active session already exists' });
 
 			// Send response with user info (safe fields only)
 			return reply.send({
@@ -139,15 +123,4 @@ export async function authGoogle(app: FastifyInstance) {
 			return reply.code(500).send({ error: 'Authentication failed' });
 		}
 	});
-
-	// // Route: Get current session by cookie
-	// app.get('/api/auth/session', async (request, reply) => {
-	// 	const sid = request.cookies?.[COOKIE_NAME];
-	// 	if (!sid) return reply.code(401).send({ authenticated: false });
-
-	// 	const user = validation.getUserBySession(sid);
-	// 	if (!user) return reply.code(401).send({ authenticated: false });
-
-	// 	return reply.send({ authenticated: true, user });
-	// });
 }

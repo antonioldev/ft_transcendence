@@ -369,33 +369,6 @@ export class AuthManager {
         const responseData = await sendPOST("login", { username, password });
         this.handleLoginResponse(responseData.result, responseData.message, username, translation);
 
-        // --- Helper: set HttpOnly cookie via binder route ---
-        // const bindSessionCookie = async (sid: string) => {
-        // const res = await fetch('/api/auth/session/bind', {
-        //     method: 'POST',
-        //     headers: { 'Content-Type': 'application/json' },
-        //     body: JSON.stringify({ sid }),
-        //     credentials: 'include',
-        // });
-        // if (!res.ok) throw new Error('bind_failed');
-        // };
-
-        // // --- Helper: parse the server string payload safely ---
-        // const parsePayload = (raw: unknown): { text: string; sid?: string; uname?: string } => {
-        //     let payload: any = raw;
-        //     if (typeof payload === 'string') {
-        //         try {
-        //             payload = JSON.parse(payload);
-        //         } catch {
-        //             return { text: payload };
-        //         }
-        //     }
-        //     const text  = payload.text ?? payload.message ?? 'Login success';
-        //     const sid   = payload.sid ?? payload.sessionId ?? payload.data?.sid;
-        //     const uname = payload.username ?? payload.user?.username;
-        //     return { text, sid, uname };
-        // };
-
         // // SUCCESS: the callback still receives a string; we parse it here
         // webSocketClient.registerCallback(WebSocketEvent.LOGIN_SUCCESS, async (raw: string) => {
         //     try {

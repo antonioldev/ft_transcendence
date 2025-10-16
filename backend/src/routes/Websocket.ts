@@ -4,7 +4,6 @@ import { Client } from '../network/Client.js';
 import { MessageType } from '../shared/constants.js';
 import { ClientMessage} from '../shared/types.js';
 import * as db from "../data/validation.js";
-import { getUserBySession } from '../data/validation.js';
 import { TournamentRemote } from '../network/Tournament.js';
 import { getClient, send } from './utils.js';
 
@@ -15,50 +14,32 @@ import { getClient, send } from './utils.js';
 export async function setupWebsocket(app: FastifyInstance): Promise<void> {
     app.get('/ws', { websocket: true } as any, (socket, request) => {
         const { sid } = request.query as { sid: string}; 
-        // const { token } = request.query as { token?: string };
-
-        if (!sid) { return socket.close(1008, 'SID missing'); }
-
-        const user = getUserBySession(sid); // do we need this?
-        if (user) {
-            handleConnection(socket, sid);
+        if (!sid) {
+            console.log(`Cannot create websocket: missing SID`);
+            return socket.close(1008, 'SID missing'); 
         }
+        console.log(`Creating websocket for sid: ${sid}`);
 
-        // try {
-        //     // Google authentication: verify JWT token
-        //     const decoded = app.jwt.verify(token) as any;
-        //     handleConnection(socket, decoded.user);
-        // } catch (err) {
-        //     socket.close(1008, 'Invalid token');
-        //     return;
-        // }
-    });
-}
-
-/**
- * Handles a new WebSocket connection, initializing the client and setting up event listeners.
- * @param socket - The WebSocket connection object.
- */
-function handleConnection(socket: any, sid: string): void {
-    let client = getClient(sid);
-    if (!client) {
-        console.log(`Cannot handle Websocket connection, client does not exist`);
-        return ;
-    }
-    if (!client.websocket) client.websocket = socket;
-
-    socket.on('message', async (message: string) => {
-        await handleMessage(client!, message);
-    });
-
-    socket.on('close', () => {
-        console.log(`WebSocket closed for client ${client!.username}:`);
-        handleDisconnection(client!);
-    });
-
-    socket.on('error', (error: any) => {
-        console.error(`❌ WebSocket error for client ${client!.username}:`, error);
-        handleDisconnection(client!);
+        const client = getClient(sid);
+        if (!client) {
+            console.log(`Cannot handle Websocket connection, client does not exist`);
+            return ;
+        }
+        if (!client.websocket) client.websocket = socket;
+    
+        socket.on('message', async (message: string) => {
+            await handleMessage(client!, message);
+        });
+    
+        socket.on('close', () => {
+            console.log(`WebSocket closed for client ${client!.username}:`);
+            handleDisconnection(client!);
+        });
+    
+        socket.on('error', (error: any) => {
+            console.error(`❌ WebSocket error for client ${client!.username}:`, error);
+            handleDisconnection(client!);
+        });
     });
 }
 
@@ -86,8 +67,7 @@ async function handleMessage(client: Client, message: string) {
         const data: ClientMessage = JSON.parse(message.toString());
         const gameSession = gameManager.findGameSession(client);
         if (!gameSession) {
-            console.warn(`Client ${client.username} not in any game for "${MessageType[data.type]}" signal`);
-            return;
+            throw( new Error(`Client ${client.username} not in any game for "${MessageType[data.type]}" signal`) );
         }
         switch (data.type) {
             case MessageType.PLAYER_READY:
@@ -132,12 +112,3 @@ async function handleMessage(client: Client, message: string) {
         });
     }
 }
-
-// function parseCookie(cookieHeader: string): Record<string, string> {
-//     const out: Record<string, string> = {};
-//     cookieHeader.split(';').forEach(kv => {
-//         const [k, ...rest] = kv.trim().split('=');
-//         if (k) out[k] = decodeURIComponent(rest.join('=') || '');
-//     });
-// return out;
-// }

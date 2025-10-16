@@ -29,18 +29,18 @@ async function loadPage() {
 
 	// send "/" HTTP request and receive WebSocket URL to create ws
 	const WS_URL = await sendRootRequest();
-	webSocketClient.connect(WS_URL);
+	// webSocketClient.connect(WS_URL);
 
-	// Setup WebSocket monitoring
-	webSocketClient.registerCallback(WebSocketEvent.STATUS_CHANGE, (status: ConnectionStatus) => {
-		uiManager.updateConnectionStatus(status);
-	});
+	// // Setup WebSocket monitoring
+	// webSocketClient.registerCallback(WebSocketEvent.STATUS_CHANGE, (status: ConnectionStatus) => {
+	// 	uiManager.updateConnectionStatus(status);
+	// });
 
-	if (webSocketClient.isConnected()) {
-        uiManager.updateConnectionStatus(ConnectionStatus.CONNECTED);
-    } else {
-        uiManager.updateConnectionStatus(ConnectionStatus.CONNECTING);
-    }
+	// if (webSocketClient.isConnected()) {
+    //     uiManager.updateConnectionStatus(ConnectionStatus.CONNECTED);
+    // } else {
+    //     uiManager.updateConnectionStatus(ConnectionStatus.CONNECTING);
+    // }
 }
 
 /**

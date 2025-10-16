@@ -77,37 +77,37 @@ export async function logoutUser(username: string): Promise<number> {
 	}
 }
 
-/**
- * Get user info from a session id.
- */
-export function getUserBySession(sid: string): { id: number; username: string; email?: string } | null {
-	try {
-		const row = dbFunction.getUserBySession(sid);
-		console.log(
-			'[getUserBySession]',
-			row ? `${row.id}, ${row.username}, ${row.email}` : 'no user'
-		);
-		return row ?? null;
-	} catch (err) {
-		console.error('getUserBySession error:', err);
-		return null;
-	}
-}
+// /**
+//  * Get user info from a session id.
+//  */
+// export function getUserBySession(sid: string): { id: number; username: string; email?: string } | null {
+// 	try {
+// 		const row = dbFunction.getUserBySession(sid);
+// 		console.log(
+// 			'[getUserBySession]',
+// 			row ? `${row.id}, ${row.username}, ${row.email}` : 'no user'
+// 		);
+// 		return row ?? null;
+// 	} catch (err) {
+// 		console.error('getUserBySession error:', err);
+// 		return null;
+// 	}
+// }
 
-/**
- * Get session id from a username.
- */
-export function getSessionByUsername(username: string): string | null | undefined {
-	try {
-		const userId = dbFunction.retrieveUserID(username);
-		const sid = dbFunction.retrieveSessionID(userId);
-		console.log(`getSessionByUsername: got sid=${sid}`);
-		if (sid !== undefined || sid !== null) return sid;
-	} catch (err) {
-		console.error('getSessionByUsername error', err);
-		return null;
-	}
-}
+// /**
+//  * Get session id from a username.
+//  */
+// export function getSessionByUsername(username: string): string | null | undefined {
+// 	try {
+// 		const userId = dbFunction.retrieveUserID(username);
+// 		const sid = dbFunction.retrieveSessionID(userId);
+// 		console.log(`getSessionByUsername: got sid=${sid}`);
+// 		if (sid !== undefined || sid !== null) return sid;
+// 	} catch (err) {
+// 		console.error('getSessionByUsername error', err);
+// 		return null;
+// 	}
+// }
 
 /**
  * Register a new user with hashed password.
@@ -207,7 +207,7 @@ export function findOrCreateGoogleUser(profile: { sub: string; name: string; ema
 		dbFunction.createGoogleUser(profile);
 
 	const userId = dbFunction.retrieveUserID(profile.name);
-	dbFunction.createSession(userId);
+	// dbFunction.createSession(userId);
 
 	return dbFunction.findUserByGoogleId(profile.sub);
 }

@@ -2,14 +2,13 @@ import Fastify from 'fastify';
 import { FastifyInstance } from 'fastify';
 import fastifyJwt from '@fastify/jwt';
 import fastifyCors from '@fastify/cors';
-import cookie from '@fastify/cookie';
 import * as dotenv from 'dotenv';
 import { setupWebsocket }  from './routes/Websocket.js';
 import config from './config/default.js';
 import { initialisazeDatabase } from './data/db-init.js';
 import { registerDatabaseFunctions } from './data/database.js';
 import { APIRoutes } from './routes/apiRoutes.js';
-// import { authGoogle, authLocal } from './routes/authRoutes.js';
+import { authGoogle } from './routes/authRoutes.js';
 import { seedDefaultUsers } from './data/db-init.js';
 
 /* --- SETUP DATABASE --- */
@@ -33,17 +32,6 @@ export const app: FastifyInstance = Fastify({
 // JWT
 await app.register(fastifyJwt, { secret: process.env.JWT_SECRET! });
 
-// // Cookies
-// await app.register(cookie, {
-//     secret: process.env.COOKIE_SECRET,
-//     hook: 'onRequest',
-//     parseOptions: {
-//         secure: true,
-//         sameSite: 'none',
-//         httpOnly: true
-//     }
-// });
-
 // Websocket options
 await app.register(import('@fastify/websocket'), {
 	options: {
@@ -56,23 +44,6 @@ await app.register(import('@fastify/websocket'), {
 
 // CORS for frontend
 await app.register(fastifyCors, {
-    // origin: (origin: string | undefined, cb: (err: Error | null, allow: boolean) => void) => {
-    // if (!origin) return cb(null, true); // allow non-browser requests (curl)
-    // const allowed = [
-    //     // 42 London hostname pattern
-    //     /^https:\/\/c\d+r\d+s\d+\.42london\.com(:8443)?$/,
-
-    //     // Local network IP ranges A, B, and C with optional port 8443
-    //     /^https?:\/\/10\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(:8443)?$/,
-    //     /^https?:\/\/172\.(?:1[6-9]|2[0-9]|3[01])\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(:8443)?$/,
-    //     /^https?:\/\/192\.168\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(:8443)?$/,
-    
-    //     /^https?:\/\/localhost(:\d+)?$/
-    // ];
-    // if (allowed.some(regexp => regexp.test(origin))) cb(null, true);
-    // else cb(new Error('Not allowed'), false); 
-    // },
-    // origin: process.env.LAN_IP,
     origin: "https://localhost",
     methods: ['GET', 'POST', 'OPTIONS'],
     credentials: true,
@@ -84,7 +55,7 @@ await app.register(fastifyCors, {
 
 await app.register(APIRoutes);
 // await app.register(authLocal);
-// await app.register(authGoogle);
+await app.register(authGoogle);
 await app.register(setupWebsocket);
 
 

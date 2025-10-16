@@ -62,11 +62,11 @@ export const safeGameId = (s: string) => {
   return s;
 };
 
-export const safeSid = (s: string) => {
-  s = trimString(s, 'sid');
-  if (!SID_RE.test(s)) throw new Error('Invalid sid');
-  return s;
-};
+// export const safeSid = (s: string) => {
+//   s = trimString(s, 'sid');
+//   if (!SID_RE.test(s)) throw new Error('Invalid sid');
+//   return s;
+// };
 
 /**
  * USERS table functions
@@ -805,36 +805,36 @@ export function getUserGameHistoryRows(userId: number) {
 	}
 }
 
-// Session cookie creation to ensure no double login and refresh doesn't logout user
-export function createSession(userId: number): string | undefined {
-	try {
-		userId = nonNegInt(userId, 'user id');
-		if (userId === -1) {
-			console.error("error in createSession, userId is invalid");
-			return undefined;
-		}
-		const now = nowSec();
-		deleteSessionExpired(userId);
+// // // Session cookie creation to ensure no double login and refresh doesn't logout user
+// export function createSession(userId: number): string | undefined {
+// 	try {
+// 		userId = nonNegInt(userId, 'user id');
+// 		if (userId === -1) {
+// 			console.error("error in createSession, userId is invalid");
+// 			return undefined;
+// 		}
+// 		const now = nowSec();
+// 		deleteSessionExpired(userId);
 
-		// Block if there is any active session for this user
-		const active = db.prepare(
-		'SELECT id FROM sessions WHERE user_id=? AND expires_at > ? LIMIT 1'
-		).get(userId, now) as { id: string } | undefined;
-		if (active !== undefined) return undefined;
+// 		// Block if there is any active session for this user
+// 		const active = db.prepare(
+// 		'SELECT id FROM sessions WHERE user_id=? AND expires_at > ? LIMIT 1'
+// 		).get(userId, now) as { id: string } | undefined;
+// 		if (active !== undefined) return undefined;
 		
-		const sid = crypto.randomBytes(32).toString('hex');
-		const expiresAt = now + HOUR;
-		db.prepare(
-		`INSERT INTO sessions (id, user_id, created_at, expires_at, user_agent, ip)
-		VALUES (?,?,?,?,?,?)`
-		).run(sid, userId, now, expiresAt, null, null);
+// 		const sid = crypto.randomBytes(32).toString('hex');
+// 		const expiresAt = now + HOUR;
+// 		db.prepare(
+// 		`INSERT INTO sessions (id, user_id, created_at, expires_at, user_agent, ip)
+// 		VALUES (?,?,?,?,?,?)`
+// 		).run(sid, userId, now, expiresAt, null, null);
 
-		return sid;
-	} catch (err) {
-		console.error('Error in createSession:', err);
-		return undefined;
-	}
-}
+// 		return sid;
+// 	} catch (err) {
+// 		console.error('Error in createSession:', err);
+// 		return undefined;
+// 	}
+// }
 
 export function deleteSessionExpired(userId: number): boolean {
 	try {
@@ -871,33 +871,33 @@ export function getSessionInfo(userId: number): SessionUser | null {
 	}
 }
 
-export function getUserBySession(sid: string): { id: number; username: string, email?: string} | null {
-	try {
-		sid = safeSid(sid);
-		const userId = db.prepare('SELECT user_id FROM sessions WHERE id = ?').get(sid) as { user_id: number } | undefined;
-		if (!userId) return null;
-		const row = db.prepare('SELECT id, username, email FROM users WHERE id = ?').get(userId.user_id) as { id:number; username:string; email?:string } | undefined;
-		if (!row) return null;
-		console.log(`in database.ts we found the session by user: ${row.username}, ${row.email}, ${row.id} where userId: ${userId.user_id}`);
-		return row;
-	} catch (e) {
-		console.error('getUserBySession error:', e);
-		return null;
-	}
-}
+// export function getUserBySession(sid: string): { id: number; username: string, email?: string} | null {
+// 	try {
+// 		sid = safeSid(sid);
+// 		const userId = db.prepare('SELECT user_id FROM sessions WHERE id = ?').get(sid) as { user_id: number } | undefined;
+// 		if (!userId) return null;
+// 		const row = db.prepare('SELECT id, username, email FROM users WHERE id = ?').get(userId.user_id) as { id:number; username:string; email?:string } | undefined;
+// 		if (!row) return null;
+// 		console.log(`in database.ts we found the session by user: ${row.username}, ${row.email}, ${row.id} where userId: ${userId.user_id}`);
+// 		return row;
+// 	} catch (e) {
+// 		console.error('getUserBySession error:', e);
+// 		return null;
+// 	}
+// }
 
-export function retrieveSessionID(userId: number): string | null {
-	try {
-		userId = nonNegInt(userId, 'user id');
-		const sid = db.prepare('SELECT id FROM sessions WHERE user_id = ?');
-		const SID = sid.get(userId) as { id: string } | undefined;
-		if (SID === undefined) {
-			console.error('SID not found');
-			return null;
-		}
-		return SID.id;
-	} catch (err) {
-		console.error('Error in get User ID:', err);
-		return null;
-	}
-}
+// export function retrieveSessionID(userId: number): string | null {
+// 	try {
+// 		userId = nonNegInt(userId, 'user id');
+// 		const sid = db.prepare('SELECT id FROM sessions WHERE user_id = ?');
+// 		const SID = sid.get(userId) as { id: string } | undefined;
+// 		if (SID === undefined) {
+// 			console.error('SID not found');
+// 			return null;
+// 		}
+// 		return SID.id;
+// 	} catch (err) {
+// 		console.error('Error in get User ID:', err);
+// 		return null;
+// 	}
+// }
