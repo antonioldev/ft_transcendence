@@ -8,10 +8,12 @@ import { createActor } from "../entities/animatedProps.js";
 import { createBall, createGameField, createPlayer, createWalls, createWallLineGlowEffect } from '../entities/gameObjects.js';
 import { createBallEffects, createPaddleCage, createPaddleGlow, createWallGlowEffect } from '../entities/gameObjectsEffects.js';
 import { createStaticObject, createStaticObjects } from "../entities/staticProps.js";
-import { createDustParticleSystem, createFog, createLensFlare, createRainParticles, createSmokeSprite, createSnow, createUnderwaterParticles, createStarsParticles } from '../rendering/effects.js';
+import { createParticleSystem, createFog, createLensFlare, createSmokeSprite } from './effectsBuilder.js';
 import { createCameras, createGuiCamera } from "./camerasBuilder.js";
 import { createSky, createLight, createTerrain } from './enviromentBuilder.js';
 import { GameConfig } from '../../GameConfig.js';
+import { Logger } from '../../../utils/LogManager.js';
+import { ParticleEffectType } from "../config/effectSceneConfig.js";
 
 export type LoadingProgressCallback = (progress: number) => void;
 
@@ -24,26 +26,26 @@ export async function buildScene(
 
 	const viewMode = config.viewMode;
 	const gameMode = config.gameMode;
-    let themeObjects: ThemeObject = { props: [], actors: [], effects: [] };
+	let themeObjects: ThemeObject = { props: [], actors: [], effects: [] };
 
 	const map_asset = getMap(viewMode, config.scene3D);
-    
-    const coreObjects = await buildCoreGameObjects(scene, gameMode, viewMode, map_asset);
-    onProgress?.(20);
-    const powerUpEffects = await createPowerUpEffects(scene, coreObjects.players, coreObjects.balls);
-    onProgress?.(40);
-    await buildThematicEnvironment(scene, map_asset, themeObjects, onProgress);
+	
+	const coreObjects = await buildCoreGameObjects(scene, gameMode, viewMode, map_asset);
+	onProgress?.(20);
+	const powerUpEffects = await createPowerUpEffects(scene, coreObjects.players, coreObjects.balls);
+	onProgress?.(40);
+	await buildThematicEnvironment(scene, map_asset, themeObjects, onProgress);
 
 	onProgress?.(100);
 	await scene.whenReadyAsync();
-    
-    return {
-        gameObjects: {
-            ...coreObjects,
-            effects: powerUpEffects
-        },
-        themeObjects
-    };
+	
+	return {
+		gameObjects: {
+			...coreObjects,
+			effects: powerUpEffects
+		},
+		themeObjects
+	};
 }
 
 function getMap(viewMode: ViewMode, scene3D: string): any {
@@ -144,40 +146,34 @@ async function buildThematicEnvironment(
 					themeObjects?.actors.push(actor);
 				}
 			} catch (error) {
-				console.error(`Failed to create actor ${i}:`, error);
+				Logger.error(`Failed to create actor ${i}`, 'SceneBuilder', error);
 			}
 		}
 	}
 
 	onProgress?.(90);
-	if (map_asset.particleType === 'underwater'){
-		const bubble = createUnderwaterParticles(scene);
-		themeObjects?.effects.push(bubble);
-	}
-		
-	if (map_asset.particleType === 'dust'){
-		const dust = createDustParticleSystem(scene);
-		themeObjects?.effects.push(dust);
-	}
+	const particleType = map_asset.particleType;
+	if (particleType) {
+		let effect = null;
 
-	if (map_asset.particleType === 'snow') {
-		const snow = createSnow(scene);
-		themeObjects.effects.push(snow);
-	}
+		switch(particleType) {
+			case ParticleEffectType.LENS: 
+				effect = createLensFlare(scene); 
+				break;
+			case ParticleEffectType.SMOKE: 
+				effect = createSmokeSprite(scene); 
+				break;
+			case ParticleEffectType.UNDERWATER:
+			case ParticleEffectType.DUST:
+			case ParticleEffectType.SNOW:
+			case ParticleEffectType.STARS:
+			case ParticleEffectType.RAIN:
+				effect = createParticleSystem(scene, particleType);
+				break;
+		}
 
-	if (map_asset.particleType === 'lensFlare') {
-		const lensFlare = createLensFlare(scene);
-		themeObjects.effects.push(lensFlare);
-	}
-
-	if (map_asset.particleType === 'smoke') {
-		const smoke = createSmokeSprite(scene);
-		themeObjects.effects.push(smoke);
-	}
-
-	if (map_asset.particleType === 'stars') {
-		const stars = createStarsParticles(scene);
-		themeObjects.effects.push(stars);
+		if (effect)
+			themeObjects.effects.push(effect);
 	}
 
 	if (map_asset.fogColor)
@@ -185,11 +181,6 @@ async function buildThematicEnvironment(
 
 	if (map_asset === MAP_CONFIGS.map0)
 		createWallLineGlowEffect(scene, themeObjects);
-		
-	if (map_asset.particleType === 'rain') {
-		const rain = createRainParticles(scene);
-		themeObjects?.effects.push(rain);
-	}
 
 	const glow = new GlowLayer("glow", scene);
 	glow.intensity = map_asset.glow ?? 0;

@@ -49,8 +49,8 @@ export const GAME_CONFIG = {
 
 	// Ball settings
 	ballRadius: 0.3, // Radius of the ball
-	ballServeSpeed: 0,//5, // Initial speed of the ball
-	ballInitialSpeed: 0,//7, // Initial speed of the ball
+	ballServeSpeed: 5, // Initial speed of the ball
+	ballInitialSpeed: 7, // Initial speed of the ball
 	ballMaxAngle: Math.PI / 4, // Maximum angle of the ball trajectory
 	ballMinAngle: Math.PI / 12, // Minimum angle of the ball trajectory
 	ballSpeedIncrease: 1.1, // Speed multiplier after paddle hit

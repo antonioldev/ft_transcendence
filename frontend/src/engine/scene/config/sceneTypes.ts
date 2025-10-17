@@ -1,4 +1,5 @@
 import { Color3 } from "@babylonjs/core";
+import { ParticleEffectType } from "./effectSceneConfig";
 
 export type StaticObject = {
 	model: string;
@@ -36,7 +37,7 @@ export type MapAssetConfig = {
 	skybox: string | null;
 	fogColor?: Color3 | null;
 	fogIntensity: number;
-	particleType?: 'dust' | 'underwater' | 'rain' | 'snow' | 'lensFlare' | 'smoke' | 'stars' | null;
+	particleType?: ParticleEffectType | null;
 	actors: ActorConfig[];
 };
 

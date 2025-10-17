@@ -1,7 +1,4 @@
 import { Color4, ParticleSystem, Scene, Texture, Vector3 } from "@babylonjs/core";
-import { Animation } from "@babylonjs/core/Animations/animation";
-import { AdvancedDynamicTexture, Image } from "@babylonjs/gui";
-import { Z_INDEX } from "../../gui/GuiStyle";
 
 interface FireworkDetails {
 	bursts: number;
@@ -24,31 +21,6 @@ interface FireworkDetails {
 	stopAfterMs: number;
 	disposeDelayMs: number;
 };
-
-// export const PARTIAL_FIREWORKS: FireworkDetails = {
-//   bursts: 4,
-//   delay: { min: 120, max: 280 },
-//   distance: { min: 6, max: 12 },
-//   spread: 10,
-//   liftY: { min: 0.5, max: 1.5 },
-//   particle: {
-// 	capacity: 800,
-// 	texturePaths: [
-// 	  "assets/textures/particle/flare_transparent.png",
-// 	  "assets/textures/particle/flare.png"
-// 	],
-// 	emitterSphereRadius: 1.2,
-// 	emitRate: 400,
-// 	size: { min: 0.05, max: 0.3 },
-// 	lifeTime: { min: 0.7, max: 1.4 },
-// 	power: { min: 4, max: 8 },
-// 	gravityY: -6.0,
-// 	blendMode: ParticleSystem.BLENDMODE_ONEONE,
-// 	colors: [{ c: new Color4(1.0, 0.92, 0.5, 1.0) }],
-//   },
-//   stopAfterMs: 1200,
-//   disposeDelayMs: 2000,
-// };
 
 export const FINAL_FIREWORKS: FireworkDetails = {
 	bursts: 8,
@@ -86,7 +58,7 @@ export class Particles {
 	private activeParticles: Set<ParticleSystem> = new Set();
 	private maxSize: number = 20;
 
-	getParticle(scene: Scene, profile: FireworkDetails): ParticleSystem {
+	private getParticle(scene: Scene, profile: FireworkDetails): ParticleSystem {
 		let ps = this.availableParticles.pop();
 
 		if (!ps) {
@@ -198,7 +170,6 @@ export class Particles {
 
 const activeTimeouts = new Set<number>();
 const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
-const randomFromArray = <T>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
 const createDelayedAction = (action: () => void, delay: number) => {
 	const timeoutId = window.setTimeout(() => {
 		activeTimeouts.delete(timeoutId);
@@ -214,134 +185,3 @@ export function clearAllFireworkTimers(): void {
 	});
 	activeTimeouts.clear();
 }
-
-export interface SparkleDetails {
-	asset: string;
-	count: number;
-	duration: number;
-	size: { min: number; max: number };
-	colors: string[];
-	spread: { x: number; y: number };
-	zIndex?: number;
-}
-
-export const PARTIAL_GUI_SPARKLES: SparkleDetails = {
-	asset: "assets/textures/particle/flare_transparent.png",
-	count: 80,
-	duration: 3000,
-	size: { min: 5, max: 40 },
-	colors: [
-		"#FFD700", // Gold
-		"#FFF8DC", // Cornsilk  
-		"#FFFFE0", // Light yellow
-		"#F0E68C", // Khaki
-		"#FFFFFF"  // White
-	],
-	spread: { x: 80, y: 60 }
-};
-
-
-export const PARTIAL_GUI_SPARKLES_LOSER: SparkleDetails = {
-	asset: "assets/textures/particle/flare_red.png",
-	count: 60,
-	duration: 2000,
-	size: { min: 3, max: 25 },
-	colors: [
-		"#CD5C5C", // Indian red
-		"#A0522D", // Sienna  
-		"#B22222", // Fire brick
-		"#8B4513", // Saddle brown
-		"#DC143C", // Crimson
-		"#800000", // Maroon
-		"#9B111E"  // Ruby red
-	],
-	spread: { x: 60, y: 50 }
-};
-
-function createSparkleElement(config: SparkleDetails, winner: boolean): Image {
-	const sparkle = new Image("sparkle", config.asset);
-	sparkle.stretch = Image.STRETCH_UNIFORM;
-
-	const size = randomInRange(config.size.min, config.size.max);
-	sparkle.widthInPixels = size;
-	sparkle.heightInPixels = size;
-
-	sparkle.color = randomFromArray(config.colors);
-
-	if (!winner) {
-		const startYOffset = -config.spread.y * 0.8;
-		sparkle.top = `${randomInRange(startYOffset, startYOffset + config.spread.y * 0.4)}%`;
-	} else {
-		sparkle.top = `${randomInRange(-config.spread.y / 2, config.spread.y / 2)}%`;
-	}
-	
-	sparkle.left = `${randomInRange(-config.spread.x / 2, config.spread.x / 2)}%`;
-
-	sparkle.alpha = 0;
-	sparkle.scaleX = 0;
-	sparkle.scaleY = 0;
-
-	sparkle.zIndex = Math.floor(randomInRange(Z_INDEX.ENDGAME, Z_INDEX.MODAL - 1));
-
-	return sparkle;
-}
-
-function animateSparkle(sparkle: Image, animationManager: any, delay: number, duration: number, winner: boolean): void {
-	createDelayedAction(() => {
-		sparkle.animations = [
-			animationManager.createFloat("alpha", 0, 1, 8, false, animationManager.Motion?.ease.quadOut()),
-			animationManager.createFloat("scaleX", 0, 1, 8, false, animationManager.Motion?.ease.quadOut()),
-			animationManager.createFloat("scaleY", 0, 1, 8, false, animationManager.Motion?.ease.quadOut()),
-		];
-
-		animationManager.play(sparkle, 8, false).then(() => {
-			const LOOP_CYCLE = Animation.ANIMATIONLOOPMODE_CYCLE;
-			sparkle.animations = [
-				animationManager.createFloat("alpha", 1, 0.3, 20, true, animationManager.Motion?.ease.sine(), LOOP_CYCLE),
-			];
-			animationManager.play(sparkle, 20, true);
-
-			createDelayedAction(() => {
-				if (winner) {
-					sparkle.animations = [
-						animationManager.createFloat("alpha", sparkle.alpha, 0, 12, false, animationManager.Motion?.ease.quadOut()),
-						animationManager.createFloat("scaleX", sparkle.scaleX, 0, 12, false, animationManager.Motion?.ease.quadOut()),
-						animationManager.createFloat("scaleY", sparkle.scaleY, 0, 12, false, animationManager.Motion?.ease.quadOut()),
-					];
-					animationManager.play(sparkle, 12, false).then(() => {
-						sparkle.dispose();
-					});
-				} else {
-					const fallDistance = 300 + Math.random() * 200;
-					const fallDuration = 40 + Math.random() * 20;
-					
-					sparkle.animations = [
-						animationManager.createFloat("alpha", 1, 0, fallDuration, false, animationManager.Motion?.ease.sine()),
-						animationManager.createFloat("scaleX", 1, 0.1, fallDuration, false, animationManager.Motion?.ease.quadOut()),
-						animationManager.createFloat("scaleY", 1, 0.1, fallDuration, false, animationManager.Motion?.ease.quadOut()),
-						animationManager.createFloat("topInPixels", sparkle.topInPixels, sparkle.topInPixels + fallDistance, fallDuration, false, animationManager.Motion?.ease.quadIn()), // Use quadIn for faster acceleration
-						animationManager.createFloat("rotation", 0, Math.PI / 2 + Math.random() * Math.PI, fallDuration, false, animationManager.Motion?.ease.sine())
-					];
-					animationManager.play(sparkle, fallDuration, false).then(() => {
-						sparkle.dispose();
-					});
-				}
-			}, Math.max(0, duration - (winner ? 500 : 300)));
-		});
-	}, delay);
-}
-
-export function spawnGUISparkles(
-	advancedTexture: AdvancedDynamicTexture, 
-	animationManager: any,
-	winner: boolean
-): void {
-	const config = winner ? PARTIAL_GUI_SPARKLES : PARTIAL_GUI_SPARKLES_LOSER;
-	for (let i = 0; i < config.count; i++) {
-		const sparkle = createSparkleElement(config, winner);
-		advancedTexture.addControl(sparkle);
-		const delay = Math.random() * (winner ? 800 : 100);
-		animateSparkle(sparkle, animationManager, delay, config.duration, winner);
-	}
-}
-

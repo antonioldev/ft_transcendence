@@ -4,7 +4,7 @@ import { ViewMode } from '../../../shared/constants.js';
 import { GAME_CONFIG } from '../../../shared/gameConfig.js';
 import { Logger } from '../../../utils/LogManager.js';
 import { MAP_OBJECT_TYPE, MapAssetConfig, TextureSet } from "../config/sceneTypes.js";
-import { createLavaMaterial, createMaterial, getStandardTextureScale } from '../rendering/materials.js';
+import { createLavaMaterial, createMaterial, getStandardTextureScale } from './materialsBuilder.js';
 import { MAP_CONFIGS } from "../config/mapConfigs.js";
 
 // Creates HDRI environment with fallback to default environment
@@ -16,7 +16,8 @@ export function createSky(scene: Scene, path: string | null): void {
 		scene.createDefaultSkybox(hdrTexture, true, 200);
 		
 	} catch (error) {
-		Logger.errorAndThrow('Error creating HDRI environment, using default environment', 'MaterialFactory');
+		Logger.error('Error creating HDRI environment, using default environment', 'MaterialFactory', error);
+		scene.createDefaultEnvironment({ createGround: false, createSkybox: true });
 	}
 }
 

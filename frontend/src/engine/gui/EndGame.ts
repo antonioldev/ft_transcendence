@@ -1,9 +1,11 @@
 import { KeyboardEventTypes } from "@babylonjs/core";
-import { AdvancedDynamicTexture, Grid, Rectangle, TextBlock } from "@babylonjs/gui";
+import { AdvancedDynamicTexture, Grid, Rectangle, TextBlock, Image } from "@babylonjs/gui";
 import { getCurrentTranslation } from '../../translations/translations.js';
-import { spawnGUISparkles } from '../scene/rendering/fireworks.js';
+import { Z_INDEX } from "./GuiStyle";
 import { AnimationManager, Motion } from "../services/AnimationManager.js";
 import { END_GAME_STYLES, PARTIAL_END_GAME_STYLES, createGrid, createRect, createTextBlock } from "./GuiStyle.js";
+import { PARTIAL_GUI_SPARKLES, PARTIAL_GUI_SPARKLES_LOSER, SparkleDetails } from "../scene/config/particleGuiConfig.js";
+import { randomFromRange, randomFromArray } from "../utils.js";
 
 export class EndGame {
 	private partialEndGameOverlay!: Rectangle;
@@ -59,6 +61,69 @@ export class EndGame {
 		}
 	}
 
+	private createSparkleElement(config: SparkleDetails, winner: boolean): Image {
+		const sparkle = new Image("sparkle", config.asset);
+		sparkle.stretch = Image.STRETCH_UNIFORM;
+	
+		const size = randomFromRange(config.size.min, config.size.max);
+		sparkle.widthInPixels = size;
+		sparkle.heightInPixels = size;
+	
+		sparkle.color = randomFromArray(config.colors);
+	
+		if (!winner) {
+			const startYOffset = -config.spread.y * 0.8;
+			sparkle.top = `${randomFromRange(startYOffset, startYOffset + config.spread.y * 0.4)}%`;
+		} else {
+			sparkle.top = `${randomFromRange(-config.spread.y / 2, config.spread.y / 2)}%`;
+		}
+		
+		sparkle.left = `${randomFromRange(-config.spread.x / 2, config.spread.x / 2)}%`;
+	
+		sparkle.alpha = 0;
+		sparkle.scaleX = 0;
+		sparkle.scaleY = 0;
+	
+		sparkle.zIndex = Z_INDEX.ENDGAME;
+	
+		return sparkle;
+	}
+	
+	private animateSparkle(sparkle: Image, animationManager: AnimationManager, delay: number, duration: number, winner: boolean): void {
+		setTimeout(() => {
+			animationManager.zoom(sparkle, 'in', 8).then(() => {
+			
+				if (winner) {
+					animationManager.twinkle(sparkle, 20);
+					setTimeout(() => {
+						sparkle.animations = [];
+						animationManager.fade(sparkle, 'out', 12).then(() => sparkle.dispose());
+					}, duration - 500);
+				} else {
+					setTimeout(() => {
+						const fallDistance = 300 + Math.random() * 200;
+						const fallDuration = 40 + Math.random() * 20;
+						animationManager.slideFromDirection(sparkle, 'down', 'out', fallDistance, fallDuration, true).then(() => sparkle.dispose());
+					}, duration - 300);
+				}
+			});
+		}, delay);
+	}
+	
+	private spawnGUISparkles(
+		advancedTexture: AdvancedDynamicTexture, 
+		animationManager: any,
+		winner: boolean
+	): void {
+		const config = winner ? PARTIAL_GUI_SPARKLES : PARTIAL_GUI_SPARKLES_LOSER;
+		for (let i = 0; i < config.count; i++) {
+			const sparkle = this.createSparkleElement(config, winner);
+			advancedTexture.addControl(sparkle);
+			const delay = Math.random() * (winner ? 800 : 100);
+			this.animateSparkle(sparkle, animationManager, delay, config.duration, winner);
+		}
+	}
+
 	async showPartialWinner(name: string, waitForSpace: boolean = true, duration: number = 2000): Promise<void> {
 		if (!this.adt) return;
 
@@ -69,7 +134,7 @@ export class EndGame {
 		this.partialWinnerName.isVisible = true;
 		this.partialEndGameOverlay.isPointerBlocker = true;
 
-		spawnGUISparkles(this.adt, this.animationManager, true);
+		this.spawnGUISparkles(this.adt, this.animationManager, true);
 
 		await this.animationManager?.slideFromDirection(this.partialWinnerLabel, 'up', 'in', 200, Motion.F.base);
 		await new Promise(r => setTimeout(r, 60));
@@ -115,7 +180,7 @@ export class EndGame {
 		this.partialWinnerName.isVisible = true;
 		this.partialEndGameOverlay.isPointerBlocker = true;
 
-		spawnGUISparkles(this.adt, this.animationManager, false);
+		this.spawnGUISparkles(this.adt, this.animationManager, false);
 
 		await this.animationManager?.slideFromDirection(this.partialWinnerLabel, 'up', 'in', 200, Motion.F.slow);
 		await new Promise(r => setTimeout(r, 100));
