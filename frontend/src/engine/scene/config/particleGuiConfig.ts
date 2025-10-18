@@ -1,3 +1,5 @@
+import { ParticleTexturePath } from "./effectSceneConfig";
+
 export interface SparkleDetails {
 	asset: string;
 	count: number;
@@ -9,7 +11,7 @@ export interface SparkleDetails {
 }
 
 export const PARTIAL_GUI_SPARKLES: SparkleDetails = {
-	asset: "assets/textures/particle/flare_transparent.png",
+	asset: ParticleTexturePath.FLARE_TRANSPARENT,
 	count: 100,
 	duration: 4000,
 	size: { min: 5, max: 40 },
@@ -25,7 +27,7 @@ export const PARTIAL_GUI_SPARKLES: SparkleDetails = {
 
 
 export const PARTIAL_GUI_SPARKLES_LOSER: SparkleDetails = {
-	asset: "assets/textures/particle/flare_red.png",
+	asset: ParticleTexturePath.FLARE,
 	count: 80,
 	duration: 2000,
 	size: { min: 3, max: 25 },

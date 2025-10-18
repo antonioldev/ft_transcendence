@@ -1,19 +1,19 @@
 import { GlowLayer, Scene } from "@babylonjs/core";
 import { GameMode, ViewMode } from '../../../shared/constants.js';
 import { Effects, GameObjects, Players, ThemeObject } from '../../../shared/types.js';
+import { Logger } from '../../../utils/LogManager.js';
+import { GameConfig } from '../../GameConfig.js';
 import { getBallStartPosition, getPlayerLeftPosition, getPlayerRightPosition, getPlayerSize, PlayerSide } from '../../utils.js';
+import { ParticleEffectType } from "../config/effectSceneConfig.js";
 import { MAP_CONFIGS } from "../config/mapConfigs.js";
 import { MapAssetConfig } from "../config/sceneTypes.js";
 import { createActor } from "../entities/animatedProps.js";
-import { createBall, createGameField, createPlayer, createWalls, createWallLineGlowEffect } from '../entities/gameObjects.js';
+import { createBall, createGameField, createPlayer, createWallLineGlowEffect, createWalls } from '../entities/gameObjects.js';
 import { createBallEffects, createPaddleCage, createPaddleGlow, createWallGlowEffect } from '../entities/gameObjectsEffects.js';
 import { createStaticObject, createStaticObjects } from "../entities/staticProps.js";
-import { createParticleSystem, createFog, createLensFlare, createSmokeSprite } from './effectsBuilder.js';
 import { createCameras, createGuiCamera } from "./camerasBuilder.js";
-import { createSky, createLight, createTerrain } from './enviromentBuilder.js';
-import { GameConfig } from '../../GameConfig.js';
-import { Logger } from '../../../utils/LogManager.js';
-import { ParticleEffectType } from "../config/effectSceneConfig.js";
+import { createFireworks, createFog, createLensFlare, createParticleSystem, createSmokeSprite } from './effectsBuilder.js';
+import { createLight, createSky, createTerrain } from './enviromentBuilder.js';
 
 export type LoadingProgressCallback = (progress: number) => void;
 
@@ -175,6 +175,9 @@ async function buildThematicEnvironment(
 		if (effect)
 			themeObjects.effects.push(effect);
 	}
+
+	const fireworkSystems = createFireworks(scene);
+		themeObjects.effects.push(...fireworkSystems)
 
 	if (map_asset.fogColor)
 		createFog(scene, map_asset.fogColor, map_asset.fogIntensity);

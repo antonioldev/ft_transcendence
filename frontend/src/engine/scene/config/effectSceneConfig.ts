@@ -43,12 +43,13 @@ export enum ParticleEffectType {
 	RAIN = "rain",
 	UNDERWATER = "underwater",
 	SMOKE = 'smoke',
-	LENS = 'lens'
+	LENS = 'lens',
+	FIREWORK = 'firework'
 }
 
 export enum ParticleTexturePath {
 	FLARE_TRANSPARENT = "assets/textures/particle/flare_transparent.png",
-	FLARE = "assets/textures/particle/flare.png",
+	FLARE = "assets/textures/particle/flare_red.png",
 	BUBBLE = "assets/textures/particle/bubble.png",
 	RAINDROP = "assets/textures/particle/raindrop.png",
 	CANDLE_SMOKE = "assets/textures/particle/candleSmoke.tga"
@@ -178,5 +179,31 @@ export const PARTICLE_CONFIGS: Record<string, ParticleConfig> = {
 		gravity: new Vector3(0, 1, 0),
 		blendMode: ParticleSystem.BLENDMODE_STANDARD,
 		autoStart: true
+	},
+
+	firework: {
+		name: ParticleEffectType.FIREWORK,
+		capacity: 2000,
+		texturePath: ParticleTexturePath.FLARE_TRANSPARENT,
+		emitter: {
+			position: new Vector3(0, 0, 0),
+			minBox: new Vector3(-0.5, -0.5, -0.5),
+			maxBox: new Vector3(0.5, 0.5, 0.5)
+		},
+		direction: {
+			dir1: new Vector3(-1, -1, -1),
+			dir2: new Vector3(1, 1, 1)
+		},
+		size: { min: 0.15, max: 1 },
+		lifetime: { min: 1.5, max: 3.0 },
+		emitRate: 800,
+		color: {
+			color1: new Color4(1, 0.8, 0.2, 1),
+			color2: new Color4(1, 0.8, 0.2, 1),
+			colorDead: new Color4(0, 0, 0, 0)
+		},
+		gravity: new Vector3(0, -10, 0),
+		blendMode: ParticleSystem.BLENDMODE_ONEONE,
+		autoStart: false
 	}
 };

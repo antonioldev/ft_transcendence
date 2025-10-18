@@ -1,9 +1,8 @@
-import { Color3, Color4, CreateSphere, LensFlare, LensFlareSystem, ParticleSystem, Scene, Texture, Vector3, SpriteManager, Sprite } from "@babylonjs/core";
-import { PARTICLE_CONFIGS } from "../config/effectSceneConfig.js";
-import { ParticleEffectType } from "../config/effectSceneConfig.js";
+import { Color3, Color4, CreateSphere, LensFlare, LensFlareSystem, ParticleSystem, Scene, Sprite, SpriteManager, Texture, Vector3 } from "@babylonjs/core";
+import { PARTICLE_CONFIGS, ParticleEffectType, ParticleTexturePath } from "../config/effectSceneConfig.js";
 
 export function createSmokeSprite(scene: Scene): SpriteManager {
-	const smokeManager = new SpriteManager("playerManager", "assets/textures/particle/candleSmoke.tga", 4, {width: 1024/20, height:512/4}, scene);
+	const smokeManager = new SpriteManager("playerManager", ParticleTexturePath.CANDLE_SMOKE, 4, {width: 1024/20, height:512/4}, scene);
 		
 	const positions: [number, number, number][] = [
 		[3, 2, -21],
@@ -41,7 +40,7 @@ export function createLensFlare(scene: Scene): LensFlareSystem {
 	emitter.isVisible = false;
 	const lensFlareSystem = new LensFlareSystem("lensFlareSystem", emitter, scene);
 
-	const texture = "assets/textures/particle/flare_transparent.png";
+	const texture = ParticleTexturePath.FLARE_TRANSPARENT;
 	
 	new LensFlare(0.15, 0, new Color3(0.6, 0.8, 1), texture, lensFlareSystem);
 	new LensFlare(0.1, 0.1, new Color3(0.61, 0.30, 0.86), texture,lensFlareSystem);
@@ -87,3 +86,53 @@ export function createParticleSystem(scene: Scene, type: ParticleEffectType): Pa
 	return particles;
 }
 
+export function createFireworks(scene: Scene, count: number = 8): ParticleSystem[] {
+	const fireworks: ParticleSystem[] = [];
+
+	const colors = [
+		new Color4(1, 0.8, 0.2, 1),   // Gold
+		new Color4(0.2, 1, 0.3, 1),   // Green
+		new Color4(0.3, 0.5, 1, 1),   // Blue
+		new Color4(1, 0.3, 0.8, 1),   // Pink
+		new Color4(0.8, 0.2, 1, 1),   // Purple
+	];
+	
+	for (let i = 0; i < count; i++) {
+		const particles = createParticleSystem(scene, ParticleEffectType.FIREWORK);
+		if (!particles) continue;
+
+		const x = (Math.random() - 0.5) * 16;
+		const y = 2 + Math.random() * 2;
+		const z = (Math.random() - 0.5) * 30;
+		particles.emitter = new Vector3(x, y, z);
+
+		const color = colors[Math.floor(Math.random() * colors.length)];
+		particles.color1 = color;
+		particles.color2 = color;
+		
+		particles.minEmitPower = 8;
+		particles.maxEmitPower = 15;
+		particles.createSphereEmitter(10);
+
+		fireworks.push(particles);
+	}
+	
+	return fireworks;
+}
+
+
+
+export function startFireworks(effects: any[], delayBetweenBursts: number = 250): void {
+	const fireworks = effects.filter(effect => 
+		effect instanceof ParticleSystem && effect.name === ParticleEffectType.FIREWORK
+	);
+	
+	fireworks.forEach((fw, index) => {
+		setTimeout(() => {
+			fw.start();
+			setTimeout(() => {
+				fw.stop();
+			}, 2000);
+		}, index * delayBetweenBursts);
+	});
+}

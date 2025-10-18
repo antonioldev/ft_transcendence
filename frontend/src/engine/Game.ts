@@ -11,7 +11,7 @@ import { GameServices } from "./GameServices.js";
 import { buildScene } from './scene/builders/sceneBuilder.js';
 import { disposeMaterialResources } from "./scene/builders/materialsBuilder.js";
 import { PlayerSide, PlayerState } from "./utils.js";
-
+import { startFireworks } from "./scene/builders/effectsBuilder.js";
 import { PowerupType } from "../shared/constants.js";
 
 
@@ -270,8 +270,9 @@ export class Game {
 		this.services?.render?.startRendering();
 
 		this.services?.gui?.setPauseVisible(false, false);
-		const cams = this.scene?.activeCameras?.length ? this.scene.activeCameras : this.scene?.activeCamera;
-		this.services?.particles?.spawnFireworksInFrontOfCameras(this.scene, cams);
+		// const cams = this.scene?.activeCameras?.length ? this.scene.activeCameras : this.scene?.activeCamera;
+		// this.services?.particles?.spawnFireworksInFrontOfCameras(this.scene, cams);
+		startFireworks(this.themeObjects?.effects || [], 250);
 		await this.services?.gui?.showWinner(winner);
 		await this.services?.gui.curtain.play();
 		this.services?.audio?.stopGameMusic();
