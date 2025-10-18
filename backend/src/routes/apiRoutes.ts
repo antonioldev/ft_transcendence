@@ -197,7 +197,7 @@ export async function APIRoutes(app: FastifyInstance) {
 			console.log(`Failed to send game history: user '${username}' not found`);
 			return reply.code(401).send({ success: false, message: "User not found" });
 		}
-		console.log(`User stats sent to ${username}`);
+		console.log(`User history sent to ${username}`);
 		return reply.send({ success: true, history: history });
 	})
 }

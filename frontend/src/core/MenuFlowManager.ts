@@ -7,7 +7,7 @@ import { dashboardManager } from './DashboardManager.js';
 import { appStateManager } from './AppStateManager.js';
 import { EL, requireElementById} from '../ui/elements.js';
 import { GameConfigFactory } from '../engine/GameConfig.js';
-import { sendUserStatsRequest, sendGameHistoryRequest } from './HTTPRequests.js';
+import { sendGET } from './HTTPRequests.js';
 import { UserStats, GameHistoryEntry } from '../shared/types.js';
 
 /**
@@ -408,14 +408,26 @@ export class MenuFlowManager {
 			Logger.debug('clearing the dashboard', 'MenuFlowManager');
 			
 			// Request new stats from backend
-			const stats: UserStats = await sendUserStatsRequest(user.username);
-			dashboardManager.renderUserStats(stats);
-			Logger.debug('request user data was called', 'MenuFlowManager');
+			let statsData: { success: boolean, message: string, stats: UserStats };
+			statsData = await sendGET("stats", [`username=${user.username}`]);
+			if (!statsData.success) {
+				console.log(`GET request failed: ${ statsData.message }`);
+			}
+			else {
+				dashboardManager.renderUserStats(statsData.stats);
+				Logger.debug('request user data was called', 'MenuFlowManager');
+			}
 
 			// Request game history from backend
-			const history: GameHistoryEntry[] = await sendGameHistoryRequest(user.username);
-			dashboardManager.renderGameHistory(history);
-			Logger.debug('request user game history was called', 'MenuFlowManager');
+			let historyData: { success: boolean,  message: string, history: GameHistoryEntry[] }
+			historyData = await sendGET("history", [`username=${user.username}`]);
+			if (!historyData.success) {
+				console.log(`GET request failed: ${ historyData.message }`);
+			}
+			else {
+				dashboardManager.renderGameHistory(historyData.history);
+				Logger.debug('request user game history was called', 'MenuFlowManager');
+			}
 			
 			// Show dashboard panel
 			Logger.info('Navigating to dashboard...', 'MenuFlowManager');
