@@ -188,7 +188,7 @@ export const MAP_CONFIGS: Record<string, MapAssetConfig> = {
 	},
 	map4: {
 		ground: createTextureSet('map4', 'ground', "#ffffff"),
-		walls: createTextureSet('map4', 'terrain', "#ffffff"),
+		walls: createTextureSet('map4', 'ground', "#ffffff"),
 		ball: simpleColor("#ff4646"),
 		paddle: simpleColor("#405cfd"),
 		terrain: createTextureSet('map4', 'terrain', "#ffffff", true),
@@ -201,14 +201,14 @@ export const MAP_CONFIGS: Record<string, MapAssetConfig> = {
 		fogColor: new Color3(0.8, 0.85, 0.95),
 		fogIntensity: 0.007,
 		particleType: ParticleEffectType.SNOW,
-		light: 0.9,
+		light: 1,
 		glow: 0.1,
 		actors: []
 	},
 	map5: {
 		ground: createTextureSet('map5', 'ground', "#490f00"),
 		walls: simpleColor("#8B0000"),
-		ball: simpleColor("#c9ab00ff"),
+		ball: simpleColor("#c9ab00"),
 		paddle: simpleColor("#b66700"),
 		terrain: simpleColor("#FF4500"),
 		staticObjects: [

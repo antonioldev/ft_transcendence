@@ -223,8 +223,7 @@ export class KeyboardManager {
 		if (input === Direction.STOP) return;
 
 		let effectiveInput = input;
-		
-		// 3D Player 2 camera inversion (ONLY in remote multiplayer)
+
 		if (this.config.isRemoteMultiplayer && this.config.viewMode === ViewMode.MODE_3D && side === PlayerSide.RIGHT)
 			effectiveInput = (input === Direction.LEFT) ? Direction.RIGHT : Direction.LEFT;
 		

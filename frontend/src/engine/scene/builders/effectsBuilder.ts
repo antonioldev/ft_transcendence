@@ -1,6 +1,7 @@
 import { Color3, Color4, CreateSphere, LensFlare, LensFlareSystem, ParticleSystem, Scene, Sprite, SpriteManager, Texture, Vector3 } from "@babylonjs/core";
 import { PARTICLE_CONFIGS, ParticleEffectType, ParticleTexturePath } from "../config/effectSceneConfig.js";
 
+
 export function createSmokeSprite(scene: Scene): SpriteManager {
 	const smokeManager = new SpriteManager("playerManager", ParticleTexturePath.CANDLE_SMOKE, 4, {width: 1024/20, height:512/4}, scene);
 		
@@ -36,15 +37,16 @@ export function createFog(scene: Scene, fogColor: Color3, density: number): void
 
 export function createLensFlare(scene: Scene): LensFlareSystem {
 	const emitter = CreateSphere("flareEmitter", { diameter: 0.1 }, scene);
-	emitter.position = new Vector3(8, 3, 0);
+	emitter.position = new Vector3(5, 4, 0);
+
 	emitter.isVisible = false;
 	const lensFlareSystem = new LensFlareSystem("lensFlareSystem", emitter, scene);
 
 	const texture = ParticleTexturePath.FLARE_TRANSPARENT;
 	
-	new LensFlare(0.15, 0, new Color3(0.6, 0.8, 1), texture, lensFlareSystem);
-	new LensFlare(0.1, 0.1, new Color3(0.61, 0.30, 0.86), texture,lensFlareSystem);
-	new LensFlare(0.05, 0.2, new Color3(1, 0.9, 0.6), texture, lensFlareSystem);
+	new LensFlare(0.15, 0.1, new Color3(0.6, 0.8, 1), texture, lensFlareSystem);
+	new LensFlare(0.1, 0.14, new Color3(0.61, 0.30, 0.86), texture,lensFlareSystem);
+	new LensFlare(0.05, 0.18, new Color3(1, 0.9, 0.6), texture, lensFlareSystem);
 
 	return lensFlareSystem;
 }
@@ -119,8 +121,6 @@ export function createFireworks(scene: Scene, count: number = 8): ParticleSystem
 	
 	return fireworks;
 }
-
-
 
 export function startFireworks(effects: any[], delayBetweenBursts: number = 250): void {
 	const fireworks = effects.filter(effect => 

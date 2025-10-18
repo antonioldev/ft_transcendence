@@ -65,7 +65,7 @@ async function buildCoreGameObjects(scene: Scene, gameMode: GameMode, viewMode: 
 	let players: Players = { left: undefined, right: undefined };
 	const balls: any[] = [];
 
-	const lights = createLight(scene, "light1", viewMode, map_asset.light);
+	const lights = createLight(scene, "light1", viewMode, map_asset);
 	const gameField = createGameField(scene, "ground", viewMode, map_asset);
 	const walls = createWalls(scene, "walls", viewMode, map_asset.walls);
 	

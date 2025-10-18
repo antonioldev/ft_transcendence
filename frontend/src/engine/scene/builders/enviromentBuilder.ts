@@ -1,4 +1,4 @@
-import { Color3, HDRCubeTexture, HemisphericLight, MeshBuilder, Scene, Vector3 } from "@babylonjs/core";
+import { Color3, HDRCubeTexture, DirectionalLight, HemisphericLight, MeshBuilder, Scene, Vector3 } from "@babylonjs/core";
 import { GridMaterial } from "@babylonjs/materials";
 import { ViewMode } from '../../../shared/constants.js';
 import { GAME_CONFIG } from '../../../shared/gameConfig.js';
@@ -64,11 +64,32 @@ export function createTerrain(scene: Scene, name: string, texture: TextureSet, m
 	return terrain;
 }
 
-export function createLight(scene: any, name: string, viewMode: ViewMode, intensity: number = 1): any {
-	const position = viewMode === ViewMode.MODE_2D ? new Vector3(0, 10, 0) : new Vector3(100, 400, 0);
-	const light = new HemisphericLight(name, position, scene);
-	light.intensity = intensity;
-	light.diffuse = new Color3(1, 1, 1);
-	light.specular = new Color3(0, 0, 0);
-	return light;
+// export function createLight(scene: any, name: string, viewMode: ViewMode, intensity: number = 1): any {
+// 	const position = viewMode === ViewMode.MODE_2D ? new Vector3(0, 10, 0) : new Vector3(100, 400, 0);
+// 	const light = new HemisphericLight(name, position, scene);
+// 	light.intensity = intensity;
+// 	light.diffuse = new Color3(1, 1, 1);
+// 	light.specular = new Color3(0, 0, 0);
+// 	return light;
+// }
+export function createLight(scene: any, name: string, viewMode: ViewMode, mapAsset: MapAssetConfig): any {
+	if (viewMode === ViewMode.MODE_2D) {
+		const position = new Vector3(0, 10, 0);
+		const light = new HemisphericLight(name, position, scene);
+		light.intensity = mapAsset.light;
+		light.diffuse = new Color3(1, 1, 1);
+		light.specular = new Color3(0, 0, 0);
+		return light;
+	} else {
+		let lightColor = new Color3(1, 1, 1);
+		let lightDirection = new Vector3(-0.3, -1, -0.2);
+
+		const light = new DirectionalLight(name, lightDirection, scene);
+		light.position = new Vector3(30, 60, -30);
+		light.intensity = mapAsset.light;
+		light.diffuse = lightColor;
+		light.specular = lightColor.scale(0.3);
+		
+		return light;
+	}
 }
