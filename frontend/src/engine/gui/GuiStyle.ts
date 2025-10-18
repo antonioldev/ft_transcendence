@@ -39,7 +39,7 @@ export const Z_INDEX = {
     MODAL: 20,
     BRACKET: 25,
     CURTAIN: 30,
-    LOBBY: 35
+    LOBBY: 29
 
 } as const;
 
@@ -260,8 +260,6 @@ export const PAUSE_MENU_STYLES = {
     },
 
     audioStack: {
-        // width: "90%",
-        // height: "100%",
         isVertical: true,
         paddingTop: "10px",
         paddingBottom: "10px"
@@ -296,7 +294,7 @@ export const PAUSE_MENU_STYLES = {
         height: "100%",
         isVertical: true,
         spacing: 10,
-        paddingTop: "50px",
+        paddingTop: "30px",
         paddingBottom: "10px"
     },
 
@@ -537,7 +535,8 @@ export const PARTIAL_END_GAME_STYLES = {
         color: COLORS.WHITE,
         fontSize: 80,
         outlineWidth: 2,
-        alpha: 0
+        alpha: 0,
+        zIndex: Z_INDEX.ENDGAME + 1,
     },
 
     partialWinnerName: {

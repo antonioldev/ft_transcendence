@@ -110,6 +110,7 @@ export class GUIManager {
 	}
 
 	updateTournamentRound(message: any): void {
+		console.error("test");
 		if (message.round_index === message.round_total)
 			this.isLastMatch = true;
 		this.matchTree.insert(

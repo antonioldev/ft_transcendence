@@ -1,7 +1,7 @@
 import { Color4, Engine, Scene, SceneLoader } from "@babylonjs/core";
 import { appStateManager } from '../core/AppStateManager.js';
 import { webSocketClient } from '../core/WebSocketClient.js';
-import { AppState, GameMode, GameState, MessageType, PowerupType } from '../shared/constants.js';
+import { AppState, GameMode, GameState, MessageType } from '../shared/constants.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
 import { GameObjects, GameStateData, ThemeObject } from '../shared/types.js';
 import { uiManager } from '../ui/UIManager.js';
@@ -9,8 +9,10 @@ import { Logger } from '../utils/LogManager.js';
 import { GameConfig } from './GameConfig.js';
 import { GameServices } from "./GameServices.js";
 import { buildScene } from './scene/builders/sceneBuilder.js';
-import { disposeMaterialResources } from "./scene/rendering/materials.js";
+import { disposeMaterialResources } from "./scene/builders/materialsBuilder.js";
 import { PlayerSide, PlayerState } from "./utils.js";
+import { startFireworks } from "./scene/builders/effectsBuilder.js";
+import { PowerupType } from "../shared/constants.js";
 
 
 /**
@@ -102,7 +104,6 @@ export class Game {
 		await this.services?.gui.curtain.show();
 	}
 
-
 	// Initialize Babylon.js engine
 	private async initializeBabylonEngine(): Promise<Engine> {
 		const engine = new Engine(this.canvas, true, { 
@@ -152,52 +153,50 @@ export class Game {
 
 // ====================			GAME CONTROL			 ====================
 	private async handleCountdown(countdown: number): Promise<void> {
-		try {
-			if (countdown === undefined || countdown === null)
-				Logger.errorAndThrow('Server sent SIGNAL without countdown parameter', 'Game');
+		if (countdown === undefined || countdown === null) {
+			Logger.error('Server sent SIGNAL without countdown parameter', 'Game');
+			return;
+		}
 
-			if (countdown === GAME_CONFIG.startDelay) {
-				uiManager.setLoadingScreenVisible(false);
-				this.services?.gui.lobby.hide();
-				this.services?.gui.cardGame.hide();
-				this.services?.gui.curtain.hide();
-				this.services?.gui.hud.show(true);
-			}
-			if (countdown === GAME_CONFIG.startDelay - 1) {
-				const playerLeft = this.players.get(PlayerSide.LEFT)?.name;
-				const playerRight = this.players.get(PlayerSide.RIGHT)?.name;
-				this.services?.audio?.restoreMusicVolume();
-				const controlledSides = this.getControlledSides();
-				await Promise.all([
-					this.services?.gui.countdown.showPlayersName(playerLeft!, playerRight!),
-					this.services?.animation?.startCameraAnimations(
-						this.gameObjects?.cameras, 
-						this.config.viewMode,
-						controlledSides,
-						this.config.isLocalMultiplayer
-					)
-				]);
-			}
-			else if (countdown === 4) {
-				this.services?.gui.countdown.hidePlayersName();
-			}
-			else if (countdown === 3 || countdown === 2 || countdown === 1) {
-				this.services?.gui?.countdown.show(countdown);
-				this.services?.audio?.playCountdown();
-			}
-			else if (countdown === 0) {
-				this.services?.audio?.startGameMusic();
-				this.services?.animation?.stopCameraAnimations();
-				this.services?.gui?.countdown.finish();
-				this.startGameLoop();
-				this.testPowerupEffects();
-			}
-		} catch (error) {
-			Logger.error('Error handling countdown', 'Game', error);
+		if (countdown === GAME_CONFIG.startDelay) {
+			uiManager.setLoadingScreenVisible(false);
+			this.services?.gui.lobby.hide();
+			this.services?.gui.cardGame.hide();
+			this.services?.gui.curtain.hide();
+			this.services?.gui.hud.show(true);
+		}
+		if (countdown === GAME_CONFIG.startDelay - 1) {
+			const playerLeft = this.players.get(PlayerSide.LEFT)?.name;
+			const playerRight = this.players.get(PlayerSide.RIGHT)?.name;
+			this.services?.audio?.restoreMusicVolume();
+			const controlledSides = this.getControlledSides();
+			await Promise.all([
+				this.services?.gui.countdown.showPlayersName(playerLeft!, playerRight!),
+				this.services?.animation?.startCameraAnimations(
+					this.gameObjects?.cameras, 
+					this.config.viewMode,
+					controlledSides,
+					this.config.isLocalMultiplayer
+				)
+			]);
+		}
+		else if (countdown === 4) {
+			this.services?.gui.countdown.hidePlayersName();
+		}
+		else if (countdown === 3 || countdown === 2 || countdown === 1) {
+			this.services?.gui?.countdown.show(countdown);
+			this.services?.audio?.playCountdown();
+		}
+		else if (countdown === 0) {
+			this.services?.audio?.startGameMusic();
+			this.services?.animation?.stopCameraAnimations();
+			this.services?.gui?.countdown.finish();
+			this.startGameLoop();
+			// this.testPowerupEffects();
 		}
 	}
 
-private testPowerupEffects(): void {
+	private testPowerupEffects(): void {
 	const powerupTypes = [
 		PowerupType.SHRINK_OPPONENT,
 		PowerupType.GROW_PADDLE,
@@ -271,8 +270,9 @@ private testPowerupEffects(): void {
 		this.services?.render?.startRendering();
 
 		this.services?.gui?.setPauseVisible(false, false);
-		const cams = this.scene?.activeCameras?.length ? this.scene.activeCameras : this.scene?.activeCamera;
-		this.services?.particles?.spawnFireworksInFrontOfCameras(this.scene, cams);
+		// const cams = this.scene?.activeCameras?.length ? this.scene.activeCameras : this.scene?.activeCamera;
+		// this.services?.particles?.spawnFireworksInFrontOfCameras(this.scene, cams);
+		startFireworks(this.themeObjects?.effects || [], 250);
 		await this.services?.gui?.showWinner(winner);
 		await this.services?.gui.curtain.play();
 		this.services?.audio?.stopGameMusic();
@@ -286,19 +286,25 @@ private testPowerupEffects(): void {
 		this.gameLoopObserver = setInterval(() => {
 			if (!this.isInitialized) return;
 				try {
-					uiManager.setLoadingScreenVisible(false);
-					this.services?.gui?.lobby.hide();
 					this.services?.input?.update();
 					this.services?.render?.update3DCameras(this.config.viewMode);
 				} catch (error) {
-					Logger.errorAndThrow('Error in game loop', 'Game', error);
+					Logger.error('Error in game loop', 'Game', error);
 				}
 		}, 4);
+	}
+
+	private stopGameLoop(): void {
+		if (this.gameLoopObserver) {
+			clearInterval(this.gameLoopObserver);
+			this.gameLoopObserver = null;
+		}
 	}
 
 	private resetForNextMatch(): void {
 		if (!this.isInitialized) return;
 
+		this.stopGameLoop();
 		this.services?.gui?.hud.resetPowerUps();
 		this.resetPlayersState();
 
@@ -378,7 +384,7 @@ private testPowerupEffects(): void {
 				this.services?.gui?.hud.updateScores(leftPlayer.score, rightPlayer.score);
 
 		} catch (error) {
-			Logger.errorAndThrow('Error updating game objects', 'Game', error);
+			Logger.error('Error updating game objects', 'Game', error);
 		}
 	}
 
@@ -468,19 +474,16 @@ private testPowerupEffects(): void {
 	}
 
 	private unregisterCallbacks(): void {
-		try {
-			webSocketClient.unregisterCallback(MessageType.GAME_STATE);
-			webSocketClient.unregisterCallback(MessageType.ERROR);
-			webSocketClient.unregisterCallback(MessageType.SESSION_ENDED);
-			webSocketClient.unregisterCallback(MessageType.SIDE_ASSIGNMENT);
-			webSocketClient.unregisterCallback(MessageType.MATCH_ASSIGNMENT);
-			webSocketClient.unregisterCallback(MessageType.MATCH_RESULT);
-			webSocketClient.unregisterCallback(MessageType.TOURNAMENT_LOBBY);
-			webSocketClient.unregisterCallback(MessageType.COUNTDOWN);
-		} catch (error) {
-			Logger.error('Error clearing WebSocket callbacks', 'Game', error);
-		}
+		webSocketClient.unregisterCallback(MessageType.GAME_STATE);
+		webSocketClient.unregisterCallback(MessageType.ERROR);
+		webSocketClient.unregisterCallback(MessageType.SESSION_ENDED);
+		webSocketClient.unregisterCallback(MessageType.SIDE_ASSIGNMENT);
+		webSocketClient.unregisterCallback(MessageType.MATCH_ASSIGNMENT);
+		webSocketClient.unregisterCallback(MessageType.MATCH_RESULT);
+		webSocketClient.unregisterCallback(MessageType.TOURNAMENT_LOBBY);
+		webSocketClient.unregisterCallback(MessageType.COUNTDOWN);
 	}
+
 // ====================			CLEANUP				  ====================
 	private async dispose(): Promise<void> {
 		try {
@@ -490,8 +493,7 @@ private testPowerupEffects(): void {
 			}
 			this.isInitialized = false;
 			document.removeEventListener('game:exitToMenu', this.exitHandler);
-			clearInterval(this.gameLoopObserver);
-			this.gameLoopObserver = null;
+			this.stopGameLoop();
 			this.services?.dispose();
 			this.services = null;
 			if (this.themeObjects) {

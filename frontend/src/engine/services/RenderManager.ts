@@ -67,9 +67,7 @@ export class RenderManager {
 			return;
 		}
 
-		let activeGameCamera = cameras[0];
-		if (controlledSides.includes(0)) activeGameCamera = cameras[0];
-		else if (controlledSides.includes(1)) activeGameCamera = cameras[1];
+		const activeGameCamera = controlledSides.includes(1) ? cameras[1] : cameras[0];
 
 		if (activeGameCamera && guiCamera)
 			this.scene.activeCameras = [activeGameCamera, guiCamera];
@@ -97,7 +95,7 @@ export class RenderManager {
 				camera2.setTarget(Vector3.Lerp(camera2.getTarget(), this.targetRight, GAME_CONFIG.followSpeed));
 			}
 		} catch (error) {
-			Logger.errorAndThrow('Error updating 3D cameras', 'Game', error);
+			Logger.error('Error updating 3D cameras', 'RenderManager', error);
 		}
 	}
 
@@ -106,8 +104,7 @@ export class RenderManager {
 		if (!this.isInitialized || !this.isRunning) return;
 
 		this.isRunning = false;
-		if (this.engine)
-			this.engine.stopRenderLoop();
+		this.engine?.stopRenderLoop();
 
 		this.isInitialized = false;
 

@@ -77,4 +77,10 @@ export interface PlayerState {
 	inverted: boolean;
 }
 
+export function randomFromRange(min: number, max: number): number {
+	return Math.random() * (max - min) + min;
+}
 
+export function randomFromArray(arr: string[]): string {
+	return arr[Math.floor(Math.random() * arr.length)];
+}

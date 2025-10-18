@@ -21,7 +21,7 @@ export class Pause {
 
 		const pauseGrid = createGrid("pauseGrid", PAUSE_MENU_STYLES.pauseGrid);
 		if (config.isTournament) {
-			pauseGrid.width = "50%";
+			pauseGrid.width = "80%";
 			pauseGrid.horizontalAlignment = H_LEFT;
 		}
 		this.overlay.addControl(pauseGrid);
@@ -39,7 +39,6 @@ export class Pause {
 		this.buildInstructions(gameInstructions, config);
 
 		const exitStack = createStackPanel("exitStack", PAUSE_MENU_STYLES.instructionsStack);
-		exitStack.paddingBottom = "0px"
 		pauseGrid.addControl(exitStack, 2, 0);
 
 		const pauseInstruction = createTextBlock("pauseInstruction", PAUSE_MENU_STYLES.pauseInstruction, t.exitGame);

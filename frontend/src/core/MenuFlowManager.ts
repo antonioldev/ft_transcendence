@@ -111,63 +111,58 @@ export class MenuFlowManager {
 	}
 
 	private setupNavigationListeners(): void {
-		try {
-			const elements = {
-				viewModeClassic: requireElementById<HTMLButtonElement>(EL.BUTTONS.VIEW_MODE_CLASSIC),
-				viewModeImmersive: requireElementById<HTMLButtonElement>(EL.BUTTONS.VIEW_MODE_IMMERSIVE),
-				backBtn: requireElementById<HTMLButtonElement>(EL.BUTTONS.DASHBOARD_BACK),
-				settingsBackBtn: requireElementById<HTMLButtonElement>(EL.BUTTONS.SETTINGS_BACK),
-				soloDifficultyBack: requireElementById<HTMLButtonElement>(EL.BUTTONS.SOLO_DIFFICULTY_BACK),
-				soloDifficultyForward: requireElementById<HTMLButtonElement>(EL.BUTTONS.SOLO_DIFFICULTY_FORWARD),
-				tournamentNumberBack: requireElementById<HTMLButtonElement>(EL.BUTTONS.TOURNAMENT_NUMBER_BACK),
-				tournamentNumberForward: requireElementById<HTMLButtonElement>(EL.BUTTONS.TOURNAMENT_NUMBER_FORWARD),
-				tournamentOnlineNumberBack: requireElementById<HTMLButtonElement>(EL.BUTTONS.TOURNAMENT_ONLINE_NUMBER_BACK),
-				tournamentOnlineNumberForward: requireElementById<HTMLButtonElement>(EL.BUTTONS.TOURNAMENT_ONLINE_NUMBER_FORWARD)
-			};
-	
-			// View mode navigation
-			elements.viewModeClassic.addEventListener('click', () => {
-				this.setViewMode(ViewMode.MODE_2D);
-			});
-			elements.viewModeImmersive.addEventListener('click', () => {
-				this.setViewMode(ViewMode.MODE_3D);
-			});
-			
-			// Dashboard back button
-			elements.backBtn.addEventListener('click', () => { 
-				appStateManager.navigateTo(AppState.MAIN_MENU);
-			});
-			
-			// Settings back button
-			elements.settingsBackBtn.addEventListener('click', () => { 
-				appStateManager.navigateTo(AppState.MAIN_MENU);
-			});
-			
-			// AI difficulty navigation
-			elements.soloDifficultyBack.addEventListener('click', () => {
-				this.updateAIDifficulty('previous');
-			});
-			elements.soloDifficultyForward.addEventListener('click', () => {
-				this.updateAIDifficulty('next');
-			});
-			
-			// Tournament size navigation
-			elements.tournamentNumberBack.addEventListener('click', () => {
-				this.updateTournamentSize(false, 'previous');
-			});
-			elements.tournamentNumberForward.addEventListener('click', () => {
-				this.updateTournamentSize(false, 'next');
-			});
-			elements.tournamentOnlineNumberBack.addEventListener('click', () => {
-				this.updateTournamentSize(true, 'previous');
-			});
-			elements.tournamentOnlineNumberForward.addEventListener('click', () => {
-				this.updateTournamentSize(true, 'next');
-			});
-			
-		} catch (error) {
-			console.error(`Failed to setup navigation listeners: ${error}`, 'MenuFlowManager');
-		}
+		const elements = {
+			viewModeClassic: requireElementById<HTMLButtonElement>(EL.BUTTONS.VIEW_MODE_CLASSIC),
+			viewModeImmersive: requireElementById<HTMLButtonElement>(EL.BUTTONS.VIEW_MODE_IMMERSIVE),
+			backBtn: requireElementById<HTMLButtonElement>(EL.BUTTONS.DASHBOARD_BACK),
+			settingsBackBtn: requireElementById<HTMLButtonElement>(EL.BUTTONS.SETTINGS_BACK),
+			soloDifficultyBack: requireElementById<HTMLButtonElement>(EL.BUTTONS.SOLO_DIFFICULTY_BACK),
+			soloDifficultyForward: requireElementById<HTMLButtonElement>(EL.BUTTONS.SOLO_DIFFICULTY_FORWARD),
+			tournamentNumberBack: requireElementById<HTMLButtonElement>(EL.BUTTONS.TOURNAMENT_NUMBER_BACK),
+			tournamentNumberForward: requireElementById<HTMLButtonElement>(EL.BUTTONS.TOURNAMENT_NUMBER_FORWARD),
+			tournamentOnlineNumberBack: requireElementById<HTMLButtonElement>(EL.BUTTONS.TOURNAMENT_ONLINE_NUMBER_BACK),
+			tournamentOnlineNumberForward: requireElementById<HTMLButtonElement>(EL.BUTTONS.TOURNAMENT_ONLINE_NUMBER_FORWARD)
+		};
+
+		// View mode navigation
+		elements.viewModeClassic.addEventListener('click', () => {
+			this.setViewMode(ViewMode.MODE_2D);
+		});
+		elements.viewModeImmersive.addEventListener('click', () => {
+			this.setViewMode(ViewMode.MODE_3D);
+		});
+		
+		// Dashboard back button
+		elements.backBtn.addEventListener('click', () => { 
+			appStateManager.navigateTo(AppState.MAIN_MENU);
+		});
+		
+		// Settings back button
+		elements.settingsBackBtn.addEventListener('click', () => { 
+			appStateManager.navigateTo(AppState.MAIN_MENU);
+		});
+		
+		// AI difficulty navigation
+		elements.soloDifficultyBack.addEventListener('click', () => {
+			this.updateAIDifficulty('previous');
+		});
+		elements.soloDifficultyForward.addEventListener('click', () => {
+			this.updateAIDifficulty('next');
+		});
+		
+		// Tournament size navigation
+		elements.tournamentNumberBack.addEventListener('click', () => {
+			this.updateTournamentSize(false, 'previous');
+		});
+		elements.tournamentNumberForward.addEventListener('click', () => {
+			this.updateTournamentSize(false, 'next');
+		});
+		elements.tournamentOnlineNumberBack.addEventListener('click', () => {
+			this.updateTournamentSize(true, 'previous');
+		});
+		elements.tournamentOnlineNumberForward.addEventListener('click', () => {
+			this.updateTournamentSize(true, 'next');
+		});
 	}
 
 	private setupGameModeButtons(): void {

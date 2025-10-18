@@ -70,8 +70,8 @@ export function createLavaMaterial(
 ): LavaMaterial {
 	const lavaMat = new LavaMaterial(name, scene);
 	
-	lavaMat.noiseTexture = new Texture("assets/textures/particle/cloud.png", scene);
-	lavaMat.diffuseTexture = new Texture("assets/textures/particle/lavatile.jpg", scene);
+	lavaMat.noiseTexture = new Texture("assets/textures/map5/terrain/cloud.png", scene);
+	lavaMat.diffuseTexture = new Texture("assets/textures/map5/terrain/lavatile.jpg", scene);
 	lavaMat.fogColor = new Color3(1, 0, 0);
 
 	lavaMat.speed = 0.8;

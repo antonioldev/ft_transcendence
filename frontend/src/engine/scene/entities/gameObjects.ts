@@ -4,7 +4,7 @@ import { ViewMode } from '../../../shared/constants.js';
 import { GAME_CONFIG } from '../../../shared/gameConfig.js';
 import { Size } from '../../../shared/types.js';
 import { MAP_OBJECT_TYPE, MapAssetConfig, TextureSet } from "../config/sceneTypes.js";
-import { createMaterial, getStandardTextureScale } from "../rendering/materials.js";
+import { createMaterial, getStandardTextureScale } from "../builders/materialsBuilder.js";
 import { MAP_CONFIGS } from "../config/mapConfigs.js";
 
 // Creates the ground for the game field

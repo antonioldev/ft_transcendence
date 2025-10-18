@@ -1,5 +1,6 @@
 import { Color3 } from "@babylonjs/core";
 import { MAP_OBJECT_TYPE, MapAssetConfig, StaticObject } from "./sceneTypes.js";
+import { ParticleEffectType } from "./effectSceneConfig.js";
 
 import mapLinesRaw from "../data/staticObjects/map.json";
 const mapLines = mapLinesRaw as {
@@ -115,7 +116,7 @@ export const MAP_CONFIGS: Record<string, MapAssetConfig> = {
 		skybox: AssetPaths.sky('map0', 'sky4'),
 		fogColor: new Color3(0.043, 0.043, 0.122),
 		fogIntensity: 0.03,
-		particleType: 'rain',
+		particleType: ParticleEffectType.RAIN,
 		light: 0.4,
 		glow: 0.6,
 		actors: []
@@ -134,7 +135,7 @@ export const MAP_CONFIGS: Record<string, MapAssetConfig> = {
 		skybox: AssetPaths.sky('map1', 'sky'),
 		fogColor: null,
 		fogIntensity: 0,
-		particleType: 'dust',
+		particleType: ParticleEffectType.DUST,
 		light: 0.8,
 		glow: 0.5,
 		actors: [
@@ -159,7 +160,7 @@ export const MAP_CONFIGS: Record<string, MapAssetConfig> = {
 		skybox: null,
 		fogColor: new Color3(0.0, 0.2, 0.3),
 		fogIntensity: 0.03,
-		particleType: 'underwater',
+		particleType: ParticleEffectType.UNDERWATER,
 		light: 1,
 		glow: 0.5,
 		actors: [
@@ -180,14 +181,14 @@ export const MAP_CONFIGS: Record<string, MapAssetConfig> = {
 		skybox: AssetPaths.sky('map3', 'sky'),
 		fogColor: new Color3(0.7, 0.4, 0.7),
 		fogIntensity: 0.01,
-		particleType: 'lensFlare',
+		particleType: ParticleEffectType.LENS,
 		light: 0.7,
 		glow: 0.4,
 		actors: []
 	},
 	map4: {
 		ground: createTextureSet('map4', 'ground', "#ffffff"),
-		walls: createTextureSet('map4', 'terrain', "#ffffff"),
+		walls: createTextureSet('map4', 'ground', "#ffffff"),
 		ball: simpleColor("#ff4646"),
 		paddle: simpleColor("#405cfd"),
 		terrain: createTextureSet('map4', 'terrain', "#ffffff", true),
@@ -199,15 +200,15 @@ export const MAP_CONFIGS: Record<string, MapAssetConfig> = {
 		skybox: AssetPaths.sky('map4', 'sky'),
 		fogColor: new Color3(0.8, 0.85, 0.95),
 		fogIntensity: 0.007,
-		particleType: 'snow',
-		light: 0.9,
+		particleType: ParticleEffectType.SNOW,
+		light: 1,
 		glow: 0.1,
 		actors: []
 	},
 	map5: {
 		ground: createTextureSet('map5', 'ground', "#490f00"),
 		walls: simpleColor("#8B0000"),
-		ball: simpleColor("#c9ab00ff"),
+		ball: simpleColor("#c9ab00"),
 		paddle: simpleColor("#b66700"),
 		terrain: simpleColor("#FF4500"),
 		staticObjects: [
@@ -217,7 +218,7 @@ export const MAP_CONFIGS: Record<string, MapAssetConfig> = {
 		skybox:AssetPaths.sky('map5', 'sky2'),
 		fogColor: null,
 		fogIntensity: 0,
-		particleType: 'smoke',
+		particleType: ParticleEffectType.SMOKE,
 		light: 0.5,
 		glow: 0.4,
 		actors: []
@@ -234,7 +235,7 @@ export const MAP_CONFIGS: Record<string, MapAssetConfig> = {
 		skybox:AssetPaths.sky('map6', 'sky'),
 		fogColor: new Color3(0.1, 0.1, 0.1),
 		fogIntensity: 0.01,
-		particleType: 'stars',
+		particleType: ParticleEffectType.STARS,
 		light: 0.2,
 		glow: 0.4,
 		actors: [
