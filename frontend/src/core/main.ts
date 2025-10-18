@@ -27,20 +27,22 @@ async function loadPage() {
 
 	// memoryDetector.startMonitoring(); // Logs memory usage (only google) 
 
-	// send "/" HTTP request and receive WebSocket URL to create ws
-	const data: { success: boolean, WS_URL: string } = await sendGET("/root");
+	// send "/" HTTP request and receive URL for WebSocket creation
+	const data: { success: boolean, message: string, WS_URL: string } = await sendGET("root");
+	if (!data.success) { return }
+
 	webSocketClient.connect(data.WS_URL);
 
-	// // Setup WebSocket monitoring
-	// webSocketClient.registerCallback(WebSocketEvent.STATUS_CHANGE, (status: ConnectionStatus) => {
-	// 	uiManager.updateConnectionStatus(status);
-	// });
+	// Setup WebSocket monitoring
+	webSocketClient.registerCallback(WebSocketEvent.STATUS_CHANGE, (status: ConnectionStatus) => {
+		uiManager.updateConnectionStatus(status);
+	});
 
-	// if (webSocketClient.isConnected()) {
-    //     uiManager.updateConnectionStatus(ConnectionStatus.CONNECTED);
-    // } else {
-    //     uiManager.updateConnectionStatus(ConnectionStatus.CONNECTING);
-    // }
+	if (webSocketClient.isConnected()) {
+        uiManager.updateConnectionStatus(ConnectionStatus.CONNECTED);
+    } else {
+        uiManager.updateConnectionStatus(ConnectionStatus.CONNECTING);
+    }
 }
 
 /**

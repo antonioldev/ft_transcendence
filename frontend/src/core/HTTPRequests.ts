@@ -30,8 +30,8 @@ export async function sendGET(endpoint: string, query_params?: string[]) {
 		URL += `&${param}`;
 	}
 	console.log(`Sending ${endpoint} GET request to ${URL}`);
-
 	const response = await fetch(URL, { method: "GET" });
+
 	const data = await response.json();
 	console.log(data.message);
 	return (data);

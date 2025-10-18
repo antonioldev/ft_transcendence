@@ -12,11 +12,11 @@ import { getClient, send } from './utils.js';
  * @param app - The Fastify instance to configure.
  */
 export async function setupWebsocket(app: FastifyInstance): Promise<void> {
-    app.get('/ws', { websocket: true } as any, (socket, request) => {
+    app.get('/ws', { websocket: true }, (connection, request) => {
         const { sid } = request.query as { sid: string}; 
         if (!sid) {
             console.log(`Cannot create websocket: missing SID`);
-            return socket.close(1008, 'SID missing'); 
+            return connection.socket.close(1008, 'SID missing'); 
         }
         console.log(`Creating websocket for sid: ${sid}`);
 
@@ -25,18 +25,18 @@ export async function setupWebsocket(app: FastifyInstance): Promise<void> {
             console.log(`Cannot handle Websocket connection, client does not exist`);
             return ;
         }
-        if (!client.websocket) client.websocket = socket;
+        if (!client.websocket) client.websocket = connection.socket;
     
-        socket.on('message', async (message: string) => {
+        connection.socket.on('message', async (message: string) => {
             await handleMessage(client!, message);
         });
     
-        socket.on('close', () => {
+        connection.socket.on('close', () => {
             console.log(`WebSocket closed for client ${client!.username}:`);
             handleDisconnection(client!);
         });
     
-        socket.on('error', (error: any) => {
+        connection.socket.on('error', (error: any) => {
             console.error(`❌ WebSocket error for client ${client!.username}:`, error);
             handleDisconnection(client!);
         });

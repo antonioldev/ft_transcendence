@@ -2,6 +2,7 @@ import Fastify from 'fastify';
 import { FastifyInstance } from 'fastify';
 import fastifyJwt from '@fastify/jwt';
 import fastifyCors from '@fastify/cors';
+import fastifyWebsocket from '@fastify/websocket';
 import * as dotenv from 'dotenv';
 import { setupWebsocket }  from './routes/Websocket.js';
 import config from './config/default.js';
@@ -33,7 +34,7 @@ export const app: FastifyInstance = Fastify({
 await app.register(fastifyJwt, { secret: process.env.JWT_SECRET! });
 
 // Websocket options
-await app.register(import('@fastify/websocket'), {
+await app.register(fastifyWebsocket, {
 	options: {
 		maxPayload: 1048576,        // Max bytes of single message
 		perMessageDeflate: false,   // Disable per-message compression for better performance
@@ -47,7 +48,7 @@ await app.register(fastifyCors, {
     origin: "https://localhost",
     methods: ['GET', 'POST', 'OPTIONS'],
     credentials: true,
-    allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'Set-Cookie'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
 });
 
 

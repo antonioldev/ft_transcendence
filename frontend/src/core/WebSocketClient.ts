@@ -91,30 +91,6 @@ export class WebSocketClient {
             case MessageType.ERROR:
                 this.triggerCallback(WebSocketEvent.ERROR, message.message);
                 break;
-            // case MessageType.SUCCESS_LOGIN:
-            //     this.triggerCallback(WebSocketEvent.LOGIN_SUCCESS, message.message || "✅ Login success");
-            //     break;
-            // case MessageType.SUCCESS_REGISTRATION:
-                // this.triggerCallback(WebSocketEvent.REGISTRATION_SUCCESS, message.message || "✅ Registration success");
-                // break;
-            // case MessageType.LOGIN_FAILURE:
-            //     this.triggerCallback(WebSocketEvent.LOGIN_FAILURE, message.message || "🚫 Login failed: ID/Password not matching");
-            //     break;
-            // case MessageType.USER_NOTEXIST:
-            //     this.triggerCallback(WebSocketEvent.LOGIN_FAILURE, message.message || "User doesn't exist");
-            //     break;
-            // case MessageType.USER_EXIST:
-            //     this.triggerCallback(WebSocketEvent.REGISTRATION_FAILURE, message.message || "🚫 Registration failed: user exist");
-            //     break;
-            // case MessageType.USERNAME_TAKEN:
-                // this.triggerCallback(WebSocketEvent.REGISTRATION_FAILURE, message.message || "Username is already registered");
-                // break;
-            // case MessageType.SEND_USER_STATS:
-            //     this.triggerCallback(WebSocketEvent.USER_STATS, message.stats);
-            //     break;
-            // case MessageType.SEND_GAME_HISTORY:
-            //     this.triggerCallback(WebSocketEvent.GAME_HISTORY, message.gameHistory);
-            //     break;
             case MessageType.MATCH_ASSIGNMENT:
                 this.triggerCallback(WebSocketEvent.MATCH_ASSIGNMENT, message);
                 break;
@@ -187,57 +163,6 @@ export class WebSocketClient {
             this.notifyStatus(ConnectionStatus.FAILED);
         }
     }
-
-    // ========================================
-    // LOGIN/REGISTRATION 
-    // ========================================
-
-
-
-    // loginUser(loginInfo: LoginUser): void {
-    //     if (!this.isConnected()) {
-    //         this.triggerCallback(WebSocketEvent.ERROR, 'Not connected to server');
-    //         return;
-    //     }
-    //     const message: ClientMessage = {
-    //         type: MessageType.LOGIN_USER,
-    //         loginUser: loginInfo
-    //     };
-    //     this.ws!.send(JSON.stringify(message));
-    // }
-
-    // logoutUser(): void {
-    //     if (this.isConnected()) {
-    //         const message: ClientMessage = {
-    //             type: MessageType.LOGOUT_USER,
-    //         };
-    //         this.ws!.send(JSON.stringify(message));
-    //     }          
-    // }
-
-    // ========================================
-    // DASHBOARD
-    // ========================================
-
-    // requestUserStats(username: string): void {
-    //     if (this.isConnected()) {
-    //         const message: ClientMessage = {
-    //             type: MessageType.REQUEST_USER_STATS,
-    //             username: username
-    //         };
-    //         this.ws!.send(JSON.stringify(message));
-    //     }
-    // }
-
-    // requestUserGameHistory(username: string): void {
-    //     if (this.isConnected()) {
-    //         const message: ClientMessage = {
-    //             type: MessageType.REQUEST_GAME_HISTORY,
-    //             username: username
-    //         };
-    //         this.ws!.send(JSON.stringify(message));
-    //     }
-    // }
 
     // ========================================
     // CALLBACK REGISTRATION

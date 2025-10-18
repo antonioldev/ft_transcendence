@@ -66,7 +66,12 @@ export class Game {
 			const config = GameConfigFactory.createWithAuthCheck(viewMode, gameMode);
 			const game = new Game(config);
 			const players: PlayerInfo[] = this.config.players;
-			await sendPOST("join", { gameMode, players, aiDifficulty, capacity })
+			console.log("Gamemode = " + gameMode);
+			console.log("players = " + players);
+			console.log("aiDifficulty = " + aiDifficulty);
+			const data = await sendPOST("join", { gameMode, players, aiDifficulty, capacity });
+			
+			console.error(data.message);
 			await game.initialize();
 			return game;
 		} catch (error) {

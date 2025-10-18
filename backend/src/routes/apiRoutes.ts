@@ -13,22 +13,22 @@ export async function APIRoutes(app: FastifyInstance) {
 
 	// ROOT
 	app.get('/api/root', async (request, reply) => {
-		
 		const { sid } = request.query as { sid?: string};
 		if (!sid) {
 			console.log(`ROOT request failed: missing SID`);
-			return reply.code(400).send({ message: "Error: missing SID"} );
+			return reply.code(400).send({ success: false, message: "ROOT request failed: missing SID"} );
 		}
 		console.log(`ROOT request received from: ${sid}`);
 		let client = findOrCreateClient(sid);
 		// check for double user
 		client.is_connected = true;
 		
-		reply.send( { 
+		reply.send({ 
+			success: true,
 			message: "Welcome to Battle Pong!",
-			wsURL: `ws://${request.hostname}/ws?sid=${encodeURIComponent(sid)}`,
+			WS_URL: `wss://${request.hostname}/ws?sid=${encodeURIComponent(sid)}`,
 		});
-		console.log(`New Client connected: sid = ${sid}`);
+		console.log(`Client connected: sid = ${sid}`);
 	});
 
 	// LOGIN
@@ -147,9 +147,9 @@ export async function APIRoutes(app: FastifyInstance) {
 			console.log(`/join request failed: missing SID`);
 			return reply.code(400).send({ success: false, message: "Error: missing SID"} );
 		}
-		const { mode, players, capacity, aiDifficulty  } = request.body as 
-			{ mode: GameMode, players: Player[], capacity?: number, aiDifficulty?: AiDifficulty };
-		if (!mode || !players ) {
+		const { mode, players, aiDifficulty, capacity } = request.body as 
+			{ mode: GameMode, players: Player[], aiDifficulty?: AiDifficulty, capacity?: number };
+		if (mode === undefined || !players ) {
 			console.log(`/join request failed: missing game info`);
 			return reply.code(401).send({ success: false, message: 'Missing username, email, or password' })
 		}
