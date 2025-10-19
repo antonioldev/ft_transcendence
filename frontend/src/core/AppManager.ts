@@ -1,7 +1,6 @@
 import { Game } from '../engine/Game.js';
 import { GameConfigFactory } from '../engine/GameConfig.js';
 import { AiDifficulty, AppState, GAME_MODE_CONFIG, GameMode, GameState, TOURNAMENT_SIZES, ViewMode, BUTTON_NAV } from '../shared/constants.js';
-import { GameHistoryEntry, UserStats } from '../shared/types.js';
 import { getCurrentTranslation } from '../translations/translations.js';
 import { EL, requireElementById } from '../ui/elements.js';
 import { uiManager } from '../ui/UIManager.js';
@@ -9,7 +8,7 @@ import { Logger } from '../utils/LogManager.js';
 import { getMaxPlayers, getMinPlayersForCpu } from '../utils/utils.js';
 import { authManager } from './AuthManager.js';
 import { dashboardManager } from './DashboardManager.js';
-import { sendGameHistoryRequest, sendUserStatsRequest } from './HTTPRequests.js';
+
 
 /**
  * Central controller for application state and navigation.
@@ -170,19 +169,7 @@ export class AppManager {
 		const dashboardBack = requireElementById<HTMLButtonElement>(EL.BUTTONS.DASHBOARD_BACK);
 		
 		dashboardBtn.addEventListener('click', async () => {
-			if (!authManager.isUserAuthenticated()) return;
-			
-			const user = authManager.getCurrentUser();
-			if (!user) return;
-
-			dashboardManager.clear();
-
-			const stats: UserStats = await sendUserStatsRequest(user.username);
-			dashboardManager.renderUserStats(stats);
-
-			const history: GameHistoryEntry[] = await sendGameHistoryRequest(user.username);
-			dashboardManager.renderGameHistory(history);
-
+			await dashboardManager.loadUserDashboard();
 			this.navigateTo(AppState.STATS_DASHBOARD);
 		});
 

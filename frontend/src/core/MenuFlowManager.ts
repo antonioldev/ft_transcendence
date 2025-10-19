@@ -1,12 +1,13 @@
+// import { Logger } from '../utils/LogManager.js';
 // import { GameMode, ViewMode, AppState, AiDifficulty } from '../shared/constants.js';
 // import { uiManager } from '../ui/UIManager.js';
 // import { authManager } from './AuthManager.js';
 // import { getCurrentTranslation } from '../translations/translations.js';
 // import { dashboardManager } from './DashboardManager.js';
-// import { appStateManager } from './AppManager.js';
+// import { appStateManager } from './AppStateManager.js';
 // import { EL, requireElementById} from '../ui/elements.js';
 // import { GameConfigFactory } from '../engine/GameConfig.js';
-// import { sendUserStatsRequest, sendGameHistoryRequest } from './HTTPRequests.js';
+// import { sendGET } from './HTTPRequests.js';
 // import { UserStats, GameHistoryEntry } from '../shared/types.js';
 
 // /**
@@ -16,9 +17,10 @@
 //  * Handles UI state, event listeners, and game starting logic.
 //  */
 // export class MenuFlowManager {
-// 	// private static instance: MenuFlowManager;
+// 	private static instance: MenuFlowManager;
 // 	private selectedViewMode: ViewMode = ViewMode.MODE_2D;
 // 	private selectedGameMode: GameMode | null = null;
+// 	// private currentViewModeIndex = 0;
 // 	private currentAiDifficultyIndex: AiDifficulty = AiDifficulty.EASY;
 // 	private currentTournamentIndex: number = 4;
 // 	private currentOnlineTournamentIndex: number = 4;
@@ -59,17 +61,27 @@
 
 // 	private readonly tournamentSizes = [4, 8, 16] as const;
 
-// 	initialize(): void {
-// 		if (document.readyState === 'loading') {
-// 			document.addEventListener('DOMContentLoaded', () => {
-// 				this.setupEventListeners();
-// 				uiManager.updateViewModeButtonStyles(this.selectedViewMode);
-// 			});
-// 		} else {
-// 			this.setupEventListeners();
-// 			uiManager.updateViewModeButtonStyles(this.selectedViewMode)
-// 		}
+// 	static getInstance(): MenuFlowManager {
+// 		if (!MenuFlowManager.instance)
+// 			MenuFlowManager.instance = new MenuFlowManager();
+// 		return MenuFlowManager.instance;
 // 	}
+
+//     static initialize(): void {
+//         // Ensure DOM is fully loaded before initializing
+//         if (document.readyState === 'loading') {
+//             document.addEventListener('DOMContentLoaded', () => {
+//                 const menuFlowManager = MenuFlowManager.getInstance();
+//                 menuFlowManager.setupEventListeners();
+// 				menuFlowManager.updateViewModeButtonStyles();
+//             });
+//         } else {
+//             // DOM is already loaded
+//             const menuFlowManager = MenuFlowManager.getInstance();
+//             menuFlowManager.setupEventListeners();
+// 			menuFlowManager.updateViewModeButtonStyles();
+//         }
+//     }
 
 // 	// ========================================
 // 	// EVENT LISTENERS SETUP
@@ -113,15 +125,11 @@
 	
 // 			// View mode navigation
 // 			elements.viewModeClassic.addEventListener('click', () => {
-// 				this.selectedViewMode = ViewMode.MODE_2D;
-// 				uiManager.updateViewModeButtonStyles(this.selectedViewMode)
-// 				// this.setViewMode(ViewMode.MODE_2D);
-// 			});
-// 			elements.viewModeImmersive.addEventListener('click', () => {
-// 				this.selectedViewMode = ViewMode.MODE_3D;
-// 				uiManager.updateViewModeButtonStyles(this.selectedViewMode)
-// 				// this.setViewMode(ViewMode.MODE_3D);
-// 			});
+//                 this.setViewMode(ViewMode.MODE_2D);
+//             });
+//             elements.viewModeImmersive.addEventListener('click', () => {
+//                 this.setViewMode(ViewMode.MODE_3D);
+//             });
 			
 // 			// Dashboard back button
 // 			elements.backBtn.addEventListener('click', () => { 
@@ -382,22 +390,47 @@
 // 	// ========================================
 
 // 	private async showDashboard() {
+// 		Logger.debug('Dashboard button element', 'MenuFlowManager', EL.BUTTONS.DASHBOARD);
 // 		const dashboardBtn = requireElementById<HTMLButtonElement>(EL.BUTTONS.DASHBOARD);
+// 		Logger.debug('Attaching dashboard click handler', 'MenuFlowManager');
 // 		dashboardBtn?.addEventListener('click', async () => {
+// 			Logger.debug('Dashboard clicked', 'MenuFlowManager');
 // 			if (!authManager.isUserAuthenticated()) {
+// 				Logger.warn('authManager is not authenticated, returning', 'MenuFlowManager');
 // 				return;
 // 			}
 // 			const user = authManager.getCurrentUser();
-// 			if (!user) return;
-
+// 			if (!user) {
+// 				Logger.warn('user is null, returning', 'MenuFlowManager');
+// 				return;
+// 			}
 // 			dashboardManager.clear();
+// 			Logger.debug('clearing the dashboard', 'MenuFlowManager');
+			
+// 			// Request new stats from backend
+// 			let statsData: { success: boolean, message: string, stats: UserStats };
+// 			statsData = await sendGET("stats", [`username=${user.username}`]);
+// 			if (!statsData.success) {
+// 				console.log(`GET request failed: ${ statsData.message }`);
+// 			}
+// 			else {
+// 				dashboardManager.renderUserStats(statsData.stats);
+// 				Logger.debug('request user data was called', 'MenuFlowManager');
+// 			}
 
-// 			const stats: UserStats = await sendUserStatsRequest(user.username);
-// 			dashboardManager.renderUserStats(stats);
-
-// 			const history: GameHistoryEntry[] = await sendGameHistoryRequest(user.username);
-// 			dashboardManager.renderGameHistory(history);
-
+// 			// Request game history from backend
+// 			let historyData: { success: boolean,  message: string, history: GameHistoryEntry[] }
+// 			historyData = await sendGET("history", [`username=${user.username}`]);
+// 			if (!historyData.success) {
+// 				console.log(`GET request failed: ${ historyData.message }`);
+// 			}
+// 			else {
+// 				dashboardManager.renderGameHistory(historyData.history);
+// 				Logger.debug('request user game history was called', 'MenuFlowManager');
+// 			}
+			
+// 			// Show dashboard panel
+// 			Logger.info('Navigating to dashboard...', 'MenuFlowManager');
 // 			appStateManager.navigateTo(AppState.STATS_DASHBOARD);
 // 		});
 // 	}
@@ -446,28 +479,27 @@
 // 	// ========================================
 // 	// VIEW MODE MANAGEMENT
 // 	// ========================================
-// 	private setViewMode(viewMode: ViewMode): void {
-// 		this.selectedViewMode = viewMode;
-// 		uiManager.updateViewModeButtonStyles(this.selectedViewMode)
-// 		// this.updateViewModeButtonStyles();
-// 	}
+// 	    private setViewMode(viewMode: ViewMode): void {
+// 			this.selectedViewMode = viewMode;
+//         	this.updateViewModeButtonStyles();
+// 		}
 
-// 	// private updateViewModeButtonStyles(): void {
-//     //     const classicBtn = requireElementById<HTMLButtonElement>(EL.BUTTONS.VIEW_MODE_CLASSIC);
-//     //     const immersiveBtn = requireElementById<HTMLButtonElement>(EL.BUTTONS.VIEW_MODE_IMMERSIVE);
-//     //     const t = getCurrentTranslation();
+// 	private updateViewModeButtonStyles(): void {
+//         const classicBtn = requireElementById<HTMLButtonElement>(EL.BUTTONS.VIEW_MODE_CLASSIC);
+//         const immersiveBtn = requireElementById<HTMLButtonElement>(EL.BUTTONS.VIEW_MODE_IMMERSIVE);
+//         const t = getCurrentTranslation();
 
-//     //     // Reset both buttons to inactive state
-//     //     classicBtn.className = "bg-transparent text-light-green font-poppins-semibold text-lg px-4 py-3 transition-colors duration-200 border border-light-green rounded-sm min-w-[120px]";
-//     //     immersiveBtn.className = "bg-transparent text-light-green font-poppins-semibold text-lg px-4 py-3 transition-colors duration-200 border border-light-green rounded-sm min-w-[120px]";
+//         // Reset both buttons to inactive state
+//         classicBtn.className = "bg-transparent text-light-green font-poppins-semibold text-lg px-4 py-3 transition-colors duration-200 border border-light-green rounded-sm min-w-[120px]";
+//         immersiveBtn.className = "bg-transparent text-light-green font-poppins-semibold text-lg px-4 py-3 transition-colors duration-200 border border-light-green rounded-sm min-w-[120px]";
         
-//     //     // Set active button style
-//     //     if (this.selectedViewMode === ViewMode.MODE_2D) {
-//     //         classicBtn.className = "bg-orange text-blue-background font-poppins-semibold text-lg px-4 py-3 transition-colors duration-200 border border-orange rounded-sm min-w-[120px]";
-//     //     } else {
-//     //         immersiveBtn.className = "bg-orange text-blue-background font-poppins-semibold text-lg px-4 py-3 transition-colors duration-200 border border-orange rounded-sm min-w-[120px]";
-//     //     }
-//     // }
+//         // Set active button style
+//         if (this.selectedViewMode === ViewMode.MODE_2D) {
+//             classicBtn.className = "bg-orange text-blue-background font-poppins-semibold text-lg px-4 py-3 transition-colors duration-200 border border-orange rounded-sm min-w-[120px]";
+//         } else {
+//             immersiveBtn.className = "bg-orange text-blue-background font-poppins-semibold text-lg px-4 py-3 transition-colors duration-200 border border-orange rounded-sm min-w-[120px]";
+//         }
+//     }
 // }
 
-// export const menuFlowManager = new MenuFlowManager();
+// export const menuFlowManager = new MenuFlowManager;

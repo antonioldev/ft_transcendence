@@ -7,8 +7,8 @@ import { authManager } from './AuthManager.js';
 import { appManager } from './AppManager.js';
 import { ConnectionStatus, WebSocketEvent } from '../shared/constants.js';
 import { EL, requireElementById } from '../ui/elements.js';
-import { DashboardManager } from './DashboardManager.js';
-import { sendRootRequest } from "./HTTPRequests.js";
+import { dashboardManager } from './DashboardManager.js';
+import { sendGET } from "./HTTPRequests.js";
 // import { MemoryLeakDetector } from '../utils/memory.js'
 
 // Initialize the detector
@@ -19,7 +19,7 @@ async function loadPage() {
     appManager.initialize();
     authManager.initialize();
     // menuFlowManager.initialize();
-    // DashboardManager.initialize();
+    // dashboardManager.initialize();
 
 	// Setup language system
 	updateLanguageDisplay();
@@ -28,8 +28,8 @@ async function loadPage() {
 	// memoryDetector.startMonitoring(); // Logs memory usage (only google) 
 
 	// send "/" HTTP request and receive WebSocket URL to create ws
-	const WS_URL = await sendRootRequest();
-	// webSocketClient.connect(WS_URL);
+	const data: { success: boolean, wsURL: string } = await sendGET("root");
+	webSocketClient.connect(data.wsURL);
 
 	// // Setup WebSocket monitoring
 	// webSocketClient.registerCallback(WebSocketEvent.STATUS_CHANGE, (status: ConnectionStatus) => {

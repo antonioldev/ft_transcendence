@@ -1,5 +1,7 @@
 import { UserStats, GameHistoryEntry } from '../shared/types.js';
 import { EL, getElementById } from '../ui/elements.js';
+import { authManager } from './AuthManager.js';
+import { sendGET } from './HTTPRequests.js';
 
 export class DashboardManager {
 	// private static instance: DashboardManager;
@@ -231,6 +233,34 @@ export class DashboardManager {
 
 	//	 return container;
 	// }
+
+	async loadUserDashboard(): Promise<void> {
+		if (!authManager.isUserAuthenticated()) return;
+		
+		const user = authManager.getCurrentUser();
+		if (!user) return;
+
+		const username = user.username;
+		this.clear();
+		
+		// Fetch and render stats
+		const statsData: { success: boolean, message: string, stats: UserStats } = 
+			await sendGET("stats", [`username=${username}`]);
+		
+		if (!statsData.success)
+			console.error(`Failed to load stats: ${statsData.message}`);
+		else
+			this.renderUserStats(statsData.stats);
+
+		// Fetch and render history
+		const historyData: { success: boolean, message: string, history: GameHistoryEntry[] } = 
+			await sendGET("history", [`username=${username}`]);
+		
+		if (!historyData.success)
+			console.error(`Failed to load history: ${historyData.message}`);
+		else
+			this.renderGameHistory(historyData.history);
+	}
 
 }
 
