@@ -26,7 +26,7 @@ export async function APIRoutes(app: FastifyInstance) {
 		reply.send({ 
 			success: true,
 			message: "Welcome to Battle Pong!",
-			WS_URL: `wss://${request.hostname}/ws?sid=${encodeURIComponent(sid)}`,
+			// WS_URL: `wss://${request.hostname}/ws?sid=${encodeURIComponent(sid)}`,
 		});
 		console.log(`Client connected: sid = ${sid}`);
 	});

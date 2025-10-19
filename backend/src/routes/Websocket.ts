@@ -32,12 +32,12 @@ export async function setupWebsocket(app: FastifyInstance): Promise<void> {
         });
     
         connection.socket.on('close', () => {
-            console.log(`WebSocket closed for client ${client!.username}:`);
+            console.log(`❌ WebSocket closed for client ${client.username}:`);
             handleDisconnection(client!);
         });
     
         connection.socket.on('error', (error: any) => {
-            console.error(`❌ WebSocket error for client ${client!.username}:`, error);
+            console.error(`❌ WebSocket error for client ${client.username}:`, error);
             handleDisconnection(client!);
         });
     });
