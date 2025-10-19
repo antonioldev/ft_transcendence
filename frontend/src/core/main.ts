@@ -2,9 +2,9 @@ import "@babylonjs/loaders";
 import { updateLanguageDisplay, previousLanguage, nextLanguage } from '../translations/translations.js';
 import { uiManager } from '../ui/UIManager.js';
 import { webSocketClient } from './WebSocketClient.js';
-import { AuthManager } from './AuthManager.js';
-import { MenuFlowManager } from './MenuFlowManager.js';
-import { AppStateManager } from './AppStateManager.js';
+import { authManager } from './AuthManager.js';
+// import { menuFlowManager } from './MenuFlowManager.js';
+import { appManager } from './AppManager.js';
 import { ConnectionStatus, WebSocketEvent } from '../shared/constants.js';
 import { EL, requireElementById } from '../ui/elements.js';
 import { DashboardManager } from './DashboardManager.js';
@@ -16,9 +16,9 @@ import { sendRootRequest } from "./HTTPRequests.js";
 
 async function loadPage() {
     // Initialize classes
-    AppStateManager.initialize();
-    AuthManager.initialize();
-    MenuFlowManager.initialize();
+    appManager.initialize();
+    authManager.initialize();
+    // menuFlowManager.initialize();
     // DashboardManager.initialize();
 
 	// Setup language system

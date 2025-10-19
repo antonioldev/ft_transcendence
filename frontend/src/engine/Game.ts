@@ -8,8 +8,7 @@ import { ViewMode, WebSocketEvent, AppState, GameState } from '../shared/constan
 import { Logger } from '../utils/LogManager.js';
 import { uiManager } from '../ui/UIManager.js';
 import { GameMode } from '../shared/constants.js';
-import { appStateManager } from '../core/AppStateManager.js';
-import { GameConfigFactory } from './GameConfig.js';
+import { appManager } from '../core/AppManager.js';
 import { PlayerSide, PlayerState } from "./utils.js"
 import { disposeMaterialResources } from "./scene/materialFactory.js";
 import { GameServices } from "./GameServices.js";
@@ -61,14 +60,13 @@ export class Game {
 		}
 	}
 
-	async create(viewMode: ViewMode, gameMode: GameMode, aiDifficulty: number, capacity?: number): Promise<Game> {
+	async create(aiDifficulty: number, capacity?: number): Promise<Game> {
 		try {
-			const config = GameConfigFactory.createWithAuthCheck(viewMode, gameMode);
-			const game = new Game(config);
 			const players: PlayerInfo[] = this.config.players;
+			const gameMode = this.config.gameMode;
 			await sendPOST("join", { gameMode, players, aiDifficulty, capacity })
-			await game.initialize();
-			return game;
+			await this.initialize();
+			return this;
 		} catch (error) {
 			await this.dispose();
 			Logger.error('Error creating game', 'Game', error);
@@ -478,7 +476,7 @@ export class Game {
 			}
 			this.canvas = null;
 			uiManager.setLoadingScreenVisible(false);
-			appStateManager.navigateTo(AppState.MAIN_MENU);
+			appManager.navigateTo(AppState.MAIN_MENU);
 			Logger.debug('Game disposed successfully', 'Game');
 		} catch (error) {
 			Logger.error('Error disposing game', 'Game', error);
