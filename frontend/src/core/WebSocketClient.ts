@@ -19,6 +19,7 @@ export class WebSocketClient {
 
     // Establishes a WebSocket connection to the specified URL.
     connect(WS_URL: string): void {
+        
         console.log(`Connecting to websocket at '${WS_URL}'`);
         this.ws = new WebSocket(WS_URL);
         this.connectionStatus = ConnectionStatus.CONNECTING;
