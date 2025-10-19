@@ -7,7 +7,6 @@ import { authManager } from './AuthManager.js';
 import { appManager } from './AppManager.js';
 import { ConnectionStatus, WebSocketEvent } from '../shared/constants.js';
 import { EL, requireElementById } from '../ui/elements.js';
-import { dashboardManager } from './DashboardManager.js';
 import { sendGET } from "./HTTPRequests.js";
 // import { MemoryLeakDetector } from '../utils/memory.js'
 
@@ -31,16 +30,10 @@ async function loadPage() {
 	const data: { success: boolean, wsURL: string } = await sendGET("root");
 	webSocketClient.connect(data.wsURL);
 
-	// // Setup WebSocket monitoring
-	// webSocketClient.registerCallback(WebSocketEvent.STATUS_CHANGE, (status: ConnectionStatus) => {
-	// 	uiManager.updateConnectionStatus(status);
-	// });
-
-	// if (webSocketClient.isConnected()) {
-    //     uiManager.updateConnectionStatus(ConnectionStatus.CONNECTED);
-    // } else {
-    //     uiManager.updateConnectionStatus(ConnectionStatus.CONNECTING);
-    // }
+	// Setup WebSocket monitoring
+	webSocketClient.registerCallback(WebSocketEvent.STATUS_CHANGE, (status: ConnectionStatus) => {
+		uiManager.updateConnectionStatus(status);
+	});
 }
 
 /**

@@ -53,9 +53,7 @@ export class AppManager {
 	// ========================================
 	// EVENT LISTENERS SETUP
 	// ========================================
-
 	private setupEventListeners(): void {
-		this.setupBrowserNavigation();
 		this.setupViewModeListeners();
 		this.setupGameModeListeners();
 		this.setupPlayerSetupListeners();
@@ -63,9 +61,7 @@ export class AppManager {
 		document.addEventListener('submit', (event) => {
 			event.preventDefault();
 		});
-	}
 
-	private setupBrowserNavigation(): void {
 		window.addEventListener('popstate', (event) => {
 			if (this.currentGame?.getState() === GameState.RUNNING) {
 				this.currentGame?.requestExitToMenu();
@@ -84,98 +80,111 @@ export class AppManager {
 		const classicBtn = requireElementById<HTMLButtonElement>(EL.BUTTONS.VIEW_MODE_CLASSIC);
 		const immersiveBtn = requireElementById<HTMLButtonElement>(EL.BUTTONS.VIEW_MODE_IMMERSIVE);
 
-		classicBtn.addEventListener('click', () => {
-			this.selectedViewMode = ViewMode.MODE_2D;
-			uiManager.updateViewModeButtonStyles(this.selectedViewMode);
-		});
-
-		immersiveBtn.addEventListener('click', () => {
-			this.selectedViewMode = ViewMode.MODE_3D;
-			uiManager.updateViewModeButtonStyles(this.selectedViewMode);
-		});
+		classicBtn.addEventListener('click', () => this.selectViewMode(ViewMode.MODE_2D));
+		immersiveBtn.addEventListener('click', () => this.selectViewMode(ViewMode.MODE_3D));
 	}
 
 	private setupGameModeListeners(): void {
+		// Game mode buttons
 		for (const [gameMode, config] of Object.entries(GAME_MODE_CONFIG)) {
 			const button = requireElementById<HTMLButtonElement>(gameMode as GameMode);
-			
-			button.addEventListener('click', async () => {
-				if (config.availableOfflineOnly && authManager.isUserAuthenticated()) {
-					alert('This mode is not available for logged-in users.');
-					return;
-				}
-
-				if (config.requiresAuth && !authManager.isUserAuthenticated()) {
-					const t = getCurrentTranslation();
-					alert(t.loginRequired);
-					return;
-				}
-
-				this.selectedGameMode = gameMode as GameMode;
-				await this.startGame();
-			});
+			button.addEventListener('click', () => this.handleGameModeClick(gameMode as GameMode, config));
 		}
-		const modeBack = requireElementById<HTMLButtonElement>(EL.BUTTONS.MODE_BACK);
-		modeBack.addEventListener('click', () => {
-			this.isCollectingPlayerNames = false;
-			this.selectedGameMode = null;
-			this.navigateTo(AppState.MAIN_MENU);
-		});
 
-		const soloDifficultyBack = requireElementById<HTMLButtonElement>(EL.BUTTONS.SOLO_DIFFICULTY_BACK);
-		const soloDifficultyForward = requireElementById<HTMLButtonElement>(EL.BUTTONS.SOLO_DIFFICULTY_FORWARD);
-		const tournamentNumberBack = requireElementById<HTMLButtonElement>(EL.BUTTONS.TOURNAMENT_NUMBER_BACK);
-		const tournamentNumberForward = requireElementById<HTMLButtonElement>(EL.BUTTONS.TOURNAMENT_NUMBER_FORWARD);
-		const tournamentOnlineNumberBack = requireElementById<HTMLButtonElement>(EL.BUTTONS.TOURNAMENT_ONLINE_NUMBER_BACK);
-		const tournamentOnlineNumberForward = requireElementById<HTMLButtonElement>(EL.BUTTONS.TOURNAMENT_ONLINE_NUMBER_FORWARD);
+		// Navigation
+		const modeBackBtn = requireElementById<HTMLButtonElement>(EL.BUTTONS.MODE_BACK);
+		modeBackBtn.addEventListener('click', () => this.handleModeBackClick());
 
-		soloDifficultyBack.addEventListener('click', () => this.updateAIDifficulty(BUTTON_NAV.PREV));
-		soloDifficultyForward.addEventListener('click', () => this.updateAIDifficulty(BUTTON_NAV.NEXT));
+		// Difficulty controls
+		const difficultyBackBtn = requireElementById<HTMLButtonElement>(EL.BUTTONS.SOLO_DIFFICULTY_BACK);
+		const difficultyForwardBtn = requireElementById<HTMLButtonElement>(EL.BUTTONS.SOLO_DIFFICULTY_FORWARD);
 		
-		tournamentNumberBack.addEventListener('click', () => this.updateTournamentSize(false, BUTTON_NAV.PREV));
-		tournamentNumberForward.addEventListener('click', () => this.updateTournamentSize(false, BUTTON_NAV.NEXT));
+		difficultyBackBtn.addEventListener('click', () => this.updateAIDifficulty(BUTTON_NAV.PREV));
+		difficultyForwardBtn.addEventListener('click', () => this.updateAIDifficulty(BUTTON_NAV.NEXT));
 		
-		tournamentOnlineNumberBack.addEventListener('click', () => this.updateTournamentSize(true, BUTTON_NAV.PREV));
-		tournamentOnlineNumberForward.addEventListener('click', () => this.updateTournamentSize(true, BUTTON_NAV.NEXT));
+		// Tournament size controls
+		const tournamentBackBtn = requireElementById<HTMLButtonElement>(EL.BUTTONS.TOURNAMENT_NUMBER_BACK);
+		const tournamentForwardBtn = requireElementById<HTMLButtonElement>(EL.BUTTONS.TOURNAMENT_NUMBER_FORWARD);
+		
+		tournamentBackBtn.addEventListener('click', () => this.updateTournamentSize(false, BUTTON_NAV.PREV));
+		tournamentForwardBtn.addEventListener('click', () => this.updateTournamentSize(false, BUTTON_NAV.NEXT));
+		
+		// Online tournament size controls
+		const tournamentOnlineBackBtn = requireElementById<HTMLButtonElement>(EL.BUTTONS.TOURNAMENT_ONLINE_NUMBER_BACK);
+		const tournamentOnlineForwardBtn = requireElementById<HTMLButtonElement>(EL.BUTTONS.TOURNAMENT_ONLINE_NUMBER_FORWARD);
+		
+		tournamentOnlineBackBtn.addEventListener('click', () => this.updateTournamentSize(true, BUTTON_NAV.PREV));
+		tournamentOnlineForwardBtn.addEventListener('click', () => this.updateTournamentSize(true, BUTTON_NAV.NEXT));
 	}
 
 	private setupPlayerSetupListeners(): void {
-		const setupBack = requireElementById<HTMLButtonElement>(EL.BUTTONS.SETUP_BACK);
-		const startGame = requireElementById<HTMLButtonElement>(EL.BUTTONS.START_GAME);
-		const addCpu = requireElementById<HTMLButtonElement>(EL.PLAYER_COLLECTION.ADD_CPU);
+		const setupBackBtn = requireElementById<HTMLButtonElement>(EL.BUTTONS.SETUP_BACK);
+		const startGameBtn = requireElementById<HTMLButtonElement>(EL.BUTTONS.START_GAME);
+		const addCpuBtn = requireElementById<HTMLButtonElement>(EL.PLAYER_COLLECTION.ADD_CPU);
 
-		setupBack.addEventListener('click', () => {
-			this.isCollectingPlayerNames = false;
-			this.selectedGameMode = null;
-			this.navigateTo(AppState.GAME_MODE);
-		});
-
-		startGame.addEventListener('click', () => this.startGame());
-
-		addCpu.addEventListener('click', () => {
-			if (this.isCollectingPlayerNames && this.selectedGameMode === GameMode.TOURNAMENT_LOCAL) {
-				const minPlayers = getMinPlayersForCpu(this.currentOfflineTournamentSize);
-				if (this.playerNames.length < minPlayers) {
-					alert(`Need at least ${minPlayers} players to add CPU.`);
-					return;
-				}
-				this.finishPlayerCollection();
-			}
-		});
+		setupBackBtn.addEventListener('click', () => this.handleSetupBackClick());
+		startGameBtn.addEventListener('click', () => this.startGame());
+		addCpuBtn.addEventListener('click', () => this.handleAddCpuClick());
 	}
 
 	private setupDashboardListener(): void {
 		const dashboardBtn = requireElementById<HTMLButtonElement>(EL.BUTTONS.DASHBOARD);
-		const dashboardBack = requireElementById<HTMLButtonElement>(EL.BUTTONS.DASHBOARD_BACK);
+		const dashboardBackBtn = requireElementById<HTMLButtonElement>(EL.BUTTONS.DASHBOARD_BACK);
 		
-		dashboardBtn.addEventListener('click', async () => {
-			await dashboardManager.loadUserDashboard();
-			this.navigateTo(AppState.STATS_DASHBOARD);
-		});
+		dashboardBtn.addEventListener('click', () => this.handleDashboardClick());
+		dashboardBackBtn.addEventListener('click', () => this.navigateTo(AppState.MAIN_MENU));
+	}
 
-		dashboardBack.addEventListener('click', () => {
-			this.navigateTo(AppState.MAIN_MENU);
-		});
+	private selectViewMode(mode: ViewMode): void {
+		this.selectedViewMode = mode;
+		uiManager.updateViewModeButtonStyles(this.selectedViewMode);
+	}
+
+	private async handleGameModeClick(gameMode: GameMode, config: any): Promise<void> {
+		if (config.availableOfflineOnly && authManager.isUserAuthenticated()) {
+			alert('This mode is not available for logged-in users.');
+			return;
+		}
+
+		if (config.requiresAuth && !authManager.isUserAuthenticated()) {
+			const t = getCurrentTranslation();
+			alert(t.loginRequired);
+			return;
+		}
+
+		this.selectedGameMode = gameMode;
+		await this.startGame();
+	}
+
+	private handleModeBackClick(): void {
+		this.isCollectingPlayerNames = false;
+		this.selectedGameMode = null;
+		this.navigateTo(AppState.MAIN_MENU);
+	}
+
+	private handleSetupBackClick(): void {
+		this.isCollectingPlayerNames = false;
+		this.selectedGameMode = null;
+		this.navigateTo(AppState.GAME_MODE);
+	}
+
+	private handleAddCpuClick(): void {
+		if (!this.isCollectingPlayerNames || this.selectedGameMode !== GameMode.TOURNAMENT_LOCAL) {
+			return;
+		}
+
+		const minPlayers = getMinPlayersForCpu(this.currentOfflineTournamentSize);
+		if (this.playerNames.length < minPlayers) {
+			alert(`Need at least ${minPlayers} players to add CPU.`);
+			return;
+		}
+
+		this.finishPlayerCollection();
+	}
+
+	private async handleDashboardClick(): Promise<void> {
+		await dashboardManager.loadUserDashboard();
+		this.navigateTo(AppState.STATS_DASHBOARD);
 	}
 
 	private updateAIDifficulty(direction: BUTTON_NAV): void {
