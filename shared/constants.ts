@@ -183,3 +183,40 @@ export enum UserManagement {
 	REQUEST_USER_PROFILE,	// Type for back to frontend comm
 	UPDATE_USER_PROFILE	 // Request to update user information 
 }
+
+export const TOURNAMENT_SIZES = [4, 8, 16] as const;
+
+export const MIN_PLAYERS_FOR_CPU: Record<number, number> = { 4: 3, 8: 5, 16: 9 };
+
+export const GAME_MODE_CONFIG = {
+	[GameMode.SINGLE_PLAYER]: {
+		requiresAuth: false,
+		requiresSetup: true,
+		availableOfflineOnly: false
+	},
+	[GameMode.TWO_PLAYER_LOCAL]: {
+		requiresAuth: false,
+		requiresSetup: true,
+		availableOfflineOnly: true
+	},
+	[GameMode.TWO_PLAYER_REMOTE]: {
+		requiresAuth: true,
+		requiresSetup: false,
+		availableOfflineOnly: false
+	},
+	[GameMode.TOURNAMENT_LOCAL]: {
+		requiresAuth: false,
+		requiresSetup: true,
+		availableOfflineOnly: true
+	},
+	[GameMode.TOURNAMENT_REMOTE]: {
+		requiresAuth: true,
+		requiresSetup: false,
+		availableOfflineOnly: false
+	}
+} as const;
+
+export enum BUTTON_NAV {
+	PREV,
+	NEXT
+}

@@ -2,13 +2,12 @@ import "@babylonjs/loaders";
 import { updateLanguageDisplay, previousLanguage, nextLanguage } from '../translations/translations.js';
 import { uiManager } from '../ui/UIManager.js';
 import { webSocketClient } from './WebSocketClient.js';
-import { AuthManager } from './AuthManager.js';
-import { MenuFlowManager } from './MenuFlowManager.js';
-import { AppStateManager } from './AppStateManager.js';
+import { authManager } from './AuthManager.js';
+// import { menuFlowManager } from './MenuFlowManager.js';
+import { appManager } from './AppManager.js';
 import { ConnectionStatus, WebSocketEvent } from '../shared/constants.js';
 import { EL, requireElementById } from '../ui/elements.js';
-import { DashboardManager } from './DashboardManager.js';
-import { sendGET, getSID } from "./HTTPRequests.js";
+import { sendGET } from "./HTTPRequests.js";
 // import { MemoryLeakDetector } from '../utils/memory.js'
 
 // Initialize the detector
@@ -16,10 +15,10 @@ import { sendGET, getSID } from "./HTTPRequests.js";
 
 async function loadPage() {
     // Initialize classes
-    AppStateManager.initialize();
-    AuthManager.initialize();
-    MenuFlowManager.initialize();
-    // DashboardManager.initialize();
+    appManager.initialize();
+    authManager.initialize();
+    // menuFlowManager.initialize();
+    // dashboardManager.initialize();
 
 	// Setup language system
 	updateLanguageDisplay();
@@ -27,23 +26,14 @@ async function loadPage() {
 
 	// memoryDetector.startMonitoring(); // Logs memory usage (only google) 
 
-	// send "/" HTTP request and receive URL for WebSocket creation
-	const data: { success: boolean, message: string } = await sendGET("root");
-	if (!data.success) { return }
-	
-	const WS_URL = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + `/ws?sid=${encodeURIComponent(getSID())}`;
-	webSocketClient.connect(WS_URL);
+	// send "/" HTTP request and receive WebSocket URL to create ws
+	const data: { success: boolean, wsURL: string } = await sendGET("root");
+	webSocketClient.connect(data.wsURL);
 
 	// Setup WebSocket monitoring
 	webSocketClient.registerCallback(WebSocketEvent.STATUS_CHANGE, (status: ConnectionStatus) => {
 		uiManager.updateConnectionStatus(status);
 	});
-
-	if (webSocketClient.isConnected()) {
-        uiManager.updateConnectionStatus(ConnectionStatus.CONNECTED);
-    } else {
-        uiManager.updateConnectionStatus(ConnectionStatus.CONNECTING);
-    }
 }
 
 /**

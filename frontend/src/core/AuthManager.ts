@@ -4,7 +4,7 @@ import { uiManager } from '../ui/UIManager.js';
 import { getCurrentTranslation } from '../translations/translations.js';
 import { EL, requireElementById} from '../ui/elements.js';
 import { initializeGoogleSignIn, renderGoogleButton } from './GoogleSignIn.js';
-import { appStateManager } from './AppStateManager.js';
+import { appManager } from './AppManager.js';
 import { sendPOST } from './HTTPRequests.js';
 import { AuthCode } from '../shared/constants.js';
 import { Translation } from '../translations/Translation.js';
@@ -21,21 +21,21 @@ type GoogleCredentialResponse = {
  * form validation, UI updates, and navigation control.
  */
 export class AuthManager {
-	private static instance: AuthManager;
+	// private static instance: AuthManager;
 	private currentUser: {username: string} | null = null;
 	private readonly loginFields = [EL.AUTH.LOGIN_USERNAME, EL.AUTH.LOGIN_PASSWORD];
 	private readonly registrationFields = [EL.AUTH.REGISTER_USERNAME, EL.AUTH.REGISTER_EMAIL, EL.AUTH.REGISTER_PASSWORD, EL.AUTH.REGISTER_CONFIRM_PASSWORD];
 
 	// Gets the singleton instance of AuthManager.
-	static getInstance(): AuthManager {
-		if (!AuthManager.instance)
-			AuthManager.instance = new AuthManager();
-		return AuthManager.instance;
-	}
+	// static getInstance(): AuthManager {
+	// 	if (!AuthManager.instance)
+	// 		AuthManager.instance = new AuthManager();
+	// 	return AuthManager.instance;
+	// }
 
 	// Initializes the AuthManager by setting up event listeners.
-	static initialize(): void {
-		const authManager = AuthManager.getInstance();
+	initialize(): void {
+		// const authManager = AuthManager.getInstance();
 		authManager.setupEventListeners();
 		// authManager.restoreSessionOnBoot();
 	}
@@ -88,12 +88,12 @@ export class AuthManager {
 		playBtn: HTMLElement | null
 	): void {
 		loginBtn?.addEventListener('click', () => {
-			appStateManager.navigateTo(AppState.LOGIN);
+			appManager.navigateTo(AppState.LOGIN);
 			this.prepareGoogleLogin();
 		});
 
 		registerBtn?.addEventListener('click', () => {
-			appStateManager.navigateTo(AppState.REGISTER);
+			appManager.navigateTo(AppState.REGISTER);
 			this.prepareGoogleLogin();
 		});
 
@@ -102,7 +102,7 @@ export class AuthManager {
 		});
 
 		playBtn?.addEventListener('click', () => {
-			appStateManager.navigateTo(AppState.GAME_MODE);
+			appManager.navigateTo(AppState.GAME_MODE);
 		});
 	}
 
@@ -116,13 +116,13 @@ export class AuthManager {
 		showLogin: HTMLElement | null
 	): void {
 		showRegister?.addEventListener('click', () => {
-			appStateManager.navigateTo(AppState.REGISTER);
-            this.prepareGoogleLogin();
+			appManager.navigateTo(AppState.REGISTER);
+			this.prepareGoogleLogin();
 		});
 
 		showLogin?.addEventListener('click', () => {
-			appStateManager.navigateTo(AppState.LOGIN);
-            this.prepareGoogleLogin();
+			appManager.navigateTo(AppState.LOGIN);
+			this.prepareGoogleLogin();
 		});
 	}
 
@@ -136,11 +136,11 @@ export class AuthManager {
 		registerBack: HTMLElement | null
 	): void {
 		loginBack?.addEventListener('click', () => {
-			appStateManager.navigateTo(AppState.MAIN_MENU);
+			appManager.navigateTo(AppState.MAIN_MENU);
 		});
 
 		registerBack?.addEventListener('click', () => {
-			appStateManager.navigateTo(AppState.MAIN_MENU);
+			appManager.navigateTo(AppState.MAIN_MENU);
 		});
 	}
 
@@ -283,7 +283,7 @@ export class AuthManager {
                 if (data?.ok && data.user?.username) {
                     this.currentUser = { username: data.user.username };
                     uiManager.showUserInfo(this.currentUser.username);
-                    appStateManager.navigateTo(AppState.MAIN_MENU);
+                    appManager.navigateTo(AppState.MAIN_MENU);
                     return;
                 }
             }
@@ -316,7 +316,7 @@ export class AuthManager {
                             console.log('Session fully restored via Google');
                             this.currentUser = { username: data2.user.username };
                             uiManager.showUserInfo(this.currentUser.username);
-                            appStateManager.navigateTo(AppState.MAIN_MENU);
+                            appManager.navigateTo(AppState.MAIN_MENU);
                             return;
                         }
                     }
@@ -338,7 +338,7 @@ export class AuthManager {
     }
 
     // Handles the login form submission process. Validates input fields, processes authentication, and updates UI state.
-    private async handleLoginSubmit() {
+    private async handleLoginSubmit(): Promise<void> {
         const usernameInput = requireElementById<HTMLInputElement>(EL.AUTH.LOGIN_USERNAME);
         const passwordInput = requireElementById<HTMLInputElement>(EL.AUTH.LOGIN_PASSWORD);
         const username = usernameInput.value.trim();
@@ -409,7 +409,7 @@ export class AuthManager {
             // await bindSessionCookie(sid);
             this.currentUser = { username: username };
             uiManager.clearForm(this.loginFields);
-            appStateManager.navigateTo(AppState.MAIN_MENU);
+            appManager.navigateTo(AppState.MAIN_MENU);
             uiManager.showUserInfo(this.currentUser.username);
             Logger.info(message, 'AuthManager');
             return ;
@@ -417,7 +417,7 @@ export class AuthManager {
 
         if (result == AuthCode.NOT_FOUND) {
             alert(translation.dontHaveAccount);
-            setTimeout(() => { appStateManager.navigateTo(AppState.REGISTER); }, 500);
+            setTimeout(() => { appManager.navigateTo(AppState.REGISTER); }, 500);
         } 
         else if (AuthCode.ALREADY_LOGIN) {
             alert(translation.alreadyLogin)
@@ -434,13 +434,13 @@ export class AuthManager {
             uiManager.clearForm(this.registrationFields);
             // uiManager.showUserInfo(username);
             alert(message || 'Registration successful! Welcome to the game!');
-            setTimeout(() => { appStateManager.navigateTo(AppState.GAME_MODE); }, 500);
+            setTimeout(() => { appManager.navigateTo(AppState.GAME_MODE); }, 500);
         }
         else {
             uiManager.clearForm(this.registrationFields);
             alert(message);
             if (result === AuthCode.USERNAME_TAKEN) {
-                setTimeout(() => { appStateManager.navigateTo(AppState.LOGIN); }, 500);
+                setTimeout(() => { appManager.navigateTo(AppState.LOGIN); }, 500);
             }
         }
     }
@@ -493,7 +493,7 @@ export class AuthManager {
                 // Updates the UI to show user information and navigates to game mode selection
                 uiManager.showUserInfo(this.currentUser.username);
                 // uiManager.hideOverlays('login-modal');
-                appStateManager.navigateTo(AppState.GAME_MODE);
+                appManager.navigateTo(AppState.GAME_MODE);
 
 		} catch (error) {
 			console.error("Backend communication failed:", error);
@@ -571,7 +571,7 @@ export class AuthManager {
 		localStorage.removeItem('google_id_token');
 		
 		uiManager.showAuthButtons();
-		appStateManager.navigateTo(AppState.MAIN_MENU);
+		appManager.navigateTo(AppState.MAIN_MENU);
 	}
 
 	// Checks the current authentication state and updates UI accordingly. Should be called after page loads or state changes to ensure UI consistency.
@@ -593,4 +593,4 @@ export class AuthManager {
     }
 }
 
-export const authManager = AuthManager.getInstance();
+export const authManager = new AuthManager;

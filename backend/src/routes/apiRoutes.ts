@@ -26,7 +26,7 @@ export async function APIRoutes(app: FastifyInstance) {
 		reply.send({ 
 			success: true,
 			message: "Welcome to Battle Pong!",
-			// WS_URL: `wss://${request.hostname}/ws?sid=${encodeURIComponent(sid)}`,
+			wsURL: `wss://${request.hostname}:8443/ws?sid=${encodeURIComponent(sid)}`,
 		});
 		console.log(`Client connected: sid = ${sid}`);
 	});
@@ -147,14 +147,16 @@ export async function APIRoutes(app: FastifyInstance) {
 			console.log(`/join request failed: missing SID`);
 			return reply.code(400).send({ success: false, message: "Error: missing SID"} );
 		}
-		const { mode, players, aiDifficulty, capacity } = request.body as 
-			{ mode: GameMode, players: Player[], aiDifficulty?: AiDifficulty, capacity?: number };
-		if (mode === undefined || !players ) {
+
+		const { gameMode, players, capacity, aiDifficulty  } = request.body as 
+			{ gameMode: GameMode, players: Player[], capacity?: number, aiDifficulty?: AiDifficulty };
+
+		if (!gameMode || !players ) {
 			console.log(`/join request failed: missing game info`);
 			return reply.code(401).send({ success: false, message: 'Missing username, email, or password' })
 		}
 		const client = findOrCreateClient(sid);
-		const gameSession = gameManager.findOrCreateGame(mode, capacity ?? undefined);
+		const gameSession = gameManager.findOrCreateGame(gameMode, capacity ?? undefined);
 		gameManager.addClient(client, gameSession);
 
 		if (aiDifficulty !== undefined && gameSession.ai_difficulty === undefined) {
@@ -192,7 +194,7 @@ export async function APIRoutes(app: FastifyInstance) {
 	// GAME HISTORY
 	app.get('/api/history', (request, reply) => {
 		const { username } = request.query as { username: string };
-		const history = db.getUserStats(username); // from DB
+		const history = db.getGameHistoryForUser(username); // from DB
 		if (!history) {
 			console.log(`Failed to send game history: user '${username}' not found`);
 			return reply.code(401).send({ success: false, message: "User not found" });
