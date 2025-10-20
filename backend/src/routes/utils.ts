@@ -13,15 +13,15 @@ export function findOrCreateClient(sid: string): Client {
 	return client;
 }
 
-export function getClient(sid: string): Client | undefined {
+export function getClientConnection(sid: string): Client | undefined {
 	return (sidClientMap.get(sid));
 }
 
-export function removeClient(sid: string) {
+export function removeClientConnection(sid: string) {
 	sidClientMap.delete(sid);
 }
 
-export function addClient(sid: string, client: Client) {
+export function addClientConnection(sid: string, client: Client) {
 	sidClientMap.set(sid, client);
 }
 

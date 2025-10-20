@@ -4,7 +4,7 @@ import * as db from "../data/validation.js";
 import { gameManager } from '../network/GameManager.js';
 import { AuthCode, GameMode, AiDifficulty } from '../shared/constants.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
-import { removeClient, findOrCreateClient, getClient } from './utils.js';
+import { removeClientConnection, findOrCreateClient, getClientConnection } from './utils.js';
 
 
 /* --- HTTP Endpoints --- */
@@ -21,14 +21,10 @@ export async function APIRoutes(app: FastifyInstance) {
 		}
 		console.log(`ROOT request received from: ${sid}`);
 		let client = findOrCreateClient(sid);
-		// check for double user
 		client.is_connected = true;
+		// check for double user
 		
-		reply.send( { 
-			message: "Welcome to Battle Pong!",
-			// wsURL: `ws://${request.hostname}/ws?sid=${encodeURIComponent(sid)}`,
-			wsURL: `wss://${request.hostname}:8443/ws?sid=${encodeURIComponent(sid)}`,
-		});
+		reply.send( { message: "Welcome to Battle Pong!" });
 		console.log(`New Client connected: sid = ${sid}`);
 	});
 
@@ -92,12 +88,12 @@ export async function APIRoutes(app: FastifyInstance) {
 			return reply.code(400).send({ message: "Error: missing SID"} );
 		}
 		console.log(`/logout request received from: ${sid}`);
-		let client = getClient(sid);
+		let client = getClientConnection(sid);
 		if (!client) {
 			return reply.code(401).send( {success: false, message: "Logout failed: user not logged in"});
 		}
 
-		removeClient(sid);
+		removeClientConnection(sid);
 		await db.logoutUser(client.username);
 		console.log(`User ${client.username} successfully logged out`);
 		return reply.send({ success: true, message: `User '${client.username}' successfully logged out` })

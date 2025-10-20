@@ -5,7 +5,7 @@ import { MessageType } from '../shared/constants.js';
 import { ClientMessage} from '../shared/types.js';
 import * as db from "../data/validation.js";
 import { TournamentRemote } from '../network/Tournament.js';
-import { getClient, send } from './utils.js';
+import { getClientConnection, send } from './utils.js';
 
 /**
  * Sets up WebSocket routes for the Fastify server.
@@ -20,7 +20,7 @@ export async function setupWebsocket(app: FastifyInstance): Promise<void> {
         }
         console.log(`Creating websocket for sid: ${sid}`);
 
-        const client = getClient(sid);
+        const client = getClientConnection(sid);
         if (!client) {
             console.log(`Cannot handle Websocket connection, client does not exist`);
             return ;
