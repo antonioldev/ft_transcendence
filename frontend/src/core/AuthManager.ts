@@ -308,38 +308,13 @@ export class AuthManager {
                 console.log('Found Google token, attempting restore');
                 // Hit your Google restore endpoint that verifies the Google token
                 // and SETS the same 'sid' cookie as classic login
-                const gRes = await fetch('/api/auth/google/restore', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include', // <-- must include so cookie gets set
-                    body: JSON.stringify({ token: googleIdToken }),
-                });
-
-                if (gRes.ok) {
-                    console.log('Google restore successful, fetching user data');
-
-                    // After cookie set, ask the unified "who am I" (classic) again
-                    const res2 = await fetch('/api/auth/session/me', {
-                    method: 'GET',
-                    credentials: 'include',
-                    cache: 'no-store',
-                    });
-                    if (res2.ok) {
-                        const data2 = await res2.json();
-                        if (data2?.ok && data2.user?.username) {
-                            console.log('Session fully restored via Google');
-                            this.currentUser = { username: data2.user.username };
-                            uiManager.showUserInfo(this.currentUser.username);
-                            appManager.navigateTo(AppState.MAIN_MENU);
-                            return;
-                        }
-                    }
-                } else {
-                console.log('Google restore failed, token may be expired');
-                // Remove invalid token
-                localStorage.removeItem('google_id_token');
+                const data = await sendPOST("google", JSON.stringify({ token: googleIdToken }));
+                console.log(data.message);
+                if (!data.success) {
+                    localStorage.removeItem('google_id_token');
                 }
-            } else {
+            } 
+            else {
                 console.log('No Google token found in local storage');
             }
 
@@ -555,10 +530,9 @@ export class AuthManager {
             console.log("Google token received, sending to backend...");
             try {
                 // 1) Hit your backend; allow cookies to be set
-                const authRes = await fetch('/api/auth/google', {
+                const authRes = await fetch('/api/google', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include',					  // ⬅️ IMPORTANT
                     body: JSON.stringify({ token: googleResponse.credential })
                 });
 

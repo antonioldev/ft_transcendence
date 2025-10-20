@@ -6,93 +6,13 @@ import * as validation from '../data/validation.js';
 // Google OAuth2 client
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
-// export async function authLocal(app: FastifyInstance) {
-// 	/**
-// 	 * POST /api/auth/session/bind
-// 	 * - Reads a session ID from the request body
-// 	 * - Verifies it exists in the DB
-// 	 * - If valid, sets it as a secure HTTP-only cookie
-// 	 */
-// 	app.post('/api/auth/session/bind', async (req, reply) => {
-// 		console.log('[BIND] HIT', req.method, req.url);
-// 		console.log('[BIND] cookie header =', req.headers.cookie);
-
-// 		try {
-// 			// Get request body
-// 			const body: any = req.body || {};
-// 			console.log('[BIND] body =', body);
-
-// 			// Extract and validate sid
-// 			const sid = body.sid;
-// 			if (!sid || typeof sid !== 'string') {
-// 				console.log('[BIND] missing sid');
-// 				return reply.code(400).send({ ok: false, error: 'missing_sid' });
-// 			}
-
-// 			// Check if sid corresponds to a valid session
-// 			const user = getUserBySession(sid);
-// 			console.log('[BIND] lookup sid', (sid || '').slice(0, 8), '-> user =', user);
-
-// 			if (!user) {
-// 				console.log('[BIND] invalid or expired sid');
-// 				return reply.code(401).send({ ok: false, error: 'invalid_or_expired' });
-// 			}
-
-// 			// // Set session cookie
-// 			// reply.setCookie(COOKIE_NAME, sid, {
-// 			// 	httpOnly: true,   // Not accessible from client JS
-// 			// 	secure: true,     // Only sent over HTTPS
-// 			// 	sameSite: 'lax',  // Helps mitigate CSRF
-// 			// 	path: '/',
-// 			// 	maxAge: COOKIE_MAX_AGE,
-// 			// });
-
-// 			// Send success response
-// 			return reply.send({ ok: true });
-// 		} catch (err) {
-// 			console.error('[BIND] server error:', err);
-// 			return reply.code(500).send({ ok: false, error: 'server_error' });
-// 		}
-// 	});
-
-	// /**
-	//  * GET /api/auth/session/me
-	//  * - Reads the sid cookie
-	//  * - Looks up the user from DB
-	//  * - Returns user info if session is valid
-	//  */
-	// app.get('/api/auth/session/me', async (req, reply) => {
-	// 	console.log('[ME] HIT', req.method, req.url);
-	// 	console.log('[ME] cookie header =', req.cookies);
-
-	// 	// Get sid from cookie
-	// 	const sid = (req as any).cookies?.[COOKIE_NAME];
-	// 	console.log('[ME] sid from cookie =', sid);
-
-	// 	if (!sid) {
-	// 		return reply.code(401).send({ ok: false, error: 'no_cookie' });
-	// 	}
-
-	// 	// Validate session and fetch user
-	// 	const user = getUserBySession(sid);
-	// 	console.log('[ME] lookup user =', user);
-
-	// 	if (!user) {
-	// 		return reply.code(401).send({ ok: false, error: 'invalid_or_expired' });
-	// 	}
-
-	// 	// Send authenticated user info
-	// 	return reply.send({ ok: true, user });
-	// });
-// }
-
 export async function authGoogle(app: FastifyInstance) {
 	// Route: Google login
-	app.post('/api/auth/google', async (request, reply) => {
+	app.post('/api/google', async (request, reply) => {
 		try {
 			// Get token from request body
 			const { token } = request.body as { token: string };
-			if (!token) return reply.code(400).send({ error: 'Token not provided' });
+			if (!token) return reply.code(400).send({ success: false, message: 'Error: Token not provided' });
 
 			// Verify Google ID token
 			const ticket = await googleClient.verifyIdToken({
@@ -106,13 +26,10 @@ export async function authGoogle(app: FastifyInstance) {
 			const user = validation.findOrCreateGoogleUser(payload as any);
 			if (!user) return reply.code(500).send({ error: 'Could not find or create user' });
 
-			// // Create a session for the user
-			// const sid = validation.getSessionByUsername(user.username); // string | undefined
-			// if (!sid) return reply.code(409).send({ error: 'Active session already exists' });
-
 			// Send response with user info (safe fields only)
 			return reply.send({
 				success: true,
+				message: "Google restore successful",
 				user: {
 					username: user.username,
 					email: user.email,
