@@ -24,7 +24,8 @@ export async function APIRoutes(app: FastifyInstance) {
 		if (!client) {
 			client = createClientConnection(sid);
 		} 
-		else if (client.is_connected) {
+		else if (!client.is_connected) {
+			console.log("Client refresh")
 			reply.send({ 
 				status: AuthCode.ALREADY_LOGIN, 
 				message: "Welcome back to Battle Pong!",

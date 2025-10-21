@@ -343,7 +343,6 @@ export class AuthManager {
 
         const responseData = await sendPOST("login", { username, password });
         this.handleLoginResponse(responseData.result, responseData.message, username, translation);
-
 	}
 
     // Handles the registration form submission process.
@@ -432,7 +431,6 @@ export class AuthManager {
 
     handleLoginResponse(result: AuthCode, message: string, username: string, translation: Translation) {
         if (result === AuthCode.OK) {
-            // await bindSessionCookie(sid);
             this.currentUser = { username: username };
             uiManager.clearForm(this.loginFields);
             appManager.navigateTo(AppState.MAIN_MENU);
