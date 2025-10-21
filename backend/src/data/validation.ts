@@ -2,15 +2,8 @@
 import * as dbFunction from '../data/database.js';
 import { verifyPassword, hashPassword } from './authentification.js';
 import { UserProfileData, UserStats, GameHistoryEntry } from '../shared/types.js';
+import { AuthCode } from '../shared/constants.js';
 
-/**
- * Check login credentials.
- * Returns:
- *   0 = success
- *   1 = user not found
- *   2 = wrong password
- *   3 = session creation failed
- */
 export async function verifyLogin(username: string, password: string): Promise<number> {
 	const isEmail = username.includes('@');
 
@@ -31,23 +24,23 @@ export async function verifyLogin(username: string, password: string): Promise<n
 		}
 	}
 
-	if (!userExists) return 1;
+	if (!userExists) return AuthCode.NOT_FOUND;
 
 	// Verify password against stored hash
 	const storedPwd = dbFunction.getUserPwd(user_email);
 	console.log('verifyLogin: comparing given password with stored hash', password, storedPwd);
 
 	const isMatch = await verifyPassword(storedPwd, password);
-	if (!isMatch) return 2;
+	if (!isMatch) return AuthCode.BAD_CREDENTIALS;
 
 	const userId = dbFunction.retrieveUserID(username);
 	const sid = dbFunction.createSession(userId);
 	if (!sid) {
 		console.log(`verifyLogin: failed to create session, sid=${sid}`);
-		return 3;
+		return AuthCode.ALREADY_LOGIN;
 	}
 
-	return 0;
+	return AuthCode.OK;
 }
 
 /**

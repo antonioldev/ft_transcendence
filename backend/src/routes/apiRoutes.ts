@@ -53,10 +53,6 @@ export async function APIRoutes(app: FastifyInstance) {
 			console.log("login failed: client not recognised");
 			return reply.code(401).send( { success: false, message: "login failed: client not recognised" });
 		}
-		if (client.loggedIn) {
-			console.log(`Cannot login user: ${"User already logged in"}`);
-			return reply.code(401).send({ result: AuthCode.ALREADY_LOGIN, message: "User already logged in" })
-		}
 
 		// get login details from Google Auth token or by default request body
 		let clientInfo: { username: string, email: string, password: string };
