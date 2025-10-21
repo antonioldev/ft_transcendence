@@ -344,47 +344,6 @@ export class AuthManager {
         const responseData = await sendPOST("login", { username, password });
         this.handleLoginResponse(responseData.result, responseData.message, username, translation);
 
-        // // SUCCESS: the callback still receives a string; we parse it here
-        // webSocketClient.registerCallback(WebSocketEvent.LOGIN_SUCCESS, async (raw: string) => {
-        //     try {
-        //         const { text, sid, uname } = parsePayload(raw);
-        //         if (!sid) {
-        //             Logger.error('Missing sid in LOGIN_SUCCESS payload', 'AuthManager', { raw });
-        //             alert('Login succeeded but session binding failed (no sid).');
-        //             return;
-        //         }
-
-        //         await bindSessionCookie(sid);
-
-        //         this.authState = AuthState.LOGGED_IN;
-        //         this.currentUser = { username: uname ?? username };
-        //         uiManager.clearForm(this.loginFields);
-        //         appManager.navigateTo(AppState.MAIN_MENU);
-        //         uiManager.showUserInfo(this.currentUser.username);
-        //         Logger.info(text ?? 'Login ok', 'AuthManager');
-        //     } catch (e) {
-        //         Logger.error('Binder call failed', 'AuthManager', e);
-        //         alert('Login succeeded but could not finalize session. Please retry.');
-        //     }
-        // });
-
-		// webSocketClient.registerCallback(WebSocketEvent.LOGIN_FAILURE, (msg: string) => {
-		// 	this.authState = AuthState.LOGGED_FAILED;
-		// 	if (msg === "User doesn't exist") {
-		// 		alert(translation.dontHaveAccount);
-		// 		uiManager.clearForm(this.loginFields); 
-		// 		setTimeout(() => {
-		// 			appManager.navigateTo(AppState.REGISTER);
-		// 		}, 500);
-		// 	} else if (msg === "User already login") {
-		// 		alert(translation.alreadyLogin)
-		// 		uiManager.clearForm(this.loginFields); 
-		// 	} else {
-		// 		alert(translation.passwordsDoNotMatch);
-		// 		uiManager.clearForm(this.loginFields); 
-		// 	}
-		// });
-
 	}
 
     // Handles the registration form submission process.

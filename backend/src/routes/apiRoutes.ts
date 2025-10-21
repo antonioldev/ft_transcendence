@@ -4,7 +4,7 @@ import * as db from "../data/validation.js";
 import { gameManager } from '../network/GameManager.js';
 import { AuthCode, GameMode, AiDifficulty } from '../shared/constants.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
-import { removeClientConnection, findOrCreateClient, getClientConnection } from './utils.js';
+import { removeClientConnection, findOrCreateClient, getClientConnection, createClientConnection } from './utils.js';
 
 
 /* --- HTTP Endpoints --- */
@@ -17,15 +17,28 @@ export async function APIRoutes(app: FastifyInstance) {
 		const { sid } = request.query as { sid?: string};
 		if (!sid) {
 			console.log(`ROOT request failed: missing SID`);
-			return reply.code(400).send({ message: "Error: missing SID"} );
+			return reply.code(400).send({ status: AuthCode.BAD_CREDENTIALS, message: "Error: missing SID"} );
 		}
 		console.log(`ROOT request received from: ${sid}`);
-		let client = findOrCreateClient(sid);
+		let client = getClientConnection(sid);
+		if (!client) {
+			client = createClientConnection(sid);
+		} 
+		else if (client.is_connected) {
+			reply.send({ 
+				status: AuthCode.ALREADY_LOGIN, 
+				message: "Welcome back to Battle Pong!",
+				user: {
+					username: client.username,
+					email: client.email,
+					password: client.password,
+				}
+			});
+		}
 		client.is_connected = true;
-		// check for double user
+		// check for double user ???
 		
-		reply.send( { message: "Welcome to Battle Pong!" });
-		console.log(`New Client connected: sid = ${sid}`);
+		reply.send( { status: AuthCode.OK, message: "Welcome to Battle Pong!" });
 	});
 
 	// LOGIN
@@ -36,7 +49,11 @@ export async function APIRoutes(app: FastifyInstance) {
 			return reply.code(400).send({ message: "Error: missing SID"} );
 		}
 		console.log(`/login request received from: ${sid}`);
-		let client = findOrCreateClient(sid);
+		let client = getClientConnection(sid);
+		if (!client) {
+			console.log("login failed: user not logged in");
+			return reply.code(401).send( {success: false, message: "login failed: user not logged in"});
+		}
 
 		// get login details from Google Auth token or by default request body
 		let clientInfo: { username: string, email: string, password: string };
@@ -59,7 +76,7 @@ export async function APIRoutes(app: FastifyInstance) {
 		let error: string = "";
 		switch (result) {
 			case AuthCode.OK:
-				client.setInfo(clientInfo.username, clientInfo.email);
+				client.setInfo(clientInfo.username, clientInfo.email, clientInfo.password);
 				client.loggedIn = true;
 				console.log(`User ${client.username} successfully logged in`);
 				return reply.send({ 
@@ -90,10 +107,10 @@ export async function APIRoutes(app: FastifyInstance) {
 		console.log(`/logout request received from: ${sid}`);
 		let client = getClientConnection(sid);
 		if (!client) {
+			console.log("Logout failed: user not logged in");
 			return reply.code(401).send( {success: false, message: "Logout failed: user not logged in"});
 		}
 
-		removeClientConnection(sid);
 		await db.logoutUser(client.username);
 		console.log(`User ${client.username} successfully logged out`);
 		return reply.send({ success: true, message: `User '${client.username}' successfully logged out` })
@@ -152,7 +169,12 @@ export async function APIRoutes(app: FastifyInstance) {
 			console.log(`/join request failed: missing game info`);
 			return reply.code(401).send({ success: false, message: 'Missing username, email, or password' })
 		}
-		const client = findOrCreateClient(sid);
+
+		let client = getClientConnection(sid);
+		if (!client) {
+			console.log("join failed: user not logged in");
+			return reply.code(401).send( {success: false, message: "join failed: user not logged in"});
+		}
 		const gameSession = gameManager.findOrCreateGame(gameMode, capacity ?? undefined);
 		gameManager.addClient(client, gameSession);
 

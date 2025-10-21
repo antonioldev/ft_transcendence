@@ -6,10 +6,15 @@ export const sidClientMap: Map<string, Client> = new Map();
 export function findOrCreateClient(sid: string): Client {
 	let client: Client | undefined = sidClientMap.get(sid);
 	if (!client) {
-		console.log(`New client created, SID: ${sid}`);
-		client = new Client(sid);
-		sidClientMap.set(sid, client);
+		client = createClientConnection(sid);
 	}
+	return client;
+}
+
+export function createClientConnection(sid: string): Client {
+	console.log(`New client created, SID: ${sid}`);
+	const client = new Client(sid);
+	sidClientMap.set(sid, client);
 	return client;
 }
 
@@ -18,11 +23,8 @@ export function getClientConnection(sid: string): Client | undefined {
 }
 
 export function removeClientConnection(sid: string) {
+	console.log(`Removed client connection, SID: ${sid}`);
 	sidClientMap.delete(sid);
-}
-
-export function addClientConnection(sid: string, client: Client) {
-	sidClientMap.set(sid, client);
 }
 
 export function send(socket: any, message: ServerMessage) {

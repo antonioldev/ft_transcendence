@@ -24,12 +24,12 @@ class GameManager {
     removeClient(client: Client): void {
         const gameSession = this.clientGamesMap.get(client.id);
         if (!gameSession) {
-            console.warn(`Cannot disconnect: Client ${client.username}:${client.username} not in any game`);
+            console.warn(`Cannot remove Client ${client.username}:${client.username}: not in any game`);
             return;
         }
         gameSession.handlePlayerQuit(client);
         this.clientGamesMap.delete(client.id);
-        console.log(`Client disconnected: ${client.username}:${client.username}`);
+        console.log(`Client ${client.username}:${client.username} removed from game`);
     }
 
     /**

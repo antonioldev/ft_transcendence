@@ -44,9 +44,9 @@ export async function setupWebsocket(app: FastifyInstance): Promise<void> {
 }
 
 function handleDisconnection(client: Client) {
-    client!.is_connected = false;
+    client.is_connected = false;
     gameManager.removeClient(client);
-    setTimeout(() => { logoutAfterTimeout(client!) }, 5000);
+    setTimeout(() => { logoutAfterTimeout(client) }, 2000);
 }
 
 async function logoutAfterTimeout(client:  Client) {
