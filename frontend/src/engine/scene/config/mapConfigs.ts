@@ -27,7 +27,6 @@ const map1Trees = map1TreesRaw as {
 import map2UnderwaterRaw from "../data/staticObjects/map2.json";
 const map2Underwater = map2UnderwaterRaw as {
 	rock1: StaticObject[];
-	rock2: StaticObject[];
 	coral1: StaticObject[];
 	coral2: StaticObject[];
 	wreck: StaticObject[];
@@ -174,7 +173,6 @@ export const MAP_CONFIGS: Record<string, MapAssetConfig> = {
 		terrain: createTextureSet('map2', 'terrain', "#adb448", true),
 		staticObjects: [
 			...map2Underwater.rock1,
-			...map2Underwater.rock2,
 			...map2Underwater.coral1,
 			...map2Underwater.coral2,
 			...map2Underwater.wreck,
