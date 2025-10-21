@@ -24,7 +24,7 @@ export async function APIRoutes(app: FastifyInstance) {
 		if (!client) {
 			client = createClientConnection(sid);
 		} 
-		else if (!client.is_connected) {
+		else if (!client.is_connected && client.loggedIn) {
 			console.log("Client refresh")
 			reply.send({ 
 				status: AuthCode.ALREADY_LOGIN, 
@@ -37,8 +37,6 @@ export async function APIRoutes(app: FastifyInstance) {
 			});
 		}
 		client.is_connected = true;
-		// check for double user ???
-		
 		reply.send( { status: AuthCode.OK, message: "Welcome to Battle Pong!" });
 	});
 
@@ -52,8 +50,12 @@ export async function APIRoutes(app: FastifyInstance) {
 		console.log(`/login request received from: ${sid}`);
 		let client = getClientConnection(sid);
 		if (!client) {
-			console.log("login failed: user not logged in");
-			return reply.code(401).send( {success: false, message: "login failed: user not logged in"});
+			console.log("login failed: client not recognised");
+			return reply.code(401).send( { success: false, message: "login failed: client not recognised" });
+		}
+		if (client.loggedIn) {
+			console.log(`Cannot login user: ${"User already logged in"}`);
+			return reply.code(401).send({ result: AuthCode.ALREADY_LOGIN, message: "User already logged in" })
 		}
 
 		// get login details from Google Auth token or by default request body
@@ -90,9 +92,9 @@ export async function APIRoutes(app: FastifyInstance) {
 			case AuthCode.BAD_CREDENTIALS:
 				error = `Username or password incorrect`;
 				break ;				
-			case AuthCode.ALREADY_LOGIN:
-				error = `User already loggin in`;
-				break ;
+			// case AuthCode.ALREADY_LOGIN:
+			// 	error = `User already loggin in`;
+			// 	break ;
 		}
 		console.log(`Cannot login user: ${error}`);
 		return reply.code(401).send({ result: result, message: error })
@@ -111,7 +113,8 @@ export async function APIRoutes(app: FastifyInstance) {
 			console.log("Logout failed: user not logged in");
 			return reply.code(401).send( {success: false, message: "Logout failed: user not logged in"});
 		}
-
+		
+		client.loggedIn = false;
 		await db.logoutUser(client.username);
 		console.log(`User ${client.username} successfully logged out`);
 		return reply.send({ success: true, message: `User '${client.username}' successfully logged out` })
