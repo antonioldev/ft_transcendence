@@ -1,4 +1,4 @@
-const base_url: string = `https://c1r1s5.42london.com:8443/api`; // TEMP
+const base_url: string = `https://${window.location.hostname}:8443/api`; // TEMP
 
 export function getSID() {
 	let SID = sessionStorage.getItem('sid');
