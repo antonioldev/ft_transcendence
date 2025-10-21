@@ -92,9 +92,9 @@ export async function APIRoutes(app: FastifyInstance) {
 			case AuthCode.BAD_CREDENTIALS:
 				error = `Username or password incorrect`;
 				break ;				
-			// case AuthCode.ALREADY_LOGIN:
-			// 	error = `User already loggin in`;
-			// 	break ;
+			case AuthCode.ALREADY_LOGIN:
+				error = `User already loggin in`;
+				break ;
 		}
 		console.log(`Cannot login user: ${error}`);
 		return reply.code(401).send({ result: result, message: error })

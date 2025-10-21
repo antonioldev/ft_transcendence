@@ -805,36 +805,36 @@ export function getUserGameHistoryRows(userId: number) {
 	}
 }
 
-// // // Session cookie creation to ensure no double login and refresh doesn't logout user
-// export function createSession(userId: number): string | undefined {
-// 	try {
-// 		userId = nonNegInt(userId, 'user id');
-// 		if (userId === -1) {
-// 			console.error("error in createSession, userId is invalid");
-// 			return undefined;
-// 		}
-// 		const now = nowSec();
-// 		deleteSessionExpired(userId);
+// // Session cookie creation to ensure no double login and refresh doesn't logout user
+export function createSession(userId: number): string | undefined {
+	try {
+		userId = nonNegInt(userId, 'user id');
+		if (userId === -1) {
+			console.error("error in createSession, userId is invalid");
+			return undefined;
+		}
+		const now = nowSec();
+		deleteSessionExpired(userId);
 
-// 		// Block if there is any active session for this user
-// 		const active = db.prepare(
-// 		'SELECT id FROM sessions WHERE user_id=? AND expires_at > ? LIMIT 1'
-// 		).get(userId, now) as { id: string } | undefined;
-// 		if (active !== undefined) return undefined;
+		// Block if there is any active session for this user
+		const active = db.prepare(
+		'SELECT id FROM sessions WHERE user_id=? AND expires_at > ? LIMIT 1'
+		).get(userId, now) as { id: string } | undefined;
+		if (active !== undefined) return undefined;
 		
-// 		const sid = crypto.randomBytes(32).toString('hex');
-// 		const expiresAt = now + HOUR;
-// 		db.prepare(
-// 		`INSERT INTO sessions (id, user_id, created_at, expires_at, user_agent, ip)
-// 		VALUES (?,?,?,?,?,?)`
-// 		).run(sid, userId, now, expiresAt, null, null);
+		const sid = crypto.randomBytes(32).toString('hex');
+		const expiresAt = now + HOUR;
+		db.prepare(
+		`INSERT INTO sessions (id, user_id, created_at, expires_at, user_agent, ip)
+		VALUES (?,?,?,?,?,?)`
+		).run(sid, userId, now, expiresAt, null, null);
 
-// 		return sid;
-// 	} catch (err) {
-// 		console.error('Error in createSession:', err);
-// 		return undefined;
-// 	}
-// }
+		return sid;
+	} catch (err) {
+		console.error('Error in createSession:', err);
+		return undefined;
+	}
+}
 
 export function deleteSessionExpired(userId: number): boolean {
 	try {
