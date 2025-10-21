@@ -20,7 +20,7 @@ export type TextureSet = {
 export type ActorConfig = {
 	model: string;
 	count: number;
-	type: 'flying' | 'swimming' | 'floating';
+	type: 'flying' | 'swimming' | 'floating' | 'walking';
 	scale?: number;
 };
 

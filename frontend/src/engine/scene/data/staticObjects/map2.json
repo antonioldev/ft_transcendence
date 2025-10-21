@@ -199,6 +199,12 @@
   "wreck": [
     { "model": "assets/model/map2/boat.glb", "pos": [0.00, 30.70, 2.00], "rot": 0.00, "scale": 15.00 },
     { "model": "assets/model/map2/boat.glb", "pos": [-7.60, -30.06, 2.35], "rot": 0.00, "scale": 15.00 }
+  ],
+  "tresure": [
+    { "model": "assets/model/map2/tresure.glb", "pos": [14.42, -14.35, -0.07], "rot": 0.70, "scale": 1.85 },
+    { "model": "assets/model/map2/tresure.glb", "pos": [15.09, 14.00, 0.16], "rot": 0.45, "scale": 1.34 },
+    { "model": "assets/model/map2/tresure.glb", "pos": [-16.13, 11.19, 0.26], "rot": 1.00, "scale": 1.48 },
+    { "model": "assets/model/map2/tresure.glb", "pos": [-14.97, -8.24, -0.09], "rot": 1.10, "scale": 1.96 }
   ]
 }
 

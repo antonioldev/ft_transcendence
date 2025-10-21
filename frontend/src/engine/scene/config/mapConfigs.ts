@@ -19,6 +19,9 @@ import map1TreesRaw from "../data/staticObjects/map1.json";
 const map1Trees = map1TreesRaw as {
 	tree1: StaticObject[];
 	tree2: StaticObject[];
+	tree3: StaticObject[];
+	grass: StaticObject[];
+	flower: StaticObject[];
 };
 
 import map2UnderwaterRaw from "../data/staticObjects/map2.json";
@@ -28,6 +31,7 @@ const map2Underwater = map2UnderwaterRaw as {
 	coral1: StaticObject[];
 	coral2: StaticObject[];
 	wreck: StaticObject[];
+	tresure: StaticObject[];
 };
 
 import map3beachRaw from "../data/staticObjects/map3.json";
@@ -47,11 +51,26 @@ import map5VolcanoRaw from "../data/staticObjects/map5.json";
 const map5Volcano = map5VolcanoRaw as {
 	stone: StaticObject[];
 	stone2: StaticObject[];
+	volcano: StaticObject[];
 }
 
 import map6SpaceRaw from "../data/staticObjects/map6.json";
 const map6Space = map6SpaceRaw as {
 	asteroid: StaticObject[];
+}
+
+import map7HalloweenRaw from "../data/staticObjects/map7.json";
+const map7Halloween = map7HalloweenRaw as {
+	arch: StaticObject[];
+	fence: StaticObject[];
+	fenceBroken: StaticObject[];
+	floor: StaticObject[];
+	grave: StaticObject[];
+	pumpkin: StaticObject[];
+	tree1: StaticObject[];
+	tree2: StaticObject[];
+	tree3: StaticObject[];
+	grass: StaticObject[];
 }
 
 const ASSET_BASE = "assets";
@@ -114,7 +133,7 @@ export const MAP_CONFIGS: Record<string, MapAssetConfig> = {
 			...map0Buildings.building4
 		],
 		skybox: AssetPaths.sky('map0', 'sky4'),
-		fogColor: new Color3(0.043, 0.043, 0.122),
+		fogColor: new Color3(0.04, 0.04, 0.12),
 		fogIntensity: 0.03,
 		particleType: ParticleEffectType.RAIN,
 		light: 0.4,
@@ -130,7 +149,10 @@ export const MAP_CONFIGS: Record<string, MapAssetConfig> = {
 		terrain: createTextureSet('map1', 'terrain', "#228B22", true),
 		staticObjects: [
 			...map1Trees.tree1,
-			...map1Trees.tree2
+			...map1Trees.tree2,
+			...map1Trees.tree3,
+			...map1Trees.grass,
+			...map1Trees.flower
 		],
 		skybox: AssetPaths.sky('map1', 'sky'),
 		fogColor: null,
@@ -155,7 +177,8 @@ export const MAP_CONFIGS: Record<string, MapAssetConfig> = {
 			...map2Underwater.rock2,
 			...map2Underwater.coral1,
 			...map2Underwater.coral2,
-			...map2Underwater.wreck
+			...map2Underwater.wreck,
+			...map2Underwater.tresure
 		],
 		skybox: null,
 		fogColor: new Color3(0.0, 0.2, 0.3),
@@ -188,7 +211,7 @@ export const MAP_CONFIGS: Record<string, MapAssetConfig> = {
 	},
 	map4: {
 		ground: createTextureSet('map4', 'ground', "#ffffff"),
-		walls: createTextureSet('map4', 'ground', "#ffffff"),
+		walls: createTextureSet('map4', 'terrain', "#ffffff"),
 		ball: simpleColor("#ff4646"),
 		paddle: simpleColor("#405cfd"),
 		terrain: createTextureSet('map4', 'terrain', "#ffffff", true),
@@ -213,7 +236,8 @@ export const MAP_CONFIGS: Record<string, MapAssetConfig> = {
 		terrain: simpleColor("#FF4500"),
 		staticObjects: [
 			...map5Volcano.stone,
-			...map5Volcano.stone2
+			...map5Volcano.stone2,
+			...map5Volcano.volcano
 		],
 		skybox:AssetPaths.sky('map5', 'sky2'),
 		fogColor: null,
@@ -239,16 +263,42 @@ export const MAP_CONFIGS: Record<string, MapAssetConfig> = {
 		light: 0.2,
 		glow: 0.4,
 		actors: [
-			{ model: 'assets/model/map6/asteroidGroup.glb', count: 2, type: 'floating', scale: 1 },
+			{ model: 'assets/model/map6/asteroidGroup.glb', count: 2, type: 'floating', scale: 1 }
 		]
+	},
+	map7: {
+		ground: simpleColor("#000000"),
+		walls: simpleColor("#000000"),
+		ball: simpleColor("#a5aa06"),
+		paddle: simpleColor("#fd8610"),
+		terrain: createTextureSet('map7', 'terrain', "#01180", false),
+		staticObjects: [
+			...map7Halloween.arch,
+			...map7Halloween.fence,
+			...map7Halloween.fenceBroken,
+			...map7Halloween.floor,
+			...map7Halloween.grave,
+			...map7Halloween.pumpkin,
+			...map7Halloween.tree1,
+			...map7Halloween.tree2,
+			...map7Halloween.tree3,
+			... map7Halloween.grass
+		],
+		skybox:AssetPaths.sky('map6', 'sky'),
+		fogColor: new Color3(1.0, 0.5, 0.0),
+		fogIntensity: 0.007,
+		particleType: null,
+		light: 0.3,
+		glow: 0.3,
+		actors: [{ model: 'assets/model/map7/ghost.glb', count: 4, type: 'walking', scale: 1 }]
 	}
 };
 export const TEXTURE_SCALING = {
 	standardDivisor: 10,
 	multipliers: {
 		[MAP_OBJECT_TYPE.GROUND]: 1.0,
-		[MAP_OBJECT_TYPE.WALLS]: 1.0,
-		[MAP_OBJECT_TYPE.TERRAIN]: 1,
+		[MAP_OBJECT_TYPE.WALLS]: 4.0,
+		[MAP_OBJECT_TYPE.TERRAIN]: 2,
 		[MAP_OBJECT_TYPE.PLAYER]: 0.33,
 		[MAP_OBJECT_TYPE.BALL]: 13.33
 	}

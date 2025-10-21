@@ -14,8 +14,8 @@ export async function createFlyingActor(
 	const speed = 0.08 + Math.random() * 0.12;
 	const height = 3 + Math.random() * 3;
 	const sidePosition = -30 + Math.random() * 60;
-	let positionZ = flyForward ? -50 : 50;
-	const startOffset = Math.random() * 60;
+	let positionZ = flyForward ? -70 : 70;
+	const startOffset = 10;
 	positionZ += flyForward ? -startOffset : startOffset;
 
 	let time = Math.random() * Math.PI * 2;
@@ -53,7 +53,7 @@ export async function createSwimmingActor(
 ): Promise<any> {
 	actor.scaling = new Vector3(scale, scale, scale);
 	
-	const speed = 0.02 + Math.random() * 0.03;
+	const speed = 0.005 + Math.random() * 0.01;
 	const height = 1 + Math.random() * 7;
 	const depth = -50 + Math.random() * 100;
 	let positionX = swimLeft ? 30 : -30;
@@ -151,6 +151,38 @@ export async function createFloatingActor(
 	return actor;
 }
 
+export async function createWalkingActor(
+	scene: Scene,
+	actor: any,
+	scale: number = 1
+): Promise<any> {
+	actor.scaling = new Vector3(scale, scale, scale);
+	
+	const speed = 0.02 + Math.random() * 0.03;
+	const height = 0 + Math.random() * 3;
+	const depth = -18 + Math.random() * 36;
+	let positionX = 30;
+
+	let time = Math.random() * Math.PI * 2;
+	const verticalSpeed = 0.005 + Math.random() * 0.005;
+	const verticalAmplitude = 0.1 + Math.random() * 0.5;
+
+	scene.onBeforeRenderObservable.add(() => {
+		positionX += speed;
+		if (positionX > 30) positionX = -30;
+
+		time += verticalSpeed;
+		const verticalOffset = Math.sin(time) * verticalAmplitude;
+		
+		actor.position.x = positionX;
+		actor.position.y = height + verticalOffset;
+		actor.position.z = depth;
+	});
+	
+	return actor;
+	
+}
+
 export async function createActor(
 	scene: Scene,
 	config: ActorConfig,
@@ -169,6 +201,8 @@ export async function createActor(
 		case 'floating':
 			const floatRight = index % 2 === 1;
 			return createFloatingActor(scene, actor, scale, floatRight);
+		case 'walking':
+			return createWalkingActor(scene, actor, scale);
 		default:
 			throw new Error(`Unknown actor type: ${config.type}`);
 	}

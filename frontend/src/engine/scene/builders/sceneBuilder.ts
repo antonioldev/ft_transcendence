@@ -127,7 +127,7 @@ async function buildThematicEnvironment(
 
 	onProgress?.(60);
 
-	if (map_asset === MAP_CONFIGS.map0 || map_asset === MAP_CONFIGS.map4 || map_asset === MAP_CONFIGS.map6) {
+	if (map_asset === MAP_CONFIGS.map0 || map_asset === MAP_CONFIGS.map1 || map_asset === MAP_CONFIGS.map4 || map_asset === MAP_CONFIGS.map6) {
 		for (const propData of map_asset.staticObjects) {
 			const mesh = await createStaticObject(scene, propData); 
 			themeObjects?.props.push(mesh);
