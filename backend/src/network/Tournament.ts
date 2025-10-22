@@ -114,7 +114,7 @@ abstract class AbstractTournament extends AbstractGameSession{
 			if (!this.client_match_map) continue ;
 			for (const player of [player_left, player_right]) {
 				if (!(player instanceof CPU)) {
-					this.client_match_map.set(player.client.id, match);
+					this.client_match_map.set(player.client.sid, match);
 				}
 			}
 		}
@@ -320,12 +320,12 @@ export class TournamentRemote extends AbstractTournament {
 		match.next.add_player(winner);
 
 		if (winner instanceof Player) {
-			this.readyClients.delete(winner.client.id);
-			this.client_match_map.set(winner.client.id, match.next);
+			this.readyClients.delete(winner.client.sid);
+			this.client_match_map.set(winner.client.sid, match.next);
 			match.clients.delete(winner.client);
 		}
 		if (match.game?.loser instanceof Player) {
-			this.client_match_map.delete(match.game.loser.client.id);
+			this.client_match_map.delete(match.game.loser.client.sid);
 			this.defeated_clients.add(match.game.loser.client);
 			match.clients.delete(match.game?.loser?.client);
 		}
@@ -380,7 +380,7 @@ export class TournamentRemote extends AbstractTournament {
 	}
 
 	canClientControlGame(client: Client) {
-		const match = this.findMatch(client.id);
+		const match = this.findMatch(client.sid);
 		if (!match || !this.active_matches.includes(match)) {
 			console.error(`Client ${client.username} not in any active match`);
 			return false;
@@ -406,9 +406,9 @@ export class TournamentRemote extends AbstractTournament {
 			this.remove_player(quitter);
 		}
 		else if (this.is_running()) {
-			const match = this.findMatch(quitter.id);
+			const match = this.findMatch(quitter.sid);
 			if (match) {
-				this.client_match_map.delete(quitter.id);
+				this.client_match_map.delete(quitter.sid);
 				if (this.client_match_map.size === 0) {
 					console.log(`Last undefeated player quit tournament ${this.id}`);
 					this.stop();

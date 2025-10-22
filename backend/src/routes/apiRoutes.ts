@@ -4,7 +4,7 @@ import * as db from "../data/validation.js";
 import { gameManager } from '../network/GameManager.js';
 import { AuthCode, GameMode, AiDifficulty } from '../shared/constants.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
-import { removeClientConnection, findOrCreateClient, getClientConnection, createClientConnection } from './utils.js';
+import { getClientConnection, createClientConnection } from './utils.js';
 
 
 /* --- HTTP Endpoints --- */

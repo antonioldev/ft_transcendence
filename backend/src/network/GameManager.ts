@@ -9,11 +9,11 @@ import { GAME_CONFIG } from '../shared/gameConfig.js';
  * Manages game sessions and player interactions within the game.
  */
 class GameManager {
-    private clientGamesMap: Map<string, AbstractGameSession> = new Map(); // maps client id to gameSession
+    private clientSidGamesMap: Map<string, AbstractGameSession> = new Map(); // maps client sid to gameSession
 
     addClient(client: Client, gameSession: AbstractGameSession) {
         gameSession.add_client(client);
-        this.clientGamesMap.set(client.id, gameSession);
+        this.clientSidGamesMap.set(client.sid, gameSession);
     }
 
     /**
@@ -22,13 +22,13 @@ class GameManager {
      * @param client - The client to be removed from game sessions.
      */
     removeClient(client: Client): void {
-        const gameSession = this.clientGamesMap.get(client.id);
+        const gameSession = this.clientSidGamesMap.get(client.sid);
         if (!gameSession) {
-            console.warn(`Cannot remove Client ${client.username}:${client.username}: not in any game`);
+            console.warn(`Cannot remove Client ${client.username}: not in any game`);
             return;
         }
         gameSession.handlePlayerQuit(client);
-        this.clientGamesMap.delete(client.id);
+        this.clientSidGamesMap.delete(client.sid);
         console.log(`Client ${client.username}:${client.username} removed from game`);
     }
 
@@ -63,7 +63,7 @@ class GameManager {
     findOrCreateGame(mode: GameMode, capacity?: number): AbstractGameSession {
         if (mode === GameMode.TWO_PLAYER_REMOTE || mode === GameMode.TOURNAMENT_REMOTE) /*Remote Games*/{
             // Try to find waiting game
-            for (const gameSession of new Set(this.clientGamesMap.values())) {
+            for (const gameSession of new Set(this.clientSidGamesMap.values())) {
                 if (gameSession.mode === mode && !gameSession.full && !gameSession.is_running()) {
                     if (mode === GameMode.TOURNAMENT_REMOTE && gameSession.client_capacity !== capacity) {
                         continue ;
@@ -96,7 +96,7 @@ class GameManager {
     endGame(gameSession: AbstractGameSession): void {
         gameSession.stop();
         for (const client of gameSession.clients) {
-            this.clientGamesMap.delete(client.id);
+            this.clientSidGamesMap.delete(client.sid);
         }
         console.log(`GameSession ended: ${gameSession.id}`);
     }
@@ -107,7 +107,7 @@ class GameManager {
      * @returns The game object or null if the client is not in a game.
      */
     findGameSession(client: Client): AbstractGameSession | undefined {
-        return (this.clientGamesMap.get(client.id));
+        return (this.clientSidGamesMap.get(client.sid));
     }
 }
 

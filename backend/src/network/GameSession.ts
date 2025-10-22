@@ -70,7 +70,7 @@ export abstract class AbstractGameSession {
 		if (!this.clients.has(client)) return ;
 
 		this.clients.delete(client);
-		this.readyClients.delete(client.id);
+		this.readyClients.delete(client.sid);
 		
 		if (this.clients.size === 0) {
 			this.stop();
@@ -131,7 +131,7 @@ export abstract class AbstractGameSession {
 			console.warn(`Client ${client.username} not authorized to resume game`);
 			return;
 		}
-		const game = this.getGame(client.id);
+		const game = this.getGame(client.sid);
 		if (!game) {
 			console.log(`Game ${this.id} is not running, cannot resume`);
 			return ;
@@ -141,7 +141,7 @@ export abstract class AbstractGameSession {
 			return ;
 		}
 
-		console.log(`Game ${this.id} resumed by client ${client.id}`);
+		console.log(`Game ${this.id} resumed by client ${client.sid}`);
 		game.resume();
 	}
 
@@ -150,7 +150,7 @@ export abstract class AbstractGameSession {
 			console.warn(`Client ${client.username} not authorized to pause game`);
 			return;
 		}
-		const game = this.getGame(client.id);
+		const game = this.getGame(client.sid);
 		if (!game || !game.is_running()) {
 			console.log(`Game ${this.id} is not running, cannot pause`);
 			return ;
@@ -160,7 +160,7 @@ export abstract class AbstractGameSession {
 			return ;
 		}
 
-		console.log(`Game ${this.id} paused by client ${client.id}`);
+		console.log(`Game ${this.id} paused by client ${client.sid}`);
 		game.pause();
 	}
 
@@ -176,7 +176,7 @@ export abstract class AbstractGameSession {
 			console.warn(`Client ${client.username} not authorized to control game`);
 			return;
 		}
-		const game = this.getGame(client.id);
+		const game = this.getGame(client.sid);
 		if (!game) {
 			console.error("Error: cannot activate powerup, game does not exist");
 			return ;
@@ -195,12 +195,12 @@ export abstract class AbstractGameSession {
 		}
 	
 		const input: PlayerInput = {
-			id: client.id,
+			id: client.sid,
 			type: MessageType.PLAYER_INPUT,
 			side: data.side,
 			dx: data.direction
 		}
-		this.enqueue(input, client.id);
+		this.enqueue(input, client.sid);
 	}
 
 	send_lobby(client: Client) {
