@@ -163,6 +163,7 @@ export class AppManager {
 
 	private selectViewMode(mode: ViewMode): void {
 		this.selectedViewMode = mode;
+		currentSettings.viewMode = mode;
 		uiManager.updateViewModeButtonStyles(this.selectedViewMode);
 	}
 
