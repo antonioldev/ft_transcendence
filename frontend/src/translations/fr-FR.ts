@@ -98,10 +98,5 @@ export const french: Translation = {
     pausePowerupsMulti_P1: 'Joueur 1: C / V / B',
     pausePowerupsMulti_P2: 'Joueur 2: I / O / P',
     pausePowerupsSolo: 'Activer: 1 / 2 / 3',
-    pauseObjectiveText: 'Marquez {points} points en frappant\nla balle au-delà de votre adversaire!',
-    settings: 'Paramètres',
-    language: 'Langue',
-    music: 'Musique',
-    soundEffects: 'Effets Sonores',
-    scene3D: 'Scène 3D'
+    pauseObjectiveText: 'Marquez {points} points en frappant\nla balle au-delà de votre adversaire!'
 };

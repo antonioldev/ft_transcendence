@@ -2,15 +2,8 @@
 import * as dbFunction from '../data/database.js';
 import { verifyPassword, hashPassword } from './authentification.js';
 import { UserProfileData, UserStats, GameHistoryEntry } from '../shared/types.js';
+import { AuthCode } from '../shared/constants.js';
 
-/**
- * Check login credentials.
- * Returns:
- *   0 = success
- *   1 = user not found
- *   2 = wrong password
- *   3 = session creation failed
- */
 export async function verifyLogin(username: string, password: string): Promise<number> {
 	const isEmail = username.includes('@');
 
@@ -31,23 +24,23 @@ export async function verifyLogin(username: string, password: string): Promise<n
 		}
 	}
 
-	if (!userExists) return 1;
+	if (!userExists) return AuthCode.NOT_FOUND;
 
 	// Verify password against stored hash
 	const storedPwd = dbFunction.getUserPwd(user_email);
 	console.log('verifyLogin: comparing given password with stored hash', password, storedPwd);
 
 	const isMatch = await verifyPassword(storedPwd, password);
-	if (!isMatch) return 2;
+	if (!isMatch) return AuthCode.BAD_CREDENTIALS;
 
 	const userId = dbFunction.retrieveUserID(username);
 	const sid = dbFunction.createSession(userId);
 	if (!sid) {
 		console.log(`verifyLogin: failed to create session, sid=${sid}`);
-		return 3;
+		return AuthCode.ALREADY_LOGIN;
 	}
 
-	return 0;
+	return AuthCode.OK;
 }
 
 /**
@@ -77,37 +70,37 @@ export async function logoutUser(username: string): Promise<number> {
 	}
 }
 
-/**
- * Get user info from a session id.
- */
-export function getUserBySession(sid: string): { id: number; username: string; email?: string } | null {
-	try {
-		const row = dbFunction.getUserBySession(sid);
-		console.log(
-			'[getUserBySession]',
-			row ? `${row.id}, ${row.username}, ${row.email}` : 'no user'
-		);
-		return row ?? null;
-	} catch (err) {
-		console.error('getUserBySession error:', err);
-		return null;
-	}
-}
+// /**
+//  * Get user info from a session id.
+//  */
+// export function getUserBySession(sid: string): { id: number; username: string; email?: string } | null {
+// 	try {
+// 		const row = dbFunction.getUserBySession(sid);
+// 		console.log(
+// 			'[getUserBySession]',
+// 			row ? `${row.id}, ${row.username}, ${row.email}` : 'no user'
+// 		);
+// 		return row ?? null;
+// 	} catch (err) {
+// 		console.error('getUserBySession error:', err);
+// 		return null;
+// 	}
+// }
 
-/**
- * Get session id from a username.
- */
-export function getSessionByUsername(username: string): string | null | undefined {
-	try {
-		const userId = dbFunction.retrieveUserID(username);
-		const sid = dbFunction.retrieveSessionID(userId);
-		console.log(`getSessionByUsername: got sid=${sid}`);
-		if (sid !== undefined || sid !== null) return sid;
-	} catch (err) {
-		console.error('getSessionByUsername error', err);
-		return null;
-	}
-}
+// /**
+//  * Get session id from a username.
+//  */
+// export function getSessionByUsername(username: string): string | null | undefined {
+// 	try {
+// 		const userId = dbFunction.retrieveUserID(username);
+// 		const sid = dbFunction.retrieveSessionID(userId);
+// 		console.log(`getSessionByUsername: got sid=${sid}`);
+// 		if (sid !== undefined || sid !== null) return sid;
+// 	} catch (err) {
+// 		console.error('getSessionByUsername error', err);
+// 		return null;
+// 	}
+// }
 
 /**
  * Register a new user with hashed password.
@@ -188,7 +181,7 @@ export function getGameHistoryForUser(username: string): GameHistoryEntry[] | un
 		opponent: r.opponent ?? 'error',
 		score: r.yourScore != null && r.opponentScore != null ? `${r.yourScore} - ${r.opponentScore}` : 'error',
 		result: r.didWin == null ? 'error' : r.didWin ? 'Win' : 'Loss',
-		isTournament: r.isTournament ? 'Yes' : 'No',
+		isTournament: r.isTournament ? 'No' : 'Yes',
 		duration: r.durationSeconds ?? 999,
 	}));
 }
@@ -207,7 +200,7 @@ export function findOrCreateGoogleUser(profile: { sub: string; name: string; ema
 		dbFunction.createGoogleUser(profile);
 
 	const userId = dbFunction.retrieveUserID(profile.name);
-	dbFunction.createSession(userId);
+	// dbFunction.createSession(userId);
 
 	return dbFunction.findUserByGoogleId(profile.sub);
 }
@@ -322,8 +315,6 @@ export function updatePlayers(winnerId: number, looserId: number, tournament: nu
 
 	if (tournament) {
 		dbFunction.updateUserTournament(looserId, 1);
-		dbFunction.updateUserTournament(winnerId, 1);
-		dbFunction.updateUserTournamentWin(winnerId, 1);
 	}
 }
 

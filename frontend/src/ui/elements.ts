@@ -3,123 +3,123 @@ import { Logger } from "../utils/LogManager.js";
 // Centralized element ID constants to eliminate hard-coded strings throughout the application.
 // All DOM element IDs should be defined here and referenced via these constants.
 
+export const UI_CLASSES = {
+	BUTTON_SELECTED: 'bg-orange text-blue-background font-poppins-semibold text-lg px-4 py-3 transition-colors duration-200 border border-orange rounded-sm min-w-[120px]',
+	BUTTON_UNSELECTED: 'bg-transparent text-light-green font-poppins-semibold text-lg px-4 py-3 transition-colors duration-200 border border-light-green rounded-sm min-w-[120px]',
+	BUTTON_NAV: 'text-light-green hover:text-white transition-colors duration-200 font-poppins-semibold text-lg px-2 rounded-sm',
+
+	// Form styles
+	FORM_INPUT: 'form-input block rounded-sm bg-transparent border border-light-green px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-light-green focus:outline-2 focus:outline-orange font-sans',
+	FORM_LABEL: 'block text-sm sm:text-base font-medium text-light-green font-sans',
+
+	// Container styles
+	AUTH_CONTAINER: 'w-full max-w-sm sm:max-w-md mx-auto space-y-6 sm:space-y-8',
+
+	// Text styles
+	TITLE_PRIMARY: 'text-center uppercase text-xl sm:text-2xl font-bold tracking-tight text-light-green font-sans',
+	TEXT_REGULAR: 'text-light-green font-sans text-xs sm:text-sm'
+} as const;
+
+
 export const EL = {
-  // ========================================
-  // MAIN SCREENS
-  // ========================================
-  SCREENS: {
-	MAIN_MENU: 'main-menu',
-	LOGIN_MODAL: 'login-modal', 
-	REGISTER_MODAL: 'register-modal',
-	GAME_MODE_OVERLAY: 'game-mode-overlay',
-	PLAYER_SETUP_OVERLAY: 'player-setup-overlay',
-	GAME_3D: 'game-3d',
-	STATS_DASHBOARD: 'stats-dashboard',
-	SETTINGS_MENU: 'settings-menu'
-  },
+// ========================================
+// MAIN SCREENS
+// ========================================
+	SCREENS: {
+		MAIN_MENU: 'main-menu',
+		LOGIN_MODAL: 'login-modal', 
+		REGISTER_MODAL: 'register-modal',
+		GAME_MODE_OVERLAY: 'game-mode-overlay',
+		PLAYER_SETUP_OVERLAY: 'player-setup-overlay',
+		GAME_3D: 'game-3d',
+		STATS_DASHBOARD: 'stats-dashboard'
+	},
 
-  // ========================================
-  // NAVIGATION & BUTTONS
-  // ========================================
-  BUTTONS: {
-	// Main menu buttons
-	PLAY: 'play-btn',
-	LOGIN: 'login-btn',
-	REGISTER: 'register-btn',
-	LOGOUT: 'logout-btn',
+// ========================================
+// NAVIGATION & BUTTONS
+// ========================================
+	BUTTONS: {
+		// Main menu buttons
+		PLAY: 'play-btn',
+		LOGIN: 'login-btn',
+		REGISTER: 'register-btn',
+		LOGOUT: 'logout-btn',
 
-	// Navigation buttons
-	MODE_BACK: 'mode-back',
-	SETUP_BACK: 'setup-back',
-	LOGIN_BACK: 'login-back',
-	REGISTER_BACK: 'register-back',
-	DASHBOARD_BACK: 'dashboard-back',
-	SETTINGS_BACK: 'settings-back',
-	SOLO_DIFFICULTY_BACK: 'solo-difficulty-back',
-	SOLO_DIFFICULTY_FORWARD: 'solo-difficulty-forward',
-	TOURNAMENT_NUMBER_BACK: 'tournament-number-back',
-	TOURNAMENT_NUMBER_FORWARD: 'tournament-number-forward',
-	TOURNAMENT_ONLINE_NUMBER_BACK: 'tournament-online-number-back',
-	TOURNAMENT_ONLINE_NUMBER_FORWARD: 'tournament-online-number-forward',
+		// Navigation buttons
+		BACK: 'back',
+		FORWARD: 'forward',
+		MODE_BACK: 'mode-back',
+		SETUP_BACK: 'setup-back',
+		LOGIN_BACK: 'login-back',
+		REGISTER_BACK: 'register-back',
+		DASHBOARD_BACK: 'dashboard-back',
+		SOLO_DIFFICULTY_BACK: 'solo-difficulty-back',
+		SOLO_DIFFICULTY_FORWARD: 'solo-difficulty-forward',
+		TOURNAMENT_NUMBER_BACK: 'tournament-number-back',
+		TOURNAMENT_NUMBER_FORWARD: 'tournament-number-forward',
+		TOURNAMENT_ONLINE_NUMBER_BACK: 'tournament-online-number-back',
+		TOURNAMENT_ONLINE_NUMBER_FORWARD: 'tournament-online-number-forward',
 
+		// View mode navigation
+		VIEW_MODE_CLASSIC: 'view-mode-classic',
+		VIEW_MODE_IMMERSIVE: 'view-mode-immersive',
 
-	// View mode navigation
-  VIEW_MODE_CLASSIC: 'view-mode-classic',
-  VIEW_MODE_IMMERSIVE: 'view-mode-immersive',
+		// Form submission buttons
+		LOGIN_TITLE: 'login-title',
+		REGISTER_TITLE: 'register-title',
+		LOGIN_SUBMIT: 'login-submit',
+		REGISTER_SUBMIT: 'register-submit',
+		START_GAME: 'start-game',
+		GOOGLE_LOGIN: 'google-login-btn-container',
+		FORGOT_PASSWORD: 'forgot-password',
+		NOT_REGISTERED: 'not-registered',
+		ALREADY_REGISTERED: 'already-registered',
 
-  // Form submission buttons
-  LOGIN_TITLE: 'login-title',
-  REGISTER_TITLE: 'register-title',
-  LOGIN_SUBMIT: 'login-submit',
-  REGISTER_SUBMIT: 'register-submit',
-  START_GAME: 'start-game',
-  GOOGLE_LOGIN: 'google-login-btn-container',
-  FORGOT_PASSWORD: 'forgot-password',
-  NOT_REGISTERED: 'not-registered',
-  ALREADY_REGISTERED: 'already-registered',
+		// Modal switching
+		SHOW_REGISTER: 'show-register',
+		SHOW_LOGIN: 'show-login',
 
-	// Modal switching
-	SHOW_REGISTER: 'show-register',
-	SHOW_LOGIN: 'show-login',
+		// Dashboard view
+		DASHBOARD: 'dashboard-btn'
+	},
 
-	// Dashboard view
-	DASHBOARD: 'dashboard-btn',
-	SETTINGS: 'settings-btn'
-  },
+// ========================================
+// GAME MODE BUTTONS
+// ========================================
+	GAME_MODES: {
+		SOLO: 'solo-mode',			  // GameMode.SINGLE_PLAYER
+		LOCAL: 'local-mode',			// GameMode.TWO_PLAYER_LOCAL  
+		ONLINE: 'online-mode',		  // GameMode.TWO_PLAYER_REMOTE
+		TOURNAMENT: 'tournament-mode',  // GameMode.TOURNAMENT_LOCAL
+		TOURNAMENT_ONLINE: 'tournament-online-mode' // GameMode.TOURNAMENT_REMOTE
+	},
 
-  // ========================================
-  // GAME MODE BUTTONS
-  // ========================================
-  GAME_MODES: {
-	SOLO: 'solo-mode',			  // GameMode.SINGLE_PLAYER
-	LOCAL: 'local-mode',			// GameMode.TWO_PLAYER_LOCAL  
-	ONLINE: 'online-mode',		  // GameMode.TWO_PLAYER_REMOTE
-	TOURNAMENT: 'tournament-mode',  // GameMode.TOURNAMENT_LOCAL
-	TOURNAMENT_ONLINE: 'tournament-online-mode' // GameMode.TOURNAMENT_REMOTE
-  },
+// ========================================
+// AUTHENTICATION FORMS
+// ========================================
+	AUTH: {
+		// Login form
+		LOGIN_USERNAME: 'login-username',
+		LOGIN_PASSWORD: 'login-password',
+		LOGIN_FORM: 'login-form',
 
-  // ========================================
-  // AUTHENTICATION FORMS
-  // ========================================
-  AUTH: {
-	// Login form
-	LOGIN_USERNAME: 'login-username',
-	LOGIN_PASSWORD: 'login-password',
-	LOGIN_FORM: 'login-form',
+		// Register form  
+		REGISTER_USERNAME: 'register-username',
+		REGISTER_EMAIL: 'register-email',
+		REGISTER_PASSWORD: 'register-password',
+		REGISTER_CONFIRM_PASSWORD: 'register-confirm-password',
+		REGISTER_FORM: 'register-form'
+	},
 
-	// Register form  
-	REGISTER_USERNAME: 'register-username',
-	REGISTER_EMAIL: 'register-email',
-	REGISTER_PASSWORD: 'register-password',
-	REGISTER_CONFIRM_PASSWORD: 'register-confirm-password',
-	REGISTER_FORM: 'register-form'
-  },
-
-  // ========================================
-  // PLAYER SETUP FORMS
-  // ========================================
-  PLAYER_SETUP: {
-// 	// Solo player setup
-// 	PLAYER1_NAME: 'player1-name',
-
-// 	// Local multiplayer setup
-// 	PLAYER1_NAME_LOCAL: 'player1-name-local',
-// 	PLAYER2_NAME_LOCAL: 'player2-name-local',
-
-// 	// Online setup (if needed)
-// 	PLAYER1_NAME_ONLINE: 'player1-name-online',
-
-// 	// Tournament setup
-// 	PLAYER1_NAME_TOURNAMENT: 'player1-name-tournament',
-// 	PLAYER2_NAME_TOURNAMENT: 'player2-name-tournament',
-// 	PLAYER3_NAME_TOURNAMENT: 'player3-name-tournament',
-// 	PLAYER4_NAME_TOURNAMENT: 'player4-name-tournament',
-
-	// Setup forms
-	SOLO_SETUP: 'solo-setup',
-	TWO_PLAYERS_SETUP: 'two-players-setup',
-	TOURNAMENT_SETUP: 'offline-tournament-setup',
-  },
+// ========================================
+// PLAYER SETUP FORMS
+// ========================================
+	PLAYER_SETUP: {
+		// Setup forms
+		SOLO_SETUP: 'solo-setup',
+		TWO_PLAYERS_SETUP: 'two-players-setup',
+		TOURNAMENT_SETUP: 'offline-tournament-setup',
+	},
 
 	PLAYER_COLLECTION: {
 		FORM: 'player-setup',
@@ -128,65 +128,67 @@ export const EL = {
 		ADD_CPU: 'add-cpu',
 	},
 
-  // ========================================
-  // UI DISPLAY ELEMENTS
-  // ========================================
-  DISPLAY: {
-	// Main title and headers
-	MAIN_TITLE: 'main-title',
-	MODE_TITLE: 'mode-title',
-	SETUP_TITLE: 'setup-title',
+// ========================================
+// UI DISPLAY ELEMENTS
+// ========================================
+	DISPLAY: {
+		// Main title and headers
+		MAIN_TITLE: 'main-title',
+		MODE_TITLE: 'mode-title',
+		SETUP_TITLE: 'setup-title',
 
-	VIEW_MODE_DISPLAY: 'view-mode-display',
+		// Language selector
+		LANGUAGE_SELECT: 'language_select',
+		VIEW_MODE_DISPLAY: 'view-mode-display',
 
-  // User info display
-  USER_INFO: 'user-info',
-  USER_NAME: 'user-name',
-  AUTH_BUTTONS: 'auth-buttons',
-  GREETING: 'greeting',
+		// User info display
+		USER_INFO: 'user-info',
+		USER_NAME: 'user-name',
+		AUTH_BUTTONS: 'auth-buttons',
+		GREETING: 'greeting',
 
-	// Connection status
-	CONNECTION_STATUS: 'connection-status'
-  },
+		// Connection status
+		CONNECTION_STATUS: 'connection-status'
+	},
 
-	// ========================================
-	// DASHBOARD ELEMENTS
-	// ========================================
+// ========================================
+// DASHBOARD ELEMENTS
+// ========================================
 	DASHBOARD: {
-	USER_STATS_CHART: 'user-stats-chart',
-	GAME_HISTORY_TABLE: 'game-history-table'
-  },
-  // ========================================
-  // GAME ELEMENTS
-  // ========================================
-  GAME: {
-	// Canvas
-	CANVAS_3D: 'game-canvas-3d',
+		USER_STATS_CHART: 'user-stats-chart',
+		GAME_HISTORY_TABLE: 'game-history-table'
+	},
 
-	LOADING_SCREEN: 'loading-screen',
-	LOADING_TEXT: 'loading',
-	PROGRESS_FILL: 'progress-fill',
-	PROGRESS_TEXT: 'progress-text'
-  },
+// ========================================
+// GAME ELEMENTS
+// ========================================
+	GAME: {
+		CANVAS_3D: 'game-canvas-3d',
 
-  // ========================================
-  // CONTAINERS & LAYOUT
-  // ========================================
-  CONTAINERS: {
-    MODE_BUTTONS_TABLE: 'mode-buttons-table'
-  },
+		LOADING_SCREEN: 'loading-screen',
+		LOADING_TEXT: 'loading',
+		PROGRESS_FILL: 'progress-fill',
+		PROGRESS_TEXT: 'progress-text'
+	},
 
-  // ========================================
-  // ERROR MESSAGES
-  // ========================================
-  ERRORS: {
-    LOGIN_USERNAME_ERROR: 'login-username-error',
-    LOGIN_PASSWORD_ERROR: 'login-password-error',
-    REGISTER_USERNAME_ERROR: 'register-username-error',
-    REGISTER_EMAIL_ERROR: 'register-email-error',
-    REGISTER_PASSWORD_ERROR: 'register-password-error',
-    REGISTER_CONFIRM_PASSWORD_ERROR: 'register-confirm-password-error'
-  }
+// ========================================
+// CONTAINERS & LAYOUT
+// ========================================
+	CONTAINERS: {
+		MODE_BUTTONS_TABLE: 'mode-buttons-table'
+	},
+
+// ========================================
+// ERROR MESSAGES
+// ========================================
+	ERRORS: {
+		LOGIN_USERNAME_ERROR: 'login-username-error',
+		LOGIN_PASSWORD_ERROR: 'login-password-error',
+		REGISTER_USERNAME_ERROR: 'register-username-error',
+		REGISTER_EMAIL_ERROR: 'register-email-error',
+		REGISTER_PASSWORD_ERROR: 'register-password-error',
+		REGISTER_CONFIRM_PASSWORD_ERROR: 'register-confirm-password-error'
+	}
 } as const;
 
 // ========================================

@@ -98,10 +98,5 @@ export const russian: Translation = {
     pausePowerupsMulti_P1: 'Игрок 1: C / V / B',
     pausePowerupsMulti_P2: 'Игрок 2: I / O / P',
     pausePowerupsSolo: 'Активировать: 1 / 2 / 3',
-    pauseObjectiveText: 'Наберите {points} очков, забивая\nмяч за соперника!',
-    settings: 'Настройки',
-    language: 'Язык',
-    music: 'Музыка',
-    soundEffects: 'Звуковые Эффекты',
-    scene3D: '3D Сцена'
+    pauseObjectiveText: 'Наберите {points} очков, забивая\nмяч за соперника!'
 };

@@ -1,48 +1,42 @@
-import { ConnectionStatus } from '../shared/constants.js';
-import { EL, requireElementById} from './elements.js';
+import { ConnectionStatus, ViewMode } from '../shared/constants.js';
+import { EL, getElementById, requireElementById, UI_CLASSES} from './elements.js';
 import { getCurrentTranslation } from '../translations/translations.js';
-
+import { webSocketClient } from '../core/WebSocketClient.js';
+import { authManager } from '../core/AuthManager.js';
 
 class UIManager {
-	private static instance: UIManager;
+	showScreen(
+		screenId: string,
+		options: {  hideUserInfo?: boolean; modal?: string; } = {}
+	): void {
+		Object.values(EL.SCREENS).forEach(id => {
+			const element = getElementById(id);
+			if (element) element.style.display = 'none';
+		});
 
-    static getInstance(): UIManager {
-        if (!UIManager.instance)
-            UIManager.instance = new UIManager()
-        return UIManager.instance;
-    }
+		if (options.hideUserInfo)
+			this.showAuthButtons();
+		
+		// Handle modal display
+		if (options.modal) {
+			const mainMenu = requireElementById(EL.SCREENS.MAIN_MENU);
+			mainMenu.style.display = 'block';
+			this.setElementVisibility(options.modal, true);
+		} else {
+			const screen = document.getElementById(screenId);
+			if (screen)
+				screen.style.display = screenId === EL.SCREENS.MAIN_MENU ? 'block' : 'flex';
+		}
 
-    // ========================================
-    // SCREEN & LAYOUT MANAGEMENT
-    // ========================================
-    showScreen(screenId: string): void {
-        
-        // Hide all main screens/overlays
-        const screensToHide = [
-            'main-menu',
-            'login-modal', 
-            'register-modal',
-            'game-mode-overlay',
-            'player-setup-overlay',
-            'game-3d',
-            'stats-dashboard',
-            'settings-menu'
-        ];
-        
-        screensToHide.forEach(id => {
-            const element = document.getElementById(id);
-            if (element) {
-                element.style.display = 'none';
-            }
-        });
-
-        const screenToShow = document.getElementById(screenId);
-        if (screenToShow) {
-            screenToShow.style.display = 'flex';
-        } else {
-            console.error(`Screen element not found: ${screenId}`);
-        }
-    }
+		// Hide language selector during game screens
+		const languageSelector = document.getElementById('language-selector');
+		if (languageSelector)
+			languageSelector.style.display = screenId === EL.SCREENS.GAME_3D ? 'none' : 'flex';
+	
+		const isLoggedIn = authManager.isUserAuthenticated();
+		const isOnline = webSocketClient.isConnected();
+		uiManager.updateGameModeButtonStates(isLoggedIn, isOnline);
+	}
 
 	// ========================================
 	// AUTHENTICATION UI
@@ -172,6 +166,21 @@ class UIManager {
 		});
 	}
 
+	updateViewModeButtonStyles(selectedViewMode: ViewMode): void {
+		const classicBtn = requireElementById<HTMLButtonElement>(EL.BUTTONS.VIEW_MODE_CLASSIC);
+		const immersiveBtn = requireElementById<HTMLButtonElement>(EL.BUTTONS.VIEW_MODE_IMMERSIVE);
+
+		// Reset both buttons to inactive state
+		classicBtn.className = UI_CLASSES.BUTTON_UNSELECTED;
+		immersiveBtn.className = UI_CLASSES.BUTTON_UNSELECTED;
+		
+		// Set active button style
+		if (selectedViewMode === ViewMode.MODE_2D)
+			classicBtn.className = UI_CLASSES.BUTTON_SELECTED;
+		else
+			immersiveBtn.className = UI_CLASSES.BUTTON_SELECTED;
+	}
+
 	// ========================================
 	// CONNECTION STATUS
 	// ========================================
@@ -230,4 +239,4 @@ class UIManager {
 	}
 }
 
-export const uiManager = UIManager.getInstance();
+export const uiManager = new UIManager;

@@ -62,11 +62,11 @@ export const safeGameId = (s: string) => {
   return s;
 };
 
-export const safeSid = (s: string) => {
-  s = trimString(s, 'sid');
-  if (!SID_RE.test(s)) throw new Error('Invalid sid');
-  return s;
-};
+// export const safeSid = (s: string) => {
+//   s = trimString(s, 'sid');
+//   if (!SID_RE.test(s)) throw new Error('Invalid sid');
+//   return s;
+// };
 
 /**
  * USERS table functions
@@ -122,23 +122,6 @@ export function updateUserInfo(field: UserField, newInfo: string, email: string)
 		}
 	} catch (err) {
 		console.error('Error in updating userInfo: ', err);
-		return false;
-	}
-}
-
-export async function updateUserSettings(username: string, newSettings: object): Promise<boolean> {
-	try {
-		const currentSettings = await getUserSettings(username);
-		const mergedSettings = { ...currentSettings, ...newSettings };
-
-		const settingsJson = JSON.stringify(mergedSettings);
-		const stmt = db.prepare('UPDATE users SET settings = ? WHERE username = ?');
-		const result = stmt.run(settingsJson, username);
-
-		console.log(`Updated settings for user ${username}: ${settingsJson}`);
-		return result.changes > 0;
-	} catch (err) {
-		console.error('Error in updating user settings: ', err);
 		return false;
 	}
 }
@@ -218,7 +201,6 @@ export function updateUserTournamentWin(id: number, tournament_win: number): boo
 		}
 		let newNbTournamentWin = currentTournamentWin + tournament_win;
 		const user = db.prepare('UPDATE users SET tournament_win = ? WHERE id = ?');
-		console.log(`database.ts -- updateUserTournamentWin: Nb of tournament win after update ${currentTournamentWin} + ${tournament_win} = ${newNbTournamentWin}`);
 		user.run(newNbTournamentWin, id);
 		return true;
 	} catch (err) {
@@ -249,7 +231,7 @@ export function updateUserGame(id: number, Game: number): boolean {
 }
 
 
-// GET USER INFO 
+// GET USER INFO
 export function userExist(id?: number, username?: string, email?: string): number {
 	try {
 		if (id !== undefined) {
@@ -320,19 +302,6 @@ export function getUserPwd(email: string): string {
 		console.error('Error in get User Email:', err);
 		return "";
 	}
-}
-
-export async function getUserSettings(username: string): Promise<any> {
-	try {
-		const row = await db.prepare('SELECT settings FROM users WHERE username = ?');
-		const rowData = row.get(username) as { settings: string } | undefined;
-		if (rowData && rowData.settings) {
-			return JSON.parse(rowData.settings);
-		}
-	} catch (err) {
-		console.error('Error in getUserSettings:', err);
-	}
-	return {};
 }
 
 export function retrieveUserID(username: string): number {
@@ -836,8 +805,7 @@ export function getUserGameHistoryRows(userId: number) {
 	}
 }
 
-// Session cookie creation to ensure no double login and refresh doesn't logout user
-
+// // Session cookie creation to ensure no double login and refresh doesn't logout user
 export function createSession(userId: number): string | undefined {
 	try {
 		userId = nonNegInt(userId, 'user id');
@@ -903,33 +871,33 @@ export function getSessionInfo(userId: number): SessionUser | null {
 	}
 }
 
-export function getUserBySession(sid: string): { id: number; username: string, email?: string, settings?: object } | null {
-	try {
-		sid = safeSid(sid);
-		const userId = db.prepare('SELECT user_id FROM sessions WHERE id = ?').get(sid) as { user_id: number } | undefined;
-		if (!userId) return null;
-		const row = db.prepare('SELECT id, username, email, settings FROM users WHERE id = ?').get(userId.user_id) as { id:number; username:string; email?:string, settings?: object } | undefined;
-		if (!row) return null;
-		console.log(`in database.ts we found the session by user: ${row.username}, ${row.email}, ${row.id} where userId: ${userId.user_id}`);
-		return row;
-	} catch (e) {
-		console.error('getUserBySession error:', e);
-		return null;
-	}
-}
+// export function getUserBySession(sid: string): { id: number; username: string, email?: string} | null {
+// 	try {
+// 		sid = safeSid(sid);
+// 		const userId = db.prepare('SELECT user_id FROM sessions WHERE id = ?').get(sid) as { user_id: number } | undefined;
+// 		if (!userId) return null;
+// 		const row = db.prepare('SELECT id, username, email FROM users WHERE id = ?').get(userId.user_id) as { id:number; username:string; email?:string } | undefined;
+// 		if (!row) return null;
+// 		console.log(`in database.ts we found the session by user: ${row.username}, ${row.email}, ${row.id} where userId: ${userId.user_id}`);
+// 		return row;
+// 	} catch (e) {
+// 		console.error('getUserBySession error:', e);
+// 		return null;
+// 	}
+// }
 
-export function retrieveSessionID(userId: number): string | null {
-	try {
-		userId = nonNegInt(userId, 'user id');
-		const sid = db.prepare('SELECT id FROM sessions WHERE user_id = ?');
-		const SID = sid.get(userId) as { id: string } | undefined;
-		if (SID === undefined) {
-			console.error('SID not found');
-			return null;
-		}
-		return SID.id;
-	} catch (err) {
-		console.error('Error in get User ID:', err);
-		return null;
-	}
-}
+// export function retrieveSessionID(userId: number): string | null {
+// 	try {
+// 		userId = nonNegInt(userId, 'user id');
+// 		const sid = db.prepare('SELECT id FROM sessions WHERE user_id = ?');
+// 		const SID = sid.get(userId) as { id: string } | undefined;
+// 		if (SID === undefined) {
+// 			console.error('SID not found');
+// 			return null;
+// 		}
+// 		return SID.id;
+// 	} catch (err) {
+// 		console.error('Error in get User ID:', err);
+// 		return null;
+// 	}
+// }

@@ -9,7 +9,6 @@ CREATE TABLE IF NOT EXISTS users (
 	email TEXT UNIQUE NOT NULL,
 	pwd TEXT,
 	google_id TEXT UNIQUE,
-	settings TEXT,
 	victories INTEGER DEFAULT 0,
 	defeats INTEGER DEFAULT 0,
 	games INTEGER DEFAULT 0,

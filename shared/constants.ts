@@ -40,28 +40,6 @@ export enum MessageType {
 	SPECTATE_GAME,			// Used to change which game the spectator is watching,
 }
 
-// export enum WebSocketEvent {
-// 	GAME_STATE = 'gameState',
-// 	CONNECTION = 'connection',
-// 	COUNTDOWN = 'countdown',
-// 	ERROR = 'error',
-// 	SESSION_ENDED = 'sessionEnded',
-// 	STATUS_CHANGE = 'statusChange',
-// 	SIDE_ASSIGNMENT = 'side_assignment',
-// 	LOGIN_SUCCESS = 'LOGIN_SUCCESS',
-// 	LOGIN_FAILURE = 'LOGIN_FAILURE',
-// 	REGISTRATION_SUCCESS = 'REGISTRATION_SUCCESS',
-// 	REGISTRATION_FAILURE = 'REGISTRATION_FAILURE',
-// 	USER_STATS = 'USER_STATS',
-// 	GAME_HISTORY = 'GAME_HISTORY',
-// 	MATCH_ASSIGNMENT = 'match_assignment',
-// 	MATCH_RESULT = 'match_result',
-// 	POWERUP_ASSIGNMENT = 'powerup_assignment',
-// 	POWERUP_ACTIVATED = 'powerup_activated',
-// 	POWERUP_DEACTIVATED = 'powerup_deactivated',
-// 	TOURNAMENT_LOBBY = 'tournament_lobby'
-// }
-
 // Different game modes available
 export enum GameMode {
 	SINGLE_PLAYER = 'solo-mode',

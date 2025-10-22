@@ -98,10 +98,5 @@ export const italian: Translation = {
     pausePowerupsMulti_P1: 'Giocatore 1: C / V / B',
     pausePowerupsMulti_P2: 'Giocatore 2: I / O / P',
     pausePowerupsSolo: 'Attiva: 1 / 2 / 3',
-    pauseObjectiveText: 'Segna {points} punti colpendo\nla palla oltre l\'avversario!',
-    settings: 'Impostazioni',
-    language: 'Lingua',
-    music: 'Musica',
-    soundEffects: 'Effetti Sonori',
-    scene3D: 'Scena 3D'
+    pauseObjectiveText: 'Segna {points} punti colpendo\nla palla oltre l\'avversario!'
 };

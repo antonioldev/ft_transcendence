@@ -105,11 +105,6 @@ export interface Translation {
     pausePowerupsMulti_P2: string;
     pausePowerupsSolo: string;
     pauseObjectiveText: string;
-    settings: string;
-    language: string;
-    music: string;
-    soundEffects: string;
-    scene3D: string;
 }
 
-// export type TranslationKey = keyof Translation;
+export type TranslationKey = keyof Translation;
