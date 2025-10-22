@@ -4,10 +4,10 @@ import { getCurrentTranslation } from '../translations/translations.js';
 import { EL, requireElementById } from '../ui/elements.js';
 import { uiManager } from '../ui/UIManager.js';
 import { Logger } from '../utils/LogManager.js';
-import { appStateManager } from './AppStateManager.js';
+import { appStateManager } from './AppManager.js';
 import { initializeGoogleSignIn, renderGoogleButton } from './GoogleSignIn.js';
 import { WebSocketClient } from './WebSocketClient.js';
-import { updateCurrentSettings } from './AppStateManager.js';
+import { updateCurrentSettings } from './AppManager.js';
 import { MenuFlowManager } from './MenuFlowManager.js';
 
 // Declare the type for Google Response to avoid TypeScript errors

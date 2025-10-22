@@ -6,7 +6,7 @@ import { russian } from './ru-RU.js';
 import type { Translation } from './Translation.js';
 import { EL, requireElementById } from '../ui/elements.js';
 // import { TranslationKey } from './Translation.js';
-import { currentSettings } from '../core/AppStateManager.js';
+import { currentSettings } from '../core/AppManager.js';
 
 // export let currentLang = 0;
 export const langs: string[] = ['🇬🇧 English', '🇮🇹 Italiano', '🇫🇷 Français', '🇧🇷 Brasileiro', '🇷🇺 Русский'];

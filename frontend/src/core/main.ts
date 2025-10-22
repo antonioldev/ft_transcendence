@@ -4,7 +4,7 @@ import { ConnectionStatus } from '../shared/constants.js';
 // import { setupLanguageSelector, updateLanguageDisplay } from '../translations/translations.js';
 // import { updateLanguageDisplay } from '../translations/translations.js';
 import { uiManager } from '../ui/UIManager.js';
-import { AppStateManager } from './AppStateManager.js';
+import { AppManger } from './AppManager.js';
 import { AuthManager } from './AuthManager.js';
 import { MenuFlowManager } from './MenuFlowManager.js';
 import { webSocketClient } from './WebSocketClient.js';
@@ -19,7 +19,7 @@ import { DashboardManager } from './DashboardManager.js';
 
 function loadPage(): void {
 	// Initialize classes
-	AppStateManager.initialize();
+	AppManger.initialize();
 	AuthManager.initialize();
 	MenuFlowManager.initialize();
 	DashboardManager.initialize();

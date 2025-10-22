@@ -42,20 +42,20 @@ export function updateCurrentSettings(newSettings: Partial<typeof currentSetting
     }
 }
 
-export class AppStateManager {
+export class AppManger {
 	currentAppState: AppState = AppState.MAIN_MENU;
 	currentGame: Game | null = null;
-	private static instance: AppStateManager;
+	private static instance: AppManger;
 	
-	static getInstance(): AppStateManager {
-		if (!AppStateManager.instance)
-			AppStateManager.instance = new AppStateManager();
+	static getInstance(): AppManger {
+		if (!AppManger.instance)
+			AppManger.instance = new AppManger();
 
-		return AppStateManager.instance;
+		return AppManger.instance;
 	}
 	
 	static initialize(): void {
-		const appStateManager = AppStateManager.getInstance();
+		const appStateManager = AppManger.getInstance();
 		appStateManager.setupEventListeners();
 		appStateManager.navigateTo(AppState.MAIN_MENU);
 	}
@@ -156,7 +156,7 @@ export class AppStateManager {
 	// 		await this.currentGame.create(aiDifficulty, capacity);
 	// 	} catch (error) {
 	// 		this.currentGame = null;
-	// 		Logger.error('Error starting game', 'AppStateManager', error);
+	// 		Logger.error('Error starting game', 'AppManger', error);
 	// 		this.navigateTo(AppState.MAIN_MENU);
 	// 	}
 	// }
@@ -168,10 +168,10 @@ export class AppStateManager {
 			await this.currentGame.create(settings.AiDifficulty, capacity);
 		} catch (error) {
 			this.currentGame = null;
-			Logger.error('Error starting game', 'AppStateManager', error);
+			Logger.error('Error starting game', 'AppManger', error);
 			this.navigateTo(AppState.MAIN_MENU);
 		}
 	}
 }
 
-export const appStateManager = AppStateManager.getInstance();
+export const appStateManager = AppManger.getInstance();

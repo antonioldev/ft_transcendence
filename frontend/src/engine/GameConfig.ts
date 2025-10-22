@@ -1,4 +1,4 @@
-import { Setting } from '../core/AppStateManager.js';
+import { Setting } from '../core/AppManager.js';
 import { authManager } from '../core/AuthManager.js';
 import { GameMode, ViewMode } from '../shared/constants.js';
 import { PlayerInfo } from '../shared/types.js';

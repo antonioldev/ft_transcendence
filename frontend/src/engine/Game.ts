@@ -1,5 +1,5 @@
 import { Color4, Engine, Scene, SceneLoader } from "@babylonjs/core";
-import { appStateManager } from '../core/AppStateManager.js';
+import { appStateManager } from '../core/AppManager.js';
 import { webSocketClient } from '../core/WebSocketClient.js';
 import { AppState, GameMode, GameState, MessageType } from '../shared/constants.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';

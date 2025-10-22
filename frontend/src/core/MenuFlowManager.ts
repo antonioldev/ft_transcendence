@@ -4,11 +4,11 @@ import { getCurrentTranslation } from '../translations/translations.js';
 import { EL, requireElementById } from '../ui/elements.js';
 import { uiManager } from '../ui/UIManager.js';
 import { Logger } from '../utils/LogManager.js';
-import { appStateManager } from './AppStateManager.js';
+import { appStateManager } from './AppManager.js';
 import { authManager } from './AuthManager.js';
 import { dashboardManager } from './DashboardManager.js';
 import { webSocketClient } from './WebSocketClient.js';
-import { currentSettings } from './AppStateManager.js';
+import { currentSettings } from './AppManager.js';
 import { updateLanguageDisplay } from '../translations/translations.js';
 
 /**
