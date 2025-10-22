@@ -234,12 +234,12 @@ export const PAUSE_MENU_STYLES = {
         height: "95%",
     },
 
-    pauseTitle: {
-        fontFamily: FONT_FAMILY,
-        color: COLORS.WHITE,
-        fontSize: 42,
-        fontWeight: "bold"
-    },
+    // pauseTitle: {
+    //     fontFamily: FONT_FAMILY,
+    //     color: COLORS.WHITE,
+    //     fontSize: 42,
+    //     fontWeight: "bold"
+    // },
 
     pauseInstruction: {
         fontFamily: FONT_FAMILY,
@@ -276,10 +276,9 @@ export const PAUSE_MENU_STYLES = {
     },
 
     gridRows: {
-        title: 0.15,
-        gameInstructions: 0.60,
-        exitInstruction: 0.15,
-        audio: 0.10
+        gameInstructions: 0.65,
+        exitInstruction: 0.20,
+        audio: 0.15
     },
 
     gameInstructionContainer: {

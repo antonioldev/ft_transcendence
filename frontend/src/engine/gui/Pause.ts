@@ -26,20 +26,20 @@ export class Pause {
 		}
 		this.overlay.addControl(pauseGrid);
 
-		pauseGrid.addRowDefinition(PAUSE_MENU_STYLES.gridRows.title, false);
+		// pauseGrid.addRowDefinition(PAUSE_MENU_STYLES.gridRows.title, false);
 		pauseGrid.addRowDefinition(PAUSE_MENU_STYLES.gridRows.gameInstructions, false);
 		pauseGrid.addRowDefinition(PAUSE_MENU_STYLES.gridRows.exitInstruction, false);
 		pauseGrid.addRowDefinition(PAUSE_MENU_STYLES.gridRows.audio, false);
 
-		const pauseTitle = createTextBlock( "pauseTitle", PAUSE_MENU_STYLES.pauseTitle, t.gamePaused);
-		pauseGrid.addControl(pauseTitle, 0, 0);
+		// const pauseTitle = createTextBlock( "pauseTitle", PAUSE_MENU_STYLES.pauseTitle, t.gamePaused);
+		// pauseGrid.addControl(pauseTitle, 0, 0);
 
 		const gameInstructions = createRect("gameInstructions", PAUSE_MENU_STYLES.gameInstructionContainer);
-		pauseGrid.addControl(gameInstructions, 1, 0);
+		pauseGrid.addControl(gameInstructions, 0, 0);
 		this.buildInstructions(gameInstructions, config);
 
 		const exitStack = createStackPanel("exitStack", PAUSE_MENU_STYLES.instructionsStack);
-		pauseGrid.addControl(exitStack, 2, 0);
+		pauseGrid.addControl(exitStack, 1, 0);
 
 		const pauseInstruction = createTextBlock("pauseInstruction", PAUSE_MENU_STYLES.pauseInstruction, t.exitGame);
 		exitStack.addControl(pauseInstruction);
@@ -50,7 +50,7 @@ export class Pause {
 		const audioGrid = createGrid("audioGrid", PAUSE_MENU_STYLES.audioGrid);
 		audioGrid.addColumnDefinition(0.5, false);
 		audioGrid.addColumnDefinition(0.5, false);
-		pauseGrid.addControl(audioGrid, 3, 0);
+		pauseGrid.addControl(audioGrid, 2, 0);
 
 		const musicStack = createStackPanel("musicStack", PAUSE_MENU_STYLES.audioStack);
 		audioGrid.addControl(musicStack, 0, 0);
