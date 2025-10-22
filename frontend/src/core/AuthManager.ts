@@ -386,7 +386,7 @@ export class AuthManager {
 					try {
 						const parsedSettings = JSON.parse(settingsData.user.settings);
 						updateCurrentSettings(parsedSettings);
-						MenuFlowManager.getInstance().updateSettingsUIFromState();
+						// MenuFlowManager.getInstance().updateSettingsUIFromState();
 					} catch (error) {
 						console.error('Error parsing user settings after login:', error);
 					}

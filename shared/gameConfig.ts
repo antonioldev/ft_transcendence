@@ -23,7 +23,7 @@ export const GAME_CONFIG = {
 	paddleHeight: 0.5, // Height of the paddle
 	paddleDepth: 0.5, // Depth of the paddle
 	paddleOffsetFromEdge: 2, // Distance from the edge of the field
-	paddleSpeed: 15, // Speed of the paddle
+	paddleSpeed: 8, // Speed of the paddle
 	cpu_names: ["Tom", "Richard", "Harry", "John", "Oliver", "William", "Jack", "Hugo",
 				"Jane", "Sarah", "Suzie", "Sally", "Rebecca", "Rachel", "Karen", "Katie"],
 	

@@ -108,7 +108,10 @@ export class PowerupManager {
 					isLeftSide ? this.gameObjects?.effects?.rightGlow : this.gameObjects?.effects?.leftGlow, Color3.Yellow());
 				break;
 			case PowerupType.INVISIBLE_BALL:
-				this.animationManager?.blinkInvisibility(this.gameObjects.balls);
+				// this.animationManager?.blinkInvisibility(this.gameObjects.balls);
+				this.gameObjects?.balls.forEach((ball: any) => {
+					this.animationManager?.blinkInvisibility(ball);
+				});
 				break;
 			
 			case PowerupType.SHIELD:

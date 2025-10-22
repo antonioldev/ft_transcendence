@@ -3,12 +3,10 @@ import { updateLanguageDisplay, previousLanguage, nextLanguage, getCurrentTransl
 import { uiManager } from '../ui/UIManager.js';
 import { webSocketClient } from './WebSocketClient.js';
 import { authManager } from './AuthManager.js';
-// import { menuFlowManager } from './MenuFlowManager.js';
 import { appManager } from './AppManager.js';
-import { AuthCode, ConnectionStatus, WebSocketEvent } from '../shared/constants.js';
+import { AuthCode, ConnectionStatus, MessageType } from '../shared/constants.js';
 import { EL, requireElementById } from '../ui/elements.js';
-import { getSID, sendGET,sendPOST } from "./HTTPRequests.js";
-import { authManager } from "./AuthManager.js";
+import { getSID, sendGET } from "./HTTPRequests.js";
 
 async function loadPage() {
     // Initialize classes
@@ -17,7 +15,7 @@ async function loadPage() {
 
 	// Setup language system
 	updateLanguageDisplay();
-	setupLanguageListeners();
+	// setupLanguageListeners();
 
 	// send "/" HTTP request and create ws
 	const data = await sendGET("root");
@@ -30,7 +28,7 @@ async function loadPage() {
 	webSocketClient.connect(`wss://${window.location.hostname}:8443/ws?sid=${getSID()}`);
 
 	// Setup WebSocket monitoring
-	webSocketClient.registerCallback(WebSocketEvent.STATUS_CHANGE, (status: ConnectionStatus) => {
+	webSocketClient.registerCallback(MessageType.STATUS_CHANGE, (status: ConnectionStatus) => {
 		uiManager.updateConnectionStatus(status);
 	});
 }

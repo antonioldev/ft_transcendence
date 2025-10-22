@@ -29,9 +29,13 @@ class UIManager {
 		}
 
 		// Hide language selector during game screens
-		const languageSelector = document.getElementById('language-selector');
-		if (languageSelector)
-			languageSelector.style.display = screenId === EL.SCREENS.GAME_3D ? 'none' : 'flex';
+		// const languageSelector = document.getElementById('language-selector');
+		// if (languageSelector)
+		// 	languageSelector.style.display = screenId === EL.SCREENS.GAME_3D ? 'none' : 'flex';
+
+		const settingButton = document.getElementById('settings-btn');
+		if (settingButton)
+			settingButton.style.display = screenId === EL.SCREENS.MAIN_MENU ? 'flex' : 'none';
 	
 		const isLoggedIn = authManager.isUserAuthenticated();
 		const isOnline = webSocketClient.isConnected();

@@ -32,7 +32,8 @@ export const EL = {
 		GAME_MODE_OVERLAY: 'game-mode-overlay',
 		PLAYER_SETUP_OVERLAY: 'player-setup-overlay',
 		GAME_3D: 'game-3d',
-		STATS_DASHBOARD: 'stats-dashboard'
+		STATS_DASHBOARD: 'stats-dashboard',
+		SETTINGS_MENU: 'settings-menu',
 	},
 
 // ========================================
@@ -80,7 +81,8 @@ export const EL = {
 		SHOW_LOGIN: 'show-login',
 
 		// Dashboard view
-		DASHBOARD: 'dashboard-btn'
+		DASHBOARD: 'dashboard-btn',
+		SETTINGS: 'settings-btn'
 	},
 
 // ========================================

@@ -165,7 +165,7 @@ export async function APIRoutes(app: FastifyInstance) {
 		const { gameMode, players, capacity, aiDifficulty  } = request.body as 
 			{ gameMode: GameMode, players: Player[], capacity?: number, aiDifficulty?: AiDifficulty };
 
-		if (!gameMode || !players ) {
+		if (gameMode === undefined || !players ) {
 			console.log(`/join request failed: missing game info`);
 			return reply.code(401).send({ success: false, message: 'Missing username, email, or password' })
 		}

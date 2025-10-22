@@ -105,7 +105,7 @@ export class WebSocketClient {
                 break;
         }
     }
-.
+
     // ========================================
     // GAME COMMUNICATION
     // ========================================

@@ -1,9 +1,9 @@
 import { Color4, Engine, Scene, SceneLoader } from "@babylonjs/core";
-import { appStateManager } from '../core/AppManager.js';
+import { appManager } from '../core/AppManager.js';
 import { webSocketClient } from '../core/WebSocketClient.js';
 import { AppState, GameMode, GameState, MessageType } from '../shared/constants.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
-import { GameObjects, GameStateData, ThemeObject } from '../shared/types.js';
+import { GameObjects, GameStateData, ThemeObject, PlayerInfo } from '../shared/types.js';
 import { uiManager } from '../ui/UIManager.js';
 import { Logger } from '../utils/LogManager.js';
 import { GameConfig } from './GameConfig.js';
@@ -13,7 +13,7 @@ import { disposeMaterialResources } from "./scene/builders/materialsBuilder.js";
 import { PlayerSide, PlayerState } from "./utils.js";
 import { startFireworks } from "./scene/builders/effectsBuilder.js";
 import { PowerupType } from "../shared/constants.js";
-
+import { sendPOST } from "../core/HTTPRequests.js";
 
 /**
  * The Game class serves as the core of the game engine, managing the initialization,
@@ -64,7 +64,9 @@ export class Game {
 
 	async create(aiDifficulty: number, capacity?: number): Promise<Game> {
 		try {
-			webSocketClient.joinGame(this.config.gameMode, this.config.players, aiDifficulty, capacity);
+			const players: PlayerInfo[] = this.config.players;
+			const gameMode = this.config.gameMode;
+			await sendPOST("join", { gameMode, players, aiDifficulty, capacity });
 			await this.initialize();
 			return this;
 		} catch (error) {
@@ -523,7 +525,7 @@ export class Game {
 			}
 			this.canvas = null;
 			uiManager.setLoadingScreenVisible(false);
-			appStateManager.navigateTo(AppState.MAIN_MENU);
+			appManager.navigateTo(AppState.MAIN_MENU);
 			Logger.debug('Game disposed successfully', 'Game');
 		} catch (error) {
 			Logger.error('Error disposing game', 'Game', error);
