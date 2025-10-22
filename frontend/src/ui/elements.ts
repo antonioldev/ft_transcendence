@@ -82,7 +82,8 @@ export const EL = {
 
 		// Dashboard view
 		DASHBOARD: 'dashboard-btn',
-		SETTINGS: 'settings-btn'
+		SETTINGS: 'settings-btn',
+		SETTING_BACK: 'settings-back'
 	},
 
 // ========================================
