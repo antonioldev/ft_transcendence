@@ -98,6 +98,14 @@ export const portuguese: Translation = {
     pausePowerupsMulti_P1: 'Jogador 1: C / V / B',
     pausePowerupsMulti_P2: 'Jogador 2: I / O / P',
     pausePowerupsSolo: 'Ativar: 1 / 2 / 3',
-    pauseObjectiveText: 'Marque {points} pontos acertando\na bola além do seu oponente!'
+    pauseObjectiveText: 'Marque {points} pontos acertando\na bola além do seu oponente!',
+
+    // Settings Menu
+    settings: 'Configurações',
+    language: 'Idioma',
+    scene3d: 'Cena 3D',
+    music: 'Música',
+    soundEffects: 'Efeitos Sonoros',
+    backToMainMenu: 'Voltar ao Menu Principal'
 
 };

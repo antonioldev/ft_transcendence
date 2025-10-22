@@ -100,5 +100,13 @@ export const english: Translation = {
     pausePowerupsMulti_P1: 'Player 1: C / V / B',
     pausePowerupsMulti_P2: 'Player 2: I / O / P',
     pausePowerupsSolo: 'Activate: 1 / 2 / 3',
-    pauseObjectiveText: 'Score {points} points by hitting\nthe ball past your opponent!'
+    pauseObjectiveText: 'Score {points} points by hitting\nthe ball past your opponent!',
+
+    // Settings Menu
+    settings: 'Settings',
+    language: 'Language',
+    scene3d: '3D Scene',
+    music: 'Music',
+    soundEffects: 'Sound Effects',
+    backToMainMenu: 'Back to Main Menu'
 };

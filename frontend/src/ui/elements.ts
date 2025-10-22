@@ -82,8 +82,13 @@ export const EL = {
 
 		// Dashboard view
 		DASHBOARD: 'dashboard-btn',
+		
+		// Settings menu buttons
 		SETTINGS: 'settings-btn',
-		SETTING_BACK: 'settings-back'
+		SETTING_BACK: 'settings-back',
+		SCENE_3D_SELECT: 'scene-3d-select',
+		MUSIC_TOGGLE: 'music-toggle',
+		SOUND_EFFECT_TOGGLE: 'sound-effect-toggle'
 	},
 
 // ========================================
@@ -139,6 +144,7 @@ export const EL = {
 		MAIN_TITLE: 'main-title',
 		MODE_TITLE: 'mode-title',
 		SETUP_TITLE: 'setup-title',
+		SETTINGS_TITLE: 'settings-title',
 
 		// Language selector
 		LANGUAGE_SELECT: 'language_select',
