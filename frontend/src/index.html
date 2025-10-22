@@ -14,18 +14,10 @@
     <script src="https://cdn.jsdelivr.net/npm/@tailwindplus/elements@1" type="module"></script>
     <script src="/env-config.js"></script>
 </head>
-<body class="bg-blue-background h-screen relative px-4 py-4">
+<body class="flex items-center justify-center h-screen bg-blue-background">
 
-    <div class="fixed top-4 right-5 z-50 flex items-center gap-2">
-        <button type="button"
-                id="settings-btn"
-                class="transition-transform duration-200 hover:scale-125 text-2xl px-2">
-            ⚙️
-        </button>
-    </div>
-    
     <!-- Main Menu -->
-    <main id="main-menu" class="screen flex flex-col items-center justify-center h-full text-center">
+    <main id="main-menu" class="!fixed !inset-0 !flex !flex-col items-center justify-center text-center">
         <div class="absolute top-4 left-5 flex items-center gap-2">
             <div id="connection-status" class="connection-status text-xs text-light-green opacity-80 min-w-[16px] min-h-[16px] flex items-center justify-center">
                 🟡
@@ -33,24 +25,30 @@
             <h2 class="text-light-green font-tiny5-regular text-sm sm:text-base md:text-lg">
                 ft_transcendence
             </h2>
+
+            <div class="fixed top-4 right-5 z-50 flex items-center gap-2">
+                <button type="button"
+                        id="settings-btn"
+                        class="transition-transform duration-200 hover:scale-125 text-2xl px-2">
+                    ⚙️
+                </button>
+            </div>
         </div>
         
         <!-- Centered Battle Pong text -->
-        <div class="flex flex-col items-center justify-center">
-            <h1 id="main-title" class="font-tiny5-regular text-light-green text-6xl sm:text-8xl md:text-9xl lg:text-10xl xl:text-[10rem] 2xl:text-[12rem] text-center select-none">
-                <span class="animate-bounce-letter-1">B</span>
-                <span class="animate-bounce-letter-2">A</span>
-                <span class="animate-bounce-letter-3">T</span>
-                <span class="animate-bounce-letter-4">T</span>
-                <span class="animate-bounce-letter-5">L</span>
-                <span class="animate-bounce-letter-6">E</span>
-                <br>
-                <span class="animate-bounce-letter-7">P</span>
-                <span class="animate-bounce-letter-8">O</span>
-                <span class="animate-bounce-letter-9">N</span>
-                <span class="animate-bounce-letter-10">G</span>
-            </h1>
-        </div>
+        <h1 id="main-title" class="font-tiny5-regular text-light-green text-6xl sm:text-8xl md:text-9xl lg:text-10xl xl:text-[10rem] 2xl:text-[12rem] text-center select-none">
+            <span class="animate-bounce-letter-1">B</span>
+            <span class="animate-bounce-letter-2">A</span>
+            <span class="animate-bounce-letter-3">T</span>
+            <span class="animate-bounce-letter-4">T</span>
+            <span class="animate-bounce-letter-5">L</span>
+            <span class="animate-bounce-letter-6">E</span>
+            <br>
+            <span class="animate-bounce-letter-7">P</span>
+            <span class="animate-bounce-letter-8">O</span>
+            <span class="animate-bounce-letter-9">N</span>
+            <span class="animate-bounce-letter-10">G</span>
+        </h1>
         
         <!-- Main navigation buttons - Bottom Left -->
         <nav class="absolute bottom-8 left-8 flex flex-col gap-2 sm:gap-1 md:gap-2 lg:gap-3 xl:gap-4">
