@@ -51,7 +51,7 @@ export abstract class AbstractGameSession {
 	}
 
 	add_client(client: Client) {
-		if (this.clients.size >= this.client_capacity) return ;
+		if (this.full) return ;
 
 		this.clients.add(client);
 		if (this.clients.size === this.client_capacity) {
@@ -93,11 +93,6 @@ export abstract class AbstractGameSession {
 		for (let i = 1; this.players.size < this.player_capacity; i++) {
 			this.add_player(new CPU(`CPU_${i}`, this.get_cpu_name(), this.ai_difficulty));
 		}
-
-		// if (this.mode === GameMode.TWO_PLAYER_REMOTE) {
-		// 	this.mode = GameMode.SINGLE_PLAYER
-		// }
-
 		this.client_capacity = this.clients.size;
     }
 
@@ -120,7 +115,7 @@ export abstract class AbstractGameSession {
 		this.readyClients.add(client_id);
 		console.log(`Client ${client_id} marked as ready.}`);
 		
-		if (this.allClientsReady()) {
+		if (this.full && this.allClientsReady()) {
 			eventManager.emit(`all-ready-${this.id}`);
 			console.log(`GameSession ${this.id}: all clients ready signal emitted`);
 		}
@@ -204,13 +199,11 @@ export abstract class AbstractGameSession {
 	}
 
 	send_lobby(client: Client) {
-		if (this.mode === GameMode.TOURNAMENT_REMOTE) {
-			send(client.websocket, {
-				type: MessageType.TOURNAMENT_LOBBY,
-				lobby: [...this.players].map(player => player.name)
-			});
-			console.log(`Lobby sent to ${client.username}`)
-		}
+		send(client.websocket, {
+			type: MessageType.TOURNAMENT_LOBBY,
+			lobby: [...this.players].map(player => player.name)
+		});
+		console.log(`Lobby sent to ${client.username}`)
 	}
 
 	enqueue(input: PlayerInput, client_id?: string): void  {

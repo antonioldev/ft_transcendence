@@ -87,9 +87,8 @@ async function handleMessage(client: Client, message: string) {
                 await gameSession.activate_powerup(client, data);
                 break;
             case MessageType.REQUEST_LOBBY:
-                if (gameSession instanceof TournamentRemote) {
-                    gameSession.send_lobby(client);
-                } break;
+                gameSession.send_lobby(client);
+                break;
             case MessageType.SPECTATE_GAME:
                 if (gameSession instanceof TournamentRemote) {
                     gameSession.assign_spectator(client);

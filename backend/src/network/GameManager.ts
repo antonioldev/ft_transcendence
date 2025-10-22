@@ -11,7 +11,7 @@ import { GAME_CONFIG } from '../shared/gameConfig.js';
 class GameManager {
     private clientSidGamesMap: Map<string, AbstractGameSession> = new Map(); // maps client sid to gameSession
 
-    addClient(client: Client, gameSession: AbstractGameSession) {
+    addClientToGame(client: Client, gameSession: AbstractGameSession) {
         gameSession.add_client(client);
         this.clientSidGamesMap.set(client.sid, gameSession);
     }
@@ -29,7 +29,7 @@ class GameManager {
         }
         gameSession.handlePlayerQuit(client);
         this.clientSidGamesMap.delete(client.sid);
-        console.log(`Client ${client.username}:${client.username} removed from game`);
+        console.log(`Client ${client.username}:${client.username} removed from game ${gameSession.id}`);
     }
 
     /**

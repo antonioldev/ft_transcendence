@@ -36,10 +36,10 @@ export const Z_INDEX = {
     HUD: 10,
     POWERUPS: 12,
     ENDGAME: 15,
-    MODAL: 20,
     BRACKET: 25,
     CURTAIN: 30,
-    LOBBY: 29
+    LOBBY: 31,
+    MODAL: 42,
 
 } as const;
 
