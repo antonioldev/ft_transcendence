@@ -8,6 +8,7 @@ import { Logger } from '../utils/LogManager.js';
 import { getMaxPlayers, getMinPlayersForCpu } from '../utils/utils.js';
 import { authManager } from './AuthManager.js';
 import { dashboardManager } from './DashboardManager.js';
+import { updateLanguageDisplay } from '../translations/translations.js';
 
 export interface Setting {
 	lang: number;
@@ -84,6 +85,7 @@ export class AppManager {
 		this.setupGameModeListeners();
 		this.setupPlayerSetupListeners();
 		this.setupDashboardListener();
+		this.setupSettingListner();
 		document.addEventListener('submit', (event) => {
 			event.preventDefault();
 		});
@@ -159,6 +161,63 @@ export class AppManager {
 		
 		dashboardBtn.addEventListener('click', () => this.handleDashboardClick());
 		dashboardBackBtn.addEventListener('click', () => this.navigateTo(AppState.MAIN_MENU));
+	}
+
+	private setupSettingListner(): void {
+		const settingsBtn = requireElementById<HTMLButtonElement>(EL.BUTTONS.SETTINGS);
+		settingsBtn?.addEventListener('click', () => {
+			this.navigateTo(AppState.SETTINGS);
+		});
+
+		const backBtn = requireElementById<HTMLButtonElement>(EL.BUTTONS.SETTING_BACK);
+		backBtn.addEventListener('click', () => {
+			this.navigateTo(AppState.MAIN_MENU);
+		});
+
+		const sceneSelect = document.getElementById('map-selector') as HTMLSelectElement;
+		if (sceneSelect) {
+			sceneSelect.value = currentSettings.scene3D;
+
+			sceneSelect.addEventListener('change', (event) => {
+				const target = event.target as HTMLSelectElement;
+				if (target)
+					currentSettings.scene3D = target.value;
+			});
+		}
+
+		const musicToggle = document.getElementById('music-toggle') as HTMLInputElement;
+		if (musicToggle) {
+			musicToggle.checked = currentSettings.musicEnabled;
+
+			musicToggle.addEventListener('change', (event) => {
+				const target = event.target as HTMLInputElement;
+				currentSettings.musicEnabled = target.checked;
+			});
+		}
+
+		const effectsToggle = document.getElementById('sound-effect-toggle') as HTMLInputElement;
+		if (effectsToggle) {
+			effectsToggle.checked = currentSettings.soundEffectsEnabled;
+
+			effectsToggle.addEventListener('change', (event) => {
+				const target = event.target as HTMLInputElement;
+				currentSettings.soundEffectsEnabled = target.checked;
+			});
+		}
+
+		updateLanguageDisplay();
+		const languageSelect = document.getElementById('language_select') as HTMLSelectElement;
+		if (languageSelect) {
+			languageSelect.addEventListener('change', (event) => {
+				const target = event.target as HTMLSelectElement;
+				const languageMapping = ['UK', 'IT', 'FR', 'BR', 'RU'];
+				const newLangIndex = languageMapping.indexOf(target.value);
+				if (newLangIndex !== -1) {
+					currentSettings.lang = newLangIndex;
+					updateLanguageDisplay();
+				}
+			});
+		}
 	}
 
 	private selectViewMode(mode: ViewMode): void {
