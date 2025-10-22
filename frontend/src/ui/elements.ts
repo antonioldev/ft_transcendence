@@ -86,9 +86,9 @@ export const EL = {
 		// Settings menu buttons
 		SETTINGS: 'settings-btn',
 		SETTING_BACK: 'settings-back',
-		SCENE_3D_SELECT: 'scene-3d-select',
-		MUSIC_TOGGLE: 'music-toggle',
-		SOUND_EFFECT_TOGGLE: 'sound-effect-toggle'
+		MAP_SELECTOR: 'map-selector',
+		MUSIC_TOGGLE_LABEL: 'music-toggle-label',
+		SOUND_EFFECT_TOGGLE_LABEL: 'sound-effect-toggle-label'
 	},
 
 // ========================================

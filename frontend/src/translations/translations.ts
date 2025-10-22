@@ -103,17 +103,20 @@ export function updateLanguageDisplay(): void {
     const settingsTitle = requireElementById(EL.DISPLAY.SETTINGS_TITLE);
     settingsTitle.textContent = t.settings;
 
-    const languageLabel = requireElementById(EL.DISPLAY.LANGUAGE_SELECT);
-    languageLabel.textContent = t.language;
+    const languageLabel = document.querySelector('label[for="language_select"]');
+    if (languageLabel) languageLabel.textContent = t.language;
 
-    const scene3dLabel = requireElementById(EL.BUTTONS.SCENE_3D_SELECT);
-    scene3dLabel.textContent = t.scene3d;
+    const sceneLabel = document.querySelector('label[for="map-selector"]');
+    if (sceneLabel) sceneLabel.textContent = t.scene3d;
 
-    const musicToggleLabel = requireElementById(EL.BUTTONS.MUSIC_TOGGLE);
+    const musicToggleLabel = requireElementById(EL.BUTTONS.MUSIC_TOGGLE_LABEL);
     musicToggleLabel.textContent = t.music;
 
-    const soundEffectToggleLabel = requireElementById(EL.BUTTONS.SOUND_EFFECT_TOGGLE);
+    const soundEffectToggleLabel = requireElementById(EL.BUTTONS.SOUND_EFFECT_TOGGLE_LABEL);
     soundEffectToggleLabel.textContent = t.soundEffects;
+
+    const settingsBack = requireElementById(EL.BUTTONS.SETTING_BACK);
+    settingsBack.textContent = t.backToMainMenu;
 
 	// Game mode selection
 	const modeTitle = requireElementById(EL.DISPLAY.MODE_TITLE);
@@ -204,18 +207,6 @@ export function updateLanguageDisplay(): void {
     if (registerConfirmPasswordError) registerConfirmPasswordError.textContent = t.errorConfirmPassword;
 
 }
-
-// Cycles to the next language in the list and updates the UI accordingly.
-// export function nextLanguage(): void {
-// 	currentLang = (currentLang + 1) % langs.length;
-// 	updateLanguageDisplay();
-// }
-
-// Cycles to the previous language in the list and updates the UI accordingly.
-// export function previousLanguage(): void {
-// 	currentLang = (currentLang - 1 + langs.length) % langs.length;
-// 	updateLanguageDisplay();
-// }
 
 // Retrieves a specific item based on current language
 export function getText(key: TranslationKey): string {
