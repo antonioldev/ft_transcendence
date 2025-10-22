@@ -208,6 +208,7 @@ export class AppManager {
 		updateLanguageDisplay();
 		const languageSelect = document.getElementById('language_select') as HTMLSelectElement;
 		if (languageSelect) {
+			languageSelect.value = ['UK', 'IT', 'FR', 'BR', 'RU'][currentSettings.lang];
 			languageSelect.addEventListener('change', (event) => {
 				const target = event.target as HTMLSelectElement;
 				const languageMapping = ['UK', 'IT', 'FR', 'BR', 'RU'];

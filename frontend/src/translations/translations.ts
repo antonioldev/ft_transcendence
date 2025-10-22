@@ -6,15 +6,13 @@ import { russian } from './ru-RU.js';
 import type { Translation } from './Translation.js';
 import { EL, requireElementById } from '../ui/elements.js';
 import { TranslationKey } from './Translation.js';
-
-export let currentLang = 0;
-export const langs: string[] = ['🇬🇧 English', '🇮🇹 Italiano', '🇫🇷 Français', '🇧🇷 Brasileiro', '🇷🇺 Русский'];
+import { currentSettings } from '../core/AppManager.js';
 
 const allTranslations = [english, italian, french, portuguese, russian];
 
 // Retrieves the current translation object based on the selected language.
 export function getCurrentTranslation(): Translation {
-	return allTranslations[currentLang];
+	return allTranslations[currentSettings.lang];
 }
 
 // Updates the text content of various elements in the UI to match the current language.
@@ -22,8 +20,11 @@ export function updateLanguageDisplay(): void {
 	const t = getCurrentTranslation();
 
     // Language selector
-    const langDisplay = requireElementById(EL.DISPLAY.LANGUAGE_SELECT);
-    langDisplay.textContent = langs[currentLang];
+    const languageSelect = document.getElementById('language_select') as HTMLSelectElement;
+    if (languageSelect) {
+        const languageMapping = ['UK', 'IT', 'FR', 'BR', 'RU'];
+        languageSelect.value = languageMapping[currentSettings.lang];
+    }
 
 	// Auth buttons
 	const registerBtn = requireElementById(EL.BUTTONS.REGISTER);
@@ -97,6 +98,25 @@ export function updateLanguageDisplay(): void {
 
     const registerFooter = document.querySelector('#register-modal .modal-footer .info-text');
     if (registerFooter) registerFooter.textContent = t.alreadyHaveAccount;
+
+    // Settings Menu
+    const settingsTitle = requireElementById(EL.DISPLAY.SETTINGS_TITLE);
+    settingsTitle.textContent = t.settings;
+
+    const languageLabel = document.querySelector('label[for="language_select"]');
+    if (languageLabel) languageLabel.textContent = t.language;
+
+    const sceneLabel = document.querySelector('label[for="map-selector"]');
+    if (sceneLabel) sceneLabel.textContent = t.scene3d;
+
+    const musicToggleLabel = requireElementById(EL.BUTTONS.MUSIC_TOGGLE_LABEL);
+    musicToggleLabel.textContent = t.music;
+
+    const soundEffectToggleLabel = requireElementById(EL.BUTTONS.SOUND_EFFECT_TOGGLE_LABEL);
+    soundEffectToggleLabel.textContent = t.soundEffects;
+
+    const settingsBack = requireElementById(EL.BUTTONS.SETTING_BACK);
+    settingsBack.textContent = t.backToMainMenu;
 
 	// Game mode selection
 	const modeTitle = requireElementById(EL.DISPLAY.MODE_TITLE);
@@ -186,18 +206,6 @@ export function updateLanguageDisplay(): void {
     const registerConfirmPasswordError = document.getElementById(EL.ERRORS.REGISTER_CONFIRM_PASSWORD_ERROR);
     if (registerConfirmPasswordError) registerConfirmPasswordError.textContent = t.errorConfirmPassword;
 
-}
-
-// Cycles to the next language in the list and updates the UI accordingly.
-export function nextLanguage(): void {
-	currentLang = (currentLang + 1) % langs.length;
-	updateLanguageDisplay();
-}
-
-// Cycles to the previous language in the list and updates the UI accordingly.
-export function previousLanguage(): void {
-	currentLang = (currentLang - 1 + langs.length) % langs.length;
-	updateLanguageDisplay();
 }
 
 // Retrieves a specific item based on current language

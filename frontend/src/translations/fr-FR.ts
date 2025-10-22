@@ -99,9 +99,12 @@ export const french: Translation = {
     pausePowerupsMulti_P2: 'Joueur 2: I / O / P',
     pausePowerupsSolo: 'Activer: 1 / 2 / 3',
     pauseObjectiveText: 'Marquez {points} points en frappant\nla balle au-delà de votre adversaire!',
+
+    // Settings Menu
     settings: 'Paramètres',
     language: 'Langue',
+    scene3d: 'Scène 3D',
     music: 'Musique',
     soundEffects: 'Effets Sonores',
-    scene3D: 'Scène 3D'
+    backToMainMenu: 'Retour au Menu Principal'
 };

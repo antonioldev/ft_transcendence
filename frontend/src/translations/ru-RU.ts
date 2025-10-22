@@ -99,9 +99,12 @@ export const russian: Translation = {
     pausePowerupsMulti_P2: 'Игрок 2: I / O / P',
     pausePowerupsSolo: 'Активировать: 1 / 2 / 3',
     pauseObjectiveText: 'Наберите {points} очков, забивая\nмяч за соперника!',
+
+    // Settings Menu
     settings: 'Настройки',
     language: 'Язык',
+    scene3d: '3D Сцена',
     music: 'Музыка',
     soundEffects: 'Звуковые Эффекты',
-    scene3D: '3D Сцена'
+    backToMainMenu: 'Вернуться в Главное Меню'
 };

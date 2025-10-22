@@ -1,12 +1,12 @@
 import "@babylonjs/loaders";
-import { updateLanguageDisplay, previousLanguage, nextLanguage, getCurrentTranslation } from '../translations/translations.js';
+import { updateLanguageDisplay, getCurrentTranslation } from '../translations/translations.js';
 import { uiManager } from '../ui/UIManager.js';
 import { webSocketClient } from './WebSocketClient.js';
 import { authManager } from './AuthManager.js';
 import { appManager } from './AppManager.js';
 import { AuthCode, ConnectionStatus, MessageType } from '../shared/constants.js';
-import { EL, requireElementById } from '../ui/elements.js';
 import { getSID, sendGET } from "./HTTPRequests.js";
+// import { setupLanguageSelector } from "../translations/translations.js";
 
 async function loadPage() {
     // Initialize classes
@@ -15,7 +15,6 @@ async function loadPage() {
 
 	// Setup language system
 	updateLanguageDisplay();
-	// setupLanguageListeners();
 
 	// send "/" HTTP request and create ws
 	const data = await sendGET("root");
@@ -31,17 +30,6 @@ async function loadPage() {
 	webSocketClient.registerCallback(MessageType.STATUS_CHANGE, (status: ConnectionStatus) => {
 		uiManager.updateConnectionStatus(status);
 	});
-}
-
-/**
- * Sets up language navigation button listeners.
- */
-function setupLanguageListeners() {
-	const backBtn = requireElementById(EL.BUTTONS.BACK);
-	const forwardBtn = requireElementById(EL.BUTTONS.FORWARD);
-
-	backBtn.addEventListener('click', previousLanguage);
-	forwardBtn.addEventListener('click', nextLanguage);
 }
 
 // Initialize the application
