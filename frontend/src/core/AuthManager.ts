@@ -428,7 +428,7 @@ export class AuthManager {
             uiManager.clearForm(this.registrationFields);
             // uiManager.showUserInfo(username);
             alert(message || 'Registration successful! Welcome to the game!');
-            setTimeout(() => { appManager.navigateTo(AppState.GAME_MODE); }, 500);
+            setTimeout(() => { appManager.navigateTo(AppState.LOGIN) }, 500);
         }
         else {
             uiManager.clearForm(this.registrationFields);
