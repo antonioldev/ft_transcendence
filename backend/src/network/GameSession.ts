@@ -51,7 +51,7 @@ export abstract class AbstractGameSession {
 	}
 
 	add_client(client: Client) {
-		if (this.clients.size >= this.client_capacity) return ;
+		if (this.full) return ;
 
 		this.clients.add(client);
 		if (this.clients.size === this.client_capacity) {
@@ -70,7 +70,7 @@ export abstract class AbstractGameSession {
 		if (!this.clients.has(client)) return ;
 
 		this.clients.delete(client);
-		this.readyClients.delete(client.id);
+		this.readyClients.delete(client.sid);
 		
 		if (this.clients.size === 0) {
 			this.stop();
@@ -93,11 +93,6 @@ export abstract class AbstractGameSession {
 		for (let i = 1; this.players.size < this.player_capacity; i++) {
 			this.add_player(new CPU(`CPU_${i}`, this.get_cpu_name(), this.ai_difficulty));
 		}
-
-		// if (this.mode === GameMode.TWO_PLAYER_REMOTE) {
-		// 	this.mode = GameMode.SINGLE_PLAYER
-		// }
-
 		this.client_capacity = this.clients.size;
     }
 
@@ -120,7 +115,7 @@ export abstract class AbstractGameSession {
 		this.readyClients.add(client_id);
 		console.log(`Client ${client_id} marked as ready.}`);
 		
-		if (this.allClientsReady()) {
+		if (this.full && this.allClientsReady()) {
 			eventManager.emit(`all-ready-${this.id}`);
 			console.log(`GameSession ${this.id}: all clients ready signal emitted`);
 		}
@@ -131,7 +126,7 @@ export abstract class AbstractGameSession {
 			console.warn(`Client ${client.username} not authorized to resume game`);
 			return;
 		}
-		const game = this.getGame(client.id);
+		const game = this.getGame(client.sid);
 		if (!game) {
 			console.log(`Game ${this.id} is not running, cannot resume`);
 			return ;
@@ -141,7 +136,7 @@ export abstract class AbstractGameSession {
 			return ;
 		}
 
-		console.log(`Game ${this.id} resumed by client ${client.id}`);
+		console.log(`Game ${this.id} resumed by client ${client.sid}`);
 		game.resume();
 	}
 
@@ -150,7 +145,7 @@ export abstract class AbstractGameSession {
 			console.warn(`Client ${client.username} not authorized to pause game`);
 			return;
 		}
-		const game = this.getGame(client.id);
+		const game = this.getGame(client.sid);
 		if (!game || !game.is_running()) {
 			console.log(`Game ${this.id} is not running, cannot pause`);
 			return ;
@@ -160,7 +155,7 @@ export abstract class AbstractGameSession {
 			return ;
 		}
 
-		console.log(`Game ${this.id} paused by client ${client.id}`);
+		console.log(`Game ${this.id} paused by client ${client.sid}`);
 		game.pause();
 	}
 
@@ -176,7 +171,7 @@ export abstract class AbstractGameSession {
 			console.warn(`Client ${client.username} not authorized to control game`);
 			return;
 		}
-		const game = this.getGame(client.id);
+		const game = this.getGame(client.sid);
 		if (!game) {
 			console.error("Error: cannot activate powerup, game does not exist");
 			return ;
@@ -195,22 +190,20 @@ export abstract class AbstractGameSession {
 		}
 	
 		const input: PlayerInput = {
-			id: client.id,
+			id: client.sid,
 			type: MessageType.PLAYER_INPUT,
 			side: data.side,
 			dx: data.direction
 		}
-		this.enqueue(input, client.id);
+		this.enqueue(input, client.sid);
 	}
 
 	send_lobby(client: Client) {
-		if (this.mode === GameMode.TOURNAMENT_REMOTE) {
-			send(client.websocket, {
-				type: MessageType.TOURNAMENT_LOBBY,
-				lobby: [...this.players].map(player => player.name)
-			});
-			console.log(`Lobby sent to ${client.username}`)
-		}
+		send(client.websocket, {
+			type: MessageType.TOURNAMENT_LOBBY,
+			lobby: [...this.players].map(player => player.name)
+		});
+		console.log(`Lobby sent to ${client.username}`)
 	}
 
 	enqueue(input: PlayerInput, client_id?: string): void  {

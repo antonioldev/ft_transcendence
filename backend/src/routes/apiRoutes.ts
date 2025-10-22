@@ -4,7 +4,7 @@ import * as db from "../data/validation.js";
 import { gameManager } from '../network/GameManager.js';
 import { AuthCode, GameMode, AiDifficulty } from '../shared/constants.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
-import { removeClientConnection, findOrCreateClient, getClientConnection, createClientConnection } from './utils.js';
+import { getClientConnection, createClientConnection } from './utils.js';
 
 
 /* --- HTTP Endpoints --- */
@@ -165,7 +165,7 @@ export async function APIRoutes(app: FastifyInstance) {
 		const { gameMode, players, capacity, aiDifficulty  } = request.body as 
 			{ gameMode: GameMode, players: Player[], capacity?: number, aiDifficulty?: AiDifficulty };
 
-		if (gameMode === undefined || !players ) {
+		if (gameMode === undefined || gameMode === null || !players ) {
 			console.log(`/join request failed: missing game info`);
 			return reply.code(401).send({ success: false, message: 'Missing username, email, or password' })
 		}
@@ -176,7 +176,7 @@ export async function APIRoutes(app: FastifyInstance) {
 			return reply.code(401).send( {success: false, message: "join failed: user not logged in"});
 		}
 		const gameSession = gameManager.findOrCreateGame(gameMode, capacity ?? undefined);
-		gameManager.addClient(client, gameSession);
+		gameManager.addClientToGame(client, gameSession);
 
 		if (aiDifficulty !== undefined && gameSession.ai_difficulty === undefined) {
 			gameSession.set_ai_difficulty(aiDifficulty);
@@ -188,10 +188,12 @@ export async function APIRoutes(app: FastifyInstance) {
 		}
 
 		// start game if full or local, otherwise wait for players to join
-		if ((gameSession.full) || gameSession.mode === GameMode.TOURNAMENT_LOCAL) {
+		if (gameSession.full || gameSession.mode === GameMode.TOURNAMENT_LOCAL) {
+			console.log(`RUNNING GAME: mode = ${gameSession.mode}`);
+			console.log(`full = ${gameSession.full}`);
 			gameManager.runGame(gameSession);
 		}
-		else {
+		else if (gameSession.mode === GameMode.TOURNAMENT_REMOTE) {
 			setTimeout(() => { gameManager.runGame(gameSession) }, (GAME_CONFIG.maxJoinWaitTime * 1000));
 		}
 

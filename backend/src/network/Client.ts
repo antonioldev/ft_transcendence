@@ -7,7 +7,7 @@ import { generateClientId } from '../data/database.js';
  * This is about the WebSocket connection, not the game participant
  */
 export class Client {
-    id: string = generateClientId();
+    // id: string = generateClientId();
     sid: string;
     username: string = "default";       // Username for future authentication (not used yet)
     email: string = "default@default";          // email for future authentication (not used yet)

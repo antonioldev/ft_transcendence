@@ -239,6 +239,8 @@ export class AppManager {
 			return;
 		}
 
+		currentSettings.gameMode = gameMode;
+
 		this.selectedGameMode = gameMode;
 		await this.startGame();
 	}

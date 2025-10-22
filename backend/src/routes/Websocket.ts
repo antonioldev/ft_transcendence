@@ -5,7 +5,7 @@ import { MessageType } from '../shared/constants.js';
 import { ClientMessage} from '../shared/types.js';
 import * as db from "../data/validation.js";
 import { TournamentRemote } from '../network/Tournament.js';
-import { getClientConnection, send } from './utils.js';
+import { getClientConnection, send, removeClientConnection } from './utils.js';
 
 /**
  * Sets up WebSocket routes for the Fastify server.
@@ -32,12 +32,12 @@ export async function setupWebsocket(app: FastifyInstance): Promise<void> {
         });
     
         socket.on('close', () => {
-            console.log(`WebSocket closed for client ${client!.username}:`);
+            console.log(`WebSocket closed for client ${client.username}:`);
             handleDisconnection(client!);
         });
     
         socket.on('error', (error: any) => {
-            console.error(`❌ WebSocket error for client ${client!.username}:`, error);
+            console.error(`❌ WebSocket error for client ${client.username}:`, error);
             handleDisconnection(client!);
         });
     });
@@ -46,6 +46,7 @@ export async function setupWebsocket(app: FastifyInstance): Promise<void> {
 function handleDisconnection(client: Client) {
     client.is_connected = false;
     gameManager.removeClient(client);
+    removeClientConnection(client.sid);
     setTimeout(() => { logoutAfterTimeout(client) }, 2000);
 }
 
@@ -71,7 +72,7 @@ async function handleMessage(client: Client, message: string) {
         }
         switch (data.type) {
             case MessageType.PLAYER_READY:
-                gameSession.setClientReady(client.id);
+                gameSession.setClientReady(client.sid);
                 break;
             case MessageType.PLAYER_INPUT:
                 gameSession.handlePlayerInput(client, data);
@@ -86,9 +87,8 @@ async function handleMessage(client: Client, message: string) {
                 await gameSession.activate_powerup(client, data);
                 break;
             case MessageType.REQUEST_LOBBY:
-                if (gameSession instanceof TournamentRemote) {
-                    gameSession.send_lobby(client);
-                } break;
+                gameSession.send_lobby(client);
+                break;
             case MessageType.SPECTATE_GAME:
                 if (gameSession instanceof TournamentRemote) {
                     gameSession.assign_spectator(client);
