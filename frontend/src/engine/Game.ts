@@ -237,7 +237,7 @@ export class Game {
 
 	// Handle server ending the game
 	private async onServerEndedGame(winner: string, loser: string): Promise<void> {
-		if (!this.isInitialized || !this.config.isTournament) return;
+		if (!this.isInitialized || !this.config.isTournament || this.isSpectator) return;
 		this.services?.audio?.lowerMusicVolume();
 		this.services?.gui?.setPauseVisible(false, false);
 		const controlledSides = this.getControlledSides();
