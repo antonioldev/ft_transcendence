@@ -25,15 +25,14 @@ export class Match {
 
 	add_player(player: Player | CPU) {
 		if (!player) return ;
-
+		
 		if (!this.players.includes(player)) {
-			console.log(`Player ${player.name} added to match ${this.id}`)
 			this.players.push(player);
 		}
 		if (player instanceof Player) {
-			console.log(`Client ${player.client.username} added to match ${this.id}`)
 			this.clients.add(player.client);
 		}
+		console.log(`Player ${player.name} added to match ${this.id}`)
 	}
 
 	remove_player(client: Client) {
@@ -313,7 +312,6 @@ export class TournamentRemote extends AbstractTournament {
 	assign_winner(match: Match, winner: Player | CPU) {
 		if (!match.next) {
 			this.tournamentWinner = winner;
-			
 			// save tournament winner to db
 			return ;
 		}
