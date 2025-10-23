@@ -45,13 +45,13 @@ export async function setupWebsocket(app: FastifyInstance): Promise<void> {
 
 function handleDisconnection(client: Client) {
     client.is_connected = false;
-    gameManager.removeClient(client);
-    removeClientConnection(client.sid);
-    setTimeout(() => { logoutAfterTimeout(client) }, 2000);
+    gameManager.removeClientFromGame(client);
+    setTimeout(() => { disconnectClient(client) }, 2000);
 }
 
-async function logoutAfterTimeout(client:  Client) {
+async function disconnectClient(client:  Client) {
     if (!client.is_connected) {
+        removeClientConnection(client.sid);
         await db.logoutUser(client.username); 
     }
 }
@@ -70,11 +70,15 @@ async function handleMessage(client: Client, message: string) {
         if (!gameSession) {
             throw( new Error(`Client ${client.username} not in any game for "${MessageType[data.type]}" signal`) );
         }
+        if (gameSession.in_lobby()) {
+            throw( new Error(`"${MessageType[data.type]}" signal ignored: game in lobby`) );
+        }
         switch (data.type) {
             case MessageType.PLAYER_READY:
                 gameSession.setClientReady(client.sid);
                 break;
             case MessageType.PLAYER_INPUT:
+                console.log("PLAYER INPUT RECEIVED");
                 gameSession.handlePlayerInput(client, data);
                 break;
             case MessageType.PAUSE_REQUEST:
@@ -98,7 +102,7 @@ async function handleMessage(client: Client, message: string) {
                     gameSession.toggle_spectator_game(client, data);
                 } break;
             case MessageType.QUIT_GAME:
-                gameManager.removeClient(client);
+                gameManager.removeClientFromGame(client);
                 break;
             default:
                 throw(new Error("Unknown message type"));

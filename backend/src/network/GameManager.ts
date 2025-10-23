@@ -21,7 +21,7 @@ class GameManager {
      * If a game session becomes empty, it is removed.
      * @param client - The client to be removed from game sessions.
      */
-    removeClient(client: Client): void {
+    removeClientFromGame(client: Client): void {
         const gameSession = this.clientSidGamesMap.get(client.sid);
         if (!gameSession) {
             console.warn(`Cannot remove Client ${client.username}: not in any game`);
@@ -78,11 +78,11 @@ class GameManager {
 
     async runGame(gameSession: AbstractGameSession): Promise<void> {
         if (gameSession.is_running()) return ;
-        if (gameSession.mode === GameMode.TOURNAMENT_REMOTE && gameSession.players.size < GAME_CONFIG.minTournamentSize) {
-            // wait another 30 seconds for at least 3 players to be in the tournament
-            setTimeout(() => { this.runGame(gameSession) }, (GAME_CONFIG.maxJoinWaitTime * 1000));
-            return ;
-        }
+        // if (gameSession.mode === GameMode.TOURNAMENT_REMOTE && gameSession.players.size < GAME_CONFIG.minTournamentSize) {
+        //     // wait another 30 seconds for at least 3 players to be in the tournament
+        //     setTimeout(() => { this.runGame(gameSession) }, (GAME_CONFIG.maxJoinWaitTime * 1000));
+        //     return ;
+        // }
         console.log(`Game started with ${gameSession.players.size} players`);
         db.updateStartTime(gameSession.id);
         gameSession.add_CPUs(); // add CPU's if necessary
