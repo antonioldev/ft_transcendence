@@ -36,8 +36,10 @@ export async function APIRoutes(app: FastifyInstance) {
 				}
 			});
 		}
+		else {
+			reply.send({ status: AuthCode.OK, message: "Welcome to Battle Pong!" });
+		}
 		client.is_connected = true;
-		reply.send( { status: AuthCode.OK, message: "Welcome to Battle Pong!" });
 	});
 
 	// LOGIN
@@ -188,13 +190,12 @@ export async function APIRoutes(app: FastifyInstance) {
 		}
 
 		// start game if full or local, otherwise wait for more players to join
-		if (gameSession.full || gameSession.mode === GameMode.TOURNAMENT_LOCAL ||
-		(gameSession.mode === GameMode.TOURNAMENT_REMOTE && gameSession.players.size >= GAME_CONFIG.minTournamentSize)) {
+		if (gameSession.full || gameSession.mode === GameMode.TOURNAMENT_LOCAL) {
 			gameManager.runGame(gameSession);
 		}
-		// else if (gameSession.mode === GameMode.TOURNAMENT_REMOTE) {
-		// 	setTimeout(() => { gameManager.runGame(gameSession) }, (GAME_CONFIG.maxJoinWaitTime * 1000));
-		// }
+		else if (gameSession.mode === GameMode.TOURNAMENT_REMOTE) {
+			setTimeout(() => { gameManager.runGame(gameSession) }, (GAME_CONFIG.maxJoinWaitTime * 1000));
+		}
 
 		return reply.send({ success: true, message: `Client joined game ${gameSession.id}` })
 	})

@@ -1,4 +1,4 @@
-import { AdvancedDynamicTexture, Control, Grid, Rectangle, StackPanel, TextBlock } from "@babylonjs/gui";
+import { AdvancedDynamicTexture, Grid, Rectangle, StackPanel, TextBlock } from "@babylonjs/gui";
 import { getCurrentTranslation } from '../../translations/translations.js';
 import { AnimationManager } from "../services/AnimationManager.js";
 import { LOBBY_STYLES, createRect, createStackPanel, createTextBlock, } from "./GuiStyle.js";
@@ -89,7 +89,7 @@ export class Lobby {
 	private startDots(): void {
 		if (!this.subtitle) return;
 		this.stopDots();
-		const base = this.subtitle.text;
+		const base = ""
 		let step = 0;
 		this.dotsTimer = window.setInterval(() => {
 			step = (step + 1) % 3;

@@ -916,11 +916,17 @@ export const CARD_GAME_STYLES = {
         thickness: 0
     },
 
+    stack: {
+        width: "100%",
+        height: "95%",
+        isVertical: true,
+        spacing: 20,
+    },
     title: {
-        fontSize: 36,
+        fontSize: 40,
         color: COLORS.ORANGE,
         height: "60px",
-        top: "-300px",
+        // top: "-300px",
         fontWeight: "bold",
         shadowOffsetX: 1,
         shadowOffsetY: 1,
@@ -932,10 +938,10 @@ export const CARD_GAME_STYLES = {
     },
 
     instructions: {
-        fontSize: 18,
+        fontSize: 20,
         color: COLORS.WHITE,
-        height: "40px",
-        top: "-260px",
+        height: "30px"
+        // top: "-260px",
     },
 
     cardsGrid: {

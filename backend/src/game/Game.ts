@@ -166,10 +166,10 @@ export class Game {
 		this.state = GameState.RUNNING;
 
 		// if both are CPU then choose a random winner
-		if (this.paddles[LEFT] instanceof CPUBot && this.paddles[RIGHT] instanceof CPUBot) {
-			const random_index = (Math.random() > 0.5) ? 0 : 1;
-			return (this.players[random_index]);
-		}
+		// if (this.paddles[LEFT] instanceof CPUBot && this.paddles[RIGHT] instanceof CPUBot) {
+		// 	const random_index = (Math.random() > 0.5) ? 0 : 1;
+		// 	return (this.players[random_index]);
+		// }
 		await this.send_countdown();
 
 		// run game loop, updating and broadcasting state to clients until win
@@ -218,18 +218,19 @@ export class Game {
 	}
 
 	save_to_db() {
+		if (this.players.length === 0) return ;
 		if (this.players[LEFT] instanceof CPU || this.players[RIGHT] instanceof CPU) return ;
 
-		registerNewGame(this.id, this.players[LEFT].name, 1);
-		addPlayer2(this.id, this.players[RIGHT].name);
-		console.log(`Game ${this.id} added to db: P1:${this.players[LEFT].name}, P2: ${this.players[RIGHT].name}`);
+		registerNewGame(this.id, this.players[LEFT]?.name, 1);
+		addPlayer2(this.id, this.players[RIGHT]?.name);
+		console.log(`Game ${this.id} added to db: P1:${this.players[LEFT]?.name}, P2: ${this.players[RIGHT]?.name}`);
 
 		saveGameResult(
 			this.id, 
-			this.players[LEFT].name, 
-			this.players[RIGHT].name, 
-			this.paddles[LEFT].score, 
-			this.paddles[RIGHT].score, 
+			this.players[LEFT]?.name, 
+			this.players[RIGHT]?.name, 
+			this.paddles[LEFT]?.score, 
+			this.paddles[RIGHT]?.score, 
 			Date.now()
 		);
 		console.log(`Game ${this.id} saved to db`);

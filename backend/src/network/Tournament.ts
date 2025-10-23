@@ -25,15 +25,14 @@ export class Match {
 
 	add_player(player: Player | CPU) {
 		if (!player) return ;
-
+		
 		if (!this.players.includes(player)) {
-			console.log(`Player ${player.name} added to match ${this.id}`)
 			this.players.push(player);
 		}
 		if (player instanceof Player) {
-			console.log(`Client ${player.client.username} added to match ${this.id}`)
 			this.clients.add(player.client);
 		}
+		console.log(`Player ${player.name} added to match ${this.id}`)
 	}
 
 	remove_player(client: Client) {
@@ -148,7 +147,6 @@ abstract class AbstractTournament extends AbstractGameSession{
 			
 			this.broadcastRoundSchedule(this.current_round);
 			await this.waitForClientsReady();
-			console.log(" ALL CLIENTS READY ");
 			
 			const matches = this.rounds.get(this.current_round);
 			if (!matches) return ; // maybe throw err
@@ -313,7 +311,6 @@ export class TournamentRemote extends AbstractTournament {
 	assign_winner(match: Match, winner: Player | CPU) {
 		if (!match.next) {
 			this.tournamentWinner = winner;
-			
 			// save tournament winner to db
 			return ;
 		}
@@ -339,6 +336,8 @@ export class TournamentRemote extends AbstractTournament {
 
 	assign_spectator(client: Client, match?: Match) {
 		const spectator_match = match ?? this.active_matches[0] ?? undefined;
+		console.log(`Active matches size: ${this.active_matches.length}`);
+		console.log(`Active matches[0].id: ${this.active_matches[0]?.id}`);
 		if (!spectator_match) {
 			console.log("Cannot assign spectator: no active game");
 			return ;

@@ -22,7 +22,7 @@ export class GUIManager {
 	private adt: AdvancedDynamicTexture | null = null;
 	private isInitialized: boolean = false;
 	private isTournament: boolean = false;
-	private isLastMatch: boolean = false;
+	isLastMatch: boolean = false;
 	countdown!: Countdown;
 	matchTree!: MatchTree;
 	hud!: Hud;
@@ -111,6 +111,7 @@ export class GUIManager {
 
 	updateTournamentRound(message: any): void {
 		console.error("test");
+		this.cardGame.hide();
 		if (message.round_index === message.round_total)
 			this.isLastMatch = true;
 		this.pause.alignLeft();

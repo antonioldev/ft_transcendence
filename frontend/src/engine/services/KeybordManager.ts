@@ -154,12 +154,12 @@ export class KeyboardManager {
 		this.isPaused = !this.isPaused;
 		this.gui.setPauseVisible(this.isPaused, false);
 
-		if (!this.config.isRemoteMultiplayer) {
+		// if (!this.config.isRemoteMultiplayer) {
 			if (this.isPaused)
 				webSocketClient.sendPauseRequest();
 			else
 				webSocketClient.sendResumeRequest();
-		}
+		// }
 	}
 
 	private handlePauseMenuKeys(key: number): void {

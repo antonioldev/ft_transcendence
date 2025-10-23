@@ -13,6 +13,7 @@ import { startFireworks } from "./scene/builders/effectsBuilder.js";
 import { disposeMaterialResources } from "./scene/builders/materialsBuilder.js";
 import { buildScene } from './scene/builders/sceneBuilder.js';
 import { PlayerSide, PlayerState } from "./utils.js";
+import { GUIManager } from "./services/GuiManager.js";
 
 /**
  * The Game class serves as the core of the game engine, managing the initialization,
@@ -244,14 +245,14 @@ export class Game {
 
 		const controlledPlayer = controlledSides.length === 1 ? this.players.get(controlledSides[0]) : null;
 		const showLoser = controlledPlayer?.name === loser;
-		
-		if (showLoser){
+
+		if (this.config.gameMode === GameMode.TOURNAMENT_REMOTE && showLoser){
 			await this.services?.gui?.showTournamentMatchLoser();
 			await this.services?.input.waitForSpectatorChoice();
 			this.resetForNextMatch();
 			await this.services?.gui.curtain.show(showLoser);
 			this.services?.gui.hud.setSpectatorMode();
-			webSocketClient.sendSpectatorReady();
+			// webSocketClient.sendSpectatorReady();
 			this.isSpectator = true;
 			return;
 		}
@@ -259,9 +260,12 @@ export class Game {
 		const waitForSpace = controlledSides.length !== 0 && this.config.gameMode !== GameMode.TOURNAMENT_REMOTE;
 		await this.services?.gui?.showTournamentMatchWinner(winner, waitForSpace);
 		this.resetForNextMatch();
-		await this.services?.gui.curtain.show();
-		this.services?.gui.cardGame.show();
 		webSocketClient.sendPlayerReady();
+		if (this.services?.gui.isLastMatch)  return ;
+
+		await this.services?.gui.curtain.show();
+		if (this.config.isRemoteMultiplayer)
+			this.services?.gui.cardGame.show();
 	}
 
 	private async onServerEndedSession(winner: string): Promise<void> {

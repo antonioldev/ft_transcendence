@@ -25,10 +25,10 @@ export async function setupWebsocket(app: FastifyInstance): Promise<void> {
             console.log(`Cannot handle Websocket connection, client does not exist`);
             return ;
         }
-        if (!client.websocket) client.websocket = socket;
+        client.websocket = socket;
     
         socket.on('message', async (message: string) => {
-            await handleMessage(client!, message);
+            await handleMessage(client, message);
         });
     
         socket.on('close', () => {
@@ -70,15 +70,11 @@ async function handleMessage(client: Client, message: string) {
         if (!gameSession) {
             throw( new Error(`Client ${client.username} not in any game for "${MessageType[data.type]}" signal`) );
         }
-        if (gameSession.in_lobby()) {
-            throw( new Error(`"${MessageType[data.type]}" signal ignored: game in lobby`) );
-        }
         switch (data.type) {
             case MessageType.PLAYER_READY:
-                gameSession.setClientReady(client.sid);
+                gameSession.setClientReady(client);
                 break;
             case MessageType.PLAYER_INPUT:
-                console.log("PLAYER INPUT RECEIVED");
                 gameSession.handlePlayerInput(client, data);
                 break;
             case MessageType.PAUSE_REQUEST:
@@ -93,10 +89,10 @@ async function handleMessage(client: Client, message: string) {
             case MessageType.REQUEST_LOBBY:
                 gameSession.send_lobby(client);
                 break;
-            case MessageType.SPECTATE_GAME:
-                if (gameSession instanceof TournamentRemote) {
-                    gameSession.assign_spectator(client);
-                } break;
+            // case MessageType.SPECTATE_GAME:
+            //     if (gameSession instanceof TournamentRemote) {
+            //         gameSession.assign_spectator(client);
+            //     } break;
             case MessageType.TOGGLE_SPECTATOR_GAME:
                 if (gameSession instanceof TournamentRemote) {
                     gameSession.toggle_spectator_game(client, data);
