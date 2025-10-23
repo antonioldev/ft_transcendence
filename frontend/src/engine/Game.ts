@@ -244,8 +244,8 @@ export class Game {
 
 		const controlledPlayer = controlledSides.length === 1 ? this.players.get(controlledSides[0]) : null;
 		const showLoser = controlledPlayer?.name === loser;
-		
-		if (showLoser){
+
+		if (this.config.gameMode === GameMode.TOURNAMENT_REMOTE && showLoser){
 			await this.services?.gui?.showTournamentMatchLoser();
 			await this.services?.input.waitForSpectatorChoice();
 			this.resetForNextMatch();
@@ -261,7 +261,8 @@ export class Game {
 		this.resetForNextMatch();
 		webSocketClient.sendPlayerReady();
 		await this.services?.gui.curtain.show();
-		this.services?.gui.cardGame.show();
+		if (this.config.isRemoteMultiplayer)
+			this.services?.gui.cardGame.show();
 	}
 
 	private async onServerEndedSession(winner: string): Promise<void> {
