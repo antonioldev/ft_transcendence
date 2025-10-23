@@ -363,7 +363,12 @@ export const LOBBY_STYLES = {
         color: COLORS.ORANGE,
         height: "60px",
         fontWeight: "bold",
-        outlineWidth: 2,
+         shadowOffsetX: 1,
+        shadowOffsetY: 1,
+        shadowBlur: 3,
+        shadowOpacity: 0.7,
+        shadowColor: COLORS.BLACK,
+        // outlineWidth: 2,
         outlineColor: COLORS.WHITE
     },
     
