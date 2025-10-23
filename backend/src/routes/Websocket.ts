@@ -45,13 +45,13 @@ export async function setupWebsocket(app: FastifyInstance): Promise<void> {
 
 function handleDisconnection(client: Client) {
     client.is_connected = false;
-    gameManager.removeClient(client);
-    removeClientConnection(client.sid);
-    setTimeout(() => { logoutAfterTimeout(client) }, 2000);
+    gameManager.removeClientFromGame(client);
+    setTimeout(() => { disconnectClient(client) }, 2000);
 }
 
-async function logoutAfterTimeout(client:  Client) {
+async function disconnectClient(client:  Client) {
     if (!client.is_connected) {
+        removeClientConnection(client.sid);
         await db.logoutUser(client.username); 
     }
 }
@@ -98,7 +98,7 @@ async function handleMessage(client: Client, message: string) {
                     gameSession.toggle_spectator_game(client, data);
                 } break;
             case MessageType.QUIT_GAME:
-                gameManager.removeClient(client);
+                gameManager.removeClientFromGame(client);
                 break;
             default:
                 throw(new Error("Unknown message type"));

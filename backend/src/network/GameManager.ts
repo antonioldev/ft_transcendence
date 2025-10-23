@@ -21,7 +21,7 @@ class GameManager {
      * If a game session becomes empty, it is removed.
      * @param client - The client to be removed from game sessions.
      */
-    removeClient(client: Client): void {
+    removeClientFromGame(client: Client): void {
         const gameSession = this.clientSidGamesMap.get(client.sid);
         if (!gameSession) {
             console.warn(`Cannot remove Client ${client.username}: not in any game`);
