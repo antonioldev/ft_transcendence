@@ -166,10 +166,10 @@ export class Game {
 		this.state = GameState.RUNNING;
 
 		// if both are CPU then choose a random winner
-		if (this.paddles[LEFT] instanceof CPUBot && this.paddles[RIGHT] instanceof CPUBot) {
-			const random_index = (Math.random() > 0.5) ? 0 : 1;
-			return (this.players[random_index]);
-		}
+		// if (this.paddles[LEFT] instanceof CPUBot && this.paddles[RIGHT] instanceof CPUBot) {
+		// 	const random_index = (Math.random() > 0.5) ? 0 : 1;
+		// 	return (this.players[random_index]);
+		// }
 		await this.send_countdown();
 
 		// run game loop, updating and broadcasting state to clients until win

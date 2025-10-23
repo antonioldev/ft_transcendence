@@ -97,12 +97,12 @@ export abstract class AbstractGameSession {
     }
 
 	allClientsReady(): boolean {
-		return (this.readyClients.size === this.clients.size && this.clients.size > 0);
+		return (this.readyClients.size >= this.clients.size && this.clients.size > 0);
 	}
 
 	async waitForClientsReady() {
 		if (this.allClientsReady()) {
-			console.log(`All clients ready: ready size: ${this.readyClients.size}`)
+			console.log(`All clients ready: ready size: ${this.readyClients.size}`);
 			return ;
 		}
 		await new Promise(resolve => {
@@ -111,9 +111,9 @@ export abstract class AbstractGameSession {
 		console.log(`Event triggered ALL READY`);
 	}
 
-	setClientReady(client_id: string): void {
-		this.readyClients.add(client_id);
-		console.log(`Client ${client_id} marked as ready.}`);
+	setClientReady(client: Client): void {
+		this.readyClients.add(client.sid);
+		console.log(`Client ${client.username} marked as ready\nTotal client ready: ${this.readyClients.size}\nTotal clients ${this.clients.size}`);
 		
 		if (this.full && this.allClientsReady()) {
 			eventManager.emit(`all-ready-${this.id}`);
@@ -130,6 +130,10 @@ export abstract class AbstractGameSession {
 		if (!game) {
 			console.log(`Game ${this.id} is not running, cannot resume`);
 			return ;
+		}
+		if (this.in_lobby()) {
+			console.warn('Unable to resume: game in lobby');
+			return;
 		}
 		if (!game.is_paused()) {
 			console.log(`Game ${this.id} is not paused`);
@@ -149,6 +153,10 @@ export abstract class AbstractGameSession {
 		if (!game || !game.is_running()) {
 			console.log(`Game ${this.id} is not running, cannot pause`);
 			return ;
+		}
+		if (this.in_lobby()) {
+			console.warn('Unable to pause: game in lobby');
+			return;
 		}
 		if (game.is_paused()) {
 			console.log(`Game ${this.id} is already paused`);
@@ -171,6 +179,10 @@ export abstract class AbstractGameSession {
 			console.warn(`Client ${client.username} not authorized to control game`);
 			return;
 		}
+		if (this.in_lobby()) {
+			console.warn('Unable to activate powerup: game in lobby');
+			return;
+		}
 		const game = this.getGame(client.sid);
 		if (!game) {
 			console.error("Error: cannot activate powerup, game does not exist");
@@ -186,6 +198,10 @@ export abstract class AbstractGameSession {
 		}
 		if (!this.canClientControlGame(client)){
 			console.warn(`Client ${client.username} not authorized to control game`);
+			return;
+		}
+		if (this.in_lobby()) {
+			console.warn('Unable to process player input: game in lobby');
 			return;
 		}
 	
