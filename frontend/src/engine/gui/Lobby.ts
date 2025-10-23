@@ -1,4 +1,4 @@
-import { AdvancedDynamicTexture, Grid, Rectangle, StackPanel, TextBlock } from "@babylonjs/gui";
+import { AdvancedDynamicTexture, Control, Grid, Rectangle, StackPanel, TextBlock } from "@babylonjs/gui";
 import { getCurrentTranslation } from '../../translations/translations.js';
 import { AnimationManager } from "../services/AnimationManager.js";
 import { LOBBY_STYLES, createRect, createStackPanel, createTextBlock, } from "./GuiStyle.js";
@@ -17,21 +17,26 @@ export class Lobby {
 		this.adt.addControl(this.overlay);
 
 		const mainGrid = new Grid("lobbyMainGrid");
-		mainGrid.addRowDefinition(0.25, false);  // Subtitle row
+		mainGrid.addRowDefinition(0.20, false);  // Subtitle row
+		mainGrid.addRowDefinition(0.05, false); // dots
 		mainGrid.addRowDefinition(0.1, false); // Count row
 		mainGrid.addRowDefinition(0.65, false);  // Scroll row
 		mainGrid.width = "100%";
 		mainGrid.height = "100%";
 		this.overlay.addControl(mainGrid);
 
-		this.subtitle = createTextBlock("lobbySubtitle", LOBBY_STYLES.title, t.waiting);
-		mainGrid.addControl(this.subtitle, 0, 0);
+		const title = createTextBlock("lobbySubtitle", LOBBY_STYLES.title, t.waiting);
+		mainGrid.addControl(title, 0, 0);
+
+		this.subtitle = createTextBlock("lobbySubtitle", LOBBY_STYLES.title);
+		// this.subtitle.textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT,
+		mainGrid.addControl(this.subtitle, 1, 0);
 
 		this.countText = createTextBlock("lobbyCount", LOBBY_STYLES.count, "");
-		mainGrid.addControl(this.countText, 1, 0);
+		mainGrid.addControl(this.countText, 2, 0);
 
 		this.listPanel = createStackPanel("lobbyList", LOBBY_STYLES.lobbyList);
-		mainGrid.addControl(this.listPanel, 2, 0);
+		mainGrid.addControl(this.listPanel, 3, 0);
 	}
 
 	show(players: string[]): void {
@@ -88,7 +93,7 @@ export class Lobby {
 		let step = 0;
 		this.dotsTimer = window.setInterval(() => {
 			step = (step + 1) % 3;
-			const dotPatterns = ["  .", " ..", "..."];
+			const dotPatterns = [".  ", ".. ", "..."];
 			this.subtitle!.text = base + dotPatterns[step];
 		}, 500);
 	}

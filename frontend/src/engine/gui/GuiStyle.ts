@@ -356,14 +356,16 @@ export const LOBBY_STYLES = {
         outlineColor: COLORS.WHITE
     },
     
-    subtitle: {
-        fontFamily: "monospace",
-        fontSize: 24,
-        color: COLORS.LIGHT_GREEN,
-        fontWeight: "bold",
-        height: "40px",
-        width: "100%",
-    },
+    // subtitle: {
+    //     // fontFamily: "monospace",
+    //     fontFamily: FONT_FAMILY,
+    //     textHorizontalAlignment: H_LEFT,
+    //     fontSize: 24,
+    //     color: COLORS.LIGHT_GREEN,
+    //     fontWeight: "bold",
+    //     height: "40px",
+    //     width: "100%",
+    // },
     
     count: {
         fontFamily: FONT_FAMILY,
