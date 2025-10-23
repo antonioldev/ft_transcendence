@@ -65,7 +65,7 @@ export const french: Translation = {
     easy: ' (Facile)',
     medium: ' (Moyen)',
     hard: ' (Difficile)',
-    impossible: ' (Impossible)',
+    impossible: ' (God of War)',
     winner: 'VAINQUEUR',
     continue: 'Appuyez sur ESPACE pour continuer',
 	tournamentTitle: 'Classement du Tournoi',

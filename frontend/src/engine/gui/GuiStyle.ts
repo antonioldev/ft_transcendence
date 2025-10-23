@@ -97,13 +97,18 @@ export const HUD_STYLES = {
         color: COLORS.WHITE,
         fontSize: 48,
         fontWeight: "bold",
-        shadowOffsetX: 2,
-        shadowOffsetY: 2,
-        shadowBlur: 0,
-        shadowColor: COLORS.GOLD_SHADOW,
-        outlineWidth: 2,
-        outlineColor: COLORS.TRANSPARENT_BLACK,
-        thickness: 2,
+        shadowOffsetX: 1,
+        shadowOffsetY: 1,
+        shadowBlur: 2,
+        shadowOpacity: 0.5,
+        shadowColor: COLORS.BLACK,
+        // shadowOffsetX: 2,
+        // shadowOffsetY: 2,
+        // shadowBlur: 0,
+        // shadowColor: COLORS.GOLD_SHADOW,
+        // outlineWidth: 2,
+        // outlineColor: COLORS.TRANSPARENT_BLACK,
+        // thickness: 2,
         resizeToFit: true
     },
 
@@ -112,12 +117,17 @@ export const HUD_STYLES = {
         color: COLORS.WHITE,
         fontSize: 48,
         fontWeight: "bold",
-        shadowOffsetX: 2,
-        shadowOffsetY: 2,
-        shadowBlur: 0,
-        shadowColor: COLORS.GOLD_SHADOW,
-        outlineWidth: 2,
-        outlineColor: COLORS.TRANSPARENT_BLACK,
+        shadowOffsetX: 1,
+        shadowOffsetY: 1,
+        shadowBlur: 2,
+        shadowOpacity: 0.5,
+        shadowColor: COLORS.BLACK,
+        // shadowOffsetX: 2,
+        // shadowOffsetY: 2,
+        // shadowBlur: 0,
+        // shadowColor: COLORS.GOLD_SHADOW,
+        // outlineWidth: 2,
+        // outlineColor: COLORS.TRANSPARENT_BLACK,
         resizeToFit: true,
     },
 
@@ -127,12 +137,17 @@ export const HUD_STYLES = {
         textVerticalAlignment: V_BOTTOM,
         fontSize: 56,
         fontWeight: "bold",
-        shadowOffsetX: 2,
-        shadowOffsetY: 2,
-        shadowBlur: 0,
-        shadowColor: COLORS.GOLD_SHADOW,
-        outlineWidth: 2,
-        outlineColor: COLORS.TRANSPARENT_BLACK
+        shadowOffsetX: 1,
+        shadowOffsetY: 1,
+        shadowBlur: 2,
+        shadowOpacity: 0.5,
+        shadowColor: COLORS.BLACK,
+        // shadowOffsetX: 2,
+        // shadowOffsetY: 2,
+        // shadowBlur: 0,
+        // shadowColor: COLORS.GOLD_SHADOW,
+        // outlineWidth: 2,
+        // outlineColor: COLORS.TRANSPARENT_BLACK
     },
 
     score2Text: {
@@ -141,12 +156,17 @@ export const HUD_STYLES = {
         textVerticalAlignment: V_BOTTOM,
         fontSize: 56,
         fontWeight: "bold",
-        shadowOffsetX: 3,
-        shadowOffsetY: 3,
-        shadowBlur: 0,
-        shadowColor: COLORS.GOLD_SHADOW,
-        outlineWidth: 2,
-        outlineColor: COLORS.TRANSPARENT_BLACK
+        shadowOffsetX: 1,
+        shadowOffsetY: 1,
+        shadowBlur: 2,
+        shadowOpacity: 0.5,
+        shadowColor: COLORS.BLACK,
+        // shadowOffsetX: 3,
+        // shadowOffsetY: 3,
+        // shadowBlur: 0,
+        // shadowColor: COLORS.GOLD_SHADOW,
+        // outlineWidth: 2,
+        // outlineColor: COLORS.TRANSPARENT_BLACK
     },
 
     rallyText: {
@@ -329,8 +349,13 @@ export const PAUSE_MENU_STYLES = {
         color: COLORS.WHITE,
         fontSize: 36,
         fontWeight: "bold",
-        outlineWidth: 2,
-        outlineColor: COLORS.BLACK
+        // outlineWidth: 2,
+        shadowOffsetX: 1,
+        shadowOffsetY: 1,
+        shadowBlur: 2,
+        shadowOpacity: 0.5,
+        shadowColor: COLORS.BLACK,
+        // outlineColor: COLORS.BLACK
     }
 } as const;
 
@@ -338,8 +363,10 @@ export const LOBBY_STYLES = {
     overlay: {
         width: "50%",
         height: "80%",
-        color: COLORS.WHITE,
-        background: COLORS.TRANSPARENT_WHITE_15,
+        color: COLORS.LIGHT_GREEN,
+        background: COLORS.DARK_BLUE,
+        shadowBlur: 15,
+        shadowColor: COLORS.TRANSPARENT_BLACK_DARK,
         zIndex: Z_INDEX.LOBBY,
         isVisible: false,
         thickness: 2,
@@ -352,13 +379,13 @@ export const LOBBY_STYLES = {
         color: COLORS.ORANGE,
         height: "60px",
         fontWeight: "bold",
-         shadowOffsetX: 1,
-        shadowOffsetY: 1,
-        shadowBlur: 3,
-        shadowOpacity: 0.7,
-        shadowColor: COLORS.BLACK,
+        // shadowOffsetX: 1,
+        // shadowOffsetY: 1,
+        // shadowBlur: 2,
+        // shadowOpacity: 0.5,
+        // shadowColor: COLORS.BLACK,
         // outlineWidth: 2,
-        outlineColor: COLORS.WHITE
+        // outlineColor: COLORS.WHITE
     },
     
     // subtitle: {
@@ -539,18 +566,28 @@ export const PARTIAL_END_GAME_STYLES = {
         color: COLORS.GOLD,
         fontSize: 110,
         fontWeight: "bold",
-        outlineWidth: 2,
-        outlineColor: COLORS.WHITE,
+        shadowOffsetX: 3,
+        shadowOffsetY: 3,
+        // shadowBlur: 2,
+        // shadowOpacity: 0.5,
+        // shadowColor: COLORS.BLACK,
+        // outlineWidth: 2,
+        // outlineColor: COLORS.WHITE,
         alpha: 0,
-        shadowBlur: 20,
+        shadowBlur: 10,
         shadowColor: COLORS.GOLD
     },
 
     continueText: {
         fontFamily: FONT_FAMILY,
         color: COLORS.WHITE,
-        outlineWidth: 2,
-        outlineColor: COLORS.GOLD,
+        shadowOffsetX: 1,
+        shadowOffsetY: 1,
+        shadowBlur: 2,
+        shadowOpacity: 0.5,
+        shadowColor: COLORS.BLACK,
+        // outlineWidth: 2,
+        // outlineColor: COLORS.GOLD,
         isVisible: false,
     }
 } as const;
@@ -645,12 +682,17 @@ export const BRACKET_STYLES = {
         fontWeight: "bold",
         fontSize: "18px",
         color: COLORS.WHITE,
-        outlineWidth: 2,
-        outlineColor: COLORS.BLACK,
-        shadowOffsetX: 2,
-        shadowOffsetY: 2,
-        shadowBlur: 0,
-        shadowColor: COLORS.TRANSPARENT_BLACK
+        // shadowOffsetX: 1,
+        // shadowOffsetY: 1,
+        // shadowBlur: 2,
+        // shadowOpacity: 0.5,
+        // shadowColor: COLORS.BLACK,
+        // outlineWidth: 2,
+        // outlineColor: COLORS.BLACK,
+        // shadowOffsetX: 2,
+        // shadowOffsetY: 2,
+        // shadowBlur: 0,
+        // shadowColor: COLORS.TRANSPARENT_BLACK
     },
     
     loserCell: {
@@ -733,8 +775,13 @@ export const BRACKET_STYLES = {
         color: COLORS.WHITE,
         fontSize: 16,
         fontWeight: "bold",
-        outlineWidth: 1,
-        outlineColor: COLORS.DARK_BLUE,
+        // shadowOffsetX: 1,
+        // shadowOffsetY: 1,
+        // shadowBlur: 2,
+        // shadowOpacity: 0.5,
+        // shadowColor: COLORS.BLACK,
+        // outlineWidth: 1,
+        // outlineColor: COLORS.DARK_BLUE,
     },
 
     matchRowRect: {
@@ -813,8 +860,8 @@ export const CURTAIN_STYLES = {
         horizontalAlignment: H_RIGHT,
         verticalAlignment: V_TOP,
         isVisible: false,
-        shadowBlur: 60,
-        shadowColor: COLORS.WHITE,
+        // shadowBlur: 60,
+        // shadowColor: COLORS.WHITE,
         zIndex: Z_INDEX.CURTAIN + 1
     },
     
@@ -826,8 +873,8 @@ export const CURTAIN_STYLES = {
         horizontalAlignment: H_LEFT,
         verticalAlignment: V_TOP,
         isVisible: false,
-        shadowBlur: 60,
-        shadowColor: COLORS.WHITE,
+        // shadowBlur: 60,
+        // shadowColor: COLORS.WHITE,
         zIndex: Z_INDEX.CURTAIN + 1
     },
 
@@ -849,8 +896,13 @@ export const CURTAIN_STYLES = {
         color: COLORS.WHITE,
         fontSize: 28,
         fontWeight: "bold",
-        outlineWidth: 2,
-        outlineColor: COLORS.BLACK
+        // shadowOffsetX: 1,
+        // shadowOffsetY: 1,
+        // shadowBlur: 2,
+        // shadowOpacity: 0.5,
+        // shadowColor: COLORS.BLACK,
+        // outlineWidth: 2,
+        // outlineColor: COLORS.BLACK
     }
 } as const;
 
@@ -870,8 +922,13 @@ export const CARD_GAME_STYLES = {
         height: "60px",
         top: "-300px",
         fontWeight: "bold",
-        outlineWidth: 2,
-        outlineColor: COLORS.WHITE,
+        shadowOffsetX: 1,
+        shadowOffsetY: 1,
+        shadowBlur: 2,
+        shadowOpacity: 0.5,
+        shadowColor: COLORS.BLACK,
+        // outlineWidth: 2,
+        // outlineColor: COLORS.WHITE,
     },
 
     instructions: {

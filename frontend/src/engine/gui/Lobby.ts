@@ -75,7 +75,7 @@ export class Lobby {
 			
 			this.listPanel!.addControl(rowContainer);
 		}
-		this.countText.text = `${t.countPlayer}: ${players.length}`;
+		this.countText.text = `${t.countPlayer} ${players.length}`;
 	}
 
 	hide(): void {
