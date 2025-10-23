@@ -89,7 +89,7 @@ export class Lobby {
 	private startDots(): void {
 		if (!this.subtitle) return;
 		this.stopDots();
-		const base = this.subtitle.text;
+		const base = ""
 		let step = 0;
 		this.dotsTimer = window.setInterval(() => {
 			step = (step + 1) % 3;
