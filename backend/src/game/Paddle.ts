@@ -156,7 +156,6 @@ export class CPUBot extends Paddle {
 			if (this._powerup === GAME_CONFIG.slot_count - 1 && dz <= GAME_CONFIG.paddleDepth * 15) {
 				const decider = (botScore + rally > GAME_CONFIG.scoreToWin) || (oppScore + rally >= GAME_CONFIG.scoreToWin);
 				if (decider) {
-					console.log(`DECIDER!`);
 					this._trigger?.(this.side, this._powerup);
 					this._powerup++;
 				}

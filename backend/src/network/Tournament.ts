@@ -337,6 +337,8 @@ export class TournamentRemote extends AbstractTournament {
 
 	assign_spectator(client: Client, match?: Match) {
 		const spectator_match = match ?? this.active_matches[0] ?? undefined;
+		console.log(`Active matches size: ${this.active_matches.length}`);
+		console.log(`Active matches[0].id: ${this.active_matches[0].id}`);
 		if (!spectator_match) {
 			console.log("Cannot assign spectator: no active game");
 			return ;

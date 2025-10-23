@@ -102,7 +102,7 @@ export abstract class AbstractGameSession {
 
 	async waitForClientsReady() {
 		if (this.allClientsReady()) {
-			console.log(`All clients ready: ready size: ${this.readyClients.size}`)
+			console.log(`All clients ready: ready size: ${this.readyClients.size}`);
 			return ;
 		}
 		await new Promise(resolve => {
@@ -113,7 +113,7 @@ export abstract class AbstractGameSession {
 
 	setClientReady(client: Client): void {
 		this.readyClients.add(client.sid);
-		console.log(`Client ${client.username} marked as ready\nTotal client ready: ${this.readyClients.size}`);
+		console.log(`Client ${client.username} marked as ready\nTotal client ready: ${this.readyClients.size}\nTotal clients ${this.clients.size}`);
 		
 		if (this.full && this.allClientsReady()) {
 			eventManager.emit(`all-ready-${this.id}`);
