@@ -1,4 +1,4 @@
-import { AdvancedDynamicTexture, Control, Grid, Rectangle, StackPanel, TextBlock } from "@babylonjs/gui";
+import { AdvancedDynamicTexture, Grid, Rectangle, StackPanel, TextBlock } from "@babylonjs/gui";
 import { getCurrentTranslation } from '../../translations/translations.js';
 import { AnimationManager } from "../services/AnimationManager.js";
 import { LOBBY_STYLES, createRect, createStackPanel, createTextBlock, } from "./GuiStyle.js";
