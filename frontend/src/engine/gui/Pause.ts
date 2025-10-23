@@ -8,6 +8,7 @@ import { H_LEFT, PAUSE_MENU_STYLES, createGrid, createRect, createStackPanel, cr
 
 export class Pause {
 	private overlay!: Rectangle;
+	private pauseBox!: Rectangle;
 	private spectatorPauseBox!: Rectangle;
 	private checkboxMusic?: Checkbox;
 	private checkboxEffects?: Checkbox;
@@ -19,43 +20,70 @@ export class Pause {
 		this.overlay = createRect("pauseOverlay", PAUSE_MENU_STYLES.pauseOverlay);
 		this.adt.addControl(this.overlay);
 
-		const pauseGrid = createGrid("pauseGrid", PAUSE_MENU_STYLES.pauseGrid);
-		if (config.isTournament) {
-			pauseGrid.width = "80%";
-			pauseGrid.horizontalAlignment = H_LEFT;
-		}
-		this.overlay.addControl(pauseGrid);
+		this.pauseBox = createRect("pauseBox", PAUSE_MENU_STYLES.pauseBox);
+		this.overlay.addControl(this.pauseBox);
 
-		// pauseGrid.addRowDefinition(PAUSE_MENU_STYLES.gridRows.title, false);
+		const pauseGrid = createGrid("pauseGrid", PAUSE_MENU_STYLES.grid);
+		this.pauseBox.addControl(pauseGrid);
+
 		pauseGrid.addRowDefinition(PAUSE_MENU_STYLES.gridRows.gameInstructions, false);
 		pauseGrid.addRowDefinition(PAUSE_MENU_STYLES.gridRows.exitInstruction, false);
 		pauseGrid.addRowDefinition(PAUSE_MENU_STYLES.gridRows.audio, false);
 
-		// const pauseTitle = createTextBlock( "pauseTitle", PAUSE_MENU_STYLES.pauseTitle, t.gamePaused);
-		// pauseGrid.addControl(pauseTitle, 0, 0);
 
-		const gameInstructions = createRect("gameInstructions", PAUSE_MENU_STYLES.gameInstructionContainer);
-		pauseGrid.addControl(gameInstructions, 0, 0);
-		this.buildInstructions(gameInstructions, config);
+		const instructionsStack = createStackPanel("instructionsStack", PAUSE_MENU_STYLES.stack);
+		pauseGrid.addControl(instructionsStack, 0, 0);
+		
+		const controlsTitle = createTextBlock("controlsTitle", PAUSE_MENU_STYLES.pauseTitle, t.pauseControlsTitle);
+		instructionsStack.addControl(controlsTitle);
 
-		const exitStack = createStackPanel("exitStack", PAUSE_MENU_STYLES.instructionsStack);
+		const movementHeader = createTextBlock("movementHeader", PAUSE_MENU_STYLES.pauseHeader, t.pauseMovementTitle);
+		instructionsStack.addControl(movementHeader);
+
+		const movementText = this.getMovementText(config);
+		const movementDetails = createTextBlock("movementDetails", PAUSE_MENU_STYLES.pauseDetails, movementText);
+		instructionsStack.addControl(movementDetails);
+
+		const powerupsHeader = createTextBlock("powerupsHeader", PAUSE_MENU_STYLES.pauseHeader, t.pausePowerupsTitle);
+		instructionsStack.addControl(powerupsHeader);
+
+		const powerupsText = this.getPowerupsText(config);
+		const powerupsDetails = createTextBlock("powerupsDetails", PAUSE_MENU_STYLES.pauseDetails, powerupsText);
+		instructionsStack.addControl(powerupsDetails);
+
+		const objectiveHeader = createTextBlock("objectiveHeader", PAUSE_MENU_STYLES.pauseHeader, t.pauseObjectiveTitle);
+		instructionsStack.addControl(objectiveHeader);
+
+		const points = GAME_CONFIG.scoreToWin;
+		const objectiveText = t.pauseObjectiveText.replace('{points}', points.toString());
+		const objectiveDetails = createTextBlock("objectiveDetails", PAUSE_MENU_STYLES.pauseDetails, objectiveText);
+		instructionsStack.addControl(objectiveDetails);
+
+
+
+
+
+
+
+		const exitStack = createStackPanel("exitStack", PAUSE_MENU_STYLES.stack);
 		pauseGrid.addControl(exitStack, 1, 0);
 
-		const pauseInstruction = createTextBlock("pauseInstruction", PAUSE_MENU_STYLES.pauseInstruction, t.exitGame);
-		exitStack.addControl(pauseInstruction);
+		const exitInstruction = createTextBlock("pauseInstruction", PAUSE_MENU_STYLES.pauseHeader, t.exitGame);
+		exitInstruction.fontSize = 24;
+		exitStack.addControl(exitInstruction);
 
-		const pauseHint = createTextBlock("pauseHint", PAUSE_MENU_STYLES.pauseHint, t.pauseControls);
-		exitStack.addControl(pauseHint);
+		const exitHint = createTextBlock("pauseHint", PAUSE_MENU_STYLES.pauseDetails, t.pauseControls);
+		exitStack.addControl(exitHint);
 
-		const audioGrid = createGrid("audioGrid", PAUSE_MENU_STYLES.audioGrid);
+		const audioGrid = createGrid("audioGrid", PAUSE_MENU_STYLES.grid);
 		audioGrid.addColumnDefinition(0.5, false);
 		audioGrid.addColumnDefinition(0.5, false);
 		pauseGrid.addControl(audioGrid, 2, 0);
 
-		const musicStack = createStackPanel("musicStack", PAUSE_MENU_STYLES.audioStack);
+		const musicStack = createStackPanel("musicStack", PAUSE_MENU_STYLES.stack);
 		audioGrid.addControl(musicStack, 0, 0);
 		
-		const musicLabel = createTextBlock("musicLabel", PAUSE_MENU_STYLES.pauseHint, t.music);
+		const musicLabel = createTextBlock("musicLabel", PAUSE_MENU_STYLES.pauseDetails, t.music);
 		musicStack.addControl(musicLabel);
 
 		this.checkboxMusic = createCheckbox("musicCheckbox", PAUSE_MENU_STYLES.muteCheckbox, config.musicEnabled);
@@ -71,10 +99,10 @@ export class Pause {
 			}
 		});
 		
-		const effectsStack = createStackPanel("effectsStack", PAUSE_MENU_STYLES.audioStack);
+		const effectsStack = createStackPanel("effectsStack", PAUSE_MENU_STYLES.stack);
 		audioGrid.addControl(effectsStack, 0, 1);
 		
-		const effectsLabel = createTextBlock("effectsLabel", PAUSE_MENU_STYLES.pauseHint, t.soundEffects);
+		const effectsLabel = createTextBlock("effectsLabel", PAUSE_MENU_STYLES.pauseDetails, t.soundEffects);
 		effectsStack.addControl(effectsLabel);
 
 		this.checkboxEffects = createCheckbox("effectsCheckbox", PAUSE_MENU_STYLES.muteCheckbox, config.soundEffectsEnabled);
@@ -97,37 +125,37 @@ export class Pause {
 		this.spectatorPauseBox.addControl(spectatorPauseText);
 	}
 
-	private buildInstructions(gameInstructions: Rectangle, config: GameConfig): void {
-		const t = getCurrentTranslation();
+	// private buildInstructions(gameInstructions: Rectangle, config: GameConfig): void {
+	// 	const t = getCurrentTranslation();
 
-		const instructionsStack = createStackPanel("instructionsStack", PAUSE_MENU_STYLES.instructionsStack);
-		gameInstructions.addControl(instructionsStack);
+	// 	const instructionsStack = createStackPanel("instructionsStack", PAUSE_MENU_STYLES.instructionsStack);
+	// 	gameInstructions.addControl(instructionsStack);
 		
-		const controlsTitle = createTextBlock("controlsTitle", PAUSE_MENU_STYLES.instructionTitle, t.pauseControlsTitle);
-		instructionsStack.addControl(controlsTitle);
+	// 	const controlsTitle = createTextBlock("controlsTitle", PAUSE_MENU_STYLES.instructionTitle, t.pauseControlsTitle);
+	// 	instructionsStack.addControl(controlsTitle);
 
-		const movementHeader = createTextBlock("movementHeader", PAUSE_MENU_STYLES.instructionSectionHeader, t.pauseMovementTitle);
-		instructionsStack.addControl(movementHeader);
+	// 	const movementHeader = createTextBlock("movementHeader", PAUSE_MENU_STYLES.instructionSectionHeader, t.pauseMovementTitle);
+	// 	instructionsStack.addControl(movementHeader);
 
-		const movementText = this.getMovementText(config);
-		const movementDetails = createTextBlock("movementDetails", PAUSE_MENU_STYLES.instructionDetails, movementText);
-		instructionsStack.addControl(movementDetails);
+	// 	const movementText = this.getMovementText(config);
+	// 	const movementDetails = createTextBlock("movementDetails", PAUSE_MENU_STYLES.instructionDetails, movementText);
+	// 	instructionsStack.addControl(movementDetails);
 
-		const powerupsHeader = createTextBlock("powerupsHeader", PAUSE_MENU_STYLES.instructionSectionHeader, t.pausePowerupsTitle);
-		instructionsStack.addControl(powerupsHeader);
+	// 	const powerupsHeader = createTextBlock("powerupsHeader", PAUSE_MENU_STYLES.instructionSectionHeader, t.pausePowerupsTitle);
+	// 	instructionsStack.addControl(powerupsHeader);
 
-		const powerupsText = this.getPowerupsText(config);
-		const powerupsDetails = createTextBlock("powerupsDetails", PAUSE_MENU_STYLES.instructionDetails, powerupsText);
-		instructionsStack.addControl(powerupsDetails);
+	// 	const powerupsText = this.getPowerupsText(config);
+	// 	const powerupsDetails = createTextBlock("powerupsDetails", PAUSE_MENU_STYLES.instructionDetails, powerupsText);
+	// 	instructionsStack.addControl(powerupsDetails);
 
-		const objectiveHeader = createTextBlock("objectiveHeader", PAUSE_MENU_STYLES.instructionSectionHeader, t.pauseObjectiveTitle);
-		instructionsStack.addControl(objectiveHeader);
+	// 	const objectiveHeader = createTextBlock("objectiveHeader", PAUSE_MENU_STYLES.instructionSectionHeader, t.pauseObjectiveTitle);
+	// 	instructionsStack.addControl(objectiveHeader);
 
-		const points = GAME_CONFIG.scoreToWin;
-		const objectiveText = t.pauseObjectiveText.replace('{points}', points.toString());
-		const objectiveDetails = createTextBlock("objectiveDetails", PAUSE_MENU_STYLES.instructionDetails, objectiveText);
-		instructionsStack.addControl(objectiveDetails);
-	}
+	// 	const points = GAME_CONFIG.scoreToWin;
+	// 	const objectiveText = t.pauseObjectiveText.replace('{points}', points.toString());
+	// 	const objectiveDetails = createTextBlock("objectiveDetails", PAUSE_MENU_STYLES.instructionDetails, objectiveText);
+	// 	instructionsStack.addControl(objectiveDetails);
+	// }
 
 	private getMovementText(config: GameConfig): string {
 		const t = getCurrentTranslation();
@@ -190,6 +218,10 @@ export class Pause {
 				});
 			}
 		}
+	}
+
+	alignLeft(): void {
+		this.pauseBox.horizontalAlignment = H_LEFT;
 	}
 
 	dispose(): void {

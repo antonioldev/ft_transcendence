@@ -113,6 +113,7 @@ export class GUIManager {
 		console.error("test");
 		if (message.round_index === message.round_total)
 			this.isLastMatch = true;
+		this.pause.alignLeft();
 		this.matchTree.insert(
 			message.round_index,
 			message.round_total,

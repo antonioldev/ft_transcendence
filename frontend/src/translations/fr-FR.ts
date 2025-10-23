@@ -59,7 +59,7 @@ export const french: Translation = {
     tournamentOnline: 'Tournoi en ligne',
     play: '/ jouer',
     loading: 'Chargement...',
-    waiting: 'Recherche d’adversaires ',
+    waiting: 'Recherche d’adversaires',
 	countPlayer: 'Joueurs rejoints: ',
     controls: 'Contrôles',
     easy: ' (Facile)',

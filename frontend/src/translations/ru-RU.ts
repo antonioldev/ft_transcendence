@@ -59,7 +59,7 @@ export const russian: Translation = {
     tournamentOnline: 'Онлайн-турнир',
     play: '/ ИГРАТЬ',
     loading: 'Загрузка...',
-    waiting: 'Поиск соперников ',
+    waiting: 'Поиск соперников',
 	countPlayer: 'Игроки подключились: ',
     controls: 'Управление',
     easy: ' (Лёгкий)',
