@@ -22,7 +22,7 @@ export class GUIManager {
 	private adt: AdvancedDynamicTexture | null = null;
 	private isInitialized: boolean = false;
 	private isTournament: boolean = false;
-	private isLastMatch: boolean = false;
+	isLastMatch: boolean = false;
 	countdown!: Countdown;
 	matchTree!: MatchTree;
 	hud!: Hud;

@@ -89,10 +89,10 @@ async function handleMessage(client: Client, message: string) {
             case MessageType.REQUEST_LOBBY:
                 gameSession.send_lobby(client);
                 break;
-            case MessageType.SPECTATE_GAME:
-                if (gameSession instanceof TournamentRemote) {
-                    gameSession.assign_spectator(client);
-                } break;
+            // case MessageType.SPECTATE_GAME:
+            //     if (gameSession instanceof TournamentRemote) {
+            //         gameSession.assign_spectator(client);
+            //     } break;
             case MessageType.TOGGLE_SPECTATOR_GAME:
                 if (gameSession instanceof TournamentRemote) {
                     gameSession.toggle_spectator_game(client, data);

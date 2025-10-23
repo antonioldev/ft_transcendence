@@ -13,6 +13,7 @@ import { startFireworks } from "./scene/builders/effectsBuilder.js";
 import { disposeMaterialResources } from "./scene/builders/materialsBuilder.js";
 import { buildScene } from './scene/builders/sceneBuilder.js';
 import { PlayerSide, PlayerState } from "./utils.js";
+import { GUIManager } from "./services/GuiManager.js";
 
 /**
  * The Game class serves as the core of the game engine, managing the initialization,
@@ -251,7 +252,7 @@ export class Game {
 			this.resetForNextMatch();
 			await this.services?.gui.curtain.show(showLoser);
 			this.services?.gui.hud.setSpectatorMode();
-			webSocketClient.sendSpectatorReady();
+			// webSocketClient.sendSpectatorReady();
 			this.isSpectator = true;
 			return;
 		}
@@ -260,6 +261,8 @@ export class Game {
 		await this.services?.gui?.showTournamentMatchWinner(winner, waitForSpace);
 		this.resetForNextMatch();
 		webSocketClient.sendPlayerReady();
+		if (this.services?.gui.isLastMatch)  return ;
+
 		await this.services?.gui.curtain.show();
 		if (this.config.isRemoteMultiplayer)
 			this.services?.gui.cardGame.show();

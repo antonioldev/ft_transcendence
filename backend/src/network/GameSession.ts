@@ -101,10 +101,12 @@ export abstract class AbstractGameSession {
 	}
 
 	async waitForClientsReady() {
+		console.log("INSIDE WAIT FOR CLIENTS READY");
 		if (this.allClientsReady()) {
 			console.log(`All clients ready: ready size: ${this.readyClients.size}`);
 			return ;
 		}
+		console.log("WAITING FOR EVENT");
 		await new Promise(resolve => {
 			eventManager.once(`all-ready-${this.id}`, resolve);
 		});
@@ -115,7 +117,7 @@ export abstract class AbstractGameSession {
 		this.readyClients.add(client.sid);
 		console.log(`Client ${client.username} marked as ready\nTotal client ready: ${this.readyClients.size}\nTotal clients ${this.clients.size}`);
 		
-		if (this.full && this.allClientsReady()) {
+		if (/*this.full && */this.allClientsReady()) {
 			eventManager.emit(`all-ready-${this.id}`);
 			console.log(`GameSession ${this.id}: all clients ready signal emitted`);
 		}
