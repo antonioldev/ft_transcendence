@@ -55,7 +55,7 @@
             <!-- PLAY button -->
             <button type="button" 
                     id="play-btn" 
-                    class="bg-orange rounded-sm text-blue-background font-poppins-semibold text-lg px-8 py-2 
+                    class="bg-orange rounded-md text-blue-background font-poppins-semibold text-lg px-8 py-2 
                         hover:bg-light-green hover:text-blue-background transition-colors duration-200
                         border border-orange hover:border-light-green
                         min-w-[180px] text-left">
@@ -65,7 +65,7 @@
             <!-- LOGIN button -->
             <button type="button" 
                     id="login-btn" 
-                    class="bg-transparent rounded-sm text-light-green font-poppins-semibold text-lg px-8 py-2 
+                    class="bg-transparent rounded-md text-light-green font-poppins-semibold text-lg px-8 py-2 
                         hover:bg-light-green hover:text-blue-background transition-colors duration-200
                         border border-light-green
                         min-w-[180px] text-left">
@@ -75,7 +75,7 @@
             <!-- REGISTER button -->
             <button type="button" 
                     id="register-btn" 
-                    class="bg-transparent rounded-sm text-light-green font-poppins-semibold text-lg px-8 py-2 
+                    class="bg-transparent rounded-md text-light-green font-poppins-semibold text-lg px-8 py-2 
                         hover:bg-light-green hover:text-blue-background transition-colors duration-200
                         border border-light-green
                         min-w-[180px] text-left">
@@ -95,7 +95,7 @@
                 </div>
                 <form class="max-w-sm mx-auto">
                     <label for="language_select" class="block mb-2 text-sm font-medium text-light-green font-sans">Language</label>
-                        <select id="language_select" class="block w-full p-2 mb-6 text-sm sm:text-base bg-transparent border border-light-green rounded-sm text-light-green focus:outline-2 focus:outline-orange font-sans">
+                        <select id="language_select" class="block w-full p-2 mb-6 text-sm sm:text-base bg-transparent border border-light-green rounded-md text-light-green focus:outline-2 focus:outline-orange font-sans">
                             <option value="UK">🇬🇧 English</option>
                             <option value="IT">🇮🇹 Italiano</option>
                             <option value="FR">🇫🇷 Français</option>
@@ -103,7 +103,7 @@
                             <option value="RU">🇷🇺 Русский</option>
                         </select>
                     <label for="map-selector" class="block mb-2 text-sm font-medium text-light-green font-sans">3D Scene</label>
-                        <select id="map-selector" class="block w-full p-2 mb-6 text-sm sm:text-base bg-transparent border border-light-green rounded-sm text-light-green focus:outline-2 focus:outline-orange font-sans">
+                        <select id="map-selector" class="block w-full p-2 mb-6 text-sm sm:text-base bg-transparent border border-light-green rounded-md text-light-green focus:outline-2 focus:outline-orange font-sans">
                             <option value="map0">Cyberpunk</option>
                             <option value="map1">Forest</option>
                             <option value="map2">Underwater</option>
@@ -138,11 +138,11 @@
                     <button type="button" id="settings-back"
                         class="bg-transparent text-light-green font-sans text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 
                                hover:bg-light-green hover:text-blue-background transition-colors duration-200
-                               border border-light-green rounded-sm">
+                               border border-light-green rounded-md">
                         Back to Main Menu
                     </button>
                     <!-- <button type="button" id="settings-save-btn"
-                        class="bg-orange rounded-sm text-blue-background font-sans text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 
+                        class="bg-orange rounded-md text-blue-background font-sans text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 
                                hover:bg-light-green hover:text-blue-background transition-colors duration-200
                                border border-orange hover:border-light-green
                                disabled:bg-gray-400 disabled:cursor-not-allowed">
@@ -179,7 +179,7 @@
                         </label>
                         <div class="mt-2">
                             <input id="login-username" name="email" type="text" autocomplete="email" required 
-                                   class="form-input block rounded-sm bg-transparent border border-light-green px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-light-green 
+                                   class="form-input block rounded-md bg-transparent border border-light-green px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-light-green 
                                           focus:outline-2 focus:outline-orange font-sans">
                             <span class="error-message" id="login-username-error">Please enter your email or username</span>
                         </div>
@@ -197,7 +197,7 @@
                         </div>
                         <div class="mt-1 sm:mt-2">
                             <input id="login-password" type="password" name="password" required autocomplete="current-password" 
-                                class="form-input block rounded-sm bg-transparent border border-light-green px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-light-green 
+                                class="form-input block rounded-md bg-transparent border border-light-green px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-light-green 
                                     focus:outline-2 focus:outline-orange font-sans" />
                             <span class="error-message" id="login-password-error">Please enter your password</span>
                         </div>
@@ -227,7 +227,7 @@
                     <button type="button" id="login-back"
                         class="bg-transparent text-light-green font-sans text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 
                                hover:bg-light-green hover:text-blue-background transition-colors duration-200
-                               border border-light-green rounded-sm">
+                               border border-light-green rounded-md">
                         Back to Main Menu
                     </button>
                 </div>
@@ -261,7 +261,7 @@
                         </label>
                         <div class="mt-2">
                             <input id="register-username" name="username" type="text" autocomplete="username" required 
-                                   class="form-input block rounded-sm bg-transparent border border-light-green px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-light-green 
+                                   class="form-input block rounded-md bg-transparent border border-light-green px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-light-green 
                                           focus:outline-2 focus:outline-orange font-sans">
                             <span class="error-message" id="register-username-error">Please enter a username</span>
                         </div>
@@ -271,7 +271,7 @@
                         </label>
                         <div class="mt-1 sm:mt-2">
                             <input id="register-email" type="email" name="email" required autocomplete="email" 
-                                class="form-input block rounded-sm bg-transparent border border-light-green px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-light-green 
+                                class="form-input block rounded-md bg-transparent border border-light-green px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-light-green 
                                       focus:outline-2 focus:outline-orange font-sans" />
                             <span class="error-message" id="register-email-error">Please enter a valid email</span>
                         </div>
@@ -283,7 +283,7 @@
                         </label>
                         <div class="mt-1 sm:mt-2">
                             <input id="register-password" type="password" name="password" required autocomplete="new-password" 
-                                class="form-input block rounded-sm bg-transparent border border-light-green px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-light-green 
+                                class="form-input block rounded-md bg-transparent border border-light-green px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-light-green 
                                       focus:outline-2 focus:outline-orange font-sans" />
                             <span class="error-message" id="register-password-error">Please enter a password</span>
                         </div>
@@ -295,7 +295,7 @@
                         </label>
                         <div class="mt-1 sm:mt-2">
                             <input id="register-confirm-password" type="password" name="confirm-password" required autocomplete="new-password" 
-                                class="form-input block rounded-sm bg-transparent border border-light-green px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-light-green 
+                                class="form-input block rounded-md bg-transparent border border-light-green px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-light-green 
                                       focus:outline-2 focus:outline-orange font-sans" />
                             <span class="error-message" id="register-confirm-password-error">Please confirm your password</span>
                         </div>
@@ -325,7 +325,7 @@
                     <button type="button" id="register-back"
                         class="bg-transparent text-light-green font-sans text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 
                                hover:bg-light-green hover:text-blue-background transition-colors duration-200
-                               border border-light-green rounded-sm">
+                               border border-light-green rounded-md">
                         Back to Main Menu
                     </button>
                 </div>
@@ -335,18 +335,18 @@
 
     <!-- Hidden elements for JS compatibility -->
     <div id="auth-buttons" style="display: none;"></div>
-    <div id="user-info" class="fixed top-16 right-7 z-40 bg-blue-background border border-light-green p-3 text-xs text-light-green font-sans text-center rounded-sm" style="display: none;">
+    <div id="user-info" class="fixed top-16 right-7 z-40 bg-blue-background border border-light-green p-3 text-xs text-light-green font-sans text-center rounded-md" style="display: none;">
         <div class="flex flex-col items-center gap-1">
             <div class="text-light-green font-tiny5-regular text-sm">
                 <span id="greeting">Hi</span>, <span id="user-name" class="font-sans font-bold"></span>
             </div>
             <div class="flex items-center gap-2">
                 <button type="button" id="dashboard-btn" 
-                        class="text-light-green hover:text-white transition-colors duration-200 font-tiny5-regular text-xs px-1 rounded-sm">
+                        class="text-light-green hover:text-white transition-colors duration-200 font-tiny5-regular text-xs px-1 rounded-md">
                     Dashboard
                 </button>
                 <button type="button" id="logout-btn" 
-                        class="text-orange hover:text-white transition-colors duration-200 font-tiny5-regular text-xs px-1 rounded-sm">
+                        class="text-orange hover:text-white transition-colors duration-200 font-tiny5-regular text-xs px-1 rounded-md">
                     Logout
                 </button>
             </div>
@@ -374,14 +374,14 @@
              <div class="flex items-center justify-center gap-4 mb-8">
                 <button type="button" id="view-mode-classic" 
                         class="bg-orange text-blue-background font-poppins-semibold text-lg px-3 py-3 
-                               transition-colors duration-200 border border-orange rounded-sm min-w-[120px]">
+                               transition-colors duration-200 border border-orange rounded-md min-w-[120px]">
                     <span id="view-mode-display">
                         Classic Mode
                     </span>
                 </button>
                 <button type="button" id="view-mode-immersive" 
                         class="bg-transparent text-light-green font-poppins-semibold text-lg px-3 py-3 
-                               transition-colors duration-200 border border-light-green rounded-sm min-w-[120px]">
+                               transition-colors duration-200 border border-light-green rounded-md min-w-[120px]">
                     <span id="view-mode-display">
                         Immersive Mode
                     </span>
@@ -394,50 +394,50 @@
                 <div class="flex items-center gap-2">
                     <button type="button" id="solo-difficulty-back" 
                             class="text-light-green hover:text-white transition-colors duration-200 
-                                   font-poppins-semibold text-lg px-2 rounded-sm">
+                                   font-poppins-semibold text-lg px-2 rounded-md">
                         ◂
                     </button>
                     <button type="button" id="solo-mode" 
                             class="flex-1 bg-transparent text-light-green font-poppins-semibold text-lg px-6 py-3 
                                    hover:bg-light-green hover:text-blue-background transition-colors duration-200
-                                   border border-light-green text-center rounded-sm">
+                                   border border-light-green text-center rounded-md">
                         vs AI (Medium)
                     </button>
                     <button type="button" id="solo-difficulty-forward" 
                             class="text-light-green hover:text-white transition-colors duration-200 
-                                   font-poppins-semibold text-lg px-2 rounded-sm">
+                                   font-poppins-semibold text-lg px-2 rounded-md">
                         ▸
                     </button>
                 </div>
                 
                 <!-- Local Game with 2 Players -->
                 <div class="flex items-center gap-2">
-                    <div class="text-light-green font-poppins-semibold text-lg px-2 rounded-sm opacity-0">
+                    <div class="text-light-green font-poppins-semibold text-lg px-2 rounded-md opacity-0">
                         ◂
                     </div>
                     <button type="button" id="local-mode" 
                             class="flex-1 bg-transparent text-light-green font-poppins-semibold text-lg px-6 py-3 
                                    hover:bg-light-green hover:text-blue-background transition-colors duration-200
-                                   border border-light-green text-center rounded-sm">
+                                   border border-light-green text-center rounded-md">
                         Local 2 Players
                     </button>
-                    <div class="text-light-green font-poppins-semibold text-lg px-2 rounded-sm opacity-0">
+                    <div class="text-light-green font-poppins-semibold text-lg px-2 rounded-md opacity-0">
                         ▸
                     </div>
                 </div>
                 
                 <!-- Online Game with 2 Players -->
                 <div class="flex items-center gap-2">
-                    <div class="text-light-green font-poppins-semibold text-lg px-2 rounded-sm opacity-0">
+                    <div class="text-light-green font-poppins-semibold text-lg px-2 rounded-md opacity-0">
                         ◂
                     </div>
                     <button type="button" id="online-mode" 
                             class="flex-1 bg-transparent text-light-green font-poppins-semibold text-lg px-6 py-3 
                                    hover:bg-light-green hover:text-blue-background transition-colors duration-200
-                                   border border-light-green text-center rounded-sm">
+                                   border border-light-green text-center rounded-md">
                         Online 2 Players
                     </button>
-                    <div class="text-light-green font-poppins-semibold text-lg px-2 rounded-sm opacity-0">
+                    <div class="text-light-green font-poppins-semibold text-lg px-2 rounded-md opacity-0">
                         ▸
                     </div>
                 </div>
@@ -446,18 +446,18 @@
                 <div class="flex items-center gap-2">
                     <button type="button" id="tournament-number-back" 
                             class="text-light-green hover:text-white transition-colors duration-200 
-                                   font-poppins-semibold text-lg px-2 rounded-sm">
+                                   font-poppins-semibold text-lg px-2 rounded-md">
                         ◂
                     </button>
                     <button type="button" id="tournament-mode" 
                             class="flex-1 bg-transparent text-light-green font-poppins-semibold text-lg px-6 py-3 
                                    hover:bg-light-green hover:text-blue-background transition-colors duration-200
-                                   border border-light-green text-center rounded-sm">
+                                   border border-light-green text-center rounded-md">
                         Tournament (4 x 👤)
                     </button>
                     <button type="button" id="tournament-number-forward" 
                             class="text-light-green hover:text-white transition-colors duration-200 
-                                   font-poppins-semibold text-lg px-2 rounded-sm">
+                                   font-poppins-semibold text-lg px-2 rounded-md">
                         ▸
                     </button>
                 </div>
@@ -466,18 +466,18 @@
                 <div class="flex items-center gap-2">
                     <button type="button" id="tournament-online-number-back" 
                             class="text-light-green hover:text-white transition-colors duration-200 
-                                    font-poppins-semibold text-lg px-2 rounded-sm">
+                                    font-poppins-semibold text-lg px-2 rounded-md">
                         ◂
                     </button>
                     <button type="button" id="tournament-online-mode" 
                             class="flex-1 bg-transparent text-light-green font-poppins-semibold text-lg px-6 py-3 
                                    hover:bg-light-green hover:text-blue-background transition-colors duration-200
-                                   border border-light-green text-center rounded-sm">
+                                   border border-light-green text-center rounded-md">
                         Tournament Online
                     </button>
                     <button type="button" id="tournament-online-number-forward" 
                             class="text-light-green hover:text-white transition-colors duration-200 
-                                    font-poppins-semibold text-lg px-2 rounded-sm">
+                                    font-poppins-semibold text-lg px-2 rounded-md">
                         ▸
                     </button>
                 </div>
@@ -487,7 +487,7 @@
                     <button type="button" id="mode-back"
                         class="bg-transparent text-light-green font-sans text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 
                                hover:bg-light-green hover:text-blue-background transition-colors duration-200
-                               border border-light-green rounded-sm">
+                               border border-light-green rounded-md">
                         Back to Main Menu
                     </button>
                 </div>
@@ -523,7 +523,7 @@
                                 <label id="player-label" class="text-light-green font-sans text-lg">Player 1</label>
                                 <input
                                     type="text" id="player-input" placeholder="Enter name"  maxlength="20" autocomplete="off"
-                                    class="form-input block rounded-sm bg-transparent border border-light-green px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-light-green 
+                                    class="form-input block rounded-md bg-transparent border border-light-green px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-light-green 
                                         focus:outline-2 focus:outline-orange font-sans"
                                 />
                             </div>
@@ -536,19 +536,19 @@
                     <button id="start-game" type="button" class="btn w-full sm:w-auto
                             bg-transparent text-light-green font-sans text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 
                             hover:bg-light-green hover:text-blue-background transition-colors duration-200
-                            border border-light-green rounded-sm">
+                            border border-light-green rounded-md">
                         Next
                     </button>
                     <button id="add-cpu" type="button" disabled class="btn btn-secondary w-full sm:w-auto
                             bg-transparent text-light-green font-sans text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 
                             hover:bg-light-green hover:text-blue-background transition-colors duration-200
-                            border border-light-green rounded-sm">
+                            border border-light-green rounded-md">
                         Add CPU
                     </button>
                     <button id="setup-back" type="button" class="btn btn-secondary w-full sm:w-auto
                             bg-transparent text-light-green font-sans text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 
                             hover:bg-light-green hover:text-blue-background transition-colors duration-200
-                            border border-light-green rounded-sm">
+                            border border-light-green rounded-md">
                         Back
                     </button>
                 </div>
@@ -613,7 +613,7 @@
                 <button type="button" id="dashboard-back" 
                         class="bg-transparent text-light-green font-sans text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 
                                hover:bg-light-green hover:text-blue-background transition-colors duration-200
-                               border border-light-green rounded-sm">
+                               border border-light-green rounded-md">
                     Back
                 </button>
             </div>
