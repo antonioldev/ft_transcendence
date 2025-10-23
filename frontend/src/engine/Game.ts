@@ -1,19 +1,18 @@
 import { Color4, Engine, Scene, SceneLoader } from "@babylonjs/core";
 import { appManager } from '../core/AppManager.js';
+import { sendPOST } from "../core/HTTPRequests.js";
 import { webSocketClient } from '../core/WebSocketClient.js';
 import { AppState, GameMode, GameState, MessageType } from '../shared/constants.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
-import { GameObjects, GameStateData, ThemeObject, PlayerInfo } from '../shared/types.js';
+import { GameObjects, GameStateData, PlayerInfo, ThemeObject } from '../shared/types.js';
 import { uiManager } from '../ui/UIManager.js';
 import { Logger } from '../utils/LogManager.js';
 import { GameConfig } from './GameConfig.js';
 import { GameServices } from "./GameServices.js";
-import { buildScene } from './scene/builders/sceneBuilder.js';
-import { disposeMaterialResources } from "./scene/builders/materialsBuilder.js";
-import { PlayerSide, PlayerState } from "./utils.js";
 import { startFireworks } from "./scene/builders/effectsBuilder.js";
-import { PowerupType } from "../shared/constants.js";
-import { sendPOST } from "../core/HTTPRequests.js";
+import { disposeMaterialResources } from "./scene/builders/materialsBuilder.js";
+import { buildScene } from './scene/builders/sceneBuilder.js';
+import { PlayerSide, PlayerState } from "./utils.js";
 
 /**
  * The Game class serves as the core of the game engine, managing the initialization,
@@ -194,48 +193,47 @@ export class Game {
 			this.services?.animation?.stopCameraAnimations();
 			this.services?.gui?.countdown.finish();
 			this.startGameLoop();
-			// this.testPowerupEffects();
 		}
 	}
 
-	private testPowerupEffects(): void {
-	const powerupTypes = [
-		PowerupType.SHRINK_OPPONENT,
-		PowerupType.GROW_PADDLE,
-		PowerupType.INVERT_OPPONENT,
-		PowerupType.SHIELD,
-		PowerupType.SLOW_OPPONENT,
-		PowerupType.INCREASE_PADDLE_SPEED,
-		PowerupType.FREEZE,
-		PowerupType.POWERSHOT,
-		PowerupType.CURVE_BALL,
-		PowerupType.CURVE_BALL
-	];
+// 	private testPowerupEffects(): void {
+// 	const powerupTypes = [
+// 		PowerupType.SHRINK_OPPONENT,
+// 		PowerupType.GROW_PADDLE,
+// 		PowerupType.INVERT_OPPONENT,
+// 		PowerupType.SHIELD,
+// 		PowerupType.SLOW_OPPONENT,
+// 		PowerupType.INCREASE_PADDLE_SPEED,
+// 		PowerupType.FREEZE,
+// 		PowerupType.POWERSHOT,
+// 		PowerupType.CURVE_BALL,
+// 		PowerupType.CURVE_BALL
+// 	];
 
-	let currentIndex = 0;
-	let previousPowerup: PowerupType | null = null;
+// 	let currentIndex = 0;
+// 	let previousPowerup: PowerupType | null = null;
 
-	const testInterval = setInterval(() => {
-		if (!this.isInitialized || !this.services?.powerup) {
-			clearInterval(testInterval);
-			return;
-		}
+// 	const testInterval = setInterval(() => {
+// 		if (!this.isInitialized || !this.services?.powerup) {
+// 			clearInterval(testInterval);
+// 			return;
+// 		}
 
-		// Deactivate previous powerup
-		if (previousPowerup !== null) {
-			this.services.powerup.deactivate(PlayerSide.LEFT, 0, previousPowerup);
-			console.error(`   ✅ Deactivated: ${PowerupType[previousPowerup]}`);
-		}
+// 		// Deactivate previous powerup
+// 		if (previousPowerup !== null) {
+// 			this.services.powerup.deactivate(PlayerSide.LEFT, 0, previousPowerup);
+// 			console.error(`   ✅ Deactivated: ${PowerupType[previousPowerup]}`);
+// 		}
 
-		// Activate new powerup
-		const powerupType = powerupTypes[currentIndex];
-		console.error(`🧪 Activating: ${PowerupType[powerupType]}`);
-		this.services.powerup.activate(PlayerSide.LEFT, 0, powerupType);
+// 		// Activate new powerup
+// 		const powerupType = powerupTypes[currentIndex];
+// 		console.error(`🧪 Activating: ${PowerupType[powerupType]}`);
+// 		this.services.powerup.activate(PlayerSide.LEFT, 0, powerupType);
 
-		previousPowerup = powerupType;
-		currentIndex = (currentIndex + 1) % powerupTypes.length;
-	}, 3000);
-}
+// 		previousPowerup = powerupType;
+// 		currentIndex = (currentIndex + 1) % powerupTypes.length;
+// 	}, 3000);
+// }
 
 	// Handle server ending the game
 	private async onServerEndedGame(winner: string, loser: string): Promise<void> {

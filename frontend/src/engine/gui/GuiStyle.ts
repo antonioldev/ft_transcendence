@@ -36,7 +36,7 @@ export const Z_INDEX = {
     HUD: 10,
     POWERUPS: 12,
     ENDGAME: 15,
-    BRACKET: 25,
+    BRACKET: 43,
     CURTAIN: 30,
     LOBBY: 31,
     MODAL: 42,
@@ -229,41 +229,37 @@ export const PAUSE_MENU_STYLES = {
         isVisible: false
     },
 
-    pauseGrid: {
-        width: "100%",
-        height: "95%",
+    pauseBox: {
+        width: "50%",
+        height: "80%",
+        cornerRadius: 12,
+        thickness: 2,
     },
 
-    // pauseTitle: {
+    grid: {
+        width: "100%",
+        height: "100%",
+    },
+
+    // exitInstruction: {
     //     fontFamily: FONT_FAMILY,
     //     color: COLORS.WHITE,
-    //     fontSize: 42,
-    //     fontWeight: "bold"
+    //     height: "30px",
+    //     fontSize: 20,
     // },
 
-    pauseInstruction: {
-        fontFamily: FONT_FAMILY,
-        color: COLORS.WHITE,
-        height: "30px",
-        fontSize: 20,
-    },
-
-    pauseHint: {
-        fontFamily: FONT_FAMILY,
-        color: COLORS.WHITE,
-        height: "30px",
-        fontSize: 16,
-    },
-
-    audioGrid:{
-        width: "50%"
-    },
-
-    audioStack: {
+    stack: {
         isVertical: true,
-        paddingTop: "10px",
-        paddingBottom: "10px"
+        paddingTop: "30px",
+        paddingBottom: "10px",
+        spacing: 10
     },
+
+    // audioStack: {
+    //     isVertical: true,
+    //     paddingTop: "10px",
+    //     paddingBottom: "10px"
+    // },
 
     muteCheckbox: {
         width: "20px",
@@ -281,23 +277,16 @@ export const PAUSE_MENU_STYLES = {
         audio: 0.15
     },
 
-    gameInstructionContainer: {
-        width: "50%",
-        cornerRadius: 12,
-        thickness: 2,
-        color: COLORS.WHITE
-    },
+    // instructionsStack: {
+    //     width: "90%",
+    //     height: "100%",
+    //     isVertical: true,
+    //     spacing: 10,
+    //     paddingTop: "30px",
+    //     paddingBottom: "10px"
+    // },
 
-    instructionsStack: {
-        width: "90%",
-        height: "100%",
-        isVertical: true,
-        spacing: 10,
-        paddingTop: "30px",
-        paddingBottom: "10px"
-    },
-
-    instructionTitle: {
+    pauseTitle: {
         fontFamily: FONT_FAMILY,
         color: COLORS.LIGHT_GREEN,
         fontSize: 36,
@@ -305,19 +294,19 @@ export const PAUSE_MENU_STYLES = {
         height: "40px"
     },
 
-    instructionSectionHeader: {
+    pauseHeader: {
         fontFamily: FONT_FAMILY,
         color: COLORS.WHITE,
-        fontSize: 22,
+        fontSize: 24,
         fontWeight: "bold",
         height: "35px",
         paddingTop: "10px"
     },
 
-    instructionDetails: {
+    pauseDetails: {
         fontFamily: FONT_FAMILY,
         color: COLORS.WHITE,
-        fontSize: 18,
+        fontSize: 20,
         height: "60px",
         textWrapping: true
     },
@@ -585,7 +574,7 @@ export const END_GAME_STYLES = {
 
 export const BRACKET_STYLES = {
     bracketOverlay: {
-        width: "580px",
+        width: "550px",
         height: "700px",
         background: COLORS.TRANSPARENT,
         horizontalAlignment: H_RIGHT,

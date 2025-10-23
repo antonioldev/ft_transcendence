@@ -17,16 +17,12 @@ export class Lobby {
 		this.adt.addControl(this.overlay);
 
 		const mainGrid = new Grid("lobbyMainGrid");
-		// mainGrid.addRowDefinition(0.15, false); // Title row
 		mainGrid.addRowDefinition(0.25, false);  // Subtitle row
 		mainGrid.addRowDefinition(0.1, false); // Count row
 		mainGrid.addRowDefinition(0.65, false);  // Scroll row
 		mainGrid.width = "100%";
 		mainGrid.height = "100%";
 		this.overlay.addControl(mainGrid);
-
-		// const title = createTextBlock("lobbyTitle", LOBBY_STYLES.title, t.tournamentOnline);
-		// mainGrid.addControl(title, 0, 0);
 
 		this.subtitle = createTextBlock("lobbySubtitle", LOBBY_STYLES.title, t.waiting);
 		mainGrid.addControl(this.subtitle, 0, 0);
