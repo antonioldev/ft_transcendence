@@ -36,8 +36,10 @@ export async function APIRoutes(app: FastifyInstance) {
 				}
 			});
 		}
+		else {
+			reply.send({ status: AuthCode.OK, message: "Welcome to Battle Pong!" });
+		}
 		client.is_connected = true;
-		reply.send( { status: AuthCode.OK, message: "Welcome to Battle Pong!" });
 	});
 
 	// LOGIN

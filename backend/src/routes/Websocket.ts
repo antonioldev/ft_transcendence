@@ -25,10 +25,10 @@ export async function setupWebsocket(app: FastifyInstance): Promise<void> {
             console.log(`Cannot handle Websocket connection, client does not exist`);
             return ;
         }
-        if (!client.websocket) client.websocket = socket;
+        client.websocket = socket;
     
         socket.on('message', async (message: string) => {
-            await handleMessage(client!, message);
+            await handleMessage(client, message);
         });
     
         socket.on('close', () => {
