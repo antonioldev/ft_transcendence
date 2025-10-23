@@ -70,11 +70,15 @@ async function handleMessage(client: Client, message: string) {
         if (!gameSession) {
             throw( new Error(`Client ${client.username} not in any game for "${MessageType[data.type]}" signal`) );
         }
+        if (gameSession.in_lobby()) {
+            throw( new Error(`"${MessageType[data.type]}" signal ignored: game in lobby`) );
+        }
         switch (data.type) {
             case MessageType.PLAYER_READY:
                 gameSession.setClientReady(client.sid);
                 break;
             case MessageType.PLAYER_INPUT:
+                console.log("PLAYER INPUT RECEIVED");
                 gameSession.handlePlayerInput(client, data);
                 break;
             case MessageType.PAUSE_REQUEST:

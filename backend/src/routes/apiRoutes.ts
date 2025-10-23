@@ -187,15 +187,14 @@ export async function APIRoutes(app: FastifyInstance) {
 			gameSession.add_player(new Player(player.id, player.name, client));
 		}
 
-		// start game if full or local, otherwise wait for players to join
-		if (gameSession.full || gameSession.mode === GameMode.TOURNAMENT_LOCAL) {
-			console.log(`RUNNING GAME: mode = ${gameSession.mode}`);
-			console.log(`full = ${gameSession.full}`);
+		// start game if full or local, otherwise wait for more players to join
+		if (gameSession.full || gameSession.mode === GameMode.TOURNAMENT_LOCAL ||
+		(gameSession.mode === GameMode.TOURNAMENT_REMOTE && gameSession.players.size >= GAME_CONFIG.minTournamentSize)) {
 			gameManager.runGame(gameSession);
 		}
-		else if (gameSession.mode === GameMode.TOURNAMENT_REMOTE) {
-			setTimeout(() => { gameManager.runGame(gameSession) }, (GAME_CONFIG.maxJoinWaitTime * 1000));
-		}
+		// else if (gameSession.mode === GameMode.TOURNAMENT_REMOTE) {
+		// 	setTimeout(() => { gameManager.runGame(gameSession) }, (GAME_CONFIG.maxJoinWaitTime * 1000));
+		// }
 
 		return reply.send({ success: true, message: `Client joined game ${gameSession.id}` })
 	})

@@ -208,7 +208,11 @@ export abstract class AbstractGameSession {
 
 	enqueue(input: PlayerInput, client_id?: string): void  {
 		const game = this.getGame(client_id);
-		game?.enqueue(input);
+		if (!game) {
+			console.log("Cannot enqueue input: game session does nto exist");
+			return ;
+		}
+		game.enqueue(input);
 	}
 
 	is_running(): boolean {
