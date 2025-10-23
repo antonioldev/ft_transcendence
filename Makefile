@@ -31,8 +31,9 @@ secret-env: pepper-env cookie-env
 #################################################################################
 #################################     MAIN      #################################
 
-run: set-env-ip build start
+run: set-env-ip set-env-hostname build start
 	@. ./.env; echo "Server running at https://$${LAN_IP}:8443"
+	@. ./.env; echo "Server running at https://$${HOSTNAME}:8443"
 
 start:
 	docker-compose up -d
@@ -68,7 +69,13 @@ set-env-ip:
 	grep -vE '^(LAN_IP)=' .env > "$$tmp" 2>/dev/null || true; \
 	mv "$$tmp" .env; \
 	printf "LAN_IP=%s\n" "$$IP" >> .env; \
-	echo "✅ LAN_IP set to $$IP and written to .env"
+	echo "LAN_IP set to $$IP and written to .env"
+
+set-env-hostname:
+	@touch .env
+	@HOSTNAME=$$(hostname); \
+	printf "HOSTNAME=%s\n" "$$HOSTNAME" >> .env; \
+	echo "HOSTNAME set to $$HOSTNAME and written to .env"
 
 home:
 	@echo "Cleaning up previous containers and images..."
