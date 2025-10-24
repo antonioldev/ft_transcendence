@@ -1,9 +1,9 @@
 import { KeyboardEventTypes } from "@babylonjs/core";
-import { AdvancedDynamicTexture, Grid, Rectangle, TextBlock, Image } from "@babylonjs/gui";
+import { AdvancedDynamicTexture, Rectangle, TextBlock, Image } from "@babylonjs/gui";
 import { getCurrentTranslation } from '../../translations/translations.js';
 import { Z_INDEX } from "./GuiStyle";
 import { AnimationManager, Motion } from "../services/AnimationManager.js";
-import { END_GAME_STYLES, PARTIAL_END_GAME_STYLES, createGrid, createRect, createTextBlock } from "./GuiStyle.js";
+import { END_GAME_STYLES, createGrid, createRect, createTextBlock } from "./GuiStyle.js";
 import { PARTIAL_GUI_SPARKLES, PARTIAL_GUI_SPARKLES_LOSER, SparkleDetails } from "../scene/config/particleGuiConfig.js";
 import { randomFromRange, randomFromArray } from "../utils.js";
 
@@ -14,40 +14,40 @@ export class EndGame {
 	private spectatorTimerText!: TextBlock;
 
 	private continueText!: TextBlock;
-	private endGameOverlay!: Grid;
+	private endGameOverlay!: Rectangle;
 	private endGameWinnerText!: TextBlock;
 	private spectatorTimerInterval: ReturnType<typeof setInterval> | null = null;
 
 	constructor(private adt: AdvancedDynamicTexture, private animationManager: AnimationManager) {
 		const t = getCurrentTranslation();
 
-		this.partialEndGameOverlay = createRect("partialWinnerLayer", PARTIAL_END_GAME_STYLES.partialEndGameOverlay);
+		this.partialEndGameOverlay = createRect("partialWinnerLayer", END_GAME_STYLES.endGameOverlay);
 		this.adt!.addControl(this.partialEndGameOverlay);
 
-		const centerColumn = createGrid("winnerGrid", PARTIAL_END_GAME_STYLES.winnerGrid);
+		const centerColumn = createGrid("winnerGrid", END_GAME_STYLES.winnerGrid);
 		this.partialEndGameOverlay.addControl(centerColumn);
 
-		centerColumn.addRowDefinition(PARTIAL_END_GAME_STYLES.gridRows.label);
-		centerColumn.addRowDefinition(PARTIAL_END_GAME_STYLES.gridRows.name);
-		centerColumn.addRowDefinition(PARTIAL_END_GAME_STYLES.gridRows.continue);
+		centerColumn.addRowDefinition(END_GAME_STYLES.gridRows.label);
+		centerColumn.addRowDefinition(END_GAME_STYLES.gridRows.name);
+		centerColumn.addRowDefinition(END_GAME_STYLES.gridRows.continue);
+		centerColumn.addRowDefinition(END_GAME_STYLES.gridRows.timer);
 
-		this.partialWinnerLabel = createTextBlock( "winnerLabel", PARTIAL_END_GAME_STYLES.partialWinnerLabel, t.winner);
+		this.partialWinnerLabel = createTextBlock( "winnerLabel", END_GAME_STYLES.partialWinnerLabel, t.winner);
 		centerColumn.addControl(this.partialWinnerLabel, 0, 0);
-
-		this.partialWinnerName = createTextBlock( "winnerName", PARTIAL_END_GAME_STYLES.partialWinnerName, "");
+		
+		this.partialWinnerName = createTextBlock( "winnerName", END_GAME_STYLES.partialWinnerName, "");
 		centerColumn.addControl(this.partialWinnerName, 1, 0);
 
-		this.continueText = createTextBlock( "continue_text", PARTIAL_END_GAME_STYLES.continueText, t.continue );
+		this.continueText = createTextBlock( "continue_text", END_GAME_STYLES.continueText, t.continue );
 		centerColumn.addControl(this.continueText, 2, 0);
 
-		this.spectatorTimerText = createTextBlock("spectatorTimer", PARTIAL_END_GAME_STYLES.continueText, "10");
-		this.partialEndGameOverlay.addControl(this.spectatorTimerText);
+		this.spectatorTimerText = createTextBlock("spectatorTimer", END_GAME_STYLES.continueText, "10");
+		centerColumn.addControl(this.spectatorTimerText);
 
-		this.endGameOverlay = createGrid("endGameOverlay", END_GAME_STYLES.endGameOverlay);
-		this.endGameOverlay.addColumnDefinition(1.0);
+		this.endGameOverlay = createRect("endGameOverlay", END_GAME_STYLES.endGameOverlay);
 
 		this.endGameWinnerText = createTextBlock( "endGameWinnerText", END_GAME_STYLES.endGameWinnerText, "");
-		this.endGameOverlay.addControl(this.endGameWinnerText, 0, 0);
+		this.endGameOverlay.addControl(this.endGameWinnerText);
 		this.adt!.addControl(this.endGameOverlay);
 	}
 
@@ -191,8 +191,6 @@ export class EndGame {
 		const t = getCurrentTranslation();
 
 		this.continueText.text = t.spectatorQuestion;
-		this.spectatorTimerText.fontSize = "20px";
-		this.spectatorTimerText.top = "120px";
 
 		this.continueText.isVisible = true;
 		this.spectatorTimerText.isVisible = true;
@@ -229,7 +227,6 @@ export class EndGame {
 
 	async showFinalWinner(winner: string): Promise<void> {
 		this.endGameWinnerText.text = `🏆 ${winner} WINS! 🏆`;
-		this.endGameWinnerText.color = "rgba(255, 255, 255, 1)";
 		this.endGameOverlay.isVisible = true;
 
 		this.animationManager?.scale(this.endGameWinnerText, 1, 1.2, Motion.F.breath, true);

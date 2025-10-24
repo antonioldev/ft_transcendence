@@ -7,6 +7,7 @@ export const V_TOP = Control.VERTICAL_ALIGNMENT_TOP;
 export const V_CENTER = Control.VERTICAL_ALIGNMENT_CENTER;
 export const V_BOTTOM = Control.VERTICAL_ALIGNMENT_BOTTOM;
 const FONT_FAMILY = 'Poppins, Tiny5, sans-serif';
+const FONT_FAMILY_SEC = 'Tiny5, Poppins, sans-serif';
 
 export const COLORS = {
     BLACK: "rgba(0, 0, 0, 1)",
@@ -212,25 +213,12 @@ export const PAUSE_MENU_STYLES = {
         height: "100%",
     },
 
-    // exitInstruction: {
-    //     fontFamily: FONT_FAMILY,
-    //     color: COLORS.WHITE,
-    //     height: "30px",
-    //     fontSize: 20,
-    // },
-
     stack: {
         isVertical: true,
         paddingTop: "30px",
         paddingBottom: "10px",
         spacing: 10
     },
-
-    // audioStack: {
-    //     isVertical: true,
-    //     paddingTop: "10px",
-    //     paddingBottom: "10px"
-    // },
 
     muteCheckbox: {
         width: "20px",
@@ -247,15 +235,6 @@ export const PAUSE_MENU_STYLES = {
         exitInstruction: 0.20,
         audio: 0.15
     },
-
-    // instructionsStack: {
-    //     width: "90%",
-    //     height: "100%",
-    //     isVertical: true,
-    //     spacing: 10,
-    //     paddingTop: "30px",
-    //     paddingBottom: "10px"
-    // },
 
     pauseTitle: {
         fontFamily: FONT_FAMILY,
@@ -300,13 +279,11 @@ export const PAUSE_MENU_STYLES = {
         color: COLORS.WHITE,
         fontSize: 36,
         fontWeight: "bold",
-        // outlineWidth: 2,
         shadowOffsetX: 1,
         shadowOffsetY: 1,
         shadowBlur: 2,
         shadowOpacity: 0.5,
         shadowColor: COLORS.BLACK,
-        // outlineColor: COLORS.BLACK
     }
 } as const;
 
@@ -330,13 +307,6 @@ export const LOBBY_STYLES = {
         color: COLORS.ORANGE,
         height: "60px",
         fontWeight: "bold",
-        // shadowOffsetX: 1,
-        // shadowOffsetY: 1,
-        // shadowBlur: 2,
-        // shadowOpacity: 0.5,
-        // shadowColor: COLORS.BLACK,
-        // outlineWidth: 2,
-        // outlineColor: COLORS.WHITE
     },
     
     count: {
@@ -471,88 +441,72 @@ export const VIEW_MODE_STYLES = {
     }
 } as const;
 
-export const PARTIAL_END_GAME_STYLES = {
-    partialEndGameOverlay: {
+export const END_GAME_STYLES = {
+    endGameOverlay: {
         width: "100%",
         height: "100%",
-        background: COLORS.BLACK,
-        verticalAlignment: V_BOTTOM,
+        background: COLORS.TRANSPARENT_BLACK,
+        isVisible: false,
         zIndex: Z_INDEX.ENDGAME,
-        isVisible: false
     },
 
     winnerGrid: {
         width: "100%",
-        height: "100%",
+        height: "90%",
+        verticalAlignment: V_BOTTOM
     },
 
     gridRows: {
-        label: 0.2,
-        name: 0.6,
-        continue: 0.2
+        label: 0.35,
+        name: 0.35,
+        continue: 0.15,
+        timer: 0.15
     },
 
     partialWinnerLabel: {
-        fontFamily: FONT_FAMILY,
+        height: "20%",
+        fontFamily: FONT_FAMILY_SEC,
         color: COLORS.WHITE,
-        fontSize: 80,
+        fontSize: 85,
         outlineWidth: 2,
         alpha: 0,
-        zIndex: Z_INDEX.ENDGAME + 1,
     },
 
     partialWinnerName: {
+        height: "70%",
         fontFamily: FONT_FAMILY,
         color: COLORS.GOLD,
-        fontSize: 110,
+        fontSize: 120,
         fontWeight: "bold",
         shadowOffsetX: 3,
         shadowOffsetY: 3,
-        // shadowBlur: 2,
-        // shadowOpacity: 0.5,
-        // shadowColor: COLORS.BLACK,
-        // outlineWidth: 2,
-        // outlineColor: COLORS.WHITE,
         alpha: 0,
         shadowBlur: 10,
         shadowColor: COLORS.GOLD
     },
 
     continueText: {
+        height: "10%",
         fontFamily: FONT_FAMILY,
         color: COLORS.WHITE,
+        fontSize: 20,
         shadowOffsetX: 1,
         shadowOffsetY: 1,
         shadowBlur: 2,
         shadowOpacity: 0.5,
         shadowColor: COLORS.BLACK,
-        // outlineWidth: 2,
-        // outlineColor: COLORS.GOLD,
         isVisible: false,
-    }
-} as const;
-
-export const END_GAME_STYLES = {
-    endGameOverlay: {
-        width: "100%",
-        height: "20%",
-        background: COLORS.TRANSPARENT_BLACK,
-        verticalAlignment: V_BOTTOM,
-        isVisible: false,
-        zIndex: Z_INDEX.ENDGAME,
     },
-
+    
     endGameWinnerText: {
         fontFamily: FONT_FAMILY,
         color: COLORS.WHITE,
-        fontSize: 72,
+        fontSize: 120,
         shadowOffsetX: 1,
         shadowOffsetY: 1,
         shadowBlur: 8,
         shadowColor: COLORS.GOLD_SHADOW,
-        fontWeight: "bold",
-        outlineWidth: 2,
-        outlineColor: COLORS.TRANSPARENT_BLACK
+        fontWeight: "bold"
     }
 } as const;
 
