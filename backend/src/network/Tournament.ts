@@ -346,7 +346,7 @@ export class TournamentRemote extends AbstractTournament {
 	}
 
 	toggle_spectator_game(client: Client, data: ClientMessage) {
-		if (!data.direction) {
+		if (data.direction === undefined) {
 			console.log("Cannot toggle spectator game, direction not specified")
 			return 
 		}
