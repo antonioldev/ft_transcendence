@@ -18,18 +18,19 @@
 
     <!-- Main Menu -->
     <main id="main-menu" class="!fixed !inset-0 !flex !flex-col items-center justify-center text-center">
-        <div class="absolute top-4 left-5 flex items-center gap-2">
-            <div id="connection-status" class="connection-status text-xs text-light-green opacity-80 min-w-[16px] min-h-[16px] flex items-center justify-center">
+        <div class="absolute top-6 left-8 flex items-center gap-2">
+            <div id="connection-status" class="connection-status text-light-green opacity-80 min-w-[16px] min-h-[16px]
+                    flex items-center justify-center text-xs sm:text-base md:text-lg">
                 🟡
             </div>
-            <h2 class="text-light-green font-tiny5-regular text-sm sm:text-base md:text-lg">
+            <h2 class="text-light-green font-tiny5-regular text-sm sm:text-base md:text-xl">
                 ft_transcendence
             </h2>
 
-            <div class="fixed top-4 right-5 z-50 flex items-center gap-2">
+            <div class="fixed top-6 right-8 z-50 flex items-center gap-2">
                 <button type="button"
                         id="settings-btn"
-                        class="transition-transform duration-200 hover:scale-125 text-2xl px-2">
+                        class="transition-transform duration-200 hover:scale-125 text-3xl px-2">
                     ⚙️
                 </button>
             </div>
@@ -51,34 +52,34 @@
         </h1>
         
         <!-- Main navigation buttons - Bottom Left -->
-        <nav class="absolute bottom-8 left-8 flex flex-col gap-2 sm:gap-1 md:gap-2 lg:gap-3 xl:gap-4">
+        <nav class="absolute bottom-8 left-8 flex flex-col gap-2 sm:gap-1 md:gap-2 lg:gap-3 xl:gap-3">
             <!-- PLAY button -->
             <button type="button" 
                     id="play-btn" 
-                    class="bg-orange rounded-md text-blue-background font-poppins-semibold text-lg px-8 py-2 
-                        hover:bg-light-green hover:text-blue-background transition-colors duration-200
-                        border border-orange hover:border-light-green
-                        min-w-[180px] text-left">
+                    class="bg-orange rounded-md text-blue-background font-poppins-semibold text-sm sm:text-base md:text-xl lg:text-xl
+                        px-4 sm:px-6 md:px-8 lg:px-10 py-2 sm:py-2.5 md:py-3 lg:py-3.5 hover:bg-light-green hover:text-blue-background
+                        transition-colors duration-200 border border-orange hover:border-light-green min-w-[140px] sm:min-w-[180px]
+                        md:min-w-[200px] lg:min-w-[230px] text-left">
                 play    
             </button>
             
             <!-- LOGIN button -->
             <button type="button" 
                     id="login-btn" 
-                    class="bg-transparent rounded-md text-light-green font-poppins-semibold text-lg px-8 py-2 
-                        hover:bg-light-green hover:text-blue-background transition-colors duration-200
-                        border border-light-green
-                        min-w-[180px] text-left">
+                    class="bg-transparent rounded-md text-light-green font-poppins-semibold text-sm sm:text-base md:text-xl lg:text-xl
+                        px-4 sm:px-6 md:px-8 lg:px-10 py-2 sm:py-2.5 md:py-3 lg:py-3.5 hover:bg-light-green hover:text-blue-background
+                        transition-colors duration-200 border border-light-green min-w-[140px] sm:min-w-[180px] md:min-w-[200px]
+                        lg:min-w-[230px] text-left">
                 login
             </button>
             
             <!-- REGISTER button -->
             <button type="button" 
                     id="register-btn" 
-                    class="bg-transparent rounded-md text-light-green font-poppins-semibold text-lg px-8 py-2 
-                        hover:bg-light-green hover:text-blue-background transition-colors duration-200
-                        border border-light-green
-                        min-w-[180px] text-left">
+                    class="bg-transparent rounded-md text-light-green font-poppins-semibold text-sm sm:text-base md:text-xl lg:text-xl
+                        px-4 sm:px-6 md:px-8 lg:px-10 py-2 sm:py-2.5 md:py-3 lg:py-3.5 hover:bg-light-green hover:text-blue-background
+                        transition-colors duration-200 border border-light-green min-w-[140px] sm:min-w-[180px] md:min-w-[200px]
+                        lg:min-w-[230px] text-left">
                 register
             </button>
         </nav>
@@ -141,13 +142,6 @@
                                border border-light-green rounded-md">
                         Back to Main Menu
                     </button>
-                    <!-- <button type="button" id="settings-save-btn"
-                        class="bg-orange rounded-md text-blue-background font-sans text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 
-                               hover:bg-light-green hover:text-blue-background transition-colors duration-200
-                               border border-orange hover:border-light-green
-                               disabled:bg-gray-400 disabled:cursor-not-allowed">
-                        Save
-                    </button> -->
                 </div>
             </div>
         </div>
@@ -211,7 +205,7 @@
                         </button>
                         
                         <!-- Google Login Button Container -->
-                        <div id="google-login-btn-container" class="mt-3 sm:mt-4 flex justify-center items-center"></div>
+                        <div id="google-login-btn-container" class="mt-6 sm:mt-8 flex justify-center items-center"></div>
                     </div>
                 </form>
 
@@ -309,7 +303,7 @@
                         </button>
                         
                         <!-- Google Register Button Container -->
-                        <div id="google-register-btn-container" class="mt-3 sm:mt-4 flex justify-center items-center"></div>
+                        <div id="google-register-btn-container" class="mt-6 sm:mt-8 flex justify-center items-center"></div>
                     </div>
                 </form>
 

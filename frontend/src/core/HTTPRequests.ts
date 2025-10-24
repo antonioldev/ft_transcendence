@@ -19,7 +19,9 @@ export async function sendPOST(endpoint: string, body?: any) {
 		...(body && { body: JSON.stringify(body) }),
 	});
 
-	const data = await response.json();
+	// const data = await response.json(); // this fails if no content is returned ***
+	const text = await response.text();
+	const data = text ? JSON.parse(text) : {};
 	console.log(data.message);
 	return (data);
 }
@@ -32,7 +34,9 @@ export async function sendGET(endpoint: string, query_params?: string[]) {
 	console.log(`Sending ${endpoint} GET request to ${URL}`);
 
 	const response = await fetch(URL, { method: "GET" });
-	const data = await response.json();
+	// const data = await response.json();
+	const text = await response.text();
+	const data = text ? JSON.parse(text) : {};
 	console.log(data.message);
 	return (data);
 }
