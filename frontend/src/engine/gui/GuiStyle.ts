@@ -92,7 +92,14 @@ export const HUD_STYLES = {
         zIndex: Z_INDEX.HUD
     },
 
-    player1Label: {
+    stack: {
+        width: "100%",
+        height: "100%",
+	    isVertical: true
+    },
+
+    playerLabel: {
+        height: "40%",
         fontFamily: FONT_FAMILY,
         color: COLORS.WHITE,
         fontSize: 48,
@@ -101,40 +108,12 @@ export const HUD_STYLES = {
         shadowOffsetY: 1,
         shadowBlur: 2,
         shadowOpacity: 0.5,
-        shadowColor: COLORS.BLACK,
-        // shadowOffsetX: 2,
-        // shadowOffsetY: 2,
-        // shadowBlur: 0,
-        // shadowColor: COLORS.GOLD_SHADOW,
-        // outlineWidth: 2,
-        // outlineColor: COLORS.TRANSPARENT_BLACK,
-        // thickness: 2,
-        resizeToFit: true
+        shadowColor: COLORS.BLACK
     },
 
-    player2Label: {
+    scoreText: {
         fontFamily: FONT_FAMILY,
         color: COLORS.WHITE,
-        fontSize: 48,
-        fontWeight: "bold",
-        shadowOffsetX: 1,
-        shadowOffsetY: 1,
-        shadowBlur: 2,
-        shadowOpacity: 0.5,
-        shadowColor: COLORS.BLACK,
-        // shadowOffsetX: 2,
-        // shadowOffsetY: 2,
-        // shadowBlur: 0,
-        // shadowColor: COLORS.GOLD_SHADOW,
-        // outlineWidth: 2,
-        // outlineColor: COLORS.TRANSPARENT_BLACK,
-        resizeToFit: true,
-    },
-
-    score1Text: {
-        fontFamily: FONT_FAMILY,
-        color: COLORS.WHITE,
-        textVerticalAlignment: V_BOTTOM,
         fontSize: 56,
         fontWeight: "bold",
         shadowOffsetX: 1,
@@ -142,48 +121,20 @@ export const HUD_STYLES = {
         shadowBlur: 2,
         shadowOpacity: 0.5,
         shadowColor: COLORS.BLACK,
-        // shadowOffsetX: 2,
-        // shadowOffsetY: 2,
-        // shadowBlur: 0,
-        // shadowColor: COLORS.GOLD_SHADOW,
-        // outlineWidth: 2,
-        // outlineColor: COLORS.TRANSPARENT_BLACK
-    },
-
-    score2Text: {
-        fontFamily: FONT_FAMILY,
-        color: COLORS.WHITE,
-        textVerticalAlignment: V_BOTTOM,
-        fontSize: 56,
-        fontWeight: "bold",
-        shadowOffsetX: 1,
-        shadowOffsetY: 1,
-        shadowBlur: 2,
-        shadowOpacity: 0.5,
-        shadowColor: COLORS.BLACK,
-        // shadowOffsetX: 3,
-        // shadowOffsetY: 3,
-        // shadowBlur: 0,
-        // shadowColor: COLORS.GOLD_SHADOW,
-        // outlineWidth: 2,
-        // outlineColor: COLORS.TRANSPARENT_BLACK
     },
 
     rallyText: {
         fontFamily: FONT_FAMILY,
         color: COLORS.TRANSPARENT_WHITE_50,
-        textVerticalAlignment: V_BOTTOM,
-        fontSize: 16,
-        top: "-8px" 
+        fontSize: 16
     },
 
     rallyValue: {
+        height: "70%",
         fontFamily: FONT_FAMILY,
         color: COLORS.WHITE,
-        textVerticalAlignment: V_TOP,
         fontSize: 40,
         fontWeight: "bold",
-        top: "4px",
         shadowOffsetX: 1,
         shadowOffsetY: 1,
         shadowBlur: 6,
@@ -387,17 +338,6 @@ export const LOBBY_STYLES = {
         // outlineWidth: 2,
         // outlineColor: COLORS.WHITE
     },
-    
-    // subtitle: {
-    //     // fontFamily: "monospace",
-    //     fontFamily: FONT_FAMILY,
-    //     textHorizontalAlignment: H_LEFT,
-    //     fontSize: 24,
-    //     color: COLORS.LIGHT_GREEN,
-    //     fontWeight: "bold",
-    //     height: "40px",
-    //     width: "100%",
-    // },
     
     count: {
         fontFamily: FONT_FAMILY,

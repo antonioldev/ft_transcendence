@@ -17,8 +17,6 @@ export class Hud {
 	private previousRally: number = 1;
 	private spectatorOverlay!: Rectangle;
 	private spectatorBanner!: Rectangle;
-	private spectatorText!: TextBlock;
-	private spectatorControls!: TextBlock;
 	private powerUpContainerP1!: Rectangle;
 	private powerUpContainerP2!: Rectangle;
 	private hdImagesP1: Map<PowerupType, Image> = new Map();
@@ -82,49 +80,34 @@ export class Hud {
 		this.hudGrid.addControl(p1PowerUpContainer, 0, 0);
 
 		// P1 Score Cell
-		const p1Cell = new Grid();
-		p1Cell.width = "100%";
-		p1Cell.addRowDefinition(1, false);
-		p1Cell.addRowDefinition(1, false);
-		p1Cell.addColumnDefinition(1, false);
+		const p1Stack = createStackPanel("player1Stack", HUD_STYLES.stack);
 
-		this.player1Label = createTextBlock("player1Label", HUD_STYLES.player1Label, "Player 1");
-		this.player1Label
-		this.score1Text = createTextBlock("score1Text", HUD_STYLES.score1Text, "0");
-		
-		p1Cell.addControl(this.player1Label, 0, 0);
-		p1Cell.addControl(this.score1Text, 1, 0);
-		this.hudGrid.addControl(p1Cell, 0, 1);
+		this.player1Label = createTextBlock("player1Label", HUD_STYLES.playerLabel, "Player 1");
+		this.score1Text = createTextBlock("score1Text", HUD_STYLES.scoreText, "0");
+
+		p1Stack.addControl(this.player1Label);
+		p1Stack.addControl(this.score1Text);
+		this.hudGrid.addControl(p1Stack, 0, 1);
 
 		// Rally Cell
-		const rallyCell = new Grid();
-		rallyCell.addRowDefinition(1, false);
-		rallyCell.addRowDefinition(1, false);
-		rallyCell.addColumnDefinition(1, false);
+		const rallyStack = createStackPanel("rallyStack", HUD_STYLES.stack);
 
-		this.rallyText = createTextBlock("rallyText", HUD_STYLES.rallyText, "Rally");
 		this.rally = createTextBlock("rallyValue", HUD_STYLES.rallyValue, "0");
+		this.rallyText = createTextBlock("rallyText", HUD_STYLES.rallyText, "Rally");
 		
-		rallyCell.addControl(this.rallyText, 0, 0);
-		rallyCell.addControl(this.rally, 1, 0);
-		this.hudGrid.addControl(rallyCell, 0, 2);
-
-		this.rally.transformCenterX = 0.5;
-		this.rally.transformCenterY = 0.5;
+		rallyStack.addControl(this.rally);
+		rallyStack.addControl(this.rallyText);
+		this.hudGrid.addControl(rallyStack, 0, 2);
 
 		// P2 Score Cell
-		const p2Cell = new Grid();
-		p2Cell.width = "100%";
-		p2Cell.addRowDefinition(1, false);
-		p2Cell.addRowDefinition(1, false);
-		p2Cell.addColumnDefinition(1, false);
+		const p2Stack = createStackPanel("player2Stack", HUD_STYLES.stack);
 
-		this.player2Label = createTextBlock("player2Label", HUD_STYLES.player2Label, "Player 2");
-		this.score2Text = createTextBlock("score2Text", HUD_STYLES.score2Text, "0");
+		this.player2Label = createTextBlock("player2Label", HUD_STYLES.playerLabel, "Player 2");
+		this.score2Text = createTextBlock("score2Text", HUD_STYLES.scoreText, "0");
 		
-		p2Cell.addControl(this.player2Label, 0, 0);
-		p2Cell.addControl(this.score2Text, 1, 0);
-		this.hudGrid.addControl(p2Cell, 0, 3);
+		p2Stack.addControl(this.player2Label);
+		p2Stack.addControl(this.score2Text);
+		this.hudGrid.addControl(p2Stack, 0, 3);
 
 		// P2 PowerUps
 		const p2PowerUpContainer = this.createPowerUpContainer(1, config);
@@ -192,11 +175,11 @@ export class Hud {
 		const bannerContent = createStackPanel("bannerContent", SPECTATOR_STYLE.bannerContent);
 		this.spectatorBanner.addControl(bannerContent);
 
-		this.spectatorText = createTextBlock("spectatorText", SPECTATOR_STYLE.spectatorText, t.spectator);
-		bannerContent.addControl(this.spectatorText);
+		const spectatorText = createTextBlock("spectatorText", SPECTATOR_STYLE.spectatorText, t.spectator);
+		bannerContent.addControl(spectatorText);
 
-		this.spectatorControls = createTextBlock("spectatorControls", SPECTATOR_STYLE.spectatorControls, t.spectatorInstruction);
-		bannerContent.addControl(this.spectatorControls);
+		const spectatorControls = createTextBlock("spectatorControls", SPECTATOR_STYLE.spectatorControls, t.spectatorInstruction);
+		bannerContent.addControl(spectatorControls);
 	}
 
 	show(show: boolean): void {
@@ -368,8 +351,8 @@ export class Hud {
 		this.player1Label.dispose();
 		this.player2Label.dispose();
 		this.hudGrid.dispose();
-		this.spectatorText.dispose();
-		this.spectatorBanner.dispose();
+		// this.spectatorText.dispose();
+		// this.spectatorBanner.dispose();
 
 		[...this.powerUpCellsP1, ...this.powerUpCellsP2].forEach(cell => {
 			cell.icon?.dispose();
