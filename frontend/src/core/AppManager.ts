@@ -30,7 +30,7 @@ export let currentSettings: Setting = {
     musicEnabled: true,
     soundEffectsEnabled: true
 };
-
+``
 export function updateCurrentSettings(newSettings: Partial<typeof currentSettings>): void {
     if (newSettings) {
         currentSettings = { ...currentSettings, ...newSettings };

@@ -287,7 +287,7 @@ export class TournamentRemote extends AbstractTournament {
 				round_winners.push(winner_promise);
 			}
 		}
-		
+		console.log("Assigning spectators at beginning of round");
 		for (const client of this.defeated_clients) {
 			this.assign_spectator(client);
 		}
@@ -302,6 +302,7 @@ export class TournamentRemote extends AbstractTournament {
 		match.game.save_to_db();
 		this.assign_winner(match, winner);
 
+		console.log("Assigning spectators at end of match");
 		// reassign spectators to next available match
 		for (const client of match.clients) {
 			this.assign_spectator(client);
@@ -366,6 +367,7 @@ export class TournamentRemote extends AbstractTournament {
 		else if (new_index > this.active_matches.length - 1) new_index = 0;
 		
 		old_match.clients.delete(client);
+		console.log("Assigning spectators after toggle called");
 		this.assign_spectator(client, this.active_matches[new_index]);
 	}
 

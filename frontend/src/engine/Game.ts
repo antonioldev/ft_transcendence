@@ -160,6 +160,7 @@ export class Game {
 			return;
 		}
 
+		console.log(`countdown: ${countdown}`);
 		if (countdown === GAME_CONFIG.startDelay) {
 			uiManager.setLoadingScreenVisible(false);
 			this.services?.gui.lobby.hide();
@@ -394,9 +395,10 @@ export class Game {
 
 	private handleChangeServerState(state: GameStateData): void {
 		if (this.serverState === state.state) return;
-
-		// if (this.isSpectator)
-		// 	this.services?.gui.curtain.hide();
+		
+		if (this.isSpectator)
+			this.services?.gui.curtain.hide();
+		
 		this.serverState = state.state;
 
 		switch (this.serverState){
