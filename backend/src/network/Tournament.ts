@@ -325,7 +325,7 @@ export class TournamentRemote extends AbstractTournament {
 		if (match.game?.loser instanceof Player) {
 			this.client_match_map.delete(match.game.loser.client.sid);
 			this.defeated_clients.add(match.game.loser.client);
-			match.clients.delete(match.game?.loser?.client);
+			// match.clients.delete(match.game?.loser?.client);
 		}
 		this.broadcast({
 			type: MessageType.MATCH_RESULT,
@@ -337,8 +337,6 @@ export class TournamentRemote extends AbstractTournament {
 
 	assign_spectator(client: Client, match?: Match) {
 		const spectator_match = match ?? this.active_matches[0] ?? undefined;
-		console.log(`Active matches size: ${this.active_matches.length}`);
-		console.log(`Active matches[0].id: ${this.active_matches[0]?.id}`);
 		if (!spectator_match) {
 			console.log("Cannot assign spectator: no active game");
 			return ;
@@ -359,14 +357,12 @@ export class TournamentRemote extends AbstractTournament {
 			console.error(`Client ${client.username} is not spectating any game`);
 			return ;
 		}
+		old_match.clients.delete(client);
+
 		const old_index = this.active_matches.indexOf(old_match);
 		if (old_index === -1) return ; 
 
-		let new_index: number = old_index + data.direction;
-		if (new_index < 0) new_index = this.active_matches.length - 1;
-		else if (new_index > this.active_matches.length - 1) new_index = 0;
-		
-		old_match.clients.delete(client);
+		let new_index: number = (old_index + data.direction + this.active_matches.length) % this.active_matches.length;
 		console.log("Assigning spectators after toggle called");
 		this.assign_spectator(client, this.active_matches[new_index]);
 	}

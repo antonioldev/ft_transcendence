@@ -26,6 +26,7 @@ export class PowerupManager {
 			return;
 
 		if (!player.powerUpsAssigned) {
+			console.error("try to assign new powerup " + serverPowerups.length);
 			player.powerUpsAssigned = true;
 			player.powerUps = [...serverPowerups];
 			for (let i = 0; i < serverPowerups.length; i++)
