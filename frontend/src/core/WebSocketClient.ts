@@ -139,11 +139,11 @@ export class WebSocketClient {
     }
 
     sendSwitchGame(direction: Direction): void {
-        this.sendMessage(MessageType.TOGGLE_SPECTATOR_GAME, direction)
+        this.sendMessage(MessageType.TOGGLE_SPECTATOR_GAME, { direction })
     }
 
     sendPowerupActivationRequest(powerup_type: PowerupType, side: number, slot: number,): void {
-        this.sendMessage(MessageType.ACTIVATE_POWERUP, {powerup_type, slot, side});
+        this.sendMessage(MessageType.ACTIVATE_POWERUP, { powerup_type, slot, side });
     }
 
     private sendMessage(type: MessageType, data: any = {}): void {

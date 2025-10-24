@@ -281,7 +281,7 @@ export class OneOffGame extends AbstractGameSession{
 		
 		this.broadcast({ 
 			type: MessageType.SESSION_ENDED,
-			...(this.game.winner?.name && { winner: this.game.winner.name })
+			...(this.game?.winner?.name && { winner: this.game.winner.name })
 		});
 	}
 	

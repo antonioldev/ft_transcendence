@@ -26,6 +26,7 @@ export class PowerupManager {
 			return;
 
 		if (!player.powerUpsAssigned) {
+			console.error("try to assign new powerup " + serverPowerups.length);
 			player.powerUpsAssigned = true;
 			player.powerUps = [...serverPowerups];
 			for (let i = 0; i < serverPowerups.length; i++)
@@ -108,7 +109,6 @@ export class PowerupManager {
 					isLeftSide ? this.gameObjects?.effects?.rightGlow : this.gameObjects?.effects?.leftGlow, Color3.Yellow());
 				break;
 			case PowerupType.INVISIBLE_BALL:
-				// this.animationManager?.blinkInvisibility(this.gameObjects.balls);
 				this.gameObjects?.balls.forEach((ball: any) => {
 					this.animationManager?.blinkInvisibility(ball);
 				});

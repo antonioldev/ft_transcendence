@@ -12,7 +12,6 @@ export class Hud {
 	private score2Text!: TextBlock;
 	private player1Label!: TextBlock;
 	private player2Label!: TextBlock;
-	private rallyText!: TextBlock;
 	private rally!: TextBlock;
 	private previousRally: number = 1;
 	private spectatorOverlay!: Rectangle;
@@ -93,10 +92,10 @@ export class Hud {
 		const rallyStack = createStackPanel("rallyStack", HUD_STYLES.stack);
 
 		this.rally = createTextBlock("rallyValue", HUD_STYLES.rallyValue, "0");
-		this.rallyText = createTextBlock("rallyText", HUD_STYLES.rallyText, "Rally");
+		const rallyText = createTextBlock("rallyText", HUD_STYLES.rallyText, "Rally");
 		
 		rallyStack.addControl(this.rally);
-		rallyStack.addControl(this.rallyText);
+		rallyStack.addControl(rallyText);
 		this.hudGrid.addControl(rallyStack, 0, 2);
 
 		// P2 Score Cell
@@ -237,6 +236,8 @@ export class Hud {
 	}
 
 	assignPowerUp(player: PlayerSide, slotIndex: number, powerUpType: PowerupType): void {
+		this.powerUpContainerP1.isVisible = true;
+		this.powerUpContainerP2.isVisible = true;
 		const scene = this.adt.getScene();
 		const cells = player === 0 ? this.powerUpCellsP1 : this.powerUpCellsP2;
 		if (slotIndex >= 0 && slotIndex < cells.length) {
@@ -344,7 +345,7 @@ export class Hud {
 		});
 	}
 	dispose(): void {
-		this.rallyText.dispose();
+		// this.rallyText.dispose();
 		this.rally.dispose();
 		this.score1Text.dispose();
 		this.score2Text.dispose();
