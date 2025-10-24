@@ -122,8 +122,14 @@ abstract class AbstractTournament extends AbstractGameSession{
 	private broadcastRoundSchedule(roundIndex: number): void {
 		const matches = this.rounds.get(roundIndex);
 		if (!matches || matches.length === 0) return;
-
 		matches.forEach((match, i) => {
+			console.log(`Broadcasting round schedule:
+round_total: ${this.num_rounds}
+round_index: ${roundIndex}
+match_index: ${i}
+match_total: ${matches.length}
+left: ${match.players[LEFT]?.name ?? "TBD"}
+right: ${match.players[RIGHT]?.name ?? "TBD"}`);
 			this.broadcast({
 				type: MessageType.MATCH_ASSIGNMENT,
 				round_total: this.num_rounds,

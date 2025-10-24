@@ -92,6 +92,7 @@ export class WebSocketClient {
                 this.triggerCallback(MessageType.ERROR, message.message);
                 break;
             case MessageType.MATCH_ASSIGNMENT:
+                console.log("received match assignment");
                 this.triggerCallback(MessageType.MATCH_ASSIGNMENT, message);
                 break;
             case MessageType.MATCH_RESULT:
