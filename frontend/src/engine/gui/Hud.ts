@@ -262,10 +262,11 @@ export class Hud {
 				cell.root.alpha = 0;
 				const delay = slotIndex * 100;
 				setTimeout(() => {
-					this.animationManager.slideFromDirection(cell.root, 'up', 'in', 100, Motion.F.base)
-						.then(() => {
-							return this.animationManager.scale(cell.root, 1, 1.1, Motion.F.fast, true);
-						});
+					this.animationManager.scale(cell.root, 1, 1.1, Motion.F.fast, true);
+					// this.animationManager.slideFromDirection(cell.root, 'up', 'in', 100, Motion.F.base)
+					// 	.then(() => {
+					// 		return this.animationManager.scale(cell.root, 1, 1.1, Motion.F.fast, true);
+					// 	});
 				}, delay);
 			}
 		}

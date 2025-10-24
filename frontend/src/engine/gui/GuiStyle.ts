@@ -726,7 +726,7 @@ export const BRACKET_STYLES = {
 
 export const CURTAIN_STYLES = {
     leftBackground: {
-        background: COLORS.DARK_BLUE,
+        background: COLORS.LIGHT_GREEN,
         height: "100%",
         width: "100%",
         thickness: 0,
@@ -735,66 +735,66 @@ export const CURTAIN_STYLES = {
         isVisible: false,
         zIndex: Z_INDEX.CURTAIN
     },
-    
-    rightBackground: {
-        background: COLORS.DARK_BLUE,
-        height: "100%",
-        width: "100%",
-        thickness: 0,
-        horizontalAlignment: H_LEFT,
-        verticalAlignment: V_TOP,
-        isVisible: false,
-        zIndex: Z_INDEX.CURTAIN
-    },
-    
+
     leftPaddle: {
         background: COLORS.ORANGE,
         thickness: 0,
         widthInPixels: 80,
         height: "100%",
         horizontalAlignment: H_RIGHT,
-        verticalAlignment: V_TOP,
-        // isVisible: false,
-        // zIndex: Z_INDEX.CURTAIN + 1
-    },
-    
-    rightPaddle: {
-        background: COLORS.ORANGE,
-        thickness: 0,
-        widthInPixels: 80,
-        height: "100%",
-        horizontalAlignment: H_LEFT,
-        verticalAlignment: V_TOP,
-        // isVisible: false,
-        // zIndex: Z_INDEX.CURTAIN + 1
-    },
-
-    spectatorWaitingBox: {
-        widthInPixels: 500,
-        heightInPixels: 120,
-        background: COLORS.TRANSPARENT_BLACK,
-        thickness: 2,
-        color: COLORS.SPECTATOR_RED,
-        cornerRadius: 12,
-        zIndex: Z_INDEX.CURTAIN + 2,
-        isVisible: false,
-        shadowBlur: 20,
-        shadowColor: COLORS.SPECTATOR_RED
-    },
-    
-    spectatorWaitingText: {
-        fontFamily: "monospace",
-        color: COLORS.WHITE,
-        fontSize: 28,
-        fontWeight: "bold",
-        // shadowOffsetX: 1,
-        // shadowOffsetY: 1,
-        // shadowBlur: 2,
-        // shadowOpacity: 0.5,
-        // shadowColor: COLORS.BLACK,
-        // outlineWidth: 2,
-        // outlineColor: COLORS.BLACK
+        verticalAlignment: V_TOP
     }
+    
+    // rightBackground: {
+    //     background: COLORS.DARK_BLUE,
+    //     height: "100%",
+    //     width: "100%",
+    //     thickness: 0,
+    //     horizontalAlignment: H_LEFT,
+    //     verticalAlignment: V_TOP,
+    //     isVisible: false,
+    //     zIndex: Z_INDEX.CURTAIN
+    // },
+    
+    
+    
+    // rightPaddle: {
+    //     background: COLORS.ORANGE,
+    //     thickness: 0,
+    //     widthInPixels: 80,
+    //     height: "100%",
+    //     horizontalAlignment: H_LEFT,
+    //     verticalAlignment: V_TOP,
+    //     // isVisible: false,
+    //     // zIndex: Z_INDEX.CURTAIN + 1
+    // },
+
+    // spectatorWaitingBox: {
+    //     widthInPixels: 500,
+    //     heightInPixels: 120,
+    //     background: COLORS.TRANSPARENT_BLACK,
+    //     thickness: 2,
+    //     color: COLORS.SPECTATOR_RED,
+    //     cornerRadius: 12,
+    //     zIndex: Z_INDEX.CURTAIN + 2,
+    //     isVisible: false,
+    //     shadowBlur: 20,
+    //     shadowColor: COLORS.SPECTATOR_RED
+    // },
+    
+    // spectatorWaitingText: {
+    //     fontFamily: "monospace",
+    //     color: COLORS.WHITE,
+    //     fontSize: 28,
+    //     fontWeight: "bold",
+    //     // shadowOffsetX: 1,
+    //     // shadowOffsetY: 1,
+    //     // shadowBlur: 2,
+    //     // shadowOpacity: 0.5,
+    //     // shadowColor: COLORS.BLACK,
+    //     // outlineWidth: 2,
+    //     // outlineColor: COLORS.BLACK
+    // }
 } as const;
 
 export const CARD_GAME_STYLES = {

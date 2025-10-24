@@ -69,7 +69,6 @@ export const english: Translation = {
     winner: 'WINNER',
     continue: 'Press SPACE to continue',
     tournamentTitle: 'Bracket',
-    spectatorWaitingmessage: 'Searching for ongoing matches',
 	escToClose: 'Press ESC to close',
     miniGameRules: 'Find all matching pairs! Play while others finish their games.',
     spectator: '🎮 SPECTATOR MODE',

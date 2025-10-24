@@ -69,7 +69,6 @@ export const french: Translation = {
     winner: 'VAINQUEUR',
     continue: 'Appuyez sur ESPACE pour continuer',
 	tournamentTitle: 'Classement du Tournoi',
-    spectatorWaitingmessage: 'Recherche de matchs en cours',
 	escToClose: 'Appuyez sur ESC pour fermer',
     miniGameRules: 'Trouvez toutes les paires correspondantes ! Jouez pendant que les autres finissent leurs parties.',
     // Validation error messages

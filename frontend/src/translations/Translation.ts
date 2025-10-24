@@ -72,7 +72,6 @@ export interface Translation {
     winner: string;
     continue: string;
 	tournamentTitle: string;
-    spectatorWaitingmessage: string;
 	escToClose: string;
     miniGameRules: string;
     

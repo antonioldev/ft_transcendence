@@ -69,7 +69,6 @@ export const italian: Translation = {
     winner: 'VINCITORE',
     continue: 'Premi SPAZIO per continuare',
 	tournamentTitle: 'Classifica del Torneo',
-    spectatorWaitingmessage: 'Cercando partite in corso',
 	escToClose: 'Premere ESC per chiudere',
     miniGameRules: 'Trova tutte le coppie corrispondenti! Gioca mentre gli altri finiscono le loro partite.',
     // Validation error messages

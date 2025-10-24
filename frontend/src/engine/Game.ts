@@ -103,7 +103,7 @@ export class Game {
 			webSocketClient.requestLobby();
 		webSocketClient.sendPlayerReady();
 		uiManager.setLoadingScreenVisible(false);
-		await this.services?.gui.curtain.show();
+		// await this.services?.gui.curtain.show();
 	}
 
 	// Initialize Babylon.js engine
@@ -164,9 +164,10 @@ export class Game {
 		if (!this.isCountdownStarted) {
 			console.log("Hiding all screens");
 			uiManager.setLoadingScreenVisible(false);
+			await this.services?.gui.curtain.play();
 			this.services?.gui.lobby.hide();
 			this.services?.gui.cardGame.hide();
-			this.services?.gui.curtain.hide();
+			// this.services?.gui.curtain.hide();
 			this.services?.gui.hud.show(true);
 			this.isCountdownStarted = true;
 		}
@@ -216,9 +217,8 @@ export class Game {
 			await this.services?.input.waitForSpectatorChoice();
 			this.resetForNextMatch();
 
-			if (this.serverState !== GameState.RUNNING){
-				await this.services?.gui.curtain.show(showLoser);
-			}
+			if (this.serverState !== GameState.RUNNING)
+				this.services?.gui.curtain.play();
 			
 			this.services?.gui.hud.setSpectatorMode();
 			// webSocketClient.sendSpectatorReady();
@@ -232,7 +232,7 @@ export class Game {
 		webSocketClient.sendPlayerReady();
 		if (this.services?.gui.isLastMatch)  return ;
 
-		await this.services?.gui.curtain.show();
+		this.services?.gui.curtain.play();
 		if (this.config.isRemoteMultiplayer)
 			this.services?.gui.cardGame.show();
 	}
@@ -243,8 +243,6 @@ export class Game {
 		this.services?.render?.startRendering();
 
 		this.services?.gui?.setPauseVisible(false, false);
-		// const cams = this.scene?.activeCameras?.length ? this.scene.activeCameras : this.scene?.activeCamera;
-		// this.services?.particles?.spawnFireworksInFrontOfCameras(this.scene, cams);
 		startFireworks(this.themeObjects?.effects || [], 250);
 		await this.services?.gui?.showWinner(winner);
 		await this.services?.gui.curtain.play();
@@ -364,11 +362,11 @@ export class Game {
 
 	private handleChangeServerState(state: GameStateData): void {
 		if (this.isSpectator)
-			this.services?.gui.curtain.hide();
+			this.services?.gui.curtain.play();
 		if (this.serverState === state.state) return;
 		
-		if (this.isSpectator)
-			this.services?.gui.curtain.hide();
+		// if (this.isSpectator)
+		// 	this.services?.gui.curtain.hide();
 		
 		this.serverState = state.state;
 
