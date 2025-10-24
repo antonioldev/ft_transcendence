@@ -159,7 +159,7 @@ export class Game {
 			Logger.error('Server sent SIGNAL without countdown parameter', 'Game');
 			return;
 		}
-
+		console.error("countdown:" + countdown);
 		if (countdown === GAME_CONFIG.startDelay) {
 			uiManager.setLoadingScreenVisible(false);
 			this.services?.gui.lobby.hide();

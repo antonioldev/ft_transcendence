@@ -28,10 +28,10 @@ export class SceneTransition {
 		this.adt.addControl(this.leftPaddle);
 		this.adt.addControl(this.rightPaddle);
 		
-		this.leftBackground.leftInPixels = -width;
-		this.rightBackground.leftInPixels = width;
 		this.leftPaddle.leftInPixels = -80;
 		this.rightPaddle.leftInPixels = width;
+		this.leftBackground.leftInPixels = -width;
+		this.rightBackground.leftInPixels = width;
 
 		this.spectatorWaitingRect = createRect("spectatorWaitingBox", CURTAIN_STYLES.spectatorWaitingBox);
 		const spectatorWaitingText = createTextBlock("spectatorWaitingText", CURTAIN_STYLES.spectatorWaitingText, t.spectatorWaitingmessage);
@@ -67,6 +67,7 @@ export class SceneTransition {
 
 	async hide(): Promise<void> {
 		if (!this.isActive) return;
+		console.log('HIDE START - positions:', this.leftPaddle.leftInPixels, this.rightPaddle.leftInPixels);
 
 		await new Promise(resolve => setTimeout(resolve, 400));
 		this.isActive = false;
@@ -85,6 +86,7 @@ export class SceneTransition {
 		this.rightBackground.isVisible = false;
 		
 		this.resetPositions();
+		console.log('HIDE END - positions:', this.leftPaddle.leftInPixels, this.rightPaddle.leftInPixels);
 	}
 
 	async play(): Promise<void> {
