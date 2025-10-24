@@ -37,6 +37,7 @@ export abstract class AbstractGameSession {
 				client?.websocket.send(JSON.stringify(message));
 			}
 			catch {
+				console.log(`broadcast failed for client ${client.username}`);
 				deleted_clients.push(client);
 			}
 		}

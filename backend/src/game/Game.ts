@@ -15,7 +15,6 @@ export class Game {
 	state: GameState = GameState.INIT;
 	clock: Clock = new Clock();
 	input_queue: PlayerInput[] = [];
-	
 	players: readonly (Player | CPU)[]
 	winner!: Player | CPU;
 	loser!: Player | CPU;

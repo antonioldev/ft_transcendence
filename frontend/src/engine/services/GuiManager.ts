@@ -83,7 +83,7 @@ export class GUIManager {
 	async showTournamentMatchLoser(): Promise<void> {
 		if (!this.isReady || this.isLastMatch) return;
 		
-		// this.hud.show(false);
+		this.hud.show(false);
 		await this.endGame.fadeBackground(true);
 		this.audioManager.playLoser();
 		await this.endGame.showPartialLoser();

@@ -92,6 +92,7 @@ export class WebSocketClient {
                 this.triggerCallback(MessageType.ERROR, message.message);
                 break;
             case MessageType.MATCH_ASSIGNMENT:
+                console.log("received match assignment");
                 this.triggerCallback(MessageType.MATCH_ASSIGNMENT, message);
                 break;
             case MessageType.MATCH_RESULT:
@@ -139,11 +140,11 @@ export class WebSocketClient {
     }
 
     sendSwitchGame(direction: Direction): void {
-        this.sendMessage(MessageType.TOGGLE_SPECTATOR_GAME, direction)
+        this.sendMessage(MessageType.TOGGLE_SPECTATOR_GAME, { direction })
     }
 
     sendPowerupActivationRequest(powerup_type: PowerupType, side: number, slot: number,): void {
-        this.sendMessage(MessageType.ACTIVATE_POWERUP, {powerup_type, slot, side});
+        this.sendMessage(MessageType.ACTIVATE_POWERUP, { powerup_type, slot, side });
     }
 
     private sendMessage(type: MessageType, data: any = {}): void {

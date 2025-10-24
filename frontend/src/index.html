@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'self';">
     <title>ft_transcendence</title>
     <link rel="icon" href="/assets/images/42_favicon.ico" type="image/x-icon">
     <link href="/output.css" rel="stylesheet">
@@ -16,6 +17,30 @@
 </head>
 <body class="flex items-center justify-center h-screen bg-blue-background">
 
+    <div id="top-right-nav" class="fixed top-6 right-4 z-50 flex items-center gap-5">
+        <div id="user-info" class="relative" style="display: none;">
+            <button id="user-dropdown-trigger" class="bg-orange text-blue-background px-3 py-2 rounded-md flex items-center gap-1 font-sans text-sm hover:bg-orange transition-colors duration-200">
+                <span id="greeting">Hi</span>, <span id="user-name" class="font-bold">Usuario</span>
+                <span id="dropdown-arrow">▼</span>
+            </button>
+            
+            <div id="user-dropdown-menu" class="absolute top-full right-0 mt-2 w-48 bg-blue-background border border-orange rounded-md overflow-hidden shadow-lg z-50" style="display: none;">
+                <button type="button" id="dashboard-btn" class="w-full text-left px-4 py-2 text-light-green hover:bg-orange hover:text-blue-background transition-colors duration-200 font-sans text-sm">
+                    Dashboard
+                </button>
+                <button type="button" id="logout-btn" class="w-full text-left px-4 py-2 text-orange hover:bg-orange hover:text-blue-background transition-colors duration-200 font-sans text-sm">
+                    Logout
+                </button>
+            </div>
+        </div>
+        <button type="button"
+                id="settings-btn"
+                class="transition-transform duration-200 hover:scale-125 text-3xl px-2">
+            ⚙️
+        </button>
+    </div>
+
+
     <!-- Main Menu -->
     <main id="main-menu" class="!fixed !inset-0 !flex !flex-col items-center justify-center text-center">
         <div class="absolute top-6 left-8 flex items-center gap-2">
@@ -26,14 +51,6 @@
             <h2 class="text-light-green font-tiny5-regular text-sm sm:text-base md:text-xl">
                 ft_transcendence
             </h2>
-
-            <div class="fixed top-6 right-8 z-50 flex items-center gap-2">
-                <button type="button"
-                        id="settings-btn"
-                        class="transition-transform duration-200 hover:scale-125 text-3xl px-2">
-                    ⚙️
-                </button>
-            </div>
         </div>
         
         <!-- Centered Battle Pong text -->
@@ -51,6 +68,8 @@
             <span class="animate-bounce-letter-10">G</span>
         </h1>
         
+        <div id="auth-buttons" style="display: none;"></div>
+
         <!-- Main navigation buttons - Bottom Left -->
         <nav class="absolute bottom-8 left-8 flex flex-col gap-2 sm:gap-1 md:gap-2 lg:gap-3 xl:gap-3">
             <!-- PLAY button -->
@@ -62,7 +81,6 @@
                         md:min-w-[200px] lg:min-w-[230px] text-left">
                 play    
             </button>
-            
             <!-- LOGIN button -->
             <button type="button" 
                     id="login-btn" 
@@ -323,26 +341,6 @@
                         Back to Main Menu
                     </button>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Hidden elements for JS compatibility -->
-    <div id="auth-buttons" style="display: none;"></div>
-    <div id="user-info" class="fixed top-16 right-7 z-40 bg-blue-background border border-light-green p-3 text-xs text-light-green font-sans text-center rounded-md" style="display: none;">
-        <div class="flex flex-col items-center gap-1">
-            <div class="text-light-green font-tiny5-regular text-sm">
-                <span id="greeting">Hi</span>, <span id="user-name" class="font-sans font-bold"></span>
-            </div>
-            <div class="flex items-center gap-2">
-                <button type="button" id="dashboard-btn" 
-                        class="text-light-green hover:text-white transition-colors duration-200 font-tiny5-regular text-xs px-1 rounded-md">
-                    Dashboard
-                </button>
-                <button type="button" id="logout-btn" 
-                        class="text-orange hover:text-white transition-colors duration-200 font-tiny5-regular text-xs px-1 rounded-md">
-                    Logout
-                </button>
             </div>
         </div>
     </div>

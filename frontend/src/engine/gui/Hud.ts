@@ -236,6 +236,8 @@ export class Hud {
 	}
 
 	assignPowerUp(player: PlayerSide, slotIndex: number, powerUpType: PowerupType): void {
+		this.powerUpContainerP1.isVisible = true;
+		this.powerUpContainerP2.isVisible = true;
 		const scene = this.adt.getScene();
 		const cells = player === 0 ? this.powerUpCellsP1 : this.powerUpCellsP2;
 		if (slotIndex >= 0 && slotIndex < cells.length) {
