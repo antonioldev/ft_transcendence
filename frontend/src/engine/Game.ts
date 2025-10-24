@@ -215,7 +215,11 @@ export class Game {
 			await this.services?.gui?.showTournamentMatchLoser();
 			await this.services?.input.waitForSpectatorChoice();
 			this.resetForNextMatch();
-			await this.services?.gui.curtain.show(showLoser);
+
+			if (this.serverState !== GameState.RUNNING){
+				await this.services?.gui.curtain.show(showLoser);
+			}
+			
 			this.services?.gui.hud.setSpectatorMode();
 			// webSocketClient.sendSpectatorReady();
 			this.isSpectator = true;
@@ -272,6 +276,7 @@ export class Game {
 
 	private resetForNextMatch(): void {
 		if (!this.isInitialized) return;
+		console.log("Resetting game state");
 
 		this.stopGameLoop();
 		this.services?.gui?.hud.resetPowerUps();
