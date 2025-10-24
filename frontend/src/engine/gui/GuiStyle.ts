@@ -744,6 +744,7 @@ export const CURTAIN_STYLES = {
         horizontalAlignment: H_LEFT,
         verticalAlignment: V_TOP,
         isVisible: false,
+        zIndex: Z_INDEX.CURTAIN
     },
     
     leftPaddle: {
@@ -753,10 +754,8 @@ export const CURTAIN_STYLES = {
         height: "100%",
         horizontalAlignment: H_RIGHT,
         verticalAlignment: V_TOP,
-        isVisible: false,
-        // shadowBlur: 60,
-        // shadowColor: COLORS.WHITE,
-        zIndex: Z_INDEX.CURTAIN + 1
+        // isVisible: false,
+        // zIndex: Z_INDEX.CURTAIN + 1
     },
     
     rightPaddle: {
@@ -766,10 +765,8 @@ export const CURTAIN_STYLES = {
         height: "100%",
         horizontalAlignment: H_LEFT,
         verticalAlignment: V_TOP,
-        isVisible: false,
-        // shadowBlur: 60,
-        // shadowColor: COLORS.WHITE,
-        zIndex: Z_INDEX.CURTAIN + 1
+        // isVisible: false,
+        // zIndex: Z_INDEX.CURTAIN + 1
     },
 
     spectatorWaitingBox: {

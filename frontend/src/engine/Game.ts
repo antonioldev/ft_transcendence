@@ -13,7 +13,6 @@ import { startFireworks } from "./scene/builders/effectsBuilder.js";
 import { disposeMaterialResources } from "./scene/builders/materialsBuilder.js";
 import { buildScene } from './scene/builders/sceneBuilder.js';
 import { PlayerSide, PlayerState } from "./utils.js";
-import { GUIManager } from "./services/GuiManager.js";
 
 /**
  * The Game class serves as the core of the game engine, managing the initialization,
@@ -33,6 +32,7 @@ export class Game {
 	private gameLoopObserver: any = null;
 	private isSpectator: boolean = false;
 	private isGameEnded: boolean = false;
+	private isCountdownStarted: boolean = false;
 	private players: Map<PlayerSide, PlayerState> = new Map([
 			[PlayerSide.LEFT, { name: "", isControlled: false, keyboardProfile: undefined,
 				size: GAME_CONFIG.paddleWidth, score: 0, powerUpsAssigned: false, powerUps: [], inverted: false,}],
@@ -159,13 +159,13 @@ export class Game {
 			Logger.error('Server sent SIGNAL without countdown parameter', 'Game');
 			return;
 		}
-		console.error("countdown:" + countdown);
-		if (countdown === GAME_CONFIG.startDelay) {
+		if (!this.isCountdownStarted) {
 			uiManager.setLoadingScreenVisible(false);
 			this.services?.gui.lobby.hide();
 			this.services?.gui.cardGame.hide();
 			this.services?.gui.curtain.hide();
 			this.services?.gui.hud.show(true);
+			this.isCountdownStarted = true;
 		}
 		if (countdown === GAME_CONFIG.startDelay - 1) {
 			const playerLeft = this.players.get(PlayerSide.LEFT)?.name;
@@ -194,47 +194,9 @@ export class Game {
 			this.services?.animation?.stopCameraAnimations();
 			this.services?.gui?.countdown.finish();
 			this.startGameLoop();
+			this.isCountdownStarted = false;
 		}
 	}
-
-// 	private testPowerupEffects(): void {
-// 	const powerupTypes = [
-// 		PowerupType.SHRINK_OPPONENT,
-// 		PowerupType.GROW_PADDLE,
-// 		PowerupType.INVERT_OPPONENT,
-// 		PowerupType.SHIELD,
-// 		PowerupType.SLOW_OPPONENT,
-// 		PowerupType.INCREASE_PADDLE_SPEED,
-// 		PowerupType.FREEZE,
-// 		PowerupType.POWERSHOT,
-// 		PowerupType.CURVE_BALL,
-// 		PowerupType.CURVE_BALL
-// 	];
-
-// 	let currentIndex = 0;
-// 	let previousPowerup: PowerupType | null = null;
-
-// 	const testInterval = setInterval(() => {
-// 		if (!this.isInitialized || !this.services?.powerup) {
-// 			clearInterval(testInterval);
-// 			return;
-// 		}
-
-// 		// Deactivate previous powerup
-// 		if (previousPowerup !== null) {
-// 			this.services.powerup.deactivate(PlayerSide.LEFT, 0, previousPowerup);
-// 			console.error(`   ✅ Deactivated: ${PowerupType[previousPowerup]}`);
-// 		}
-
-// 		// Activate new powerup
-// 		const powerupType = powerupTypes[currentIndex];
-// 		console.error(`🧪 Activating: ${PowerupType[powerupType]}`);
-// 		this.services.powerup.activate(PlayerSide.LEFT, 0, powerupType);
-
-// 		previousPowerup = powerupType;
-// 		currentIndex = (currentIndex + 1) % powerupTypes.length;
-// 	}, 3000);
-// }
 
 	// Handle server ending the game
 	private async onServerEndedGame(winner: string, loser: string): Promise<void> {
@@ -393,6 +355,8 @@ export class Game {
 	}
 
 	private handleChangeServerState(state: GameStateData): void {
+		if (this.isSpectator)
+			this.services?.gui.curtain.hide();
 		if (this.serverState === state.state) return;
 
 		// if (this.isSpectator)

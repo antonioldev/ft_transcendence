@@ -23,13 +23,16 @@ export class SceneTransition {
 		this.leftPaddle = createRect("leftPaddle", CURTAIN_STYLES.leftPaddle);
 		this.rightPaddle = createRect("rightPaddle", CURTAIN_STYLES.rightPaddle);
 
+		this.leftBackground.addControl(this.leftPaddle);
+    	this.rightBackground.addControl(this.rightPaddle);
+
 		this.adt.addControl(this.leftBackground);
 		this.adt.addControl(this.rightBackground);
-		this.adt.addControl(this.leftPaddle);
-		this.adt.addControl(this.rightPaddle);
+		// this.adt.addControl(this.leftPaddle);
+		// this.adt.addControl(this.rightPaddle);
 		
-		this.leftPaddle.leftInPixels = -80;
-		this.rightPaddle.leftInPixels = width;
+		// this.leftPaddle.leftInPixels = -80;
+		// this.rightPaddle.leftInPixels = width;
 		this.leftBackground.leftInPixels = -width;
 		this.rightBackground.leftInPixels = width;
 
@@ -42,23 +45,24 @@ export class SceneTransition {
 	async show(isSpectator: boolean = false): Promise<void> {
 		this.isActive = true;
 
-		this.leftPaddle.isVisible = true;
-		this.rightPaddle.isVisible = true;
+		// this.leftPaddle.isVisible = true;
+		// this.rightPaddle.isVisible = true;
 		this.leftBackground.isVisible = true;
 		this.rightBackground.isVisible = true;
 		
 		const { width } = this.adt.getSize();
 		
-		this.leftBackground.leftInPixels = 0;
+		// this.leftBackground.leftInPixels = 0;
+		this.leftBackground.leftInPixels = -width / 2;
 		this.rightBackground.leftInPixels = width / 2;
-		this.leftPaddle.leftInPixels = width / 2 - 40;
-		this.rightPaddle.leftInPixels = width / 2 - 40;
+		// this.leftPaddle.leftInPixels = width / 2 - 40;
+		// this.rightPaddle.leftInPixels = width / 2 - 40;
 		
 		await Promise.all([
 			this.animationManager.slideFromDirection(this.leftBackground, 'right', 'in', width / 2, Motion.F.base),
 			this.animationManager.slideFromDirection(this.rightBackground, 'left', 'in', width / 2, Motion.F.base),
-			this.animationManager.slideFromDirection(this.leftPaddle, 'right', 'in', width / 2 + 40, Motion.F.base),
-			this.animationManager.slideFromDirection(this.rightPaddle, 'left', 'in', width / 2 + 40, Motion.F.base)
+			// this.animationManager.slideFromDirection(this.leftPaddle, 'right', 'in', width / 2 + 40, Motion.F.base),
+			// this.animationManager.slideFromDirection(this.rightPaddle, 'left', 'in', width / 2 + 40, Motion.F.base)
 		]);
 
 		if(isSpectator)
@@ -74,14 +78,14 @@ export class SceneTransition {
 		const { width } = this.adt.getSize();
 		
 		await Promise.all([
-			this.animationManager.slideFromDirection(this.leftPaddle, 'left', 'out', width / 2 + 40, Motion.F.fast),
-			this.animationManager.slideFromDirection(this.rightPaddle, 'right', 'out', width / 2 + 40, Motion.F.fast),
+			// this.animationManager.slideFromDirection(this.leftPaddle, 'left', 'out', width / 2 + 40, Motion.F.fast),
+			// this.animationManager.slideFromDirection(this.rightPaddle, 'right', 'out', width / 2 + 40, Motion.F.fast),
 			this.animationManager.slideFromDirection(this.leftBackground, 'left', 'out', width / 2, Motion.F.fast),
 			this.animationManager.slideFromDirection(this.rightBackground, 'right', 'out', width / 2, Motion.F.fast)
 		]);
 		this.spectatorWaitingRect.isVisible = false;
-		this.leftPaddle.isVisible = false;
-		this.rightPaddle.isVisible = false;
+		// this.leftPaddle.isVisible = false;
+		// this.rightPaddle.isVisible = false;
 		this.leftBackground.isVisible = false;
 		this.rightBackground.isVisible = false;
 		
@@ -97,10 +101,14 @@ export class SceneTransition {
 	private resetPositions(): void {
 		const { width } = this.adt.getSize();
 		
-		this.leftPaddle.leftInPixels = -80;
-		this.rightPaddle.leftInPixels = width;
-		this.leftBackground.leftInPixels = -width;
-		this.rightBackground.leftInPixels = width;
+		// this.leftPaddle.leftInPixels = -80;
+		// this.rightPaddle.leftInPixels = width;
+
+		this.leftBackground.leftInPixels = -width / 2;
+		this.rightBackground.leftInPixels = width / 2;
+		
+		// this.leftBackground.leftInPixels = -width;
+		// this.rightBackground.leftInPixels = width;
 	}
 }
 
