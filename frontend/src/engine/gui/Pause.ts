@@ -122,40 +122,8 @@ export class Pause {
 		this.adt.addControl(this.spectatorPauseBox);
 		
 		const spectatorPauseText = createTextBlock("spectatorPauseText", PAUSE_MENU_STYLES.spectatorPauseText, t.gamePaused);
-		this.spectatorPauseBox.addControl(spectatorPauseText);
+		this.spectatorPauseBox.addControl(spectatorPauseText);  
 	}
-
-	// private buildInstructions(gameInstructions: Rectangle, config: GameConfig): void {
-	// 	const t = getCurrentTranslation();
-
-	// 	const instructionsStack = createStackPanel("instructionsStack", PAUSE_MENU_STYLES.instructionsStack);
-	// 	gameInstructions.addControl(instructionsStack);
-		
-	// 	const controlsTitle = createTextBlock("controlsTitle", PAUSE_MENU_STYLES.instructionTitle, t.pauseControlsTitle);
-	// 	instructionsStack.addControl(controlsTitle);
-
-	// 	const movementHeader = createTextBlock("movementHeader", PAUSE_MENU_STYLES.instructionSectionHeader, t.pauseMovementTitle);
-	// 	instructionsStack.addControl(movementHeader);
-
-	// 	const movementText = this.getMovementText(config);
-	// 	const movementDetails = createTextBlock("movementDetails", PAUSE_MENU_STYLES.instructionDetails, movementText);
-	// 	instructionsStack.addControl(movementDetails);
-
-	// 	const powerupsHeader = createTextBlock("powerupsHeader", PAUSE_MENU_STYLES.instructionSectionHeader, t.pausePowerupsTitle);
-	// 	instructionsStack.addControl(powerupsHeader);
-
-	// 	const powerupsText = this.getPowerupsText(config);
-	// 	const powerupsDetails = createTextBlock("powerupsDetails", PAUSE_MENU_STYLES.instructionDetails, powerupsText);
-	// 	instructionsStack.addControl(powerupsDetails);
-
-	// 	const objectiveHeader = createTextBlock("objectiveHeader", PAUSE_MENU_STYLES.instructionSectionHeader, t.pauseObjectiveTitle);
-	// 	instructionsStack.addControl(objectiveHeader);
-
-	// 	const points = GAME_CONFIG.scoreToWin;
-	// 	const objectiveText = t.pauseObjectiveText.replace('{points}', points.toString());
-	// 	const objectiveDetails = createTextBlock("objectiveDetails", PAUSE_MENU_STYLES.instructionDetails, objectiveText);
-	// 	instructionsStack.addControl(objectiveDetails);
-	// }
 
 	private getMovementText(config: GameConfig): string {
 		const t = getCurrentTranslation();

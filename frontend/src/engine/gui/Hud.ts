@@ -12,7 +12,6 @@ export class Hud {
 	private score2Text!: TextBlock;
 	private player1Label!: TextBlock;
 	private player2Label!: TextBlock;
-	// private rallyText!: TextBlock;
 	private rally!: TextBlock;
 	private previousRally: number = 1;
 	private spectatorOverlay!: Rectangle;
