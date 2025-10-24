@@ -26,6 +26,16 @@ class UIManager {
 			const screen = document.getElementById(screenId);
 			if (screen)
 				screen.style.display = screenId === EL.SCREENS.MAIN_MENU ? 'block' : 'flex';
+
+			const topNav = document.getElementById('top-right-nav');
+			if (topNav) {
+				// Hide only during games, show in all other screens
+				if (screenId === EL.SCREENS.GAME_3D) {
+					topNav.style.display = 'none';
+				} else {
+					topNav.style.display = 'flex';
+				}
+			}
 		}
 
 		// Hide language selector during game screens
@@ -33,10 +43,10 @@ class UIManager {
 		// if (languageSelector)
 		// 	languageSelector.style.display = screenId === EL.SCREENS.GAME_3D ? 'none' : 'flex';
 
-		const settingButton = document.getElementById('settings-btn');
-		if (settingButton)
-			settingButton.style.display = screenId === EL.SCREENS.MAIN_MENU ? 'flex' : 'none';
-	
+		// const settingButton = document.getElementById('settings-btn');
+		// if (settingButton)
+		// 	settingButton.style.display = screenId === EL.SCREENS.MAIN_MENU ? 'flex' : 'none';
+
 		const isLoggedIn = authManager.isUserAuthenticated();
 		const isOnline = webSocketClient.isConnected();
 		uiManager.updateGameModeButtonStates(isLoggedIn, isOnline);
@@ -48,20 +58,58 @@ class UIManager {
 	showAuthButtons(): void {
 		const authButtons = requireElementById(EL.DISPLAY.AUTH_BUTTONS);
 		const userInfo = requireElementById(EL.DISPLAY.USER_INFO);
+		const userInfoContainer = requireElementById('user-info');
 		
 		authButtons.style.display = 'flex';
 		userInfo.style.display = 'none';
+		userInfoContainer.style.display = 'none';
 	}
 
 	showUserInfo(username: string): void {
 		const authButtons = requireElementById(EL.DISPLAY.AUTH_BUTTONS);
 		const userInfo = requireElementById(EL.DISPLAY.USER_INFO);
 		const userName = requireElementById(EL.DISPLAY.USER_NAME);
+		const userInfoContainer = requireElementById('user-info');
 		
 		authButtons.style.display = 'none';
 		userName.textContent = username;
 		userInfo.style.display = 'flex';
+		userInfoContainer.style.display = 'flex';
+
+		// Setup dropdown functionality only once
+		this.setupDropdownEvents();
 	}
+
+	private setupDropdownEvents(): void {
+		const dropdownTrigger = document.getElementById('user-dropdown-trigger');
+		const dropdownMenu = document.getElementById('user-dropdown-menu');
+		const dropdownArrow = document.getElementById('dropdown-arrow');
+
+		if (dropdownTrigger && dropdownMenu && dropdownArrow) {
+			// Remove existing listeners to avoid duplicates
+			dropdownTrigger.replaceWith(dropdownTrigger.cloneNode(true));
+			const newTrigger = document.getElementById('user-dropdown-trigger')!;
+			
+			newTrigger.addEventListener('click', (e) => {
+				e.stopPropagation();
+				const isVisible = dropdownMenu.style.display !== 'none';
+				
+				if (isVisible) {
+					dropdownMenu.style.display = 'none';
+					dropdownArrow.textContent = '▼';
+				} else {
+					dropdownMenu.style.display = 'block';
+					dropdownArrow.textContent = '▲';
+				}
+			});
+			
+			// Close dropdown when clicking outside
+			document.addEventListener('click', () => {
+				dropdownMenu.style.display = 'none';
+				dropdownArrow.textContent = '▼';
+			}, { once: false });
+		}
+		}
 
 	// ========================================
 	// FORM MANAGEMENT
