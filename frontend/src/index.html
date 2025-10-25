@@ -612,6 +612,19 @@
         </div>
     </div>
 
+    <!-- Error Modal -->
+    <div id="error-modal" class="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50" style="display: none;">
+        <div class="bg-blue-background border-2 border-white rounded-xl p-8 max-w-md w-11/12 text-center shadow-2xl">
+            <h3 class="text-red-500 text-2xl font-bold mb-5 font-sans text-shadow">Error</h3>
+            <p id="error-message" class="text-white text-base mb-6 font-sans leading-relaxed"></p>
+            <button id="error-ok-btn" 
+                    class="bg-orange hover:bg-orange-600 text-blue-background border-2 border-white rounded-lg px-8 py-3 
+                           font-bold font-sans transition-all duration-300 hover:scale-105 text-shadow">
+                OK
+            </button>
+        </div>
+    </div>
+
     <script type="module" src="./core/main.ts"></script>
 </body>
 </html>

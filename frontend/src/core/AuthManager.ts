@@ -315,10 +315,10 @@ export class AuthManager {
         
         // Basic validation
         if (!username || !password) {
-            alert(translation.pleaseFilllAllFields);
+            (translation.pleaseFilllAllFields);
             uiManager.clearForm(this.loginFields);
             return;
-        }    
+        }
 
         const responseData = await sendPOST("login", { username, password });
         this.handleLoginResponse(responseData.result, responseData.message, username, translation);
@@ -362,7 +362,7 @@ export class AuthManager {
         }
 
         if (password !== confirmPassword) {
-            alert(translation.passwordsDoNotMatch);
+            uiManager.showError(translation.passwordsDoNotMatch);
             uiManager.clearForm(this.registrationFields);
             return;
         }

@@ -112,9 +112,47 @@ class UIManager {
 		});
 	}
 
-	showFormValidationError(message: string): void {
-		alert(message); // TODO we can create UI instead of alert
+	showError(message: string): void {
+		const errorModal = document.getElementById('error-modal') as HTMLElement | null;
+		const errorMessage = document.getElementById('error-message') as HTMLElement | null;
+		const errorOkBtn = document.getElementById('error-ok-btn') as HTMLButtonElement | null;
+
+		if (!errorModal || !errorMessage || !errorOkBtn) {
+			alert(message);
+			return;
+		}
+		errorMessage.textContent = message;
+		errorModal.style.display = 'flex';
+		errorModal.style.opacity = '0';
+
+		requestAnimationFrame(() => {
+			errorModal.style.transition = 'opacity 0.3s ease';
+			errorModal.style.opacity = '1';
+		});
+
+		const closeModal = () => {
+			errorModal.style.opacity = '0';
+			setTimeout(() => {
+				errorModal.style.display = 'none';
+				errorModal.style.transition = '';
+				document.removeEventListener('keydown', handleKeyDown);
+			}, 300);
+		};
+
+		errorOkBtn.onclick = closeModal;
+
+		errorModal.onclick = (e) => {
+			if (e.target === errorModal) closeModal();
+		};
+
+		const handleKeyDown = (e: KeyboardEvent) => {
+			if (e.key === 'Escape') closeModal();
+		};
+		document.addEventListener('keydown', handleKeyDown);
+
+		setTimeout(() => errorOkBtn.focus(), 100);
 	}
+
 
 	// ========================================
 	// OVERLAY & MODAL MANAGEMENT
