@@ -61,7 +61,7 @@ export class EndGame {
 		}
 	}
 
-	private createSparkleElement(config: SparkleDetails, winner: boolean): Image {
+	private createSparkleElement(config: SparkleDetails): Image {
 		const sparkle = new Image("sparkle", config.asset);
 		sparkle.stretch = Image.STRETCH_UNIFORM;
 	
@@ -71,12 +71,13 @@ export class EndGame {
 	
 		sparkle.color = randomFromArray(config.colors);
 	
-		if (!winner) {
-			const startYOffset = -config.spread.y * 0.8;
-			sparkle.top = `${randomFromRange(startYOffset, startYOffset + config.spread.y * 0.4)}%`;
-		} else {
-			sparkle.top = `${randomFromRange(-config.spread.y / 2, config.spread.y / 2)}%`;
-		}
+		// if (!winner) {
+		// 	const startYOffset = -config.spread.y * 0.8;
+		// 	sparkle.top = `${randomFromRange(startYOffset, startYOffset + config.spread.y * 0.4)}%`;
+		// } else {
+		// 	sparkle.top = `${randomFromRange(-config.spread.y / 2, config.spread.y / 2)}%`;
+		// }
+		sparkle.top = `${randomFromRange(-config.spread.y / 2, config.spread.y / 2)}%`;
 		
 		sparkle.left = `${randomFromRange(-config.spread.x / 2, config.spread.x / 2)}%`;
 	
@@ -101,9 +102,9 @@ export class EndGame {
 					}, duration - 500);
 				} else {
 					setTimeout(() => {
-						const fallDistance = 300 + Math.random() * 200;
+						const fallDistance = 200 + Math.random() * 300;
 						const fallDuration = 40 + Math.random() * 20;
-						animationManager.slideFromDirection(sparkle, 'down', 'out', fallDistance, fallDuration, true).then(() => sparkle.dispose());
+						animationManager.fall(sparkle, fallDistance, fallDuration).then(() => sparkle.dispose());
 					}, duration - 300);
 				}
 			});
@@ -117,7 +118,7 @@ export class EndGame {
 	): void {
 		const config = winner ? PARTIAL_GUI_SPARKLES : PARTIAL_GUI_SPARKLES_LOSER;
 		for (let i = 0; i < config.count; i++) {
-			const sparkle = this.createSparkleElement(config, winner);
+			const sparkle = this.createSparkleElement(config);
 			advancedTexture.addControl(sparkle);
 			const delay = Math.random() * (winner ? 800 : 100);
 			this.animateSparkle(sparkle, animationManager, delay, config.duration, winner);

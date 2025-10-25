@@ -15,9 +15,10 @@ import { buildScene } from './scene/builders/sceneBuilder.js';
 import { PlayerSide, PlayerState } from "./utils.js";
 
 // [ ] CANVAS SIZE
-// [ ] CURTAIN TIMING
+// [x] CURTAIN TIMING
 // [ ] ORGANISE GUI
 // [ ] POWER UP stay on
+// [ ] Sparkle spread
 
 
 /**

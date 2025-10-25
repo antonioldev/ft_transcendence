@@ -26,9 +26,10 @@ export class SceneTransition {
 	}
 
 	private async show(): Promise<void> {
+		if (this.isActive) return;
 		this.isActive = true;
 		
-		await this.animationManager.slideCurtain(this.leftBackground, 'in', Motion.F.base, true);
+		await this.animationManager.slideCurtain(this.leftBackground, 'in', Motion.F.base);
 	}
 
 	private async hide(): Promise<void> {
@@ -37,7 +38,7 @@ export class SceneTransition {
 		await new Promise(resolve => setTimeout(resolve, 400));
 		this.isActive = false;
 		
-		await this.animationManager.slideCurtain(this.leftBackground, 'out', Motion.F.base, true);
+		await this.animationManager.slideCurtain(this.leftBackground, 'out', Motion.F.base);
 
 	}
 

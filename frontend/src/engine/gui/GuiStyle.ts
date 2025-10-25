@@ -712,6 +712,7 @@ export const CURTAIN_STYLES = {
         height: "100%",
         width: "100%",
         thickness: 0,
+        alpha: 0,
         horizontalAlignment: H_LEFT,
         verticalAlignment: V_TOP,
         zIndex: Z_INDEX.CURTAIN

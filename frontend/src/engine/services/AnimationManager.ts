@@ -170,10 +170,9 @@ export class AnimationManager {
 	slideCurtain(
 		target: Control,
 		type: 'in' | 'out' = 'in',
-		frames = Motion.F.base,
-		withFade = true
+		frames = Motion.F.base
 	): Promise<void> {
-		target.alpha = withFade ? (type === 'in' ? 0 : 1) : target.alpha;
+		target.alpha = type === 'in' ? 0 : 1;
 
 		const distance = target.parent?.heightInPixels || 1000;
 		let startTop: number;
@@ -189,16 +188,31 @@ export class AnimationManager {
 			target.topInPixels = startTop;
 		}
 		
+		const alphaFrom = type === 'in' ? 0 : 1;
+		const alphaTo = type === 'in' ? 1 : 0;
+		
 		const animations: Animation[] = [
-			this.createFloat('topInPixels', startTop, endTop, frames, false, Motion.ease.quadOut())
+			this.createFloat('topInPixels', startTop, endTop, frames, false, Motion.ease.quadOut()),
+			this.createFloat("alpha", alphaFrom, alphaTo, frames, false, Motion.ease.quadOut())
 		];
 		
-		if (withFade) {
-			const alphaFrom = type === 'in' ? 0 : 1;
-			const alphaTo = type === 'in' ? 1 : 0;
-			animations.push(this.createFloat("alpha", alphaFrom, alphaTo, frames, false, Motion.ease.quadOut()));
-		}
+		target.animations = animations;
+		return this.play(target, frames, false);
+	}
+
+	fall(
+		target: Control,
+		fallDistance: number,
+		frames = Motion.F.base
+	): Promise<void> {
+		const currentTop = target.topInPixels;
+		const endTop = currentTop + fallDistance;
 		
+		const animations: Animation[] = [
+			this.createFloat('topInPixels', currentTop, endTop, frames, false, Motion.ease.quadOut()),
+			this.createFloat('alpha', target.alpha, 0, frames, false, Motion.ease.quadOut())
+		];
+
 		target.animations = animations;
 		return this.play(target, frames, false);
 	}

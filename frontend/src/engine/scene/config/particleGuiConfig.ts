@@ -22,7 +22,7 @@ export const PARTIAL_GUI_SPARKLES: SparkleDetails = {
 		"#F0E68C", // Khaki
 		"#FFFFFF"  // White
 	],
-	spread: { x: 80, y: 60 }
+	spread: { x: 100, y: 80 }
 };
 
 
@@ -40,5 +40,5 @@ export const PARTIAL_GUI_SPARKLES_LOSER: SparkleDetails = {
 		"#800000", // Maroon
 		"#9B111E"  // Ruby red
 	],
-	spread: { x: 60, y: 50 }
+	spread: { x: 100, y: 80 }
 };
