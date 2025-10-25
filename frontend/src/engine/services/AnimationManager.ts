@@ -167,6 +167,42 @@ export class AnimationManager {
 		});
 	}
 
+	slideCurtain(
+		target: Control,
+		type: 'in' | 'out' = 'in',
+		frames = Motion.F.base,
+		withFade = true
+	): Promise<void> {
+		target.alpha = withFade ? (type === 'in' ? 0 : 1) : target.alpha;
+
+		const distance = target.parent?.heightInPixels || 1000;
+		let startTop: number;
+		let endTop: number;
+		
+		if (type === 'in') {
+			startTop = -distance;
+			endTop = 0;
+			target.topInPixels = startTop;
+		} else {
+			startTop = 0;
+			endTop = -distance;
+			target.topInPixels = startTop;
+		}
+		
+		const animations: Animation[] = [
+			this.createFloat('topInPixels', startTop, endTop, frames, false, Motion.ease.quadOut())
+		];
+		
+		if (withFade) {
+			const alphaFrom = type === 'in' ? 0 : 1;
+			const alphaTo = type === 'in' ? 1 : 0;
+			animations.push(this.createFloat("alpha", alphaFrom, alphaTo, frames, false, Motion.ease.quadOut()));
+		}
+		
+		target.animations = animations;
+		return this.play(target, frames, false);
+	}
+
 	slideFromDirection(
 		target: Control, 
 		direction: 'up' | 'down' | 'left' | 'right', 

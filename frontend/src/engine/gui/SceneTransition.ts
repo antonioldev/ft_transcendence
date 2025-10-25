@@ -19,7 +19,7 @@ export class SceneTransition {
 		// this.rightPaddle = createRect("rightPaddle", CURTAIN_STYLES.rightPaddle);
 
 		this.leftBackground.addControl(this.leftPaddle);
-    	// this.rightBackground.addControl(this.rightPaddle);
+		// this.rightBackground.addControl(this.rightPaddle);
 
 		this.adt.addControl(this.leftBackground);
 		// this.adt.addControl(this.rightBackground);
@@ -27,14 +27,8 @@ export class SceneTransition {
 
 	private async show(): Promise<void> {
 		this.isActive = true;
-
-		this.leftBackground.isVisible = true;
 		
-		const { width } = this.adt.getSize();
-		
-		this.leftBackground.leftInPixels = -width;
-		
-		await this.animationManager.slideFromDirection(this.leftBackground, 'right', 'in', width, Motion.F.base, false);
+		await this.animationManager.slideCurtain(this.leftBackground, 'in', Motion.F.base, true);
 	}
 
 	private async hide(): Promise<void> {
@@ -42,11 +36,8 @@ export class SceneTransition {
 
 		await new Promise(resolve => setTimeout(resolve, 400));
 		this.isActive = false;
-		const { width } = this.adt.getSize();
 		
-		await this.animationManager.slideFromDirection(this.leftBackground, 'right', 'out', width, Motion.F.base, true);
-		this.leftBackground.isVisible = false;
-		this.leftBackground.leftInPixels = -width;
+		await this.animationManager.slideCurtain(this.leftBackground, 'out', Motion.F.base, true);
 
 	}
 

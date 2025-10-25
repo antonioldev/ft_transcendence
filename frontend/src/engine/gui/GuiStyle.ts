@@ -27,7 +27,7 @@ export const COLORS = {
     GREEN: "rgba(34, 197, 94, 1)",
     LIGHT_GREEN: "rgba(160, 200, 120, 1)",
     GRAY: "rgba(153, 153, 153, 1)",
-    ORANGE: "rgba(235, 91, 0, 1)",
+    ORANGE: "rgba(254, 94, 65, 1)",
     SPECTATOR_RED: "rgba(255, 0, 0, 0.3)",
 
 } as const;
@@ -576,17 +576,6 @@ export const BRACKET_STYLES = {
         fontWeight: "bold",
         fontSize: "18px",
         color: COLORS.WHITE,
-        // shadowOffsetX: 1,
-        // shadowOffsetY: 1,
-        // shadowBlur: 2,
-        // shadowOpacity: 0.5,
-        // shadowColor: COLORS.BLACK,
-        // outlineWidth: 2,
-        // outlineColor: COLORS.BLACK,
-        // shadowOffsetX: 2,
-        // shadowOffsetY: 2,
-        // shadowBlur: 0,
-        // shadowColor: COLORS.TRANSPARENT_BLACK
     },
     
     loserCell: {
@@ -669,13 +658,6 @@ export const BRACKET_STYLES = {
         color: COLORS.WHITE,
         fontSize: 16,
         fontWeight: "bold",
-        // shadowOffsetX: 1,
-        // shadowOffsetY: 1,
-        // shadowBlur: 2,
-        // shadowOpacity: 0.5,
-        // shadowColor: COLORS.BLACK,
-        // outlineWidth: 1,
-        // outlineColor: COLORS.DARK_BLUE,
     },
 
     matchRowRect: {
@@ -726,75 +708,23 @@ export const BRACKET_STYLES = {
 
 export const CURTAIN_STYLES = {
     leftBackground: {
-        background: COLORS.LIGHT_GREEN,
+        background: COLORS.DARK_BLUE,
         height: "100%",
         width: "100%",
         thickness: 0,
         horizontalAlignment: H_LEFT,
         verticalAlignment: V_TOP,
-        isVisible: false,
         zIndex: Z_INDEX.CURTAIN
     },
 
     leftPaddle: {
-        background: COLORS.ORANGE,
-        thickness: 0,
-        widthInPixels: 80,
-        height: "100%",
-        horizontalAlignment: H_RIGHT,
-        verticalAlignment: V_TOP
+    background: COLORS.ORANGE,
+    thickness: 0,
+    width: "100%",
+    heightInPixels: 80,
+    horizontalAlignment: H_CENTER,
+    verticalAlignment: V_BOTTOM
     }
-    
-    // rightBackground: {
-    //     background: COLORS.DARK_BLUE,
-    //     height: "100%",
-    //     width: "100%",
-    //     thickness: 0,
-    //     horizontalAlignment: H_LEFT,
-    //     verticalAlignment: V_TOP,
-    //     isVisible: false,
-    //     zIndex: Z_INDEX.CURTAIN
-    // },
-    
-    
-    
-    // rightPaddle: {
-    //     background: COLORS.ORANGE,
-    //     thickness: 0,
-    //     widthInPixels: 80,
-    //     height: "100%",
-    //     horizontalAlignment: H_LEFT,
-    //     verticalAlignment: V_TOP,
-    //     // isVisible: false,
-    //     // zIndex: Z_INDEX.CURTAIN + 1
-    // },
-
-    // spectatorWaitingBox: {
-    //     widthInPixels: 500,
-    //     heightInPixels: 120,
-    //     background: COLORS.TRANSPARENT_BLACK,
-    //     thickness: 2,
-    //     color: COLORS.SPECTATOR_RED,
-    //     cornerRadius: 12,
-    //     zIndex: Z_INDEX.CURTAIN + 2,
-    //     isVisible: false,
-    //     shadowBlur: 20,
-    //     shadowColor: COLORS.SPECTATOR_RED
-    // },
-    
-    // spectatorWaitingText: {
-    //     fontFamily: "monospace",
-    //     color: COLORS.WHITE,
-    //     fontSize: 28,
-    //     fontWeight: "bold",
-    //     // shadowOffsetX: 1,
-    //     // shadowOffsetY: 1,
-    //     // shadowBlur: 2,
-    //     // shadowOpacity: 0.5,
-    //     // shadowColor: COLORS.BLACK,
-    //     // outlineWidth: 2,
-    //     // outlineColor: COLORS.BLACK
-    // }
 } as const;
 
 export const CARD_GAME_STYLES = {
@@ -817,22 +747,18 @@ export const CARD_GAME_STYLES = {
         fontSize: 40,
         color: COLORS.ORANGE,
         height: "60px",
-        // top: "-300px",
         fontWeight: "bold",
         shadowOffsetX: 1,
         shadowOffsetY: 1,
         shadowBlur: 2,
         shadowOpacity: 0.5,
         shadowColor: COLORS.BLACK,
-        // outlineWidth: 2,
-        // outlineColor: COLORS.WHITE,
     },
 
     instructions: {
         fontSize: 20,
         color: COLORS.WHITE,
         height: "30px"
-        // top: "-260px",
     },
 
     cardsGrid: {

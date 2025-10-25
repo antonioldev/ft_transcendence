@@ -14,6 +14,12 @@ import { disposeMaterialResources } from "./scene/builders/materialsBuilder.js";
 import { buildScene } from './scene/builders/sceneBuilder.js';
 import { PlayerSide, PlayerState } from "./utils.js";
 
+// [ ] CANVAS SIZE
+// [ ] CURTAIN TIMING
+// [ ] ORGANISE GUI
+// [ ] POWER UP stay on
+
+
 /**
  * The Game class serves as the core of the game engine, managing the initialization,
  * state, and lifecycle of the game. It handles rendering, input, audio, and communication
@@ -163,13 +169,13 @@ export class Game {
 		console.log(`countdown: ${countdown}`);
 		if (!this.isCountdownStarted) {
 			console.log("Hiding all screens");
+			this.isCountdownStarted = true;
 			uiManager.setLoadingScreenVisible(false);
 			await this.services?.gui.curtain.play();
 			this.services?.gui.lobby.hide();
 			this.services?.gui.cardGame.hide();
 			// this.services?.gui.curtain.hide();
 			this.services?.gui.hud.show(true);
-			this.isCountdownStarted = true;
 		}
 		if (countdown === GAME_CONFIG.startDelay - 1) {
 			const playerLeft = this.players.get(PlayerSide.LEFT)?.name;
@@ -217,8 +223,8 @@ export class Game {
 			await this.services?.input.waitForSpectatorChoice();
 			this.resetForNextMatch();
 
-			if (this.serverState !== GameState.RUNNING)
-				this.services?.gui.curtain.play();
+			// if (this.serverState !== GameState.RUNNING)
+			// 	this.services?.gui.curtain.play();
 			
 			this.services?.gui.hud.setSpectatorMode();
 			// webSocketClient.sendSpectatorReady();
@@ -232,7 +238,7 @@ export class Game {
 		webSocketClient.sendPlayerReady();
 		if (this.services?.gui.isLastMatch)  return ;
 
-		this.services?.gui.curtain.play();
+		// this.services?.gui.curtain.play();
 		if (this.config.isRemoteMultiplayer)
 			this.services?.gui.cardGame.show();
 	}
@@ -245,7 +251,7 @@ export class Game {
 		this.services?.gui?.setPauseVisible(false, false);
 		startFireworks(this.themeObjects?.effects || [], 250);
 		await this.services?.gui?.showWinner(winner);
-		await this.services?.gui.curtain.play();
+		// await this.services?.gui.curtain.play();
 		this.services?.audio?.stopGameMusic();
 		this.dispose();
 
@@ -361,8 +367,8 @@ export class Game {
 	}
 
 	private handleChangeServerState(state: GameStateData): void {
-		if (this.isSpectator)
-			this.services?.gui.curtain.play();
+		// if (this.isSpectator)
+		// 	this.services?.gui.curtain.play();
 		if (this.serverState === state.state) return;
 		
 		// if (this.isSpectator)
