@@ -90,7 +90,8 @@ export const HUD_STYLES = {
         height: "20%",
         background: COLORS.DARK_BLUE,
         verticalAlignment: V_BOTTOM,
-        zIndex: Z_INDEX.HUD
+        zIndex: Z_INDEX.HUD,
+        alpha: 0
     },
 
     stack: {
@@ -707,10 +708,10 @@ export const BRACKET_STYLES = {
 } as const;
 
 export const CURTAIN_STYLES = {
-    leftBackground: {
+    background: {
         background: COLORS.DARK_BLUE,
         height: "100%",
-        width: "100%",
+        width: "50%",
         thickness: 0,
         alpha: 0,
         horizontalAlignment: H_LEFT,
@@ -718,13 +719,13 @@ export const CURTAIN_STYLES = {
         zIndex: Z_INDEX.CURTAIN
     },
 
-    leftPaddle: {
-    background: COLORS.ORANGE,
-    thickness: 0,
-    width: "100%",
-    heightInPixels: 80,
-    horizontalAlignment: H_CENTER,
-    verticalAlignment: V_BOTTOM
+    paddle: {
+        background: COLORS.ORANGE,
+        thickness: 0,
+        height: "100%",
+        widthInPixels: 40,
+        horizontalAlignment: H_RIGHT,
+        verticalAlignment: V_CENTER
     }
 } as const;
 

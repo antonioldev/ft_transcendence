@@ -20,8 +20,8 @@ export class Hud {
 	private powerUpContainerP2!: Rectangle;
 	private hdImagesP1: Map<PowerupType, Image> = new Map();
 	private hdImagesP2: Map<PowerupType, Image> = new Map();
-	private powerUpCellsP1: Array<{root: Rectangle; icon?: Image; letter?: TextBlock}> = [];
-	private powerUpCellsP2: Array<{root: Rectangle; icon?: Image; letter?: TextBlock}> = [];
+	private powerUpCellsP1: Array<{root: Rectangle; icon?: Image; letter: TextBlock}> = [];
+	private powerUpCellsP2: Array<{root: Rectangle; icon?: Image; letter: TextBlock}> = [];
 	
 	private POWERUP_ICON: Record<number, string> = {
 		[PowerupType.SLOW_OPPONENT]: "assets/icons/powerup/slow.png",
@@ -128,9 +128,9 @@ export class Hud {
 		return container;
 	}
 
-	private createPowerUpCell(index: number, player: PlayerSide, config: GameConfig): {root: Rectangle; icon?: Image; letter?: TextBlock} {
+	private createPowerUpCell(index: number, player: PlayerSide, config: GameConfig): {root: Rectangle; icon?: Image; letter: TextBlock} {
 		const cell = createRect(`powerUpCell_${player}_${index}`, POWER_UP_STYLES.powerUpCell);
-		cell.left = `${index * 32}%`;
+		cell.left = `${index * 33}%`;
 
 		let letterKeys = ['1', '2', '3'];
 		if (config.isLocalMultiplayer)
@@ -182,10 +182,9 @@ export class Hud {
 	}
 
 	show(show: boolean): void {
-		this.hudGrid.isVisible = show;
-
-		this.powerUpContainerP1.isVisible = show;
-		this.powerUpContainerP2.isVisible = show;
+		this.hudGrid.alpha = show ? 1 : 0;
+		this.powerUpContainerP1.alpha = show ? 1 : 0;
+		this.powerUpContainerP2.alpha = show ? 1 : 0;
 	}
 
 	updateRally(rally: number): boolean {
@@ -213,7 +212,7 @@ export class Hud {
 	async setSpectatorMode(): Promise<void> {
 		this.spectatorOverlay.isVisible = true;
 		this.animationManager.fade(this.spectatorBanner, 'in', Motion.F.base);
-		this.animationManager.twinkle(this.spectatorOverlay, Motion.F.fast);
+		this.animationManager.twinkle(this.spectatorOverlay, Motion.F.base);
 	}
 
 	updateScores(leftScore: number, rightScore: number): void {
@@ -232,12 +231,9 @@ export class Hud {
 	updatePlayerNames(player1Name: string, player2Name: string): void {
 		this.player1Label.text = player1Name;
 		this.player2Label.text = player2Name;
-		this.hudGrid.isVisible = true;
 	}
 
 	assignPowerUp(player: PlayerSide, slotIndex: number, powerUpType: PowerupType): void {
-		this.powerUpContainerP1.isVisible = true;
-		this.powerUpContainerP2.isVisible = true;
 		const scene = this.adt.getScene();
 		const cells = player === 0 ? this.powerUpCellsP1 : this.powerUpCellsP2;
 		if (slotIndex >= 0 && slotIndex < cells.length) {
@@ -247,7 +243,9 @@ export class Hud {
 			cell.root.scaleX = 1;
 			cell.root.scaleY = 1;
 			cell.root.alpha = 0;
-			cell.root.color = "rgba(255, 255, 255, 0.5)";
+			cell.root.thickness = 0;
+			cell.root.background = "rgba(0, 0, 0, 0)";
+			cell.letter.color = "rgba(255, 255, 255, 1)";
 			
 			if (powerUpType !== null && this.POWERUP_ICON[powerUpType]) {
 				if (!cell.icon) {
@@ -264,11 +262,10 @@ export class Hud {
 				cell.root.alpha = 0;
 				const delay = slotIndex * 100;
 				setTimeout(() => {
-					this.animationManager.scale(cell.root, 1, 1.1, Motion.F.fast, true);
-					// this.animationManager.slideFromDirection(cell.root, 'up', 'in', 100, Motion.F.base)
-					// 	.then(() => {
-					// 		return this.animationManager.scale(cell.root, 1, 1.1, Motion.F.fast, true);
-					// 	});
+					this.animationManager.slideFromDirection(cell.root, 'up', 'in', 100, Motion.F.base)
+						.then(() => {
+							return this.animationManager.scale(cell.root, 1, 1.1, Motion.F.fast, true);
+						});
 				}, delay);
 			}
 		}
@@ -284,6 +281,7 @@ export class Hud {
 			switch (action) {
 				case PowerupState.ACTIVE:
 					cell.root.color = "rgba(255, 0, 0, 1)";
+					cell.root.thickness = 1;
 					if (cell.icon)
 						this.animationManager?.twinkle(cell.root, Motion.F.fast);
 					break;
@@ -292,8 +290,9 @@ export class Hud {
 					scene?.stopAnimation(cell.root);
 					cell.root.scaleX = 1;
 					cell.root.scaleY = 1;
-					cell.root.color = "rgba(255, 255, 255, 0.5)";
+					cell.root.thickness = 0;
 					cell.root.background = "rgba(255, 255, 255, 0.25)";
+					cell.letter.color = "rgba(255, 255, 255, 0.25)";
 					
 					if (cell.icon)
 						this.animationManager.fade(cell.icon, 'out', Motion.F.fast).then(() => {

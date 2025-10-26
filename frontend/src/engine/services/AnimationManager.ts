@@ -169,30 +169,31 @@ export class AnimationManager {
 
 	slideCurtain(
 		target: Control,
+		isLeft: boolean,
 		type: 'in' | 'out' = 'in',
 		frames = Motion.F.base
 	): Promise<void> {
 		target.alpha = type === 'in' ? 0 : 1;
 
-		const distance = target.parent?.heightInPixels || 1000;
-		let startTop: number;
-		let endTop: number;
+		const distance = (target.parent?.widthInPixels || 1000) / 2;
+		let start: number;
+		let end: number;
 		
 		if (type === 'in') {
-			startTop = -distance;
-			endTop = 0;
-			target.topInPixels = startTop;
+			end = 0;
+			start = isLeft ? -distance : distance;
+			target.leftInPixels = start;
 		} else {
-			startTop = 0;
-			endTop = -distance;
-			target.topInPixels = startTop;
+			start = 0;
+			end = isLeft ? -distance : distance;
+			target.leftInPixels = start;
 		}
 		
 		const alphaFrom = type === 'in' ? 0 : 1;
 		const alphaTo = type === 'in' ? 1 : 0;
 		
 		const animations: Animation[] = [
-			this.createFloat('topInPixels', startTop, endTop, frames, false, Motion.ease.quadOut()),
+			this.createFloat('leftInPixels', start, end, frames, false, Motion.ease.quadOut()),
 			this.createFloat("alpha", alphaFrom, alphaTo, frames, false, Motion.ease.quadOut())
 		];
 		

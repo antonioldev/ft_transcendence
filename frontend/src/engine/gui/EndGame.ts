@@ -70,13 +70,7 @@ export class EndGame {
 		sparkle.heightInPixels = size;
 	
 		sparkle.color = randomFromArray(config.colors);
-	
-		// if (!winner) {
-		// 	const startYOffset = -config.spread.y * 0.8;
-		// 	sparkle.top = `${randomFromRange(startYOffset, startYOffset + config.spread.y * 0.4)}%`;
-		// } else {
-		// 	sparkle.top = `${randomFromRange(-config.spread.y / 2, config.spread.y / 2)}%`;
-		// }
+
 		sparkle.top = `${randomFromRange(-config.spread.y / 2, config.spread.y / 2)}%`;
 		
 		sparkle.left = `${randomFromRange(-config.spread.x / 2, config.spread.x / 2)}%`;

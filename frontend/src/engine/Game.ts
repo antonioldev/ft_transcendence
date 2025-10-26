@@ -17,8 +17,8 @@ import { PlayerSide, PlayerState } from "./utils.js";
 // [ ] CANVAS SIZE
 // [x] CURTAIN TIMING
 // [ ] ORGANISE GUI
-// [ ] POWER UP stay on
-// [ ] Sparkle spread
+// [x] POWER UP stay on
+// [x] Sparkle spread
 
 
 /**
@@ -176,7 +176,7 @@ export class Game {
 			this.services?.gui.lobby.hide();
 			this.services?.gui.cardGame.hide();
 			// this.services?.gui.curtain.hide();
-			this.services?.gui.hud.show(true);
+			// this.services?.gui.hud.show!(true);
 		}
 		if (countdown === GAME_CONFIG.startDelay - 1) {
 			const playerLeft = this.players.get(PlayerSide.LEFT)?.name;
@@ -284,6 +284,7 @@ export class Game {
 		console.log("Resetting game state");
 
 		this.stopGameLoop();
+		this.services?.powerup?.resetAllPowerups();
 		this.services?.gui?.hud.resetPowerUps();
 		this.resetPlayersState();
 
@@ -383,6 +384,7 @@ export class Game {
 				this.services?.audio?.pauseGameMusic();
 				break;
 			case GameState.RUNNING:
+				this.services?.gui.hud.show(true);
 				this.services?.gui?.setPauseVisible(false, this.isSpectator);
 				this.services?.audio?.resumeGameMusic();
 				this.isGameEnded = false;
@@ -390,6 +392,7 @@ export class Game {
 			case GameState.ENDED:
 				if (this.isGameEnded) return;
 				this.isGameEnded = true;
+				this.services?.gui.hud.show(false);
 				const winner = state.winner;
 				const loser = state.loser;
 				if (winner && loser)

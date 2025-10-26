@@ -233,4 +233,16 @@ export class PowerupManager {
 		}
 		this.guiManager?.hud.updatePowerUp(side, slot, PowerupState.SPENT);
 	}
+
+	resetAllPowerups(): void {
+		this.players.forEach((player, side) => {
+			if (player.powerUps && player.powerUps.length > 0) {
+				player.powerUps.forEach((powerup, index) => {
+					if (powerup.state === PowerupState.ACTIVE) {
+						this.deactivate(side, index, powerup.type);
+					}
+				});
+			}
+		});
+	}
 }
