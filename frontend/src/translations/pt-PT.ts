@@ -68,7 +68,7 @@ export const portuguese: Translation = {
     impossible: ' (Impossível)',
     winner: 'VENCEDOR',
     continue: 'Pressione ESPAÇO para continuar',
-	tournamentTitle: 'Classificação do Torneio de Pong',
+	tournamentTitle: 'CLASSIFICAÇÃO DO TORNEIO',
 	escToClose: 'Pressione ESC para fechar',
     miniGameRules: 'Encontre todos os pares correspondentes! Jogue enquanto outros terminam seus jogos.',
     // Validation error messages

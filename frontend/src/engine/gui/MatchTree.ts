@@ -22,13 +22,13 @@ export class MatchTree {
 		this.overlay = createRect("bracketOverlay", BRACKET_STYLES.bracketOverlay);
 		this.adt.addControl(this.overlay);
 
-		const container = createGrid("bracketContainer", BRACKET_STYLES.bracketGrid);
+		const container = createGrid("bracketContainer", BRACKET_STYLES.grid);
 		container.addRowDefinition(BRACKET_STYLES.containerRows.header, false);
 		container.addRowDefinition(BRACKET_STYLES.containerRows.content, false);
 		container.addColumnDefinition(1, false);
 		this.overlay.addControl(container);
 
-		const headerGrid = createGrid("headerGrid", BRACKET_STYLES.headerGrid);
+		const headerGrid = createGrid("headerGrid", BRACKET_STYLES.grid);
 		headerGrid.addColumnDefinition(BRACKET_STYLES.gridColumns.icon, true);
 		headerGrid.addColumnDefinition(BRACKET_STYLES.gridColumns.title, false);
 
@@ -40,7 +40,7 @@ export class MatchTree {
 
 		container.addControl(headerGrid, 0, 0);
 
-		this.bracketGrid = createGrid("bracketGrid", BRACKET_STYLES.bracketGrid);
+		this.bracketGrid = createGrid("bracketGrid", BRACKET_STYLES.grid);
 		this.bracketGrid.addRowDefinition(1, false);
 		this.bracketGrid.addColumnDefinition(1, false);
 		container.addControl(this.bracketGrid, 1, 0);
@@ -142,7 +142,7 @@ export class MatchTree {
 		this.playerTotal = matchTotal * 2;
 		this.roundsCount = roundsTotal;
 
-		const tabsRoot = createStackPanel("bracketTabsRoot", BRACKET_STYLES.tabsRoot);
+		const tabsRoot = createStackPanel("bracketTabsRoot", BRACKET_STYLES.stackPanel);
 		this.bracketGrid.addControl(tabsRoot, 0, 0);
 
 		const headerRect = createRect("roundsHeaderRect", BRACKET_STYLES.tabHeaderRect);
@@ -158,7 +158,7 @@ export class MatchTree {
 			this.tabsBar.addColumnDefinition(1, false);
 		tabsRoot.addControl(this.tabsBar);
 
-		const panelsWrap = createStackPanel("roundPanelsWrap", BRACKET_STYLES.roundPanelsWrap);
+		const panelsWrap = createStackPanel("roundPanelsWrap", BRACKET_STYLES.stackPanel);
 		tabsRoot.addControl(panelsWrap);
 		for (let r = 1; r <= this.roundsCount; r++) {
 			const tab = createRect(`tab_round_${r}`, BRACKET_STYLES.tabButton);
@@ -175,7 +175,7 @@ export class MatchTree {
 
 			this.tabButtons.push(tab);
 			this.tabLabels.push(tabLabel);
-			const panel = createStackPanel(`roundPanel_${r}`, BRACKET_STYLES.roundPanel);
+			const panel = createStackPanel(`roundPanel_${r}`, BRACKET_STYLES.stackPanel);
 			panel.isVisible = (r === this.currentRound);
 			panelsWrap.addControl(panel);
 			this.roundPanels.push(panel);
@@ -193,21 +193,24 @@ export class MatchTree {
 				const rowRect = createRect(`matchRow_${r}_${i}`, BRACKET_STYLES.matchRowRect);
 				panel.addControl(rowRect);
 
-				const rowPanel = createStackPanel(`matchRowPanel_${r}_${i}`, BRACKET_STYLES.matchRowPanel);
-				rowRect.addControl(rowPanel);
+				const rowGrid = createGrid(`matchRowGrid_${r}_${i}`, BRACKET_STYLES.matchRowGrid);
+				rowGrid.addColumnDefinition(0.40, false); // 40% for left player
+				rowGrid.addColumnDefinition(0.15, false); // 15% for VS
+				rowGrid.addColumnDefinition(0.40, false); // 40% for right player
+				rowRect.addControl(rowGrid);
 
 				const leftRect = createRect(`${leftId}_rect`, BRACKET_STYLES.matchPlayerRect);
-				rowPanel.addControl(leftRect);
 				const leftTb = createTextBlock(leftId, BRACKET_STYLES.matchPlayerText, "tbd");
 				leftRect.addControl(leftTb);
 
 				const vsTb = createTextBlock(`vs_${r}_${i}`, BRACKET_STYLES.matchVsText, "← vs →");
-				rowPanel.addControl(vsTb);
-
 				const rightRect = createRect(`${rightId}_rect`, BRACKET_STYLES.matchPlayerRect);
-				rowPanel.addControl(rightRect);
 				const rightTb = createTextBlock(rightId, BRACKET_STYLES.matchPlayerText, "tbd");
 				rightRect.addControl(rightTb);
+
+				rowGrid.addControl(leftRect, 0, 0);
+				rowGrid.addControl(vsTb, 0, 1);
+				rowGrid.addControl(rightRect, 0, 2);
 			}
 		}
 

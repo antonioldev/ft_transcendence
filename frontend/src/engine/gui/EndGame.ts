@@ -21,7 +21,7 @@ export class EndGame {
 	constructor(private adt: AdvancedDynamicTexture, private animationManager: AnimationManager) {
 		const t = getCurrentTranslation();
 
-		this.partialEndGameOverlay = createRect("partialWinnerLayer", END_GAME_STYLES.endGameOverlay);
+		this.partialEndGameOverlay = createRect("partialWinnerOverlay", END_GAME_STYLES.partialEndGameOverlay);
 		this.adt!.addControl(this.partialEndGameOverlay);
 
 		const centerColumn = createGrid("winnerGrid", END_GAME_STYLES.winnerGrid);
@@ -42,7 +42,7 @@ export class EndGame {
 		centerColumn.addControl(this.continueText, 2, 0);
 
 		this.spectatorTimerText = createTextBlock("spectatorTimer", END_GAME_STYLES.continueText, "10");
-		centerColumn.addControl(this.spectatorTimerText);
+		centerColumn.addControl(this.spectatorTimerText, 3, 0);
 
 		this.endGameOverlay = createRect("endGameOverlay", END_GAME_STYLES.endGameOverlay);
 
@@ -123,7 +123,6 @@ export class EndGame {
 		if (!this.adt) return;
 
 		this.partialWinnerName.text = name;
-		this.partialWinnerName.color = "rgba(255, 215, 0, 1)";
 		this.partialEndGameOverlay.isVisible = true;
 		this.partialWinnerLabel.isVisible = true;
 		this.partialWinnerName.isVisible = true;
@@ -216,7 +215,6 @@ export class EndGame {
 			clearInterval(this.spectatorTimerInterval);
 			this.spectatorTimerInterval = null;
 		}
-		this.continueText.isVisible = false;
 		this.spectatorTimerText.isVisible = false;
 	}
 

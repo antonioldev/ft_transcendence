@@ -68,7 +68,7 @@ export const french: Translation = {
     impossible: ' (God of War)',
     winner: 'VAINQUEUR',
     continue: 'Appuyez sur ESPACE pour continuer',
-	tournamentTitle: 'Classement du Tournoi',
+	tournamentTitle: 'CLASSEMENT DU TOURNOI',
 	escToClose: 'Appuyez sur ESC pour fermer',
     miniGameRules: 'Trouvez toutes les paires correspondantes ! Jouez pendant que les autres finissent leurs parties.',
     // Validation error messages

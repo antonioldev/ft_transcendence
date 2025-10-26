@@ -68,7 +68,7 @@ export const english: Translation = {
     impossible: ' (God of War)',
     winner: 'WINNER',
     continue: 'Press SPACE to continue',
-    tournamentTitle: 'Bracket',
+    tournamentTitle: 'BRACKET',
 	escToClose: 'Press ESC to close',
     miniGameRules: 'Find all matching pairs! Play while others finish their games.',
     spectator: '🎮 SPECTATOR MODE',

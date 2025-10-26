@@ -79,34 +79,42 @@ export class Hud {
 		this.hudGrid.addControl(p1PowerUpContainer, 0, 0);
 
 		// P1 Score Cell
-		const p1Stack = createStackPanel("player1Stack", HUD_STYLES.stack);
+		const p1Grid =  createGrid("player1Grid", HUD_STYLES.grid);
+
+		p1Grid.addRowDefinition(0.4);
+		p1Grid.addRowDefinition(0.6);
+
+		this.hudGrid.addControl(p1Grid, 0, 1);
 
 		this.player1Label = createTextBlock("player1Label", HUD_STYLES.playerLabel, "Player 1");
 		this.score1Text = createTextBlock("score1Text", HUD_STYLES.scoreText, "0");
 
-		p1Stack.addControl(this.player1Label);
-		p1Stack.addControl(this.score1Text);
-		this.hudGrid.addControl(p1Stack, 0, 1);
+		p1Grid.addControl(this.player1Label, 0, 0);
+		p1Grid.addControl(this.score1Text, 1, 0);
 
-		// Rally Cell
-		const rallyStack = createStackPanel("rallyStack", HUD_STYLES.stack);
+		// Rally Grid (converted from Stack)
+		const rallyGrid = createGrid("rallyGrid", HUD_STYLES.grid);
+		rallyGrid.addRowDefinition(0.7);
+		rallyGrid.addRowDefinition(0.3);
+		this.hudGrid.addControl(rallyGrid, 0, 2);
 
 		this.rally = createTextBlock("rallyValue", HUD_STYLES.rallyValue, "0");
 		const rallyText = createTextBlock("rallyText", HUD_STYLES.rallyText, "Rally");
-		
-		rallyStack.addControl(this.rally);
-		rallyStack.addControl(rallyText);
-		this.hudGrid.addControl(rallyStack, 0, 2);
 
-		// P2 Score Cell
-		const p2Stack = createStackPanel("player2Stack", HUD_STYLES.stack);
+		rallyGrid.addControl(this.rally, 0, 0);
+		rallyGrid.addControl(rallyText, 1, 0);
+
+		// P2 Grid (converted from Stack)
+		const p2Grid = createGrid("player2Grid", HUD_STYLES.grid);
+		p2Grid.addRowDefinition(0.4);
+		p2Grid.addRowDefinition(0.6);
+		this.hudGrid.addControl(p2Grid, 0, 3);
 
 		this.player2Label = createTextBlock("player2Label", HUD_STYLES.playerLabel, "Player 2");
 		this.score2Text = createTextBlock("score2Text", HUD_STYLES.scoreText, "0");
-		
-		p2Stack.addControl(this.player2Label);
-		p2Stack.addControl(this.score2Text);
-		this.hudGrid.addControl(p2Stack, 0, 3);
+
+		p2Grid.addControl(this.player2Label, 0, 0);
+		p2Grid.addControl(this.score2Text, 1, 0);
 
 		// P2 PowerUps
 		const p2PowerUpContainer = this.createPowerUpContainer(1, config);
@@ -333,13 +341,10 @@ export class Hud {
 				cell.root.alpha = 0;
 				cell.root.topInPixels = 0;
 				cell.root.color = "rgba(255, 255, 255, 0.5)";
-				// cell.root.background = "rgba(0, 0, 0, 1)";
-				
+
 				if (cell.icon) {
 					cell.icon.alpha = 0;
-					// cell.icon.isVisible = false;
 					cell.icon.source = "";
-					// cell.icon.dispose();
 				}
 			});
 		});

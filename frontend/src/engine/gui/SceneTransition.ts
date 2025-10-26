@@ -26,32 +26,32 @@ export class SceneTransition {
 		this.adt.addControl(this.rightBackground);
 	}
 
-	private async show(): Promise<void> {
+	async show(speed: number = Motion.F.base): Promise<void> {
 		if (this.isActive) return;
 		this.isActive = true;
 		
 		await Promise.all([
-			this.animationManager.slideCurtain(this.leftBackground, true, 'in', Motion.F.base),
-			this.animationManager.slideCurtain(this.rightBackground, false, 'in', Motion.F.base)
+			this.animationManager.slideCurtain(this.leftBackground, true, 'in', speed),
+			this.animationManager.slideCurtain(this.rightBackground, false, 'in', speed)
 		]);
 	}
 
-	private async hide(): Promise<void> {
+	private async hide(speed: number = Motion.F.base): Promise<void> {
 		if (!this.isActive) return;
 
 		await new Promise(resolve => setTimeout(resolve, 400));
 		this.isActive = false;
 		
 		await Promise.all([
-			this.animationManager.slideCurtain(this.leftBackground, true, 'out', Motion.F.base),
-			this.animationManager.slideCurtain(this.rightBackground, false, 'out', Motion.F.base)
+			this.animationManager.slideCurtain(this.leftBackground, true, 'out', speed),
+			this.animationManager.slideCurtain(this.rightBackground, false, 'out', speed)
 		]);
 
 	}
 
-	async play(): Promise<void> {
-		await this.show();
-		await this.hide();
+	async play(speed: number = Motion.F.base): Promise<void> {
+		await this.show(speed);
+		await this.hide(speed);
 	}
 
 }

@@ -8,6 +8,7 @@ import { GameConfig } from '../GameConfig.js';
 import { PlayerSide, PlayerState } from "../utils.js";
 import { GUIManager } from "./GuiManager.js";
 import { PowerupManager } from "./PowerUpManager.js";
+import { Motion } from "./AnimationManager.js";
 
 
 export const Keys = {
@@ -139,10 +140,12 @@ export class KeyboardManager {
 				document.dispatchEvent(new CustomEvent('game:exitToMenu'));
 				break;
 			case Keys.LEFT:
-					webSocketClient.sendSwitchGame(Direction.LEFT);
+				this.gui.curtain.play(Motion.F.xFast);
+				webSocketClient.sendSwitchGame(Direction.LEFT);
 				break;
 			case Keys.RIGHT:
-					webSocketClient.sendSwitchGame(Direction.RIGHT);
+				this.gui.curtain.play(Motion.F.xFast);
+				webSocketClient.sendSwitchGame(Direction.RIGHT);
 				break;
 			case Keys.SPACE:
 				this.gui.matchTree.toggle();
@@ -154,12 +157,10 @@ export class KeyboardManager {
 		this.isPaused = !this.isPaused;
 		this.gui.setPauseVisible(this.isPaused, false);
 
-		// if (!this.config.isRemoteMultiplayer) {
-			if (this.isPaused)
-				webSocketClient.sendPauseRequest();
-			else
-				webSocketClient.sendResumeRequest();
-		// }
+		if (this.isPaused)
+			webSocketClient.sendPauseRequest();
+		else
+			webSocketClient.sendResumeRequest();
 	}
 
 	private handlePauseMenuKeys(key: number): void {

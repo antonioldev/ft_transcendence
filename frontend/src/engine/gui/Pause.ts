@@ -68,11 +68,10 @@ export class Pause {
 		const exitStack = createStackPanel("exitStack", PAUSE_MENU_STYLES.stack);
 		pauseGrid.addControl(exitStack, 1, 0);
 
-		const exitInstruction = createTextBlock("pauseInstruction", PAUSE_MENU_STYLES.pauseHeader, t.exitGame);
-		exitInstruction.fontSize = 24;
+		const exitInstruction = createTextBlock("pauseInstruction", PAUSE_MENU_STYLES.otherDetails, t.exitGame);
 		exitStack.addControl(exitInstruction);
 
-		const exitHint = createTextBlock("pauseHint", PAUSE_MENU_STYLES.pauseDetails, t.pauseControls);
+		const exitHint = createTextBlock("pauseHint", PAUSE_MENU_STYLES.otherDetails, t.pauseControls);
 		exitStack.addControl(exitHint);
 
 		const audioGrid = createGrid("audioGrid", PAUSE_MENU_STYLES.grid);
@@ -83,7 +82,7 @@ export class Pause {
 		const musicStack = createStackPanel("musicStack", PAUSE_MENU_STYLES.stack);
 		audioGrid.addControl(musicStack, 0, 0);
 		
-		const musicLabel = createTextBlock("musicLabel", PAUSE_MENU_STYLES.pauseDetails, t.music);
+		const musicLabel = createTextBlock("musicLabel", PAUSE_MENU_STYLES.otherDetails, t.music);
 		musicStack.addControl(musicLabel);
 
 		this.checkboxMusic = createCheckbox("musicCheckbox", PAUSE_MENU_STYLES.muteCheckbox, config.musicEnabled);
@@ -102,7 +101,7 @@ export class Pause {
 		const effectsStack = createStackPanel("effectsStack", PAUSE_MENU_STYLES.stack);
 		audioGrid.addControl(effectsStack, 0, 1);
 		
-		const effectsLabel = createTextBlock("effectsLabel", PAUSE_MENU_STYLES.pauseDetails, t.soundEffects);
+		const effectsLabel = createTextBlock("effectsLabel", PAUSE_MENU_STYLES.otherDetails, t.soundEffects);
 		effectsStack.addControl(effectsLabel);
 
 		this.checkboxEffects = createCheckbox("effectsCheckbox", PAUSE_MENU_STYLES.muteCheckbox, config.soundEffectsEnabled);
@@ -190,6 +189,7 @@ export class Pause {
 
 	alignLeft(): void {
 		this.pauseBox.horizontalAlignment = H_LEFT;
+		this.pauseBox.paddingLeft = 20;
 	}
 
 	dispose(): void {
