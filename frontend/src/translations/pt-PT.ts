@@ -59,7 +59,7 @@ export const portuguese: Translation = {
     tournamentOnline: 'Torneio Online',
     play: '/ jogar',
     loading: 'Carregando...',
-    waiting: 'Procurando adversários ',
+    waiting: 'Procurando adversários',
 	countPlayer: 'Jogadores conectados: ',
     controls: 'Controles',
     easy: ' (Fácil)',
@@ -69,7 +69,6 @@ export const portuguese: Translation = {
     winner: 'VENCEDOR',
     continue: 'Pressione ESPAÇO para continuar',
 	tournamentTitle: 'Classificação do Torneio de Pong',
-    spectatorWaitingmessage: 'Procurando partidas em andamento',
 	escToClose: 'Pressione ESC para fechar',
     miniGameRules: 'Encontre todos os pares correspondentes! Jogue enquanto outros terminam seus jogos.',
     // Validation error messages
@@ -98,6 +97,14 @@ export const portuguese: Translation = {
     pausePowerupsMulti_P1: 'Jogador 1: C / V / B',
     pausePowerupsMulti_P2: 'Jogador 2: I / O / P',
     pausePowerupsSolo: 'Ativar: 1 / 2 / 3',
-    pauseObjectiveText: 'Marque {points} pontos acertando\na bola além do seu oponente!'
+    pauseObjectiveText: 'Marque {points} pontos acertando\na bola além do seu oponente!',
+
+    // Settings Menu
+    settings: 'Configurações',
+    language: 'Idioma',
+    scene3d: 'Cena 3D',
+    music: 'Música',
+    soundEffects: 'Efeitos Sonoros',
+    backToMainMenu: 'Voltar ao Menu Principal'
 
 };

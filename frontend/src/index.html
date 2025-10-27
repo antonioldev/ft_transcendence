@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'self';">
     <title>ft_transcendence</title>
     <link rel="icon" href="/assets/images/42_favicon.ico" type="image/x-icon">
     <link href="/output.css" rel="stylesheet">
@@ -11,96 +12,158 @@
     <script src="https://cdn.babylonjs.com/babylon.js"></script>
     <script src="https://cdn.babylonjs.com/gui/babylon.gui.min.js"></script>
     <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindplus/elements@1" type="module"></script>
     <script src="/env-config.js"></script>
 </head>
-<body class="bg-blue-background h-screen relative px-4 py-4">
+<body class="flex items-center justify-center h-screen bg-blue-background">
 
-    <!-- Language selector - Fixed in top right for all screens -->
-    <div id="language-selector" class="fixed top-4 right-4 z-50 flex items-center gap-2">
-        <button type="button" 
-                id="back" 
-                class="text-light-green hover:text-white transition-colors duration-200 
-                    font-tiny5-regular text-lg px-2">
-            ←
-        </button>
-        <span id="language_select" 
-            class="text-light-green font-tiny5-regular text-lg min-w-[80px] text-center">
-            ENGLISH
-        </span>
-        <button type="button" 
-                id="forward" 
-                class="text-light-green hover:text-white transition-colors duration-200 
-                    font-tiny5-regular text-lg px-2">
-            →
+    <div id="top-right-nav" class="fixed top-6 right-4 z-50 flex items-center gap-5">
+        <div id="user-info" class="relative" style="display: none;">
+            <button id="user-dropdown-trigger" class="bg-orange text-blue-background px-3 py-2 rounded-md flex items-center gap-1 font-sans text-sm hover:bg-orange transition-colors duration-200">
+                <span id="greeting">Hi</span>, <span id="user-name" class="font-bold">Usuario</span>
+                <span id="dropdown-arrow">▼</span>
+            </button>
+            
+            <div id="user-dropdown-menu" class="absolute top-full right-0 mt-2 w-48 bg-blue-background border border-orange rounded-md overflow-hidden shadow-lg z-50" style="display: none;">
+                <button type="button" id="dashboard-btn" class="w-full text-left px-4 py-2 text-light-green hover:bg-orange hover:text-blue-background transition-colors duration-200 font-sans text-sm">
+                    Dashboard
+                </button>
+                <button type="button" id="logout-btn" class="w-full text-left px-4 py-2 text-orange hover:bg-orange hover:text-blue-background transition-colors duration-200 font-sans text-sm">
+                    Logout
+                </button>
+            </div>
+        </div>
+        <button type="button"
+                id="settings-btn"
+                class="transition-transform duration-200 hover:scale-125 text-3xl px-2">
+            ⚙️
         </button>
     </div>
 
-    
-    
+
     <!-- Main Menu -->
-    <main id="main-menu" class="contents">
-        <!-- ft_transcendence in top left -->
-        <div class="absolute top-4 left-5 flex items-center gap-2">
-            <div id="connection-status" class="connection-status text-xs text-light-green opacity-80 min-w-[16px] min-h-[16px] flex items-center justify-center">
+    <main id="main-menu" class="!fixed !inset-0 !flex !flex-col items-center justify-center text-center">
+        <div class="absolute top-6 left-8 flex items-center gap-2">
+            <div id="connection-status" class="connection-status text-light-green opacity-80 min-w-[16px] min-h-[16px]
+                    flex items-center justify-center text-xs sm:text-base md:text-lg">
                 🟡
             </div>
-            <h2 class="text-light-green font-tiny5-regular text-sm sm:text-base md:text-lg">
+            <h2 class="text-light-green font-tiny5-regular text-sm sm:text-base md:text-xl">
                 ft_transcendence
             </h2>
         </div>
         
         <!-- Centered Battle Pong text -->
-        <div class="bg-blue-background flex flex-col items-center justify-center h-screen">
-            <h1 id="main-title" class="font-tiny5-regular text-light-green text-6xl sm:text-8xl md:text-9xl lg:text-10xl xl:text-[10rem] 2xl:text-[12rem] text-center select-none">
-                <span class="animate-bounce-letter-1">B</span>
-                <span class="animate-bounce-letter-2">A</span>
-                <span class="animate-bounce-letter-3">T</span>
-                <span class="animate-bounce-letter-4">T</span>
-                <span class="animate-bounce-letter-5">L</span>
-                <span class="animate-bounce-letter-6">E</span>
-                <br>
-                <span class="animate-bounce-letter-7">P</span>
-                <span class="animate-bounce-letter-8">O</span>
-                <span class="animate-bounce-letter-9">N</span>
-                <span class="animate-bounce-letter-10">G</span>
-            </h1>
-        </div>
+        <h1 id="main-title" class="font-tiny5-regular text-light-green text-6xl sm:text-8xl md:text-9xl lg:text-10xl xl:text-[10rem] 2xl:text-[12rem] text-center select-none">
+            <span class="animate-bounce-letter-1">B</span>
+            <span class="animate-bounce-letter-2">A</span>
+            <span class="animate-bounce-letter-3">T</span>
+            <span class="animate-bounce-letter-4">T</span>
+            <span class="animate-bounce-letter-5">L</span>
+            <span class="animate-bounce-letter-6">E</span>
+            <br>
+            <span class="animate-bounce-letter-7">P</span>
+            <span class="animate-bounce-letter-8">O</span>
+            <span class="animate-bounce-letter-9">N</span>
+            <span class="animate-bounce-letter-10">G</span>
+        </h1>
         
+        <div id="auth-buttons" style="display: none;"></div>
 
-        battlepong
         <!-- Main navigation buttons - Bottom Left -->
-        <nav class="absolute bottom-8 left-8 flex flex-col gap-2 sm:gap-1 md:gap-2 lg:gap-3 xl:gap-4">
+        <nav class="absolute bottom-8 left-8 flex flex-col gap-2 sm:gap-1 md:gap-2 lg:gap-3 xl:gap-3">
             <!-- PLAY button -->
             <button type="button" 
                     id="play-btn" 
-                    class="bg-orange rounded-sm text-blue-background font-poppins-semibold text-lg px-8 py-2 
-                        hover:bg-light-green hover:text-blue-background transition-colors duration-200
-                        border border-orange hover:border-light-green
-                        min-w-[180px] text-left">
+                    class="bg-orange rounded-md text-blue-background font-poppins-semibold text-sm sm:text-base md:text-xl lg:text-xl
+                        px-4 sm:px-6 md:px-8 lg:px-10 py-2 sm:py-2.5 md:py-3 lg:py-3.5 hover:bg-light-green hover:text-blue-background
+                        transition-colors duration-200 border border-orange hover:border-light-green min-w-[140px] sm:min-w-[180px]
+                        md:min-w-[200px] lg:min-w-[230px] text-left">
                 play    
             </button>
-            
             <!-- LOGIN button -->
             <button type="button" 
                     id="login-btn" 
-                    class="bg-transparent rounded-sm text-light-green font-poppins-semibold text-lg px-8 py-2 
-                        hover:bg-light-green hover:text-blue-background transition-colors duration-200
-                        border border-light-green
-                        min-w-[180px] text-left">
+                    class="bg-transparent rounded-md text-light-green font-poppins-semibold text-sm sm:text-base md:text-xl lg:text-xl
+                        px-4 sm:px-6 md:px-8 lg:px-10 py-2 sm:py-2.5 md:py-3 lg:py-3.5 hover:bg-light-green hover:text-blue-background
+                        transition-colors duration-200 border border-light-green min-w-[140px] sm:min-w-[180px] md:min-w-[200px]
+                        lg:min-w-[230px] text-left">
                 login
             </button>
             
             <!-- REGISTER button -->
             <button type="button" 
                     id="register-btn" 
-                    class="bg-transparent rounded-sm text-light-green font-poppins-semibold text-lg px-8 py-2 
-                        hover:bg-light-green hover:text-blue-background transition-colors duration-200
-                        border border-light-green
-                        min-w-[180px] text-left">
+                    class="bg-transparent rounded-md text-light-green font-poppins-semibold text-sm sm:text-base md:text-xl lg:text-xl
+                        px-4 sm:px-6 md:px-8 lg:px-10 py-2 sm:py-2.5 md:py-3 lg:py-3.5 hover:bg-light-green hover:text-blue-background
+                        transition-colors duration-200 border border-light-green min-w-[140px] sm:min-w-[180px] md:min-w-[200px]
+                        lg:min-w-[230px] text-left">
                 register
             </button>
         </nav>
     </main>
+
+    <!-- Settings Menu (Hidden) -->
+    <div id="settings-menu" class="fixed inset-0 bg-blue-background flex items-center justify-center" style="display: none;">
+        <div class="h-full flex items-center justify-center px-4 sm:px-8 md:px-16 lg:px-40 py-8 sm:py-12">
+            <div class="w-full max-w-sm sm:max-w-md mx-auto space-y-6 sm:space-y-8">
+                <div>
+                    <h1 id="settings-title" class="text-center uppercase text-xl sm:text-2xl font-bold tracking-tight text-light-green font-sans">
+                        Settings
+                    </h1>
+                </div>
+                <form class="max-w-sm mx-auto">
+                    <label for="language_select" class="block mb-2 text-sm font-medium text-light-green font-sans">Language</label>
+                        <select id="language_select" class="block w-full p-2 mb-6 text-sm sm:text-base bg-transparent border border-light-green rounded-md text-light-green focus:outline-2 focus:outline-orange font-sans">
+                            <option value="UK">🇬🇧 English</option>
+                            <option value="IT">🇮🇹 Italiano</option>
+                            <option value="FR">🇫🇷 Français</option>
+                            <option value="BR">🇧🇷 Brasileiro</option>
+                            <option value="RU">🇷🇺 Русский</option>
+                        </select>
+                    <label for="map-selector" class="block mb-2 text-sm font-medium text-light-green font-sans">3D Scene</label>
+                        <select id="map-selector" class="block w-full p-2 mb-6 text-sm sm:text-base bg-transparent border border-light-green rounded-md text-light-green focus:outline-2 focus:outline-orange font-sans">
+                            <option value="map0">Cyberpunk</option>
+                            <option value="map1">Forest</option>
+                            <option value="map2">Underwater</option>
+                            <option value="map3">Vice City</option>
+                            <option value="map4">Snow</option>
+                            <option value="map5">Lava</option>
+                            <option value="map6">Space</option>
+                            <option value="map7">Hallowen</option>
+                            <option value="random">Random</option>
+                        </select>
+                    <label class="inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="music-toggle" value="" class="sr-only peer" checked>
+                        <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange dark:peer-focus:ring-orange rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-orange dark:peer-checked:bg-orange">
+                        </div>
+                        <span id="music-toggle-label" class="ms-3 text-sm sm:text-base font-medium text-light-green font-sans">
+                            Music
+                        </span>
+                    </label>
+                        
+                    <label class="inline-flex items-center cursor-pointer ml-6">
+                        <input type="checkbox" id="sound-effect-toggle" value="" class="sr-only peer" checked>
+                        <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange dark:peer-focus:ring-orange rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-orange dark:peer-checked:bg-orange">
+                        </div>
+                        <span id="sound-effect-toggle-label" class="ms-3 text-sm sm:text-base font-medium text-light-green font-sans">
+                            Sound Effects
+                        </span>
+                    </label>
+                </form>
+
+                <!-- Back button -->
+                <div class="text-center">
+                    <button type="button" id="settings-back"
+                        class="bg-transparent text-light-green font-sans text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 
+                               hover:bg-light-green hover:text-blue-background transition-colors duration-200
+                               border border-light-green rounded-md">
+                        Back to Main Menu
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Login Page (Hidden) -->
     <div id="login-modal" class="fixed inset-0 bg-blue-background flex items-center justify-center" style="display: none;">
@@ -128,7 +191,7 @@
                         </label>
                         <div class="mt-2">
                             <input id="login-username" name="email" type="text" autocomplete="email" required 
-                                   class="form-input block rounded-sm bg-transparent border border-light-green px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-light-green 
+                                   class="form-input block rounded-md bg-transparent border border-light-green px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-light-green 
                                           focus:outline-2 focus:outline-orange font-sans">
                             <span class="error-message" id="login-username-error">Please enter your email or username</span>
                         </div>
@@ -146,7 +209,7 @@
                         </div>
                         <div class="mt-1 sm:mt-2">
                             <input id="login-password" type="password" name="password" required autocomplete="current-password" 
-                                class="form-input block rounded-sm bg-transparent border border-light-green px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-light-green 
+                                class="form-input block rounded-md bg-transparent border border-light-green px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-light-green 
                                     focus:outline-2 focus:outline-orange font-sans" />
                             <span class="error-message" id="login-password-error">Please enter your password</span>
                         </div>
@@ -160,7 +223,7 @@
                         </button>
                         
                         <!-- Google Login Button Container -->
-                        <div id="google-login-btn-container" class="mt-3 sm:mt-4 flex justify-center items-center"></div>
+                        <div id="google-login-btn-container" class="mt-6 sm:mt-8 flex justify-center items-center"></div>
                     </div>
                 </form>
 
@@ -176,7 +239,7 @@
                     <button type="button" id="login-back"
                         class="bg-transparent text-light-green font-sans text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 
                                hover:bg-light-green hover:text-blue-background transition-colors duration-200
-                               border border-light-green rounded-sm">
+                               border border-light-green rounded-md">
                         Back to Main Menu
                     </button>
                 </div>
@@ -210,7 +273,7 @@
                         </label>
                         <div class="mt-2">
                             <input id="register-username" name="username" type="text" autocomplete="username" required 
-                                   class="form-input block rounded-sm bg-transparent border border-light-green px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-light-green 
+                                   class="form-input block rounded-md bg-transparent border border-light-green px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-light-green 
                                           focus:outline-2 focus:outline-orange font-sans">
                             <span class="error-message" id="register-username-error">Please enter a username</span>
                         </div>
@@ -220,7 +283,7 @@
                         </label>
                         <div class="mt-1 sm:mt-2">
                             <input id="register-email" type="email" name="email" required autocomplete="email" 
-                                class="form-input block rounded-sm bg-transparent border border-light-green px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-light-green 
+                                class="form-input block rounded-md bg-transparent border border-light-green px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-light-green 
                                       focus:outline-2 focus:outline-orange font-sans" />
                             <span class="error-message" id="register-email-error">Please enter a valid email</span>
                         </div>
@@ -232,7 +295,7 @@
                         </label>
                         <div class="mt-1 sm:mt-2">
                             <input id="register-password" type="password" name="password" required autocomplete="new-password" 
-                                class="form-input block rounded-sm bg-transparent border border-light-green px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-light-green 
+                                class="form-input block rounded-md bg-transparent border border-light-green px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-light-green 
                                       focus:outline-2 focus:outline-orange font-sans" />
                             <span class="error-message" id="register-password-error">Please enter a password</span>
                         </div>
@@ -244,7 +307,7 @@
                         </label>
                         <div class="mt-1 sm:mt-2">
                             <input id="register-confirm-password" type="password" name="confirm-password" required autocomplete="new-password" 
-                                class="form-input block rounded-sm bg-transparent border border-light-green px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-light-green 
+                                class="form-input block rounded-md bg-transparent border border-light-green px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-light-green 
                                       focus:outline-2 focus:outline-orange font-sans" />
                             <span class="error-message" id="register-confirm-password-error">Please confirm your password</span>
                         </div>
@@ -258,7 +321,7 @@
                         </button>
                         
                         <!-- Google Register Button Container -->
-                        <div id="google-register-btn-container" class="mt-3 sm:mt-4 flex justify-center items-center"></div>
+                        <div id="google-register-btn-container" class="mt-6 sm:mt-8 flex justify-center items-center"></div>
                     </div>
                 </form>
 
@@ -274,30 +337,10 @@
                     <button type="button" id="register-back"
                         class="bg-transparent text-light-green font-sans text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 
                                hover:bg-light-green hover:text-blue-background transition-colors duration-200
-                               border border-light-green rounded-sm">
+                               border border-light-green rounded-md">
                         Back to Main Menu
                     </button>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Hidden elements for JS compatibility -->
-    <div id="auth-buttons" style="display: none;"></div>
-    <div id="user-info" class="fixed top-16 right-7 z-40 bg-blue-background border border-light-green p-3 text-xs text-light-green font-sans text-center rounded-sm" style="display: none;">
-        <div class="flex flex-col items-center gap-1">
-            <div class="text-light-green font-tiny5-regular text-sm">
-                <span id="greeting">Hi</span>, <span id="user-name" class="font-sans font-bold"></span>
-            </div>
-            <div class="flex items-center gap-2">
-                <button type="button" id="dashboard-btn" 
-                        class="text-light-green hover:text-white transition-colors duration-200 font-tiny5-regular text-xs px-1 rounded-sm">
-                    Dashboard
-                </button>
-                <button type="button" id="logout-btn" 
-                        class="text-orange hover:text-white transition-colors duration-200 font-tiny5-regular text-xs px-1 rounded-sm">
-                    Logout
-                </button>
             </div>
         </div>
     </div>
@@ -323,14 +366,14 @@
              <div class="flex items-center justify-center gap-4 mb-8">
                 <button type="button" id="view-mode-classic" 
                         class="bg-orange text-blue-background font-poppins-semibold text-lg px-3 py-3 
-                               transition-colors duration-200 border border-orange rounded-sm min-w-[120px]">
+                               transition-colors duration-200 border border-orange rounded-md min-w-[120px]">
                     <span id="view-mode-display">
                         Classic Mode
                     </span>
                 </button>
                 <button type="button" id="view-mode-immersive" 
                         class="bg-transparent text-light-green font-poppins-semibold text-lg px-3 py-3 
-                               transition-colors duration-200 border border-light-green rounded-sm min-w-[120px]">
+                               transition-colors duration-200 border border-light-green rounded-md min-w-[120px]">
                     <span id="view-mode-display">
                         Immersive Mode
                     </span>
@@ -343,50 +386,50 @@
                 <div class="flex items-center gap-2">
                     <button type="button" id="solo-difficulty-back" 
                             class="text-light-green hover:text-white transition-colors duration-200 
-                                   font-poppins-semibold text-lg px-2 rounded-sm">
+                                   font-poppins-semibold text-lg px-2 rounded-md">
                         ◂
                     </button>
                     <button type="button" id="solo-mode" 
                             class="flex-1 bg-transparent text-light-green font-poppins-semibold text-lg px-6 py-3 
                                    hover:bg-light-green hover:text-blue-background transition-colors duration-200
-                                   border border-light-green text-center rounded-sm">
+                                   border border-light-green text-center rounded-md">
                         vs AI (Medium)
                     </button>
                     <button type="button" id="solo-difficulty-forward" 
                             class="text-light-green hover:text-white transition-colors duration-200 
-                                   font-poppins-semibold text-lg px-2 rounded-sm">
+                                   font-poppins-semibold text-lg px-2 rounded-md">
                         ▸
                     </button>
                 </div>
                 
                 <!-- Local Game with 2 Players -->
                 <div class="flex items-center gap-2">
-                    <div class="text-light-green font-poppins-semibold text-lg px-2 rounded-sm opacity-0">
+                    <div class="text-light-green font-poppins-semibold text-lg px-2 rounded-md opacity-0">
                         ◂
                     </div>
                     <button type="button" id="local-mode" 
                             class="flex-1 bg-transparent text-light-green font-poppins-semibold text-lg px-6 py-3 
                                    hover:bg-light-green hover:text-blue-background transition-colors duration-200
-                                   border border-light-green text-center rounded-sm">
+                                   border border-light-green text-center rounded-md">
                         Local 2 Players
                     </button>
-                    <div class="text-light-green font-poppins-semibold text-lg px-2 rounded-sm opacity-0">
+                    <div class="text-light-green font-poppins-semibold text-lg px-2 rounded-md opacity-0">
                         ▸
                     </div>
                 </div>
                 
                 <!-- Online Game with 2 Players -->
                 <div class="flex items-center gap-2">
-                    <div class="text-light-green font-poppins-semibold text-lg px-2 rounded-sm opacity-0">
+                    <div class="text-light-green font-poppins-semibold text-lg px-2 rounded-md opacity-0">
                         ◂
                     </div>
                     <button type="button" id="online-mode" 
                             class="flex-1 bg-transparent text-light-green font-poppins-semibold text-lg px-6 py-3 
                                    hover:bg-light-green hover:text-blue-background transition-colors duration-200
-                                   border border-light-green text-center rounded-sm">
+                                   border border-light-green text-center rounded-md">
                         Online 2 Players
                     </button>
-                    <div class="text-light-green font-poppins-semibold text-lg px-2 rounded-sm opacity-0">
+                    <div class="text-light-green font-poppins-semibold text-lg px-2 rounded-md opacity-0">
                         ▸
                     </div>
                 </div>
@@ -395,18 +438,18 @@
                 <div class="flex items-center gap-2">
                     <button type="button" id="tournament-number-back" 
                             class="text-light-green hover:text-white transition-colors duration-200 
-                                   font-poppins-semibold text-lg px-2 rounded-sm">
+                                   font-poppins-semibold text-lg px-2 rounded-md">
                         ◂
                     </button>
                     <button type="button" id="tournament-mode" 
                             class="flex-1 bg-transparent text-light-green font-poppins-semibold text-lg px-6 py-3 
                                    hover:bg-light-green hover:text-blue-background transition-colors duration-200
-                                   border border-light-green text-center rounded-sm">
+                                   border border-light-green text-center rounded-md">
                         Tournament (4 x 👤)
                     </button>
                     <button type="button" id="tournament-number-forward" 
                             class="text-light-green hover:text-white transition-colors duration-200 
-                                   font-poppins-semibold text-lg px-2 rounded-sm">
+                                   font-poppins-semibold text-lg px-2 rounded-md">
                         ▸
                     </button>
                 </div>
@@ -415,18 +458,18 @@
                 <div class="flex items-center gap-2">
                     <button type="button" id="tournament-online-number-back" 
                             class="text-light-green hover:text-white transition-colors duration-200 
-                                    font-poppins-semibold text-lg px-2 rounded-sm">
+                                    font-poppins-semibold text-lg px-2 rounded-md">
                         ◂
                     </button>
                     <button type="button" id="tournament-online-mode" 
                             class="flex-1 bg-transparent text-light-green font-poppins-semibold text-lg px-6 py-3 
                                    hover:bg-light-green hover:text-blue-background transition-colors duration-200
-                                   border border-light-green text-center rounded-sm">
+                                   border border-light-green text-center rounded-md">
                         Tournament Online
                     </button>
                     <button type="button" id="tournament-online-number-forward" 
                             class="text-light-green hover:text-white transition-colors duration-200 
-                                    font-poppins-semibold text-lg px-2 rounded-sm">
+                                    font-poppins-semibold text-lg px-2 rounded-md">
                         ▸
                     </button>
                 </div>
@@ -436,7 +479,7 @@
                     <button type="button" id="mode-back"
                         class="bg-transparent text-light-green font-sans text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 
                                hover:bg-light-green hover:text-blue-background transition-colors duration-200
-                               border border-light-green rounded-sm">
+                               border border-light-green rounded-md">
                         Back to Main Menu
                     </button>
                 </div>
@@ -472,7 +515,7 @@
                                 <label id="player-label" class="text-light-green font-sans text-lg">Player 1</label>
                                 <input
                                     type="text" id="player-input" placeholder="Enter name"  maxlength="20" autocomplete="off"
-                                    class="form-input block rounded-sm bg-transparent border border-light-green px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-light-green 
+                                    class="form-input block rounded-md bg-transparent border border-light-green px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-light-green 
                                         focus:outline-2 focus:outline-orange font-sans"
                                 />
                             </div>
@@ -485,19 +528,19 @@
                     <button id="start-game" type="button" class="btn w-full sm:w-auto
                             bg-transparent text-light-green font-sans text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 
                             hover:bg-light-green hover:text-blue-background transition-colors duration-200
-                            border border-light-green rounded-sm">
+                            border border-light-green rounded-md">
                         Next
                     </button>
                     <button id="add-cpu" type="button" disabled class="btn btn-secondary w-full sm:w-auto
                             bg-transparent text-light-green font-sans text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 
                             hover:bg-light-green hover:text-blue-background transition-colors duration-200
-                            border border-light-green rounded-sm">
+                            border border-light-green rounded-md">
                         Add CPU
                     </button>
                     <button id="setup-back" type="button" class="btn btn-secondary w-full sm:w-auto
                             bg-transparent text-light-green font-sans text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 
                             hover:bg-light-green hover:text-blue-background transition-colors duration-200
-                            border border-light-green rounded-sm">
+                            border border-light-green rounded-md">
                         Back
                     </button>
                 </div>
@@ -526,7 +569,7 @@
             <div class="text-center">
                 <h2 id="loading" class="text-light-green font-tiny5-regular text-3xl mb-6">Loading...</h2>
                 <div class="w-64 h-4 border border-light-green bg-transparent mx-auto">
-                    <div id="progress-fill" class="h-full bg-light-green transition-all duration-300" style="width: 0%;"></div>
+                    <div id="progress-fill" class="h-full font-poppins bg-light-green transition-all duration-300" style="width: 0%;"></div>
                 </div>
                 <span id="progress-text" class="text-light-green font-tiny5-regular text-lg mt-4 block">0%</span>
             </div>
@@ -543,40 +586,26 @@
         </div>
         
         <div class="w-full max-w-4xl mx-auto px-4 py-8">
-            <h2 class="text-center uppercase text-xl sm:text-2xl font-bold tracking-tight text-light-green font-sans">
+            <h2 class="text-center uppercase text-xl sm:text-2xl font-bold tracking-tight text-light-green font-sans pb-6">
                 User Stats
             </h2>
             
             <!-- Stats Chart -->
-            <div id="user-stats-chart" class="bg-blue-background border border-light-green p-6 mb-8 w-full max-h-64">
-            </div>
+            <div id="user-stats-chart" class="overflow-x-auto bg-blue-background border border-light-green p-6 mb-8 w-full"></div>
 
             <!-- Game History -->
-            <h2 class="text-center uppercase text-xl sm:text-2xl font-bold tracking-tight text-light-green font-sans">
+            <h2 class="text-center uppercase text-xl sm:text-2xl font-bold tracking-tight text-light-green font-sans pb-6">
                 Game History
             </h2>
             
-            <div class="overflow-x-auto border border-light-green">
-                <div id="game-history-table" class="w-full text-light-green font-sans">
-                    <!-- <thead class="border-b border-light-green">
-                        <tr>
-                            <th class="px-4 py-2 text-left">Date</th>
-                            <th class="px-4 py-2 text-left">Opponent</th>
-                            <th class="px-4 py-2 text-left">Score</th>
-                            <th class="px-4 py-2 text-left">Result</th>
-                            <th class="px-4 py-2 text-left">Duration</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody> -->
-                </div>
-            </div>
+            <div id="game-history-table" class="overflow-x-auto border border-light-green w-full text-light-green font-sans"></div>
 
             <!-- Back Button -->
             <div class="text-center mt-8">
                 <button type="button" id="dashboard-back" 
                         class="bg-transparent text-light-green font-sans text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 
                                hover:bg-light-green hover:text-blue-background transition-colors duration-200
-                               border border-light-green rounded-sm">
+                               border border-light-green rounded-md">
                     Back
                 </button>
             </div>

@@ -1,8 +1,8 @@
-import { AdvancedDynamicTexture, Rectangle, Image, Grid } from "@babylonjs/gui";
-import { AnimationManager } from "../services/AnimationManager";
-import { CARD_GAME_STYLES, COLORS, createRect, createTextBlock, createGrid, createImage } from "./GuiStyle";
+import { AdvancedDynamicTexture, Grid, Image, Rectangle } from "@babylonjs/gui";
 import { getCurrentTranslation } from "../../translations/translations";
+import { AnimationManager } from "../services/AnimationManager";
 import { AudioManager } from "../services/AudioManager";
+import { CARD_GAME_STYLES, COLORS, createGrid, createImage, createRect, createStackPanel, createTextBlock } from "./GuiStyle";
 
 interface CardData {
 	value: number;
@@ -46,14 +46,17 @@ export class CardGame {
 		this.overlay = createRect("cardGameContainer", CARD_GAME_STYLES.mainContainer);
 		this.adt.addControl(this.overlay);
 
+		const stackPanel = createStackPanel("cardGameStack", CARD_GAME_STYLES.stack);
+		this.overlay.addControl(stackPanel);
+
 		const title = createTextBlock("cardGameTitle", CARD_GAME_STYLES.title, "MEMORY MATCH");
-		this.overlay.addControl(title);
+		stackPanel.addControl(title);
 
 		const instructions = createTextBlock("instructions", CARD_GAME_STYLES.instructions, t.miniGameRules);
-		this.overlay.addControl(instructions);
+		stackPanel.addControl(instructions);
 
 		this.cardsGrid = createGrid("cardsGrid", CARD_GAME_STYLES.cardsGrid);
-		this.overlay.addControl(this.cardsGrid);
+		stackPanel.addControl(this.cardsGrid);
 
 		this.startGame();
 	}
@@ -150,7 +153,7 @@ export class CardGame {
 			card.cardImage.isVisible = toFront;
 		}
 		if (toFront && card.cardImage)
-			await this.animationManager.zoomIn(card.cardImage);
+			await this.animationManager.zoom(card.cardImage, "in");
 	}
 
 	private async checkForMatch(): Promise<void> {

@@ -59,7 +59,7 @@ export const russian: Translation = {
     tournamentOnline: 'Онлайн-турнир',
     play: '/ ИГРАТЬ',
     loading: 'Загрузка...',
-    waiting: 'Поиск соперников ',
+    waiting: 'Поиск соперников',
 	countPlayer: 'Игроки подключились: ',
     controls: 'Управление',
     easy: ' (Лёгкий)',
@@ -69,7 +69,6 @@ export const russian: Translation = {
     winner: 'ПОБЕДИТЕЛЬ МАТЧА',
     continue: 'Нажмите ПРОБЕЛ, чтобы продолжить',
 	tournamentTitle: 'Турнирное Дерево',
-    spectatorWaitingmessage: 'Поиск активных матчей',
 	escToClose: 'Нажмите ESC для закрытия',
     miniGameRules: 'Найдите все подходящие пары! Играйте, пока другие заканчивают свои игры.',
     // Validation error messages
@@ -98,5 +97,13 @@ export const russian: Translation = {
     pausePowerupsMulti_P1: 'Игрок 1: C / V / B',
     pausePowerupsMulti_P2: 'Игрок 2: I / O / P',
     pausePowerupsSolo: 'Активировать: 1 / 2 / 3',
-    pauseObjectiveText: 'Наберите {points} очков, забивая\nмяч за соперника!'
+    pauseObjectiveText: 'Наберите {points} очков, забивая\nмяч за соперника!',
+
+    // Settings Menu
+    settings: 'Настройки',
+    language: 'Язык',
+    scene3d: '3D Сцена',
+    music: 'Музыка',
+    soundEffects: 'Звуковые Эффекты',
+    backToMainMenu: 'Вернуться в Главное Меню'
 };

@@ -59,7 +59,7 @@ export const italian: Translation = {
     tournamentOnline: 'Torneo Online',
     play: '/ gioca',
     loading: 'Caricamento...',
-    waiting: 'In attesa di avversari ',
+    waiting: 'In attesa di avversari',
 	countPlayer: 'Giocatori connessi: ',
     controls: 'Controlli',
     easy: ' (Facile)',
@@ -69,7 +69,6 @@ export const italian: Translation = {
     winner: 'VINCITORE',
     continue: 'Premi SPAZIO per continuare',
 	tournamentTitle: 'Classifica del Torneo',
-    spectatorWaitingmessage: 'Cercando partite in corso',
 	escToClose: 'Premere ESC per chiudere',
     miniGameRules: 'Trova tutte le coppie corrispondenti! Gioca mentre gli altri finiscono le loro partite.',
     // Validation error messages
@@ -98,5 +97,13 @@ export const italian: Translation = {
     pausePowerupsMulti_P1: 'Giocatore 1: C / V / B',
     pausePowerupsMulti_P2: 'Giocatore 2: I / O / P',
     pausePowerupsSolo: 'Attiva: 1 / 2 / 3',
-    pauseObjectiveText: 'Segna {points} punti colpendo\nla palla oltre l\'avversario!'
+    pauseObjectiveText: 'Segna {points} punti colpendo\nla palla oltre l\'avversario!',
+
+    // Settings Menu
+    settings: 'Impostazioni',
+    language: 'Lingua',
+    scene3d: 'Scena 3D',
+    music: 'Musica',
+    soundEffects: 'Effetti Sonori',
+    backToMainMenu: 'Torna al Menu Principale'
 };

@@ -1,4 +1,4 @@
-import { Control, Image, StackPanel, Grid, TextBlock, Rectangle} from "@babylonjs/gui";
+import { Control, Grid, Image, Rectangle, StackPanel, TextBlock, Checkbox } from "@babylonjs/gui";
 
 export const H_LEFT = Control.HORIZONTAL_ALIGNMENT_LEFT;
 export const H_CENTER = Control.HORIZONTAL_ALIGNMENT_CENTER;
@@ -7,6 +7,7 @@ export const V_TOP = Control.VERTICAL_ALIGNMENT_TOP;
 export const V_CENTER = Control.VERTICAL_ALIGNMENT_CENTER;
 export const V_BOTTOM = Control.VERTICAL_ALIGNMENT_BOTTOM;
 const FONT_FAMILY = 'Poppins, Tiny5, sans-serif';
+const FONT_FAMILY_SEC = 'Tiny5, Poppins, sans-serif';
 
 export const COLORS = {
     BLACK: "rgba(0, 0, 0, 1)",
@@ -36,10 +37,10 @@ export const Z_INDEX = {
     HUD: 10,
     POWERUPS: 12,
     ENDGAME: 15,
-    MODAL: 20,
-    BRACKET: 25,
+    BRACKET: 43,
     CURTAIN: 30,
-    LOBBY: 35
+    LOBBY: 31,
+    MODAL: 42,
 
 } as const;
 
@@ -92,78 +93,49 @@ export const HUD_STYLES = {
         zIndex: Z_INDEX.HUD
     },
 
-    player1Label: {
+    stack: {
+        width: "100%",
+        height: "100%",
+	    isVertical: true
+    },
+
+    playerLabel: {
+        height: "40%",
         fontFamily: FONT_FAMILY,
         color: COLORS.WHITE,
         fontSize: 48,
         fontWeight: "bold",
-        shadowOffsetX: 2,
-        shadowOffsetY: 2,
-        shadowBlur: 0,
-        shadowColor: COLORS.GOLD_SHADOW,
-        outlineWidth: 2,
-        outlineColor: COLORS.TRANSPARENT_BLACK,
-        thickness: 2,
-        resizeToFit: true,
+        shadowOffsetX: 1,
+        shadowOffsetY: 1,
+        shadowBlur: 2,
+        shadowOpacity: 0.5,
+        shadowColor: COLORS.BLACK
     },
 
-    player2Label: {
+    scoreText: {
         fontFamily: FONT_FAMILY,
         color: COLORS.WHITE,
-        fontSize: 48,
-        fontWeight: "bold",
-        shadowOffsetX: 2,
-        shadowOffsetY: 2,
-        shadowBlur: 0,
-        shadowColor: COLORS.GOLD_SHADOW,
-        outlineWidth: 2,
-        outlineColor: COLORS.TRANSPARENT_BLACK,
-        resizeToFit: true,
-    },
-
-    score1Text: {
-        fontFamily: FONT_FAMILY,
-        color: COLORS.WHITE,
-        textVerticalAlignment: V_BOTTOM,
         fontSize: 56,
         fontWeight: "bold",
-        shadowOffsetX: 2,
-        shadowOffsetY: 2,
-        shadowBlur: 0,
-        shadowColor: COLORS.GOLD_SHADOW,
-        outlineWidth: 2,
-        outlineColor: COLORS.TRANSPARENT_BLACK
-    },
-
-    score2Text: {
-        fontFamily: FONT_FAMILY,
-        color: COLORS.WHITE,
-        textVerticalAlignment: V_BOTTOM,
-        fontSize: 56,
-        fontWeight: "bold",
-        shadowOffsetX: 3,
-        shadowOffsetY: 3,
-        shadowBlur: 0,
-        shadowColor: COLORS.GOLD_SHADOW,
-        outlineWidth: 2,
-        outlineColor: COLORS.TRANSPARENT_BLACK
+        shadowOffsetX: 1,
+        shadowOffsetY: 1,
+        shadowBlur: 2,
+        shadowOpacity: 0.5,
+        shadowColor: COLORS.BLACK,
     },
 
     rallyText: {
         fontFamily: FONT_FAMILY,
         color: COLORS.TRANSPARENT_WHITE_50,
-        textVerticalAlignment: V_BOTTOM,
-        fontSize: 16,
-        top: "-8px" 
+        fontSize: 16
     },
 
     rallyValue: {
+        height: "70%",
         fontFamily: FONT_FAMILY,
         color: COLORS.WHITE,
-        textVerticalAlignment: V_TOP,
         fontSize: 40,
         fontWeight: "bold",
-        top: "4px",
         shadowOffsetX: 1,
         shadowOffsetY: 1,
         shadowBlur: 6,
@@ -229,61 +201,42 @@ export const PAUSE_MENU_STYLES = {
         isVisible: false
     },
 
-    pauseGrid: {
+    pauseBox: {
+        width: "50%",
+        height: "80%",
+        cornerRadius: 12,
+        thickness: 2,
+    },
+
+    grid: {
         width: "100%",
-        height: "95%",
+        height: "100%",
     },
 
-    pauseTitle: {
-        fontFamily: FONT_FAMILY,
-        color: COLORS.WHITE,
-        fontSize: 42,
-        fontWeight: "bold"
+    stack: {
+        isVertical: true,
+        paddingTop: "30px",
+        paddingBottom: "10px",
+        spacing: 10
     },
 
-    pauseInstruction: {
-        fontFamily: FONT_FAMILY,
-        color: COLORS.WHITE,
-        height: "30px",
-        fontSize: 20,
-    },
-
-    pauseHint: {
-        fontFamily: FONT_FAMILY,
-        color: COLORS.WHITE,
-        height: "30px",
-        fontSize: 16,
-    },
-
-    muteIcon: {
-        stretch: Image.STRETCH_UNIFORM,
-        paddingTop: "16px"
+    muteCheckbox: {
+        width: "20px",
+        height: "20px",
+        horizontalAlignment: H_CENTER,
+        color: COLORS.LIGHT_GREEN,
+        background: COLORS.TRANSPARENT,
+        thickness: 1,
+        checkSizeRatio: 0.6
     },
 
     gridRows: {
-        title: 0.15,
         gameInstructions: 0.65,
-        exitInstruction: 0.15,
-        muteIcon: 0.05
+        exitInstruction: 0.20,
+        audio: 0.15
     },
 
-    gameInstructionContainer: {
-        width: "50%",
-        cornerRadius: 12,
-        thickness: 2,
-        color: COLORS.WHITE
-    },
-
-    instructionsStack: {
-        width: "90%",
-        height: "100%",
-        isVertical: true,
-        spacing: 10,
-        paddingTop: "50px",
-        paddingBottom: "10px"
-    },
-
-    instructionTitle: {
+    pauseTitle: {
         fontFamily: FONT_FAMILY,
         color: COLORS.LIGHT_GREEN,
         fontSize: 36,
@@ -291,19 +244,19 @@ export const PAUSE_MENU_STYLES = {
         height: "40px"
     },
 
-    instructionSectionHeader: {
+    pauseHeader: {
         fontFamily: FONT_FAMILY,
         color: COLORS.WHITE,
-        fontSize: 22,
+        fontSize: 24,
         fontWeight: "bold",
         height: "35px",
         paddingTop: "10px"
     },
 
-    instructionDetails: {
+    pauseDetails: {
         fontFamily: FONT_FAMILY,
         color: COLORS.WHITE,
-        fontSize: 18,
+        fontSize: 20,
         height: "60px",
         textWrapping: true
     },
@@ -326,8 +279,11 @@ export const PAUSE_MENU_STYLES = {
         color: COLORS.WHITE,
         fontSize: 36,
         fontWeight: "bold",
-        outlineWidth: 2,
-        outlineColor: COLORS.BLACK
+        shadowOffsetX: 1,
+        shadowOffsetY: 1,
+        shadowBlur: 2,
+        shadowOpacity: 0.5,
+        shadowColor: COLORS.BLACK,
     }
 } as const;
 
@@ -335,8 +291,10 @@ export const LOBBY_STYLES = {
     overlay: {
         width: "50%",
         height: "80%",
-        color: COLORS.WHITE,
-        background: COLORS.TRANSPARENT_WHITE_15,
+        color: COLORS.LIGHT_GREEN,
+        background: COLORS.DARK_BLUE,
+        shadowBlur: 15,
+        shadowColor: COLORS.TRANSPARENT_BLACK_DARK,
         zIndex: Z_INDEX.LOBBY,
         isVisible: false,
         thickness: 2,
@@ -349,17 +307,6 @@ export const LOBBY_STYLES = {
         color: COLORS.ORANGE,
         height: "60px",
         fontWeight: "bold",
-        outlineWidth: 2,
-        outlineColor: COLORS.WHITE
-    },
-    
-    subtitle: {
-        fontFamily: "monospace",
-        fontSize: 24,
-        color: COLORS.LIGHT_GREEN,
-        fontWeight: "bold",
-        height: "40px",
-        width: "100%",
     },
     
     count: {
@@ -396,10 +343,11 @@ export const LOBBY_STYLES = {
 export const COUNTDOWN_STYLES = {
     countdownContainer: {
         width: "100%",
-        height: "100%",
+        height: "80%",
+        verticalAlignment: V_TOP,
         thickness: 0,
         isVisible: false,
-        zIndex: Z_INDEX.GAMEPLAY,
+        zIndex: Z_INDEX.HUD,
     },
 
     countdownText: {
@@ -488,88 +436,83 @@ export const VIEW_MODE_STYLES = {
         width: "5px",
         height: "100%",
         background: COLORS.BLACK,
-        zIndex: Z_INDEX.HUD,
+        zIndex: Z_INDEX.GAMEPLAY,
         thickness: 0
-    }
-} as const;
-
-export const PARTIAL_END_GAME_STYLES = {
-    partialEndGameOverlay: {
-        width: "100%",
-        height: "100%",
-        background: COLORS.BLACK,
-        verticalAlignment: V_BOTTOM,
-        zIndex: Z_INDEX.ENDGAME,
-        isVisible: false
-    },
-
-    winnerGrid: {
-        width: "100%",
-        height: "100%",
-    },
-
-    gridRows: {
-        label: 0.2,
-        name: 0.6,
-        continue: 0.2
-    },
-
-    partialWinnerLabel: {
-        fontFamily: FONT_FAMILY,
-        color: COLORS.WHITE,
-        fontSize: 80,
-        outlineWidth: 2,
-        alpha: 0
-    },
-
-    partialWinnerName: {
-        fontFamily: FONT_FAMILY,
-        color: COLORS.GOLD,
-        fontSize: 110,
-        fontWeight: "bold",
-        outlineWidth: 2,
-        outlineColor: COLORS.WHITE,
-        alpha: 0,
-        shadowBlur: 20,
-        shadowColor: COLORS.GOLD
-    },
-
-    continueText: {
-        fontFamily: FONT_FAMILY,
-        color: COLORS.WHITE,
-        outlineWidth: 2,
-        outlineColor: COLORS.GOLD,
-        isVisible: false,
     }
 } as const;
 
 export const END_GAME_STYLES = {
     endGameOverlay: {
         width: "100%",
-        height: "20%",
-        background: COLORS.TRANSPARENT_BLACK,
-        verticalAlignment: V_BOTTOM,
+        height: "100%",
+        background: COLORS.TRANSPARENT_BLACK_DARK,
         isVisible: false,
         zIndex: Z_INDEX.ENDGAME,
     },
 
+    winnerGrid: {
+        width: "100%",
+        height: "90%",
+        verticalAlignment: V_BOTTOM
+    },
+
+    gridRows: {
+        label: 0.35,
+        name: 0.35,
+        continue: 0.15,
+        timer: 0.15
+    },
+
+    partialWinnerLabel: {
+        height: "20%",
+        fontFamily: FONT_FAMILY_SEC,
+        color: COLORS.WHITE,
+        fontSize: 85,
+        outlineWidth: 2,
+        alpha: 0,
+    },
+
+    partialWinnerName: {
+        height: "70%",
+        fontFamily: FONT_FAMILY,
+        color: COLORS.GOLD,
+        fontSize: 120,
+        fontWeight: "bold",
+        shadowOffsetX: 3,
+        shadowOffsetY: 3,
+        alpha: 0,
+        shadowBlur: 10,
+        shadowColor: COLORS.GOLD
+    },
+
+    continueText: {
+        height: "10%",
+        fontFamily: FONT_FAMILY,
+        color: COLORS.WHITE,
+        fontSize: 20,
+        shadowOffsetX: 1,
+        shadowOffsetY: 1,
+        shadowBlur: 2,
+        shadowOpacity: 0.5,
+        shadowColor: COLORS.BLACK,
+        isVisible: false,
+    },
+    
     endGameWinnerText: {
         fontFamily: FONT_FAMILY,
         color: COLORS.WHITE,
-        fontSize: 72,
+        fontSize: 120,
         shadowOffsetX: 1,
         shadowOffsetY: 1,
         shadowBlur: 8,
         shadowColor: COLORS.GOLD_SHADOW,
-        fontWeight: "bold",
-        outlineWidth: 2,
-        outlineColor: COLORS.TRANSPARENT_BLACK
+        fontWeight: "bold"
     }
 } as const;
 
 export const BRACKET_STYLES = {
     bracketOverlay: {
-        width: "580px",
+        width: "550px",
         height: "700px",
         background: COLORS.TRANSPARENT,
         horizontalAlignment: H_RIGHT,
@@ -633,12 +576,17 @@ export const BRACKET_STYLES = {
         fontWeight: "bold",
         fontSize: "18px",
         color: COLORS.WHITE,
-        outlineWidth: 2,
-        outlineColor: COLORS.BLACK,
-        shadowOffsetX: 2,
-        shadowOffsetY: 2,
-        shadowBlur: 0,
-        shadowColor: COLORS.TRANSPARENT_BLACK
+        // shadowOffsetX: 1,
+        // shadowOffsetY: 1,
+        // shadowBlur: 2,
+        // shadowOpacity: 0.5,
+        // shadowColor: COLORS.BLACK,
+        // outlineWidth: 2,
+        // outlineColor: COLORS.BLACK,
+        // shadowOffsetX: 2,
+        // shadowOffsetY: 2,
+        // shadowBlur: 0,
+        // shadowColor: COLORS.TRANSPARENT_BLACK
     },
     
     loserCell: {
@@ -721,8 +669,13 @@ export const BRACKET_STYLES = {
         color: COLORS.WHITE,
         fontSize: 16,
         fontWeight: "bold",
-        outlineWidth: 1,
-        outlineColor: COLORS.DARK_BLUE,
+        // shadowOffsetX: 1,
+        // shadowOffsetY: 1,
+        // shadowBlur: 2,
+        // shadowOpacity: 0.5,
+        // shadowColor: COLORS.BLACK,
+        // outlineWidth: 1,
+        // outlineColor: COLORS.DARK_BLUE,
     },
 
     matchRowRect: {
@@ -773,7 +726,7 @@ export const BRACKET_STYLES = {
 
 export const CURTAIN_STYLES = {
     leftBackground: {
-        background: COLORS.DARK_BLUE,
+        background: COLORS.LIGHT_GREEN,
         height: "100%",
         width: "100%",
         thickness: 0,
@@ -782,64 +735,66 @@ export const CURTAIN_STYLES = {
         isVisible: false,
         zIndex: Z_INDEX.CURTAIN
     },
-    
-    rightBackground: {
-        background: COLORS.DARK_BLUE,
-        height: "100%",
-        width: "100%",
-        thickness: 0,
-        horizontalAlignment: H_LEFT,
-        verticalAlignment: V_TOP,
-        isVisible: false,
-    },
-    
+
     leftPaddle: {
         background: COLORS.ORANGE,
         thickness: 0,
         widthInPixels: 80,
         height: "100%",
         horizontalAlignment: H_RIGHT,
-        verticalAlignment: V_TOP,
-        isVisible: false,
-        shadowBlur: 60,
-        shadowColor: COLORS.WHITE,
-        zIndex: Z_INDEX.CURTAIN + 1
-    },
-    
-    rightPaddle: {
-        background: COLORS.ORANGE,
-        thickness: 0,
-        widthInPixels: 80,
-        height: "100%",
-        horizontalAlignment: H_LEFT,
-        verticalAlignment: V_TOP,
-        isVisible: false,
-        shadowBlur: 60,
-        shadowColor: COLORS.WHITE,
-        zIndex: Z_INDEX.CURTAIN + 1
-    },
-
-    spectatorWaitingBox: {
-        widthInPixels: 500,
-        heightInPixels: 120,
-        background: COLORS.TRANSPARENT_BLACK,
-        thickness: 2,
-        color: COLORS.SPECTATOR_RED,
-        cornerRadius: 12,
-        zIndex: Z_INDEX.CURTAIN + 2,
-        isVisible: false,
-        shadowBlur: 20,
-        shadowColor: COLORS.SPECTATOR_RED
-    },
-    
-    spectatorWaitingText: {
-        fontFamily: "monospace",
-        color: COLORS.WHITE,
-        fontSize: 28,
-        fontWeight: "bold",
-        outlineWidth: 2,
-        outlineColor: COLORS.BLACK
+        verticalAlignment: V_TOP
     }
+    
+    // rightBackground: {
+    //     background: COLORS.DARK_BLUE,
+    //     height: "100%",
+    //     width: "100%",
+    //     thickness: 0,
+    //     horizontalAlignment: H_LEFT,
+    //     verticalAlignment: V_TOP,
+    //     isVisible: false,
+    //     zIndex: Z_INDEX.CURTAIN
+    // },
+    
+    
+    
+    // rightPaddle: {
+    //     background: COLORS.ORANGE,
+    //     thickness: 0,
+    //     widthInPixels: 80,
+    //     height: "100%",
+    //     horizontalAlignment: H_LEFT,
+    //     verticalAlignment: V_TOP,
+    //     // isVisible: false,
+    //     // zIndex: Z_INDEX.CURTAIN + 1
+    // },
+
+    // spectatorWaitingBox: {
+    //     widthInPixels: 500,
+    //     heightInPixels: 120,
+    //     background: COLORS.TRANSPARENT_BLACK,
+    //     thickness: 2,
+    //     color: COLORS.SPECTATOR_RED,
+    //     cornerRadius: 12,
+    //     zIndex: Z_INDEX.CURTAIN + 2,
+    //     isVisible: false,
+    //     shadowBlur: 20,
+    //     shadowColor: COLORS.SPECTATOR_RED
+    // },
+    
+    // spectatorWaitingText: {
+    //     fontFamily: "monospace",
+    //     color: COLORS.WHITE,
+    //     fontSize: 28,
+    //     fontWeight: "bold",
+    //     // shadowOffsetX: 1,
+    //     // shadowOffsetY: 1,
+    //     // shadowBlur: 2,
+    //     // shadowOpacity: 0.5,
+    //     // shadowColor: COLORS.BLACK,
+    //     // outlineWidth: 2,
+    //     // outlineColor: COLORS.BLACK
+    // }
 } as const;
 
 export const CARD_GAME_STYLES = {
@@ -852,21 +807,32 @@ export const CARD_GAME_STYLES = {
         thickness: 0
     },
 
+    stack: {
+        width: "100%",
+        height: "95%",
+        isVertical: true,
+        spacing: 20,
+    },
     title: {
-        fontSize: 36,
+        fontSize: 40,
         color: COLORS.ORANGE,
         height: "60px",
-        top: "-300px",
+        // top: "-300px",
         fontWeight: "bold",
-        outlineWidth: 2,
-        outlineColor: COLORS.WHITE,
+        shadowOffsetX: 1,
+        shadowOffsetY: 1,
+        shadowBlur: 2,
+        shadowOpacity: 0.5,
+        shadowColor: COLORS.BLACK,
+        // outlineWidth: 2,
+        // outlineColor: COLORS.WHITE,
     },
 
     instructions: {
-        fontSize: 18,
+        fontSize: 20,
         color: COLORS.WHITE,
-        height: "40px",
-        top: "-260px",
+        height: "30px"
+        // top: "-260px",
     },
 
     cardsGrid: {
@@ -944,4 +910,11 @@ export function createStackPanel(name: string, styles: any): StackPanel {
     const stackPanel = new StackPanel(name);
     applyStyles(stackPanel, styles);
     return stackPanel;
+}
+
+export function createCheckbox(name: string, styles: any, isChecked: boolean = false): Checkbox {
+    const checkbox = new Checkbox(name);
+    checkbox.isChecked = isChecked;
+    applyStyles(checkbox, styles);
+    return checkbox;
 }

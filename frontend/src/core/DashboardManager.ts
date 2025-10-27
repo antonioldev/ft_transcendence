@@ -1,28 +1,9 @@
 import { UserStats, GameHistoryEntry } from '../shared/types.js';
-import { WebSocketEvent } from '../shared/constants.js';
 import { EL, getElementById } from '../ui/elements.js';
-import { webSocketClient } from './WebSocketClient.js';
+import { authManager } from './AuthManager.js';
+import { sendGET } from './HTTPRequests.js';
 
 export class DashboardManager {
-	private static instance: DashboardManager;
-
-	static getInstance(): DashboardManager {
-		if (!DashboardManager.instance)
-			DashboardManager.instance = new DashboardManager();
-		return DashboardManager.instance;
-	}
-
-	static initialize(): void {
-		const instance = DashboardManager.getInstance();
-		webSocketClient.registerCallback(WebSocketEvent.USER_STATS, (stats: UserStats) => {
-			instance.renderUserStats(stats);
-		});
-
-		webSocketClient.registerCallback(WebSocketEvent.GAME_HISTORY, (entries: GameHistoryEntry[]) => {
-			instance.renderGameHistory(entries);
-		});
-	}
-
 	clear(): void {
 		const statsContainer = getElementById(EL.DASHBOARD.USER_STATS_CHART);
 		if (statsContainer) statsContainer.innerHTML = '';
@@ -31,7 +12,7 @@ export class DashboardManager {
 		if (table) table.innerHTML = '';
 	}
 
-	private renderUserStats(stats: UserStats): void {
+	renderUserStats(stats: UserStats): void {
 		const container = getElementById(EL.DASHBOARD.USER_STATS_CHART);
 		if (!container) return;
 		container.innerHTML = '';
@@ -42,21 +23,30 @@ export class DashboardManager {
 		(container as HTMLElement).style.textAlign = 'center';
 		(container as HTMLElement).style.gap = '16px';
 
+		const tableWrapper = document.createElement('div');
+    	tableWrapper.style.width = '100%';
+    	tableWrapper.style.maxWidth = '900px';
+    	tableWrapper.style.margin = '0 auto';
+
 		const table = document.createElement('table');
 		table.style.borderCollapse = 'collapse';
 		table.style.width = 'auto';
+		table.style.minWidth = '600px';
 		table.style.minWidth = '420px';
+
+		table.style.color = '#A0C878';
+    	const commonThStyle = 'text-align:center; padding:6px 12px; min-width: 75px; height: 40px; line-height: 1.2; overflow: hidden; display: table-cell; vertical-align: middle; white-space: nowrap; font-size: clamp(10px, 2vw, 14px)';
 
 		table.innerHTML = `
 			<thead>
 				<tr>
-					<th style="text-align:center; padding:6px 12px;">Victories</th>
-					<th style="text-align:center; padding:6px 12px;">Defeats</th>
-					<th style="text-align:center; padding:6px 12px;">Games</th>
-					<th style="text-align:center; padding:6px 12px;">Win Ratio</th>
-					<th style="text-align:center; padding:6px 12px;">Tournaments Played</th>
-					<th style="text-align:center; padding:6px 12px;">Tournament Wins</th>
-					<th style="text-align:center; padding:6px 12px;">Tournament Win Ratio</th>
+					<th style="${commonThStyle}">Victories</th>
+					<th style="${commonThStyle}">Defeats</th>
+					<th style="${commonThStyle}">Games</th>
+					<th style="${commonThStyle}">Win Ratio</th>
+					<th style="${commonThStyle}">Tournaments Played</th>
+					<th style="${commonThStyle}">Tournament Wins</th>
+					<th style="${commonThStyle}">Tournament Win Ratio</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -73,24 +63,51 @@ export class DashboardManager {
 		`;
 
 		const pieChart = this.createPieChart([
-			{ label: 'Victories', value: stats.victories, color: '#4caf50' },
-			{ label: 'Defeats', value: stats.defeats, color: '#f44336' }
+			{ label: 'Victories', value: stats.victories, color: '#A0C878' },
+			{ label: 'Defeats', value: stats.defeats, color: '#EB5B00' }
 		]);
+
+		const tWins   = stats.tournamentWins ?? 0;
+	    const tLosses = Math.max(0, (stats.tournamentsPlayed ?? 0) - tWins);
+	    const pieChartTournament = this.createPieChart([
+	      { label: 'Tournament Wins',   value: tWins,   color: '#A0C878' },
+	      { label: 'Tournament Losses', value: tLosses, color: '#EB5B00' }
+	    ]);
 
 		// center & arrange table and pie chart
 		const row = document.createElement('div');
 		row.style.display = 'flex';
-		row.style.gap = '24px';
-		row.style.alignItems = 'flex-start';
+		row.style.flexDirection = 'column';
+		row.style.alignItems = 'center';
 		row.style.justifyContent = 'center';
-		row.style.flexWrap = 'wrap';
+		row.style.gap = '20px';
+		row.style.width = '100%';
 		row.appendChild(table);
-		row.appendChild(pieChart);
+
+		const pies = document.createElement('div');
+    	pies.style.display = 'flex';
+    	pies.style.gap = 'clamp(30px, 5vw, 256px)';
+    	pies.style.alignItems = 'center';
+		pies.style.justifyContent = 'center';
+    	pies.appendChild(pieChart);
+    	pies.appendChild(pieChartTournament);
+
+		if (pieChart instanceof SVGElement) {
+			pieChart.style.width = 'clamp(150px, 20vw, 200px)';
+		    pieChart.style.height = 'clamp(150px, 20vw, 200px)';
+		}
+
+		if (pieChartTournament instanceof SVGElement) {
+			pieChartTournament.style.width = 'clamp(150px, 20vw, 200px)';
+		    pieChartTournament.style.height = 'clamp(150px, 20vw, 200px)';
+		}
+
+		row.appendChild(pies);
 		container.appendChild(row);
 	}
 
 
-	private renderGameHistory(history: GameHistoryEntry[]): void {
+	renderGameHistory(history: GameHistoryEntry[]): void {
 		const container = getElementById(EL.DASHBOARD.GAME_HISTORY_TABLE);
 		if (!container) return;
 		container.innerHTML = '';
@@ -103,26 +120,28 @@ export class DashboardManager {
 		table.style.maxWidth = '900px';
 		table.style.margin = '0 auto';
 
+		const commonThStyle = 'text-align:center; padding:6px 12px';
+
 		table.innerHTML = `
 			<thead>
 				<tr>
-					<th style="text-align:center; padding:6px 12px;">Date & Time</th>
-					<th style="text-align:center; padding:6px 12px;">Opponent</th>
-					<th style="text-align:center; padding:6px 12px;">Score</th>
-					<th style="text-align:center; padding:6px 12px;">Result</th>
-					<th style="text-align:center; padding:6px 12px;">Tournament</th>
-					<th style="text-align:center; padding:6px 12px;">Duration</th>
+					<th style="${commonThStyle}">Date & Time</th>
+					<th style="${commonThStyle}">Opponent</th>
+					<th style="${commonThStyle}">Score</th>
+					<th style="${commonThStyle}">Result</th>
+					<th style="${commonThStyle}">Tournament</th>
+					<th style="${commonThStyle}">Duration</th>
 				</tr>
 			</thead>
 			<tbody>
 				${history.map(e => `
 					<tr>
-						<td style="padding:6px 12px;">${new Date(e.playedAt).toLocaleString()}</td>
-						<td style="padding:6px 12px;">${e.opponent}</td>
-						<td style="padding:6px 12px;">${e.score}</td>
-						<td style="padding:6px 12px;">${e.result}</td>
-						<td style="padding:6px 12px;">${e.isTournament ? 'No' : 'Yes'}</td>
-						<td style="padding:6px 12px;">${e.duration}s</td>
+						<td style="${commonThStyle}">${new Date(e.playedAt).toLocaleString()}</td>
+						<td style="${commonThStyle}">${e.opponent}</td>
+						<td style="${commonThStyle}">${e.score}</td>
+						<td style="${commonThStyle}">${e.result}</td>
+						<td style="${commonThStyle}">${e.isTournament ? 'No' : 'Yes'}</td>
+						<td style="${commonThStyle}">${e.duration}s</td>
 					</tr>
 				`).join('')}
 			</tbody>
@@ -160,7 +179,7 @@ export class DashboardManager {
 			hole.setAttribute("cx", String(cx));
 			hole.setAttribute("cy", String(cy));
 			hole.setAttribute("r",  String(radius / 3));
-			hole.setAttribute("fill", "#000");
+			hole.setAttribute("fill", "#143D60");
 			svg.appendChild(hole);
 
 			return svg;
@@ -198,41 +217,34 @@ export class DashboardManager {
 
 		return svg;
 	}
-	
-	// private createBarChart(data: { label: string; value: number; color: string }[]): HTMLElement {
-	//	 const max = Math.max(...data.map(d => d.value));
-	//	 const container = document.createElement('div');
-	//	 container.style.display = 'flex';
-	//	 container.style.alignItems = 'flex-end';
-	//	 container.style.gap = '10px';
-	//	 container.style.height = '150px';
-	//	 container.style.marginBottom = '20px';
 
-	//	 data.forEach(d => {
-	//		 const bar = document.createElement('div');
-	//		 const height = (d.value / max) * 100;
-	//		 bar.style.width = '50px';
-	//		 bar.style.height = `${height}%`;
-	//		 bar.style.backgroundColor = d.color;
-	//		 bar.title = `${d.label}: ${d.value}`;
+	async loadUserDashboard(): Promise<void> {
+		if (!authManager.isUserAuthenticated()) return;
+		
+		const user = authManager.getCurrentUser();
+		if (!user) return;
 
-	//		 const label = document.createElement('div');
-	//		 label.innerText = d.label;
-	//		 label.style.textAlign = 'center';
-	//		 label.style.marginTop = '5px';
+		const username = user.username;
+		this.clear();
+		
+		// Fetch and render stats
+		const statsData: { success: boolean, message: string, stats: UserStats } = 
+			await sendGET("stats", [`username=${username}`]);
+		
+		if (!statsData.success)
+			console.error(`Failed to load stats: ${statsData.message}`);
+		else
+			this.renderUserStats(statsData.stats);
 
-	//		 const barWrapper = document.createElement('div');
-	//		 barWrapper.style.display = 'flex';
-	//		 barWrapper.style.flexDirection = 'column';
-	//		 barWrapper.style.alignItems = 'center';
-
-	//		 barWrapper.appendChild(bar);
-	//		 barWrapper.appendChild(label);
-	//		 container.appendChild(barWrapper);
-	//	 });
-
-	//	 return container;
-	// }
+		// Fetch and render history
+		const historyData: { success: boolean, message: string, history: GameHistoryEntry[] } = 
+			await sendGET("history", [`username=${username}`]);
+		
+		if (!historyData.success)
+			console.error(`Failed to load history: ${historyData.message}`);
+		else
+			this.renderGameHistory(historyData.history);
+	}
 
 }
 
@@ -241,4 +253,4 @@ function polarToCartesian(radius: number, fraction: number): [number, number] {
 	return [radius + radius * Math.cos(angle), radius + radius * Math.sin(angle)];
 }
 
-export const dashboardManager = DashboardManager.getInstance();
+export const dashboardManager = new DashboardManager();

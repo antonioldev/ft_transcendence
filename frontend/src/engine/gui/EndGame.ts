@@ -1,9 +1,11 @@
-import { AdvancedDynamicTexture, Rectangle, TextBlock, Grid} from "@babylonjs/gui";
-import { KeyboardEventTypes} from "@babylonjs/core";
+import { KeyboardEventTypes } from "@babylonjs/core";
+import { AdvancedDynamicTexture, Rectangle, TextBlock, Image } from "@babylonjs/gui";
 import { getCurrentTranslation } from '../../translations/translations.js';
-import { spawnGUISparkles } from '../scene/fireworks.js';
+import { Z_INDEX } from "./GuiStyle";
 import { AnimationManager, Motion } from "../services/AnimationManager.js";
-import { PARTIAL_END_GAME_STYLES, END_GAME_STYLES, createRect, createTextBlock, createGrid} from "./GuiStyle.js";
+import { END_GAME_STYLES, createGrid, createRect, createTextBlock } from "./GuiStyle.js";
+import { PARTIAL_GUI_SPARKLES, PARTIAL_GUI_SPARKLES_LOSER, SparkleDetails } from "../scene/config/particleGuiConfig.js";
+import { randomFromRange, randomFromArray } from "../utils.js";
 
 export class EndGame {
 	private partialEndGameOverlay!: Rectangle;
@@ -12,40 +14,40 @@ export class EndGame {
 	private spectatorTimerText!: TextBlock;
 
 	private continueText!: TextBlock;
-	private endGameOverlay!: Grid;
+	private endGameOverlay!: Rectangle;
 	private endGameWinnerText!: TextBlock;
 	private spectatorTimerInterval: ReturnType<typeof setInterval> | null = null;
 
 	constructor(private adt: AdvancedDynamicTexture, private animationManager: AnimationManager) {
 		const t = getCurrentTranslation();
 
-		this.partialEndGameOverlay = createRect("partialWinnerLayer", PARTIAL_END_GAME_STYLES.partialEndGameOverlay);
+		this.partialEndGameOverlay = createRect("partialWinnerLayer", END_GAME_STYLES.endGameOverlay);
 		this.adt!.addControl(this.partialEndGameOverlay);
 
-		const centerColumn = createGrid("winnerGrid", PARTIAL_END_GAME_STYLES.winnerGrid);
+		const centerColumn = createGrid("winnerGrid", END_GAME_STYLES.winnerGrid);
 		this.partialEndGameOverlay.addControl(centerColumn);
 
-		centerColumn.addRowDefinition(PARTIAL_END_GAME_STYLES.gridRows.label);
-		centerColumn.addRowDefinition(PARTIAL_END_GAME_STYLES.gridRows.name);
-		centerColumn.addRowDefinition(PARTIAL_END_GAME_STYLES.gridRows.continue);
+		centerColumn.addRowDefinition(END_GAME_STYLES.gridRows.label);
+		centerColumn.addRowDefinition(END_GAME_STYLES.gridRows.name);
+		centerColumn.addRowDefinition(END_GAME_STYLES.gridRows.continue);
+		centerColumn.addRowDefinition(END_GAME_STYLES.gridRows.timer);
 
-		this.partialWinnerLabel = createTextBlock( "winnerLabel", PARTIAL_END_GAME_STYLES.partialWinnerLabel, t.winner);
+		this.partialWinnerLabel = createTextBlock( "winnerLabel", END_GAME_STYLES.partialWinnerLabel, t.winner);
 		centerColumn.addControl(this.partialWinnerLabel, 0, 0);
-
-		this.partialWinnerName = createTextBlock( "winnerName", PARTIAL_END_GAME_STYLES.partialWinnerName, "");
+		
+		this.partialWinnerName = createTextBlock( "winnerName", END_GAME_STYLES.partialWinnerName, "");
 		centerColumn.addControl(this.partialWinnerName, 1, 0);
 
-		this.continueText = createTextBlock( "continue_text", PARTIAL_END_GAME_STYLES.continueText, t.continue );
+		this.continueText = createTextBlock( "continue_text", END_GAME_STYLES.continueText, t.continue );
 		centerColumn.addControl(this.continueText, 2, 0);
 
-		this.spectatorTimerText = createTextBlock("spectatorTimer", PARTIAL_END_GAME_STYLES.continueText, "10");
-		this.partialEndGameOverlay.addControl(this.spectatorTimerText);
+		this.spectatorTimerText = createTextBlock("spectatorTimer", END_GAME_STYLES.continueText, "10");
+		centerColumn.addControl(this.spectatorTimerText);
 
-		this.endGameOverlay = createGrid("endGameOverlay", END_GAME_STYLES.endGameOverlay);
-		this.endGameOverlay.addColumnDefinition(1.0);
+		this.endGameOverlay = createRect("endGameOverlay", END_GAME_STYLES.endGameOverlay);
 
 		this.endGameWinnerText = createTextBlock( "endGameWinnerText", END_GAME_STYLES.endGameWinnerText, "");
-		this.endGameOverlay.addControl(this.endGameWinnerText, 0, 0);
+		this.endGameOverlay.addControl(this.endGameWinnerText);
 		this.adt!.addControl(this.endGameOverlay);
 	}
 
@@ -59,6 +61,69 @@ export class EndGame {
 		}
 	}
 
+	private createSparkleElement(config: SparkleDetails, winner: boolean): Image {
+		const sparkle = new Image("sparkle", config.asset);
+		sparkle.stretch = Image.STRETCH_UNIFORM;
+	
+		const size = randomFromRange(config.size.min, config.size.max);
+		sparkle.widthInPixels = size;
+		sparkle.heightInPixels = size;
+	
+		sparkle.color = randomFromArray(config.colors);
+	
+		if (!winner) {
+			const startYOffset = -config.spread.y * 0.8;
+			sparkle.top = `${randomFromRange(startYOffset, startYOffset + config.spread.y * 0.4)}%`;
+		} else {
+			sparkle.top = `${randomFromRange(-config.spread.y / 2, config.spread.y / 2)}%`;
+		}
+		
+		sparkle.left = `${randomFromRange(-config.spread.x / 2, config.spread.x / 2)}%`;
+	
+		sparkle.alpha = 0;
+		sparkle.scaleX = 0;
+		sparkle.scaleY = 0;
+	
+		sparkle.zIndex = Z_INDEX.ENDGAME;
+	
+		return sparkle;
+	}
+	
+	private animateSparkle(sparkle: Image, animationManager: AnimationManager, delay: number, duration: number, winner: boolean): void {
+		setTimeout(() => {
+			animationManager.zoom(sparkle, 'in', 8).then(() => {
+			
+				if (winner) {
+					animationManager.twinkle(sparkle, 20);
+					setTimeout(() => {
+						sparkle.animations = [];
+						animationManager.fade(sparkle, 'out', 12).then(() => sparkle.dispose());
+					}, duration - 500);
+				} else {
+					setTimeout(() => {
+						const fallDistance = 300 + Math.random() * 200;
+						const fallDuration = 40 + Math.random() * 20;
+						animationManager.slideFromDirection(sparkle, 'down', 'out', fallDistance, fallDuration, true).then(() => sparkle.dispose());
+					}, duration - 300);
+				}
+			});
+		}, delay);
+	}
+	
+	private spawnGUISparkles(
+		advancedTexture: AdvancedDynamicTexture, 
+		animationManager: any,
+		winner: boolean
+	): void {
+		const config = winner ? PARTIAL_GUI_SPARKLES : PARTIAL_GUI_SPARKLES_LOSER;
+		for (let i = 0; i < config.count; i++) {
+			const sparkle = this.createSparkleElement(config, winner);
+			advancedTexture.addControl(sparkle);
+			const delay = Math.random() * (winner ? 800 : 100);
+			this.animateSparkle(sparkle, animationManager, delay, config.duration, winner);
+		}
+	}
+
 	async showPartialWinner(name: string, waitForSpace: boolean = true, duration: number = 2000): Promise<void> {
 		if (!this.adt) return;
 
@@ -69,7 +134,7 @@ export class EndGame {
 		this.partialWinnerName.isVisible = true;
 		this.partialEndGameOverlay.isPointerBlocker = true;
 
-		spawnGUISparkles(this.adt, this.animationManager, true);
+		this.spawnGUISparkles(this.adt, this.animationManager, true);
 
 		await this.animationManager?.slideFromDirection(this.partialWinnerLabel, 'up', 'in', 200, Motion.F.base);
 		await new Promise(r => setTimeout(r, 60));
@@ -115,7 +180,7 @@ export class EndGame {
 		this.partialWinnerName.isVisible = true;
 		this.partialEndGameOverlay.isPointerBlocker = true;
 
-		spawnGUISparkles(this.adt, this.animationManager, false);
+		this.spawnGUISparkles(this.adt, this.animationManager, false);
 
 		await this.animationManager?.slideFromDirection(this.partialWinnerLabel, 'up', 'in', 200, Motion.F.slow);
 		await new Promise(r => setTimeout(r, 100));
@@ -126,8 +191,6 @@ export class EndGame {
 		const t = getCurrentTranslation();
 
 		this.continueText.text = t.spectatorQuestion;
-		this.spectatorTimerText.fontSize = "20px";
-		this.spectatorTimerText.top = "120px";
 
 		this.continueText.isVisible = true;
 		this.spectatorTimerText.isVisible = true;
@@ -164,7 +227,6 @@ export class EndGame {
 
 	async showFinalWinner(winner: string): Promise<void> {
 		this.endGameWinnerText.text = `🏆 ${winner} WINS! 🏆`;
-		this.endGameWinnerText.color = "rgba(255, 255, 255, 1)";
 		this.endGameOverlay.isVisible = true;
 
 		this.animationManager?.scale(this.endGameWinnerText, 1, 1.2, Motion.F.breath, true);

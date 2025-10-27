@@ -1,16 +1,20 @@
-import { ViewMode, GameMode } from '../shared/constants.js';
+import { Setting } from '../core/AppManager.js';
+import { authManager } from '../core/AuthManager.js';
+import { GameMode, ViewMode } from '../shared/constants.js';
 import { PlayerInfo } from '../shared/types.js';
 import { EL } from '../ui/elements.js';
-import { authManager } from '../core/AuthManager.js';
 
 // Complete configuration for starting a game
 export interface GameConfig {
 	canvasId: string;
 	viewMode: ViewMode;
+	scene3D: string;
 	gameMode: GameMode;
 	isLocalMultiplayer: boolean;
 	isRemoteMultiplayer: boolean;
 	isTournament: boolean;
+	musicEnabled: boolean;
+	soundEffectsEnabled: boolean;
 	players: PlayerInfo[];
 }
 
@@ -19,20 +23,27 @@ export class GameConfigFactory {
 	private static playerNames: string[] = [];
 
 	static createConfig(
-		viewMode: ViewMode, 
-		gameMode: GameMode, 
+		settings: Setting,
 		players: PlayerInfo[]
 	): GameConfig {
+		const gameMode = settings.gameMode!;
+		const viewMode = settings.viewMode;
+		const scene3D = settings.scene3D;
+		const musicEnabled = settings.musicEnabled;
+		const soundEffectsEnabled = settings.soundEffectsEnabled;
 		const isLocalMultiplayer = (gameMode === GameMode.TWO_PLAYER_LOCAL || gameMode === GameMode.TOURNAMENT_LOCAL);
 		const isTournament = (gameMode === GameMode.TOURNAMENT_REMOTE || gameMode === GameMode.TOURNAMENT_LOCAL);
 		const isRemoteMultiplayer = (gameMode === GameMode.TOURNAMENT_REMOTE || gameMode === GameMode.TWO_PLAYER_REMOTE);
 		return {
 			canvasId: EL.GAME.CANVAS_3D,
 			viewMode,
+			scene3D,
 			gameMode,
 			isLocalMultiplayer,
 			isRemoteMultiplayer,
 			isTournament,
+			musicEnabled,
+			soundEffectsEnabled,
 			players
 		};
 	}
@@ -43,7 +54,7 @@ export class GameConfigFactory {
 	}
 
 	// Convert stored player names to PlayerInfo objects
-	static getPlayers(gameMode: GameMode): PlayerInfo[] {
+	static getPlayers(): PlayerInfo[] {
 		return this.playerNames.map(name => ({
 			id: name,
 			name: name,
@@ -62,12 +73,12 @@ export class GameConfigFactory {
 		}];
 	}
 
-	static createWithAuthCheck(viewMode: ViewMode, gameMode: GameMode): GameConfig {
+	static createWithAuthCheck(settings: Setting): GameConfig {
 		const players = authManager.isUserAuthenticated()
 			? this.getAuthenticatedPlayer()
-			: this.getPlayers(gameMode);
+			: this.getPlayers();
 
-		return this.createConfig(viewMode, gameMode, players);
+		return this.createConfig(settings, players);
 	}
 
 	static validatePlayerSetup(gameMode: GameMode): boolean {

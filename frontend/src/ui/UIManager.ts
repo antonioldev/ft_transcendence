@@ -1,58 +1,46 @@
-import { ConnectionStatus } from '../shared/constants.js';
-import { EL, requireElementById} from './elements.js';
+import { ConnectionStatus, ViewMode } from '../shared/constants.js';
+import { EL, getElementById, requireElementById, UI_CLASSES} from './elements.js';
 import { getCurrentTranslation } from '../translations/translations.js';
-
+import { webSocketClient } from '../core/WebSocketClient.js';
+import { authManager } from '../core/AuthManager.js';
 
 class UIManager {
-	private static instance: UIManager;
+	showScreen(
+		screenId: string,
+		options: {  hideUserInfo?: boolean; modal?: string; } = {}
+	): void {
+		Object.values(EL.SCREENS).forEach(id => {
+			const element = getElementById(id);
+			if (element) element.style.display = 'none';
+		});
 
-    static getInstance(): UIManager {
-        if (!UIManager.instance)
-            UIManager.instance = new UIManager()
-        return UIManager.instance;
-    }
+		if (options.hideUserInfo)
+			this.showAuthButtons();
+		
+		// Handle modal display
+		if (options.modal) {
+			const mainMenu = requireElementById(EL.SCREENS.MAIN_MENU);
+			mainMenu.style.display = 'block';
+			this.setElementVisibility(options.modal, true);
+		} else {
+			const screen = document.getElementById(screenId);
+			if (screen)
+				screen.style.display = screenId === EL.SCREENS.MAIN_MENU ? 'block' : 'flex';
 
-    // ========================================
-    // SCREEN & LAYOUT MANAGEMENT
-    // ========================================
-    showScreen(screenId: string): void {
-        
-        // Hide all main screens/overlays
-        const screensToHide = [
-            'main-menu',
-            'login-modal', 
-            'register-modal',
-            'game-mode-overlay',
-            'player-setup-overlay',
-            'game-3d',
-            'stats-dashboard'
-        ];
-        
-        screensToHide.forEach(id => {
-            const element = document.getElementById(id);
-            if (element) {
-                element.style.display = 'none';
-            }
-        });
+			const topNav = document.getElementById('top-right-nav');
+			if (topNav) {
+				if (screenId === EL.SCREENS.GAME_3D) {
+					topNav.style.display = 'none';
+				} else {
+					topNav.style.display = 'flex';
+				}
+			}
+		}
 
-        const screen = document.getElementById(screenId);
-        if (screen) {
-            const displayValue = screenId === 'main-menu' ? 'block' : 'flex';
-            screen.style.display = displayValue;
-        } else {
-            console.error(`Screen element not found: ${screenId}`);
-        }
-
-        // Hide language selector during game screens
-        const languageSelector = document.getElementById('language-selector');
-        if (languageSelector) {
-            if (screenId === 'game-3d') {
-                languageSelector.style.display = 'none';
-            } else {
-                languageSelector.style.display = 'flex';
-            }
-        }
-    }
+		const isLoggedIn = authManager.isUserAuthenticated();
+		const isOnline = webSocketClient.isConnected();
+		uiManager.updateGameModeButtonStates(isLoggedIn, isOnline);
+	}
 
 	// ========================================
 	// AUTHENTICATION UI
@@ -60,20 +48,58 @@ class UIManager {
 	showAuthButtons(): void {
 		const authButtons = requireElementById(EL.DISPLAY.AUTH_BUTTONS);
 		const userInfo = requireElementById(EL.DISPLAY.USER_INFO);
+		const userInfoContainer = requireElementById('user-info');
 		
 		authButtons.style.display = 'flex';
 		userInfo.style.display = 'none';
+		userInfoContainer.style.display = 'none';
 	}
 
 	showUserInfo(username: string): void {
 		const authButtons = requireElementById(EL.DISPLAY.AUTH_BUTTONS);
 		const userInfo = requireElementById(EL.DISPLAY.USER_INFO);
 		const userName = requireElementById(EL.DISPLAY.USER_NAME);
+		const userInfoContainer = requireElementById('user-info');
 		
 		authButtons.style.display = 'none';
 		userName.textContent = username;
 		userInfo.style.display = 'flex';
+		userInfoContainer.style.display = 'flex';
+
+		// Setup dropdown functionality only once
+		this.setupDropdownEvents();
 	}
+
+	private setupDropdownEvents(): void {
+		const dropdownTrigger = document.getElementById('user-dropdown-trigger');
+		const dropdownMenu = document.getElementById('user-dropdown-menu');
+		const dropdownArrow = document.getElementById('dropdown-arrow');
+
+		if (dropdownTrigger && dropdownMenu && dropdownArrow) {
+			// Remove existing listeners to avoid duplicates
+			dropdownTrigger.replaceWith(dropdownTrigger.cloneNode(true));
+			const newTrigger = document.getElementById('user-dropdown-trigger')!;
+			
+			newTrigger.addEventListener('click', (e) => {
+				e.stopPropagation();
+				const isVisible = dropdownMenu.style.display !== 'none';
+				
+				if (isVisible) {
+					dropdownMenu.style.display = 'none';
+					dropdownArrow.textContent = '▼';
+				} else {
+					dropdownMenu.style.display = 'block';
+					dropdownArrow.textContent = '▲';
+				}
+			});
+			
+			// Close dropdown when clicking outside
+			document.addEventListener('click', () => {
+				dropdownMenu.style.display = 'none';
+				dropdownArrow.textContent = '▼';
+			}, { once: false });
+		}
+		}
 
 	// ========================================
 	// FORM MANAGEMENT
@@ -182,6 +208,21 @@ class UIManager {
 		});
 	}
 
+	updateViewModeButtonStyles(selectedViewMode: ViewMode): void {
+		const classicBtn = requireElementById<HTMLButtonElement>(EL.BUTTONS.VIEW_MODE_CLASSIC);
+		const immersiveBtn = requireElementById<HTMLButtonElement>(EL.BUTTONS.VIEW_MODE_IMMERSIVE);
+
+		// Reset both buttons to inactive state
+		classicBtn.className = UI_CLASSES.BUTTON_UNSELECTED;
+		immersiveBtn.className = UI_CLASSES.BUTTON_UNSELECTED;
+		
+		// Set active button style
+		if (selectedViewMode === ViewMode.MODE_2D)
+			classicBtn.className = UI_CLASSES.BUTTON_SELECTED;
+		else
+			immersiveBtn.className = UI_CLASSES.BUTTON_SELECTED;
+	}
+
 	// ========================================
 	// CONNECTION STATUS
 	// ========================================
@@ -240,4 +281,4 @@ class UIManager {
 	}
 }
 
-export const uiManager = UIManager.getInstance();
+export const uiManager = new UIManager;

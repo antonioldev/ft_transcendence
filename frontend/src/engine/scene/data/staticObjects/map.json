@@ -1,0 +1,5 @@
+{
+    "lines": [
+        {"model": "assets/model/map/lines.glb", "pos": [0, 0, 0.1], "rot": 0.00, "scale": 1.00}
+    ]
+}

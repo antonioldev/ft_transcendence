@@ -59,17 +59,16 @@ export const french: Translation = {
     tournamentOnline: 'Tournoi en ligne',
     play: '/ jouer',
     loading: 'Chargement...',
-    waiting: 'Recherche d’adversaires ',
+    waiting: 'Recherche d’adversaires',
 	countPlayer: 'Joueurs rejoints: ',
     controls: 'Contrôles',
     easy: ' (Facile)',
     medium: ' (Moyen)',
     hard: ' (Difficile)',
-    impossible: ' (Impossible)',
+    impossible: ' (God of War)',
     winner: 'VAINQUEUR',
     continue: 'Appuyez sur ESPACE pour continuer',
 	tournamentTitle: 'Classement du Tournoi',
-    spectatorWaitingmessage: 'Recherche de matchs en cours',
 	escToClose: 'Appuyez sur ESC pour fermer',
     miniGameRules: 'Trouvez toutes les paires correspondantes ! Jouez pendant que les autres finissent leurs parties.',
     // Validation error messages
@@ -98,5 +97,13 @@ export const french: Translation = {
     pausePowerupsMulti_P1: 'Joueur 1: C / V / B',
     pausePowerupsMulti_P2: 'Joueur 2: I / O / P',
     pausePowerupsSolo: 'Activer: 1 / 2 / 3',
-    pauseObjectiveText: 'Marquez {points} points en frappant\nla balle au-delà de votre adversaire!'
+    pauseObjectiveText: 'Marquez {points} points en frappant\nla balle au-delà de votre adversaire!',
+
+    // Settings Menu
+    settings: 'Paramètres',
+    language: 'Langue',
+    scene3d: 'Scène 3D',
+    music: 'Musique',
+    soundEffects: 'Effets Sonores',
+    backToMainMenu: 'Retour au Menu Principal'
 };

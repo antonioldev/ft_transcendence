@@ -1,13 +1,13 @@
 import { DeviceSourceManager, DeviceType, Scene } from "@babylonjs/core";
+import { webSocketClient } from '../../core/WebSocketClient.js';
+import { Direction, ViewMode } from '../../shared/constants.js';
+import { getPlayerBoundaries } from '../../shared/gameConfig.js';
+import { GameObjects } from '../../shared/types.js';
 import { Logger } from '../../utils/LogManager.js';
 import { GameConfig } from '../GameConfig.js';
-import { Direction, ViewMode} from '../../shared/constants.js';
-import { GameObjects } from '../../shared/types.js';
-import { getPlayerBoundaries } from '../../shared/gameConfig.js';
 import { PlayerSide, PlayerState } from "../utils.js";
-import { webSocketClient } from '../../core/WebSocketClient.js';
-import { PowerupManager } from "./PowerUpManager.js";
 import { GUIManager } from "./GuiManager.js";
+import { PowerupManager } from "./PowerUpManager.js";
 
 
 export const Keys = {
@@ -150,15 +150,16 @@ export class KeyboardManager {
 		}
 	}
 
-	// Updated escape key handler
 	private handleEscapeKey(): void {
 		this.isPaused = !this.isPaused;
 		this.gui.setPauseVisible(this.isPaused, false);
 
-		if (this.isPaused)
-			webSocketClient.sendPauseRequest();
-		else
-			webSocketClient.sendResumeRequest();
+		// if (!this.config.isRemoteMultiplayer) {
+			if (this.isPaused)
+				webSocketClient.sendPauseRequest();
+			else
+				webSocketClient.sendResumeRequest();
+		// }
 	}
 
 	private handlePauseMenuKeys(key: number): void {
@@ -224,8 +225,7 @@ export class KeyboardManager {
 		if (input === Direction.STOP) return;
 
 		let effectiveInput = input;
-		
-		// 3D Player 2 camera inversion (ONLY in remote multiplayer)
+
 		if (this.config.isRemoteMultiplayer && this.config.viewMode === ViewMode.MODE_3D && side === PlayerSide.RIGHT)
 			effectiveInput = (input === Direction.LEFT) ? Direction.RIGHT : Direction.LEFT;
 		

@@ -2,10 +2,10 @@ import { AbstractGameSession } from './GameSession.js'
 import { Game } from '../game/Game.js';
 import { Client, Player, CPU } from './Client.js';
 import { GameMode, MessageType, Direction, GameSessionState } from '../shared/constants.js';
-import { addPlayer2, registerNewGame } from '../data/validation.js';
 import { LEFT, RIGHT } from '../shared/gameConfig.js';
 import { generateGameId } from '../data/database.js';
 import { randomize } from './utils.js';
+import { ClientMessage } from '../shared/types.js';
 
 export class Match {
 	id: string = generateGameId();
@@ -25,15 +25,14 @@ export class Match {
 
 	add_player(player: Player | CPU) {
 		if (!player) return ;
-
+		
 		if (!this.players.includes(player)) {
-			console.log(`Player ${player.name} added to match ${this.id}`)
 			this.players.push(player);
 		}
 		if (player instanceof Player) {
-			console.log(`Client ${player.client.username} added to match ${this.id}`)
 			this.clients.add(player.client);
 		}
+		console.log(`Player ${player.name} added to match ${this.id}`)
 	}
 
 	remove_player(client: Client) {
@@ -114,7 +113,7 @@ abstract class AbstractTournament extends AbstractGameSession{
 			if (!this.client_match_map) continue ;
 			for (const player of [player_left, player_right]) {
 				if (!(player instanceof CPU)) {
-					this.client_match_map.set(player.client.id, match);
+					this.client_match_map.set(player.client.sid, match);
 				}
 			}
 		}
@@ -123,8 +122,14 @@ abstract class AbstractTournament extends AbstractGameSession{
 	private broadcastRoundSchedule(roundIndex: number): void {
 		const matches = this.rounds.get(roundIndex);
 		if (!matches || matches.length === 0) return;
-
 		matches.forEach((match, i) => {
+			console.log(`Broadcasting round schedule:
+round_total: ${this.num_rounds}
+round_index: ${roundIndex}
+match_index: ${i}
+match_total: ${matches.length}
+left: ${match.players[LEFT]?.name ?? "TBD"}
+right: ${match.players[RIGHT]?.name ?? "TBD"}`);
 			this.broadcast({
 				type: MessageType.MATCH_ASSIGNMENT,
 				round_total: this.num_rounds,
@@ -148,7 +153,6 @@ abstract class AbstractTournament extends AbstractGameSession{
 			
 			this.broadcastRoundSchedule(this.current_round);
 			await this.waitForClientsReady();
-			console.log(" ALL CLIENTS READY ");
 			
 			const matches = this.rounds.get(this.current_round);
 			if (!matches) return ; // maybe throw err
@@ -289,7 +293,7 @@ export class TournamentRemote extends AbstractTournament {
 				round_winners.push(winner_promise);
 			}
 		}
-		
+		console.log("Assigning spectators at beginning of round");
 		for (const client of this.defeated_clients) {
 			this.assign_spectator(client);
 		}
@@ -304,6 +308,7 @@ export class TournamentRemote extends AbstractTournament {
 		match.game.save_to_db();
 		this.assign_winner(match, winner);
 
+		console.log("Assigning spectators at end of match");
 		// reassign spectators to next available match
 		for (const client of match.clients) {
 			this.assign_spectator(client);
@@ -313,21 +318,20 @@ export class TournamentRemote extends AbstractTournament {
 	assign_winner(match: Match, winner: Player | CPU) {
 		if (!match.next) {
 			this.tournamentWinner = winner;
-			
 			// save tournament winner to db
 			return ;
 		}
 		match.next.add_player(winner);
 
 		if (winner instanceof Player) {
-			this.readyClients.delete(winner.client.id);
-			this.client_match_map.set(winner.client.id, match.next);
+			this.readyClients.delete(winner.client.sid);
+			this.client_match_map.set(winner.client.sid, match.next);
 			match.clients.delete(winner.client);
 		}
 		if (match.game?.loser instanceof Player) {
-			this.client_match_map.delete(match.game.loser.client.id);
+			this.client_match_map.delete(match.game.loser.client.sid);
 			this.defeated_clients.add(match.game.loser.client);
-			match.clients.delete(match.game?.loser?.client);
+			// match.clients.delete(match.game?.loser?.client);
 		}
 		this.broadcast({
 			type: MessageType.MATCH_RESULT,
@@ -347,7 +351,11 @@ export class TournamentRemote extends AbstractTournament {
 		spectator_match.game?.send_side_assignment(new Set([client]));
 	}
 
-	toggle_spectator_game(client: Client, direction: Direction) {
+	toggle_spectator_game(client: Client, data: ClientMessage) {
+		if (data.direction === undefined) {
+			console.log("Cannot toggle spectator game, direction not specified")
+			return 
+		}
 		if (this.active_matches.length <= 1) return ;
 
 		const old_match = this.find_spectator_match(client);
@@ -355,14 +363,13 @@ export class TournamentRemote extends AbstractTournament {
 			console.error(`Client ${client.username} is not spectating any game`);
 			return ;
 		}
+		old_match.clients.delete(client);
+
 		const old_index = this.active_matches.indexOf(old_match);
 		if (old_index === -1) return ; 
 
-		let new_index: number = old_index + direction;
-		if (new_index < 0) new_index = this.active_matches.length - 1;
-		else if (new_index > this.active_matches.length - 1) new_index = 0;
-		
-		old_match.clients.delete(client);
+		let new_index: number = (old_index + data.direction + this.active_matches.length) % this.active_matches.length;
+		console.log("Assigning spectators after toggle called");
 		this.assign_spectator(client, this.active_matches[new_index]);
 	}
 
@@ -376,7 +383,7 @@ export class TournamentRemote extends AbstractTournament {
 	}
 
 	canClientControlGame(client: Client) {
-		const match = this.findMatch(client.id);
+		const match = this.findMatch(client.sid);
 		if (!match || !this.active_matches.includes(match)) {
 			console.error(`Client ${client.username} not in any active match`);
 			return false;
@@ -402,9 +409,9 @@ export class TournamentRemote extends AbstractTournament {
 			this.remove_player(quitter);
 		}
 		else if (this.is_running()) {
-			const match = this.findMatch(quitter.id);
+			const match = this.findMatch(quitter.sid);
 			if (match) {
-				this.client_match_map.delete(quitter.id);
+				this.client_match_map.delete(quitter.sid);
 				if (this.client_match_map.size === 0) {
 					console.log(`Last undefeated player quit tournament ${this.id}`);
 					this.stop();

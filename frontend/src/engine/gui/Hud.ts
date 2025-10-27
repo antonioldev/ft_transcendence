@@ -1,10 +1,10 @@
-import { AdvancedDynamicTexture, TextBlock, Grid, Rectangle, Control, Image} from "@babylonjs/gui";
-import { GameConfig } from '../GameConfig.js';
-import { PowerupType, PowerupState} from '../../shared/constants.js';
+import { AdvancedDynamicTexture, Control, Grid, Image, Rectangle, TextBlock } from "@babylonjs/gui";
+import { PowerupState, PowerupType } from '../../shared/constants.js';
 import { getCurrentTranslation } from '../../translations/translations.js';
+import { GameConfig } from '../GameConfig.js';
 import { AnimationManager, Motion } from "../services/AnimationManager.js";
-import { HUD_STYLES, createTextBlock, createGrid, createRect, createStackPanel, SPECTATOR_STYLE, POWER_UP_STYLES, createImage} from "./GuiStyle.js";
 import { PlayerSide } from "../utils.js";
+import { HUD_STYLES, POWER_UP_STYLES, SPECTATOR_STYLE, createGrid, createImage, createRect, createStackPanel, createTextBlock } from "./GuiStyle.js";
 
 export class Hud {
 	private hudGrid!: Grid;
@@ -12,13 +12,10 @@ export class Hud {
 	private score2Text!: TextBlock;
 	private player1Label!: TextBlock;
 	private player2Label!: TextBlock;
-	private rallyText!: TextBlock;
 	private rally!: TextBlock;
 	private previousRally: number = 1;
 	private spectatorOverlay!: Rectangle;
 	private spectatorBanner!: Rectangle;
-	private spectatorText!: TextBlock;
-	private spectatorControls!: TextBlock;
 	private powerUpContainerP1!: Rectangle;
 	private powerUpContainerP2!: Rectangle;
 	private hdImagesP1: Map<PowerupType, Image> = new Map();
@@ -38,7 +35,8 @@ export class Hud {
 		[PowerupType.DOUBLE_POINTS]: "assets/icons/powerup/rallyMultiplier.png",
 		[PowerupType.INVISIBLE_BALL]: "assets/icons/powerup/ghost.png",
 		[PowerupType.CURVE_BALL]: "assets/icons/powerup/curve.png",
-		[PowerupType.TRIPLE_SHOT]: "assets/icons/powerupHD/ballMultiplier.png"
+		[PowerupType.TRIPLE_SHOT]: "assets/icons/powerupHD/ballMultiplier.png",
+		[PowerupType.SHIELD]: "assets/icons/powerupHD/shield.png"
 	};
 
 	private POWERUP_ICON_HD: Record<number, string> = {
@@ -53,7 +51,8 @@ export class Hud {
 		[PowerupType.DOUBLE_POINTS]: "assets/icons/powerupHD/rallyMultiplier.png",
 		[PowerupType.INVISIBLE_BALL]: "assets/icons/powerupHD/ghost.png",
 		[PowerupType.CURVE_BALL]: "assets/icons/powerupHD/curve.png",
-		[PowerupType.TRIPLE_SHOT]: "assets/icons/powerupHD/ballMultiplier.png"
+		[PowerupType.TRIPLE_SHOT]: "assets/icons/powerupHD/ballMultiplier.png",
+		[PowerupType.SHIELD]: "assets/icons/powerupHD/shield.png"
 		
 	};
 
@@ -80,46 +79,34 @@ export class Hud {
 		this.hudGrid.addControl(p1PowerUpContainer, 0, 0);
 
 		// P1 Score Cell
-		const p1Cell = new Grid();
-		p1Cell.addRowDefinition(1, false);
-		p1Cell.addRowDefinition(1, false);
-		p1Cell.addColumnDefinition(1, false);
+		const p1Stack = createStackPanel("player1Stack", HUD_STYLES.stack);
 
-		this.player1Label = createTextBlock("player1Label", HUD_STYLES.player1Label, "Player 1");
-		this.score1Text = createTextBlock("score1Text", HUD_STYLES.score1Text, "0");
-		
-		p1Cell.addControl(this.player1Label, 0, 0);
-		p1Cell.addControl(this.score1Text, 1, 0);
-		this.hudGrid.addControl(p1Cell, 0, 1);
+		this.player1Label = createTextBlock("player1Label", HUD_STYLES.playerLabel, "Player 1");
+		this.score1Text = createTextBlock("score1Text", HUD_STYLES.scoreText, "0");
+
+		p1Stack.addControl(this.player1Label);
+		p1Stack.addControl(this.score1Text);
+		this.hudGrid.addControl(p1Stack, 0, 1);
 
 		// Rally Cell
-		const rallyCell = new Grid();
-		rallyCell.addRowDefinition(1, false);
-		rallyCell.addRowDefinition(1, false);
-		rallyCell.addColumnDefinition(1, false);
+		const rallyStack = createStackPanel("rallyStack", HUD_STYLES.stack);
 
-		this.rallyText = createTextBlock("rallyText", HUD_STYLES.rallyText, "Rally");
 		this.rally = createTextBlock("rallyValue", HUD_STYLES.rallyValue, "0");
+		const rallyText = createTextBlock("rallyText", HUD_STYLES.rallyText, "Rally");
 		
-		rallyCell.addControl(this.rallyText, 0, 0);
-		rallyCell.addControl(this.rally, 1, 0);
-		this.hudGrid.addControl(rallyCell, 0, 2);
-
-		this.rally.transformCenterX = 0.5;
-		this.rally.transformCenterY = 0.5;
+		rallyStack.addControl(this.rally);
+		rallyStack.addControl(rallyText);
+		this.hudGrid.addControl(rallyStack, 0, 2);
 
 		// P2 Score Cell
-		const p2Cell = new Grid();
-		p2Cell.addRowDefinition(1, false);
-		p2Cell.addRowDefinition(1, false);
-		p2Cell.addColumnDefinition(1, false);
+		const p2Stack = createStackPanel("player2Stack", HUD_STYLES.stack);
 
-		this.player2Label = createTextBlock("player2Label", HUD_STYLES.player2Label, "Player 2");
-		this.score2Text = createTextBlock("score2Text", HUD_STYLES.score2Text, "0");
+		this.player2Label = createTextBlock("player2Label", HUD_STYLES.playerLabel, "Player 2");
+		this.score2Text = createTextBlock("score2Text", HUD_STYLES.scoreText, "0");
 		
-		p2Cell.addControl(this.player2Label, 0, 0);
-		p2Cell.addControl(this.score2Text, 1, 0);
-		this.hudGrid.addControl(p2Cell, 0, 3);
+		p2Stack.addControl(this.player2Label);
+		p2Stack.addControl(this.score2Text);
+		this.hudGrid.addControl(p2Stack, 0, 3);
 
 		// P2 PowerUps
 		const p2PowerUpContainer = this.createPowerUpContainer(1, config);
@@ -187,11 +174,11 @@ export class Hud {
 		const bannerContent = createStackPanel("bannerContent", SPECTATOR_STYLE.bannerContent);
 		this.spectatorBanner.addControl(bannerContent);
 
-		this.spectatorText = createTextBlock("spectatorText", SPECTATOR_STYLE.spectatorText, t.spectator);
-		bannerContent.addControl(this.spectatorText);
+		const spectatorText = createTextBlock("spectatorText", SPECTATOR_STYLE.spectatorText, t.spectator);
+		bannerContent.addControl(spectatorText);
 
-		this.spectatorControls = createTextBlock("spectatorControls", SPECTATOR_STYLE.spectatorControls, t.spectatorInstruction);
-		bannerContent.addControl(this.spectatorControls);
+		const spectatorControls = createTextBlock("spectatorControls", SPECTATOR_STYLE.spectatorControls, t.spectatorInstruction);
+		bannerContent.addControl(spectatorControls);
 	}
 
 	show(show: boolean): void {
@@ -212,10 +199,10 @@ export class Hud {
 			const b = Math.round(255 * (1 - intensity));
 			this.rally.color = `rgb(${r}, ${g}, ${b})`;
 
+			let scale = 1.4;
 			if (rally > 0 && rally % 5 === 0)
-				this.animationManager?.rotatePulse(this.rally, 1, Motion.F.slow);
-			else
-				this.animationManager?.scale(this.rally, 1, 1.4, Motion.F.base, true);
+				scale = 2;
+			this.animationManager?.scale(this.rally, 1, scale, Motion.F.base, true);
 			this.previousRally = rally;
 			return true;
 		}
@@ -249,6 +236,8 @@ export class Hud {
 	}
 
 	assignPowerUp(player: PlayerSide, slotIndex: number, powerUpType: PowerupType): void {
+		this.powerUpContainerP1.isVisible = true;
+		this.powerUpContainerP2.isVisible = true;
 		const scene = this.adt.getScene();
 		const cells = player === 0 ? this.powerUpCellsP1 : this.powerUpCellsP2;
 		if (slotIndex >= 0 && slotIndex < cells.length) {
@@ -275,10 +264,11 @@ export class Hud {
 				cell.root.alpha = 0;
 				const delay = slotIndex * 100;
 				setTimeout(() => {
-					this.animationManager.slideFromDirection(cell.root, 'up', 'in', 100, Motion.F.base)
-						.then(() => {
-							return this.animationManager.scale(cell.root, 1, 1.1, Motion.F.fast, true);
-						});
+					this.animationManager.scale(cell.root, 1, 1.1, Motion.F.fast, true);
+					// this.animationManager.slideFromDirection(cell.root, 'up', 'in', 100, Motion.F.base)
+					// 	.then(() => {
+					// 		return this.animationManager.scale(cell.root, 1, 1.1, Motion.F.fast, true);
+					// 	});
 				}, delay);
 			}
 		}
@@ -356,15 +346,15 @@ export class Hud {
 		});
 	}
 	dispose(): void {
-		this.rallyText.dispose();
+		// this.rallyText.dispose();
 		this.rally.dispose();
 		this.score1Text.dispose();
 		this.score2Text.dispose();
 		this.player1Label.dispose();
 		this.player2Label.dispose();
 		this.hudGrid.dispose();
-		this.spectatorText.dispose();
-		this.spectatorBanner.dispose();
+		// this.spectatorText.dispose();
+		// this.spectatorBanner.dispose();
 
 		[...this.powerUpCellsP1, ...this.powerUpCellsP2].forEach(cell => {
 			cell.icon?.dispose();

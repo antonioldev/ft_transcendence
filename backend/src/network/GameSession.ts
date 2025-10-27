@@ -2,11 +2,12 @@ import { Game } from '../game/Game.js';
 import { Client, Player, CPU } from './Client.js';
 import { MessageType, GameMode, AiDifficulty, GameSessionState } from '../shared/constants.js';
 import { PlayerInput, ServerMessage } from '../shared/types.js';
-import { gameManager } from './GameManager.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
 import { generateGameId } from '../data/database.js';
-import { LEFT, RIGHT } from '../shared/gameConfig.js';
 import { eventManager } from './utils.js';
+import { ClientMessage } from '../shared/types.js';
+import { TournamentRemote } from './Tournament.js';
+import { send } from '../routes/utils.js';
 
 export abstract class AbstractGameSession {
 	mode: GameMode;
@@ -36,6 +37,7 @@ export abstract class AbstractGameSession {
 				client?.websocket.send(JSON.stringify(message));
 			}
 			catch {
+				console.log(`broadcast failed for client ${client.username}`);
 				deleted_clients.push(client);
 			}
 		}
@@ -50,7 +52,7 @@ export abstract class AbstractGameSession {
 	}
 
 	add_client(client: Client) {
-		if (this.clients.size >= this.client_capacity) return ;
+		if (this.full) return ;
 
 		this.clients.add(client);
 		if (this.clients.size === this.client_capacity) {
@@ -69,7 +71,7 @@ export abstract class AbstractGameSession {
 		if (!this.clients.has(client)) return ;
 
 		this.clients.delete(client);
-		this.readyClients.delete(client.id);
+		this.readyClients.delete(client.sid);
 		
 		if (this.clients.size === 0) {
 			this.stop();
@@ -92,72 +94,144 @@ export abstract class AbstractGameSession {
 		for (let i = 1; this.players.size < this.player_capacity; i++) {
 			this.add_player(new CPU(`CPU_${i}`, this.get_cpu_name(), this.ai_difficulty));
 		}
-
-		// if (this.mode === GameMode.TWO_PLAYER_REMOTE) {
-		// 	this.mode = GameMode.SINGLE_PLAYER
-		// }
-
 		this.client_capacity = this.clients.size;
     }
 
 	allClientsReady(): boolean {
-		return (this.readyClients.size === this.clients.size && this.clients.size > 0);
+		return (this.readyClients.size >= this.clients.size && this.clients.size > 0);
 	}
 
 	async waitForClientsReady() {
+		console.log("INSIDE WAIT FOR CLIENTS READY");
 		if (this.allClientsReady()) {
-			console.log(`All clients ready: ready size: ${this.readyClients.size}`)
+			console.log(`All clients ready: ready size: ${this.readyClients.size}`);
 			return ;
 		}
+		console.log("WAITING FOR EVENT");
 		await new Promise(resolve => {
 			eventManager.once(`all-ready-${this.id}`, resolve);
 		});
 		console.log(`Event triggered ALL READY`);
 	}
 
-	setClientReady(client_id: string): void {
-		this.readyClients.add(client_id);
-		console.log(`Client ${client_id} marked as ready.}`);
+	setClientReady(client: Client): void {
+		this.readyClients.add(client.sid);
+		console.log(`Client ${client.username} marked as ready\nTotal client ready: ${this.readyClients.size}\nTotal clients ${this.clients.size}`);
 		
-		if (this.allClientsReady()) {
+		if (/*this.full && */this.allClientsReady()) {
 			eventManager.emit(`all-ready-${this.id}`);
 			console.log(`GameSession ${this.id}: all clients ready signal emitted`);
 		}
 	}
 
-	resume(client_id?: string): void {
-		const game = this.getGame(client_id);
+	resume(client: Client): void {
+		if (!this.canClientControlGame(client)){
+			console.warn(`Client ${client.username} not authorized to resume game`);
+			return;
+		}
+		const game = this.getGame(client.sid);
 		if (!game) {
 			console.log(`Game ${this.id} is not running, cannot resume`);
 			return ;
+		}
+		if (this.in_lobby()) {
+			console.warn('Unable to resume: game in lobby');
+			return;
 		}
 		if (!game.is_paused()) {
 			console.log(`Game ${this.id} is not paused`);
 			return ;
 		}
 
-		console.log(`Game ${this.id} resumed by client ${client_id}`);
+		console.log(`Game ${this.id} resumed by client ${client.sid}`);
 		game.resume();
 	}
 
-	pause(client_id?: string): void {
-		const game = this.getGame(client_id);
+	pause(client: Client): void {
+		if (!this.canClientControlGame(client)){
+			console.warn(`Client ${client.username} not authorized to pause game`);
+			return;
+		}
+		const game = this.getGame(client.sid);
 		if (!game || !game.is_running()) {
 			console.log(`Game ${this.id} is not running, cannot pause`);
 			return ;
+		}
+		if (this.in_lobby()) {
+			console.warn('Unable to pause: game in lobby');
+			return;
 		}
 		if (game.is_paused()) {
 			console.log(`Game ${this.id} is already paused`);
 			return ;
 		}
 
-		console.log(`Game ${this.id} paused by client ${client_id}`);
+		console.log(`Game ${this.id} paused by client ${client.sid}`);
 		game.pause();
+	}
+
+	async activate_powerup(client: Client, data: ClientMessage) {
+		if (data.powerup_type === undefined || data.powerup_type === null || 
+			data.slot === undefined || data.slot === null || 
+			data.side === undefined || data.side === null) {
+			console.error("Error: cannot activate powerup, missing data");
+			return;
+		}
+	
+		if (!this.canClientControlGame(client)){
+			console.warn(`Client ${client.username} not authorized to control game`);
+			return;
+		}
+		if (this.in_lobby()) {
+			console.warn('Unable to activate powerup: game in lobby');
+			return;
+		}
+		const game = this.getGame(client.sid);
+		if (!game) {
+			console.error("Error: cannot activate powerup, game does not exist");
+			return ;
+		}
+		await game.activate(data.side, data.slot);
+	}
+
+	handlePlayerInput(client: Client, data: ClientMessage): void {
+		if (data.direction === undefined || data.side === undefined) {
+			console.warn('Invalid player input: missing direction or side');
+			return;
+		}
+		if (!this.canClientControlGame(client)){
+			console.warn(`Client ${client.username} not authorized to control game`);
+			return;
+		}
+		if (this.in_lobby()) {
+			console.warn('Unable to process player input: game in lobby');
+			return;
+		}
+	
+		const input: PlayerInput = {
+			id: client.sid,
+			type: MessageType.PLAYER_INPUT,
+			side: data.side,
+			dx: data.direction
+		}
+		this.enqueue(input, client.sid);
+	}
+
+	send_lobby(client: Client) {
+		send(client.websocket, {
+			type: MessageType.TOURNAMENT_LOBBY,
+			lobby: [...this.players].map(player => player.name)
+		});
+		console.log(`Lobby sent to ${client.username}`)
 	}
 
 	enqueue(input: PlayerInput, client_id?: string): void  {
 		const game = this.getGame(client_id);
-		game?.enqueue(input);
+		if (!game) {
+			console.log("Cannot enqueue input: game session does nto exist");
+			return ;
+		}
+		game.enqueue(input);
 	}
 
 	is_running(): boolean {
@@ -208,7 +282,7 @@ export class OneOffGame extends AbstractGameSession{
 		
 		this.broadcast({ 
 			type: MessageType.SESSION_ENDED,
-			...(this.game.winner?.name && { winner: this.game.winner.name })
+			...(this.game?.winner?.name && { winner: this.game.winner.name })
 		});
 	}
 	

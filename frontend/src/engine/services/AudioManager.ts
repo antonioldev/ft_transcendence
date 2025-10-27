@@ -1,4 +1,5 @@
 import { Scene, Sound } from "@babylonjs/core";
+import { GameConfig } from "../GameConfig.js";
 import { Logger } from '../../utils/LogManager.js';
 
 /**
@@ -13,8 +14,8 @@ export class AudioManager {
 	private maxPlaybackRate: number = 1.8;
 	private maxRally: number = 50;
 	private currentRally: number = 1;
-
-	private muted = false;
+	private musicEnabled: boolean;
+	private effectsEnabled: boolean;
 	private volumes = {
 		music: 0.5,
 		gameMusicEntrance: 0.4,
@@ -41,7 +42,9 @@ export class AudioManager {
 	private miniGameNotCorrect: Sound | null = null;
 
 
-	constructor(private scene: Scene) {
+	constructor(private scene: Scene, config: GameConfig) {
+		this.musicEnabled = config.musicEnabled;
+		this.effectsEnabled = config.soundEffectsEnabled;
 	}
 
 	async initialize(): Promise<void> {
@@ -189,7 +192,7 @@ export class AudioManager {
 					playbackRate: this.basePlaybackRate
 				}
 			);
-
+			this.applyVolumes();
 			this.isInitialized = true;
 		} catch (error) {
 			Logger.errorAndThrow('Error initializing Babylon audio', 'BabylonAudioManager', error);
@@ -200,16 +203,12 @@ export class AudioManager {
 		if (!this.gameMusic || !this.isInitialized)
 			return;
 
-		try {
-			this.countdownSound?.stop();
-			if (this.gameMusic.isPlaying !== true )
-				this.gameMusic.play();
-			setTimeout(() => {
-				this.gameMusicEntrance?.stop();
-			}, 500);
-		} catch (error) {
-			Logger.errorAndThrow('Error starting game music', 'BabylonAudioManager', error);
-		}
+		this.countdownSound?.stop();
+		if (this.gameMusic.isPlaying !== true )
+			this.gameMusic.play();
+		setTimeout(() => {
+			this.gameMusicEntrance?.stop();
+		}, 500);
 	}
 
 	stopGameMusic(): void {
@@ -217,10 +216,12 @@ export class AudioManager {
 	}
 
 	lowerMusicVolume(factor: number = 0.5): void {
+		if (!this.musicEnabled) return;
 		this.gameMusic?.setVolume(this.volumes.music * factor);
 	}
 
 	restoreMusicVolume(): void {
+		if (!this.musicEnabled) return;
 		this.gameMusic?.setVolume(this.volumes.music);
 	}
 
@@ -245,7 +246,6 @@ export class AudioManager {
 		const newPlaybackRate = this.basePlaybackRate + 
 			(speedCurve * (this.maxPlaybackRate - this.basePlaybackRate));
 
-		// this.gameMusic.setPlaybackRate(newPlaybackRate);
 		const currentRate = this.gameMusic.getPlaybackRate();
 		if (Math.abs(newPlaybackRate - currentRate) > 0.01)
 			this.gameMusic.setPlaybackRate(newPlaybackRate);
@@ -289,35 +289,31 @@ export class AudioManager {
 			this.miniGameNotCorrect?.play();
 	}
 
-
-	isMuted(): boolean {
-		return this.muted;
+	toggleMusic(): boolean {
+		this.musicEnabled = !this.musicEnabled;
+		this.applyVolumes();
+		return this.musicEnabled;
 	}
 
-	setMuted(m: boolean): void {
-		this.muted = m;
+	toggleEffects(): boolean {
+		this.effectsEnabled = !this.effectsEnabled;
 		this.applyVolumes();
-	}
-
-	toggleMute(): boolean {
-		this.muted = !this.muted;
-		this.applyVolumes();
-		return this.muted;
+		return this.effectsEnabled;
 	}
 
 	private applyVolumes(): void {
-		const base = this.muted ? 0 : 1;
-
+		let base = this.musicEnabled ? 1 : 0;
 		this.gameMusic?.setVolume(base * this.volumes.music);
 		this.gameMusicEntrance?.setVolume(base * this.volumes.music);
+
+		base = this.effectsEnabled ? 1 : 0;
 		this.countdownSound?.setVolume(base * this.volumes.countdown);
 		this.paddleHitSound?.setVolume(base * this.volumes.paddle);
 		this.scoreSound?.setVolume(base * this.volumes.score);
 		this.powerup?.setVolume(base * this.volumes.powerup);
 		this.entrance?.setVolume(base * this.volumes.entrance);
-		this.winner?.setVolume(base * this.volumes.winner)
-		this.loser?.setVolume(base * this.volumes.loser)
-
+		this.winner?.setVolume(base * this.volumes.winner);
+		this.loser?.setVolume(base * this.volumes.loser);
 	}
 
 	dispose(): void {
@@ -344,10 +340,10 @@ export class AudioManager {
 			this.entrance = null;
 
 			this.winner?.dispose();
-			this.entrance = null;
+			this.winner = null;
 
 			this.loser?.dispose();
-			this.entrance = null;
+			this.loser = null;
 
 			this.isInitialized = false;
 

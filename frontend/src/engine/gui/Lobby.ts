@@ -1,7 +1,7 @@
-import { AdvancedDynamicTexture, Rectangle, TextBlock, Grid, StackPanel} from "@babylonjs/gui";
+import { AdvancedDynamicTexture, Grid, Rectangle, StackPanel, TextBlock } from "@babylonjs/gui";
 import { getCurrentTranslation } from '../../translations/translations.js';
 import { AnimationManager } from "../services/AnimationManager.js";
-import { LOBBY_STYLES, createRect, createTextBlock, createStackPanel,} from "./GuiStyle.js";
+import { LOBBY_STYLES, createRect, createStackPanel, createTextBlock, } from "./GuiStyle.js";
 
 export class Lobby {
 	private overlay!: Rectangle;
@@ -17,18 +17,19 @@ export class Lobby {
 		this.adt.addControl(this.overlay);
 
 		const mainGrid = new Grid("lobbyMainGrid");
-		mainGrid.addRowDefinition(0.15, false); // Title row
-		mainGrid.addRowDefinition(0.15, false);  // Subtitle row
+		mainGrid.addRowDefinition(0.20, false);  // Subtitle row
+		mainGrid.addRowDefinition(0.05, false); // dots
 		mainGrid.addRowDefinition(0.1, false); // Count row
-		mainGrid.addRowDefinition(0.6, false);  // Scroll row
+		mainGrid.addRowDefinition(0.65, false);  // Scroll row
 		mainGrid.width = "100%";
 		mainGrid.height = "100%";
 		this.overlay.addControl(mainGrid);
 
-		const title = createTextBlock("lobbyTitle", LOBBY_STYLES.title, t.tournamentOnline);
+		const title = createTextBlock("lobbySubtitle", LOBBY_STYLES.title, t.waiting);
 		mainGrid.addControl(title, 0, 0);
 
-		this.subtitle = createTextBlock("lobbySubtitle", LOBBY_STYLES.subtitle, t.waiting);
+		this.subtitle = createTextBlock("lobbySubtitle", LOBBY_STYLES.title);
+		// this.subtitle.textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT,
 		mainGrid.addControl(this.subtitle, 1, 0);
 
 		this.countText = createTextBlock("lobbyCount", LOBBY_STYLES.count, "");
@@ -74,7 +75,7 @@ export class Lobby {
 			
 			this.listPanel!.addControl(rowContainer);
 		}
-		this.countText.text = `${t.countPlayer}: ${players.length}`;
+		this.countText.text = `${t.countPlayer} ${players.length}`;
 	}
 
 	hide(): void {
@@ -88,11 +89,11 @@ export class Lobby {
 	private startDots(): void {
 		if (!this.subtitle) return;
 		this.stopDots();
-		const base = this.subtitle.text;
+		const base = ""
 		let step = 0;
 		this.dotsTimer = window.setInterval(() => {
 			step = (step + 1) % 3;
-			const dotPatterns = ["  .", " ..", "..."];
+			const dotPatterns = [".  ", ".. ", "..."];
 			this.subtitle!.text = base + dotPatterns[step];
 		}, 500);
 	}

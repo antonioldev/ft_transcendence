@@ -1,7 +1,0 @@
-This can be used to import models to enrich the scene (3d models)
-
-.glb	Recommended. Compact, fast, and includes meshes, materials, textures, animations, etc.
-.gltf
-.babylon
-.obj + .mtl
-.stl
