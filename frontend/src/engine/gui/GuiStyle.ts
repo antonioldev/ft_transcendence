@@ -1,4 +1,4 @@
-import { Control, Grid, Image, Rectangle, StackPanel, TextBlock, Checkbox, Container } from "@babylonjs/gui";
+import { Control, Grid, Image, Rectangle, StackPanel, TextBlock, Checkbox } from "@babylonjs/gui";
 
 export const H_LEFT = Control.HORIZONTAL_ALIGNMENT_LEFT;
 export const H_CENTER = Control.HORIZONTAL_ALIGNMENT_CENTER;
@@ -822,30 +822,14 @@ export function applyStyles(control: any, styles: any): void {
     });
 }
 
-function addToParent(
-    control: Control, 
-    parent?: any, 
-    row?: number, 
-    column?: number
-): void {
-    if (!parent) return;
-    
-    if (row !== undefined && column !== undefined)
-        parent.addControl(control, row, column);
-    else if (row !== undefined)
-        parent.addControl(control, row);
-    else
-        parent.addControl(control);
-}
-
 export function createRect(name: string, styles: any): Rectangle {
     const rect = new Rectangle(name);
     applyStyles(rect, styles);
     return rect;
 }
 
-export function createTextBlock(name: string, styles: any): TextBlock {
-    const textBlock = new TextBlock(name);
+export function createTextBlock(name: string, styles: any, text: string): TextBlock {
+    const textBlock = new TextBlock(name, text);
     applyStyles(textBlock, styles);
     return textBlock;
 }

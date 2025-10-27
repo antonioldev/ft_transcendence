@@ -456,6 +456,7 @@ export class AppManager {
 		if (!currentSettings.gameMode) return;
 
 		try {
+			this.clearCanvas();
 			this.navigateTo(AppState.GAME_3D, false);
 
 			let capacity: number | undefined = undefined;
@@ -472,6 +473,18 @@ export class AppManager {
 			this.currentGame = null;
 			Logger.error('Error starting game', 'AppManager', error);
 			this.navigateTo(AppState.MAIN_MENU);
+		}
+	}
+
+	private clearCanvas(): void {
+		const canvas = document.getElementById('renderCanvas') as HTMLCanvasElement;
+		if (!canvas) return;
+
+		// Clear WebGL context properly
+		const gl = canvas.getContext('webgl2') || canvas.getContext('webgl');
+		if (gl) {
+			gl.clearColor(0, 0, 0, 1); // Black
+			gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 		}
 	}
 }
