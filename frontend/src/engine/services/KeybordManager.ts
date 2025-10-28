@@ -9,6 +9,7 @@ import { PlayerSide, PlayerState } from "../utils.js";
 import { GUIManager } from "./GuiManager.js";
 import { PowerupManager } from "./PowerUpManager.js";
 import { Motion } from "./AnimationManager.js";
+import { GameEventEmitter, GameEventType } from "./EventEmitter.js";
 
 
 export const Keys = {
@@ -54,6 +55,7 @@ export class KeyboardManager {
 		private players: Map<PlayerSide, PlayerState>,
 		private powerupManager: PowerupManager,
 		private gui: GUIManager,
+		private eventEmitter: GameEventEmitter
 	) {
 		this.deviceSourceManager = new DeviceSourceManager(scene.getEngine());
 		this.globalKeyDownHandler = this.handleGlobalKeyDown.bind(this);
@@ -153,14 +155,18 @@ export class KeyboardManager {
 		}
 	}
 
-	private handleEscapeKey(): void {
-		this.isPaused = !this.isPaused;
-		this.gui.setPauseVisible(this.isPaused, false);
+	// private handleEscapeKey(): void {
+	// 	this.isPaused = !this.isPaused;
+	// 	this.gui.setPauseVisible(this.isPaused, false);
 
-		if (this.isPaused)
-			webSocketClient.sendPauseRequest();
-		else
-			webSocketClient.sendResumeRequest();
+	// 	if (this.isPaused)
+	// 		webSocketClient.sendPauseRequest();
+	// 	else
+	// 		webSocketClient.sendResumeRequest();
+	// }
+
+	private handleEscapeKey(): void {
+		this.eventEmitter.emit({ type: GameEventType.PAUSE_TOGGLE });
 	}
 
 	private handlePauseMenuKeys(key: number): void {

@@ -8,6 +8,7 @@ import { KeyboardManager } from "./services/KeybordManager";
 import { PowerupManager } from "./services/PowerUpManager";
 import { RenderManager } from "./services/RenderManager";
 import { PlayerSide, PlayerState } from "./utils.js";
+import { GameEventEmitter } from "./services/EventEmitter.js";
 
 export class GameServices {
 	audio: AudioManager;
@@ -18,6 +19,7 @@ export class GameServices {
 	powerup: PowerupManager;
 
 	constructor(
+		eventEmitter: GameEventEmitter,
 		engine: Engine,
 		scene: Scene,
 		config: GameConfig,
@@ -28,7 +30,7 @@ export class GameServices {
 		this.audio = new AudioManager(scene, config);
 		this.gui = new GUIManager(scene, config, this.animation, this.audio);
 		this.powerup = new PowerupManager(players, this.animation, this.gui, gameObjects);
-		this.input = new KeyboardManager(scene, config, gameObjects, players, this.powerup, this.gui);
+		this.input = new KeyboardManager(scene, config, gameObjects, players, this.powerup, this.gui, eventEmitter);
 		this.render = new RenderManager(engine, scene, gameObjects);
 	}
 

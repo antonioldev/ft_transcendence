@@ -13,6 +13,7 @@ import { startFireworks } from "./scene/builders/effectsBuilder.js";
 import { disposeMaterialResources } from "./scene/builders/materialsBuilder.js";
 import { buildScene } from './scene/builders/sceneBuilder.js';
 import { PlayerSide, PlayerState } from "./utils.js";
+import { GameEventEmitter, GameEventType } from "./services/EventEmitter.js";
 
 // [x] CANVAS SIZE
 // [x] CURTAIN TIMING
@@ -29,6 +30,7 @@ import { PlayerSide, PlayerState } from "./utils.js";
  */
 export class Game {
 	private isInitialized: boolean = false;
+	private eventEmitter: GameEventEmitter;
 	private serverState: GameState = GameState.INIT;
 	private engine: Engine | null = null;
 	private scene: Scene | null = null;
@@ -38,6 +40,7 @@ export class Game {
 	private themeObjects: ThemeObject | null = null;
 	private gameLoopObserver: any = null;
 	private isSpectator: boolean = false;
+	private isPaused: boolean = false;
 	private isGameEnded: boolean = false;
 	private isCountdownStarted: boolean = false;
 	private players: Map<PlayerSide, PlayerState> = new Map([
@@ -64,6 +67,7 @@ export class Game {
 				}
 				this.canvas.focus();
 			}
+			this.eventEmitter = new GameEventEmitter();
 		} catch (error) {
 			Logger.errorAndThrow('Error creating game managers', 'Game', error);
 		}
@@ -101,7 +105,7 @@ export class Game {
 		this.gameObjects = gameObjects;
 		this.themeObjects = themeObjects;
 
-		this.services = new GameServices(this.engine, this.scene, this.config, this.gameObjects, this.players);
+		this.services = new GameServices(this.eventEmitter, this.engine, this.scene, this.config, this.gameObjects, this.players);
 		await this.services.initialize();
 		this.services.render.startRendering();
 		this.registerCallbacks();
@@ -443,6 +447,9 @@ export class Game {
 		webSocketClient.registerCallback(MessageType.TOURNAMENT_LOBBY, (message: any) => {this.services?.gui?.updateTournamentLobby(message);});
 		webSocketClient.registerCallback(MessageType.COUNTDOWN, (message: any) => { this.handleCountdown(message.countdown); });
 		document.addEventListener('game:exitToMenu', this.exitHandler);
+
+
+		this.eventEmitter.on(GameEventType.PAUSE_TOGGLE, (event) => { this.handlePauseToggle(); });
 	}
 
 	private unregisterCallbacks(): void {
@@ -454,6 +461,16 @@ export class Game {
 		webSocketClient.unregisterCallback(MessageType.MATCH_RESULT);
 		webSocketClient.unregisterCallback(MessageType.TOURNAMENT_LOBBY);
 		webSocketClient.unregisterCallback(MessageType.COUNTDOWN);
+	}
+
+	private handlePauseToggle(): void {
+		this.isPaused = !this.isPaused;
+		this.services?.gui.setPauseVisible(this.isPaused, false);
+
+		if (this.isPaused)
+			webSocketClient.sendPauseRequest();
+		else
+			webSocketClient.sendResumeRequest();
 	}
 
 // ====================			CLEANUP				  ====================
