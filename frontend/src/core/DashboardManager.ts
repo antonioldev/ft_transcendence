@@ -17,93 +17,81 @@ export class DashboardManager {
 		if (!container) return;
 		container.innerHTML = '';
 
-		(container as HTMLElement).style.display = 'flex';
-		(container as HTMLElement).style.flexDirection = 'column';
-		(container as HTMLElement).style.alignItems = 'center';
-		(container as HTMLElement).style.textAlign = 'center';
-		(container as HTMLElement).style.gap = '16px';
+		const mainWraper = document.createElement('div');
+		mainWraper.style.width = '100%';
+		mainWraper.style.maxWidth = '1200px';
+		mainWraper.style.margin = '0 auto';
+		mainWraper.style.display = 'flex';
+		mainWraper.style.flexDirection = 'column';
+		mainWraper.style.gap = '30px';
 
-		const tableWrapper = document.createElement('div');
-    	tableWrapper.style.width = '100%';
-    	tableWrapper.style.maxWidth = '900px';
-    	tableWrapper.style.margin = '0 auto';
+		const columnsContainer = document.createElement('div');
+		columnsContainer.style.display = 'flex';
+		columnsContainer.style.gap = '30px';
+		columnsContainer.style.alignItems = 'flex-start';
+		columnsContainer.style.justifyContent = 'center';
+		columnsContainer.style.flexWrap = 'wrap';
+
+		const leftColumn = document.createElement('div');
+		leftColumn.style.flex = '1';
+		leftColumn.style.minWidth = '300px';
 
 		const table = document.createElement('table');
 		table.style.borderCollapse = 'collapse';
-		table.style.width = 'auto';
-		table.style.minWidth = '600px';
-		table.style.minWidth = '420px';
-
+		table.style.width = '100%';
 		table.style.color = '#A0C878';
+
     	const commonThStyle = 'text-align:center; padding:6px 12px; min-width: 75px; height: 40px; line-height: 1.2; overflow: hidden; display: table-cell; vertical-align: middle; white-space: nowrap; font-size: clamp(10px, 2vw, 14px)';
+    	const commonTdStyle = 'text-align:center; padding:8px 12px; border: 1px solid #444; background: rgba(160, 200, 120, 0.1)';
+
 
 		table.innerHTML = `
-			<thead>
-				<tr>
-					<th style="${commonThStyle}">Victories</th>
-					<th style="${commonThStyle}">Defeats</th>
-					<th style="${commonThStyle}">Games</th>
-					<th style="${commonThStyle}">Win Ratio</th>
-					<th style="${commonThStyle}">Tournaments Played</th>
-					<th style="${commonThStyle}">Tournament Wins</th>
-					<th style="${commonThStyle}">Tournament Win Ratio</th>
-				</tr>
-			</thead>
 			<tbody>
 				<tr>
-					<td style="padding:6px 12px;">${stats.victories}</td>
-					<td style="padding:6px 12px;">${stats.defeats}</td>
-					<td style="padding:6px 12px;">${stats.games}</td>
-					<td style="padding:6px 12px;">${(stats.winRatio * 100).toFixed(1)}%</td>
-					<td style="padding:6px 12px;">${stats.tournamentsPlayed}</td>
-					<td style="padding:6px 12px;">${stats.tournamentWins}</td>
-					<td style="padding:6px 12px;">${(stats.tournamentWinRatio * 100).toFixed(1)}%</td>
+					<th style="${commonThStyle}">Victories</th>
+					<td style="${commonTdStyle}">${stats.victories}</td>
+				</tr>
+				<tr>
+					<th style="${commonThStyle}">Defeats</th>
+					<td style="${commonTdStyle}">${stats.defeats}</td>
+				</tr>
+				<tr>
+					<th style="${commonThStyle}">Tournament Wins</th>
+					<td style="${commonTdStyle}">${stats.tournamentWins}</td>
 				</tr>
 			</tbody>
 		`;
+
+		leftColumn.appendChild(table);
+
+		const rightColumn = document.createElement('div');
+		rightColumn.style.flex = '1';
+		rightColumn.style.minWidth = '300px';
+		rightColumn.style.display = 'flex';
+		rightColumn.style.flexDirection = 'column';
+		rightColumn.style.alignItems = 'center';
+		rightColumn.style.justifyContent = 'center';
+
+		const chartTitle = document.createElement('h3');
+		chartTitle.textContent = 'Victories vs Defeats';
+    	chartTitle.style.color = '#A0C878';
+    	chartTitle.style.margin = '0 0 20px 0';
+    	chartTitle.style.fontSize = '18px';
+    	chartTitle.style.textAlign = 'center';
 
 		const pieChart = this.createPieChart([
 			{ label: 'Victories', value: stats.victories, color: '#A0C878' },
 			{ label: 'Defeats', value: stats.defeats, color: '#EB5B00' }
 		]);
 
-		const tWins   = stats.tournamentWins ?? 0;
-	    const tLosses = Math.max(0, (stats.tournamentsPlayed ?? 0) - tWins);
-	    const pieChartTournament = this.createPieChart([
-	      { label: 'Tournament Wins',   value: tWins,   color: '#A0C878' },
-	      { label: 'Tournament Losses', value: tLosses, color: '#EB5B00' }
-	    ]);
+		rightColumn.appendChild(chartTitle);
+		rightColumn.appendChild(pieChart);
 
-		// center & arrange table and pie chart
-		const row = document.createElement('div');
-		row.style.display = 'flex';
-		row.style.flexDirection = 'column';
-		row.style.alignItems = 'center';
-		row.style.justifyContent = 'center';
-		row.style.gap = '20px';
-		row.style.width = '100%';
-		row.appendChild(table);
+		columnsContainer.appendChild(leftColumn);
+		columnsContainer.appendChild(rightColumn);
+		mainWraper.appendChild(columnsContainer);
+		container.appendChild(mainWraper);
 
-		const pies = document.createElement('div');
-    	pies.style.display = 'flex';
-    	pies.style.gap = 'clamp(30px, 5vw, 256px)';
-    	pies.style.alignItems = 'center';
-		pies.style.justifyContent = 'center';
-    	pies.appendChild(pieChart);
-    	pies.appendChild(pieChartTournament);
-
-		if (pieChart instanceof SVGElement) {
-			pieChart.style.width = 'clamp(150px, 20vw, 200px)';
-		    pieChart.style.height = 'clamp(150px, 20vw, 200px)';
-		}
-
-		if (pieChartTournament instanceof SVGElement) {
-			pieChartTournament.style.width = 'clamp(150px, 20vw, 200px)';
-		    pieChartTournament.style.height = 'clamp(150px, 20vw, 200px)';
-		}
-
-		row.appendChild(pies);
-		container.appendChild(row);
 	}
 
 
@@ -202,8 +190,8 @@ export class DashboardManager {
 			path.setAttribute("d", dAttr);
 			path.setAttribute("fill", d.color);
 			path.setAttribute("title", d.label);
-			path.setAttribute("stroke", "#000");		// separators
-			path.setAttribute("stroke-width", "1");
+			path.setAttribute("stroke", "#143D60");		// separators
+			path.setAttribute("stroke-width", "0.5");
 			svg.appendChild(path);
 		});
 
@@ -212,7 +200,7 @@ export class DashboardManager {
 		hole.setAttribute("cx", String(radius + 10));
 		hole.setAttribute("cy", String(radius + 10));
 		hole.setAttribute("r",  String(radius / 3));
-		hole.setAttribute("fill", "#000");
+		hole.setAttribute("fill", "#143D60");
 		svg.appendChild(hole);
 
 		return svg;
