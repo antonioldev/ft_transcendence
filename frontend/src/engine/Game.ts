@@ -14,13 +14,9 @@ import { disposeMaterialResources } from "./scene/builders/materialsBuilder.js";
 import { buildScene } from './scene/builders/sceneBuilder.js';
 import { PlayerSide, PlayerState } from "./utils.js";
 import { GameEventEmitter, GameEventType } from "./services/EventEmitter.js";
-
-// [x] CANVAS SIZE
-// [x] CURTAIN TIMING
-// [ ] ORGANISE GUI
-// [x] POWER UP stay on
-// [x] Sparkle spread
-
+import { KeyboardMode } from "./services/KeybordManager.js";
+import { Direction } from '../shared/constants.js';
+import { Motion } from "./services/AnimationManager.js";
 
 /**
  * The Game class serves as the core of the game engine, managing the initialization,
@@ -49,9 +45,6 @@ export class Game {
 			[PlayerSide.RIGHT, { name: "", isControlled: false, keyboardProfile: undefined,
 				size: GAME_CONFIG.paddleWidth, score: 0, powerUpsAssigned: false, powerUps: [], inverted: false,}]
 		]);
-	private exitHandler = () => {
-		this.requestExitToMenu();
-	};
 
 // ====================			CONSTRUCTOR			   ====================
 	constructor(private config: GameConfig) {
@@ -111,7 +104,7 @@ export class Game {
 		this.registerCallbacks();
 		this.isInitialized = true;
 		uiManager.setLoadingScreenVisible(false);
-		await this.services?.gui.curtain.show();
+		await this.services?.gui.curtain.play();
 		if (this.config.isRemoteMultiplayer)
 			webSocketClient.requestLobby();
 		webSocketClient.sendPlayerReady();
@@ -228,14 +221,12 @@ export class Game {
 			this.isSpectator = true;
 			await this.services?.gui?.showTournamentMatchLoser();
 			await this.services?.input.waitForSpectatorChoice();
-			// this.resetForNextMatch();
 			this.services?.gui.hud.setSpectatorMode();
 			return;
 		}
 
 		const waitForSpace = controlledSides.length !== 0 && this.config.gameMode !== GameMode.TOURNAMENT_REMOTE;
 		await this.services?.gui?.showTournamentMatchWinner(winner, waitForSpace);
-		// this.resetForNextMatch();
 		webSocketClient.sendPlayerReady();
 		if (this.services?.gui.isLastMatch)  return ;
 
@@ -446,10 +437,42 @@ export class Game {
 		webSocketClient.registerCallback(MessageType.MATCH_RESULT, (message: any) => { this.services?.gui?.updateTournamentGame(message);});
 		webSocketClient.registerCallback(MessageType.TOURNAMENT_LOBBY, (message: any) => {this.services?.gui?.updateTournamentLobby(message);});
 		webSocketClient.registerCallback(MessageType.COUNTDOWN, (message: any) => { this.handleCountdown(message.countdown); });
-		document.addEventListener('game:exitToMenu', this.exitHandler);
 
 
-		this.eventEmitter.on(GameEventType.PAUSE_TOGGLE, (event) => { this.handlePauseToggle(); });
+		this.eventEmitter.on(GameEventType.PAUSE_TOGGLE, (event) => { 
+			this.isPaused = !this.isPaused;
+			this.services?.gui.setPauseVisible(this.isPaused, false);
+
+			if (this.isPaused) {
+				this.services?.input.setMode(KeyboardMode.PAUSED);
+				webSocketClient.sendPauseRequest();
+			} else {
+				this.services?.input.setMode(KeyboardMode.NORMAL);
+				webSocketClient.sendResumeRequest();
+			}
+		});
+
+		this.eventEmitter.on(GameEventType.EXIT_TO_MENU, (event) => { this.requestExitToMenu(); });
+
+		this.eventEmitter.on(GameEventType.SWITCH_GAME, (event) => {
+			if (event.type === GameEventType.SWITCH_GAME) {
+				const direction = event.direction;
+				this.services?.gui.curtain.play(Motion.F.xFast);
+				webSocketClient.sendSwitchGame(direction);
+			}
+		});
+
+		this.eventEmitter.on(GameEventType.TOGGLE_MATCH_TREE, (event) => { this.services?.gui.matchTree.toggle(); });
+
+		this.eventEmitter.on(GameEventType.SPECTATOR_CHOICE, (event) => {
+			if (event.type === GameEventType.SPECTATOR_CHOICE) {
+				this.services?.gui.endGame.hidePartial();
+				const choice = event.choice;
+				if (!choice)
+					this.requestExitToMenu();	
+			}
+		});
+	
 	}
 
 	private unregisterCallbacks(): void {
@@ -463,16 +486,6 @@ export class Game {
 		webSocketClient.unregisterCallback(MessageType.COUNTDOWN);
 	}
 
-	private handlePauseToggle(): void {
-		this.isPaused = !this.isPaused;
-		this.services?.gui.setPauseVisible(this.isPaused, false);
-
-		if (this.isPaused)
-			webSocketClient.sendPauseRequest();
-		else
-			webSocketClient.sendResumeRequest();
-	}
-
 // ====================			CLEANUP				  ====================
 	private async dispose(): Promise<void> {
 		try {
@@ -481,7 +494,6 @@ export class Game {
 				return;
 			}
 			this.isInitialized = false;
-			document.removeEventListener('game:exitToMenu', this.exitHandler);
 			this.stopGameLoop();
 			this.services?.dispose();
 			this.services = null;

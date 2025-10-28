@@ -6,9 +6,8 @@ import { GameObjects } from '../../shared/types.js';
 import { Logger } from '../../utils/LogManager.js';
 import { GameConfig } from '../GameConfig.js';
 import { PlayerSide, PlayerState } from "../utils.js";
-import { GUIManager } from "./GuiManager.js";
+// import { GUIManager } from "./GuiManager.js";
 import { PowerupManager } from "./PowerUpManager.js";
-import { Motion } from "./AnimationManager.js";
 import { GameEventEmitter, GameEventType } from "./EventEmitter.js";
 
 
@@ -38,14 +37,20 @@ export const PROFILES_3D = {
   DEFAULT_RIGHT: { move: { left: Keys.RIGHT, right: Keys.LEFT }, power: { k1: Keys.ONE, k2: Keys.TWO, k3: Keys.THREE } }
 } as const;
 
+export enum KeyboardMode {
+	NORMAL,
+	PAUSED,
+	SPECTATOR_CHOICE,
+	SPECTATOR
+}
+
 // Manages all keyboard input handling for the game
 export class KeyboardManager {
 	private deviceSourceManager: DeviceSourceManager | null = null;
 	private globalKeyDownHandler: (event: KeyboardEvent) => void;
 	private activeProfiles!: { P1: KeysProfile; P2: KeysProfile; DEFAULT: KeysProfile, DEFAULT_RIGHT: KeysProfile };
 	private isInitialized: boolean = false;
-	private isSpectator: boolean = false;
-	private isPaused: boolean = false;
+	private mode: KeyboardMode = KeyboardMode.NORMAL;
 	private spectatorChoiceResolver: ((choice: boolean) => void) | null = null;
 
 	constructor(
@@ -54,7 +59,6 @@ export class KeyboardManager {
 		private gameObjects: GameObjects,
 		private players: Map<PlayerSide, PlayerState>,
 		private powerupManager: PowerupManager,
-		private gui: GUIManager,
 		private eventEmitter: GameEventEmitter
 	) {
 		this.deviceSourceManager = new DeviceSourceManager(scene.getEngine());
@@ -69,6 +73,10 @@ export class KeyboardManager {
 
 	private setupGlobalKeyboardEvents(): void {
 		document.addEventListener('keydown', this.globalKeyDownHandler);
+	}
+
+	setMode(mode: KeyboardMode): void {
+		this.mode = mode;
 	}
 
 	assignLocalControls() {
@@ -88,82 +96,84 @@ export class KeyboardManager {
 	waitForSpectatorChoice(): Promise<boolean> {
 		return new Promise<boolean>((resolve) => {
 			this.spectatorChoiceResolver = resolve;
-
+			this.setMode(KeyboardMode.SPECTATOR_CHOICE);
 			setTimeout(() => {
-					if (this.spectatorChoiceResolver !== null) {
-						this.gui.endGame.hidePartial();
-						this.spectatorChoiceResolver = null;
-						document.dispatchEvent(new CustomEvent('game:exitToMenu'));
-						resolve(false);
-					}
-				}, 10000);
+				if (this.spectatorChoiceResolver !== null) {
+					this.spectatorChoiceResolver = null;
+					this.eventEmitter.emit({ 
+						type: GameEventType.SPECTATOR_CHOICE, 
+						choice: false 
+					});
+					resolve(false);
+				}
+			}, 10000);
 		});
-	}
-	
-	private handleGlobalKeyDown(event: KeyboardEvent): void {
-		const key = event.keyCode;
-		
-		if (this.spectatorChoiceResolver !== null) {
-			this.handleSpectatorChoiceKeys(key);
-			return;
-		}
-
-		if (this.isSpectator) {
-			this.handleSpectatorInteraciot(key);
-			return;
-		}
-
-		if (key === Keys.ESC) {
-			this.handleEscapeKey();
-			return;
-		}
-
-		if (this.isPaused)
-			this.handlePauseMenuKeys(key);
-		else
-			this.handlePowerupKeys(key);
 	}
 
 	private handleSpectatorChoiceKeys(key: number): void {
 		if (key === Keys.Y) {
-			this.gui.endGame.hidePartial();
-			this.isSpectator = true;
 			this.spectatorChoiceResolver?.(true);
 			this.spectatorChoiceResolver = null;
+			this.setMode(KeyboardMode.SPECTATOR);
+			this.eventEmitter.emit({ 
+				type: GameEventType.SPECTATOR_CHOICE, 
+				choice: true 
+			});
 		} else if (key === Keys.N) {
 			this.spectatorChoiceResolver?.(false);
 			this.spectatorChoiceResolver = null;
-			document.dispatchEvent(new CustomEvent('game:exitToMenu'));
+			this.eventEmitter.emit({ 
+				type: GameEventType.SPECTATOR_CHOICE, 
+				choice: false 
+			});
 		}
 	}
-	private handleSpectatorInteraciot(key: number) {
+
+	private handleGlobalKeyDown(event: KeyboardEvent): void {
+		const key = event.keyCode;
+		
+		switch (this.mode) {
+			case KeyboardMode.SPECTATOR_CHOICE:
+				this.handleSpectatorChoiceKeys(key);
+				break;
+			case KeyboardMode.SPECTATOR:
+				this.handleSpectatorInteraciot(key);
+				break;
+			case KeyboardMode.PAUSED:
+				this.handlePauseMenuKeys(key);
+				break;
+			case KeyboardMode.NORMAL:
+				if (key === Keys.ESC) {
+					this.handleEscapeKey();
+					return;
+				}
+				this.handlePowerupKeys(key);
+				break;
+		}
+	}
+
+	private handleSpectatorInteraciot(key: number): void {
 		switch (key) {
 			case Keys.Y:
-				document.dispatchEvent(new CustomEvent('game:exitToMenu'));
+				this.eventEmitter.emit({ type: GameEventType.EXIT_TO_MENU });
 				break;
 			case Keys.LEFT:
-				this.gui.curtain.play(Motion.F.xFast);
-				webSocketClient.sendSwitchGame(Direction.LEFT);
+				this.eventEmitter.emit({ 
+					type: GameEventType.SWITCH_GAME, 
+					direction: Direction.LEFT 
+				});
 				break;
 			case Keys.RIGHT:
-				this.gui.curtain.play(Motion.F.xFast);
-				webSocketClient.sendSwitchGame(Direction.RIGHT);
+				this.eventEmitter.emit({ 
+					type: GameEventType.SWITCH_GAME, 
+					direction: Direction.RIGHT 
+				});
 				break;
 			case Keys.SPACE:
-				this.gui.matchTree.toggle();
+				this.eventEmitter.emit({ type: GameEventType.TOGGLE_MATCH_TREE });
 				break;
 		}
 	}
-
-	// private handleEscapeKey(): void {
-	// 	this.isPaused = !this.isPaused;
-	// 	this.gui.setPauseVisible(this.isPaused, false);
-
-	// 	if (this.isPaused)
-	// 		webSocketClient.sendPauseRequest();
-	// 	else
-	// 		webSocketClient.sendResumeRequest();
-	// }
 
 	private handleEscapeKey(): void {
 		this.eventEmitter.emit({ type: GameEventType.PAUSE_TOGGLE });
@@ -172,11 +182,11 @@ export class KeyboardManager {
 	private handlePauseMenuKeys(key: number): void {
 		switch (key) {
 			case Keys.Y:
-				document.dispatchEvent(new CustomEvent('game:exitToMenu'));
+				this.eventEmitter.emit({ type: GameEventType.EXIT_TO_MENU });
 				break;
 			case Keys.N:
 			case Keys.ESC:
-				webSocketClient.sendResumeRequest();
+				this.eventEmitter.emit({ type: GameEventType.PAUSE_TOGGLE });
 				break;
 		}
 	}
