@@ -216,22 +216,24 @@ export class Game {
 	}
 
 	save_to_db() {
-		if (this.players.length === 0) return ;
-		if (this.players[LEFT] instanceof CPU || this.players[RIGHT] instanceof CPU) return ;
-
-		registerNewGame(this.id, this.players[LEFT]?.name, 1);
-		addPlayer2(this.id, this.players[RIGHT]?.name);
-		console.log(`Game ${this.id} added to db: P1:${this.players[LEFT]?.name}, P2: ${this.players[RIGHT]?.name}`);
-
-		saveGameResult(
-			this.id, 
-			this.players[LEFT]?.name, 
-			this.players[RIGHT]?.name, 
-			this.paddles[LEFT]?.score, 
-			this.paddles[RIGHT]?.score, 
-			Date.now()
-		);
-		console.log(`Game ${this.id} saved to db`);
+		try {
+			registerNewGame(this.id, this.players[LEFT].name, 1);
+			addPlayer2(this.id, this.players[RIGHT].name);
+			console.log(`Game ${this.id} added to db: P1:${this.players[LEFT].name}, P2: ${this.players[RIGHT].name}`);
+			
+			saveGameResult(
+				this.id, 
+				this.players[LEFT].name, 
+				this.players[RIGHT].name, 
+				this.paddles[LEFT].score, 
+				this.paddles[RIGHT].score, 
+				Date.now()
+				);
+				console.log(`Game ${this.id} saved to db`);
+			}
+		catch (err) {
+			console.log(`DB failed to save game ${this.id}`, err);
+		}
 	}
 	
 	// If someone quits a remote game, the opposing player wins
