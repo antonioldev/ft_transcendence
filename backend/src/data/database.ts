@@ -870,34 +870,3 @@ export function getSessionInfo(userId: number): SessionUser | null {
 		return null;
 	}
 }
-
-// export function getUserBySession(sid: string): { id: number; username: string, email?: string} | null {
-// 	try {
-// 		sid = safeSid(sid);
-// 		const userId = db.prepare('SELECT user_id FROM sessions WHERE id = ?').get(sid) as { user_id: number } | undefined;
-// 		if (!userId) return null;
-// 		const row = db.prepare('SELECT id, username, email FROM users WHERE id = ?').get(userId.user_id) as { id:number; username:string; email?:string } | undefined;
-// 		if (!row) return null;
-// 		console.log(`in database.ts we found the session by user: ${row.username}, ${row.email}, ${row.id} where userId: ${userId.user_id}`);
-// 		return row;
-// 	} catch (e) {
-// 		console.error('getUserBySession error:', e);
-// 		return null;
-// 	}
-// }
-
-// export function retrieveSessionID(userId: number): string | null {
-// 	try {
-// 		userId = nonNegInt(userId, 'user id');
-// 		const sid = db.prepare('SELECT id FROM sessions WHERE user_id = ?');
-// 		const SID = sid.get(userId) as { id: string } | undefined;
-// 		if (SID === undefined) {
-// 			console.error('SID not found');
-// 			return null;
-// 		}
-// 		return SID.id;
-// 	} catch (err) {
-// 		console.error('Error in get User ID:', err);
-// 		return null;
-// 	}
-// }
