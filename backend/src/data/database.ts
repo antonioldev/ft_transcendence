@@ -209,6 +209,26 @@ export function updateUserTournamentWin(id: number, tournament_win: number): boo
 	}
 }
 
+export function updateUserTournamentDefeat(id: number, tournament_defeat: number): boolean {
+	try {
+		id = nonNegInt(id, 'user id');
+		tournament_defeat = nonNegInt(tournament_defeat, 'tournament defeat count');
+
+		const currentTournamentDefeat = getUserNbTournamentDefeat(id);
+		if (currentTournamentDefeat === -1) {
+			console.error('User not found');
+			return false;
+		}
+		let newNbTournamentDefeat = currentTournamentDefeat + tournament_defeat;
+		const user = db.prepare('UPDATE users SET tournament_defeat = ? WHERE id = ?');
+		user.run(newNbTournamentDefeat, id);
+		return true;
+	} catch (err) {
+		console.error('Error in updating userDefeats: ', err);
+		return false;
+	}
+}
+
 export function updateUserGame(id: number, Game: number): boolean {
 	try {
 		id = nonNegInt(id, 'user id');
@@ -367,6 +387,23 @@ export function getUserNbTournamentWin(id: number) {
 			return -1;
 		}
 		return userTournamentWin.tournament_win;
+	} catch (err) {
+		console.error('Error in get User defeat nb:', err);
+		return -1;
+	}
+}
+
+export function getUserNbTournamentDefeat(id: number) {
+	try {
+		id = nonNegInt(id, 'user id');
+
+		const user = db.prepare('SELECT tournament_defeat FROM users WHERE id = ?');
+		const userTournamentDefeat = user.get(id) as { tournament_defeat: number };
+		if (!userTournamentDefeat) {
+			console.error('User not found');
+			return -1;
+		}
+		return userTournamentDefeat.tournament_defeat;
 	} catch (err) {
 		console.error('Error in get User defeat nb:', err);
 		return -1;

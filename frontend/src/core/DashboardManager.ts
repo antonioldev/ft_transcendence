@@ -24,13 +24,20 @@ export class DashboardManager {
 		mainWraper.style.display = 'flex';
 		mainWraper.style.flexDirection = 'column';
 		mainWraper.style.gap = '30px';
+		mainWraper.style.backgroundColor = 'rgba(160, 200, 120, 0.05)';
 
 		const columnsContainer = document.createElement('div');
 		columnsContainer.style.display = 'flex';
 		columnsContainer.style.gap = '30px';
-		columnsContainer.style.alignItems = 'flex-start';
-		columnsContainer.style.justifyContent = 'center';
+		columnsContainer.style.alignItems = 'center';
+		columnsContainer.style.justifyContent = 'left';
 		columnsContainer.style.flexWrap = 'wrap';
+		columnsContainer.style.border = '1px solid #A0C878';
+		columnsContainer.style.borderRadius = '10px';
+		columnsContainer.style.padding = '20px';
+		columnsContainer.style.maxWidth = '900px';
+		columnsContainer.style.width = '100%';
+		columnsContainer.style.margin = '0 auto';
 
 		const leftColumn = document.createElement('div');
 		leftColumn.style.flex = '1';
@@ -41,8 +48,10 @@ export class DashboardManager {
 		table.style.width = '100%';
 		table.style.color = '#A0C878';
 
-    	const commonThStyle = 'text-align:center; padding:6px 12px; min-width: 75px; height: 40px; line-height: 1.2; overflow: hidden; display: table-cell; vertical-align: middle; white-space: nowrap; font-size: clamp(10px, 2vw, 14px)';
-    	const commonTdStyle = 'text-align:center; padding:8px 12px; border: 1px solid #444; background: rgba(160, 200, 120, 0.1)';
+    	const commonThStyle = 'text-align:left; padding:10px 15px; min-width: 75px; height: 50px; line-height: 1.2; overflow: hidden; display: table-cell; vertical-align: middle; white-space: nowrap; font-size: clamp(14px, 3vw, 18px); font-weight: bold;';
+		const secondThStyle = 'text-align:left; padding:5px 30px; min-width: 50px; height: 30px; line-height: 0.5; overflow: hidden; display: table-cell; vertical-align: middle; white-space: nowrap; font-size: clamp(10px, 2vw, 14px); font-weight: light;';
+		const commonTdStyle = 'text-align:center; padding:10px 15px; font-size: clamp(14px, 3vw, 18px); font-weight: 500;';
+		const secondTdStyle = 'text-align:center; padding:5px 30px; font-size: clamp(10px, 2vw, 14px); font-weight: 400;';
 
 
 		table.innerHTML = `
@@ -52,12 +61,16 @@ export class DashboardManager {
 					<td style="${commonTdStyle}">${stats.victories}</td>
 				</tr>
 				<tr>
-					<th style="${commonThStyle}">Defeats</th>
-					<td style="${commonTdStyle}">${stats.defeats}</td>
+					<th style="${secondThStyle}">Tournament Victories</th>
+					<td style="${secondTdStyle}">${stats.tournamentWins}</td>
 				</tr>
 				<tr>
-					<th style="${commonThStyle}">Tournament Wins</th>
-					<td style="${commonTdStyle}">${stats.tournamentWins}</td>
+					<th style="${commonThStyle} color: #FE5E41">Defeats</th>
+					<td style="${commonTdStyle} color: #FE5E41">${stats.defeats}</td>
+				</tr>
+				<tr>
+					<th style="${secondThStyle} color: #FE5E41">Tournament Defeats</th>
+					<td style="${secondTdStyle} color: #FE5E41">${stats.tournamentDefeats}</td>
 				</tr>
 			</tbody>
 		`;
@@ -72,19 +85,15 @@ export class DashboardManager {
 		rightColumn.style.alignItems = 'center';
 		rightColumn.style.justifyContent = 'center';
 
-		const chartTitle = document.createElement('h3');
-		chartTitle.textContent = 'Victories vs Defeats';
-    	chartTitle.style.color = '#A0C878';
-    	chartTitle.style.margin = '0 0 20px 0';
-    	chartTitle.style.fontSize = '18px';
-    	chartTitle.style.textAlign = 'center';
-
 		const pieChart = this.createPieChart([
 			{ label: 'Victories', value: stats.victories, color: '#A0C878' },
 			{ label: 'Defeats', value: stats.defeats, color: '#EB5B00' }
 		]);
 
-		rightColumn.appendChild(chartTitle);
+		if (pieChart instanceof SVGElement) {
+			pieChart.style.width = '150px';
+			pieChart.style.height = '150px';
+		}
 		rightColumn.appendChild(pieChart);
 
 		columnsContainer.appendChild(leftColumn);
@@ -94,7 +103,6 @@ export class DashboardManager {
 
 	}
 
-
 	renderGameHistory(history: GameHistoryEntry[]): void {
 		const container = getElementById(EL.DASHBOARD.GAME_HISTORY_TABLE);
 		if (!container) return;
@@ -102,11 +110,23 @@ export class DashboardManager {
 		(container as HTMLElement).style.display = 'block';
 		(container as HTMLElement).style.textAlign = 'center';
 
+    	const scrollWrapper = document.createElement('div');
+    	scrollWrapper.style.maxHeight = '300px';
+    	scrollWrapper.style.overflowY = 'auto';
+    	scrollWrapper.style.overflowX = 'auto';
+    	scrollWrapper.style.border = '1px solid #A0C878';
+    	scrollWrapper.style.borderRadius = '10px';
+    	scrollWrapper.style.backgroundColor = 'rgba(160, 200, 120, 0.05)';
+    	scrollWrapper.style.scrollbarWidth = 'thin';
+    	scrollWrapper.style.scrollbarColor = '#A0C878 #143D60';
+		scrollWrapper.style.maxWidth = '100%';
+
 		const table = document.createElement('table');
-		table.style.borderCollapse = 'collapse';
+		table.style.borderCollapse = 'separate';
 		table.style.width = '100%';
 		table.style.maxWidth = '900px';
 		table.style.margin = '0 auto';
+		
 
 		const commonThStyle = 'text-align:center; padding:6px 12px';
 
@@ -134,7 +154,9 @@ export class DashboardManager {
 				`).join('')}
 			</tbody>
 		`;
-		container.appendChild(table);
+
+		scrollWrapper.appendChild(table);
+		container.appendChild(scrollWrapper);
 	}
 
 
