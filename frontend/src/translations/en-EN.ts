@@ -30,6 +30,7 @@ export const english: Translation = {
     loginTitle: 'Sign in to Your Account',
     login: '/ login',
     loginSubmit: 'Login',
+    instructions: '/ how to play',
     greeting: 'Hi',
     username: 'Username:',
     email: 'Email:',

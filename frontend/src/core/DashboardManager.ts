@@ -24,7 +24,7 @@ export class DashboardManager {
 		mainWraper.style.display = 'flex';
 		mainWraper.style.flexDirection = 'column';
 		mainWraper.style.gap = '30px';
-		mainWraper.style.backgroundColor = 'rgba(160, 200, 120, 0.05)';
+		mainWraper.style.backgroundColor = 'rgba(63, 42, 43, 0.2)';
 
 		const columnsContainer = document.createElement('div');
 		columnsContainer.style.display = 'flex';
@@ -32,9 +32,9 @@ export class DashboardManager {
 		columnsContainer.style.alignItems = 'center';
 		columnsContainer.style.justifyContent = 'left';
 		columnsContainer.style.flexWrap = 'wrap';
-		columnsContainer.style.border = '1px solid #A0C878';
-		columnsContainer.style.borderRadius = '10px';
+		columnsContainer.style.borderRadius = '6px';
 		columnsContainer.style.padding = '20px';
+		columnsContainer.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
 		columnsContainer.style.maxWidth = '900px';
 		columnsContainer.style.width = '100%';
 		columnsContainer.style.margin = '0 auto';
@@ -114,9 +114,10 @@ export class DashboardManager {
     	scrollWrapper.style.maxHeight = '300px';
     	scrollWrapper.style.overflowY = 'auto';
     	scrollWrapper.style.overflowX = 'auto';
-    	scrollWrapper.style.border = '1px solid #A0C878';
-    	scrollWrapper.style.borderRadius = '10px';
-    	scrollWrapper.style.backgroundColor = 'rgba(160, 200, 120, 0.05)';
+    	scrollWrapper.style.border = '';
+    	scrollWrapper.style.borderRadius = '6px';
+    	scrollWrapper.style.backgroundColor = 'rgba(63, 42, 43, 0.2)';
+    	scrollWrapper.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
     	scrollWrapper.style.scrollbarWidth = 'thin';
     	scrollWrapper.style.scrollbarColor = '#A0C878 #143D60';
 		scrollWrapper.style.maxWidth = '100%';
