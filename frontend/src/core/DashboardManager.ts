@@ -104,11 +104,19 @@ export class DashboardManager {
 	}
 
 	renderGameHistory(history: GameHistoryEntry[]): void {
+
+		fetch('/log', {method:'POST', body:'xxx'})
+		console.log(`### renderGameHistory ###`);
 		const container = getElementById(EL.DASHBOARD.GAME_HISTORY_TABLE);
 		if (!container) return;
 		container.innerHTML = '';
 		(container as HTMLElement).style.display = 'block';
 		(container as HTMLElement).style.textAlign = 'center';
+
+		// print only isTournament from history
+		history.forEach(entry => {
+			console.log(`### isTournament in history: ${entry.isTournament}`);
+		});
 
     	const scrollWrapper = document.createElement('div');
     	scrollWrapper.style.maxHeight = '300px';
@@ -149,7 +157,7 @@ export class DashboardManager {
 						<td style="${commonThStyle}">${e.opponent}</td>
 						<td style="${commonThStyle}">${e.score}</td>
 						<td style="${commonThStyle}">${e.result}</td>
-						<td style="${commonThStyle}">${e.isTournament ? 'No' : 'Yes'}</td>
+						<td style="${commonThStyle}">${e.isTournament}</td>
 						<td style="${commonThStyle}">${e.duration}s</td>
 					</tr>
 				`).join('')}

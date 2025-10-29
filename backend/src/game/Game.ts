@@ -216,9 +216,10 @@ export class Game {
 		this.state = GameState.ENDED;
 	}
 
-	save_to_db() {
+	save_to_db(isTournament: number = 0): void {
 		try {
-			registerNewGame(this.id, this.players[LEFT].name, 1);
+			registerNewGame(this.id, this.players[LEFT].name, isTournament);
+			console.log(`#### isTournament in save_to_db: ${isTournament}`);
 			addPlayer2(this.id, this.players[RIGHT].name);
 			console.log(`Game ${this.id} added to db: P1:${this.players[LEFT].name}, P2: ${this.players[RIGHT].name}`);
 			

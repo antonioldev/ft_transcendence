@@ -478,6 +478,8 @@ export function createNewGame(gameId: string, player1_id: number, tournament: nu
 		gameId = safeGameId(gameId);
 		player1_id = nonNegInt(player1_id, 'player1_id');
 		tournament = nonNegInt(tournament, 'tournament');
+		// print tournament value
+		console.log(`### isTournament downstream in createNewGame: ${tournament}`);
 
 		const game = db.prepare('INSERT INTO games (game_id, player1_id, tournament) VALUES (?,?, ?)');
 		const newGame = game.run(gameId, player1_id, tournament);
