@@ -13,7 +13,11 @@ CREATE TABLE IF NOT EXISTS users (
 	defeats INTEGER DEFAULT 0,
 	games INTEGER DEFAULT 0,
 	tournament INTEGER DEFAULT 0,
-	tournament_win INTEGER DEFAULT 0
+	tournament_win INTEGER DEFAULT 0,
+	music_enabled INTEGER DEFAULT 1,
+    sound_effects_enabled INTEGER DEFAULT 1,
+    language INTEGER DEFAULT 0,
+    scene3D TEXT DEFAULT 'random'
 );
 
 -- Empty table for game info

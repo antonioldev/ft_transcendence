@@ -126,6 +126,37 @@ export function updateUserInfo(field: UserField, newInfo: string, email: string)
 	}
 }
 
+export function updateUserSettings(
+	username: string,
+	musicEnabled: boolean,
+	soundEffectsEnabled: boolean,
+	language: number,
+	scene3D: string
+): boolean {
+	try {
+		username = trimString(username, 'username');
+		language = nonNegInt(language, 'language');
+
+		const stmt = db.prepare(`
+			UPDATE users
+			SET music_enabled = ?, sound_effects_enabled = ?, language = ?, scene3D = ?
+			WHERE username = ?
+		`);
+
+		const result = stmt.run(
+			musicEnabled ? 1 : 0,
+			soundEffectsEnabled ? 1 : 0,
+			language,
+			scene3D,
+			username
+		);
+		return result.changes > 0;
+	} catch (err) {
+		console.error('Error in updating user settings: ', err);
+		return false;
+	}
+}
+
 export function updateUserVictory(id: number, victory: number): boolean {
 	try {
 		id = nonNegInt(id, 'user id');
@@ -341,6 +372,37 @@ export function retrieveUserID(username: string): number {
 	}
 }
 
+export function getUserSettings(username: string) : any | null {
+	try {
+		username = trimString(username, 'username');
+
+		const stmt = db.prepare(`
+			SELECT music_enabled, sound_effects_enabled, language, scene3D
+			FROM users
+			WHERE username = ?`
+		);
+
+		const userSettings = stmt.get(username) as {
+			music_enabled: boolean,
+			sound_effects_enabled: boolean,
+			language: number,
+			scene3D: string
+		} | undefined;
+
+		if (!userSettings) return null;
+
+		return {
+			musicEnabled: userSettings.music_enabled,
+			soundEffectsEnabled: userSettings.sound_effects_enabled,
+			language: userSettings.language,
+			scene3D: userSettings.scene3D
+		};
+	} catch (err) {
+		console.error('Error in getUserSettings:', err);
+		return null;
+	}
+}
+
 // GET INFO regarding game history
 export function getUserNbVictory(id: number): number {
 	try {
@@ -465,7 +527,11 @@ export function getUserProfile(username: string): UserProfileData | null {
 		email: userInfo.email,
 		victories: userInfo.victories,
 		defeats: userInfo.defeats,
-		games: userInfo.games
+		games: userInfo.games,
+		soundEffectsEnabled: userInfo.soundEffectsEnabled,
+		musicEnabled: userInfo.musicEnabled,
+		language: userInfo.language,
+		scene3D: userInfo.scene3D
 	};
 }
 

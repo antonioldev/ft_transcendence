@@ -127,6 +127,10 @@ export interface UserProfileData {
   victories: number;
   defeats: number;
   games: number;
+  soundEffectsEnabled: boolean;
+  musicEnabled: boolean;
+  language: number;
+  scene3D: string;
 }
 
 export interface GetUserProfile {

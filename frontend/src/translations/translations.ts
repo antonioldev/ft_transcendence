@@ -12,7 +12,7 @@ const allTranslations = [english, italian, french, portuguese, russian];
 
 // Retrieves the current translation object based on the selected language.
 export function getCurrentTranslation(): Translation {
-	return allTranslations[currentSettings.lang];
+	return allTranslations[currentSettings.language];
 }
 
 // Updates the text content of various elements in the UI to match the current language.
@@ -23,7 +23,7 @@ export function updateLanguageDisplay(): void {
     const languageSelect = document.getElementById('language_select') as HTMLSelectElement;
     if (languageSelect) {
         const languageMapping = ['UK', 'IT', 'FR', 'BR', 'RU'];
-        languageSelect.value = languageMapping[currentSettings.lang];
+        languageSelect.value = languageMapping[currentSettings.language];
     }
 
 	// Auth buttons
