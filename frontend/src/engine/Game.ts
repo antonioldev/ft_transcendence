@@ -2,7 +2,7 @@ import { Color4, Engine, Scene, SceneLoader } from "@babylonjs/core";
 import { appManager } from '../core/AppManager.js';
 import { sendPOST } from "../core/HTTPRequests.js";
 import { webSocketClient } from '../core/WebSocketClient.js';
-import { AppState, GameMode, GameState, MessageType } from '../shared/constants.js';
+import { AppState, Direction, GameMode, GameState, MessageType } from '../shared/constants.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
 import { GameObjects, GameStateData, PlayerInfo, ThemeObject } from '../shared/types.js';
 import { uiManager } from '../ui/UIManager.js';
@@ -13,7 +13,6 @@ import { startFireworks } from "./scene/builders/effectsBuilder.js";
 import { disposeMaterialResources } from "./scene/builders/materialsBuilder.js";
 import { buildScene } from './scene/builders/sceneBuilder.js';
 import { PlayerSide, PlayerState } from "./utils.js";
-import { GameEventEmitter, GameEventType } from "./services/EventEmitter.js";
 import { KeyboardMode } from "./services/KeybordManager.js";
 import { Motion } from "./services/AnimationManager.js";
 
@@ -25,7 +24,6 @@ import { Motion } from "./services/AnimationManager.js";
  */
 export class Game {
 	private isInitialized: boolean = false;
-	private eventEmitter: GameEventEmitter;
 	private serverState: GameState = GameState.INIT;
 	private engine: Engine | null = null;
 	private scene: Scene | null = null;
@@ -38,6 +36,7 @@ export class Game {
 	private isPaused: boolean = false;
 	private isGameEnded: boolean = false;
 	private isCountdownStarted: boolean = false;
+	private currentRally: number = 0;
 	private players: Map<PlayerSide, PlayerState> = new Map([
 			[PlayerSide.LEFT, { name: "", isControlled: false, keyboardProfile: undefined,
 				size: GAME_CONFIG.paddleWidth, score: 0, powerUpsAssigned: false, powerUps: [], inverted: false,}],
@@ -59,7 +58,7 @@ export class Game {
 				}
 				this.canvas.focus();
 			}
-			this.eventEmitter = new GameEventEmitter();
+			// this.eventEmitter = new GameEventEmitter();
 		} catch (error) {
 			Logger.errorAndThrow('Error creating game managers', 'Game', error);
 		}
@@ -97,7 +96,13 @@ export class Game {
 		this.gameObjects = gameObjects;
 		this.themeObjects = themeObjects;
 
-		this.services = new GameServices(this.eventEmitter, this.engine, this.scene, this.config, this.gameObjects, this.players);
+		this.services = new GameServices(this.engine, this.scene, this.config, this.gameObjects, this.players, {
+			onPauseToggle: () => this.togglePause(),
+            onExitToMenu: () => this.requestExitToMenu(),
+            onSwitchGame: (dir) => this.switchGame(dir),
+            onToggleMatchTree: () => this.services?.gui.matchTree.toggle(),
+            onSpectatorChoice: (choice) => this.onSpectatorChoice(choice)
+		});
 		await this.services.initialize();
 		this.services.render.startRendering();
 		this.registerCallbacks();
@@ -168,8 +173,6 @@ export class Game {
 
 		if (!this.isCountdownStarted) {
 			this.isCountdownStarted = true;
-			// uiManager.setLoadingScreenVisible(false);
-			// this.services?.gui.curtain.play();
 			this.services?.gui.lobby.hide();
 			this.services?.gui.cardGame.hide();
 		}
@@ -289,7 +292,7 @@ export class Game {
 				ball.visibility = 0;
 			}
 		}
-
+		this.currentRally = 0;
 		this.services?.gui?.hud.updateScores(
 			this.players.get(PlayerSide.LEFT)!.score,
 			this.players.get(PlayerSide.RIGHT)!.score
@@ -323,10 +326,13 @@ export class Game {
 				}
 			}
 
-			const currentRally = state.rally || 0;
-			if (this.services?.gui?.hud.updateRally(currentRally))
-				this.services?.audio?.playPaddleHit();
-			this.services?.audio?.updateMusicSpeed(currentRally);
+			if (this.currentRally !== state.rally) {
+				this.currentRally = state.rally;
+				this.services?.gui.hud.updateRally(this.currentRally);
+				this.services?.audio.playPaddleHit();
+				this.services?.audio.updateMusicSpeed(this.currentRally);
+				
+			}
 
 			const leftPlayer = this.players.get(PlayerSide.LEFT)!;
 			const rightPlayer = this.players.get(PlayerSide.RIGHT)!;
@@ -335,20 +341,13 @@ export class Game {
 			this.services?.powerup?.handleUpdates(PlayerSide.RIGHT, state.paddleRight.powerups);
 
 
-			let scoresChanged = false;
-			if (leftPlayer.score < state.paddleLeft.score) {
-				leftPlayer.score = state.paddleLeft.score;
-				this.services?.audio?.playScore();
-				scoresChanged = true;
-			}
-			if (rightPlayer.score < state.paddleRight.score) {
+			if (leftPlayer.score < state.paddleLeft.score || rightPlayer.score < state.paddleRight.score) {
 				rightPlayer.score = state.paddleRight.score;
-				this.services?.audio?.playScore();
-				scoresChanged = true;
+				leftPlayer.score = state.paddleLeft.score;
+				this.services?.gui.hud.updateScores(leftPlayer.score, rightPlayer.score);
+				this.services?.gui.hud.updateRally(0);
+				this.services?.audio.playScore();
 			}
-
-			if (scoresChanged)
-				this.services?.gui?.hud.updateScores(leftPlayer.score, rightPlayer.score);
 
 		} catch (error) {
 			Logger.error('Error updating game objects', 'Game', error);
@@ -362,12 +361,12 @@ export class Game {
 		switch (this.serverState){
 			case GameState.PAUSED:
 				this.services?.gui?.setPauseVisible(true, this.isSpectator);
-				this.services?.audio?.pauseGameMusic();
+				// this.services?.audio?.pauseGameMusic();
 				break;
 			case GameState.RUNNING:
 				this.services?.gui.hud.show(true);
 				this.services?.gui?.setPauseVisible(false, this.isSpectator);
-				this.services?.audio?.resumeGameMusic();
+				// this.services?.audio?.resumeGameMusic();
 				this.isGameEnded = false;
 				break;
 			case GameState.ENDED:
@@ -436,42 +435,6 @@ export class Game {
 		webSocketClient.registerCallback(MessageType.MATCH_RESULT, (message: any) => { this.services?.gui?.updateTournamentGame(message);});
 		webSocketClient.registerCallback(MessageType.TOURNAMENT_LOBBY, (message: any) => {this.services?.gui?.updateTournamentLobby(message);});
 		webSocketClient.registerCallback(MessageType.COUNTDOWN, (message: any) => { this.handleCountdown(message.countdown); });
-
-
-		this.eventEmitter.on(GameEventType.PAUSE_TOGGLE, (_event) => { 
-			this.isPaused = !this.isPaused;
-			this.services?.gui.setPauseVisible(this.isPaused, false);
-
-			if (this.isPaused) {
-				this.services?.input.setMode(KeyboardMode.PAUSED);
-				webSocketClient.sendPauseRequest();
-			} else {
-				this.services?.input.setMode(KeyboardMode.NORMAL);
-				webSocketClient.sendResumeRequest();
-			}
-		});
-
-		this.eventEmitter.on(GameEventType.EXIT_TO_MENU, (_event) => { this.requestExitToMenu(); });
-
-		this.eventEmitter.on(GameEventType.SWITCH_GAME, (event) => {
-			if (event.type === GameEventType.SWITCH_GAME) {
-				const direction = event.direction;
-				this.services?.gui.curtain.play(Motion.F.xFast);
-				webSocketClient.sendSwitchGame(direction);
-			}
-		});
-
-		this.eventEmitter.on(GameEventType.TOGGLE_MATCH_TREE, (_event) => { this.services?.gui.matchTree.toggle(); });
-
-		this.eventEmitter.on(GameEventType.SPECTATOR_CHOICE, (event) => {
-			if (event.type === GameEventType.SPECTATOR_CHOICE) {
-				this.services?.gui.endGame.hidePartial();
-				const choice = event.choice;
-				if (!choice)
-					this.requestExitToMenu();	
-			}
-		});
-	
 	}
 
 	private unregisterCallbacks(): void {
@@ -484,6 +447,33 @@ export class Game {
 		webSocketClient.unregisterCallback(MessageType.TOURNAMENT_LOBBY);
 		webSocketClient.unregisterCallback(MessageType.COUNTDOWN);
 	}
+
+	private togglePause(): void {
+        this.isPaused = !this.isPaused;
+        this.services?.gui.setPauseVisible(this.isPaused, this.isSpectator);
+
+        if (this.isPaused) {
+            this.services?.input.setMode(KeyboardMode.PAUSED);
+            this.services?.audio.pauseGameMusic();
+            webSocketClient.sendPauseRequest();
+        } else {
+            this.services?.input.setMode(KeyboardMode.NORMAL);
+            this.services?.audio.resumeGameMusic();
+            webSocketClient.sendResumeRequest();
+        }
+    }
+
+    private switchGame(direction: Direction): void {
+        this.services?.gui.curtain.play(Motion.F.xFast);
+        webSocketClient.sendSwitchGame(direction);
+    }
+
+    private onSpectatorChoice(choice: boolean): void {
+        this.services?.gui.endGame.hidePartial();
+        if (!choice) {
+            this.requestExitToMenu();
+        }
+    }
 
 // ====================			CLEANUP				  ====================
 	private async dispose(): Promise<void> {

@@ -6,9 +6,7 @@ import { GameObjects } from '../../shared/types.js';
 import { Logger } from '../../utils/LogManager.js';
 import { GameConfig } from '../GameConfig.js';
 import { PlayerSide, PlayerState } from "../utils.js";
-// import { GUIManager } from "./GuiManager.js";
 import { PowerupManager } from "./PowerUpManager.js";
-import { GameEventEmitter, GameEventType } from "./EventEmitter.js";
 
 
 export const Keys = {
@@ -59,7 +57,13 @@ export class KeyboardManager {
 		private gameObjects: GameObjects,
 		private players: Map<PlayerSide, PlayerState>,
 		private powerupManager: PowerupManager,
-		private eventEmitter: GameEventEmitter
+		private callbacks: {
+            onPauseToggle: () => void;
+            onExitToMenu: () => void;
+            onSwitchGame: (direction: Direction) => void;
+            onToggleMatchTree: () => void;
+            onSpectatorChoice: (choice: boolean) => void;
+        }
 	) {
 		this.deviceSourceManager = new DeviceSourceManager(scene.getEngine());
 		this.globalKeyDownHandler = this.handleGlobalKeyDown.bind(this);
@@ -100,10 +104,7 @@ export class KeyboardManager {
 			setTimeout(() => {
 				if (this.spectatorChoiceResolver !== null) {
 					this.spectatorChoiceResolver = null;
-					this.eventEmitter.emit({ 
-						type: GameEventType.SPECTATOR_CHOICE, 
-						choice: false 
-					});
+					this.callbacks.onSpectatorChoice(false);
 					resolve(false);
 				}
 			}, 10000);
@@ -115,17 +116,11 @@ export class KeyboardManager {
 			this.spectatorChoiceResolver?.(true);
 			this.spectatorChoiceResolver = null;
 			this.setMode(KeyboardMode.SPECTATOR);
-			this.eventEmitter.emit({ 
-				type: GameEventType.SPECTATOR_CHOICE, 
-				choice: true 
-			});
+			this.callbacks.onSpectatorChoice(true);
 		} else if (key === Keys.N) {
 			this.spectatorChoiceResolver?.(false);
 			this.spectatorChoiceResolver = null;
-			this.eventEmitter.emit({ 
-				type: GameEventType.SPECTATOR_CHOICE, 
-				choice: false 
-			});
+			this.callbacks.onSpectatorChoice(false);
 		}
 	}
 
@@ -144,7 +139,7 @@ export class KeyboardManager {
 				break;
 			case KeyboardMode.NORMAL:
 				if (key === Keys.ESC) {
-					this.handleEscapeKey();
+					this.callbacks.onPauseToggle();
 					return;
 				}
 				this.handlePowerupKeys(key);
@@ -155,38 +150,28 @@ export class KeyboardManager {
 	private handleSpectatorInteraciot(key: number): void {
 		switch (key) {
 			case Keys.Y:
-				this.eventEmitter.emit({ type: GameEventType.EXIT_TO_MENU });
+				this.callbacks.onExitToMenu();
 				break;
 			case Keys.LEFT:
-				this.eventEmitter.emit({ 
-					type: GameEventType.SWITCH_GAME, 
-					direction: Direction.LEFT 
-				});
+				this.callbacks.onSwitchGame(Direction.LEFT);
 				break;
 			case Keys.RIGHT:
-				this.eventEmitter.emit({ 
-					type: GameEventType.SWITCH_GAME, 
-					direction: Direction.RIGHT 
-				});
+				this.callbacks.onSwitchGame(Direction.RIGHT);
 				break;
 			case Keys.SPACE:
-				this.eventEmitter.emit({ type: GameEventType.TOGGLE_MATCH_TREE });
+				this.callbacks.onToggleMatchTree();
 				break;
 		}
-	}
-
-	private handleEscapeKey(): void {
-		this.eventEmitter.emit({ type: GameEventType.PAUSE_TOGGLE });
 	}
 
 	private handlePauseMenuKeys(key: number): void {
 		switch (key) {
 			case Keys.Y:
-				this.eventEmitter.emit({ type: GameEventType.EXIT_TO_MENU });
+				this.callbacks.onExitToMenu();
 				break;
 			case Keys.N:
 			case Keys.ESC:
-				this.eventEmitter.emit({ type: GameEventType.PAUSE_TOGGLE });
+				this.callbacks.onPauseToggle();
 				break;
 		}
 	}

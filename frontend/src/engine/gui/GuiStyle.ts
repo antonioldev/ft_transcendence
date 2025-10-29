@@ -139,7 +139,6 @@ export const HUD_STYLES = {
     },
 
     rallyValue: {
-        textVerticalAlignment: V_BOTTOM,
         fontFamily: FONT_FAMILY,
         color: COLORS.WHITE,
         fontSize:  "35%",

@@ -13,7 +13,7 @@ export class Hud {
 	private player1Label!: TextBlock;
 	private player2Label!: TextBlock;
 	private rally!: TextBlock;
-	private previousRally: number = 1;
+	// private previousRally: number = 1;
 	private spectatorOverlay!: Rectangle;
 	private spectatorBanner!: Rectangle;
 	private powerUpContainerP1!: Rectangle;
@@ -195,26 +195,22 @@ export class Hud {
 		this.powerUpContainerP2.alpha = show ? 1 : 0;
 	}
 
-	updateRally(rally: number): boolean {
-		if (this.rally && ((this.previousRally < rally) || (rally === 1 && this.previousRally > rally))) {
-			this.rally.text = `${Math.round(rally)}`;
+	updateRally(rally: number): void {
+		if (!this.rally) return;
+		
+		this.rally.text = `${Math.round(rally)}`;
 
-			const maxRally = 10;
-			const intensity = Math.min(rally / maxRally, 1);
-			const r = 255;
-			const g = Math.round(255 * (1 - intensity));
-			const b = Math.round(255 * (1 - intensity));
-			this.rally.color = `rgb(${r}, ${g}, ${b})`;
+		const maxRally = 10;
+		const intensity = Math.min(rally / maxRally, 1);
+		const r = 255;
+		const g = Math.round(255 * (1 - intensity));
+		const b = Math.round(255 * (1 - intensity));
+		this.rally.color = `rgb(${r}, ${g}, ${b})`;
 
-			let scale = 1.4;
-			if (rally > 0 && rally % 5 === 0)
-				scale = 2;
-			this.animationManager?.scale(this.rally, 1, scale, Motion.F.base, true);
-			this.previousRally = rally;
-			return true;
-		}
-		this.previousRally = rally;
-		return false;
+		let scale = 1.4;
+		if (rally > 0 && rally % 5 === 0)
+			scale = 2;
+		this.animationManager?.scale(this.rally, 1, scale, Motion.F.base, true);
 	}
 
 	async setSpectatorMode(): Promise<void> {

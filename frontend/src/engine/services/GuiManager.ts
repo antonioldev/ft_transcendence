@@ -47,7 +47,7 @@ export class GUIManager {
 			this.lobby = new Lobby(this.adt, this.animationManager);
 			this.curtain = new SceneTransition(this.adt, this.animationManager);
 			this.cardGame = new CardGame(this.adt, animationManager, audioManager);
-
+			
 			this.isInitialized = true;
 		} catch (error) {
 			Logger.error('Error creating GUI', 'GUIManager', error);

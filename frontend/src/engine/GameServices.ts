@@ -8,7 +8,7 @@ import { KeyboardManager } from "./services/KeybordManager";
 import { PowerupManager } from "./services/PowerUpManager";
 import { RenderManager } from "./services/RenderManager";
 import { PlayerSide, PlayerState } from "./utils.js";
-import { GameEventEmitter } from "./services/EventEmitter.js";
+import { Direction } from "../shared/constants.js";
 
 export class GameServices {
 	audio: AudioManager;
@@ -19,20 +19,28 @@ export class GameServices {
 	powerup: PowerupManager;
 
 	constructor(
-		eventEmitter: GameEventEmitter,
 		engine: Engine,
 		scene: Scene,
 		config: GameConfig,
 		gameObjects: GameObjects,
 		players: Map<PlayerSide, PlayerState>,
+		callbacks: {
+			onPauseToggle: () => void;
+			onExitToMenu: () => void;
+			onSwitchGame: (direction: Direction) => void;
+			onToggleMatchTree: () => void;
+			onSpectatorChoice: (choice: boolean) => void;
+		}
 	) {
 		this.animation = new AnimationManager(scene);
 		this.audio = new AudioManager(scene, config);
 		this.gui = new GUIManager(scene, config, this.animation, this.audio);
 		this.powerup = new PowerupManager(players, this.animation, this.gui, gameObjects);
-		this.input = new KeyboardManager(scene, config, gameObjects, players, this.powerup, eventEmitter);
+		this.input = new KeyboardManager(scene, config, gameObjects, players, this.powerup, callbacks);
 		this.render = new RenderManager(engine, scene, gameObjects);
 	}
+
+	
 
 	async initialize(): Promise<void> {
 		await this.audio.initialize();
