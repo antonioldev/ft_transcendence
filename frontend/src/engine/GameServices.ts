@@ -29,7 +29,7 @@ export class GameServices {
 			onExitToMenu: () => void;
 			onSwitchGame: (direction: Direction) => void;
 			onToggleMatchTree: () => void;
-			onSpectatorChoice: (choice: boolean) => void;
+			// onSpectatorChoice: (choice: boolean) => void;
 		}
 	) {
 		this.animation = new AnimationManager(scene);
@@ -98,7 +98,24 @@ export class GameServices {
 	}
 
 //END GAME CALLS
+	async showMatchEndForLoser(): Promise<boolean> {
+		this.audio.lowerMusicVolume();
+		this.gui.setPauseVisible(false, true);
+		await this.gui.showTournamentMatchLoser();
+		const wantsToSpectate = await this.input.waitForSpectatorChoice();
+		if (wantsToSpectate)
+			this.gui.hud.setSpectatorMode();
+		return wantsToSpectate;
+	}
 
+	async showMatchEndForWinner(winner: string, waitForSpace: boolean, showCardGame: boolean): Promise<void> {
+		this.audio.lowerMusicVolume();
+		this.gui.setPauseVisible(false, false);
+		await this.gui.showTournamentMatchWinner(winner, waitForSpace);
+		
+		if (!this.gui.isLastMatch && showCardGame)
+			this.gui.cardGame.show();
+	}
 
 
 	dispose(): void {

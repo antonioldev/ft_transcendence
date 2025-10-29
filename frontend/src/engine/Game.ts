@@ -37,12 +37,6 @@ export class Game {
 	private isGameEnded: boolean = false;
 	private isCountdownStarted: boolean = false;
 	private currentRally: number = 0;
-	// private players: Map<PlayerSide, PlayerState> = new Map([
-	// 		[PlayerSide.LEFT, { name: "", isControlled: false, keyboardProfile: undefined,
-	// 			size: GAME_CONFIG.paddleWidth, score: 0, powerUpsAssigned: false, powerUps: [], inverted: false,}],
-	// 		[PlayerSide.RIGHT, { name: "", isControlled: false, keyboardProfile: undefined,
-	// 			size: GAME_CONFIG.paddleWidth, score: 0, powerUpsAssigned: false, powerUps: [], inverted: false,}]
-	// 	]);
 	private players: Map<PlayerSide, PlayerState> = new Map([
 		[PlayerSide.LEFT, this.resetPlayerState()],
 		[PlayerSide.RIGHT, this.resetPlayerState()]
@@ -106,7 +100,7 @@ export class Game {
             onExitToMenu: () => this.requestExitToMenu(),
             onSwitchGame: (dir) => this.switchGame(dir),
             onToggleMatchTree: () => this.services?.gui.matchTree.toggle(),
-            onSpectatorChoice: (choice) => this.onSpectatorChoice(choice)
+            // onSpectatorChoice: (choice) => this.onSpectatorChoice(choice)
 		});
 		// await this.services.initialize();
 		await this.services.audio.initialize();
@@ -178,32 +172,58 @@ export class Game {
 	}
 
 	// Handle server ending the game
+	// private async onServerEndedGame(winner: string, loser: string): Promise<void> {
+	// 	if (!this.isInitialized || !this.config.isTournament || this.isSpectator) return;
+	// 	this.services?.audio?.lowerMusicVolume();
+	// 	this.services?.gui?.setPauseVisible(false, this.isSpectator);
+	// 	const controlledSides = this.getControlledSides();
+
+	// 	const controlledPlayer = controlledSides.length === 1 ? this.players.get(controlledSides[0]) : null;
+	// 	const showLoser = controlledPlayer?.name === loser;
+
+	// 	this.resetForNextMatch();
+
+	// 	if (this.config.gameMode === GameMode.TOURNAMENT_REMOTE && showLoser){
+	// 		this.isSpectator = true;
+	// 		await this.services?.gui?.showTournamentMatchLoser();
+	// 		await this.services?.input.waitForSpectatorChoice();
+	// 		this.services?.gui.hud.setSpectatorMode();
+	// 		return;
+	// 	}
+
+	// 	const waitForSpace = controlledSides.length !== 0 && this.config.gameMode !== GameMode.TOURNAMENT_REMOTE;
+	// 	await this.services?.gui?.showTournamentMatchWinner(winner, waitForSpace);
+	// 	webSocketClient.sendPlayerReady();
+	// 	if (this.services?.gui.isLastMatch)  return ;
+
+	// 	if (this.config.isRemoteMultiplayer)
+	// 		this.services?.gui.cardGame.show();
+	// }
+
 	private async onServerEndedGame(winner: string, loser: string): Promise<void> {
 		if (!this.isInitialized || !this.config.isTournament || this.isSpectator) return;
-		this.services?.audio?.lowerMusicVolume();
-		this.services?.gui?.setPauseVisible(false, this.isSpectator);
+		
 		const controlledSides = this.getControlledSides();
-
 		const controlledPlayer = controlledSides.length === 1 ? this.players.get(controlledSides[0]) : null;
 		const showLoser = controlledPlayer?.name === loser;
 
 		this.resetForNextMatch();
 
-		if (this.config.gameMode === GameMode.TOURNAMENT_REMOTE && showLoser){
+		if (this.config.gameMode === GameMode.TOURNAMENT_REMOTE && showLoser) {
 			this.isSpectator = true;
-			await this.services?.gui?.showTournamentMatchLoser();
-			await this.services?.input.waitForSpectatorChoice();
-			this.services?.gui.hud.setSpectatorMode();
+			const wantsToSpectate = await this.services?.showMatchEndForLoser();
+			if (wantsToSpectate)
+				this.services?.input.setMode(KeyboardMode.SPECTATOR);
+			else
+				this.requestExitToMenu();		
 			return;
 		}
 
 		const waitForSpace = controlledSides.length !== 0 && this.config.gameMode !== GameMode.TOURNAMENT_REMOTE;
-		await this.services?.gui?.showTournamentMatchWinner(winner, waitForSpace);
+		const showCardGame = this.config.isRemoteMultiplayer;
+		await this.services?.showMatchEndForWinner(winner, waitForSpace, showCardGame);
+		
 		webSocketClient.sendPlayerReady();
-		if (this.services?.gui.isLastMatch)  return ;
-
-		if (this.config.isRemoteMultiplayer)
-			this.services?.gui.cardGame.show();
 	}
 	
 
@@ -410,6 +430,21 @@ export class Game {
 		await this.dispose();
 	}
 
+	private togglePause(): void {
+		this.isPaused = !this.isPaused;
+		this.services?.gui.setPauseVisible(this.isPaused, this.isSpectator);
+
+		if (this.isPaused) {
+			this.services?.input.setMode(KeyboardMode.PAUSED);
+			this.services?.audio.pauseGameMusic();
+			webSocketClient.sendPauseRequest();
+		} else {
+			this.services?.input.setMode(KeyboardMode.NORMAL);
+			this.services?.audio.resumeGameMusic();
+			webSocketClient.sendResumeRequest();
+		}
+	}
+
 // ====================			WEBSOCKET				  ====================
 	private registerCallbacks(): void {
 		webSocketClient.registerCallback(MessageType.GAME_STATE, (state: GameStateData) => { this.updateGameObjects(state); });
@@ -433,32 +468,17 @@ export class Game {
 		webSocketClient.unregisterCallback(MessageType.COUNTDOWN);
 	}
 
-	private togglePause(): void {
-        this.isPaused = !this.isPaused;
-        this.services?.gui.setPauseVisible(this.isPaused, this.isSpectator);
+	private switchGame(direction: Direction): void {
+		this.services?.gui.curtain.play(Motion.F.xFast);
+		webSocketClient.sendSwitchGame(direction);
+	}
 
-        if (this.isPaused) {
-            this.services?.input.setMode(KeyboardMode.PAUSED);
-            this.services?.audio.pauseGameMusic();
-            webSocketClient.sendPauseRequest();
-        } else {
-            this.services?.input.setMode(KeyboardMode.NORMAL);
-            this.services?.audio.resumeGameMusic();
-            webSocketClient.sendResumeRequest();
-        }
-    }
-
-    private switchGame(direction: Direction): void {
-        this.services?.gui.curtain.play(Motion.F.xFast);
-        webSocketClient.sendSwitchGame(direction);
-    }
-
-    private onSpectatorChoice(choice: boolean): void {
-        this.services?.gui.endGame.hidePartial();
-        if (!choice) {
-            this.requestExitToMenu();
-        }
-    }
+	// private onSpectatorChoice(choice: boolean): void {
+	// 	this.services?.gui.endGame.hidePartial();
+	// 	if (!choice) {
+	// 		this.requestExitToMenu();
+	// 	}
+	// }
 
 // ====================			CLEANUP				  ====================
 	private async dispose(): Promise<void> {

@@ -62,7 +62,7 @@ export class KeyboardManager {
             onExitToMenu: () => void;
             onSwitchGame: (direction: Direction) => void;
             onToggleMatchTree: () => void;
-            onSpectatorChoice: (choice: boolean) => void;
+            // onSpectatorChoice: (choice: boolean) => void;
         }
 	) {
 		this.deviceSourceManager = new DeviceSourceManager(scene.getEngine());
@@ -98,13 +98,15 @@ export class KeyboardManager {
 	}
 
 	waitForSpectatorChoice(): Promise<boolean> {
+		this.setMode(KeyboardMode.SPECTATOR_CHOICE);
+console.log('MODE SET TO SPECTATOR_CHOICE:', this.mode);
 		return new Promise<boolean>((resolve) => {
 			this.spectatorChoiceResolver = resolve;
-			this.setMode(KeyboardMode.SPECTATOR_CHOICE);
+			// this.setMode(KeyboardMode.SPECTATOR_CHOICE);
 			setTimeout(() => {
 				if (this.spectatorChoiceResolver !== null) {
 					this.spectatorChoiceResolver = null;
-					this.callbacks.onSpectatorChoice(false);
+					// this.callbacks.onSpectatorChoice(false);
 					resolve(false);
 				}
 			}, 10000);
@@ -115,18 +117,18 @@ export class KeyboardManager {
 		if (key === Keys.Y) {
 			this.spectatorChoiceResolver?.(true);
 			this.spectatorChoiceResolver = null;
-			this.setMode(KeyboardMode.SPECTATOR);
-			this.callbacks.onSpectatorChoice(true);
+			// this.setMode(KeyboardMode.SPECTATOR);
+			// this.callbacks.onSpectatorChoice(true);
 		} else if (key === Keys.N) {
 			this.spectatorChoiceResolver?.(false);
 			this.spectatorChoiceResolver = null;
-			this.callbacks.onSpectatorChoice(false);
+			// this.callbacks.onSpectatorChoice(false);
 		}
 	}
 
 	private handleGlobalKeyDown(event: KeyboardEvent): void {
 		const key = event.keyCode;
-		
+		console.log('KEY PRESSED:', key, 'MODE:', this.mode); 
 		switch (this.mode) {
 			case KeyboardMode.SPECTATOR_CHOICE:
 				this.handleSpectatorChoiceKeys(key);
@@ -149,7 +151,7 @@ export class KeyboardManager {
 
 	private handleSpectatorInteraciot(key: number): void {
 		switch (key) {
-			case Keys.Y:
+			case Keys.ESC:
 				this.callbacks.onExitToMenu();
 				break;
 			case Keys.LEFT:
