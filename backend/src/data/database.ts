@@ -15,7 +15,7 @@ export function registerDatabaseFunctions(database: Database.Database) {
 export function generateClientId(): string {
 	return `client_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 }
- 
+
 export function generateGameId(): string {
 	return `game_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 }
