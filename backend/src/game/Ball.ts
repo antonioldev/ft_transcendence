@@ -111,8 +111,7 @@ export class Ball {
         if (this.speed === GAME_CONFIG.ballServeSpeed) this.speed = GAME_CONFIG.ballInitialSpeed;
 
         this.calculate_direction(this.paddles[side]);
-        this.speed += GAME_CONFIG.ballSpeedIncrease;
-        // this.speed *= (this.speed < GAME_CONFIG.maxBallSpeed) ? GAME_CONFIG.ballSpeedIncrease : 1;
+        this.speed += (this.speed < GAME_CONFIG.maxBallSpeed) ? GAME_CONFIG.ballSpeedIncrease : 0;
     }
 
     activate_powerups_on_collision(side: number) {

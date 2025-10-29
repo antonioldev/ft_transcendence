@@ -228,9 +228,9 @@ export class Game {
 				this.paddles[LEFT].score, 
 				this.paddles[RIGHT].score, 
 				Date.now()
-				);
-				console.log(`Game ${this.id} saved to db`);
-			}
+			);
+			console.log(`Game ${this.id} saved to db`);
+		}
 		catch (err) {
 			console.log(`DB failed to save game ${this.id}`, err);
 		}
