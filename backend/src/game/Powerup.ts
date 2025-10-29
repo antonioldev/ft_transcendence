@@ -4,7 +4,6 @@ import { LEFT, RIGHT, GAME_CONFIG } from '../shared/gameConfig.js';
 import { PowerupType, PowerupState} from '../shared/constants.js';
 import { Powerup } from '../shared/types.js';
 import { eventManager } from '../network/utils.js';
-import { rotate } from './utils.js';
 
 export class Slot {
 	type: PowerupType;
@@ -35,12 +34,12 @@ export class PowerupManager {
 	_init_powerups() {
 		// generates 3 random powerups in each player's slots
 		const num_powerups = Object.keys(PowerupType).length / 2;
-		this.left_slots[0] = new Slot(PowerupType.POWERSHOT, LEFT, 0);
-		this.left_slots[1] = new Slot(PowerupType.SHRINK_OPPONENT, LEFT, 1);
-		this.left_slots[2] = new Slot(PowerupType.INCREASE_PADDLE_SPEED, LEFT, 2);
+		// this.left_slots[0] = new Slot(PowerupType.POWERSHOT, LEFT, 0);
+		// this.left_slots[1] = new Slot(PowerupType.SHRINK_OPPONENT, LEFT, 1);
+		// this.left_slots[2] = new Slot(PowerupType.INCREASE_PADDLE_SPEED, LEFT, 2);
 
 		for (let i = 0; i < GAME_CONFIG.slot_count; i++) {
-			// this.left_slots[i] = new Slot(Math.floor(Math.random() * num_powerups), LEFT, i);
+			this.left_slots[i] = new Slot(Math.floor(Math.random() * num_powerups), LEFT, i);
 			this.right_slots[i] = new Slot(Math.floor(Math.random() * num_powerups), RIGHT, i);
 		}
 	}
