@@ -85,8 +85,8 @@ export class PowerupManager {
 				timeout = await this.set_powershot(slot.side, opponent_side);
 				break ;
 			case PowerupType.INVISIBLE_BALL:
-				// timeout = this.set_invisible(slot.side, false);
-				timeout = GAME_CONFIG.invisibilityTimeLimit; // implementation handled on front
+				timeout = GAME_CONFIG.invisibilityTimeLimit; 
+				// implementation handled on front
 				break ;
 			case PowerupType.CURVE_BALL:
 				timeout = this.set_curve_ball(true);
@@ -139,7 +139,6 @@ export class PowerupManager {
 				break ;
 			case PowerupType.INVISIBLE_BALL:
 				// nothing to handle
-				// this.set_invisible(slot.side, false);
 				break ;
 			case PowerupType.CURVE_BALL:
 				this.set_curve_ball(false);
@@ -278,11 +277,6 @@ export class PowerupManager {
 			});
 		});
 	}
-
-	// set_invisible(side: number, active: boolean) {
-	// 	// this.paddles[side].invisible_activated = active;
-	// 	return GAME_CONFIG.invisibilityTimeLimit; // implementation handled on front
-	// }
 
 	set_curve_ball(active: boolean) {
 		for (const ball of this.balls) {
