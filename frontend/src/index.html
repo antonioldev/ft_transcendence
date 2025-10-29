@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'self';">
     <title>ft_transcendence</title>
     <link rel="icon" href="/assets/images/42_favicon.ico" type="image/x-icon">
     <link href="/output.css" rel="stylesheet">
@@ -99,6 +98,16 @@
                         transition-colors duration-200 border border-light-green min-w-[140px] sm:min-w-[180px] md:min-w-[200px]
                         lg:min-w-[230px] text-left">
                 register
+            </button>
+
+            <!-- Instructions button -->
+             <button type="button"
+                    id="instructions-btn" 
+                    class="bg-transparent rounded-md text-light-green font-poppins-semibold text-sm sm:text-base md:text-xl lg:text-xl
+                        px-4 sm:px-6 md:px-8 lg:px-10 py-2 sm:py-2.5 md:py-3 lg:py-3.5 hover:bg-light-green hover:text-blue-background
+                        transition-colors duration-200 border border-light-green min-w-[140px] sm:min-w-[180px] md:min-w-[200px]
+                        lg:min-w-[230px] text-left">
+                instructions
             </button>
         </nav>
     </main>
@@ -611,6 +620,200 @@
             </div>
         </div>
     </div>
+
+    <!-- Instructions Page -->
+    <div id="instructions-modal" class="fixed inset-0 bg-blue-background flex items-center justify-center" style="display: none;">
+        <!-- ft_transcendence in top left -->
+        <div class="absolute top-4 left-5 z-10 flex items-center gap-2">
+            <h2 class="text-light-green font-tiny5-regular text-sm sm:text-base md:text-lg">
+                ft_transcendence
+            </h2>
+        </div>
+        
+        <div class="w-full max-w-6xl mx-auto px-4 py-8">
+            <h2 class="text-center uppercase text-xl sm:text-2xl font-bold tracking-tight text-light-green font-sans pb-6">
+                How to Play
+            </h2>
+            
+            <!-- Instructions Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                <div class="bg-dark-brown bg-opacity-20 rounded-md p-6 shadow-md">
+                    <h3 class="text-orange text-center font-bold font-tiny5-regular text-2xl mb-6">2D Games</h3>
+                    <h4 class="text-light-green font-semibold font-sans mb-4">Solo | Online</h4>
+                    <div class="flex items-center justify-center space-x-12">
+                        <div class="flex flex-col items-center space-y-2">
+                            <div class="flex gap-1">
+                                <span class="key">↑</span>
+                                <span class="key">↓</span>
+                            </div>
+                            <span class="text-light-green font-tiny5-regular text-xs uppercase tracking-wide">Move</span>
+                        </div>
+                        <div class="flex flex-col items-center space-y-2">
+                            <div class="flex gap-1">
+                                <span class="key">1</span>
+                                <span class="key">2</span>
+                                <span class="key">3</span>
+                            </div>
+                            <span class="text-light-green font-tiny5-regular text-xs uppercase tracking-wide">Power-ups</span>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-center my-6">
+                        <div class="w-3/4 h-0.5 bg-light-green opacity-20"></div>
+                    </div>
+
+                    <h4 class="text-light-green font-semibold font-sans mb-4">Local</h4>
+                    <div class="space-y-4">
+                        <div class="p-4">
+                            <div class="flex items-center justify-center space-x-12">
+                                <div class="flex flex-col items-center space-y-2">
+                                    <div class="flex gap-1">
+                                        <span class="key">W</span>
+                                        <span class="key">S</span>
+                                    </div>
+                                    <span class="text-light-green font-tiny5-regular text-xs uppercase tracking-wide">Move</span>
+                                </div>
+                                <h5 class="text-orange font-sans text-sm font-semibold">player_1</h5>
+                                <div class="flex flex-col items-center space-y-2">
+                                    <div class="flex gap-1">
+                                        <span class="key">C</span>
+                                        <span class="key">V</span>
+                                        <span class="key">B</span>
+                                    </div>
+                                    <span class="text-light-green font-tiny5-regular text-xs uppercase tracking-wide">Power-ups</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-4">
+                            <div class="flex items-center justify-center space-x-12">
+                                <div class="flex flex-col items-center space-y-2">
+                                    <div class="flex gap-1">
+                                        <span class="key">↑</span>
+                                        <span class="key">↓</span>
+                                    </div>
+                                    <span class="text-light-green font-tiny5-regular text-xs uppercase tracking-wide">Move</span>
+                                </div>
+                                <h5 class="text-orange font-sans text-sm font-semibold">player_2</h5>
+                                <div class="flex flex-col items-center space-y-2">
+                                    <div class="flex gap-1">
+                                        <span class="key">I</span>
+                                        <span class="key">O</span>
+                                        <span class="key">P</span>
+                                    </div>
+                                    <span class="text-light-green font-tiny5-regular text-xs uppercase tracking-wide">Power-ups</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-dark-brown bg-opacity-20 rounded-md p-6 shadow-md">
+                    <h3 class="text-orange text-center font-bold font-tiny5-regular text-2xl mb-6">3D Games</h3>
+                    <h4 class="text-light-green font-semibold font-sans mb-4">Solo | Online</h4>
+                    <div class="flex items-center justify-center space-x-12">
+                        <div class="flex flex-col items-center space-y-2">
+                            <div class="flex gap-1">
+                                <span class="key">←</span>
+                                <span class="key">→</span>
+                            </div>
+                            <span class="text-light-green font-tiny5-regular text-xs uppercase tracking-wide">Move</span>
+                        </div>
+                        <div class="flex flex-col items-center space-y-2">
+                            <div class="flex gap-1">
+                                <span class="key">1</span>
+                                <span class="key">2</span>
+                                <span class="key">3</span>
+                            </div>
+                            <span class="text-light-green font-tiny5-regular text-xs uppercase tracking-wide">Power-ups</span>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-center my-6">
+                        <div class="w-3/4 h-0.5 bg-light-green opacity-20"></div>
+                    </div>
+
+                    <h4 class="text-light-green font-semibold font-sans mb-4">Local</h4>
+                    <div class="space-y-4">
+                        <div class="p-4">
+                            <div class="flex items-center justify-center space-x-12">
+                                <div class="flex flex-col items-center space-y-2">
+                                    <div class="flex gap-1">
+                                        <span class="key">A</span>
+                                        <span class="key">D</span>
+                                    </div>
+                                    <span class="text-light-green font-tiny5-regular text-xs uppercase tracking-wide">Move</span>
+                                </div>
+                                <h5 class="text-orange font-sans text-sm font-semibold">player_1</h5>
+                                <div class="flex flex-col items-center space-y-2">
+                                    <div class="flex gap-1">
+                                        <span class="key">C</span>
+                                        <span class="key">V</span>
+                                        <span class="key">B</span>
+                                    </div>
+                                    <span class="text-light-green font-tiny5-regular text-xs uppercase tracking-wide">Power-ups</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-4">
+                            <div class="flex items-center justify-center space-x-12">
+                                <div class="flex flex-col items-center space-y-2">
+                                    <div class="flex gap-1">
+                                        <span class="key">←</span>
+                                        <span class="key">→</span>
+                                    </div>
+                                    <span class="text-light-green font-tiny5-regular text-xs uppercase tracking-wide">Move</span>
+                                </div>
+                                <h5 class="text-orange font-sans text-sm font-semibold">player_2</h5>
+                                <div class="flex flex-col items-center space-y-2">
+                                    <div class="flex gap-1">
+                                        <span class="key">I</span>
+                                        <span class="key">O</span>
+                                        <span class="key">P</span>
+                                    </div>
+                                    <span class="text-light-green font-tiny5-regular text-xs uppercase tracking-wide">Power-ups</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- General Game Modes -->
+            <div class="mt-8 max-w-4xl mx-auto">
+                <h2 class="text-center uppercase text-xl sm:text-2xl font-bold tracking-tight text-light-green font-sans mb-8">Game Modes</h2>
+                <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                    <div class="bg-dark-brown bg-opacity-20 rounded-md p-4 text-center shadow-md">
+                        <h4 class="text-orange font-semibold font-sans mb-2">Solo vs AI</h4>
+                        <p class="text-light-green font-sans text-xs">4 difficulty levels available</p>
+                    </div>
+                    <div class="bg-dark-brown bg-opacity-20 rounded-md p-4 text-center shadow-md">
+                        <h4 class="text-orange font-semibold font-sans mb-2">Local</h4>
+                        <p class="text-light-green font-sans text-xs">Share the same keyboard</p>
+                    </div>
+                    <div class="bg-dark-brown bg-opacity-20 rounded-md p-4 text-center shadow-md">
+                        <h4 class="text-orange font-semibold font-sans mb-2">Online Match</h4>
+                        <p class="text-light-green font-sans text-xs">Play against remote players</p>
+                    </div>
+                    <div class="bg-dark-brown bg-opacity-20 rounded-md p-4 text-center shadow-md">
+                        <h4 class="text-orange font-semibold font-sans mb-2">Online Tournament</h4>
+                        <p class="text-light-green font-sans text-xs">4, 8, or 16 players</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Back Button -->
+            <div class="text-center mt-8">
+                <button type="button" id="instructions-back" 
+                        class="bg-transparent text-light-green font-sans text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 
+                               hover:bg-light-green hover:text-blue-background transition-colors duration-200
+                               border border-light-green rounded-md">
+                    Back to Main Menu
+                </button>
+            </div>
+        </div>
+    </div>
+
 
     <script type="module" src="./core/main.ts"></script>
 </body>

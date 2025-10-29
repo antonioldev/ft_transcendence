@@ -23,21 +23,22 @@ export const GAME_CONFIG = {
 	paddleHeight: 0.5, // Height of the paddle
 	paddleDepth: 0.5, // Depth of the paddle
 	paddleOffsetFromEdge: 2, // Distance from the edge of the field
-	paddleSpeed: 8, // Speed of the paddle
+	paddleSpeed: 6, // Speed of the paddle
 	cpu_names: ["Tom", "Richard", "Harry", "John", "Oliver", "William", "Jack", "Hugo",
 				"Jane", "Sarah", "Suzie", "Sally", "Rebecca", "Rachel", "Karen", "Katie"],
 	
 	// Powerup settings
 	slot_count: 3,				// number of powerup slots each player has
-	increasedPaddleWidth: 6, // Width of the paddle when GROW_PADDLE activated
-	decreasedPaddleWidth: 1.5, // Width of the paddle when SHRINK_PADDLE activated
-	increasedPaddleSpeed: 22, // Speed of the paddle when INCREASE_PADDLE_SPEED activated
-	decreasedPaddleSpeed: 4, // Speed of the paddle when SLOW_PADDLE activated
-	powerupDuration: 7000,	   // time elapsed before powerup is deactivated
-	freezeDuration: 1500.0, // duration of ball freeze
+	increasedPaddleWidth: 5, 	// Width of the paddle when GROW_PADDLE activated
+	decreasedPaddleWidth: 1.5, 	// Width of the paddle when SHRINK_PADDLE activated
+	increasedPaddleSpeed: 9, 	// Speed of the paddle when INCREASE_PADDLE_SPEED activated
+	decreasedPaddleSpeed: 3, 	// Speed of the paddle when SLOW_PADDLE activated
+	curve_angle: -Math.PI / 1500,  // angle of rotation applied during curve ball
+	ballPowerShotSpeed: 20, 	// Speed multiplier after paddle hit
+	powerupDuration: 8000,	   	// time elapsed before a powerup is deactivated
+	freezeDuration: 1500.0, 	// duration of ball freeze
 	powershotTimeLimit: 3000.0, // time limit to use powershot after activating
 	invisibilityTimeLimit: 5000.0, // time limit to use powershot after activating
-	curve_angle: -Math.PI / 1500,
 
 	// Camera settings (mainly for frontend)
 	camera2DHeight: 25, // Camera height in 2D mode
@@ -50,11 +51,10 @@ export const GAME_CONFIG = {
 	// Ball settings
 	ballRadius: 0.3, // Radius of the ball
 	ballServeSpeed: 5, // Initial speed of the ball
-	ballInitialSpeed: 7, // Initial speed of the ball
+	ballInitialSpeed: 8, // Initial speed of the ball
 	ballMaxAngle: Math.PI / 4, // Maximum angle of the ball trajectory
 	ballMinAngle: Math.PI / 12, // Minimum angle of the ball trajectory
-	ballSpeedIncrease: 1.08, // Speed multiplier after paddle hit
-	ballPowerShotSpeed: 18, // Speed multiplier after paddle hit
+	ballSpeedIncrease: 1.07, // Speed multiplier after paddle hit
 	maxBallSpeed: 18,	   // Maximum ball speed
 	
 	// Wall collision boundaries (accounting for ball radius)
@@ -70,7 +70,7 @@ export const GAME_CONFIG = {
 	},
 
 	// Game mechanics
-	scoreToWin: 1,		  // Points needed to win
+	scoreToWin: 50,		  // Points needed to win
 	
 	// Input mappings
 	input2D: {

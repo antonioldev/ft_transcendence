@@ -60,7 +60,7 @@ export class Ball {
 
     calculate_direction(paddle: Paddle) {
         // calculate how far along the paddle the ball hits
-        const paddle_intercept = paddle.rect.centerx - this.rect.centerx;
+        const paddle_intercept = Math.min(paddle.rect.centerx - this.rect.centerx, GAME_CONFIG.paddleWidth / 2);
         const normalized_intercept = paddle_intercept / (GAME_CONFIG.paddleWidth / 2)
         
         // calculate the angle of defelction relative to the paddle intersection
@@ -111,8 +111,8 @@ export class Ball {
         if (this.speed === GAME_CONFIG.ballServeSpeed) this.speed = GAME_CONFIG.ballInitialSpeed;
 
         this.calculate_direction(this.paddles[side]);
-        // this.speed *= (this.speed < GAME_CONFIG.maxBallSpeed) ? GAME_CONFIG.ballSpeedIncrease : 1;
-        this.speed += GAME_CONFIG.ballSpeedIncrease;
+        this.speed *= (this.speed < GAME_CONFIG.maxBallSpeed) ? GAME_CONFIG.ballSpeedIncrease : 1;
+        // this.speed += GAME_CONFIG.ballSpeedIncrease;
     }
 
     activate_powerups_on_collision(side: number) {

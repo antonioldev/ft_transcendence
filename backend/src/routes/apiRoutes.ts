@@ -216,6 +216,10 @@ export async function APIRoutes(app: FastifyInstance) {
 	app.get('/api/history', (request, reply) => {
 		const { username } = request.query as { username: string };
 		const history = db.getGameHistoryForUser(username); // from DB
+		// print duration from history only
+		// history.forEach((entry) => {
+		// 	console.log(`Game played at: ${entry.playedAt}, Duration: ${entry.duration}`);
+		// });
 		if (!history) {
 			console.log(`Failed to send game history: user '${username}' not found`);
 			return reply.code(401).send({ success: false, message: "User not found" });

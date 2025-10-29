@@ -99,6 +99,10 @@ export function updateLanguageDisplay(): void {
     const registerFooter = document.querySelector('#register-modal .modal-footer .info-text');
     if (registerFooter) registerFooter.textContent = t.alreadyHaveAccount;
 
+    // Instructions
+    const instructionsBtn = requireElementById(EL.BUTTONS.INSTRUCTIONS);
+    instructionsBtn.textContent = t.instructions;
+
     // Settings Menu
     const settingsTitle = requireElementById(EL.DISPLAY.SETTINGS_TITLE);
     settingsTitle.textContent = t.settings;

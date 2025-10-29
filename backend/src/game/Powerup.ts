@@ -35,8 +35,12 @@ export class PowerupManager {
 	_init_powerups() {
 		// generates 3 random powerups in each player's slots
 		const num_powerups = Object.keys(PowerupType).length / 2;
+		this.left_slots[0] = new Slot(PowerupType.GROW_PADDLE, LEFT, 0);
+		this.left_slots[1] = new Slot(PowerupType.SHRINK_OPPONENT, LEFT, 1);
+		this.left_slots[2] = new Slot(PowerupType.INCREASE_PADDLE_SPEED, LEFT, 2);
+
 		for (let i = 0; i < GAME_CONFIG.slot_count; i++) {
-			this.left_slots[i] = new Slot(Math.floor(Math.random() * num_powerups), LEFT, i);
+			// this.left_slots[i] = new Slot(Math.floor(Math.random() * num_powerups), LEFT, i);
 			this.right_slots[i] = new Slot(Math.floor(Math.random() * num_powerups), RIGHT, i);
 		}
 	}

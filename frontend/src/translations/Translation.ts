@@ -33,6 +33,7 @@ export interface Translation {
     loginSubmit: string;
     loginTitle: string;
     registerTitle: string;
+    instructions: string;
     greeting: string;
     username: string;
     email: string;

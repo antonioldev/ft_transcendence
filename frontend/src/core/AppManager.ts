@@ -85,7 +85,9 @@ export class AppManager {
 		this.setupGameModeListeners();
 		this.setupPlayerSetupListeners();
 		this.setupDashboardListener();
-		this.setupSettingListner();
+		this.setupSettingListener();
+		this.setupInstructionsListener();
+		
 		document.addEventListener('submit', (event) => {
 			event.preventDefault();
 		});
@@ -163,7 +165,7 @@ export class AppManager {
 		dashboardBackBtn.addEventListener('click', () => this.navigateTo(AppState.MAIN_MENU));
 	}
 
-	private setupSettingListner(): void {
+	private setupSettingListener(): void {
 		const settingsBtn = requireElementById<HTMLButtonElement>(EL.BUTTONS.SETTINGS);
 		settingsBtn?.addEventListener('click', () => {
 			this.navigateTo(AppState.SETTINGS);
@@ -219,6 +221,19 @@ export class AppManager {
 				}
 			});
 		}
+	}
+
+	private setupInstructionsListener(): void {
+		const instructionsBtn = requireElementById<HTMLButtonElement>(EL.BUTTONS.INSTRUCTIONS);
+		const instructionsBackBtn = requireElementById<HTMLButtonElement>(EL.BUTTONS.INSTRUCTIONS_BACK);
+
+		instructionsBtn.addEventListener('click', () => {
+			appManager.navigateTo(AppState.INSTRUCTIONS);
+		});
+
+		instructionsBackBtn.addEventListener('click', () => {
+			appManager.navigateTo(AppState.MAIN_MENU);
+		});
 	}
 
 	private selectViewMode(mode: ViewMode): void {
@@ -325,6 +340,9 @@ export class AppManager {
 				break;
 			case AppState.REGISTER:
 				uiManager.showScreen(EL.SCREENS.MAIN_MENU, { modal: EL.SCREENS.REGISTER_MODAL });
+				break;
+			case AppState.INSTRUCTIONS:
+				uiManager.showScreen(EL.SCREENS.MAIN_MENU, { modal: EL.SCREENS.INSTRUCTIONS_MODAL });
 				break;
 			case AppState.GAME_MODE:
 				uiManager.showScreen(EL.SCREENS.GAME_MODE_OVERLAY);
