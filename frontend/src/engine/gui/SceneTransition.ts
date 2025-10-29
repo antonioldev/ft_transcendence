@@ -26,7 +26,7 @@ export class SceneTransition {
 		this.adt.addControl(this.rightBackground);
 	}
 
-	async show(speed: number = Motion.F.base): Promise<void> {
+	private async show(speed: number = Motion.F.base): Promise<void> {
 		if (this.isActive) return;
 		this.isActive = true;
 		

@@ -9,6 +9,17 @@ import { Logger } from '../../utils/LogManager.js';
 export class AudioManager {
 	private gameMusic: Sound | null = null;
 	private gameMusicEntrance: Sound | null = null;
+		// Sound effects
+	private countdownSound: Sound | null = null;
+	private paddleHitSound: Sound | null = null;
+	private scoreSound: Sound | null = null;
+	private powerup: Sound | null = null;
+	private entrance: Sound | null = null;
+	private winner: Sound | null = null;
+	private loser: Sound | null = null;
+	private miniGameCorrect: Sound | null = null;
+	private miniGameNotCorrect: Sound | null = null;
+
 	private isInitialized: boolean = false;
 	private basePlaybackRate: number = 1.0;
 	private maxPlaybackRate: number = 1.8;
@@ -30,16 +41,6 @@ export class AudioManager {
 		miniGameNotCorrect: 0.7,
 	};
 
-	// Sound effects
-	private countdownSound: Sound | null = null;
-	private paddleHitSound: Sound | null = null;
-	private scoreSound: Sound | null = null;
-	private powerup: Sound | null = null;
-	private entrance: Sound | null = null;
-	private winner: Sound | null = null;
-	private loser: Sound | null = null;
-	private miniGameCorrect: Sound | null = null;
-	private miniGameNotCorrect: Sound | null = null;
 
 
 	constructor(private scene: Scene, config: GameConfig) {

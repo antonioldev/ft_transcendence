@@ -477,15 +477,15 @@ export class AppManager {
 	}
 
 	private clearCanvas(): void {
-		const canvas = document.getElementById('renderCanvas') as HTMLCanvasElement;
-		if (!canvas) return;
+		const el = document.getElementById(EL.GAME.CANVAS_3D);
+		if (!(el instanceof HTMLCanvasElement)) return;
+		const canvas = el;
 
-		// Clear WebGL context properly
-		const gl = canvas.getContext('webgl2') || canvas.getContext('webgl');
-		if (gl) {
-			gl.clearColor(0, 0, 0, 1); // Black
-			gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-		}
+        const gl = canvas.getContext('webgl2') || canvas.getContext('webgl');
+        if (gl) {
+            gl.clearColor(0, 0, 0, 1);
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        }
 	}
 }
 

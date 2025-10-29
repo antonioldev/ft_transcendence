@@ -15,7 +15,6 @@ import { buildScene } from './scene/builders/sceneBuilder.js';
 import { PlayerSide, PlayerState } from "./utils.js";
 import { GameEventEmitter, GameEventType } from "./services/EventEmitter.js";
 import { KeyboardMode } from "./services/KeybordManager.js";
-import { Direction } from '../shared/constants.js';
 import { Motion } from "./services/AnimationManager.js";
 
 /**
@@ -169,8 +168,8 @@ export class Game {
 
 		if (!this.isCountdownStarted) {
 			this.isCountdownStarted = true;
-			uiManager.setLoadingScreenVisible(false);
-			this.services?.gui.curtain.play();
+			// uiManager.setLoadingScreenVisible(false);
+			// this.services?.gui.curtain.play();
 			this.services?.gui.lobby.hide();
 			this.services?.gui.cardGame.hide();
 		}
@@ -439,7 +438,7 @@ export class Game {
 		webSocketClient.registerCallback(MessageType.COUNTDOWN, (message: any) => { this.handleCountdown(message.countdown); });
 
 
-		this.eventEmitter.on(GameEventType.PAUSE_TOGGLE, (event) => { 
+		this.eventEmitter.on(GameEventType.PAUSE_TOGGLE, (_event) => { 
 			this.isPaused = !this.isPaused;
 			this.services?.gui.setPauseVisible(this.isPaused, false);
 
@@ -452,7 +451,7 @@ export class Game {
 			}
 		});
 
-		this.eventEmitter.on(GameEventType.EXIT_TO_MENU, (event) => { this.requestExitToMenu(); });
+		this.eventEmitter.on(GameEventType.EXIT_TO_MENU, (_event) => { this.requestExitToMenu(); });
 
 		this.eventEmitter.on(GameEventType.SWITCH_GAME, (event) => {
 			if (event.type === GameEventType.SWITCH_GAME) {
@@ -462,7 +461,7 @@ export class Game {
 			}
 		});
 
-		this.eventEmitter.on(GameEventType.TOGGLE_MATCH_TREE, (event) => { this.services?.gui.matchTree.toggle(); });
+		this.eventEmitter.on(GameEventType.TOGGLE_MATCH_TREE, (_event) => { this.services?.gui.matchTree.toggle(); });
 
 		this.eventEmitter.on(GameEventType.SPECTATOR_CHOICE, (event) => {
 			if (event.type === GameEventType.SPECTATOR_CHOICE) {
