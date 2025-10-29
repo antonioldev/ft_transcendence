@@ -35,7 +35,7 @@ export class PowerupManager {
 	_init_powerups() {
 		// generates 3 random powerups in each player's slots
 		const num_powerups = Object.keys(PowerupType).length / 2;
-		this.left_slots[0] = new Slot(PowerupType.GROW_PADDLE, LEFT, 0);
+		this.left_slots[0] = new Slot(PowerupType.POWERSHOT, LEFT, 0);
 		this.left_slots[1] = new Slot(PowerupType.SHRINK_OPPONENT, LEFT, 1);
 		this.left_slots[2] = new Slot(PowerupType.INCREASE_PADDLE_SPEED, LEFT, 2);
 
@@ -256,11 +256,10 @@ export class PowerupManager {
 
 		await new Promise<void>((resolve) => {
 			eventManager.once(`paddle-collision-${side}`, (ball: Ball ) => {
-				
 				this.paddles[side].powershot_activate = false;
 				this.paddles[opponent_side].powershot_deactivate = true;
 				ball.speed_cache = ball.speed;
-				ball.speed = GAME_CONFIG.ballPowerShotSpeed;
+				ball.speed = Math.max(GAME_CONFIG.ballMinPowershotSpeed, ball.speed * 1.5);
 				resolve();
 			});
 		});

@@ -34,7 +34,7 @@ export const GAME_CONFIG = {
 	increasedPaddleSpeed: 9, 	// Speed of the paddle when INCREASE_PADDLE_SPEED activated
 	decreasedPaddleSpeed: 3, 	// Speed of the paddle when SLOW_PADDLE activated
 	curve_angle: -Math.PI / 1500,  // angle of rotation applied during curve ball
-	ballPowerShotSpeed: 20, 	// Speed multiplier after paddle hit
+	ballMinPowershotSpeed: 25, 	// Speed multiplier after paddle hit
 	powerupDuration: 8000,	   	// time elapsed before a powerup is deactivated
 	freezeDuration: 1500.0, 	// duration of ball freeze
 	powershotTimeLimit: 3000.0, // time limit to use powershot after activating
@@ -51,10 +51,10 @@ export const GAME_CONFIG = {
 	// Ball settings
 	ballRadius: 0.3, // Radius of the ball
 	ballServeSpeed: 5, // Initial speed of the ball
-	ballInitialSpeed: 8, // Initial speed of the ball
+	ballInitialSpeed: 10, // Initial speed of the ball
 	ballMaxAngle: Math.PI / 4, // Maximum angle of the ball trajectory
 	ballMinAngle: Math.PI / 12, // Minimum angle of the ball trajectory
-	ballSpeedIncrease: 1.07, // Speed multiplier after paddle hit
+	ballSpeedIncrease: 0.5, // Speed multiplier after paddle hit
 	maxBallSpeed: 18,	   // Maximum ball speed
 	
 	// Wall collision boundaries (accounting for ball radius)
