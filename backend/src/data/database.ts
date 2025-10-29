@@ -577,9 +577,9 @@ export function updateGameInfo(id: string, player1_score: number, player2_score:
 			console.error('Game not found or start time invalid.');
 			return false;
 		}
-		const gameDuration = Math.floor((endTime - startTime.getTime()) / 1000);
+		const gameDuration = ((endTime - startTime.getTime()) / 1000).toFixed(1);
 		const gameInfo = db.prepare('UPDATE games SET player1_score = ?, player2_score = ?, winner_id = ?, looser_id = ?, duration_seconds = ? WHERE game_id = ?');
-		gameInfo.run(player1_score, player2_score, winner, looser, gameDuration, id);
+		gameInfo.run(player1_score, player2_score, winner, looser, parseFloat(gameDuration), id);
 		return true;
 	} catch (err) {
 		console.error('Error in update game: ', err);
@@ -815,6 +815,7 @@ export function getUserGameHistoryRows(userId: number) {
 	try {
 		userId = nonNegInt(userId, 'user id');
 
+		
 		const stmt = db.prepare(`
 		SELECT
 			g.game_id                       AS gameId,
@@ -834,7 +835,7 @@ export function getUserGameHistoryRows(userId: number) {
 		JOIN users u2 ON u2.id = g.player2_id
 		WHERE g.player1_id = ? OR g.player2_id = ?
 		ORDER BY g.played_at DESC, g.game_id DESC
-		`);
+		`);		
 		return stmt.all(userId, userId, userId, userId, userId, userId);
 	} catch (err) {
 		console.error('Error in getUserGameHistoryRows:', err);
