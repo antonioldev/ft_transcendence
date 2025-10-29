@@ -212,10 +212,8 @@ export class Game {
 		if (this.config.gameMode === GameMode.TOURNAMENT_REMOTE && showLoser) {
 			this.isSpectator = true;
 			const wantsToSpectate = await this.services?.showMatchEndForLoser();
-			if (wantsToSpectate)
-				this.services?.input.setMode(KeyboardMode.SPECTATOR);
-			else
-				this.requestExitToMenu();		
+			if (!wantsToSpectate)
+				this.requestExitToMenu();
 			return;
 		}
 

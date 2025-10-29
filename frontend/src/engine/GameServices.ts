@@ -101,10 +101,12 @@ export class GameServices {
 	async showMatchEndForLoser(): Promise<boolean> {
 		this.audio.lowerMusicVolume();
 		this.gui.setPauseVisible(false, true);
+		this.audio.playLoser();
 		await this.gui.showTournamentMatchLoser();
 		const wantsToSpectate = await this.input.waitForSpectatorChoice();
 		if (wantsToSpectate)
 			this.gui.hud.setSpectatorMode();
+		await this.gui.endGame.hidePartial();
 		return wantsToSpectate;
 	}
 

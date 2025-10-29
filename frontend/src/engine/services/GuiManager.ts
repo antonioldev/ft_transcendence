@@ -83,7 +83,6 @@ export class GUIManager {
 		if (!this.isReady || this.isLastMatch) return;
 		
 		await this.endGame.fadeBackground(true);
-		this.audioManager.playLoser();
 		await this.endGame.showPartialLoser();
 	}
 
