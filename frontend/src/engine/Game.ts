@@ -37,16 +37,21 @@ export class Game {
 	private isGameEnded: boolean = false;
 	private isCountdownStarted: boolean = false;
 	private currentRally: number = 0;
+	// private players: Map<PlayerSide, PlayerState> = new Map([
+	// 		[PlayerSide.LEFT, { name: "", isControlled: false, keyboardProfile: undefined,
+	// 			size: GAME_CONFIG.paddleWidth, score: 0, powerUpsAssigned: false, powerUps: [], inverted: false,}],
+	// 		[PlayerSide.RIGHT, { name: "", isControlled: false, keyboardProfile: undefined,
+	// 			size: GAME_CONFIG.paddleWidth, score: 0, powerUpsAssigned: false, powerUps: [], inverted: false,}]
+	// 	]);
 	private players: Map<PlayerSide, PlayerState> = new Map([
-			[PlayerSide.LEFT, { name: "", isControlled: false, keyboardProfile: undefined,
-				size: GAME_CONFIG.paddleWidth, score: 0, powerUpsAssigned: false, powerUps: [], inverted: false,}],
-			[PlayerSide.RIGHT, { name: "", isControlled: false, keyboardProfile: undefined,
-				size: GAME_CONFIG.paddleWidth, score: 0, powerUpsAssigned: false, powerUps: [], inverted: false,}]
-		]);
+		[PlayerSide.LEFT, this.resetPlayerState()],
+		[PlayerSide.RIGHT, this.resetPlayerState()]
+	]);
 
 // ====================			CONSTRUCTOR			   ====================
 	constructor(private config: GameConfig) {
 		try {
+			// this.resetPlayersState();
 			this.themeObjects = { props: [], actors: [], effects: [] };
 			const element = document.getElementById(config.canvasId);
 			if (element instanceof HTMLCanvasElement) {
@@ -103,7 +108,8 @@ export class Game {
             onToggleMatchTree: () => this.services?.gui.matchTree.toggle(),
             onSpectatorChoice: (choice) => this.onSpectatorChoice(choice)
 		});
-		await this.services.initialize();
+		// await this.services.initialize();
+		await this.services.audio.initialize();
 		this.services.render.startRendering();
 		this.registerCallbacks();
 		this.isInitialized = true;
@@ -141,28 +147,6 @@ export class Game {
 		return scene;
 	}
 
-	private resetPlayersState(): void {
-		this.players.set(PlayerSide.LEFT, {
-			name: "",
-			score: 0,
-			size: GAME_CONFIG.paddleWidth,
-			inverted: false,
-			isControlled: false,
-			powerUps: [],
-			powerUpsAssigned: false
-		});
-		
-		this.players.set(PlayerSide.RIGHT, {
-			name: "",
-			score: 0,
-			size: GAME_CONFIG.paddleWidth,
-			inverted: false,
-			isControlled: false,
-			powerUps: [],
-			powerUpsAssigned: false
-		});
-	}
-
 	getState(): GameState {
 		return this.serverState;
 	}
@@ -173,35 +157,21 @@ export class Game {
 
 		if (!this.isCountdownStarted) {
 			this.isCountdownStarted = true;
-			this.services?.gui.lobby.hide();
-			this.services?.gui.cardGame.hide();
+			this.services?.startCountdownSequence();
 		}
+		
 		if (countdown === GAME_CONFIG.startDelay - 1) {
-			const playerLeft = this.players.get(PlayerSide.LEFT)?.name;
-			const playerRight = this.players.get(PlayerSide.RIGHT)?.name;
-			this.services?.audio?.restoreMusicVolume();
 			const controlledSides = this.getControlledSides();
-			await Promise.all([
-				this.services?.gui.countdown.showPlayersName(playerLeft!, playerRight!),
-				this.services?.animation?.startCameraAnimations(
-					this.gameObjects?.cameras, 
-					this.config.viewMode,
-					controlledSides,
-					this.config.isLocalMultiplayer
-				)
-			]);
+			await this.services?.showPlayerIntroduction(controlledSides);
 		}
 		else if (countdown === 4) {
-			this.services?.gui.countdown.hidePlayersName();
+			this.services?.hidePlayerIntroduction();
 		}
 		else if (countdown === 3 || countdown === 2 || countdown === 1) {
-			this.services?.gui?.countdown.show(countdown);
-			this.services?.audio?.playCountdown();
+			this.services?.showCountdownNumber(countdown);
 		}
 		else if (countdown === 0) {
-			this.services?.audio?.startGameMusic();
-			this.services?.animation?.stopCameraAnimations();
-			this.services?.gui?.countdown.finish();
+			this.services?.finishCountdown();
 			this.startGameLoop();
 			this.isCountdownStarted = false;
 		}
@@ -235,6 +205,7 @@ export class Game {
 		if (this.config.isRemoteMultiplayer)
 			this.services?.gui.cardGame.show();
 	}
+	
 
 	private async onServerEndedSession(winner: string): Promise<void> {
 		if (!this.isInitialized) return;
@@ -268,6 +239,24 @@ export class Game {
 			clearInterval(this.gameLoopObserver);
 			this.gameLoopObserver = null;
 		}
+	}
+
+	private resetPlayerState(): PlayerState {
+		return {
+			name: "",
+			isControlled: false,
+			keyboardProfile: undefined,
+			size: GAME_CONFIG.paddleWidth,
+			score: 0,
+			powerUpsAssigned: false,
+			powerUps: [],
+			inverted: false
+		};
+	}
+
+	private resetPlayersState(): void {
+		this.players.set(PlayerSide.LEFT, this.resetPlayerState());
+		this.players.set(PlayerSide.RIGHT, this.resetPlayerState());
 	}
 
 	private resetForNextMatch(): void {
@@ -328,9 +317,7 @@ export class Game {
 
 			if (this.currentRally !== state.rally) {
 				this.currentRally = state.rally;
-				this.services?.gui.hud.updateRally(this.currentRally);
-				this.services?.audio.playPaddleHit();
-				this.services?.audio.updateMusicSpeed(this.currentRally);
+				this.services?.updateRally(this.currentRally);
 				
 			}
 
@@ -344,9 +331,7 @@ export class Game {
 			if (leftPlayer.score < state.paddleLeft.score || rightPlayer.score < state.paddleRight.score) {
 				rightPlayer.score = state.paddleRight.score;
 				leftPlayer.score = state.paddleLeft.score;
-				this.services?.gui.hud.updateScores(leftPlayer.score, rightPlayer.score);
-				this.services?.gui.hud.updateRally(0);
-				this.services?.audio.playScore();
+				this.services?.updateScore(leftPlayer.score, rightPlayer.score);
 			}
 
 		} catch (error) {

@@ -21,9 +21,9 @@ export class GameServices {
 	constructor(
 		engine: Engine,
 		scene: Scene,
-		config: GameConfig,
-		gameObjects: GameObjects,
-		players: Map<PlayerSide, PlayerState>,
+		private config: GameConfig,
+		private gameObjects: GameObjects,
+		private players: Map<PlayerSide, PlayerState>,
 		callbacks: {
 			onPauseToggle: () => void;
 			onExitToMenu: () => void;
@@ -40,11 +40,66 @@ export class GameServices {
 		this.render = new RenderManager(engine, scene, gameObjects);
 	}
 
-	
+
 
 	async initialize(): Promise<void> {
 		await this.audio.initialize();
 	}
+
+//COUNTDOWN CALLS
+	startCountdownSequence(): void {
+        this.gui.lobby.hide();
+        this.gui.cardGame.hide();
+    }
+
+    async showPlayerIntroduction(controlledSides: PlayerSide[]): Promise<void> {
+		const playerLeft = this.players.get(PlayerSide.LEFT)?.name!;
+		const playerRight = this.players.get(PlayerSide.RIGHT)?.name!;
+		
+		this.audio.restoreMusicVolume();
+		
+		await Promise.all([
+			this.gui.countdown.showPlayersName(playerLeft, playerRight),
+			this.animation.startCameraAnimations(
+				this.gameObjects.cameras,
+				this.config.viewMode,
+				controlledSides,
+				this.config.isLocalMultiplayer
+			)
+		]);
+	}
+
+	hidePlayerIntroduction(): void {
+		this.gui.countdown.hidePlayersName();
+	}
+
+	showCountdownNumber(count: number): void {
+		this.gui.countdown.show(count);
+		this.audio.playCountdown();
+	}
+
+	finishCountdown(): void {
+		this.audio.startGameMusic();
+		this.animation.stopCameraAnimations();
+		this.gui.countdown.finish();
+	}
+
+//GAMEPLAY CALLS
+	updateRally(rallyCount: number): void {
+		this.gui.hud.updateRally(rallyCount);
+		this.audio.playPaddleHit();
+		this.audio.updateMusicSpeed(rallyCount);
+	}
+
+	updateScore(leftScore: number, rightScore: number): void {
+		this.gui.hud.updateScores(leftScore, rightScore);
+		this.gui.hud.updateRally(0);
+		this.audio.playScore();
+	}
+
+//END GAME CALLS
+
+
 
 	dispose(): void {
 		this.input?.dispose();
