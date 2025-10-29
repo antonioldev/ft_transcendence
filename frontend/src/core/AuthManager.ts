@@ -447,7 +447,7 @@ export class AuthManager {
             console.log("Google token received, sending to backend...");
             try {
                 const sid = getSID();
-                const response = await fetch(`/api/google?isd=${sid}`, {
+                const response = await fetch(`/api/google?sid=${sid}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ token: googleResponse.credential })
@@ -464,7 +464,7 @@ export class AuthManager {
                 // this.currentUser = { username: decodedToken.user.username };
                 // this.authState = AuthState.LOGGED_IN;
 
-                const { user, success } = await authRes.json();
+                const { user, success } = await response.json();
                 console.log("Backend responded with user data:", user, "success:", success);
 
                 this.currentUser = { username: user.username };
