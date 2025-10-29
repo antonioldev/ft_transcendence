@@ -2,7 +2,7 @@ import { Ball } from './Ball.js';
 import { Paddle, CPUBot } from './Paddle.js';
 import { Clock } from './utils.js';
 import { GAME_CONFIG, CPUDifficultyMap, LEFT, RIGHT } from '../shared/gameConfig.js';
-import { MessageType, GameState} from '../shared/constants.js';
+import { MessageType, GameState, PowerupType} from '../shared/constants.js';
 import { PlayerInput, GameStateData, ServerMessage, BallState } from '../shared/types.js';
 import { Client, Player, CPU} from '../network/Client.js'
 import { saveGameResult, registerNewGame, addPlayer2  } from '../data/validation.js';
@@ -68,6 +68,7 @@ export class Game {
 		if (this.balls.length > 1) {
 			remove_elem(this.balls, ball);
 		}
+		this.powerup_manager.deactivate_all();
 	}
 
 	// Update the game state, including player and ball positions

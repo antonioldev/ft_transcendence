@@ -115,7 +115,7 @@ export class Ball {
     }
 
     activate_powerups_on_collision(side: number) {
-        if (this.paddles[side].powershot_activate || this.paddles[side].powershot_deactivate || this.paddles[side].triple_shot_activated) {
+        if (this.paddles[side].powershot_active || this.paddles[side].powershot_deactivate || this.paddles[side].triple_shot_active) {
             eventManager.emit(`paddle-collision-${side}`, this );
         }
     }

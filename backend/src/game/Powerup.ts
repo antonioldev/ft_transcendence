@@ -34,12 +34,12 @@ export class PowerupManager {
 	_init_powerups() {
 		// generates 3 random powerups in each player's slots
 		const num_powerups = Object.keys(PowerupType).length / 2;
-		// this.left_slots[0] = new Slot(PowerupType.POWERSHOT, LEFT, 0);
-		// this.left_slots[1] = new Slot(PowerupType.SHRINK_OPPONENT, LEFT, 1);
-		// this.left_slots[2] = new Slot(PowerupType.INCREASE_PADDLE_SPEED, LEFT, 2);
+		this.left_slots[0] = new Slot(PowerupType.INVISIBLE_BALL, LEFT, 0);
+		this.left_slots[1] = new Slot(PowerupType.POWERSHOT, LEFT, 1);
+		this.left_slots[2] = new Slot(PowerupType.TRIPLE_SHOT, LEFT, 2);
 
 		for (let i = 0; i < GAME_CONFIG.slot_count; i++) {
-			this.left_slots[i] = new Slot(Math.floor(Math.random() * num_powerups), LEFT, i);
+			// this.left_slots[i] = new Slot(Math.floor(Math.random() * num_powerups), LEFT, i);
 			this.right_slots[i] = new Slot(Math.floor(Math.random() * num_powerups), RIGHT, i);
 		}
 	}
@@ -85,7 +85,8 @@ export class PowerupManager {
 				timeout = await this.set_powershot(slot.side, opponent_side);
 				break ;
 			case PowerupType.INVISIBLE_BALL:
-				timeout = this.set_invisible(slot.side, false);
+				// timeout = this.set_invisible(slot.side, false);
+				timeout = GAME_CONFIG.invisibilityTimeLimit; // implementation handled on front
 				break ;
 			case PowerupType.CURVE_BALL:
 				timeout = this.set_curve_ball(true);
@@ -133,10 +134,12 @@ export class PowerupManager {
 				this.set_freeze(false);
 				break ;
 			case PowerupType.POWERSHOT:
+				this.paddles[slot.side].powershot_active = false;
 				this.unset_powershot(slot.side, opponent_side);
 				break ;
 			case PowerupType.INVISIBLE_BALL:
-				this.set_invisible(slot.side, false);
+				// nothing to handle
+				// this.set_invisible(slot.side, false);
 				break ;
 			case PowerupType.CURVE_BALL:
 				this.set_curve_ball(false);
@@ -148,7 +151,7 @@ export class PowerupManager {
 				this.set_double_points(false);
 				break ;
 			case PowerupType.TRIPLE_SHOT:
-				// nothing to handle
+				this.paddles[slot.side].triple_shot_active = false;
 				break ;
 			case PowerupType.SHIELD:
 				this.set_shield(slot.side, false);
@@ -251,14 +254,15 @@ export class PowerupManager {
 	}
 
 	async set_powershot(side: number, opponent_side: number) {
-		this.paddles[side].powershot_activate = true;
+		this.paddles[side].powershot_active = true;
 
 		await new Promise<void>((resolve) => {
 			eventManager.once(`paddle-collision-${side}`, (ball: Ball ) => {
-				this.paddles[side].powershot_activate = false;
-				this.paddles[opponent_side].powershot_deactivate = true;
-				ball.speed_cache = ball.speed;
-				ball.speed = Math.max(GAME_CONFIG.ballMinPowershotSpeed, ball.speed * 1.5);
+				if (this.paddles[side].powershot_active) {
+					this.paddles[opponent_side].powershot_deactivate = true;
+					ball.speed_cache = ball.speed;
+					ball.speed = Math.max(GAME_CONFIG.ballMinPowershotSpeed, ball.speed * 1.5);
+				}
 				resolve();
 			});
 		});
@@ -275,10 +279,10 @@ export class PowerupManager {
 		});
 	}
 
-	set_invisible(side: number, active: boolean) {
-		this.paddles[side].invisible_activated = active;
-		return GAME_CONFIG.invisibilityTimeLimit; // implementation handled on front
-	}
+	// set_invisible(side: number, active: boolean) {
+	// 	// this.paddles[side].invisible_activated = active;
+	// 	return GAME_CONFIG.invisibilityTimeLimit; // implementation handled on front
+	// }
 
 	set_curve_ball(active: boolean) {
 		for (const ball of this.balls) {
@@ -288,16 +292,17 @@ export class PowerupManager {
 	}
 
 	async triple_shot(side: number): Promise<number> {
-		this.paddles[side].triple_shot_activated = true;
+		this.paddles[side].triple_shot_active = true;
 
 		if (this.balls.length === 3) return (0);
 		await new Promise<void>(resolve => {
 			eventManager.once(`paddle-collision-${side}`, (ball: Ball ) => {
-				this.balls.push( ball.duplicate(ball.speed * 0.85, -Math.PI / 9) );
-				if (this.balls.length !== 3) {
-					this.balls.push( ball.duplicate(ball.speed * 0.7, Math.PI / 9) );
+				if (this.paddles[side].triple_shot_active) {
+					this.balls.push(ball.duplicate(ball.speed * 0.85, -Math.PI / 9));
+					if (this.balls.length !== 3) {
+						this.balls.push(ball.duplicate(ball.speed * 0.7, Math.PI / 9));
+					}
 				}
-				this.paddles[side].triple_shot_activated = false;
 				resolve();
 			});
 		})
@@ -319,5 +324,15 @@ export class PowerupManager {
 	set_shield(side: number, active: boolean): number {
 		this.paddles[side].shield_activated = active;
 		return (GAME_CONFIG.powerupDuration)
+	}
+
+	deactivate_all() {
+		for (const side of [LEFT, RIGHT]) {
+			for (const slot of this.slots[side]) {
+				if (slot.state === PowerupState.ACTIVE) {
+					this.deactivate(slot);
+				}
+			}
+		}
 	}
 }
