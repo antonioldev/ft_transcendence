@@ -1,5 +1,5 @@
 import { Scene, Sound } from "@babylonjs/core";
-import { GameConfig } from "../GameConfig.js";
+import { GameConfig } from "../GameInitializer.js";
 import { Logger } from '../../utils/LogManager.js';
 
 /**

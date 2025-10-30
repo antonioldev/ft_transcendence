@@ -4,7 +4,7 @@ import { Direction, ViewMode } from '../../shared/constants.js';
 import { getPlayerBoundaries } from '../../shared/gameConfig.js';
 import { GameObjects } from '../../shared/types.js';
 import { Logger } from '../../utils/LogManager.js';
-import { GameConfig } from '../GameConfig.js';
+import { GameConfig } from '../GameInitializer.js';
 import { PlayerSide, PlayerState } from "../utils.js";
 import { PowerupManager } from "./PowerUpManager.js";
 

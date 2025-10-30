@@ -7,7 +7,7 @@ import { GAME_CONFIG } from '../shared/gameConfig.js';
 import { GameObjects, GameStateData, PlayerInfo, ThemeObject } from '../shared/types.js';
 import { uiManager } from '../ui/UIManager.js';
 import { Logger } from '../utils/LogManager.js';
-import { GameConfig } from './GameConfig.js';
+import { GameConfig } from './GameInitializer.js';
 import { GameServices } from "./GameServices.js";
 import { startFireworks } from "./scene/builders/effectsBuilder.js";
 import { disposeMaterialResources } from "./scene/builders/materialsBuilder.js";
@@ -256,7 +256,7 @@ export class Game {
 				ball.visibility = 0;
 			}
 		}
-		this.currentRally = 0;
+		this.currentRally = 1;
 		this.services?.gui?.hud.updateScores(
 			this.players.get(PlayerSide.LEFT)!.score,
 			this.players.get(PlayerSide.RIGHT)!.score

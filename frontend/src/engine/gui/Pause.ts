@@ -2,7 +2,7 @@ import { AdvancedDynamicTexture, Rectangle, Checkbox } from "@babylonjs/gui";
 import { ViewMode } from "../../shared/constants.js";
 import { GAME_CONFIG } from "../../shared/gameConfig.js";
 import { getCurrentTranslation } from '../../translations/translations.js';
-import { GameConfig } from "../GameConfig.js";
+import { GameConfig } from "../GameInitializer.js";
 import { AnimationManager, Motion } from "../services/AnimationManager.js";
 import { H_LEFT, PAUSE_MENU_STYLES, createGrid, createRect, createStackPanel, createTextBlock, createCheckbox } from "./GuiStyle.js";
 

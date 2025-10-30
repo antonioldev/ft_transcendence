@@ -1,7 +1,7 @@
 import { AdvancedDynamicTexture, Control, Grid, Image, Rectangle, TextBlock } from "@babylonjs/gui";
 import { PowerupState, PowerupType } from '../../shared/constants.js';
 import { getCurrentTranslation } from '../../translations/translations.js';
-import { GameConfig } from '../GameConfig.js';
+import { GameConfig } from '../GameInitializer.js';
 import { AnimationManager, Motion } from "../services/AnimationManager.js";
 import { PlayerSide } from "../utils.js";
 import { HUD_STYLES, POWER_UP_STYLES, SPECTATOR_STYLE, createGrid, createImage, createRect, createStackPanel, createTextBlock } from "./GuiStyle.js";
@@ -13,7 +13,6 @@ export class Hud {
 	private player1Label!: TextBlock;
 	private player2Label!: TextBlock;
 	private rally!: TextBlock;
-	// private previousRally: number = 1;
 	private spectatorOverlay!: Rectangle;
 	private spectatorBanner!: Rectangle;
 	private powerUpContainerP1!: Rectangle;

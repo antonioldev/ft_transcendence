@@ -1,5 +1,5 @@
 import { Game } from '../engine/Game.js';
-import { GameConfigFactory } from '../engine/GameConfig.js';
+import { GameInitializer } from '../engine/GameInitializer.js';
 import { AiDifficulty, AppState, GAME_MODE_CONFIG, GameMode, GameState, TOURNAMENT_SIZES, ViewMode, BUTTON_NAV } from '../shared/constants.js';
 import { getCurrentTranslation } from '../translations/translations.js';
 import { EL, requireElementById } from '../ui/elements.js';
@@ -447,7 +447,7 @@ export class AppManager {
 	}
 
 	private async finishPlayerCollection(): Promise<void> {
-		GameConfigFactory.setPlayers(this.playerNames);
+		GameInitializer.setPlayers(this.playerNames);
 		this.isCollectingPlayerNames = false;
 		await this.launchGame();
 	}
@@ -465,7 +465,7 @@ export class AppManager {
 			else if (currentSettings.gameMode === GameMode.TOURNAMENT_LOCAL)
 				capacity = currentSettings.offlineTournamentSize;
 
-			const config = GameConfigFactory.createWithAuthCheck(currentSettings);
+			const config = GameInitializer.createWithAuthCheck(currentSettings);
 
 			this.currentGame = new Game(config);
 			await this.currentGame.create(currentSettings.AiDifficulty, capacity);
@@ -481,11 +481,11 @@ export class AppManager {
 		if (!(el instanceof HTMLCanvasElement)) return;
 		const canvas = el;
 
-        const gl = canvas.getContext('webgl2') || canvas.getContext('webgl');
-        if (gl) {
-            gl.clearColor(0, 0, 0, 1);
-            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        }
+		const gl = canvas.getContext('webgl2') || canvas.getContext('webgl');
+		if (gl) {
+			gl.clearColor(0, 0, 0, 1);
+			gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+		}
 	}
 }
 

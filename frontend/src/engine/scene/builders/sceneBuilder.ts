@@ -2,7 +2,7 @@ import { GlowLayer, Scene } from "@babylonjs/core";
 import { GameMode, ViewMode } from '../../../shared/constants.js';
 import { Effects, GameObjects, Players, ThemeObject } from '../../../shared/types.js';
 import { Logger } from '../../../utils/LogManager.js';
-import { GameConfig } from '../../GameConfig.js';
+import { GameConfig } from '../../GameInitializer.js';
 import { getBallStartPosition, getPlayerLeftPosition, getPlayerRightPosition, getPlayerSize, PlayerSide } from '../../utils.js';
 import { ParticleEffectType } from "../config/effectSceneConfig.js";
 import { MAP_CONFIGS } from "../config/mapConfigs.js";

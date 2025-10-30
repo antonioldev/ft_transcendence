@@ -1,6 +1,6 @@
 import { Engine, Scene } from "@babylonjs/core";
 import { GameObjects } from '../shared/types.js';
-import { GameConfig } from './GameConfig.js';
+import { GameConfig } from './GameInitializer.js';
 import { AnimationManager } from "./services/AnimationManager";
 import { AudioManager } from "./services/AudioManager";
 import { GUIManager } from "./services/GuiManager";

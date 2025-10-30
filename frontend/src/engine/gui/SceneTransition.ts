@@ -46,7 +46,6 @@ export class SceneTransition {
 			this.animationManager.slideCurtain(this.leftBackground, true, 'out', speed),
 			this.animationManager.slideCurtain(this.rightBackground, false, 'out', speed)
 		]);
-
 	}
 
 	async play(speed: number = Motion.F.base): Promise<void> {

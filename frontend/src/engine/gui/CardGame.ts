@@ -23,7 +23,7 @@ export class CardGame {
 	private cards: CardElement[] = [];
 	private flippedCards: CardElement[] = [];
 	private matchedPairs: number = 0;
-	private totalPairs: number = 4;
+	private totalPairs: number = 12;
 	private isProcessing: boolean = false;
 
 	private readonly iconPaths: string[] = [
