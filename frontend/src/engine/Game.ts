@@ -13,7 +13,6 @@ import { startFireworks } from "./scene/builders/effectsBuilder.js";
 import { disposeMaterialResources } from "./scene/builders/materialsBuilder.js";
 import { buildScene } from './scene/builders/sceneBuilder.js';
 import { PlayerSide, PlayerState } from "./utils.js";
-import { KeyboardMode } from "./services/KeybordManager.js";
 import { Motion } from "./services/AnimationManager.js";
 
 /**
@@ -34,9 +33,8 @@ export class Game {
 	private gameLoopObserver: any = null;
 	private isSpectator: boolean = false;
 	private isPaused: boolean = false;
-	private isGameEnded: boolean = false;
 	private isCountdownStarted: boolean = false;
-	private currentRally: number = 0;
+	private currentRally: number = 1;
 	private players: Map<PlayerSide, PlayerState> = new Map([
 		[PlayerSide.LEFT, this.resetPlayerState()],
 		[PlayerSide.RIGHT, this.resetPlayerState()]
@@ -45,7 +43,6 @@ export class Game {
 // ====================			CONSTRUCTOR			   ====================
 	constructor(private config: GameConfig) {
 		try {
-			// this.resetPlayersState();
 			this.themeObjects = { props: [], actors: [], effects: [] };
 			const element = document.getElementById(config.canvasId);
 			if (element instanceof HTMLCanvasElement) {
@@ -57,7 +54,6 @@ export class Game {
 				}
 				this.canvas.focus();
 			}
-			// this.eventEmitter = new GameEventEmitter();
 		} catch (error) {
 			Logger.errorAndThrow('Error creating game managers', 'Game', error);
 		}
@@ -97,18 +93,14 @@ export class Game {
 
 		this.services = new GameServices(this.engine, this.scene, this.config, this.gameObjects, this.players, {
 			onPauseToggle: () => this.togglePause(),
-            onExitToMenu: () => this.requestExitToMenu(),
-            onSwitchGame: (dir) => this.switchGame(dir),
-            onToggleMatchTree: () => this.services?.gui.matchTree.toggle(),
-            // onSpectatorChoice: (choice) => this.onSpectatorChoice(choice)
+			onExitToMenu: () => this.requestExitToMenu(),
+			onSwitchGame: (dir) => this.switchGame(dir),
+			onToggleMatchTree: () => this.services?.gui.matchTree.toggle(),
 		});
-		// await this.services.initialize();
-		await this.services.audio.initialize();
-		this.services.render.startRendering();
 		this.registerCallbacks();
 		this.isInitialized = true;
 		uiManager.setLoadingScreenVisible(false);
-		await this.services?.gui.curtain.play();
+		await this.services?.start();
 		if (this.config.isRemoteMultiplayer)
 			webSocketClient.requestLobby();
 		webSocketClient.sendPlayerReady();
@@ -171,35 +163,6 @@ export class Game {
 		}
 	}
 
-	// Handle server ending the game
-	// private async onServerEndedGame(winner: string, loser: string): Promise<void> {
-	// 	if (!this.isInitialized || !this.config.isTournament || this.isSpectator) return;
-	// 	this.services?.audio?.lowerMusicVolume();
-	// 	this.services?.gui?.setPauseVisible(false, this.isSpectator);
-	// 	const controlledSides = this.getControlledSides();
-
-	// 	const controlledPlayer = controlledSides.length === 1 ? this.players.get(controlledSides[0]) : null;
-	// 	const showLoser = controlledPlayer?.name === loser;
-
-	// 	this.resetForNextMatch();
-
-	// 	if (this.config.gameMode === GameMode.TOURNAMENT_REMOTE && showLoser){
-	// 		this.isSpectator = true;
-	// 		await this.services?.gui?.showTournamentMatchLoser();
-	// 		await this.services?.input.waitForSpectatorChoice();
-	// 		this.services?.gui.hud.setSpectatorMode();
-	// 		return;
-	// 	}
-
-	// 	const waitForSpace = controlledSides.length !== 0 && this.config.gameMode !== GameMode.TOURNAMENT_REMOTE;
-	// 	await this.services?.gui?.showTournamentMatchWinner(winner, waitForSpace);
-	// 	webSocketClient.sendPlayerReady();
-	// 	if (this.services?.gui.isLastMatch)  return ;
-
-	// 	if (this.config.isRemoteMultiplayer)
-	// 		this.services?.gui.cardGame.show();
-	// }
-
 	private async onServerEndedGame(winner: string, loser: string): Promise<void> {
 		if (!this.isInitialized || !this.config.isTournament || this.isSpectator) return;
 		
@@ -224,18 +187,12 @@ export class Game {
 		webSocketClient.sendPlayerReady();
 	}
 	
-
 	private async onServerEndedSession(winner: string): Promise<void> {
 		if (!this.isInitialized) return;
 
-		this.services?.render?.startRendering();
-
-		this.services?.gui?.setPauseVisible(false, this.isSpectator);
 		startFireworks(this.themeObjects?.effects || [], 250);
-		await this.services?.gui?.showWinner(winner);
-		this.services?.audio?.stopGameMusic();
+		await this.services?.handleSessionEnd(winner, this.isSpectator);
 		this.dispose();
-
 	}
 
 // ====================			GAME LOOP				====================
@@ -245,7 +202,7 @@ export class Game {
 			if (!this.isInitialized) return;
 				try {
 					this.services?.input?.update();
-					this.services?.render?.update3DCameras(this.config.viewMode);
+					this.services?.render?.updateCamerasAngle(this.config.viewMode);
 				} catch (error) {
 					Logger.error('Error in game loop', 'Game', error);
 				}
@@ -363,19 +320,12 @@ export class Game {
 
 		switch (this.serverState){
 			case GameState.PAUSED:
-				this.services?.gui?.setPauseVisible(true, this.isSpectator);
-				// this.services?.audio?.pauseGameMusic();
+				this.services?.gui?.setPauseVisible(true, this.isSpectator); //TODO we need it?
 				break;
 			case GameState.RUNNING:
-				this.services?.gui.hud.show(true);
 				this.services?.gui?.setPauseVisible(false, this.isSpectator);
-				// this.services?.audio?.resumeGameMusic();
-				this.isGameEnded = false;
 				break;
 			case GameState.ENDED:
-				if (this.isGameEnded) return;
-				this.isGameEnded = true;
-				this.services?.gui.hud.show(false);
 				const winner = state.winner;
 				const loser = state.loser;
 				if (winner && loser)
@@ -386,28 +336,21 @@ export class Game {
 
 // ====================			INPUT HANDLING		   ====================
 	private handlePlayerAssignment(leftPlayerName: string, rightPlayerName: string): void {
-		this.services?.gui?.hud.updatePlayerNames(leftPlayerName, rightPlayerName);
-
 		const leftPlayer = this.players?.get(PlayerSide.LEFT);
 		const rightPlayer = this.players?.get(PlayerSide.RIGHT);
 		
-		if (leftPlayer){
+		if (leftPlayer) {
 			leftPlayer.name = leftPlayerName;
 			leftPlayer.isControlled = this.config.players.some(player => player.name === leftPlayerName);
 		}
-		if (rightPlayer){
+		if (rightPlayer) {
 			rightPlayer.name = rightPlayerName;
 			rightPlayer.isControlled = this.config.players.some(player => player.name === rightPlayerName);
 		}
 
-		this.services?.input?.assignLocalControls();
-
 		const controlledSides = this.getControlledSides();
-		this.services?.render?.updateActiveCameras(this.config.viewMode, controlledSides, this.config.isLocalMultiplayer);
-		this.services?.gui?.updateControlVisibility(
-			leftPlayer?.isControlled || false, 
-			rightPlayer?.isControlled || false
-		);
+		
+		this.services?.updatePlayerAssignment(leftPlayerName, rightPlayerName, controlledSides);
 	}
 
 	private getControlledSides(): PlayerSide[] {
@@ -417,6 +360,7 @@ export class Game {
 		if (this.players?.get(PlayerSide.RIGHT)?.isControlled)
 			controlledSides.push(PlayerSide.RIGHT);
 		return controlledSides;
+
 	}
 
 // ====================			GAME LIFECYCLE			   ====================
@@ -430,17 +374,12 @@ export class Game {
 
 	private togglePause(): void {
 		this.isPaused = !this.isPaused;
-		this.services?.gui.setPauseVisible(this.isPaused, this.isSpectator);
+		this.services?.handlePause(this.isPaused, this.isSpectator);
 
-		if (this.isPaused) {
-			this.services?.input.setMode(KeyboardMode.PAUSED);
-			this.services?.audio.pauseGameMusic();
+		if (this.isPaused)
 			webSocketClient.sendPauseRequest();
-		} else {
-			this.services?.input.setMode(KeyboardMode.NORMAL);
-			this.services?.audio.resumeGameMusic();
+		else
 			webSocketClient.sendResumeRequest();
-		}
 	}
 
 // ====================			WEBSOCKET				  ====================
@@ -470,13 +409,6 @@ export class Game {
 		this.services?.gui.curtain.play(Motion.F.xFast);
 		webSocketClient.sendSwitchGame(direction);
 	}
-
-	// private onSpectatorChoice(choice: boolean): void {
-	// 	this.services?.gui.endGame.hidePartial();
-	// 	if (!choice) {
-	// 		this.requestExitToMenu();
-	// 	}
-	// }
 
 // ====================			CLEANUP				  ====================
 	private async dispose(): Promise<void> {

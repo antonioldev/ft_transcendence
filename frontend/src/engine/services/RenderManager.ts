@@ -74,7 +74,7 @@ export class RenderManager {
 	}
 
 	// Update 3D camera targets to follow players
-	update3DCameras(viewMode: ViewMode): void {
+	updateCamerasAngle(viewMode: ViewMode): void {
 		if (!this.isInitialized || !this.gameObjects?.cameras) return;
 
 		if (viewMode === ViewMode.MODE_2D) return;

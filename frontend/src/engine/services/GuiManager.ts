@@ -1,5 +1,5 @@
 import { Scene } from "@babylonjs/core";
-import { AdvancedDynamicTexture, TextBlock } from "@babylonjs/gui";
+import { AdvancedDynamicTexture } from "@babylonjs/gui";
 import { GameMode, ViewMode } from '../../shared/constants.js';
 import { Logger } from '../../utils/LogManager.js';
 import { GameConfig } from '../GameConfig.js';
@@ -93,15 +93,6 @@ export class GUIManager {
 
 		this.audioManager.playWinner();
 		await this.endGame.showFinalWinner(winner);
-	}
-
-	updateControlVisibility(player1: boolean, player2: boolean): void {
-		if (!this.isReady) return;
-		const p1 = this.adt?.getControlByName("PlayerControls_p1") as TextBlock | null;
-		const p2 = this.adt?.getControlByName("PlayerControls_p2") as TextBlock | null;
-
-		if (p1) p1.color = player1 ? "rgba(255, 255, 255, 0.7)" : "rgba(0, 0, 0, 0)";
-		if (p2) p2.color = player2 ? "rgba(255, 255, 255, 0.7)" : "rgba(0, 0, 0, 0)";
 	}
 
 	updateTournamentRound(message: any): void {

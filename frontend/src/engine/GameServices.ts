@@ -4,7 +4,7 @@ import { GameConfig } from './GameConfig.js';
 import { AnimationManager } from "./services/AnimationManager";
 import { AudioManager } from "./services/AudioManager";
 import { GUIManager } from "./services/GuiManager";
-import { KeyboardManager } from "./services/KeybordManager";
+import { KeyboardManager, KeyboardMode } from "./services/KeybordManager";
 import { PowerupManager } from "./services/PowerUpManager";
 import { RenderManager } from "./services/RenderManager";
 import { PlayerSide, PlayerState } from "./utils.js";
@@ -29,7 +29,6 @@ export class GameServices {
 			onExitToMenu: () => void;
 			onSwitchGame: (direction: Direction) => void;
 			onToggleMatchTree: () => void;
-			// onSpectatorChoice: (choice: boolean) => void;
 		}
 	) {
 		this.animation = new AnimationManager(scene);
@@ -40,19 +39,19 @@ export class GameServices {
 		this.render = new RenderManager(engine, scene, gameObjects);
 	}
 
-
-
-	async initialize(): Promise<void> {
+	async start(): Promise<void> {
 		await this.audio.initialize();
+		this.render.startRendering();
+		await this.gui.curtain.play();
 	}
 
 //COUNTDOWN CALLS
 	startCountdownSequence(): void {
-        this.gui.lobby.hide();
-        this.gui.cardGame.hide();
-    }
+		this.gui.lobby.hide();
+		this.gui.cardGame.hide();
+	}
 
-    async showPlayerIntroduction(controlledSides: PlayerSide[]): Promise<void> {
+	async showPlayerIntroduction(controlledSides: PlayerSide[]): Promise<void> {
 		const playerLeft = this.players.get(PlayerSide.LEFT)?.name!;
 		const playerRight = this.players.get(PlayerSide.RIGHT)?.name!;
 		
@@ -85,6 +84,16 @@ export class GameServices {
 	}
 
 //GAMEPLAY CALLS
+	updatePlayerAssignment(leftPlayerName: string, rightPlayerName: string, controlledSides: PlayerSide[]): void {
+		const leftIsControlled = controlledSides.includes(PlayerSide.LEFT);
+		const rightIsControlled = controlledSides.includes(PlayerSide.RIGHT);
+
+		this.gui.hud.updatePlayerNames(leftPlayerName, rightPlayerName);
+		this.input.assignLocalControls();
+		this.render.updateActiveCameras(this.config.viewMode, controlledSides, this.config.isLocalMultiplayer);
+		this.gui.hud.updateControlVisibility(leftIsControlled, rightIsControlled);
+	}
+
 	updateRally(rallyCount: number): void {
 		this.gui.hud.updateRally(rallyCount);
 		this.audio.playPaddleHit();
@@ -93,8 +102,22 @@ export class GameServices {
 
 	updateScore(leftScore: number, rightScore: number): void {
 		this.gui.hud.updateScores(leftScore, rightScore);
-		this.gui.hud.updateRally(0);
+		this.gui.hud.updateRally(1);
 		this.audio.playScore();
+	}
+
+	handlePause(isPaused: boolean, isSpectator: boolean): void {
+		this.gui.setPauseVisible(isPaused, isSpectator);
+
+		if (isPaused) {
+			this.gui.hud.show(false);
+			this.input.setMode(KeyboardMode.PAUSED);
+			this.audio.pauseGameMusic();
+		} else {
+			this.gui.hud.show(true);
+			this.input.setMode(KeyboardMode.NORMAL);
+			this.audio.resumeGameMusic();
+		}
 	}
 
 //END GAME CALLS
@@ -111,12 +134,20 @@ export class GameServices {
 	}
 
 	async showMatchEndForWinner(winner: string, waitForSpace: boolean, showCardGame: boolean): Promise<void> {
+		this.gui.hud.show(false);
 		this.audio.lowerMusicVolume();
 		this.gui.setPauseVisible(false, false);
 		await this.gui.showTournamentMatchWinner(winner, waitForSpace);
 		
 		if (!this.gui.isLastMatch && showCardGame)
 			this.gui.cardGame.show();
+	}
+
+	async handleSessionEnd(winner: string, isSpectator: boolean): Promise<void> {
+		this.render.startRendering();
+		this.gui.setPauseVisible(false, isSpectator);
+		await this.gui.showWinner(winner);
+		this.audio.stopGameMusic();
 	}
 
 

@@ -275,6 +275,16 @@ export class Hud {
 		}
 	}
 
+	updateControlVisibility(leftIsControlled: boolean, rightIsControlled: boolean): void {
+		this.powerUpCellsP1.forEach(cell => {
+			cell.letter.alpha = leftIsControlled ? 1 : 0;
+		});
+
+		this.powerUpCellsP2.forEach(cell => {
+			cell.letter.alpha = rightIsControlled ? 1 : 0;
+		});
+	}
+
 	updatePowerUp(player: PlayerSide, slotIndex: number, action: PowerupState): void {
 		const scene = this.adt.getScene();
 		const cells = player === 0 ? this.powerUpCellsP1 : this.powerUpCellsP2;
