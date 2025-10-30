@@ -564,15 +564,6 @@
                 aria-label="3D Game Canvas" tabindex="0"></canvas>
         </div>
         
-        <!-- Pause Dialog -->
-        <div id="pause-dialog-3d" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center" style="display: none;">
-            <div class="bg-blue-background border-2 border-light-green p-8 text-center">
-                <h2 id="pause-title-3d" class="text-light-green font-tiny5-regular text-2xl mb-4">Game Paused</h2>
-                <p id="pause-text-3d" class="text-light-green font-tiny5-regular text-lg mb-4">Exit the game?</p>
-                <p id="pause-controls-3d" class="text-light-green font-tiny5-regular text-lg">Y | N</p>
-            </div>
-        </div>
-        
         <!-- Loading Screen -->
         <div id="loading-screen" class="fixed inset-0 bg-blue-background flex items-center justify-center" style="display: none;">
             <div class="text-center">
@@ -631,7 +622,7 @@
         </div>
         
         <div class="w-full max-w-6xl mx-auto px-4 py-8">
-            <h2 class="text-center uppercase text-xl sm:text-2xl font-bold tracking-tight text-light-green font-sans pb-6">
+            <h2 id="instructions-title" class="text-center uppercase text-xl sm:text-2xl font-bold tracking-tight text-light-green font-sans pb-6">
                 How to Play
             </h2>
             
@@ -639,7 +630,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
                 <div class="bg-dark-brown bg-opacity-20 rounded-md p-6 shadow-md">
-                    <h3 class="text-orange text-center font-bold font-tiny5-regular text-2xl mb-6">2D Games</h3>
+                    <h3 id="instructions-2d-title" class="text-orange text-center font-bold font-tiny5-regular text-2xl mb-6">2D Games</h3>
                     <h4 class="text-light-green font-semibold font-sans mb-4">Solo | Online</h4>
                     <div class="flex items-center justify-center space-x-12">
                         <div class="flex flex-col items-center space-y-2">
@@ -647,7 +638,7 @@
                                 <span class="key">↑</span>
                                 <span class="key">↓</span>
                             </div>
-                            <span class="text-light-green font-tiny5-regular text-xs uppercase tracking-wide">Move</span>
+                            <span class="instructions-move text-light-green font-tiny5-regular text-xs uppercase tracking-wide">Move</span>
                         </div>
                         <div class="flex flex-col items-center space-y-2">
                             <div class="flex gap-1">
@@ -663,7 +654,7 @@
                         <div class="w-3/4 h-0.5 bg-light-green opacity-20"></div>
                     </div>
 
-                    <h4 class="text-light-green font-semibold font-sans mb-4">Local</h4>
+                    <h4 id="instructions-local-label" class="instructions-local text-light-green font-semibold font-sans mb-4">Local</h4>
                     <div class="space-y-4">
                         <div class="p-4">
                             <div class="flex items-center justify-center space-x-12">
@@ -672,9 +663,9 @@
                                         <span class="key">W</span>
                                         <span class="key">S</span>
                                     </div>
-                                    <span class="text-light-green font-tiny5-regular text-xs uppercase tracking-wide">Move</span>
+                                    <span class="instructions-move text-light-green font-tiny5-regular text-xs uppercase tracking-wide">Move</span>
                                 </div>
-                                <h5 class="text-orange font-sans text-sm font-semibold">player_1</h5>
+                                <h5 class="text-orange font-sans text-sm font-semibold instructions-player1">player_1</h5>
                                 <div class="flex flex-col items-center space-y-2">
                                     <div class="flex gap-1">
                                         <span class="key">C</span>
@@ -692,9 +683,9 @@
                                         <span class="key">↑</span>
                                         <span class="key">↓</span>
                                     </div>
-                                    <span class="text-light-green font-tiny5-regular text-xs uppercase tracking-wide">Move</span>
+                                    <span class="instructions-move text-light-green font-tiny5-regular text-xs uppercase tracking-wide">Move</span>
                                 </div>
-                                <h5 class="text-orange font-sans text-sm font-semibold">player_2</h5>
+                                <h5 class="text-orange font-sans text-sm font-semibold instructions-player2">player_2</h5>
                                 <div class="flex flex-col items-center space-y-2">
                                     <div class="flex gap-1">
                                         <span class="key">I</span>
@@ -709,7 +700,7 @@
                 </div>
 
                 <div class="bg-dark-brown bg-opacity-20 rounded-md p-6 shadow-md">
-                    <h3 class="text-orange text-center font-bold font-tiny5-regular text-2xl mb-6">3D Games</h3>
+                    <h3 id="instructions-3d-title" class="text-orange text-center font-bold font-tiny5-regular text-2xl mb-6">3D Games</h3>
                     <h4 class="text-light-green font-semibold font-sans mb-4">Solo | Online</h4>
                     <div class="flex items-center justify-center space-x-12">
                         <div class="flex flex-col items-center space-y-2">
@@ -717,7 +708,7 @@
                                 <span class="key">←</span>
                                 <span class="key">→</span>
                             </div>
-                            <span class="text-light-green font-tiny5-regular text-xs uppercase tracking-wide">Move</span>
+                            <span class="instructions-move text-light-green font-tiny5-regular text-xs uppercase tracking-wide">Move</span>
                         </div>
                         <div class="flex flex-col items-center space-y-2">
                             <div class="flex gap-1">
@@ -733,7 +724,7 @@
                         <div class="w-3/4 h-0.5 bg-light-green opacity-20"></div>
                     </div>
 
-                    <h4 class="text-light-green font-semibold font-sans mb-4">Local</h4>
+                    <h4 class="instructions-local text-light-green font-semibold font-sans mb-4">Local</h4>
                     <div class="space-y-4">
                         <div class="p-4">
                             <div class="flex items-center justify-center space-x-12">
@@ -742,9 +733,9 @@
                                         <span class="key">A</span>
                                         <span class="key">D</span>
                                     </div>
-                                    <span class="text-light-green font-tiny5-regular text-xs uppercase tracking-wide">Move</span>
+                                    <span class="instructions-move text-light-green font-tiny5-regular text-xs uppercase tracking-wide">Move</span>
                                 </div>
-                                <h5 class="text-orange font-sans text-sm font-semibold">player_1</h5>
+                                <h5 class="text-orange font-sans text-sm font-semibold instructions-player1">player_1</h5>
                                 <div class="flex flex-col items-center space-y-2">
                                     <div class="flex gap-1">
                                         <span class="key">C</span>
@@ -762,9 +753,9 @@
                                         <span class="key">←</span>
                                         <span class="key">→</span>
                                     </div>
-                                    <span class="text-light-green font-tiny5-regular text-xs uppercase tracking-wide">Move</span>
+                                    <span class="instructions-move text-light-green font-tiny5-regular text-xs uppercase tracking-wide">Move</span>
                                 </div>
-                                <h5 class="text-orange font-sans text-sm font-semibold">player_2</h5>
+                                <h5 class="text-orange font-sans text-sm font-semibold instructions-player2">player_2</h5>
                                 <div class="flex flex-col items-center space-y-2">
                                     <div class="flex gap-1">
                                         <span class="key">I</span>
@@ -781,23 +772,23 @@
             
             <!-- General Game Modes -->
             <div class="mt-8 max-w-4xl mx-auto">
-                <h2 class="text-center uppercase text-xl sm:text-2xl font-bold tracking-tight text-light-green font-sans mb-8">Game Modes</h2>
+                <h2 id="instructions-game-modes-title" class="text-center uppercase text-xl sm:text-2xl font-bold tracking-tight text-light-green font-sans mb-8">Game Modes</h2>
                 <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     <div class="bg-dark-brown bg-opacity-20 rounded-md p-4 text-center shadow-md">
-                        <h4 class="text-orange font-semibold font-sans mb-2">Solo vs AI</h4>
-                        <p class="text-light-green font-sans text-xs">4 difficulty levels available</p>
+                        <h4 id="instructions-solo-title" class="text-orange font-semibold font-sans mb-2">Solo vs AI</h4>
+                        <p id="instructions-solo-desc" class="text-light-green font-sans text-xs">4 difficulty levels available</p>
                     </div>
                     <div class="bg-dark-brown bg-opacity-20 rounded-md p-4 text-center shadow-md">
-                        <h4 class="text-orange font-semibold font-sans mb-2">Local</h4>
-                        <p class="text-light-green font-sans text-xs">Share the same keyboard</p>
+                        <h4 id="instructions-local-title" class="text-orange font-semibold font-sans mb-2">Local</h4>
+                        <p id="instructions-local-desc" class="text-light-green font-sans text-xs">Share the same keyboard</p>
                     </div>
                     <div class="bg-dark-brown bg-opacity-20 rounded-md p-4 text-center shadow-md">
-                        <h4 class="text-orange font-semibold font-sans mb-2">Online Match</h4>
-                        <p class="text-light-green font-sans text-xs">Play against remote players</p>
+                        <h4 id="instructions-online-title" class="text-orange font-semibold font-sans mb-2">Online Match</h4>
+                        <p id="instructions-online-desc" class="text-light-green font-sans text-xs">Play against remote players</p>
                     </div>
                     <div class="bg-dark-brown bg-opacity-20 rounded-md p-4 text-center shadow-md">
-                        <h4 class="text-orange font-semibold font-sans mb-2">Online Tournament</h4>
-                        <p class="text-light-green font-sans text-xs">4, 8, or 16 players</p>
+                        <h4 id="instructions-tournament-title" class="text-orange font-semibold font-sans mb-2">Online Tournament</h4>
+                        <p id="instructions-tournament-desc" class="text-light-green font-sans text-xs">4, 8, or 16 players</p>
                     </div>
                 </div>
             </div>

@@ -31,6 +31,7 @@ export const russian: Translation = {
     loginSubmit: 'Войти',
     loginTitle: 'Войти в свой аккаунт',
     greeting: 'Привет',
+    instructions: '/ как играть',
     username: 'Имя пользователя:',
     email: 'имейл:',
     password: 'Пароль:',
@@ -106,4 +107,22 @@ export const russian: Translation = {
     music: 'Музыка',
     soundEffects: 'Звуковые Эффекты',
     backToMainMenu: 'Вернуться в Главное Меню'
+
+,
+    // Instructions / How to Play
+    howToPlay: 'Как Играть',
+    games2DTitle: '2D Игра',
+    games3DTitle: '3D Игра',
+    soloOnline: 'Соло | Онлайн',
+    moveLabel: 'Двигаться',
+    localLabel: 'Локально',
+    player1Label: 'игрок_1',
+    player2Label: 'игрок_2',
+    gameModesTitle: 'Режимы игры',
+    soloVsAITitle: 'Соло против ИИ',
+    difficultyInfo: 'Доступно 4 уровня сложности',
+    shareKeyboard: 'Делитесь одной клавиатурой',
+    onlineMatchTitle: 'Онлайн Матч',
+    onlineMatchInfo: 'Играйте против удалённых игроков',
+    tournamentInfo: '4, 8 или 16 игроков'
 };

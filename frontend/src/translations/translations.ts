@@ -210,6 +210,55 @@ export function updateLanguageDisplay(): void {
     const registerConfirmPasswordError = document.getElementById(EL.ERRORS.REGISTER_CONFIRM_PASSWORD_ERROR);
     if (registerConfirmPasswordError) registerConfirmPasswordError.textContent = t.errorConfirmPassword;
 
+    // Instructions modal texts
+    const instructionsTitle = document.getElementById('instructions-title');
+    if (instructionsTitle) instructionsTitle.textContent = t.howToPlay;
+
+    const instructions2d = document.getElementById('instructions-2d-title');
+    if (instructions2d) instructions2d.textContent = t.games2DTitle;
+
+    const instructions3d = document.getElementById('instructions-3d-title');
+    if (instructions3d) instructions3d.textContent = t.games3DTitle;
+
+    const moveElements = document.querySelectorAll<HTMLElement>('.instructions-move');
+    moveElements.forEach(el => el.textContent = t.moveLabel);
+
+    const localLabelElements = document.querySelectorAll<HTMLElement>('.instructions-local');
+    localLabelElements.forEach(el => el.textContent = t.localLabel);
+
+    const gameModesTitle = document.getElementById('instructions-game-modes-title');
+    if (gameModesTitle) gameModesTitle.textContent = t.gameModesTitle;
+
+    const soloTitle = document.getElementById('instructions-solo-title');
+    if (soloTitle) soloTitle.textContent = t.soloVsAITitle;
+
+    const soloDesc = document.getElementById('instructions-solo-desc');
+    if (soloDesc) soloDesc.textContent = t.difficultyInfo;
+
+    const localTitleCard = document.getElementById('instructions-local-title');
+    if (localTitleCard) localTitleCard.textContent = t.localMode;
+
+    const localDesc = document.getElementById('instructions-local-desc');
+    if (localDesc) localDesc.textContent = t.shareKeyboard;
+
+    const onlineTitle = document.getElementById('instructions-online-title');
+    if (onlineTitle) onlineTitle.textContent = t.onlineMatchTitle;
+
+    const onlineDesc = document.getElementById('instructions-online-desc');
+    if (onlineDesc) onlineDesc.textContent = t.onlineMatchInfo;
+
+    const tournamentTitle = document.getElementById('instructions-tournament-title');
+    if (tournamentTitle) tournamentTitle.textContent = t.tournamentMode;
+
+    const tournamentDesc = document.getElementById('instructions-tournament-desc');
+    if (tournamentDesc) tournamentDesc.textContent = t.tournamentInfo;
+
+    const player1Els = document.querySelectorAll<HTMLElement>('.instructions-player1');
+    player1Els.forEach(el => el.textContent = t.player1Label);
+
+    const player2Els = document.querySelectorAll<HTMLElement>('.instructions-player2');
+    player2Els.forEach(el => el.textContent = t.player2Label);
+
 }
 
 // Retrieves a specific item based on current language

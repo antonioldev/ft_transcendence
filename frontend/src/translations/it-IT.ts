@@ -30,6 +30,7 @@ export const italian: Translation = {
     login: '/ accedi',
     loginTitle: 'Accedi al Tuo Account',
     loginSubmit: 'Accedi',
+    instructions: '/ come giocare',
     greeting: 'Ciao',
     username: 'Nome utente:',
     email: 'Email:',
@@ -106,4 +107,21 @@ export const italian: Translation = {
     music: 'Musica',
     soundEffects: 'Effetti Sonori',
     backToMainMenu: 'Torna al Menu Principale'
+,
+    // Instructions / How to Play
+    howToPlay: 'Come Giocare',
+    games2DTitle: 'Giochi 2D',
+    games3DTitle: 'Giochi 3D',
+    soloOnline: 'Solo | Online',
+    moveLabel: 'Muovi',
+    localLabel: 'Locale',
+    player1Label: 'giocatore_1',
+    player2Label: 'giocatore_2',
+    gameModesTitle: 'Modalità di Gioco',
+    soloVsAITitle: 'Solo vs IA',
+    difficultyInfo: '4 livelli di difficoltà disponibili',
+    shareKeyboard: 'Condividi la stessa tastiera',
+    onlineMatchTitle: 'Partita Online',
+    onlineMatchInfo: 'Gioca contro giocatori remoti',
+    tournamentInfo: '4, 8 o 16 giocatori'
 };

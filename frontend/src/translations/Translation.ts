@@ -113,6 +113,23 @@ export interface Translation {
     music: string;
     soundEffects: string;
     backToMainMenu: string;
+
+    // Instructions / How to Play
+    howToPlay: string;
+    games2DTitle: string;
+    games3DTitle: string;
+    soloOnline: string;
+    moveLabel: string;
+    localLabel: string;
+    player1Label: string;
+    player2Label: string;
+    gameModesTitle: string;
+    soloVsAITitle: string;
+    difficultyInfo: string;
+    shareKeyboard: string;
+    onlineMatchTitle: string;
+    onlineMatchInfo: string;
+    tournamentInfo: string;
 }
 
 // export type TranslationKey = keyof Translation;
