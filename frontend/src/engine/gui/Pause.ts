@@ -59,12 +59,6 @@ export class Pause {
 		const objectiveDetails = createTextBlock("objectiveDetails", PAUSE_MENU_STYLES.pauseDetails, objectiveText);
 		instructionsStack.addControl(objectiveDetails);
 
-
-
-
-
-
-
 		const exitStack = createStackPanel("exitStack", PAUSE_MENU_STYLES.stack);
 		pauseGrid.addControl(exitStack, 1, 0);
 

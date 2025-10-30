@@ -22,7 +22,7 @@ export class GUIManager {
 	private adt: AdvancedDynamicTexture | null = null;
 	private isInitialized: boolean = false;
 	private isTournament: boolean = false;
-	isLastMatch: boolean = false;
+	// isLastMatch: boolean = false;
 	countdown!: Countdown;
 	matchTree!: MatchTree;
 	hud!: Hud;
@@ -71,16 +71,16 @@ export class GUIManager {
 			this.matchTree.show(visible);
 	}
 
-	async showTournamentMatchWinner(winner: string, waitForSpace: boolean): Promise<void> {
-		if (!this.isReady || this.isLastMatch) return;
+	async showTournamentMatchWinner(winner: string, waitForSpace: boolean, isLastMatch: boolean): Promise<void> {
+		if (!this.isReady || isLastMatch) return;
 		
 		await this.endGame.fadeBackground(true);
 		await this.endGame.showPartialWinner(winner, waitForSpace);
 		await this.endGame.hidePartial();
 	}
 
-	async showTournamentMatchLoser(): Promise<void> {
-		if (!this.isReady || this.isLastMatch) return;
+	async showTournamentMatchLoser(isLastMatch: boolean): Promise<void> {
+		if (!this.isReady || isLastMatch) return;
 		
 		await this.endGame.fadeBackground(true);
 		await this.endGame.showPartialLoser();
@@ -95,34 +95,6 @@ export class GUIManager {
 		await this.endGame.showFinalWinner(winner);
 	}
 
-	updateTournamentRound(message: any): void {
-		if (message.round_index === message.round_total)
-			this.isLastMatch = true;
-		this.pause.alignLeft();
-		this.matchTree.insert(
-			message.round_index,
-			message.round_total,
-			message.match_index,
-			message.left ?? null,
-			message.right ?? null,
-			message.match_total ?? undefined
-		);
-	}
-
-	updateTournamentGame(message: any): void {
-		if (message.winner !== undefined)
-			this.matchTree.update(
-				message.winner,
-				message.round_index,
-				message.match_index
-			)
-	}
-
-	updateTournamentLobby(message: any): void {
-		const names: string[] = message.lobby ?? [""];
-		this.lobby.show(names);
-	}
-	
 	isReady(): boolean {
 		return this.isInitialized;
 	}

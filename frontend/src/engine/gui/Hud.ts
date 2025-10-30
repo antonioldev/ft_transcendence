@@ -97,7 +97,7 @@ export class Hud {
 		rallyGrid.addRowDefinition(0.3);
 		this.hudGrid.addControl(rallyGrid, 0, 2);
 
-		this.rally = createTextBlock("rallyValue", HUD_STYLES.rallyValue, "0");
+		this.rally = createTextBlock("rallyValue", HUD_STYLES.rallyValue, "1");
 		const rallyText = createTextBlock("rallyText", HUD_STYLES.rallyText, "Rally");
 
 		rallyGrid.addControl(this.rally, 0, 0);
@@ -335,7 +335,7 @@ export class Hud {
 		imageHD.isVisible = false;
 	}
 
-	resetPowerUps(): void {
+	resetPowerupVisuals(): void {
 		const scene = this.adt.getScene();
 
 		[this.powerUpCellsP1, this.powerUpCellsP2].forEach(cells => {

@@ -21,10 +21,8 @@ export class AudioManager {
 	private miniGameNotCorrect: Sound | null = null;
 
 	private isInitialized: boolean = false;
-	private basePlaybackRate: number = 1.0;
-	private maxPlaybackRate: number = 1.8;
-	private maxRally: number = 10;
-	private currentRally: number = 1;
+	private readonly basePlaybackRate: number = 1.0;
+	private readonly maxPlaybackRate: number = 1.8;
 	private musicEnabled: boolean;
 	private effectsEnabled: boolean;
 	private volumes = {
@@ -236,14 +234,13 @@ export class AudioManager {
 	}
 
 	// Update music speed based on rally count with gentler curve and pinch effect
-	updateMusicSpeed(rallyCount: number): void {
+	updateMusicSpeed(rallyCount: number, maxRally: number = 10): void {
 		if (!this.gameMusic || !this.isInitialized) return;
 
-		if (rallyCount === this.currentRally) return;
 		this.playPaddleHit();
-		this.currentRally = rallyCount;
 
-		const speedCurve = Math.min(rallyCount / this.maxRally, 1.0);
+		const normalizedRally = Math.min(rallyCount / maxRally, 1.0);
+		const speedCurve = Math.pow(normalizedRally, 2.5);
 		const newPlaybackRate = this.basePlaybackRate + 
 			(speedCurve * (this.maxPlaybackRate - this.basePlaybackRate));
 

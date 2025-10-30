@@ -30,15 +30,17 @@ export class Game {
 	private canvas: HTMLCanvasElement | null = null;
 	private gameObjects: GameObjects | null = null;
 	private themeObjects: ThemeObject | null = null;
-	private gameLoopObserver: any = null;
-	private isSpectator: boolean = false;
-	private isPaused: boolean = false;
-	private isCountdownStarted: boolean = false;
-	private currentRally: number = 1;
 	private players: Map<PlayerSide, PlayerState> = new Map([
 		[PlayerSide.LEFT, this.resetPlayerState()],
 		[PlayerSide.RIGHT, this.resetPlayerState()]
 	]);
+	private gameLoopObserver: any = null;
+	private isSpectator: boolean = false;
+	private isPaused: boolean = false;
+	private isLastMatch: boolean = false;
+	private isCountdownStarted: boolean = false;
+	private currentRally: number = 1;
+	
 
 // ====================			CONSTRUCTOR			   ====================
 	constructor(private config: GameConfig) {
@@ -174,7 +176,7 @@ export class Game {
 
 		if (this.config.gameMode === GameMode.TOURNAMENT_REMOTE && showLoser) {
 			this.isSpectator = true;
-			const wantsToSpectate = await this.services?.showMatchEndForLoser();
+			const wantsToSpectate = await this.services?.showMatchEndForLoser(this.isLastMatch);
 			if (!wantsToSpectate)
 				this.requestExitToMenu();
 			return;
@@ -182,7 +184,7 @@ export class Game {
 
 		const waitForSpace = controlledSides.length !== 0 && this.config.gameMode !== GameMode.TOURNAMENT_REMOTE;
 		const showCardGame = this.config.isRemoteMultiplayer;
-		await this.services?.showMatchEndForWinner(winner, waitForSpace, showCardGame);
+		await this.services?.showMatchEndForWinner(winner, waitForSpace, showCardGame, this.isLastMatch);
 		
 		webSocketClient.sendPlayerReady();
 	}
@@ -201,8 +203,7 @@ export class Game {
 		this.gameLoopObserver = setInterval(() => {
 			if (!this.isInitialized) return;
 				try {
-					this.services?.input?.update();
-					this.services?.render?.updateCamerasAngle(this.config.viewMode);
+					this.services?.updateGameLoop(this.config.viewMode);
 				} catch (error) {
 					Logger.error('Error in game loop', 'Game', error);
 				}
@@ -238,8 +239,7 @@ export class Game {
 		if (!this.isInitialized) return;
 
 		this.stopGameLoop();
-		this.services?.powerup?.resetAllPowerups();
-		this.services?.gui?.hud.resetPowerUps();
+		this.services?.resetGuiForNextMatch();
 		this.resetPlayersState();
 
 		if (this.gameObjects) {
@@ -257,10 +257,6 @@ export class Game {
 			}
 		}
 		this.currentRally = 1;
-		this.services?.gui?.hud.updateScores(
-			this.players.get(PlayerSide.LEFT)!.score,
-			this.players.get(PlayerSide.RIGHT)!.score
-		);
 	}
 
 // ====================			GAME STATE UPDATES	   ====================
@@ -273,7 +269,6 @@ export class Game {
 			this.gameObjects.players.left.position.x = state.paddleLeft.x;
 			this.gameObjects.players.right.position.x = state.paddleRight.x;
 
-			// Update ball position
 			const ballStates = state.ball_states || [];
 			for (let i = 0; i < this.gameObjects.balls.length; i++) {
 				const ball = this.gameObjects.balls[i];
@@ -299,9 +294,7 @@ export class Game {
 			const leftPlayer = this.players.get(PlayerSide.LEFT)!;
 			const rightPlayer = this.players.get(PlayerSide.RIGHT)!;
 
-			this.services?.powerup?.handleUpdates(PlayerSide.LEFT, state.paddleLeft.powerups);
-			this.services?.powerup?.handleUpdates(PlayerSide.RIGHT, state.paddleRight.powerups);
-
+			this.services?.updatePowerups(state.paddleLeft.powerups, state.paddleRight.powerups)
 
 			if (leftPlayer.score < state.paddleLeft.score || rightPlayer.score < state.paddleRight.score) {
 				rightPlayer.score = state.paddleRight.score;
@@ -320,10 +313,10 @@ export class Game {
 
 		switch (this.serverState){
 			case GameState.PAUSED:
-				this.services?.gui?.setPauseVisible(true, this.isSpectator); //TODO we need it?
+				// this.services?.gui?.setPauseVisible(true, this.isSpectator); //TODO we need it?
 				break;
 			case GameState.RUNNING:
-				this.services?.gui?.setPauseVisible(false, this.isSpectator);
+				// this.services?.gui?.setPauseVisible(false, this.isSpectator);
 				break;
 			case GameState.ENDED:
 				const winner = state.winner;
@@ -336,8 +329,8 @@ export class Game {
 
 // ====================			INPUT HANDLING		   ====================
 	private handlePlayerAssignment(leftPlayerName: string, rightPlayerName: string): void {
-		const leftPlayer = this.players?.get(PlayerSide.LEFT);
-		const rightPlayer = this.players?.get(PlayerSide.RIGHT);
+		const leftPlayer = this.players.get(PlayerSide.LEFT);
+		const rightPlayer = this.players.get(PlayerSide.RIGHT);
 		
 		if (leftPlayer) {
 			leftPlayer.name = leftPlayerName;
@@ -366,7 +359,7 @@ export class Game {
 // ====================			GAME LIFECYCLE			   ====================
 	async requestExitToMenu(): Promise<void> {
 		if (!this.isInitialized) return;
-		await this.services?.gui.curtain.play();
+		await this.services?.playCurtains();
 		if (webSocketClient.isConnected())
 			webSocketClient.sendQuitGame();
 		await this.dispose();
@@ -388,9 +381,9 @@ export class Game {
 		webSocketClient.registerCallback(MessageType.ERROR, (error: string) => { Logger.error('Network error', 'Game', error); });
 		webSocketClient.registerCallback(MessageType.SESSION_ENDED, (message: any) => { this.onServerEndedSession(message.winner); });
 		webSocketClient.registerCallback(MessageType.SIDE_ASSIGNMENT, (message: any) => { this.handlePlayerAssignment(message.left, message.right); });
-		webSocketClient.registerCallback(MessageType.MATCH_ASSIGNMENT, (message: any) => { this.services?.gui?.updateTournamentRound(message); });
-		webSocketClient.registerCallback(MessageType.MATCH_RESULT, (message: any) => { this.services?.gui?.updateTournamentGame(message);});
-		webSocketClient.registerCallback(MessageType.TOURNAMENT_LOBBY, (message: any) => {this.services?.gui?.updateTournamentLobby(message);});
+		webSocketClient.registerCallback(MessageType.MATCH_ASSIGNMENT, (message: any) => { this.isLastMatch = this.services?.updateTournamentRound(message) ?? false; });
+		webSocketClient.registerCallback(MessageType.MATCH_RESULT, (message: any) => { this.services?.updateTournamentGame(message);});
+		webSocketClient.registerCallback(MessageType.TOURNAMENT_LOBBY, (message: any) => { this.services?.updateTournamentLobby(message);});
 		webSocketClient.registerCallback(MessageType.COUNTDOWN, (message: any) => { this.handleCountdown(message.countdown); });
 	}
 
@@ -406,7 +399,7 @@ export class Game {
 	}
 
 	private switchGame(direction: Direction): void {
-		this.services?.gui.curtain.play(Motion.F.xFast);
+		this.services?.playCurtains(Motion.F.xFast);
 		webSocketClient.sendSwitchGame(direction);
 	}
 

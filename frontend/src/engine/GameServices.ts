@@ -1,14 +1,14 @@
 import { Engine, Scene } from "@babylonjs/core";
 import { GameObjects } from '../shared/types.js';
 import { GameConfig } from './GameInitializer.js';
-import { AnimationManager } from "./services/AnimationManager";
+import { AnimationManager, Motion } from "./services/AnimationManager";
 import { AudioManager } from "./services/AudioManager";
 import { GUIManager } from "./services/GuiManager";
 import { KeyboardManager, KeyboardMode } from "./services/KeybordManager";
 import { PowerupManager } from "./services/PowerUpManager";
 import { RenderManager } from "./services/RenderManager";
 import { PlayerSide, PlayerState } from "./utils.js";
-import { Direction } from "../shared/constants.js";
+import { Direction, ViewMode } from "../shared/constants.js";
 
 export class GameServices {
 	audio: AudioManager;
@@ -42,13 +42,29 @@ export class GameServices {
 	async start(): Promise<void> {
 		await this.audio.initialize();
 		this.render.startRendering();
-		await this.gui.curtain.play();
+		await this.playCurtains();
+	}
+
+	async playCurtains(speed: number = Motion.F.base): Promise<void> {
+		await this.gui.curtain.show(speed);
+		await this.gui.curtain.hide(speed);
+	}
+
+	updateGameLoop(viewMode: ViewMode): void {
+		this.input?.update();
+		this.render?.updateCamerasAngle(viewMode);
+	}
+
+	updatePowerups(leftPowerups: any, rightPowerups: any): void {
+		this.powerup?.handleUpdates(PlayerSide.LEFT, leftPowerups);
+		this.powerup?.handleUpdates(PlayerSide.RIGHT, rightPowerups);
 	}
 
 //COUNTDOWN CALLS
 	startCountdownSequence(): void {
 		this.gui.lobby.hide();
 		this.gui.cardGame.hide();
+		this.gui.hud.show(true);
 	}
 
 	async showPlayerIntroduction(controlledSides: PlayerSide[]): Promise<void> {
@@ -96,7 +112,6 @@ export class GameServices {
 
 	updateRally(rallyCount: number): void {
 		this.gui.hud.updateRally(rallyCount);
-		this.audio.playPaddleHit();
 		this.audio.updateMusicSpeed(rallyCount);
 	}
 
@@ -120,12 +135,58 @@ export class GameServices {
 		}
 	}
 
+	updateTournamentRound(message: any): boolean {
+		if (!message) return false;
+		
+		const roundIndex = message.round_index;
+		const roundTotal = message.round_total;
+		const matchIndex = message.match_index;
+		const leftPlayer = message.left ?? null;
+		const rightPlayer = message.right ?? null;
+		const matchTotal = message.match_total ?? undefined;
+		
+		this.gui.pause.alignLeft();
+		this.gui.matchTree.insert(
+			roundIndex,
+			roundTotal,
+			matchIndex,
+			leftPlayer,
+			rightPlayer,
+			matchTotal
+		);
+		
+		return roundIndex === roundTotal;
+	}
+
+	updateTournamentGame(message: any): void {
+		if (!message || message.winner === undefined) return;
+		
+		this.gui.matchTree.update(
+			message.winner,
+			message.round_index,
+			message.match_index
+		);
+	}
+
+	updateTournamentLobby(message: any): void {
+		if (!message) return;
+		
+		const names: string[] = message.lobby ?? [""];
+		this.gui.lobby.show(names);
+	}
+
 //END GAME CALLS
-	async showMatchEndForLoser(): Promise<boolean> {
+	resetGuiForNextMatch(): void {
+		this.powerup?.resetPowerupStates();
+		this.gui?.hud.resetPowerupVisuals();
+		this.gui?.hud.updateScores(0, 0);
+	}
+
+	async showMatchEndForLoser(isLastMatch: boolean): Promise<boolean> {
 		this.audio.lowerMusicVolume();
 		this.gui.setPauseVisible(false, true);
 		this.audio.playLoser();
-		await this.gui.showTournamentMatchLoser();
+		await this.gui.showTournamentMatchLoser(isLastMatch);
 		const wantsToSpectate = await this.input.waitForSpectatorChoice();
 		if (wantsToSpectate)
 			this.gui.hud.setSpectatorMode();
@@ -133,18 +194,19 @@ export class GameServices {
 		return wantsToSpectate;
 	}
 
-	async showMatchEndForWinner(winner: string, waitForSpace: boolean, showCardGame: boolean): Promise<void> {
+	async showMatchEndForWinner(winner: string, waitForSpace: boolean, showCardGame: boolean, isLastMatch: boolean): Promise<void> {
 		this.gui.hud.show(false);
 		this.audio.lowerMusicVolume();
 		this.gui.setPauseVisible(false, false);
-		await this.gui.showTournamentMatchWinner(winner, waitForSpace);
+		await this.gui.showTournamentMatchWinner(winner, waitForSpace, isLastMatch);
 		
-		if (!this.gui.isLastMatch && showCardGame)
+		if (!isLastMatch && showCardGame)
 			this.gui.cardGame.show();
 	}
 
 	async handleSessionEnd(winner: string, isSpectator: boolean): Promise<void> {
 		this.render.startRendering();
+		this.audio.lowerMusicVolume();
 		this.gui.setPauseVisible(false, isSpectator);
 		await this.gui.showWinner(winner);
 		this.audio.stopGameMusic();

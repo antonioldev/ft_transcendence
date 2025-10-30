@@ -26,7 +26,7 @@ export class SceneTransition {
 		this.adt.addControl(this.rightBackground);
 	}
 
-	private async show(speed: number = Motion.F.base): Promise<void> {
+	async show(speed: number = Motion.F.base): Promise<void> {
 		if (this.isActive) return;
 		this.isActive = true;
 		
@@ -36,7 +36,7 @@ export class SceneTransition {
 		]);
 	}
 
-	private async hide(speed: number = Motion.F.base): Promise<void> {
+	async hide(speed: number = Motion.F.base): Promise<void> {
 		if (!this.isActive) return;
 
 		await new Promise(resolve => setTimeout(resolve, 400));
@@ -47,11 +47,5 @@ export class SceneTransition {
 			this.animationManager.slideCurtain(this.rightBackground, false, 'out', speed)
 		]);
 	}
-
-	async play(speed: number = Motion.F.base): Promise<void> {
-		await this.show(speed);
-		await this.hide(speed);
-	}
-
 }
 
