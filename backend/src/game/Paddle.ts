@@ -11,10 +11,10 @@ export class Paddle {
 	speed: number = GAME_CONFIG.paddleSpeed;
 	is_inverted: boolean = false;
 
-	powershot_activate = false;
+	powershot_active = false;
 	powershot_deactivate = false;
-    invisible_activated: boolean = false;
-    triple_shot_activated: boolean = false;
+    // invisible_activated: boolean = false;
+    triple_shot_active: boolean = false;
 	shield_activated: boolean = false;
 
 	constructor(side: number) {

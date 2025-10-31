@@ -5,10 +5,10 @@ import { getCurrentTranslation } from '../translations/translations.js';
 import { EL, requireElementById} from '../ui/elements.js';
 import { initializeGoogleSignIn, renderGoogleButton } from './GoogleSignIn.js';
 import { appManager } from './AppManager.js';
-import { sendPOST } from './HTTPRequests.js';
+import { sendGET, sendPOST, getSID } from './HTTPRequests.js';
 import { AuthCode } from '../shared/constants.js';
 import { Translation } from '../translations/Translation.js';
-import { updateCurrentSettings } from './AppManager.js';
+import { updateCurrentSettings, Setting } from './AppManager.js';
 
 // Declare the type for Google Response to avoid TypeScript errors
 type GoogleCredentialResponse = {
@@ -372,35 +372,31 @@ export class AuthManager {
         this.handleRegistrationResponse(responseData.result, responseData.message);
     }
 
+    async saveUserSettings(settings: Partial<Setting>) : Promise<void> {
+        if (!this.isUserAuthenticated()) return;
+
+        const response = await sendPOST('settings', settings);
+        if (!response.success) {
+            console.error('Error saving user settings:', response.message);
+        }
+    }
+
 	async getUserSettings() {
 		try {
-			const settingsRes = await fetch('/api/auth/session/me', {
-				method: 'GET',
-				credentials: 'include',
-				cache: 'no-store',
-			});
+			const response = await sendGET('settings');
 			
-			if (settingsRes.ok) {
-				const settingsData = await settingsRes.json();
-				if (settingsData?.ok && settingsData.user?.settings) {
-					try {
-						const parsedSettings = JSON.parse(settingsData.user.settings);
-						updateCurrentSettings(parsedSettings);
-						// MenuFlowManager.getInstance().updateSettingsUIFromState();
-					} catch (error) {
-						console.error('Error parsing user settings after login:', error);
-					}
-				}
-			}
+			if (response.success && response.settings) {
+				updateCurrentSettings(response.settings);
+            }
 		} catch (error) {
-			console.error('Error loading user settings after login:', error);
+			console.error('Error loading user settings:', error);
 		}
 	}
 
     handleLoginResponse(result: AuthCode, message: string, username: string, translation: Translation) {
         if (result === AuthCode.OK) {
             this.currentUser = { username: username };
-			// getUserSettings()
+			this.getUserSettings();
             uiManager.clearForm(this.loginFields);
             appManager.navigateTo(AppState.MAIN_MENU);
             uiManager.showUserInfo(this.currentUser.username);
@@ -423,7 +419,6 @@ export class AuthManager {
 
     handleRegistrationResponse(result: AuthCode, message: string) {
         if (result === AuthCode.OK) {
-            // this.authState = AuthState.LOGGED_IN;
             // this.currentUser = { username };
             uiManager.clearForm(this.registrationFields);
             // uiManager.showUserInfo(username);
@@ -440,10 +435,6 @@ export class AuthManager {
     }
 
 
-	// public setupGoogleLoginButton(): void {
-	// 	this.prepareGoogleLogin();
-	// }
-
 	// Prepares and initializes Google Sign-In for the application
 	private prepareGoogleLogin(): void {
         const googleClientId = window.GOOGLE_CLIENT_ID;
@@ -455,15 +446,15 @@ export class AuthManager {
 	    const handleAuthSuccess = async (googleResponse: GoogleCredentialResponse) => {
             console.log("Google token received, sending to backend...");
             try {
-                // 1) Hit your backend; allow cookies to be set
-                const authRes = await fetch('/api/google', {
+                const sid = getSID();
+                const response = await fetch(`/api/google?sid=${sid}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ token: googleResponse.credential })
                 });
 
-                if (!authRes.ok) {
-                    const errorData = await authRes.json();
+                if (!response.ok) {
+                    const errorData = await response.json();
                     throw new Error(`Backend authentication failed: ${errorData.message || errorData.error || 'Unknown error'}`);
                 }
 
@@ -473,14 +464,11 @@ export class AuthManager {
                 // this.currentUser = { username: decodedToken.user.username };
                 // this.authState = AuthState.LOGGED_IN;
 
-                // Parses the response to get the user data from your application
-                const { user, success } = await authRes.json();
+                const { user, success } = await response.json();
                 console.log("Backend responded with user data:", user, "success:", success);
 
-                // Updates the current user and authentication state
                 this.currentUser = { username: user.username };
-
-				this.getUserSettings() // NEED TO CHECK LATER !
+				this.getUserSettings();
                 
                 // Store Google token for session restore if needed
                 localStorage.setItem('google_id_token', googleResponse.credential);

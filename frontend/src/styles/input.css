@@ -78,6 +78,22 @@
     color: #ffffff !important;
     border-radius: 0.375rem !important;
   }
+
+  .key {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    background-color: #FE5E41;
+    color: #143D60;
+    font-family: 'Tiny5';
+    font-weight: 400;
+    font-size: 1.125rem;
+    border-radius: 0.375rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    vertical-align: middle;
+  }
 }
 
 @layer utilities {

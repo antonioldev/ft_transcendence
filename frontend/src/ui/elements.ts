@@ -34,6 +34,7 @@ export const EL = {
 		GAME_3D: 'game-3d',
 		STATS_DASHBOARD: 'stats-dashboard',
 		SETTINGS_MENU: 'settings-menu',
+		INSTRUCTIONS_MODAL: 'instructions-modal'
 	},
 
 // ========================================
@@ -45,6 +46,7 @@ export const EL = {
 		LOGIN: 'login-btn',
 		REGISTER: 'register-btn',
 		LOGOUT: 'logout-btn',
+		INSTRUCTIONS: 'instructions-btn',
 
 		// Navigation buttons
 		BACK: 'back',
@@ -54,6 +56,7 @@ export const EL = {
 		LOGIN_BACK: 'login-back',
 		REGISTER_BACK: 'register-back',
 		DASHBOARD_BACK: 'dashboard-back',
+		INSTRUCTIONS_BACK: 'instructions-back',
 		SOLO_DIFFICULTY_BACK: 'solo-difficulty-back',
 		SOLO_DIFFICULTY_FORWARD: 'solo-difficulty-forward',
 		TOURNAMENT_NUMBER_BACK: 'tournament-number-back',

@@ -30,6 +30,7 @@ export const english: Translation = {
     loginTitle: 'Sign in to Your Account',
     login: '/ login',
     loginSubmit: 'Login',
+    instructions: '/ how to play',
     greeting: 'Hi',
     username: 'Username:',
     email: 'Email:',
@@ -108,4 +109,22 @@ export const english: Translation = {
     music: 'Music',
     soundEffects: 'Sound Effects',
     backToMainMenu: 'Back to Main Menu'
+,
+
+    // Instructions / How to Play
+    howToPlay: 'How to Play',
+    games2DTitle: '2D Games',
+    games3DTitle: '3D Games',
+    soloOnline: 'Solo | Online',
+    moveLabel: 'Move',
+    localLabel: 'Local',
+    player1Label: 'player_1',
+    player2Label: 'player_2',
+    gameModesTitle: 'Game Modes',
+    soloVsAITitle: 'Solo vs AI',
+    difficultyInfo: '4 difficulty levels available',
+    shareKeyboard: 'Share the same keyboard',
+    onlineMatchTitle: 'Online Match',
+    onlineMatchInfo: 'Play against remote players',
+    tournamentInfo: '4, 8, or 16 players'
 };

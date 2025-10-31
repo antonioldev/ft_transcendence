@@ -74,6 +74,9 @@ set-env-ip:
 set-env-hostname:
 	@touch .env
 	@HOSTNAME=$$(hostname); \
+	tmp=$$(mktemp 2>/dev/null || echo .env.tmp); \
+	grep -vE '^(HOSTNAME)=' .env > "$$tmp" 2>/dev/null || true; \
+	mv "$$tmp" .env; \
 	printf "HOSTNAME=%s\n" "$$HOSTNAME" >> .env; \
 	echo "HOSTNAME set to $$HOSTNAME and written to .env"
 

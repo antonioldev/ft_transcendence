@@ -30,6 +30,7 @@ export const portuguese: Translation = {
     login: '/ entrar',
     loginTitle: 'Entre na Sua Conta',
     loginSubmit: 'Entrar',
+    instructions: '/ como jogar',
     greeting: 'Oi',
     username: 'Nome de usuário:',
     email: 'Email:',
@@ -107,4 +108,21 @@ export const portuguese: Translation = {
     soundEffects: 'Efeitos Sonoros',
     backToMainMenu: 'Voltar ao Menu Principal'
 
+,
+    // Instructions / How to Play
+    howToPlay: 'Como Jogar',
+    games2DTitle: 'Jogos 2D',
+    games3DTitle: 'Jogos 3D',
+    soloOnline: 'Solo | Online',
+    moveLabel: 'Mover',
+    localLabel: 'Local',
+    player1Label: 'jogador_1',
+    player2Label: 'jogador_2',
+    gameModesTitle: 'Modos de Jogo',
+    soloVsAITitle: 'Solo vs IA',
+    difficultyInfo: '4 níveis de dificuldade disponíveis',
+    shareKeyboard: 'Compartilhe o mesmo teclado',
+    onlineMatchTitle: 'Partida Online',
+    onlineMatchInfo: 'Jogue contra jogadores remotos',
+    tournamentInfo: '4, 8 ou 16 jogadores'
 };

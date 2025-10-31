@@ -5,7 +5,7 @@ import { gameManager } from '../network/GameManager.js';
 import { AuthCode, GameMode, AiDifficulty } from '../shared/constants.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
 import { getClientConnection, createClientConnection } from './utils.js';
-
+import { updateUserSettings, getUserSettings } from '../data/database.js';
 
 /* --- HTTP Endpoints --- */
 
@@ -216,6 +216,10 @@ export async function APIRoutes(app: FastifyInstance) {
 	app.get('/api/history', (request, reply) => {
 		const { username } = request.query as { username: string };
 		const history = db.getGameHistoryForUser(username); // from DB
+		// print duration from history only
+		// history.forEach((entry) => {
+		// 	console.log(`Game played at: ${entry.playedAt}, Duration: ${entry.duration}`);
+		// });
 		if (!history) {
 			console.log(`Failed to send game history: user '${username}' not found`);
 			return reply.code(401).send({ success: false, message: "User not found" });
@@ -223,4 +227,73 @@ export async function APIRoutes(app: FastifyInstance) {
 		console.log(`User history sent to ${username}`);
 		return reply.send({ success: true, history: history });
 	})
+
+	// UPDATE USER SETTINGS
+	app.post('/api/settings', async  (request, reply) =>{
+		const { sid } = request.query as { sid: string };
+		if (!sid) {
+			console.log(`/settings request failed: missing SID`);
+			return reply.code(400).send({ success: false, message: "Error: missing SID"} );
+		}
+
+		const client = getClientConnection(sid);
+		if (!client || !client.loggedIn) {
+			console.log("Update settings failed: user not logged in");
+			return reply.code(401).send( {success: false, message: "User not authenticated"});
+		}
+
+		const currentSettings = getUserSettings(client.username);
+		const requestBody = request.body as {
+			musicEnabled?: boolean,
+			soundEffectsEnabled?: boolean,
+			language?: number,
+			scene3D?: string
+		};
+
+		const {
+			musicEnabled = currentSettings?.musicEnabled,
+			soundEffectsEnabled = currentSettings?.soundEffectsEnabled,
+			language = currentSettings?.language,
+			scene3D = currentSettings?.scene3D
+		} = requestBody;
+
+		const success = updateUserSettings(
+			client.username,
+			musicEnabled,
+			soundEffectsEnabled,
+			language,
+			scene3D
+		);
+
+		if (!success) {
+			console.log(`Failed to update settings for user '${client.username}'`);
+			return reply.code(500).send({ success: false, message: "Failed to update settings" });
+		}
+
+		console.log(`Settings updated successfully for user '${client.username}'`);
+		return reply.code(200).send({ success: true, message: "Settings updated successfully" });
+	})
+
+	// GET USER SETTINGS
+	app.get('/api/settings', (request, reply) => {
+		const { sid } = request.query as { sid: string };
+		if (!sid) {
+			console.log(`/settings request failed: missing SID`);
+			return reply.code(400).send({ success: false, message: "Error: missing SID"} );
+		}
+
+		const client = getClientConnection(sid);
+		if (!client || !client.loggedIn) {
+			console.log("Get settings failed: user not logged in");
+			return reply.code(401).send( {success: false, message: "User not authenticated"});
+		}
+
+		const userSettings = getUserSettings(client.username);
+		if (!userSettings) {
+			console.log(`Failed to get settings for user '${client.username}'`);
+			return reply.code(500).send({ success: false, message: "Failed to get settings" });
+		}
+
+		return reply.send({ success: true, settings: userSettings });
+	});
 }

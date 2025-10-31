@@ -11,7 +11,7 @@ import { dashboardManager } from './DashboardManager.js';
 import { updateLanguageDisplay } from '../translations/translations.js';
 
 export interface Setting {
-	lang: number;
+	language: number;
 	viewMode: ViewMode;
 	scene3D: string;
 	gameMode: GameMode | null;
@@ -24,7 +24,7 @@ export interface Setting {
 }
 
 export let currentSettings: Setting = {
-	lang: 0,
+	language: 0,
 	viewMode: ViewMode.MODE_2D,
 	scene3D: 'random',
 	gameMode: null,
@@ -37,8 +37,33 @@ export let currentSettings: Setting = {
 };
 
 export function updateCurrentSettings(newSettings: Partial<typeof currentSettings>): void {
-	if (newSettings)
-		currentSettings = { ...currentSettings, ...newSettings };
+    if (newSettings) {
+        currentSettings = { ...currentSettings, ...newSettings };
+        updateSettingsUI();
+    }
+}
+
+function updateSettingsUI(): void {
+    const sceneSelect = document.getElementById('map-selector') as HTMLSelectElement;
+    if (sceneSelect) {
+        sceneSelect.value = currentSettings.scene3D;
+    }
+
+    const musicToggle = document.getElementById('music-toggle') as HTMLInputElement;
+    if (musicToggle) {
+        musicToggle.checked = currentSettings.musicEnabled;
+    }
+
+    const effectsToggle = document.getElementById('sound-effect-toggle') as HTMLInputElement;
+    if (effectsToggle) {
+        effectsToggle.checked = currentSettings.soundEffectsEnabled;
+    }
+
+    const languageSelect = document.getElementById('language_select') as HTMLSelectElement;
+    if (languageSelect) {
+        languageSelect.value = ['UK', 'IT', 'FR', 'BR', 'RU'][currentSettings.language];
+        updateLanguageDisplay();
+    }
 }
 
 /**
@@ -89,7 +114,9 @@ export class AppManager {
 		this.setupGameModeListeners();
 		this.setupPlayerSetupListeners();
 		this.setupDashboardListener();
-		this.setupSettingListner();
+		this.setupSettingListener();
+		this.setupInstructionsListener();
+		
 		document.addEventListener('submit', (event) => {
 			event.preventDefault();
 		});
@@ -167,7 +194,7 @@ export class AppManager {
 		dashboardBackBtn.addEventListener('click', () => this.navigateTo(AppState.MAIN_MENU));
 	}
 
-	private setupSettingListner(): void {
+	private setupSettingListener(): void {
 		const settingsBtn = requireElementById<HTMLButtonElement>(EL.BUTTONS.SETTINGS);
 		settingsBtn?.addEventListener('click', () => {
 			this.navigateTo(AppState.SETTINGS);
@@ -182,10 +209,11 @@ export class AppManager {
 		if (sceneSelect) {
 			sceneSelect.value = currentSettings.scene3D;
 
-			sceneSelect.addEventListener('change', (event) => {
+			sceneSelect.addEventListener('change', async (event) => {
 				const target = event.target as HTMLSelectElement;
 				if (target)
 					currentSettings.scene3D = target.value;
+				await authManager.saveUserSettings({ scene3D: target.value });
 			});
 		}
 
@@ -193,9 +221,10 @@ export class AppManager {
 		if (musicToggle) {
 			musicToggle.checked = currentSettings.musicEnabled;
 
-			musicToggle.addEventListener('change', (event) => {
+			musicToggle.addEventListener('change', async (event) => {
 				const target = event.target as HTMLInputElement;
 				currentSettings.musicEnabled = target.checked;
+				await authManager.saveUserSettings({ musicEnabled: target.checked });
 			});
 		}
 
@@ -203,26 +232,43 @@ export class AppManager {
 		if (effectsToggle) {
 			effectsToggle.checked = currentSettings.soundEffectsEnabled;
 
-			effectsToggle.addEventListener('change', (event) => {
+			effectsToggle.addEventListener('change', async (event) => {
 				const target = event.target as HTMLInputElement;
 				currentSettings.soundEffectsEnabled = target.checked;
+				await authManager.saveUserSettings({ soundEffectsEnabled: target.checked });
 			});
 		}
 
 		updateLanguageDisplay();
 		const languageSelect = document.getElementById('language_select') as HTMLSelectElement;
 		if (languageSelect) {
-			languageSelect.value = ['UK', 'IT', 'FR', 'BR', 'RU'][currentSettings.lang];
-			languageSelect.addEventListener('change', (event) => {
+			languageSelect.value = ['UK', 'IT', 'FR', 'BR', 'RU'][currentSettings.language];
+			languageSelect.addEventListener('change', async (event) => {
 				const target = event.target as HTMLSelectElement;
 				const languageMapping = ['UK', 'IT', 'FR', 'BR', 'RU'];
 				const newLangIndex = languageMapping.indexOf(target.value);
 				if (newLangIndex !== -1) {
-					currentSettings.lang = newLangIndex;
+					currentSettings.language = newLangIndex;
 					updateLanguageDisplay();
+					await authManager.saveUserSettings({ language: newLangIndex });
 				}
 			});
 		}
+
+		updateCurrentSettings(currentSettings);
+	}
+
+	private setupInstructionsListener(): void {
+		const instructionsBtn = requireElementById<HTMLButtonElement>(EL.BUTTONS.INSTRUCTIONS);
+		const instructionsBackBtn = requireElementById<HTMLButtonElement>(EL.BUTTONS.INSTRUCTIONS_BACK);
+
+		instructionsBtn.addEventListener('click', () => {
+			appManager.navigateTo(AppState.INSTRUCTIONS);
+		});
+
+		instructionsBackBtn.addEventListener('click', () => {
+			appManager.navigateTo(AppState.MAIN_MENU);
+		});
 	}
 
 	private selectViewMode(mode: ViewMode): void {
@@ -332,6 +378,9 @@ export class AppManager {
 			case AppState.REGISTER:
 				uiManager.showScreen(EL.SCREENS.MAIN_MENU, { modal: EL.SCREENS.REGISTER_MODAL });
 				break;
+			case AppState.INSTRUCTIONS:
+				uiManager.showScreen(EL.SCREENS.MAIN_MENU, { modal: EL.SCREENS.INSTRUCTIONS_MODAL });
+				break;
 			case AppState.GAME_MODE:
 				uiManager.showScreen(EL.SCREENS.GAME_MODE_OVERLAY);
 				break;
@@ -346,6 +395,9 @@ export class AppManager {
 				break;
 			case AppState.SETTINGS:
 				uiManager.showScreen(EL.SCREENS.SETTINGS_MENU);
+				if (authManager.isUserAuthenticated()) {
+					authManager.getUserSettings();
+				}
 				break;
 			default:
 				Logger.error(`Unknown state: ${state}, redirecting to main menu`, 'AppManager');

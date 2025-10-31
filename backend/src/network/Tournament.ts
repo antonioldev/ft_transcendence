@@ -40,7 +40,6 @@ export class Match {
 			(p): p is Player => p instanceof Player && p.client === client
 		)
 		if (index >= 0) this.players.splice(index);
-
 		this.clients.delete(client);
 	}
 }
@@ -300,6 +299,19 @@ export class TournamentRemote extends AbstractTournament {
 		await Promise.all(round_winners);
 	}
 
+	stop() {
+		if (this.is_ended()) return ;
+		this.state = GameSessionState.ENDED
+		
+		for (const match of this.active_matches) {
+			match.game?.stop();
+		}
+		this.broadcast({
+			type: MessageType.SESSION_ENDED,
+			...(this.tournamentWinner?.name && { winner: this.tournamentWinner?.name }),
+		});
+	}
+
 	handle_match_end(match: Match, winner: Player | CPU) {
 		// remove match from active_matches[]
 		const index = this.active_matches.indexOf(match);
@@ -340,6 +352,8 @@ export class TournamentRemote extends AbstractTournament {
 			match_index: match.index,
 		});
 	}
+
+	/* --- Spectators --- */
 
 	assign_spectator(client: Client, match?: Match) {
 		const spectator_match = match ?? this.active_matches[0] ?? undefined;
@@ -389,19 +403,6 @@ export class TournamentRemote extends AbstractTournament {
 			return false;
 		}
 		return true;
-	}
-
-	stop() {
-		if (this.is_ended()) return ;
-		this.state = GameSessionState.ENDED
-		
-		for (const match of this.active_matches) {
-			match.game?.stop();
-		}
-		this.broadcast({
-			type: MessageType.SESSION_ENDED,
-			...(this.tournamentWinner?.name && { winner: this.tournamentWinner?.name }),
-		});
 	}
 
 	handlePlayerQuit(quitter: Client): void {

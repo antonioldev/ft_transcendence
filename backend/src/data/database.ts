@@ -15,7 +15,7 @@ export function registerDatabaseFunctions(database: Database.Database) {
 export function generateClientId(): string {
 	return `client_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 }
- 
+
 export function generateGameId(): string {
 	return `game_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 }
@@ -126,6 +126,37 @@ export function updateUserInfo(field: UserField, newInfo: string, email: string)
 	}
 }
 
+export function updateUserSettings(
+	username: string,
+	musicEnabled: boolean,
+	soundEffectsEnabled: boolean,
+	language: number,
+	scene3D: string
+): boolean {
+	try {
+		username = trimString(username, 'username');
+		language = nonNegInt(language, 'language');
+
+		const stmt = db.prepare(`
+			UPDATE users
+			SET music_enabled = ?, sound_effects_enabled = ?, language = ?, scene3D = ?
+			WHERE username = ?
+		`);
+
+		const result = stmt.run(
+			musicEnabled ? 1 : 0,
+			soundEffectsEnabled ? 1 : 0,
+			language,
+			scene3D,
+			username
+		);
+		return result.changes > 0;
+	} catch (err) {
+		console.error('Error in updating user settings: ', err);
+		return false;
+	}
+}
+
 export function updateUserVictory(id: number, victory: number): boolean {
 	try {
 		id = nonNegInt(id, 'user id');
@@ -202,6 +233,26 @@ export function updateUserTournamentWin(id: number, tournament_win: number): boo
 		let newNbTournamentWin = currentTournamentWin + tournament_win;
 		const user = db.prepare('UPDATE users SET tournament_win = ? WHERE id = ?');
 		user.run(newNbTournamentWin, id);
+		return true;
+	} catch (err) {
+		console.error('Error in updating userDefeats: ', err);
+		return false;
+	}
+}
+
+export function updateUserTournamentDefeat(id: number, tournament_defeat: number): boolean {
+	try {
+		id = nonNegInt(id, 'user id');
+		tournament_defeat = nonNegInt(tournament_defeat, 'tournament defeat count');
+
+		const currentTournamentDefeat = getUserNbTournamentDefeat(id);
+		if (currentTournamentDefeat === -1) {
+			console.error('User not found');
+			return false;
+		}
+		let newNbTournamentDefeat = currentTournamentDefeat + tournament_defeat;
+		const user = db.prepare('UPDATE users SET tournament_defeat = ? WHERE id = ?');
+		user.run(newNbTournamentDefeat, id);
 		return true;
 	} catch (err) {
 		console.error('Error in updating userDefeats: ', err);
@@ -321,6 +372,37 @@ export function retrieveUserID(username: string): number {
 	}
 }
 
+export function getUserSettings(username: string) : any | null {
+	try {
+		username = trimString(username, 'username');
+
+		const stmt = db.prepare(`
+			SELECT music_enabled, sound_effects_enabled, language, scene3D
+			FROM users
+			WHERE username = ?`
+		);
+
+		const userSettings = stmt.get(username) as {
+			music_enabled: boolean,
+			sound_effects_enabled: boolean,
+			language: number,
+			scene3D: string
+		} | undefined;
+
+		if (!userSettings) return null;
+
+		return {
+			musicEnabled: userSettings.music_enabled,
+			soundEffectsEnabled: userSettings.sound_effects_enabled,
+			language: userSettings.language,
+			scene3D: userSettings.scene3D
+		};
+	} catch (err) {
+		console.error('Error in getUserSettings:', err);
+		return null;
+	}
+}
+
 // GET INFO regarding game history
 export function getUserNbVictory(id: number): number {
 	try {
@@ -367,6 +449,23 @@ export function getUserNbTournamentWin(id: number) {
 			return -1;
 		}
 		return userTournamentWin.tournament_win;
+	} catch (err) {
+		console.error('Error in get User defeat nb:', err);
+		return -1;
+	}
+}
+
+export function getUserNbTournamentDefeat(id: number) {
+	try {
+		id = nonNegInt(id, 'user id');
+
+		const user = db.prepare('SELECT tournament_defeat FROM users WHERE id = ?');
+		const userTournamentDefeat = user.get(id) as { tournament_defeat: number };
+		if (!userTournamentDefeat) {
+			console.error('User not found');
+			return -1;
+		}
+		return userTournamentDefeat.tournament_defeat;
 	} catch (err) {
 		console.error('Error in get User defeat nb:', err);
 		return -1;
@@ -428,7 +527,11 @@ export function getUserProfile(username: string): UserProfileData | null {
 		email: userInfo.email,
 		victories: userInfo.victories,
 		defeats: userInfo.defeats,
-		games: userInfo.games
+		games: userInfo.games,
+		soundEffectsEnabled: userInfo.soundEffectsEnabled,
+		musicEnabled: userInfo.musicEnabled,
+		language: userInfo.language,
+		scene3D: userInfo.scene3D
 	};
 }
 
@@ -540,9 +643,9 @@ export function updateGameInfo(id: string, player1_score: number, player2_score:
 			console.error('Game not found or start time invalid.');
 			return false;
 		}
-		const gameDuration = Math.floor((endTime - startTime.getTime()) / 1000);
+		const gameDuration = ((endTime - startTime.getTime()) / 1000).toFixed(1);
 		const gameInfo = db.prepare('UPDATE games SET player1_score = ?, player2_score = ?, winner_id = ?, looser_id = ?, duration_seconds = ? WHERE game_id = ?');
-		gameInfo.run(player1_score, player2_score, winner, looser, gameDuration, id);
+		gameInfo.run(player1_score, player2_score, winner, looser, parseFloat(gameDuration), id);
 		return true;
 	} catch (err) {
 		console.error('Error in update game: ', err);
@@ -778,6 +881,7 @@ export function getUserGameHistoryRows(userId: number) {
 	try {
 		userId = nonNegInt(userId, 'user id');
 
+		
 		const stmt = db.prepare(`
 		SELECT
 			g.game_id                       AS gameId,
@@ -797,7 +901,7 @@ export function getUserGameHistoryRows(userId: number) {
 		JOIN users u2 ON u2.id = g.player2_id
 		WHERE g.player1_id = ? OR g.player2_id = ?
 		ORDER BY g.played_at DESC, g.game_id DESC
-		`);
+		`);		
 		return stmt.all(userId, userId, userId, userId, userId, userId);
 	} catch (err) {
 		console.error('Error in getUserGameHistoryRows:', err);
@@ -870,34 +974,3 @@ export function getSessionInfo(userId: number): SessionUser | null {
 		return null;
 	}
 }
-
-// export function getUserBySession(sid: string): { id: number; username: string, email?: string} | null {
-// 	try {
-// 		sid = safeSid(sid);
-// 		const userId = db.prepare('SELECT user_id FROM sessions WHERE id = ?').get(sid) as { user_id: number } | undefined;
-// 		if (!userId) return null;
-// 		const row = db.prepare('SELECT id, username, email FROM users WHERE id = ?').get(userId.user_id) as { id:number; username:string; email?:string } | undefined;
-// 		if (!row) return null;
-// 		console.log(`in database.ts we found the session by user: ${row.username}, ${row.email}, ${row.id} where userId: ${userId.user_id}`);
-// 		return row;
-// 	} catch (e) {
-// 		console.error('getUserBySession error:', e);
-// 		return null;
-// 	}
-// }
-
-// export function retrieveSessionID(userId: number): string | null {
-// 	try {
-// 		userId = nonNegInt(userId, 'user id');
-// 		const sid = db.prepare('SELECT id FROM sessions WHERE user_id = ?');
-// 		const SID = sid.get(userId) as { id: string } | undefined;
-// 		if (SID === undefined) {
-// 			console.error('SID not found');
-// 			return null;
-// 		}
-// 		return SID.id;
-// 	} catch (err) {
-// 		console.error('Error in get User ID:', err);
-// 		return null;
-// 	}
-// }
