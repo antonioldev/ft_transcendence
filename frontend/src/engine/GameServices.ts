@@ -1,5 +1,5 @@
 import { Engine, Scene } from "@babylonjs/core";
-import { GameObjects } from '../shared/types.js';
+import { GameObjects, Powerup } from '../shared/types.js';
 import { GameConfig } from './GameInitializer.js';
 import { AnimationManager, Motion } from "./services/AnimationManager";
 import { AudioManager } from "./services/AudioManager";
@@ -55,7 +55,7 @@ export class GameServices {
 		this.render?.updateCamerasAngle(viewMode);
 	}
 
-	updatePowerups(leftPowerups: any, rightPowerups: any): void {
+	updatePowerups(leftPowerups: Powerup[], rightPowerups: Powerup[]): void {
 		this.powerup?.handleUpdates(PlayerSide.LEFT, leftPowerups);
 		this.powerup?.handleUpdates(PlayerSide.RIGHT, rightPowerups);
 	}

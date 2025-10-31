@@ -235,7 +235,7 @@ export class MatchTree {
 
 		children.forEach((child) => {
 			if (child.name?.startsWith('matchRow_'))
-				animationPromises.push(this.animationManager.fade(child as any, 'in', Motion.F.fast));
+				animationPromises.push(this.animationManager.fade(child, 'in', Motion.F.fast));
 		});
 
 		await Promise.all(animationPromises);

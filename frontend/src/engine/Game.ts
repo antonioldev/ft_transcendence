@@ -4,7 +4,7 @@ import { sendPOST } from "../core/HTTPRequests.js";
 import { webSocketClient } from '../core/WebSocketClient.js';
 import { AppState, Direction, GameMode, GameState, MessageType } from '../shared/constants.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
-import { GameObjects, GameStateData, PlayerInfo, ThemeObject } from '../shared/types.js';
+import { GameObjects, GameStateData, PlayerInfo, ServerMessage, ThemeObject } from '../shared/types.js';
 import { uiManager } from '../ui/UIManager.js';
 import { Logger } from '../utils/LogManager.js';
 import { GameConfig } from './GameInitializer.js';
@@ -34,7 +34,7 @@ export class Game {
 		[PlayerSide.LEFT, this.resetPlayerState()],
 		[PlayerSide.RIGHT, this.resetPlayerState()]
 	]);
-	private gameLoopObserver: any = null;
+	private gameLoopObserver: number | null = null;
 	private isSpectator: boolean = false;
 	private isPaused: boolean = false;
 	private isLastMatch: boolean = false;
@@ -140,7 +140,8 @@ export class Game {
 	}
 
 // ====================			GAME CONTROL			 ====================
-	private async handleCountdown(countdown: number): Promise<void> {
+	private async handleCountdown(message: ServerMessage): Promise<void> {
+		const countdown = message.countdown;
 		if (countdown === undefined || countdown === null) return;
 
 		if (!this.isCountdownStarted) {
@@ -189,11 +190,14 @@ export class Game {
 		webSocketClient.sendPlayerReady();
 	}
 	
-	private async onServerEndedSession(winner: string): Promise<void> {
+	private async onServerEndedSession(message: ServerMessage): Promise<void> {
 		if (!this.isInitialized) return;
 
+		const winner = message.winner;
+
 		startFireworks(this.themeObjects?.effects || [], 250);
-		await this.services?.handleSessionEnd(winner, this.isSpectator);
+		if (winner)
+			await this.services?.handleSessionEnd(winner, this.isSpectator);
 		this.dispose();
 	}
 
@@ -328,7 +332,12 @@ export class Game {
 	}
 
 // ====================			INPUT HANDLING		   ====================
-	private handlePlayerAssignment(leftPlayerName: string, rightPlayerName: string): void {
+	private handlePlayerAssignment(message: ServerMessage): void {
+		const leftPlayerName = message.left;
+		const rightPlayerName = message.right;
+
+		if (!leftPlayerName || !rightPlayerName) return;
+
 		const leftPlayer = this.players.get(PlayerSide.LEFT);
 		const rightPlayer = this.players.get(PlayerSide.RIGHT);
 		
@@ -342,7 +351,6 @@ export class Game {
 		}
 
 		const controlledSides = this.getControlledSides();
-		
 		this.services?.updatePlayerAssignment(leftPlayerName, rightPlayerName, controlledSides);
 	}
 
@@ -379,12 +387,12 @@ export class Game {
 	private registerCallbacks(): void {
 		webSocketClient.registerCallback(MessageType.GAME_STATE, (state: GameStateData) => { this.updateGameObjects(state); });
 		webSocketClient.registerCallback(MessageType.ERROR, (error: string) => { Logger.error('Network error', 'Game', error); });
-		webSocketClient.registerCallback(MessageType.SESSION_ENDED, (message: any) => { this.onServerEndedSession(message.winner); });
-		webSocketClient.registerCallback(MessageType.SIDE_ASSIGNMENT, (message: any) => { this.handlePlayerAssignment(message.left, message.right); });
-		webSocketClient.registerCallback(MessageType.MATCH_ASSIGNMENT, (message: any) => { this.isLastMatch = this.services?.updateTournamentRound(message) ?? false; });
-		webSocketClient.registerCallback(MessageType.MATCH_RESULT, (message: any) => { this.services?.updateTournamentGame(message);});
-		webSocketClient.registerCallback(MessageType.TOURNAMENT_LOBBY, (message: any) => { this.services?.updateTournamentLobby(message);});
-		webSocketClient.registerCallback(MessageType.COUNTDOWN, (message: any) => { this.handleCountdown(message.countdown); });
+		webSocketClient.registerCallback(MessageType.SESSION_ENDED, (message: ServerMessage) => { this.onServerEndedSession(message); });
+		webSocketClient.registerCallback(MessageType.SIDE_ASSIGNMENT, (message: ServerMessage) => { this.handlePlayerAssignment(message); });
+		webSocketClient.registerCallback(MessageType.MATCH_ASSIGNMENT, (message: ServerMessage) => { this.isLastMatch = this.services?.updateTournamentRound(message) ?? false; });
+		webSocketClient.registerCallback(MessageType.MATCH_RESULT, (message: ServerMessage) => { this.services?.updateTournamentGame(message);});
+		webSocketClient.registerCallback(MessageType.TOURNAMENT_LOBBY, (message: ServerMessage) => { this.services?.updateTournamentLobby(message);});
+		webSocketClient.registerCallback(MessageType.COUNTDOWN, (message: ServerMessage) => { this.handleCountdown(message); });
 	}
 
 	private unregisterCallbacks(): void {

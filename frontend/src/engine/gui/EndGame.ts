@@ -1,4 +1,4 @@
-import { KeyboardEventTypes } from "@babylonjs/core";
+import { KeyboardEventTypes, KeyboardInfo } from "@babylonjs/core";
 import { AdvancedDynamicTexture, Rectangle, TextBlock, Image } from "@babylonjs/gui";
 import { getCurrentTranslation } from '../../translations/translations.js';
 import { Z_INDEX } from "./GuiStyle";
@@ -107,7 +107,7 @@ export class EndGame {
 	
 	private spawnGUISparkles(
 		advancedTexture: AdvancedDynamicTexture, 
-		animationManager: any,
+		animationManager: AnimationManager,
 		winner: boolean
 	): void {
 		const config = winner ? PARTIAL_GUI_SPARKLES : PARTIAL_GUI_SPARKLES_LOSER;
@@ -145,7 +145,7 @@ export class EndGame {
 			this.animationManager?.twinkle(this.continueText, Motion.F.slow);
 
 			return new Promise<void>((resolve) => {
-				const sub = scene?.onKeyboardObservable.add((kbInfo: any) => {
+				const sub = scene?.onKeyboardObservable.add((kbInfo: KeyboardInfo) => {
 					if (kbInfo.type === KeyboardEventTypes.KEYDOWN) {
 						const e = kbInfo.event as KeyboardEvent;
 						if (e.code === "Space" || e.key === " ") {

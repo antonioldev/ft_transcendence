@@ -122,7 +122,6 @@ export class KeyboardManager {
 
 	private handleGlobalKeyDown(event: KeyboardEvent): void {
 		const key = event.keyCode;
-		console.log('KEY PRESSED:', key, 'MODE:', this.mode); 
 		switch (this.mode) {
 			case KeyboardMode.SPECTATOR_CHOICE:
 				this.handleSpectatorChoiceKeys(key);
