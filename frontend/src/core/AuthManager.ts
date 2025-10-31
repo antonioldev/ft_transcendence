@@ -561,10 +561,6 @@ export class AuthManager {
 	checkAuthState(): void {
 		if (this.currentUser) {
 			uiManager.showUserInfo(this.currentUser.username);
-            // uiManager.setButtonState(
-			// 		[EL.BUTTONS.LOGIN, EL.BUTTONS.REGISTER],
-			// 		'disabled'
-			// 	);
             uiManager.hideLoginButtons();
         }
 		else {
