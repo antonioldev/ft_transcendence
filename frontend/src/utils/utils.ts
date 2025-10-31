@@ -1,4 +1,5 @@
-import { GameMode, MIN_PLAYERS_FOR_CPU } from '../shared/constants.js';
+import { GameMode } from '../shared/constants.js';
+import { MIN_PLAYERS_FOR_CPU } from './constants.js';
 
 // Returns the maximum number of players for a game mode
 export function getMaxPlayers(gameMode: GameMode, tournamentSize?: number): number {

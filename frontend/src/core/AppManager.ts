@@ -1,6 +1,7 @@
 import { Game } from '../engine/Game.js';
 import { GameInitializer } from '../engine/GameInitializer.js';
-import { AiDifficulty, AppState, GAME_MODE_CONFIG, GameMode, GameState, TOURNAMENT_SIZES, ViewMode, BUTTON_NAV } from '../shared/constants.js';
+import { AiDifficulty, GameMode, GameState } from '../shared/constants.js';
+import { AppState, GAME_MODE_CONFIG, TOURNAMENT_SIZES, ViewMode, BUTTON_NAV } from '../utils/constants.js';
 import { getCurrentTranslation } from '../translations/translations.js';
 import { EL, requireElementById } from '../ui/elements.js';
 import { uiManager } from '../ui/UIManager.js';
@@ -9,21 +10,9 @@ import { getMaxPlayers, getMinPlayersForCpu } from '../utils/utils.js';
 import { authManager } from './AuthManager.js';
 import { dashboardManager } from './DashboardManager.js';
 import { updateLanguageDisplay } from '../translations/translations.js';
+import { GameSetting } from '../utils/types.js';
 
-export interface Setting {
-	language: number;
-	viewMode: ViewMode;
-	scene3D: string;
-	gameMode: GameMode | null;
-	AiDifficulty: AiDifficulty;
-	musicEnabled: boolean;
-	soundEffectsEnabled: boolean;
-	offlineTournamentSize: number;
-	onlineTournamentSize: number;
-
-}
-
-export let currentSettings: Setting = {
+export let currentSettings: GameSetting = {
 	language: 0,
 	viewMode: ViewMode.MODE_2D,
 	scene3D: 'random',

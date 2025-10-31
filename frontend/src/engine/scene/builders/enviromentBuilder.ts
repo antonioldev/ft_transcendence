@@ -1,6 +1,6 @@
 import { Color3, HDRCubeTexture, DirectionalLight, HemisphericLight, MeshBuilder, Scene, Vector3 } from "@babylonjs/core";
 import { GridMaterial } from "@babylonjs/materials";
-import { ViewMode } from '../../../shared/constants.js';
+import { ViewMode } from '../../../utils/constants.js';
 import { GAME_CONFIG } from '../../../shared/gameConfig.js';
 import { Logger } from '../../../utils/LogManager.js';
 import { MAP_OBJECT_TYPE, MapAssetConfig, TextureSet } from "../config/sceneTypes.js";

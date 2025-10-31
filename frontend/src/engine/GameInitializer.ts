@@ -1,8 +1,9 @@
-import { Setting } from '../core/AppManager.js';
 import { authManager } from '../core/AuthManager.js';
-import { GameMode, ViewMode } from '../shared/constants.js';
+import { GameMode } from '../shared/constants.js';
+import { ViewMode } from '../utils/constants.js';
 import { PlayerInfo } from '../shared/types.js';
 import { EL } from '../ui/elements.js';
+import { GameSetting } from '../utils/types.js';
 
 // Complete configuration for starting a game
 export interface GameConfig {
@@ -23,7 +24,7 @@ export class GameInitializer {
 	private static playerNames: string[] = [];
 
 	static createConfig(
-		settings: Setting,
+		settings: GameSetting,
 		players: PlayerInfo[]
 	): GameConfig {
 		const gameMode = settings.gameMode!;
@@ -73,7 +74,7 @@ export class GameInitializer {
 		}];
 	}
 
-	static createWithAuthCheck(settings: Setting): GameConfig {
+	static createWithAuthCheck(settings: GameSetting): GameConfig {
 		const players = authManager.isUserAuthenticated()
 			? this.getAuthenticatedPlayer()
 			: this.getPlayers();

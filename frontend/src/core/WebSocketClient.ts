@@ -1,5 +1,6 @@
 import { Logger } from '../utils/LogManager.js';
-import { ConnectionStatus, MessageType, Direction, PowerupType, AppState } from '../shared/constants.js'
+import { MessageType, Direction, PowerupType } from '../shared/constants.js'
+import { ConnectionStatus, AppState } from '../utils/constants.js';
 import { ClientMessage, ServerMessage } from '../shared/types.js'
 import { appManager } from './AppManager.js';
 
@@ -102,7 +103,6 @@ export class WebSocketClient {
                 break;
             default:
                 Logger.errorAndThrow(`Unhandled message type: ${message.type}`, 'WebSocketClient');
-                break;
         }
     }
 

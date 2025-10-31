@@ -3,7 +3,7 @@ import { PowerupState, PowerupType } from '../../shared/constants.js';
 import { getCurrentTranslation } from '../../translations/translations.js';
 import { GameConfig } from '../GameInitializer.js';
 import { AnimationManager, Motion } from "../services/AnimationManager.js";
-import { PlayerSide } from "../utils.js";
+import { PlayerSide } from "../../utils/constants.js";
 import { HUD_STYLES, POWER_UP_STYLES, SPECTATOR_STYLE, createGrid, createImage, createRect, createStackPanel, createTextBlock } from "./GuiStyle.js";
 
 export class Hud {

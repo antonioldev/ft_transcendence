@@ -1,5 +1,5 @@
 import { AdvancedDynamicTexture, Rectangle, Checkbox } from "@babylonjs/gui";
-import { ViewMode } from "../../shared/constants.js";
+import { ViewMode } from "../../utils/constants.js";
 import { GAME_CONFIG } from "../../shared/gameConfig.js";
 import { getCurrentTranslation } from '../../translations/translations.js';
 import { GameConfig } from "../GameInitializer.js";

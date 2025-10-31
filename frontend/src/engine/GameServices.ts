@@ -1,14 +1,18 @@
 import { Engine, Scene } from "@babylonjs/core";
-import { GameObjects, Powerup } from '../shared/types.js';
+import { Powerup } from '../shared/types.js';
 import { GameConfig } from './GameInitializer.js';
 import { AnimationManager, Motion } from "./services/AnimationManager";
 import { AudioManager } from "./services/AudioManager";
 import { GUIManager } from "./services/GuiManager";
-import { KeyboardManager, KeyboardMode } from "./services/KeybordManager";
+import { KeyboardManager } from "./services/KeybordManager";
 import { PowerupManager } from "./services/PowerUpManager";
 import { RenderManager } from "./services/RenderManager";
-import { PlayerSide, PlayerState } from "./utils.js";
-import { Direction, ViewMode } from "../shared/constants.js";
+import { PlayerState } from "../utils/types.js";
+import { PlayerSide } from "../utils/constants.js";
+import { Direction } from "../shared/constants.js";
+import { GameObjects } from '../utils/types.js';
+import { ViewMode } from "../utils/constants.js";
+import { KeyboardMode } from "./../utils/constants.js";
 
 export class GameServices {
 	audio: AudioManager;

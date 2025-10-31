@@ -2,8 +2,10 @@ import { Color3, Color4 } from "@babylonjs/core";
 import { webSocketClient } from '../../core/WebSocketClient.js';
 import { PowerupState, PowerupType } from "../../shared/constants.js";
 import { GAME_CONFIG } from "../../shared/gameConfig.js";
-import { GameObjects, Powerup } from "../../shared/types.js";
-import { PlayerSide, PlayerState } from "../utils.js";
+import { Powerup } from "../../shared/types.js";
+import { GameObjects } from "../../utils/types.js";
+import { PlayerState } from "../utils/utils.js";
+import { PlayerSide } from "../../utils/constants.js";
 import { AnimationManager } from "./AnimationManager.js";
 import { GUIManager } from "./GuiManager.js";
 

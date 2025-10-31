@@ -5,7 +5,7 @@ import { Z_INDEX } from "./GuiStyle";
 import { AnimationManager, Motion } from "../services/AnimationManager.js";
 import { END_GAME_STYLES, createGrid, createRect, createTextBlock } from "./GuiStyle.js";
 import { PARTIAL_GUI_SPARKLES, PARTIAL_GUI_SPARKLES_LOSER, SparkleDetails } from "../scene/config/particleGuiConfig.js";
-import { randomFromRange, randomFromArray } from "../utils.js";
+import { randomFromRange, randomFromArray } from "../utils/utils.js";
 
 export class EndGame {
 	private partialEndGameOverlay!: Rectangle;

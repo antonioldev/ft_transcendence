@@ -1,6 +1,6 @@
 import { Color3, Color4, Material, Mesh, MeshBuilder, Scene, StandardMaterial, Vector3 } from "@babylonjs/core";
 import { GAME_CONFIG } from '../../../shared/gameConfig.js';
-import { PlayerSide } from '../../utils.js';
+import { PlayerSide } from "../../../utils/constants.js";
 
 export function createPaddleGlow(scene: Scene, name: string, size: Vector3, parent: any): any {
 	const radius = (size.z / 2) * 1.01;

@@ -1,7 +1,5 @@
 import { Vector3, Viewport } from "@babylonjs/core";
-import { GAME_CONFIG } from '../shared/gameConfig.js';
-import { Powerup } from "../shared/types.js";
-import { KeysProfile } from "./services/KeybordManager.js";
+import { GAME_CONFIG } from '../../shared/gameConfig.js';
 
 // Utility functions for Babylon.js game objects
 // They get datas from gameConfig TypeScript and convert them to Babylon.js objects
@@ -59,22 +57,6 @@ export function get3DCamera1Viewport() {
 
 export function get3DCamera2Viewport() {
 	return VIEWPORTS.RIGHT_HALF;
-}
-
-export enum PlayerSide {
-	LEFT = 0,
-	RIGHT = 1
-}
-
-export interface PlayerState {
-	name: string;
-	isControlled: boolean;
-	keyboardProfile?: KeysProfile;
-	size: number;
-	score: number;
-	powerUpsAssigned: boolean;
-	powerUps: Powerup [];
-	inverted: boolean;
 }
 
 export function randomFromRange(min: number, max: number): number {

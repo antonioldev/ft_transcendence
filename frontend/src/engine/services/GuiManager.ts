@@ -1,6 +1,7 @@
 import { Scene } from "@babylonjs/core";
 import { AdvancedDynamicTexture } from "@babylonjs/gui";
-import { GameMode, ViewMode } from '../../shared/constants.js';
+import { GameMode } from '../../shared/constants.js';
+import { ViewMode } from '../../utils/constants.js';
 import { Logger } from '../../utils/LogManager.js';
 import { GameConfig } from '../GameInitializer.js';
 import { CardGame } from "../gui/CardGame.js";

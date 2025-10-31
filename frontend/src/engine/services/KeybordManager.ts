@@ -1,46 +1,16 @@
 import { DeviceSourceManager, DeviceType, Scene } from "@babylonjs/core";
 import { webSocketClient } from '../../core/WebSocketClient.js';
-import { Direction, ViewMode } from '../../shared/constants.js';
+import { Direction } from '../../shared/constants.js';
+import { ViewMode } from '../../utils/constants.js';
 import { getPlayerBoundaries } from '../../shared/gameConfig.js';
-import { GameObjects } from '../../shared/types.js';
+import { GameObjects } from '../../utils/types.js';
 import { Logger } from '../../utils/LogManager.js';
 import { GameConfig } from '../GameInitializer.js';
-import { PlayerSide, PlayerState } from "../utils.js";
+import { PlayerState } from "../../utils/types.js";
+import { PlayerSide } from "../../utils/constants.js";
 import { PowerupManager } from "./PowerUpManager.js";
-
-
-export const Keys = {
-  W: 87, S: 83, A: 65, D: 68,
-  C: 67, V: 86, B: 66, I: 73, O: 79, P: 80,
-  UP: 38, DOWN: 40, LEFT: 37, RIGHT: 39,
-  ESC: 27, Y: 89, N: 78, SPACE: 32,
-  ONE: 49, TWO: 50, THREE: 51
-} as const;
-
-export type MoveKeys = { left: number; right: number; };
-export type PowerKeys = { k1: number; k2: number; k3: number };
-export type KeysProfile = { move: MoveKeys; power: PowerKeys };
-
-export const PROFILES_2D = {
-  P1: { move: { left: Keys.W, right: Keys.S }, power: { k1: Keys.C, k2: Keys.V, k3: Keys.B } },
-  P2: { move: { left: Keys.UP, right: Keys.DOWN }, power: { k1: Keys.I, k2: Keys.O, k3: Keys.P } },
-  DEFAULT: { move: { left: Keys.UP, right: Keys.DOWN }, power: { k1: Keys.ONE, k2: Keys.TWO, k3: Keys.THREE } },
-  DEFAULT_RIGHT: { move: { left: Keys.UP, right: Keys.DOWN }, power: { k1: Keys.ONE, k2: Keys.TWO, k3: Keys.THREE } }
-} as const;
-
-export const PROFILES_3D = {
-  P1: { move: { left: Keys.A, right: Keys.D }, power: { k1: Keys.C, k2: Keys.V, k3: Keys.B } },
-  P2: { move: { left: Keys.RIGHT, right: Keys.LEFT }, power: { k1: Keys.I, k2: Keys.O, k3: Keys.P } },
-  DEFAULT: { move: { left: Keys.LEFT, right: Keys.RIGHT }, power: { k1: Keys.ONE, k2: Keys.TWO, k3: Keys.THREE } },
-  DEFAULT_RIGHT: { move: { left: Keys.RIGHT, right: Keys.LEFT }, power: { k1: Keys.ONE, k2: Keys.TWO, k3: Keys.THREE } }
-} as const;
-
-export enum KeyboardMode {
-	NORMAL,
-	PAUSED,
-	SPECTATOR_CHOICE,
-	SPECTATOR
-}
+import { KeysProfile } from "../../utils/types.js";
+import { KeyboardMode, Keys,  PROFILES_2D, PROFILES_3D } from "../../utils/constants.js";
 
 // Manages all keyboard input handling for the game
 export class KeyboardManager {

@@ -1,5 +1,5 @@
 import { Logger } from '../utils/LogManager.js';
-import { AppState} from '../shared/constants.js';
+import { AppState } from '../utils/constants.js';
 import { uiManager } from '../ui/UIManager.js';
 import { getCurrentTranslation } from '../translations/translations.js';
 import { EL, requireElementById} from '../ui/elements.js';
@@ -8,7 +8,8 @@ import { appManager } from './AppManager.js';
 import { sendGET, sendPOST, getSID } from './HTTPRequests.js';
 import { AuthCode } from '../shared/constants.js';
 import { Translation } from '../translations/Translation.js';
-import { updateCurrentSettings, Setting } from './AppManager.js';
+import { updateCurrentSettings } from './AppManager.js';
+import { GameSetting } from '../utils/types.js';
 
 // Declare the type for Google Response to avoid TypeScript errors
 type GoogleCredentialResponse = {
@@ -372,7 +373,7 @@ export class AuthManager {
         this.handleRegistrationResponse(responseData.result, responseData.message);
     }
 
-    async saveUserSettings(settings: Partial<Setting>) : Promise<void> {
+    async saveUserSettings(settings: Partial<GameSetting>) : Promise<void> {
         if (!this.isUserAuthenticated()) return;
 
         const response = await sendPOST('settings', settings);

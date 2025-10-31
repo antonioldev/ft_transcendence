@@ -1,4 +1,4 @@
-import { ConnectionStatus, ViewMode } from '../shared/constants.js';
+import { ConnectionStatus, ViewMode } from '../utils/constants.js';
 import { EL, getElementById, requireElementById, UI_CLASSES} from './elements.js';
 import { getCurrentTranslation } from '../translations/translations.js';
 import { webSocketClient } from '../core/WebSocketClient.js';

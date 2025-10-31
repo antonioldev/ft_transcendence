@@ -90,10 +90,10 @@ export interface PlayerInfo {
 }
 
 // Represents the input data for a specific action or event.
-export interface InputData{
-	side: number;
-	direction: Direction;
-}
+// export interface InputData{
+// 	side: number;
+// 	direction: Direction;
+// }
 
 // ============================== AUTHENTIFICATION TYPES ==============================
 
@@ -133,15 +133,15 @@ export interface UserProfileData {
   scene3D: string;
 }
 
-export interface GetUserProfile {
-  type: MessageType;
-  data: { username: string };
-}
+// export interface GetUserProfile { ***** CANNOT SEE THE USE
+//   type: MessageType;
+//   data: { username: string };
+// }
 
-export interface UserProfileMessage {
-  type: MessageType;
-  data: UserProfileData;
-}
+// export interface UserProfileMessage { ***** CANNOT SEE THE USE
+//   type: MessageType;
+//   data: UserProfileData;
+// }
 
 // ============================== DASHBOARD TYPES ==============================
 
@@ -166,143 +166,57 @@ export interface GameHistoryEntry {
 }
 
 
-// ============================== FRONTEND-ONLY TYPES ==============================
-
-export interface Players {
-	left: any;
-	right: any;
-}
-
-export interface Effects {
-	leftGlow: any;
-	rightGlow: any;
-	leftCage: any;
-	rightCage: any;
-	ballsGlow: any[];
-	ballsFreeze: any[];
-	leftShield: any;
-	rightShield: any;
-}
-
-// Represents the game objects in a Babylon.js scene
-export interface GameObjects {
-	players: Players;
-	balls: any[];
-	gameField: any;
-	walls: any;
-	cameras: any[];
-	guiCamera: any;
-	lights: any[];
-	effects: Effects;
-	// players: {
-	// 	left: Mesh;
-	// 	right: Mesh;
-	// };
-	// ball: Mesh;
-	// gameField: Mesh;
-	// walls: Mesh[];
-	// cameras: Camera[];
-	// guiCamera: Camera;
-	// lights: Light[]; // TODO
-}
-
-type ThemeActor = { update: (dt: number) => void; dispose: () => void };
-type ThemeEffect = { dispose: () => void };
-
-export type ThemeObject = {
-  props: any[];         // static meshes (trees/bushes now; wreck/rocks later)
-  actors: ThemeActor[]; // moving things later (clouds, fish, bubbles)
-  effects: ThemeEffect[]; // glow layer, particle systems, post-process, etc.
-};
-
 // Player control configuration (keyboard mappings)
-export interface PlayerControls {
-	left: number;  // Key code for left movement
-	right: number; // Key code for right movement
-}
+// export interface PlayerControls { ***** CANNOT SEE THE USE
+// 	left: number;  // Key code for left movement
+// 	right: number; // Key code for right movement
+// }
 
 // Input configuration for both players
-export interface InputConfig {
-	playerLeft: PlayerControls;
-	playerRight: PlayerControls;
-}
+// export interface InputConfig { ***** CANNOT SEE THE USE
+// 	playerLeft: PlayerControls;
+// 	playerRight: PlayerControls;
+// }
 
 // State configuration for game state management
-export interface StateConfig {
-	dialogId?: string;	  // ID of pause dialog
-	controller?: any;	   // Game controller instance
-	oppositeState?: ClientState; // State to transition to
-	playingState?: ClientState;  // Playing state for this mode
-}
+// export interface StateConfig { ***** CANNOT SEE THE USE
+// 	dialogId?: string;	  // ID of pause dialog
+// 	controller?: any;	   // Game controller instance
+// 	oppositeState?: ClientState; // State to transition to
+// 	playingState?: ClientState;  // Playing state for this mode
+// }
 
-// ============================== CAMERA & SCENE TYPES ==============================
-
-// Camera configuration for scene setup
-export interface CameraConfig {
-	name: string;
-	position: Position;
-	viewport: {
-		x: number;
-		y: number; 
-		width: number;
-		height: number;
-	};
-}
-
-// Light configuration for scene setup
-export interface LightConfig {
-	name: string;
-	position: Position;
-}
-
-// Scene color configuration
-export interface SceneColors {
-	field: any;
-	walls: any;
-	players: {
-		left: any;
-		right: any;
-	};
-	ball: any;
-}
-
-// Complete scene configuration
-export interface SceneConfig {
-	colors: SceneColors;
-	cameras: CameraConfig[];
-	lights: LightConfig[];
-}
 
 // ============================== UTILITY TYPES ==============================
 
-// Generic callback function type
-export type Callback<T = void> = (data: T) => void;
+// Generic callback function type		***** CANNOT SEE THE USE
+// export type Callback<T = void> = (data: T) => void;
 
-// Network callback for input events
-export type NetworkCallback = (side: number, direction: Direction) => void;
+// // Network callback for input events
+// export type NetworkCallback = (side: number, direction: Direction) => void;
 
-// WebSocket event callbacks
-export interface WebSocketCallbacks {
-	onGameState?: Callback<GameStateData>;
-	onConnection?: Callback;
-	onError?: Callback<string>;
-}
+// // WebSocket event callbacks
+// export interface WebSocketCallbacks {
+// 	onGameState?: Callback<GameStateData>;
+// 	onConnection?: Callback;
+// 	onError?: Callback<string>;	
+// }
 
 // ============================== GAME CONFIGURATION TYPES ==============================
 
 // Boundary configuration for player movement
-export interface PlayerBoundaries {
-	left: number;
-	right: number;
-}
+// export interface PlayerBoundaries { ***** CANNOT SEE THE USE
+// 	left: number;
+// 	right: number;
+// }
 
-// Wall configuration
-export interface WallConfig {
-	name: string;
-	position: Position;
-	size: {
-		width: number;
-		height: number;
-		depth: number;
-	};
-}
+// // Wall configuration
+// export interface WallConfig { ***** CANNOT SEE THE USE
+// 	name: string;
+// 	position: Position;
+// 	size: {
+// 		width: number;
+// 		height: number;
+// 		depth: number;
+// 	};
+// }

@@ -1,7 +1,7 @@
 import { Engine, Scene, Vector3 } from "@babylonjs/core";
-import { ViewMode } from '../../shared/constants.js';
+import { ViewMode } from '../../utils/constants.js';
 import { GAME_CONFIG } from '../../shared/gameConfig.js';
-import { GameObjects } from "../../shared/types.js";
+import { GameObjects } from "../../utils/types.js";
 import { Logger } from '../../utils/LogManager.js';
 
 /**
