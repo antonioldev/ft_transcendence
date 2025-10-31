@@ -1,4 +1,4 @@
-import { Color3, HDRCubeTexture, DirectionalLight, HemisphericLight, MeshBuilder, Scene, Vector3 } from "@babylonjs/core";
+import { Color3, HDRCubeTexture, DirectionalLight, HemisphericLight, MeshBuilder, Scene, Vector3, GroundMesh, Light } from "@babylonjs/core";
 import { GridMaterial } from "@babylonjs/materials";
 import { ViewMode } from '../../../utils/constants.js';
 import { GAME_CONFIG } from '../../../shared/gameConfig.js';
@@ -21,7 +21,7 @@ export function createSky(scene: Scene, path: string | null): void {
 	}
 }
 
-export function createTerrain(scene: Scene, name: string, texture: TextureSet, map_asset: MapAssetConfig): any {
+export function createTerrain(scene: Scene, name: string, texture: TextureSet, map_asset: MapAssetConfig): GroundMesh {
 	const terrainWidth = GAME_CONFIG.fieldWidth * 10;
 	const terrainHeight = GAME_CONFIG.fieldHeight * 10;
 
@@ -64,15 +64,7 @@ export function createTerrain(scene: Scene, name: string, texture: TextureSet, m
 	return terrain;
 }
 
-// export function createLight(scene: any, name: string, viewMode: ViewMode, intensity: number = 1): any {
-// 	const position = viewMode === ViewMode.MODE_2D ? new Vector3(0, 10, 0) : new Vector3(100, 400, 0);
-// 	const light = new HemisphericLight(name, position, scene);
-// 	light.intensity = intensity;
-// 	light.diffuse = new Color3(1, 1, 1);
-// 	light.specular = new Color3(0, 0, 0);
-// 	return light;
-// }
-export function createLight(scene: any, name: string, viewMode: ViewMode, mapAsset: MapAssetConfig): any {
+export function createLight(scene: Scene, name: string, viewMode: ViewMode, mapAsset: MapAssetConfig): Light {
 	if (viewMode === ViewMode.MODE_2D) {
 		const position = new Vector3(0, 10, 0);
 		const light = new HemisphericLight(name, position, scene);

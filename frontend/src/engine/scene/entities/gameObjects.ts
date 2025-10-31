@@ -8,7 +8,7 @@ import { createMaterial, getStandardTextureScale } from "../builders/materialsBu
 import { MAP_CONFIGS } from "../config/mapConfigs.js";
 
 // Creates the ground for the game field
-export function createGameField(scene: any, name: string, mode: ViewMode, map_asset: MapAssetConfig): any {
+export function createGameField(scene: Scene, name: string, mode: ViewMode, map_asset: MapAssetConfig): any {
 
 	const w = GAME_CONFIG.fieldWidth;
 	const h = GAME_CONFIG.fieldHeight;
@@ -36,8 +36,8 @@ export function createGameField(scene: any, name: string, mode: ViewMode, map_as
 }
 
 // Creates a player object in the scene
-export function createWalls(scene: any, name: string, mode: ViewMode, texture: TextureSet): any[] {
-	const walls: any[] = [];
+export function createWalls(scene: Scene, name: string, mode: ViewMode, texture: TextureSet): Mesh[] {
+	const walls: Mesh[] = [];
 
 	const w = GAME_CONFIG.fieldWidth;
 	const h = GAME_CONFIG.fieldHeight;

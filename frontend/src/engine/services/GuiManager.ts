@@ -23,7 +23,6 @@ export class GUIManager {
 	private adt: AdvancedDynamicTexture | null = null;
 	private isInitialized: boolean = false;
 	private isTournament: boolean = false;
-	// isLastMatch: boolean = false;
 	countdown!: Countdown;
 	matchTree!: MatchTree;
 	hud!: Hud;
@@ -37,6 +36,10 @@ export class GUIManager {
 	constructor(private scene: Scene, config: GameConfig, private animationManager: AnimationManager, private audioManager: AudioManager) {
 		try {
 			this.adt = AdvancedDynamicTexture.CreateFullscreenUI("UI", true, this.scene);
+			this.adt!.renderAtIdealSize = true;
+			window.addEventListener('resize', () => {
+				this.handleResize();
+			});
 			this.adt!.layer!.layerMask = 0x20000000;
 			this.isTournament = config.isTournament;
 			this.createViewModeDivider(config);
@@ -54,6 +57,14 @@ export class GUIManager {
 			Logger.error('Error creating GUI', 'GUIManager', error);
 			throw error;
 		}
+	}
+
+	private handleResize(): void {
+		this.adt!.markAsDirty();
+
+		this.adt!.getDescendants().forEach(control => {
+			control.markAsDirty();
+		});
 	}
 
 	private createViewModeDivider(config: GameConfig): void {

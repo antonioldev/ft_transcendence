@@ -1,4 +1,4 @@
-import { GlowLayer, Scene } from "@babylonjs/core";
+import { FreeCamera, GlowLayer, Mesh, Scene } from "@babylonjs/core";
 import { GameMode } from '../../../shared/constants.js';
 import { ViewMode } from '../../../utils/constants.js';
 import { Effects, GameObjects, Players, ThemeObject } from '../../../utils/types.js';
@@ -16,6 +16,7 @@ import { createStaticObject, createStaticObjects } from "../entities/staticProps
 import { createCameras, createGuiCamera } from "./camerasBuilder.js";
 import { createFireworks, createFog, createLensFlare, createParticleSystem, createSmokeSprite } from './effectsBuilder.js';
 import { createLight, createSky, createTerrain } from './enviromentBuilder.js';
+import { CoreGameObjects } from "../../../utils/types.js";
 
 export type LoadingProgressCallback = (progress: number) => void;
 
@@ -50,7 +51,7 @@ export async function buildScene(
 	};
 }
 
-function getMap(viewMode: ViewMode, scene3D: string): any {
+function getMap(viewMode: ViewMode, scene3D: string): MapAssetConfig {
 	if (viewMode === ViewMode.MODE_2D)
 		return MAP_CONFIGS.map;
 
@@ -62,10 +63,9 @@ function getMap(viewMode: ViewMode, scene3D: string): any {
 	return MAP_CONFIGS[scene3D];
 }
 
-async function buildCoreGameObjects(scene: Scene, gameMode: GameMode, viewMode: ViewMode, map_asset: MapAssetConfig): Promise<any> {
-	let cameras: any[];
-	let players: Players = { left: undefined, right: undefined };
-	const balls: any[] = [];
+async function buildCoreGameObjects(scene: Scene, gameMode: GameMode, viewMode: ViewMode, map_asset: MapAssetConfig): Promise<CoreGameObjects> {
+	let cameras: FreeCamera[];
+	const balls: Mesh[] = [];
 
 	const lights = createLight(scene, "light1", viewMode, map_asset);
 	const gameField = createGameField(scene, "ground", viewMode, map_asset);
@@ -84,13 +84,14 @@ async function buildCoreGameObjects(scene: Scene, gameMode: GameMode, viewMode: 
 		scene.activeCameras = allCameras;
 	}
 
-	players.left = createPlayer(scene, "player1", getPlayerLeftPosition(), getPlayerSize(), viewMode, map_asset.paddle);
-	players.right = createPlayer(scene, "player2", getPlayerRightPosition(), getPlayerSize(), viewMode, map_asset.paddle);
+	const playerLeft = createPlayer(scene, "player1", getPlayerLeftPosition(), getPlayerSize(), viewMode, map_asset.paddle);
+	const playerRight = createPlayer(scene, "player2", getPlayerRightPosition(), getPlayerSize(), viewMode, map_asset.paddle);
+	const players: Players = { left: playerLeft, right: playerRight };
 	
 	return { lights, gameField, walls, balls, players, cameras, guiCamera };
 }
 
-async function createPowerUpEffects(scene: Scene, players: Players, balls: any): Promise<Effects> {
+async function createPowerUpEffects(scene: Scene, players: Players, balls: Mesh[]): Promise<Effects> {
 
 	const ballsGlow: any[] = [];
 	const ballsFreeze: any[] = [];

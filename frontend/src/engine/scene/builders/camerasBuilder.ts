@@ -3,7 +3,7 @@ import { GameMode } from '../../../shared/constants.js';
 import { ViewMode } from '../../../utils/constants.js';
 import { get3DCamera1Viewport, get3DCamera2Viewport, getCamera2DPosition, getSoloCameraViewport } from '../../utils/utils.js';
 
-export function createCameras(scene: Scene, name: string, viewMode: ViewMode, gameMode: GameMode): any[] {
+export function createCameras(scene: Scene, name: string, viewMode: ViewMode, gameMode: GameMode): FreeCamera[] {
 	let cameras = [];
 
 	const position = getCamera2DPosition();
@@ -41,7 +41,7 @@ export function createCameras(scene: Scene, name: string, viewMode: ViewMode, ga
 	return cameras;
 }
 
-export function createGuiCamera(scene: any, name: string) {
+export function createGuiCamera(scene: Scene, name: string): FreeCamera {
 	let camera;
 	camera = new FreeCamera(name, Vector3.Zero(), scene);
 	camera.setTarget(Vector3.Zero());

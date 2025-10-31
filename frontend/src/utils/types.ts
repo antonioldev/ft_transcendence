@@ -1,6 +1,7 @@
 import { ViewMode } from "./constants";
 import { GameMode, AiDifficulty } from "../shared/constants";
 import { Powerup } from "../shared/types";
+import { FreeCamera, Light, Mesh } from "@babylonjs/core";
 
 export interface GameSetting {
 	language: number;
@@ -14,12 +15,6 @@ export interface GameSetting {
 	onlineTournamentSize: number;
 
 }
-
-export interface Players {
-	left: any;
-	right: any;
-}
-
 
 export interface PlayerState {
 	name: string;
@@ -43,26 +38,23 @@ export interface Effects {
 	rightShield: any;
 }
 
+export interface Players {
+	left: Mesh;
+	right: Mesh;
+}
+
 // Represents the game objects in a Babylon.js scene
-export interface GameObjects {
-	players: Players;
-	balls: any[];
-	gameField: any;
-	walls: any;
-	cameras: any[];
-	guiCamera: any;
-	lights: any[];
-	effects: Effects;
-	// players: {
-	// 	left: Mesh;
-	// 	right: Mesh;
-	// };
-	// ball: Mesh;
-	// gameField: Mesh;
-	// walls: Mesh[];
-	// cameras: Camera[];
-	// guiCamera: Camera;
-	// lights: Light[]; // TODO
+export interface CoreGameObjects {
+    players: Players;
+    balls: Mesh[];
+    gameField: Mesh;
+    walls: Mesh[];
+    cameras: FreeCamera[];
+    guiCamera: FreeCamera;
+    lights: Light;
+}
+export interface GameObjects extends CoreGameObjects {
+    effects: Effects;
 }
 
 type ThemeActor = { update: (dt: number) => void; dispose: () => void };
