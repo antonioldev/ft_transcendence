@@ -5,8 +5,8 @@ import { Vector3 } from "@babylonjs/core/Maths/math.vector";
 import type { Scene } from "@babylonjs/core/scene";
 import type { Control } from "@babylonjs/gui/2D/controls/control";
 import { GAME_CONFIG } from "../../shared/gameConfig.js";
-import { getCamera2DPosition, getCamera3DPlayer1Position, getCamera3DPlayer2Position } from '../utils/utils.js';
 import { ViewMode } from "../../utils/constants.js";
+import { getCamera2DPosition, getCamera3DPlayer1Position, getCamera3DPlayer2Position } from '../utils/utils.js';
 
 type FloatProp =
   | "alpha"

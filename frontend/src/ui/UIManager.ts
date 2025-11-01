@@ -1,8 +1,9 @@
-import { ConnectionStatus, ViewMode } from '../utils/constants.js';
-import { EL, getElementById, requireElementById, UI_CLASSES} from './elements.js';
-import { getCurrentTranslation } from '../translations/translations.js';
-import { webSocketClient } from '../core/WebSocketClient.js';
+import { currentSettings } from '../core/AppManager.js';
 import { authManager } from '../core/AuthManager.js';
+import { webSocketClient } from '../core/WebSocketClient.js';
+import { getCurrentTranslation, updateLanguageDisplay } from '../translations/translations.js';
+import { ConnectionStatus, ViewMode } from '../utils/constants.js';
+import { EL, getElementById, requireElementById, UI_CLASSES } from './elements.js';
 
 class UIManager {
 	showScreen(
@@ -186,6 +187,29 @@ class UIManager {
 		const tournamentOnlineButton = requireElementById(EL.GAME_MODES.TOURNAMENT_ONLINE);
 		const t = getCurrentTranslation();
 		tournamentOnlineButton.textContent = `${t.tournamentOnline} (${currentOnlineTournamentSize} x 👤)`;
+	}
+
+	updateSettings(): void {
+		const sceneSelect = document.getElementById('map-selector') as HTMLSelectElement;
+		if (sceneSelect) {
+			sceneSelect.value = currentSettings.scene3D;
+		}
+	
+		const musicToggle = document.getElementById('music-toggle') as HTMLInputElement;
+		if (musicToggle) {
+			musicToggle.checked = currentSettings.musicEnabled;
+		}
+	
+		const effectsToggle = document.getElementById('sound-effect-toggle') as HTMLInputElement;
+		if (effectsToggle) {
+			effectsToggle.checked = currentSettings.soundEffectsEnabled;
+		}
+	
+		const languageSelect = document.getElementById('language_select') as HTMLSelectElement;
+		if (languageSelect) {
+			languageSelect.value = ['UK', 'IT', 'FR', 'BR', 'RU'][currentSettings.language];
+			updateLanguageDisplay();
+		}
 	}
 
 	// ========================================

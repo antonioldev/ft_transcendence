@@ -1,4 +1,4 @@
-import { AdvancedDynamicTexture, Grid, Image, Rectangle, StackPanel, TextBlock } from "@babylonjs/gui";
+import { AdvancedDynamicTexture, Grid, Image, Rectangle, TextBlock } from "@babylonjs/gui";
 import { getCurrentTranslation } from "../../translations/translations.js";
 import { AnimationManager, Motion } from "../services/AnimationManager.js";
 import { BRACKET_STYLES, COLORS, applyStyles, createGrid, createImage, createRect, createStackPanel, createTextBlock } from "./GuiStyle.js";
@@ -9,7 +9,7 @@ export class MatchTree {
 	private bracketGrid!: Grid;
 	private roundsCount = 0;
 	private tabsBar!: Grid;
-	private roundPanels: StackPanel[] = [];
+	private roundPanels: Grid[] = [];
 	private tabButtons: Rectangle[] = [];
 	private tabButtonsBg: Image[] = [];
 	private tabLabels: TextBlock[] = [];
@@ -142,7 +142,13 @@ export class MatchTree {
 		this.playerTotal = matchTotal * 2;
 		this.roundsCount = roundsTotal;
 
-		const tabsRoot = createStackPanel("bracketTabsRoot", BRACKET_STYLES.stackPanel);
+		// const tabsRoot = createStackPanel("bracketTabsRoot", BRACKET_STYLES.stackPanel);
+		// this.bracketGrid.addControl(tabsRoot, 0, 0);
+
+		const tabsRoot = createGrid("bracketTabsRoot", BRACKET_STYLES.panelGrid);
+		tabsRoot.addRowDefinition(30, true);  // headerRect
+		tabsRoot.addRowDefinition(44, true);  // tabsBar
+		tabsRoot.addRowDefinition(1, false);  // panelsWrap (remaining space)
 		this.bracketGrid.addControl(tabsRoot, 0, 0);
 
 		const headerRect = createRect("roundsHeaderRect", BRACKET_STYLES.tabHeaderRect);
@@ -151,15 +157,18 @@ export class MatchTree {
 		headerRect.addControl(bg);
 		
 		headerRect.addControl(roundsHeader);
-		tabsRoot.addControl(headerRect);
+		// tabsRoot.addControl(headerRect);
+		tabsRoot.addControl(headerRect, 0, 0);
 
 		this.tabsBar = createGrid("bracketTabsBar", BRACKET_STYLES.tabsBar);
 		for (let i = 0; i < this.roundsCount; i++)
 			this.tabsBar.addColumnDefinition(1, false);
-		tabsRoot.addControl(this.tabsBar);
+		// tabsRoot.addControl(this.tabsBar);
+		tabsRoot.addControl(this.tabsBar, 1, 0);
 
 		const panelsWrap = createStackPanel("roundPanelsWrap", BRACKET_STYLES.stackPanel);
-		tabsRoot.addControl(panelsWrap);
+		tabsRoot.addControl(panelsWrap, 2, 0);
+
 		for (let r = 1; r <= this.roundsCount; r++) {
 			const tab = createRect(`tab_round_${r}`, BRACKET_STYLES.tabButton);
 			const bgTab = createImage(`tab_bg_${r}`, BRACKET_STYLES.bg, "/assets/bg/active.png");
@@ -175,13 +184,18 @@ export class MatchTree {
 
 			this.tabButtons.push(tab);
 			this.tabLabels.push(tabLabel);
-			const panel = createStackPanel(`roundPanel_${r}`, BRACKET_STYLES.stackPanel);
+
+			const panel = createGrid(`roundPanel_${r}`, BRACKET_STYLES.panelGrid);
 			panel.isVisible = (r === this.currentRound);
 			panelsWrap.addControl(panel);
 			this.roundPanels.push(panel);
 
 			const slots = this.playerTotal / Math.pow(2, r - 1);
 			const matches = Math.ceil(slots / 2);
+
+			for (let i = 0; i < matches; i++) {
+				panel.addRowDefinition(48, true); // Fixed 48px height per match row
+			}
 
 			for (let i = 0; i < matches; i++) {
 				const leftSlot = i * 2;
@@ -191,12 +205,12 @@ export class MatchTree {
 				const rightId = `bracketCell_${r}_${rightSlot}`;
 
 				const rowRect = createRect(`matchRow_${r}_${i}`, BRACKET_STYLES.matchRowRect);
-				panel.addControl(rowRect);
+				panel.addControl(rowRect, i, 0); // ✅ Add to specific row
 
 				const rowGrid = createGrid(`matchRowGrid_${r}_${i}`, BRACKET_STYLES.matchRowGrid);
-				rowGrid.addColumnDefinition(0.40, false); // 40% for left player
-				rowGrid.addColumnDefinition(0.15, false); // 15% for VS
-				rowGrid.addColumnDefinition(0.40, false); // 40% for right player
+				rowGrid.addColumnDefinition(0.44, false); // 44% for left player
+				rowGrid.addColumnDefinition(0.10, false); // 10% for VS
+				rowGrid.addColumnDefinition(0.44, false); // 44% for right player
 				rowRect.addControl(rowGrid);
 
 				const leftRect = createRect(`${leftId}_rect`, BRACKET_STYLES.matchPlayerRect);
@@ -229,7 +243,7 @@ export class MatchTree {
 		}
 	}
 
-	private async animateMatchRowsIn(panel: StackPanel): Promise<void> {
+	private async animateMatchRowsIn(panel: Grid): Promise<void> {
 		const children = panel.children;
 		const animationPromises: Promise<void>[] = [];
 

@@ -36,11 +36,11 @@ export class GUIManager {
 	constructor(private scene: Scene, config: GameConfig, private animationManager: AnimationManager, private audioManager: AudioManager) {
 		try {
 			this.adt = AdvancedDynamicTexture.CreateFullscreenUI("UI", true, this.scene);
-			this.adt!.renderAtIdealSize = true;
-			window.addEventListener('resize', () => {
-				this.handleResize();
-			});
 			this.adt!.layer!.layerMask = 0x20000000;
+			this.adt.idealWidth = 1920;
+			this.adt.idealHeight = 1080;
+			this.adt.renderAtIdealSize = true;
+
 			this.isTournament = config.isTournament;
 			this.createViewModeDivider(config);
 			this.countdown = new Countdown(this.adt, this.animationManager, audioManager);
@@ -59,13 +59,6 @@ export class GUIManager {
 		}
 	}
 
-	private handleResize(): void {
-		this.adt!.markAsDirty();
-
-		this.adt!.getDescendants().forEach(control => {
-			control.markAsDirty();
-		});
-	}
 
 	private createViewModeDivider(config: GameConfig): void {
 		if (config.viewMode === ViewMode.MODE_3D && 

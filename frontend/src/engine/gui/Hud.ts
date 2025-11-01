@@ -4,7 +4,7 @@ import { getCurrentTranslation } from '../../translations/translations.js';
 import { GameConfig } from '../GameInitializer.js';
 import { AnimationManager, Motion } from "../services/AnimationManager.js";
 import { PlayerSide } from "../../utils/constants.js";
-import { HUD_STYLES, POWER_UP_STYLES, SPECTATOR_STYLE, createGrid, createImage, createRect, createStackPanel, createTextBlock } from "./GuiStyle.js";
+import { HUD_STYLES, POWER_UP_STYLES, SPECTATOR_STYLE, createGrid, createImage, createRect, createTextBlock } from "./GuiStyle.js";
 
 export class Hud {
 	private hudGrid!: Grid;
@@ -91,7 +91,7 @@ export class Hud {
 		p1Grid.addControl(this.player1Label, 0, 0);
 		p1Grid.addControl(this.score1Text, 1, 0);
 
-		// Rally Grid (converted from Stack)
+		// Rally Grid
 		const rallyGrid = createGrid("rallyGrid", HUD_STYLES.grid);
 		rallyGrid.addRowDefinition(0.7);
 		rallyGrid.addRowDefinition(0.3);
@@ -178,14 +178,16 @@ export class Hud {
 		this.spectatorBanner = createRect("spectatorBanner", SPECTATOR_STYLE.spectatorBanner);
 		this.spectatorOverlay.addControl(this.spectatorBanner);
 
-		const bannerContent = createStackPanel("bannerContent", SPECTATOR_STYLE.bannerContent);
-		this.spectatorBanner.addControl(bannerContent);
+		const bannerGrid = createGrid("bannerGrid", SPECTATOR_STYLE.bannerGrid);
+		bannerGrid.addColumnDefinition(0.3, false);
+		bannerGrid.addColumnDefinition(0.7, false);
+		this.spectatorBanner.addControl(bannerGrid);
 
 		const spectatorText = createTextBlock("spectatorText", SPECTATOR_STYLE.spectatorText, t.spectator);
-		bannerContent.addControl(spectatorText);
+		bannerGrid.addControl(spectatorText, 0, 0);
 
 		const spectatorControls = createTextBlock("spectatorControls", SPECTATOR_STYLE.spectatorControls, t.spectatorInstruction);
-		bannerContent.addControl(spectatorControls);
+		bannerGrid.addControl(spectatorControls, 0, 1);
 	}
 
 	show(show: boolean): void {

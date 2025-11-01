@@ -51,19 +51,29 @@ export class WebSocketClient {
         this.ws.onclose = () => {
             clearTimeout(timeout);
             Logger.warn('Disconnected from game server', 'WebSocketClient');
-            appManager.navigateTo(AppState.MAIN_MENU);
             this.connectionStatus = ConnectionStatus.FAILED;
             this.notifyStatus(ConnectionStatus.FAILED);
+            this.handleConnectionLoss();
         };
 
         this.ws.onerror = (error) => {
             clearTimeout(timeout);
             Logger.error('WebSocket error', 'WebSocketClient', error);
-            appManager.navigateTo(AppState.MAIN_MENU);
             this.connectionStatus = ConnectionStatus.FAILED;
             this.notifyStatus(ConnectionStatus.FAILED);
+            this.handleConnectionLoss();
         };
     }
+
+    private handleConnectionLoss(): void {
+
+    if (appManager.getCurrentGame()) {
+        const game = appManager.getCurrentGame()!;
+        game.requestExitToMenu();
+    } else {
+        appManager.navigateTo(AppState.MAIN_MENU);
+    }
+}
 
     // Disconnects the WebSocket connection.
     disconnect(): void {

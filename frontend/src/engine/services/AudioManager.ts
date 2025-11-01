@@ -1,6 +1,6 @@
 import { Scene, Sound } from "@babylonjs/core";
-import { GameConfig } from "../GameInitializer.js";
 import { Logger } from '../../utils/LogManager.js';
+import { GameConfig } from "../GameInitializer.js";
 
 /**
  * Manages audio playback for the game, including background music, sound effects,

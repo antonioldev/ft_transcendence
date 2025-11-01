@@ -1,4 +1,4 @@
-import { UserStats, GameHistoryEntry } from '../shared/types.js';
+import { GameHistoryEntry, UserStats } from '../shared/types.js';
 import { EL, getElementById } from '../ui/elements.js';
 import { authManager } from './AuthManager.js';
 import { sendGET } from './HTTPRequests.js';

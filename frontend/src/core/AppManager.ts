@@ -1,16 +1,15 @@
 import { Game } from '../engine/Game.js';
 import { GameInitializer } from '../engine/GameInitializer.js';
 import { AiDifficulty, GameMode, GameState } from '../shared/constants.js';
-import { AppState, GAME_MODE_CONFIG, TOURNAMENT_SIZES, ViewMode, BUTTON_NAV } from '../utils/constants.js';
-import { getCurrentTranslation } from '../translations/translations.js';
+import { getCurrentTranslation, updateLanguageDisplay } from '../translations/translations.js';
 import { EL, requireElementById } from '../ui/elements.js';
 import { uiManager } from '../ui/UIManager.js';
+import { AppState, BUTTON_NAV, GAME_MODE_CONFIG, TOURNAMENT_SIZES, ViewMode } from '../utils/constants.js';
 import { Logger } from '../utils/LogManager.js';
+import { GameSetting } from '../utils/types.js';
 import { getMaxPlayers, getMinPlayersForCpu } from '../utils/utils.js';
 import { authManager } from './AuthManager.js';
 import { dashboardManager } from './DashboardManager.js';
-import { updateLanguageDisplay } from '../translations/translations.js';
-import { GameSetting } from '../utils/types.js';
 
 export let currentSettings: GameSetting = {
 	language: 0,
@@ -28,30 +27,7 @@ export let currentSettings: GameSetting = {
 export function updateCurrentSettings(newSettings: Partial<typeof currentSettings>): void {
     if (newSettings) {
         currentSettings = { ...currentSettings, ...newSettings };
-        updateSettingsUI();
-    }
-}
-
-function updateSettingsUI(): void {
-    const sceneSelect = document.getElementById('map-selector') as HTMLSelectElement;
-    if (sceneSelect) {
-        sceneSelect.value = currentSettings.scene3D;
-    }
-
-    const musicToggle = document.getElementById('music-toggle') as HTMLInputElement;
-    if (musicToggle) {
-        musicToggle.checked = currentSettings.musicEnabled;
-    }
-
-    const effectsToggle = document.getElementById('sound-effect-toggle') as HTMLInputElement;
-    if (effectsToggle) {
-        effectsToggle.checked = currentSettings.soundEffectsEnabled;
-    }
-
-    const languageSelect = document.getElementById('language_select') as HTMLSelectElement;
-    if (languageSelect) {
-        languageSelect.value = ['UK', 'IT', 'FR', 'BR', 'RU'][currentSettings.language];
-        updateLanguageDisplay();
+        uiManager.updateSettings();
     }
 }
 
@@ -64,11 +40,6 @@ function updateSettingsUI(): void {
 export class AppManager {
 	currentAppState: AppState = AppState.MAIN_MENU;
 	private currentGame: Game | null = null;
-	// private selectedViewMode: ViewMode = ViewMode.MODE_2D;
-	// private selectedGameMode: GameMode | null = null;
-	// private currentAiDifficultyIndex: AiDifficulty = AiDifficulty.EASY;
-	// private currentOfflineTournamentSize: number = 4;
-	// private currentOnlineTournamentSize: number = 4;
 	private isCollectingPlayerNames = false;
 	private playerIndex: number = 0;
 	private playerNames: string[] = [];
@@ -261,7 +232,6 @@ export class AppManager {
 	}
 
 	private selectViewMode(mode: ViewMode): void {
-		// this.selectedViewMode = mode;
 		currentSettings.viewMode = mode;
 		uiManager.updateViewModeButtonStyles(mode);
 	}
@@ -279,22 +249,18 @@ export class AppManager {
 		}
 
 		currentSettings.gameMode = gameMode;
-
-		// this.selectedGameMode = gameMode;
 		await this.startGame();
 	}
 
 	private handleModeBackClick(): void {
 		this.isCollectingPlayerNames = false;
 		currentSettings.gameMode = null;
-		// this.selectedGameMode = null;
 		this.navigateTo(AppState.MAIN_MENU);
 	}
 
 	private handleSetupBackClick(): void {
 		this.isCollectingPlayerNames = false;
 		currentSettings.gameMode = null;
-		// this.selectedGameMode = null;
 		this.navigateTo(AppState.GAME_MODE);
 	}
 
@@ -515,6 +481,10 @@ export class AppManager {
 			Logger.error('Error starting game', 'AppManager', error);
 			this.navigateTo(AppState.MAIN_MENU);
 		}
+	}
+
+	getCurrentGame(): Game | null {
+		return this.currentGame;
 	}
 
 	private clearCanvas(): void {

@@ -3,19 +3,17 @@ import { appManager } from '../core/AppManager.js';
 import { sendPOST } from "../core/HTTPRequests.js";
 import { webSocketClient } from '../core/WebSocketClient.js';
 import { Direction, GameMode, GameState, MessageType } from '../shared/constants.js';
-import { AppState } from '../utils/constants.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
 import { GameStateData, PlayerInfo, ServerMessage } from '../shared/types.js';
-import { GameObjects, ThemeObject } from '../utils/types.js';
 import { uiManager } from '../ui/UIManager.js';
+import { AppState, PlayerSide } from '../utils/constants.js';
 import { Logger } from '../utils/LogManager.js';
+import { GameObjects, PlayerState, ThemeObject } from '../utils/types.js';
 import { GameConfig } from './GameInitializer.js';
 import { GameServices } from "./GameServices.js";
 import { startFireworks } from "./scene/builders/effectsBuilder.js";
 import { disposeMaterialResources } from "./scene/builders/materialsBuilder.js";
 import { buildScene } from './scene/builders/sceneBuilder.js';
-import { PlayerState } from "../utils/types.js";
-import { PlayerSide } from "../utils/constants.js";
 import { Motion } from "./services/AnimationManager.js";
 
 /**
@@ -37,7 +35,7 @@ export class Game {
 		[PlayerSide.LEFT, this.resetPlayerState()],
 		[PlayerSide.RIGHT, this.resetPlayerState()]
 	]);
-	private gameLoopObserver: number | null = null;
+	private gameLoopObserver: any | null = null;
 	private isSpectator: boolean = false;
 	private isPaused: boolean = false;
 	private isLastMatch: boolean = false;

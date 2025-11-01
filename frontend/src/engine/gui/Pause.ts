@@ -26,9 +26,9 @@ export class Pause {
 		const pauseGrid = createGrid("pauseGrid", PAUSE_MENU_STYLES.grid);
 		this.pauseBox.addControl(pauseGrid);
 
-		pauseGrid.addRowDefinition(PAUSE_MENU_STYLES.gridRows.gameInstructions, false);
-		pauseGrid.addRowDefinition(PAUSE_MENU_STYLES.gridRows.exitInstruction, false);
-		pauseGrid.addRowDefinition(PAUSE_MENU_STYLES.gridRows.audio, false);
+		pauseGrid.addRowDefinition(700, true);
+		pauseGrid.addRowDefinition(70, true);
+		pauseGrid.addRowDefinition(70, true);
 
 
 		const instructionsStack = createStackPanel("instructionsStack", PAUSE_MENU_STYLES.stack);
@@ -107,7 +107,7 @@ export class Pause {
 				if (this.checkboxEffects) {
 					this.animationManager?.scale(this.checkboxEffects, 1, 0.9, Motion.F.xFast, true);
 					this.checkboxEffects.isChecked = isEnabled;
-				}  
+				}
 			}
 		});
 

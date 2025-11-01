@@ -1,16 +1,12 @@
 import { DeviceSourceManager, DeviceType, Scene } from "@babylonjs/core";
 import { webSocketClient } from '../../core/WebSocketClient.js';
 import { Direction } from '../../shared/constants.js';
-import { ViewMode } from '../../utils/constants.js';
 import { getPlayerBoundaries } from '../../shared/gameConfig.js';
-import { GameObjects } from '../../utils/types.js';
+import { KeyboardMode, Keys, PlayerSide, PROFILES_2D, PROFILES_3D, ViewMode } from '../../utils/constants.js';
 import { Logger } from '../../utils/LogManager.js';
+import { GameObjects, KeysProfile, PlayerState } from '../../utils/types.js';
 import { GameConfig } from '../GameInitializer.js';
-import { PlayerState } from "../../utils/types.js";
-import { PlayerSide } from "../../utils/constants.js";
 import { PowerupManager } from "./PowerUpManager.js";
-import { KeysProfile } from "../../utils/types.js";
-import { KeyboardMode, Keys,  PROFILES_2D, PROFILES_3D } from "../../utils/constants.js";
 
 // Manages all keyboard input handling for the game
 export class KeyboardManager {
