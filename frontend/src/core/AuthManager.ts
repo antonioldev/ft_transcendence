@@ -1,11 +1,11 @@
 import { AuthCode } from '../shared/constants.js';
-import { Translation } from '../translations/Translation.js';
+import type { Translation } from '../translations/Translation.js';
 import { getCurrentTranslation } from '../translations/translations.js';
 import { uiManager } from '../ui/UIManager.js';
 import { EL, requireElementById } from '../ui/elements.js';
 import { Logger } from '../utils/LogManager.js';
 import { AppState } from '../utils/constants.js';
-import { GameSetting } from '../utils/types.js';
+import type { GameSetting } from '../utils/types.js';
 import { appManager, updateCurrentSettings } from './AppManager.js';
 import { initializeGoogleSignIn, renderGoogleButton } from './GoogleSignIn.js';
 import { getSID, sendGET, sendPOST } from './HTTPRequests.js';

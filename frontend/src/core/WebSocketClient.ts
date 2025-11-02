@@ -1,7 +1,7 @@
 import { Logger } from '../utils/LogManager.js';
 import { MessageType, Direction, PowerupType } from '../shared/constants.js'
 import { ConnectionStatus, AppState } from '../utils/constants.js';
-import { ClientMessage, ServerMessage } from '../shared/types.js'
+import type { ClientMessage, ServerMessage } from '../shared/types.js'
 import { appManager } from './AppManager.js';
 
 /**

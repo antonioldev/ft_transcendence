@@ -68,26 +68,27 @@ export function randomFromArray(arr: string[]): string {
 	return arr[Math.floor(Math.random() * arr.length)];
 }
 
-export async function detectQuality(engine: Engine, maxSamples: number = 30): Promise<Quality> {
-	return new Promise((resolve) => {
-		let samples = 0;
-		let fpsSum = 0;
-		
-		const interval = setInterval(() => {
-			const fps = engine.getFps();
-			fpsSum += fps;
-			samples++;
-			
-			if (samples >= maxSamples) {
-				clearInterval(interval);
-				const avgFps = fpsSum / samples;
-				
-				if (avgFps >= 55) resolve(Quality.HIGH);
-				else if (avgFps >= 35) resolve(Quality.MEDIUM);
-				else resolve(Quality.LOW);
-			}
-		}, 50);
-	});
+export function detectQuality(): Quality {
+	if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent))
+		return Quality.MEDIUM;
+
+	const canvas = document.createElement('canvas');
+	const gl = canvas.getContext('webgl') as WebGLRenderingContext | null;
+
+	if (!gl)
+		return Quality.LOW;
+
+	if (canvas.getContext('webgl2'))
+		return Quality.HIGH;
+
+	const maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
+	const maxVaryingVectors = gl.getParameter(gl.MAX_VARYING_VECTORS);
+
+	if (maxTextureSize >= 8192 && maxVaryingVectors >= 8)
+		return Quality.HIGH;
+	if (maxTextureSize >= 4096 && maxVaryingVectors >= 4)
+		return Quality.MEDIUM;
+	return Quality.LOW;
 }
 
 export function applyQualitySettings(engine: Engine, quality: Quality): void {

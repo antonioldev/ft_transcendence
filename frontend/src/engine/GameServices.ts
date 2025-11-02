@@ -1,10 +1,10 @@
 import { Engine, Scene } from "@babylonjs/core";
 import { Direction } from "../shared/constants.js";
-import { Powerup } from '../shared/types.js';
+import type { Powerup } from '../shared/types.js';
 import { PlayerSide, ViewMode } from "../utils/constants.js";
-import { GameObjects, PlayerState } from "../utils/types.js";
+import type { GameObjects, PlayerState } from "../utils/types.js";
 import { KeyboardMode } from "./../utils/constants.js";
-import { GameConfig } from './GameInitializer.js';
+import type { GameConfig } from './GameInitializer.js';
 import { AnimationManager, Motion } from "./services/AnimationManager";
 import { AudioManager } from "./services/AudioManager";
 import { GUIManager } from "./services/GuiManager";

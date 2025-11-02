@@ -1,14 +1,14 @@
 import { FreeCamera, GlowLayer, Mesh, Scene } from "@babylonjs/core";
 import { GameMode } from '../../../shared/constants.js';
 import { ViewMode } from '../../../utils/constants.js';
-import { Effects, GameObjects, Players, ThemeObject } from '../../../utils/types.js';
+import type { Effects, GameObjects, Players, ThemeObject } from '../../../utils/types.js';
 import { Logger } from '../../../utils/LogManager.js';
-import { GameConfig } from '../../GameInitializer.js';
+import type { GameConfig } from '../../GameInitializer.js';
 import { getBallStartPosition, getPlayerLeftPosition, getPlayerRightPosition, getPlayerSize } from '../../utils/utils.js';
 import { ParticleEffectType } from "../config/effectSceneConfig.js";
 import { PlayerSide } from "../../../utils/constants.js";
 import { MAP_CONFIGS } from "../config/mapConfigs.js";
-import { MapAssetConfig } from "../config/sceneTypes.js";
+import type { MapAssetConfig } from "../config/sceneTypes.js";
 import { createActor } from "../entities/animatedProps.js";
 import { createBall, createGameField, createPlayer, createWallLineGlowEffect, createWalls } from '../entities/gameObjects.js';
 import { createBallEffects, createPaddleCage, createPaddleGlow, createWallGlowEffect } from '../entities/gameObjectsEffects.js';
@@ -16,7 +16,7 @@ import { createStaticObject, createStaticObjects } from "../entities/staticProps
 import { createCameras, createGuiCamera } from "./camerasBuilder.js";
 import { createFireworks, createFog, createLensFlare, createParticleSystem, createSmokeSprite } from './effectsBuilder.js';
 import { createLight, createSky, createTerrain } from './enviromentBuilder.js';
-import { CoreGameObjects } from "../../../utils/types.js";
+import type { CoreGameObjects } from "../../../utils/types.js";
 
 export type LoadingProgressCallback = (progress: number) => void;
 

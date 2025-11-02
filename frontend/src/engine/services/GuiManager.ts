@@ -3,7 +3,7 @@ import { AdvancedDynamicTexture } from "@babylonjs/gui";
 import { GameMode } from '../../shared/constants.js';
 import { ViewMode } from '../../utils/constants.js';
 import { Logger } from '../../utils/LogManager.js';
-import { GameConfig } from '../GameInitializer.js';
+import type { GameConfig } from '../GameInitializer.js';
 import { CardGame } from "../gui/CardGame.js";
 import { Countdown } from "../gui/Countdown.js";
 import { EndGame } from "../gui/EndGame.js";

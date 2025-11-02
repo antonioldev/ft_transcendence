@@ -6,7 +6,7 @@ import { EL, requireElementById } from '../ui/elements.js';
 import { uiManager } from '../ui/UIManager.js';
 import { AppState, BUTTON_NAV, GAME_MODE_CONFIG, Quality, TOURNAMENT_SIZES, ViewMode } from '../utils/constants.js';
 import { Logger } from '../utils/LogManager.js';
-import { GameSetting } from '../utils/types.js';
+import type { GameSetting } from '../utils/types.js';
 import { getMaxPlayers, getMinPlayersForCpu } from '../utils/utils.js';
 import { authManager } from './AuthManager.js';
 import { dashboardManager } from './DashboardManager.js';

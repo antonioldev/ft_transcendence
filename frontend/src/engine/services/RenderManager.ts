@@ -2,7 +2,7 @@ import { Engine, Scene, Vector3 } from "@babylonjs/core";
 import { GAME_CONFIG } from '../../shared/gameConfig.js';
 import { ViewMode } from '../../utils/constants.js';
 import { Logger } from '../../utils/LogManager.js';
-import { GameObjects } from "../../utils/types.js";
+import type { GameObjects } from "../../utils/types.js";
 
 /**
  * The RenderManager class is responsible for managing the rendering loop,

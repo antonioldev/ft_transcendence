@@ -367,8 +367,8 @@ export const LOBBY_STYLES = {
 
 export const COUNTDOWN_STYLES = {
     countdownContainer: {
-        widthInPixels: 1920,
-        heightInPixels: 864, // 80% of 1080
+        width: "100%",
+        height: "80%",
         verticalAlignment: V_TOP,
         thickness: 0,
         isVisible: false,
@@ -401,7 +401,8 @@ export const COUNTDOWN_STYLES = {
         leftInPixels: -300,
         topInPixels: -150,
         isVisible: false,
-        alpha: 0
+        alpha: 0,
+        zIndex: Z_INDEX.HUD,
     },
 
     vsText: {
@@ -416,7 +417,8 @@ export const COUNTDOWN_STYLES = {
         outlineColor: COLORS.BLACK,
         topInPixels: -50,
         isVisible: false,
-        alpha: 0
+        alpha: 0,
+        zIndex: Z_INDEX.HUD,
     },
 
     namePlayerRight: {
@@ -433,7 +435,9 @@ export const COUNTDOWN_STYLES = {
         leftInPixels: 300,
         topInPixels: 50,
         isVisible: false,
-        alpha: 0
+        alpha: 0,
+        zIndex: Z_INDEX.HUD,
+
     },
 
     readyText: {
@@ -449,7 +453,8 @@ export const COUNTDOWN_STYLES = {
         outlineColor: COLORS.TRANSPARENT_BLACK,
         topInPixels: -50,
         isVisible: false,
-        alpha: 0
+        alpha: 0,
+        zIndex: Z_INDEX.HUD,
     }
 
 } as const;

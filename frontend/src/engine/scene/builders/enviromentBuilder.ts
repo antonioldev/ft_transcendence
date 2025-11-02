@@ -3,7 +3,8 @@ import { GridMaterial } from "@babylonjs/materials";
 import { ViewMode } from '../../../utils/constants.js';
 import { GAME_CONFIG } from '../../../shared/gameConfig.js';
 import { Logger } from '../../../utils/LogManager.js';
-import { MAP_OBJECT_TYPE, MapAssetConfig, TextureSet } from "../config/sceneTypes.js";
+import { MAP_OBJECT_TYPE } from "../config/sceneTypes.js";
+import type { MapAssetConfig, TextureSet } from "../config/sceneTypes.js";
 import { createLavaMaterial, createMaterial, getStandardTextureScale } from './materialsBuilder.js';
 import { MAP_CONFIGS } from "../config/mapConfigs.js";
 

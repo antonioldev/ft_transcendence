@@ -4,8 +4,8 @@ import { Direction } from '../../shared/constants.js';
 import { getPlayerBoundaries } from '../../shared/gameConfig.js';
 import { KeyboardMode, Keys, PlayerSide, PROFILES_2D, PROFILES_3D, ViewMode } from '../../utils/constants.js';
 import { Logger } from '../../utils/LogManager.js';
-import { GameObjects, KeysProfile, PlayerState } from '../../utils/types.js';
-import { GameConfig } from '../GameInitializer.js';
+import type { GameObjects, KeysProfile, PlayerState } from '../../utils/types.js';
+import type { GameConfig } from '../GameInitializer.js';
 import { PowerupManager } from "./PowerUpManager.js";
 
 // Manages all keyboard input handling for the game

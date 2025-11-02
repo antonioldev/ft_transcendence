@@ -4,12 +4,12 @@ import { sendPOST } from "../core/HTTPRequests.js";
 import { webSocketClient } from '../core/WebSocketClient.js';
 import { Direction, GameMode, GameState, MessageType } from '../shared/constants.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
-import { GameStateData, PlayerInfo, ServerMessage } from '../shared/types.js';
+import type { GameStateData, PlayerInfo, ServerMessage } from '../shared/types.js';
 import { uiManager } from '../ui/UIManager.js';
 import { AppState, KeyboardMode, PlayerSide } from '../utils/constants.js';
 import { Logger } from '../utils/LogManager.js';
-import { GameObjects, PlayerState, ThemeObject } from '../utils/types.js';
-import { GameConfig } from './GameInitializer.js';
+import type { GameObjects, PlayerState, ThemeObject } from '../utils/types.js';
+import type { GameConfig } from './GameInitializer.js';
 import { GameServices } from "./GameServices.js";
 import { startFireworks } from "./scene/builders/effectsBuilder.js";
 import { disposeMaterialResources } from "./scene/builders/materialsBuilder.js";
@@ -87,7 +87,7 @@ export class Game {
 		Logger.info('Initializing game...', 'Game');
 
 		this.engine = await this.initializeBabylonEngine();
-		currentSettings.quality = await detectQuality(this.engine);
+		currentSettings.quality = detectQuality();
 		applyQualitySettings(this.engine, currentSettings.quality);
 		Logger.info(`Detected quality level: ${currentSettings.quality}`, 'Game');
 		this.scene = await this.createScene();

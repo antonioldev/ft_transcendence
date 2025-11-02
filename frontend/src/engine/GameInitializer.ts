@@ -1,9 +1,9 @@
 import { authManager } from '../core/AuthManager.js';
 import { GameMode } from '../shared/constants.js';
-import { PlayerInfo } from '../shared/types.js';
+import type { PlayerInfo } from '../shared/types.js';
 import { EL } from '../ui/elements.js';
 import { ViewMode } from '../utils/constants.js';
-import { GameSetting } from '../utils/types.js';
+import type { GameSetting } from '../utils/types.js';
 
 // Complete configuration for starting a game
 export interface GameConfig {

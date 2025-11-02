@@ -12,7 +12,8 @@
 	"noUnusedLocals": true,
 	"noUnusedParameters": true,
 	"isolatedModules": true,
-	"noEmit": true
+	"noEmit": true,
+	"verbatimModuleSyntax": true
   },
   "include": ["src/**/*", "src/.libs_REMOVE"],
   "exclude": ["node_modules", "dist"]
