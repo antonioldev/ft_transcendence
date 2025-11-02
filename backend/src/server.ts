@@ -5,18 +5,20 @@ import fastifyCors from '@fastify/cors';
 import * as dotenv from 'dotenv';
 import { setupWebsocket }  from './routes/Websocket.js';
 import config from './config/default.js';
-import { initialisazeDatabase } from './data/db-init.js';
+import { initialisazeDatabase, setDefaultStatus } from './data/db-init.js';
 import { registerDatabaseFunctions } from './data/database.js';
 import { APIRoutes } from './routes/apiRoutes.js';
 import { authGoogle } from './routes/authRoutes.js';
-import { seedDefaultUsers } from './data/db-init.js';
+import { seedDefaultUsers, setDefaultCPU } from './data/db-init.js';
 
 /* --- SETUP DATABASE --- */
 
 dotenv.config();
 const db = await initialisazeDatabase('./database/transcendence.sqlite');
 registerDatabaseFunctions(db);
+await setDefaultCPU();
 await seedDefaultUsers(8);
+await setDefaultStatus();
 
 
 /* --- CREATE FASTIFY APP --- */

@@ -30,6 +30,7 @@ export const portuguese: Translation = {
     login: '/ entrar',
     loginTitle: 'Entre na Sua Conta',
     loginSubmit: 'Entrar',
+    instructions: '/ como jogar',
     greeting: 'Oi',
     username: 'Nome de usuário:',
     email: 'Email:',
@@ -53,6 +54,7 @@ export const portuguese: Translation = {
     passwordsDoNotMatch: 'As senhas não coincidem',
     dontHaveAccount: 'Não tem uma conta?',
     alreadyHaveAccount: 'Já tem uma conta?',
+    unauthorizedAccess: 'Acesso não autorizado',
     availableOnlyOffline: 'Disponível apenas no modo offline',
     loginRequired: 'Login obrigatório',
     logout: 'Sair',
@@ -78,6 +80,7 @@ export const portuguese: Translation = {
     errorEnterEmail: 'Por favor, insira um email',
     errorEnterValidEmail: 'Por favor, insira um email válido',
     errorPasswordMinLength: 'A senha deve ter pelo menos 6 caracteres',
+    errorPasswordComplexity: 'A senha deve conter pelo menos uma letra maiúscula, uma letra minúscula, um número e um caractere especial',
     errorConfirmPassword: 'Por favor, confirme senha',
     errorPasswordsDoNotMatch: 'As senhas não coincidem',
 	spectator: '🎮 MODO ESPECTADOR',
@@ -123,4 +126,21 @@ export const portuguese: Translation = {
     win: 'Vitória',
     loss: 'Derrota'
 
+,
+    // Instructions / How to Play
+    howToPlay: 'Como Jogar',
+    games2DTitle: 'Jogos 2D',
+    games3DTitle: 'Jogos 3D',
+    soloOnline: 'Solo | Online',
+    moveLabel: 'Mover',
+    localLabel: 'Local',
+    player1Label: 'jogador_1',
+    player2Label: 'jogador_2',
+    gameModesTitle: 'Modos de Jogo',
+    soloVsAITitle: 'Solo vs IA',
+    difficultyInfo: '4 níveis de dificuldade disponíveis',
+    shareKeyboard: 'Compartilhe o mesmo teclado',
+    onlineMatchTitle: 'Partida Online',
+    onlineMatchInfo: 'Jogue contra jogadores remotos',
+    tournamentInfo: '4, 8 ou 16 jogadores'
 };

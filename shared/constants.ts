@@ -132,6 +132,7 @@ export enum AuthCode {
   USERNAME_TAKEN = 2,
   USER_EXISTS = 1,
   ALREADY_LOGIN = 3,
+  UNAUTHORIZED = 4
 }
 
 export enum ConnectionStatus {

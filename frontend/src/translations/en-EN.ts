@@ -55,6 +55,7 @@ export const english: Translation = {
     dontHaveAccount: "Don't have an account?",
     alreadyHaveAccount: 'Already have an account?',
     availableOnlyOffline: 'Available only in offline mode',
+    unauthorizedAccess: 'Unauthorized access attempt detected',
     loginRequired: 'Login required',
     logout: 'Logout',
     tournamentOnline: 'Tournament Online',
@@ -83,6 +84,7 @@ export const english: Translation = {
     errorEnterEmail: 'Please enter an email',
     errorEnterValidEmail: 'Please enter a valid email',
     errorPasswordMinLength: 'Password must be at least 6 characters',
+    errorPasswordComplexity: 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
     errorConfirmPassword: 'Please confirm password',
     errorPasswordsDoNotMatch: 'Passwords do not match',
 
@@ -124,5 +126,23 @@ export const english: Translation = {
     yes: 'Yes',
     no: 'No',
     win: 'Win',
-    loss: 'Loss'
+    loss: 'Loss',
+,
+
+    // Instructions / How to Play
+    howToPlay: 'How to Play',
+    games2DTitle: '2D Games',
+    games3DTitle: '3D Games',
+    soloOnline: 'Solo | Online',
+    moveLabel: 'Move',
+    localLabel: 'Local',
+    player1Label: 'player_1',
+    player2Label: 'player_2',
+    gameModesTitle: 'Game Modes',
+    soloVsAITitle: 'Solo vs AI',
+    difficultyInfo: '4 difficulty levels available',
+    shareKeyboard: 'Share the same keyboard',
+    onlineMatchTitle: 'Online Match',
+    onlineMatchInfo: 'Play against remote players',
+    tournamentInfo: '4, 8, or 16 players'
 };

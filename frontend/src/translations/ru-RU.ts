@@ -31,6 +31,7 @@ export const russian: Translation = {
     loginSubmit: 'Войти',
     loginTitle: 'Войти в свой аккаунт',
     greeting: 'Привет',
+    instructions: '/ как играть',
     username: 'Имя пользователя:',
     email: 'имейл:',
     password: 'Пароль:',
@@ -53,6 +54,7 @@ export const russian: Translation = {
     passwordsDoNotMatch: 'Пароли не совпадают',
     dontHaveAccount: 'Нет аккаунта?',
     alreadyHaveAccount: 'Уже есть аккаунт?',
+    unauthorizedAccess: 'Попытка несанкционированного доступа',
     availableOnlyOffline: 'Доступно только в оффлайн-режиме',
     loginRequired: 'Требуется вход в систему',
     logout: 'Выйти',
@@ -78,6 +80,7 @@ export const russian: Translation = {
     errorEnterEmail: 'Пожалуйста, введите имейл',
     errorEnterValidEmail: 'Пожалуйста, введите действительный имейл',
     errorPasswordMinLength: 'Пароль должен содержать не менее 6 символов',
+    errorPasswordComplexity: 'Пароль должен содержать как минимум одну заглавную букву, одну строчную букву, одну цифру и один специальный символ',
     errorConfirmPassword: 'Пожалуйста, подтвердите пароль',
     errorPasswordsDoNotMatch: 'Пароли не совпадают',
 	spectator: '🎮 РЕЖИМ НАБЛЮДАТЕЛЯ',
@@ -121,5 +124,23 @@ export const russian: Translation = {
     yes: 'Да',
     no: 'Нет',
     win: 'Победа',
-    loss: 'Поражение'
+    loss: 'Поражение',
+
+,
+    // Instructions / How to Play
+    howToPlay: 'Как Играть',
+    games2DTitle: '2D Игра',
+    games3DTitle: '3D Игра',
+    soloOnline: 'Соло | Онлайн',
+    moveLabel: 'Двигаться',
+    localLabel: 'Локально',
+    player1Label: 'игрок_1',
+    player2Label: 'игрок_2',
+    gameModesTitle: 'Режимы игры',
+    soloVsAITitle: 'Соло против ИИ',
+    difficultyInfo: 'Доступно 4 уровня сложности',
+    shareKeyboard: 'Делитесь одной клавиатурой',
+    onlineMatchTitle: 'Онлайн Матч',
+    onlineMatchInfo: 'Играйте против удалённых игроков',
+    tournamentInfo: '4, 8 или 16 игроков'
 };
