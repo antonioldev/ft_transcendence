@@ -1,5 +1,6 @@
-import { Vector3, Viewport } from "@babylonjs/core";
+import { Vector3, Viewport, Engine } from "@babylonjs/core";
 import { GAME_CONFIG } from '../../shared/gameConfig.js';
+import { Quality } from "../../utils/constants.js";
 
 // Utility functions for Babylon.js game objects
 // They get datas from gameConfig TypeScript and convert them to Babylon.js objects
@@ -65,4 +66,40 @@ export function randomFromRange(min: number, max: number): number {
 
 export function randomFromArray(arr: string[]): string {
 	return arr[Math.floor(Math.random() * arr.length)];
+}
+
+export async function detectQuality(engine: Engine, maxSamples: number = 30): Promise<Quality> {
+	return new Promise((resolve) => {
+		let samples = 0;
+		let fpsSum = 0;
+		
+		const interval = setInterval(() => {
+			const fps = engine.getFps();
+			fpsSum += fps;
+			samples++;
+			
+			if (samples >= maxSamples) {
+				clearInterval(interval);
+				const avgFps = fpsSum / samples;
+				
+				if (avgFps >= 55) resolve(Quality.HIGH);
+				else if (avgFps >= 35) resolve(Quality.MEDIUM);
+				else resolve(Quality.LOW);
+			}
+		}, 50);
+	});
+}
+
+export function applyQualitySettings(engine: Engine, quality: Quality): void {
+	switch(quality) {
+		case Quality.LOW:
+			engine.setHardwareScalingLevel(1.5);
+			break;
+		case Quality.MEDIUM:
+			engine.setHardwareScalingLevel(1.2);
+			break;
+		case Quality.HIGH:
+			engine.setHardwareScalingLevel(1);
+			break;
+	}
 }

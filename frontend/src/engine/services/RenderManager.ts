@@ -44,9 +44,8 @@ export class RenderManager {
 
 			if (deltaTime >= frameInterval) {
 				try {
-					if (this.scene && this.scene.activeCamera) {
+					if (this.scene && this.scene.activeCamera)
 						this.scene.render();
-					}
 					this.lastFrameTime = currentTime;
 				} catch (error) {
 					Logger.error('Error in render loop', 'RenderManager', error);

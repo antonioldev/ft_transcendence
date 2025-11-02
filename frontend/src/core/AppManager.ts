@@ -4,7 +4,7 @@ import { AiDifficulty, GameMode, GameState } from '../shared/constants.js';
 import { getCurrentTranslation, updateLanguageDisplay } from '../translations/translations.js';
 import { EL, requireElementById } from '../ui/elements.js';
 import { uiManager } from '../ui/UIManager.js';
-import { AppState, BUTTON_NAV, GAME_MODE_CONFIG, TOURNAMENT_SIZES, ViewMode } from '../utils/constants.js';
+import { AppState, BUTTON_NAV, GAME_MODE_CONFIG, Quality, TOURNAMENT_SIZES, ViewMode } from '../utils/constants.js';
 import { Logger } from '../utils/LogManager.js';
 import { GameSetting } from '../utils/types.js';
 import { getMaxPlayers, getMinPlayersForCpu } from '../utils/utils.js';
@@ -20,8 +20,8 @@ export let currentSettings: GameSetting = {
 	musicEnabled: true,
 	soundEffectsEnabled: true,
 	offlineTournamentSize: 4,
-	onlineTournamentSize: 4
-
+	onlineTournamentSize: 4,
+	quality: Quality.MEDIUM
 };
 
 export function updateCurrentSettings(newSettings: Partial<typeof currentSettings>): void {

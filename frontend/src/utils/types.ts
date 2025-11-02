@@ -1,4 +1,4 @@
-import { ViewMode } from "./constants";
+import { ViewMode, Quality } from "./constants";
 import { GameMode, AiDifficulty } from "../shared/constants";
 import { Powerup } from "../shared/types";
 import { FreeCamera, Light, Mesh } from "@babylonjs/core";
@@ -13,6 +13,7 @@ export interface GameSetting {
 	soundEffectsEnabled: boolean;
 	offlineTournamentSize: number;
 	onlineTournamentSize: number;
+	quality: Quality;
 
 }
 

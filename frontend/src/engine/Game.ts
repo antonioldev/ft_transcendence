@@ -1,12 +1,12 @@
 import { Color4, Engine, Scene, SceneLoader } from "@babylonjs/core";
-import { appManager } from '../core/AppManager.js';
+import { appManager, currentSettings } from '../core/AppManager.js';
 import { sendPOST } from "../core/HTTPRequests.js";
 import { webSocketClient } from '../core/WebSocketClient.js';
 import { Direction, GameMode, GameState, MessageType } from '../shared/constants.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
 import { GameStateData, PlayerInfo, ServerMessage } from '../shared/types.js';
 import { uiManager } from '../ui/UIManager.js';
-import { AppState, PlayerSide } from '../utils/constants.js';
+import { AppState, KeyboardMode, PlayerSide } from '../utils/constants.js';
 import { Logger } from '../utils/LogManager.js';
 import { GameObjects, PlayerState, ThemeObject } from '../utils/types.js';
 import { GameConfig } from './GameInitializer.js';
@@ -15,6 +15,7 @@ import { startFireworks } from "./scene/builders/effectsBuilder.js";
 import { disposeMaterialResources } from "./scene/builders/materialsBuilder.js";
 import { buildScene } from './scene/builders/sceneBuilder.js';
 import { Motion } from "./services/AnimationManager.js";
+import { applyQualitySettings, detectQuality } from "./utils/utils.js";
 
 /**
  * The Game class serves as the core of the game engine, managing the initialization,
@@ -86,6 +87,9 @@ export class Game {
 		Logger.info('Initializing game...', 'Game');
 
 		this.engine = await this.initializeBabylonEngine();
+		currentSettings.quality = await detectQuality(this.engine);
+		applyQualitySettings(this.engine, currentSettings.quality);
+		Logger.info(`Detected quality level: ${currentSettings.quality}`, 'Game');
 		this.scene = await this.createScene();
 
 		const { gameObjects, themeObjects } = await buildScene(this.scene, this.config, 
@@ -112,15 +116,14 @@ export class Game {
 
 	// Initialize Babylon.js engine
 	private async initializeBabylonEngine(): Promise<Engine> {
-		const engine = new Engine(this.canvas, true, { 
-			preserveDrawingBuffer: true, 
-			stencil: true, 
+		const engine = new Engine(this.canvas, false, { 
+			preserveDrawingBuffer: false, 
+			stencil: false, 
 			disableWebGL2Support: false,
 			antialias: false,
 			audioEngine: true,
 			powerPreference: "high-performance"
-		});
-
+		}, false);
 		window.addEventListener('resize', () => {
 			engine.resize();
 		});
@@ -194,9 +197,10 @@ export class Game {
 	private async onServerEndedSession(message: ServerMessage): Promise<void> {
 		if (!this.isInitialized) return;
 
-		const winner = message.winner;
+		this.services?.input.setMode(KeyboardMode.DISABLED);
 
 		startFireworks(this.themeObjects?.effects || [], 250);
+		const winner = message.winner;
 		if (winner)
 			await this.services?.handleSessionEnd(winner, this.isSpectator);
 		this.dispose();
@@ -387,7 +391,7 @@ export class Game {
 // ====================			WEBSOCKET				  ====================
 	private registerCallbacks(): void {
 		webSocketClient.registerCallback(MessageType.GAME_STATE, (state: GameStateData) => { this.updateGameObjects(state); });
-		webSocketClient.registerCallback(MessageType.ERROR, (error: string) => { Logger.error('Network error', 'Game', error); });
+		webSocketClient.registerCallback(MessageType.ERROR, (error: string) => { Logger.warn('Network error', 'Game', error); });
 		webSocketClient.registerCallback(MessageType.SESSION_ENDED, (message: ServerMessage) => { this.onServerEndedSession(message); });
 		webSocketClient.registerCallback(MessageType.SIDE_ASSIGNMENT, (message: ServerMessage) => { this.handlePlayerAssignment(message); });
 		webSocketClient.registerCallback(MessageType.MATCH_ASSIGNMENT, (message: ServerMessage) => { this.isLastMatch = this.services?.updateTournamentRound(message) ?? false; });

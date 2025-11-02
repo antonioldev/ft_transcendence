@@ -1,8 +1,9 @@
 import { Color3, Scene, StandardMaterial, Texture } from "@babylonjs/core";
-import { ViewMode } from '../../../utils/constants.js';
+import { ViewMode, Quality } from '../../../utils/constants.js';
 import { TEXTURE_SCALING } from '../config/mapConfigs.js';
 import { MAP_OBJECT_TYPE, TextureSet } from '../config/sceneTypes.js';
 import { LavaMaterial } from "@babylonjs/materials";
+import { currentSettings } from "../../../core/AppManager.js";
 
 const createdMaterials = new Set<StandardMaterial>();
 const createdTextures = new Set<Texture>();
@@ -33,8 +34,9 @@ export function createMaterial(
 	name: string, 
 	mode: ViewMode, 
 	textureSet: TextureSet,
-	textureScale?: { u: number, v: number }
+	textureScale?: { u: number, v: number },
 ): StandardMaterial {
+	const quality = currentSettings.quality;
 	const material = new StandardMaterial(name, scene);
 	
 	if (mode === ViewMode.MODE_2D) {
@@ -45,17 +47,34 @@ export function createMaterial(
 	} else if (mode === ViewMode.MODE_3D && textureSet) {
 		try {
 			const diffuseTexture = new Texture(textureSet.diffuse, scene);
-			const normalTexture = new Texture(textureSet.normal, scene);
-			const roughnessTexture = new Texture(textureSet.roughness, scene);
-
 			material.diffuseTexture = diffuseTexture;
 			setTextureScale(textureScale, diffuseTexture);
+
+			if (quality === Quality.LOW)
+				diffuseTexture.updateSamplingMode(Texture.NEAREST_SAMPLINGMODE);
+			else if (quality === Quality.MEDIUM)
+				diffuseTexture.updateSamplingMode(Texture.BILINEAR_SAMPLINGMODE);
+			else
+				diffuseTexture.updateSamplingMode(Texture.TRILINEAR_SAMPLINGMODE);
+
+			if (quality !== Quality.LOW) {
+				const normalTexture = new Texture(textureSet.normal, scene);
+				material.bumpTexture = normalTexture;
+				setTextureScale(textureScale, normalTexture);
 				
-			material.bumpTexture = normalTexture;
-			setTextureScale(textureScale, normalTexture);
-			
-			material.specularTexture = roughnessTexture;
-			setTextureScale(textureScale, roughnessTexture);
+				const roughnessTexture = new Texture(textureSet.roughness, scene);
+				material.specularTexture = roughnessTexture;
+				setTextureScale(textureScale, roughnessTexture);
+				
+				if (quality === Quality.MEDIUM) {
+					normalTexture.updateSamplingMode(Texture.BILINEAR_SAMPLINGMODE);
+					roughnessTexture.updateSamplingMode(Texture.BILINEAR_SAMPLINGMODE);
+				} else {
+					normalTexture.updateSamplingMode(Texture.TRILINEAR_SAMPLINGMODE);
+					roughnessTexture.updateSamplingMode(Texture.TRILINEAR_SAMPLINGMODE);
+				}
+			}
+
 		} catch (error) {
 			material.diffuseColor = Color3.FromHexString(textureSet.color);
 		}

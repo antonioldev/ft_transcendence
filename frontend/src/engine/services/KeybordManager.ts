@@ -89,6 +89,8 @@ export class KeyboardManager {
 	private handleGlobalKeyDown(event: KeyboardEvent): void {
 		const key = event.keyCode;
 		switch (this.mode) {
+			case KeyboardMode.DISABLED:
+				break;
 			case KeyboardMode.SPECTATOR_CHOICE:
 				this.handleSpectatorChoiceKeys(key);
 				break;
@@ -159,16 +161,17 @@ export class KeyboardManager {
 	}
 
 	update(): void {
-		if (!this.isInitialized || !this.deviceSourceManager || !this.gameObjects) return;
+		if (!this.isInitialized || !this.deviceSourceManager ||
+			!this.gameObjects || this.mode === KeyboardMode.DISABLED) return;
 
 		try {
 			const keyboardSource = this.deviceSourceManager.getDeviceSource(DeviceType.Keyboard);
 			if (!keyboardSource) return;
 
 			this.players.forEach((playerState, side) => {
-				if (playerState.isControlled && playerState.keyboardProfile) {
+				if (playerState.isControlled && playerState.keyboardProfile)
 					this.handlePlayerMovement(keyboardSource, side, playerState, playerState.keyboardProfile);
-				}
+
 			});
 		} catch (error) {
 			Logger.error('Error updating player input', 'KeyboardManager', error);

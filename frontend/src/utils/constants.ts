@@ -28,6 +28,12 @@ export enum PlayerSide {
 	RIGHT = 1
 }
 
+export enum Quality {
+	LOW,
+	MEDIUM,
+	HIGH
+}
+
 // export enum UserManagement {
 // 	SEND_USER_PROFILE,	  // Type for front to backend comm
 // 	REQUEST_USER_PROFILE,	// Type for back to frontend comm
@@ -97,5 +103,6 @@ export enum KeyboardMode {
 	NORMAL,
 	PAUSED,
 	SPECTATOR_CHOICE,
-	SPECTATOR
+	SPECTATOR,
+	DISABLED
 }
