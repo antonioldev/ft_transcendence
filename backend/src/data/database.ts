@@ -564,30 +564,54 @@ export function deleteGame(id: number): boolean {
 	}
 }
 
-// UPDATE game info
-export function updateGameInfo(id: string, player1_score: number, player2_score: number, winner: number, looser: number, endTime: number): boolean {
-	try {
-		id = safeGameId(id);
-		player1_score = nonNegInt(player1_score, 'player1_score');
-		player2_score = nonNegInt(player2_score, 'player2_score');
-		winner = nonNegInt(winner, 'winner_id');
-		looser = nonNegInt(looser, 'looser_id');
-		endTime = nonNegInt(endTime, 'end time');
 
-		let startTime = getGameStartTime(id);
-		if (!startTime) {
-			console.error('Game not found or start time invalid.');
-			return false;
-		}
-		const gameDuration = ((endTime - startTime.getTime()) / 1000).toFixed(1);
-		const gameInfo = db.prepare('UPDATE games SET player1_score = ?, player2_score = ?, winner_id = ?, looser_id = ?, duration_seconds = ? WHERE game_id = ?');
-		gameInfo.run(player1_score, player2_score, winner, looser, parseFloat(gameDuration), id);
-		return true;
-	} catch (err) {
-		console.error('Error in update game: ', err);
-		return false;
-	}
+export function updateGameInfo(
+  id: string,
+  player1_score: number,
+  player2_score: number,
+  winner: number,
+  looser: number,
+  endTime: number,
+  startTimeMs?: number    // [NEW]]
+): boolean {
+  try {
+    id = safeGameId(id);
+    player1_score = nonNegInt(player1_score, 'player1_score');
+    player2_score = nonNegInt(player2_score, 'player2_score');
+    winner = nonNegInt(winner, 'winner_id');
+    looser = nonNegInt(looser, 'looser_id');
+    endTime = nonNegInt(endTime, 'end time');
+
+    // If we got a start timestamp from the game (after countdown), use it
+    if (typeof startTimeMs === 'number') {
+      const isoStart = new Date(startTimeMs).toISOString();
+      const durationSec = parseFloat(((endTime - startTimeMs) / 1000).toFixed(1));
+      const stmt = db.prepare(
+        'UPDATE games SET player1_score = ?, player2_score = ?, winner_id = ?, looser_id = ?, duration_seconds = ?, played_at = ? WHERE game_id = ?'
+      );
+      stmt.run(player1_score, player2_score, winner, looser, durationSec, isoStart, id);
+      return true;
+    }
+
+    // Fallback: compute from DB's played_at if no startTimeMs was given
+    const startTime = getGameStartTime(id);
+    if (!startTime) {
+      console.error('Game not found or start time invalid.');
+      return false;
+    }
+    const durationSec = parseFloat(((endTime - startTime.getTime()) / 1000).toFixed(1));
+    const stmt = db.prepare(
+      'UPDATE games SET player1_score = ?, player2_score = ?, winner_id = ?, looser_id = ?, duration_seconds = ? WHERE game_id = ?'
+    );
+    stmt.run(player1_score, player2_score, winner, looser, durationSec, id);
+    return true;
+
+  } catch (err) {
+    console.error('Error in update game: ', err);
+    return false;
+  }
 }
+
 
 export function updatePlayer2(id: string, player_2: number): boolean {
 	try {

@@ -11,6 +11,7 @@ import { remove_elem } from './utils.js';
 
 // The Game class runs the core game logic for all game modes.
 export class Game {
+	private _startMs: number | null = null;  // [NEW]]
 	id: string;
 	state: GameState = GameState.INIT;
 	clock: Clock = new Clock();
@@ -171,6 +172,7 @@ export class Game {
 		});
 		
 		await this.send_countdown();
+		this._startMs = Date.now();          // [NEW]]
 		// run game loop, updating and broadcasting state to clients until win
 		while (!this.is_ended()) {
 			const dt = await this.clock.tick(60);
@@ -229,7 +231,8 @@ export class Game {
 				this.players[RIGHT].name, 
 				this.paddles[LEFT].score, 
 				this.paddles[RIGHT].score, 
-				Date.now()
+				Date.now(),
+				this._startMs!    // [NEW]]
 			);
 			console.log(`Game ${this.id} saved to db`);
 		}

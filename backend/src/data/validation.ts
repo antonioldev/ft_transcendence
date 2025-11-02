@@ -265,7 +265,8 @@ export function saveGameResult(
 	player2Name: string,
 	player1Score: number,
 	player2Score: number,
-	endTime: number
+	endTime: number,
+	startTimeMs?: number    // [NEW]]
 ): boolean {
 	const player1Id = dbFunction.retrieveUserID(player1Name);
 	const player2Id = dbFunction.retrieveUserID(player2Name);
@@ -289,7 +290,8 @@ export function saveGameResult(
 		player2Score,
 		winnerId,
 		looserId,
-		endTime
+		endTime,
+		startTimeMs
 	);
 
 	if (!updated) {
