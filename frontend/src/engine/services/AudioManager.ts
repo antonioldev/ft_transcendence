@@ -233,7 +233,6 @@ export class AudioManager {
 			this.gameMusic?.play();
 	}
 
-	// Update music speed based on rally count with gentler curve and pinch effect
 	updateMusicSpeed(rallyCount: number, maxRally: number = 10): void {
 		if (!this.gameMusic || !this.isInitialized) return;
 
