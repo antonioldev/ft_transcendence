@@ -3,6 +3,7 @@ import { existsSync, readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { registerNewUser } from './validation.js';
+import { setAllUsersInactive } from './database.js';
 
 export async function initialisazeDatabase(dbPath: string): Promise<Database.Database> {
 	const dir = dirname(dbPath);
@@ -40,10 +41,20 @@ export async function initialisazeDatabase(dbPath: string): Promise<Database.Dat
 	}
 }
 
+export async function setDefaultCPU() {
+	await registerNewUser('CPU', '', '');
+	console.log('Default CPU user created');
+}
+
 export async function seedDefaultUsers(user_count: number) {
 	// pick simple starter passwords; your registerUser should pepper+argon2-hash before insert
 	for (let i = 0; i < user_count; i++) {
 		await registerNewUser(`p${i}`, `player${i}@example.com`, 'p' );
 	}
 	console.log(`Seeded ${user_count} default users via registration flow`);
-  }
+}
+
+export async function setDefaultStatus() {
+	setAllUsersInactive();
+	console.log('Set all users to inactive status on server start');
+}

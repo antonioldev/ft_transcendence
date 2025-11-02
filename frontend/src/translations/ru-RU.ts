@@ -54,6 +54,7 @@ export const russian: Translation = {
     passwordsDoNotMatch: 'Пароли не совпадают',
     dontHaveAccount: 'Нет аккаунта?',
     alreadyHaveAccount: 'Уже есть аккаунт?',
+    unauthorizedAccess: 'Попытка несанкционированного доступа',
     availableOnlyOffline: 'Доступно только в оффлайн-режиме',
     loginRequired: 'Требуется вход в систему',
     logout: 'Выйти',

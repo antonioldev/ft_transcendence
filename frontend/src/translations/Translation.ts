@@ -58,6 +58,7 @@ export interface Translation {
     dontHaveAccount: string;
     alreadyHaveAccount: string;
     availableOnlyOffline: string;
+    unauthorizedAccess: string;
     loginRequired: string;
     logout: string;
     tournamentOnline: string;
