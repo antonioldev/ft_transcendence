@@ -317,7 +317,7 @@ export class TournamentRemote extends AbstractTournament {
 		const index = this.active_matches.indexOf(match);
 		if (index !== -1) this.active_matches.splice(index, 1);
 
-		match.game.save_to_db();
+		match.game.save_to_db(1);
 		this.assign_winner(match, winner);
 
 		console.log("Assigning spectators at end of match");

@@ -270,7 +270,8 @@ export class OneOffGame extends AbstractGameSession{
 		await this.game.run();
 		
 		if (this.mode === GameMode.TWO_PLAYER_REMOTE) {
-			this.game.save_to_db();
+			console.log(`this game is ${this.mode}, with a capacity of ${this.client_capacity} tournament save is: 0`);
+			this.game.save_to_db(0);
 		}
 	}
 

@@ -58,6 +58,7 @@ export interface Translation {
     dontHaveAccount: string;
     alreadyHaveAccount: string;
     availableOnlyOffline: string;
+    unauthorizedAccess: string;
     loginRequired: string;
     logout: string;
     tournamentOnline: string;
@@ -83,6 +84,7 @@ export interface Translation {
     errorEnterEmail: string;
     errorEnterValidEmail: string;
     errorPasswordMinLength: string;
+    errorPasswordComplexity: string;
     errorConfirmPassword: string;
     errorPasswordsDoNotMatch: string;
 	spectator: string,

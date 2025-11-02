@@ -359,6 +359,11 @@ export function retrieveUserID(username: string): number {
 	try {
 		username = username.trim();
 
+		if (username.includes('CPU')) {
+			console.log(`CPU user detected ${username}, returning ID 1`);
+			return 1;
+		}
+
 		const user = db.prepare('SELECT id FROM users WHERE username = ?');
 		const userID = user.get(username) as { id: number } | undefined;
 		if (!userID) {
@@ -547,6 +552,7 @@ export function createNewGame(gameId: string, player1_id: number, tournament: nu
 
 		const game = db.prepare('INSERT INTO games (game_id, player1_id, tournament) VALUES (?,?, ?)');
 		const newGame = game.run(gameId, player1_id, tournament);
+		console.log(`[DATABASE.TS] createNewGame: New game created with id=${gameId}, player1_id=${player1_id}, tournament=${tournament}`);
 		return newGame.lastInsertRowid as number;
 	} catch (error) {
 		console.error("Error in createGame:", error);
@@ -576,7 +582,6 @@ export function registerGame(
 	looser_id: number,
 	player1_score: number,
 	player2_score: number,
-	duration_seconds: number
 ): boolean {
 	try {
 		player1_id = nonNegInt(player1_id, 'player1_id');
@@ -585,7 +590,6 @@ export function registerGame(
 		looser_id = nonNegInt(looser_id, 'looser_id');
 		player1_score = nonNegInt(player1_score, 'player1_score');
 		player2_score = nonNegInt(player2_score, 'player2_score');
-		duration_seconds = nonNegInt(duration_seconds, 'duration_seconds');
 
 		const game = db.prepare(`
 			INSERT INTO games (
@@ -594,8 +598,7 @@ export function registerGame(
 				winner_id,
 				looser_id,
 				player1_score,
-				player2_score,
-				duration_seconds
+				player2_score
 			) VALUES (?, ?, ?, ?, ?, ?, ?)`);
 		game.run(
 			player1_id,
@@ -603,8 +606,7 @@ export function registerGame(
 			winner_id,
 			looser_id,
 			player1_score,
-			player2_score,
-			duration_seconds
+			player2_score
 		);
 
 		return true;
@@ -629,23 +631,16 @@ export function deleteGame(id: number): boolean {
 }
 
 // UPDATE game info
-export function updateGameInfo(id: string, player1_score: number, player2_score: number, winner: number, looser: number, endTime: number): boolean {
+export function updateGameInfo(id: string, player1_score: number, player2_score: number, winner: number, looser: number): boolean {
 	try {
 		id = safeGameId(id);
 		player1_score = nonNegInt(player1_score, 'player1_score');
 		player2_score = nonNegInt(player2_score, 'player2_score');
 		winner = nonNegInt(winner, 'winner_id');
 		looser = nonNegInt(looser, 'looser_id');
-		endTime = nonNegInt(endTime, 'end time');
 
-		let startTime = getGameStartTime(id);
-		if (!startTime) {
-			console.error('Game not found or start time invalid.');
-			return false;
-		}
-		const gameDuration = ((endTime - startTime.getTime()) / 1000).toFixed(1);
-		const gameInfo = db.prepare('UPDATE games SET player1_score = ?, player2_score = ?, winner_id = ?, looser_id = ?, duration_seconds = ? WHERE game_id = ?');
-		gameInfo.run(player1_score, player2_score, winner, looser, parseFloat(gameDuration), id);
+		const gameInfo = db.prepare('UPDATE games SET player1_score = ?, player2_score = ?, winner_id = ?, looser_id = ? WHERE game_id = ?');
+		gameInfo.run(player1_score, player2_score, winner, looser, id);
 		return true;
 	} catch (err) {
 		console.error('Error in update game: ', err);
@@ -786,19 +781,6 @@ export function getGameLooser(id: string): number {
 	}
 }
 
-export function getGameDuration(id: string): number {
-	try {
-		id = safeGameId(id);
-
-		const game = db.prepare('SELECT duration_seconds FROM games WHERE game_id = ?');
-		const ret = game.get(id) as { duration_seconds: number };
-		return ret.duration_seconds;
-	} catch (err) {
-		console.error('Error in select duration of the game: ', err);
-		return -1;
-	}
-}
-
 export function isGameTournament(id: string): number {
 	try {
 		id = safeGameId(id);
@@ -886,7 +868,6 @@ export function getUserGameHistoryRows(userId: number) {
 		SELECT
 			g.game_id                       AS gameId,
 			g.played_at                     AS startedAt,
-			COALESCE(g.duration_seconds, 0) AS durationSeconds,
 			g.tournament                    AS isTournament,
 			CASE WHEN g.player1_id = ? THEN u2.username ELSE u1.username END AS opponent,
 			CASE WHEN g.player1_id = ? THEN g.player1_score ELSE g.player2_score END AS yourScore,
@@ -909,68 +890,41 @@ export function getUserGameHistoryRows(userId: number) {
 	}
 }
 
-// // Session cookie creation to ensure no double login and refresh doesn't logout user
-export function createSession(userId: number): string | undefined {
+export function isActive(username: string) {
 	try {
-		userId = nonNegInt(userId, 'user id');
-		if (userId === -1) {
-			console.error("error in createSession, userId is invalid");
-			return undefined;
+		username = trimString(username, 'username');
+
+		const isActiveStmt = db.prepare('SELECT active FROM users WHERE username = ?');
+		const result = isActiveStmt.get(username) as { active: number } | undefined;
+		if (!result) {
+			console.error('User not found');
+			return false;
 		}
-		const now = nowSec();
-		deleteSessionExpired(userId);
-
-		// Block if there is any active session for this user
-		const active = db.prepare(
-		'SELECT id FROM sessions WHERE user_id=? AND expires_at > ? LIMIT 1'
-		).get(userId, now) as { id: string } | undefined;
-		if (active !== undefined) return undefined;
-		
-		const sid = crypto.randomBytes(32).toString('hex');
-		const expiresAt = now + HOUR;
-		db.prepare(
-		`INSERT INTO sessions (id, user_id, created_at, expires_at, user_agent, ip)
-		VALUES (?,?,?,?,?,?)`
-		).run(sid, userId, now, expiresAt, null, null);
-
-		return sid;
+		return result.active;
 	} catch (err) {
-		console.error('Error in createSession:', err);
-		return undefined;
-	}
-}
-
-export function deleteSessionExpired(userId: number): boolean {
-	try {
-		userId = nonNegInt(userId, 'user id');
-		const now = nowSec();
-		db.prepare('DELETE FROM sessions WHERE user_id=? AND expires_at <= ?').run(userId, now);
-		return true;
-	} catch (err) {
+		console.error('Error in isActive:', err);
 		return false;
-	 }
-}
-
-export function deleteSessionLogout(userId: number) {
-	try {
-		userId = nonNegInt(userId, 'user id');
-		db.prepare('DELETE FROM sessions WHERE user_id=?').run(userId);
-	} catch (err) {
-		console.error('Error on deleting session');
 	}
-
 }
 
-export function getSessionInfo(userId: number): SessionUser | null {
+export function setActiveStatus(username: string, active: boolean) {
 	try {
-		userId = nonNegInt(userId, 'user id');
-		const row = db.prepare('SELECT id, user_id, created_at, expires_at FROM sessions WHERE user_id=?'
-		).get(userId) as { sid: string, user_id: number; created_at: number; expires_at: number } | undefined;
+		username = trimString(username, 'username');
 
-		if (!row) return null;
-			return { sid: row.sid, userId: row.user_id, createdAt: row.created_at, expiresAt: row.expires_at };
+		const setActiveStmt = db.prepare('UPDATE users SET active = ? WHERE username = ?');
+		setActiveStmt.run(active ? 1 : 0, username);
 	} catch (err) {
-		console.error('Error in getSessionInfo:', err);
-		return null;
+		console.error('Error in setActiveStatus:', err);
+		return false;
+	}
+}
+
+export function setAllUsersInactive() {
+	try {
+		const setActiveStmt = db.prepare('UPDATE users SET active = 0');
+		setActiveStmt.run();
+	} catch (err) {
+		console.error('Error in setAllUsersInactive:', err);
+		return false;
 	}
 }
