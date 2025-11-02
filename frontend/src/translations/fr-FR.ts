@@ -55,6 +55,7 @@ export const french: Translation = {
     dontHaveAccount: "Vous n'avez pas de compte ?",
     alreadyHaveAccount: 'Vous avez déjà un compte ?',
     availableOnlyOffline: 'Disponible uniquement en mode hors ligne',
+    unauthorizedAccess: 'Acces non autorisé',
     loginRequired: 'Connexion requise',
     logout: 'Déconnexion',
     tournamentOnline: 'Tournoi en ligne',

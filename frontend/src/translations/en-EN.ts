@@ -55,6 +55,7 @@ export const english: Translation = {
     dontHaveAccount: "Don't have an account?",
     alreadyHaveAccount: 'Already have an account?',
     availableOnlyOffline: 'Available only in offline mode',
+    unauthorizedAccess: 'Unauthorized access attempt detected',
     loginRequired: 'Login required',
     logout: 'Logout',
     tournamentOnline: 'Tournament Online',

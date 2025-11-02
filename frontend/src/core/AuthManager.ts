@@ -400,18 +400,20 @@ export class AuthManager {
             uiManager.clearForm(this.loginFields);
             appManager.navigateTo(AppState.MAIN_MENU);
             uiManager.showUserInfo(this.currentUser.username);
+
             Logger.info(message, 'AuthManager');
             return ;
         }
+        console.log(`Value of AuthCode in the frontend -> AuthManager line 406: ${result}`)
 
         if (result == AuthCode.NOT_FOUND) {
             alert(translation.dontHaveAccount);
             setTimeout(() => { appManager.navigateTo(AppState.REGISTER); }, 500);
-        } 
-        else if (AuthCode.ALREADY_LOGIN) {
+        } else if (result == AuthCode.ALREADY_LOGIN) {
             alert(translation.alreadyLogin)
-        }
-        else {
+        } else if (result == AuthCode.UNAUTHORIZED) {
+            alert(translation.unauthorizedAccess);
+        } else {
             alert(translation.passwordsDoNotMatch);
         }
         uiManager.clearForm(this.loginFields); 
@@ -453,9 +455,14 @@ export class AuthManager {
                     body: JSON.stringify({ token: googleResponse.credential })
                 });
 
+                const { user, success } = await response.json();
+                console.log("Backend responded with user data:", user, "success:", success);
+
                 if (!response.ok) {
                     const errorData = await response.json();
                     throw new Error(`Backend authentication failed: ${errorData.message || errorData.error || 'Unknown error'}`);
+                } else if (!success) {
+                    throw new Error(`Account already in use on another device.`);
                 }
 
                 
@@ -463,9 +470,6 @@ export class AuthManager {
                 // const decodedToken = JSON.parse(atob(sessionToken.split('.')[1]));
                 // this.currentUser = { username: decodedToken.user.username };
                 // this.authState = AuthState.LOGGED_IN;
-
-                const { user, success } = await response.json();
-                console.log("Backend responded with user data:", user, "success:", success);
 
                 this.currentUser = { username: user.username };
 				this.getUserSettings();
@@ -476,11 +480,14 @@ export class AuthManager {
                 // Updates the UI to show user information and navigates to game mode selection
                 uiManager.showUserInfo(this.currentUser.username);
                 // uiManager.hideOverlays('login-modal');
-                appManager.navigateTo(AppState.GAME_MODE);
+                appManager.navigateTo(AppState.MAIN_MENU);
 
 		} catch (error) {
 			console.error("Backend communication failed:", error);
-			alert("Could not complete login.");
+            if (error == "Error: Account already in use on another device.") {
+                alert("Account already in use on another device.");
+            } else
+                alert("Could not complete login.");
 		}
 	};
 

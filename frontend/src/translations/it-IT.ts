@@ -55,6 +55,7 @@ export const italian: Translation = {
     dontHaveAccount: 'Non hai un account?',
     alreadyHaveAccount: 'Hai già un account?',
     availableOnlyOffline: 'Disponibile solo in modalità offline',
+    unauthorizedAccess: 'Accesso non autorizzato',
     loginRequired: 'Login richiesto',
     logout: 'Disconnetti',
     tournamentOnline: 'Torneo Online',

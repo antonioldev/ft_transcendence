@@ -216,21 +216,23 @@ export class Game {
 		this.state = GameState.ENDED;
 	}
 
-	save_to_db() {
+	save_to_db(isTournament: number) {
 		try {
-			registerNewGame(this.id, this.players[LEFT].name, 1);
-			addPlayer2(this.id, this.players[RIGHT].name);
-			console.log(`Game ${this.id} added to db: P1:${this.players[LEFT].name}, P2: ${this.players[RIGHT].name}`);
+			if (registerNewGame(this.id, this.players[LEFT].name, isTournament)) {
+				addPlayer2(this.id, this.players[RIGHT].name);
+				console.log(`[Games.ts] save_to_db(isTournament: ${isTournament}): Game ${this.id} added to db: P1:${this.players[LEFT].name}, P2: ${this.players[RIGHT].name}`);
 			
-			saveGameResult(
-				this.id, 
-				this.players[LEFT].name, 
-				this.players[RIGHT].name, 
-				this.paddles[LEFT].score, 
-				this.paddles[RIGHT].score, 
-				Date.now()
-			);
-			console.log(`Game ${this.id} saved to db`);
+				saveGameResult(
+					this.id, 
+					this.players[LEFT].name, 
+					this.players[RIGHT].name, 
+					this.paddles[LEFT].score, 
+					this.paddles[RIGHT].score, 
+				);
+				console.log(`[Games.ts] save_to_db: ${this.id} saved to db`);
+			} else {
+				console.log(`[Games.ts] save_to_db: ${this.id} could not be registered in db`);
+			}
 		}
 		catch (err) {
 			console.log(`DB failed to save game ${this.id}`, err);

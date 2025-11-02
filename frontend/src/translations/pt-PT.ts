@@ -54,6 +54,7 @@ export const portuguese: Translation = {
     passwordsDoNotMatch: 'As senhas não coincidem',
     dontHaveAccount: 'Não tem uma conta?',
     alreadyHaveAccount: 'Já tem uma conta?',
+    unauthorizedAccess: 'Acesso não autorizado',
     availableOnlyOffline: 'Disponível apenas no modo offline',
     loginRequired: 'Login obrigatório',
     logout: 'Sair',

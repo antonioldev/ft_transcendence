@@ -70,7 +70,7 @@ export class DashboardManager {
 				</tr>
 				<tr>
 					<th style="${secondThStyle} color: #FE5E41">Tournament Defeats</th>
-					<td style="${secondTdStyle} color: #FE5E41">${stats.tournamentDefeats}</td>
+					<td style="${secondTdStyle} color: #FE5E41">${stats.tournamentLosses}</td>
 				</tr>
 			</tbody>
 		`;
@@ -139,7 +139,6 @@ export class DashboardManager {
 					<th style="${commonThStyle}">Score</th>
 					<th style="${commonThStyle}">Result</th>
 					<th style="${commonThStyle}">Tournament</th>
-					<th style="${commonThStyle}">Duration</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -149,8 +148,7 @@ export class DashboardManager {
 						<td style="${commonThStyle}">${e.opponent}</td>
 						<td style="${commonThStyle}">${e.score}</td>
 						<td style="${commonThStyle}">${e.result}</td>
-						<td style="${commonThStyle}">${e.isTournament ? 'No' : 'Yes'}</td>
-						<td style="${commonThStyle}">${e.duration}s</td>
+						<td style="${commonThStyle}">${e.isTournament}</td>
 					</tr>
 				`).join('')}
 			</tbody>
