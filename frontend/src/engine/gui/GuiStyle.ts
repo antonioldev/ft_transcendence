@@ -13,6 +13,7 @@ export const COLORS = {
     BLACK: "rgba(0, 0, 0, 1)",
     TRANSPARENT_BLACK_DARK: "rgba(0, 0, 0, 0.9)",
     TRANSPARENT_BLACK: "rgba(0, 0, 0, 0.6)",
+    TRANSPARENT_BLACK_LIGHT: "rgba(0, 0, 0, 0.2)",
 
     WHITE: "rgba(255, 255, 255, 1)",
     TRANSPARENT_WHITE_50: "rgba(255, 255, 255, 0.5)",
@@ -27,7 +28,7 @@ export const COLORS = {
     GREEN: "rgba(34, 197, 94, 1)",
     LIGHT_GREEN: "rgba(160, 200, 120, 1)",
     GRAY: "rgba(153, 153, 153, 1)",
-    ORANGE: "rgba(235, 91, 0, 1)",
+    ORANGE: "rgba(254, 94, 65, 1)",
     SPECTATOR_RED: "rgba(255, 0, 0, 0.3)",
 
 } as const;
@@ -37,10 +38,10 @@ export const Z_INDEX = {
     HUD: 10,
     POWERUPS: 12,
     ENDGAME: 15,
-    BRACKET: 43,
-    CURTAIN: 30,
     LOBBY: 31,
     MODAL: 42,
+    BRACKET: 43,
+    CURTAIN: 45,
 
 } as const;
 
@@ -49,33 +50,36 @@ export const SPECTATOR_STYLE = {
         width: "100%",
         height: "100%",
         background: COLORS.TRANSPARENT,
-        thickness: 10,
+        thickness: 5,
         color: COLORS.SPECTATOR_RED,
         zIndex: Z_INDEX.HUD,
         isVisible: false
     },
     spectatorBanner: {
-        width: "100%",
-        height: "40px",
+        widthInPixels: 1920,
+        heightInPixels: 54,
         thickness: 0,
         background: COLORS.SPECTATOR_RED,
         verticalAlignment: V_TOP
     },
+    bannerGrid: {
+        widthInPixels: 1920,
+        heightInPixels: 54,
+    },
     spectatorText: {
         fontFamily: FONT_FAMILY,
         color: COLORS.WHITE,
-        fontSize: 20,
+        fontSizeInPixels: 27,
         fontWeight: "bold",
         textHorizontalAlignment: H_LEFT,
-        paddingLeft: "20px",
-        width: "300px"
+        paddingLeftInPixels: 20,
     },
     spectatorControls: {
         fontFamily: FONT_FAMILY,
         color: COLORS.WHITE,
-        fontSize: 18,
+        fontSizeInPixels: 27,
         textHorizontalAlignment: H_RIGHT,
-        width: "1000px"
+        paddingRightInPixels: 20,
     },
     bannerContent: {
         width: "100%",
@@ -90,20 +94,19 @@ export const HUD_STYLES = {
         height: "20%",
         background: COLORS.DARK_BLUE,
         verticalAlignment: V_BOTTOM,
-        zIndex: Z_INDEX.HUD
+        zIndex: Z_INDEX.HUD,
+        alpha: 0
     },
 
-    stack: {
+    grid: {
         width: "100%",
         height: "100%",
-	    isVertical: true
     },
 
     playerLabel: {
-        height: "40%",
         fontFamily: FONT_FAMILY,
         color: COLORS.WHITE,
-        fontSize: 48,
+        fontSizeInPixels: 56,
         fontWeight: "bold",
         shadowOffsetX: 1,
         shadowOffsetY: 1,
@@ -115,7 +118,7 @@ export const HUD_STYLES = {
     scoreText: {
         fontFamily: FONT_FAMILY,
         color: COLORS.WHITE,
-        fontSize: 56,
+        fontSizeInPixels: 64,
         fontWeight: "bold",
         shadowOffsetX: 1,
         shadowOffsetY: 1,
@@ -125,16 +128,17 @@ export const HUD_STYLES = {
     },
 
     rallyText: {
+        textVerticalAlignment: V_TOP,
         fontFamily: FONT_FAMILY,
         color: COLORS.TRANSPARENT_WHITE_50,
-        fontSize: 16
+        fontSizeInPixels: 36,
     },
 
     rallyValue: {
-        height: "70%",
         fontFamily: FONT_FAMILY,
+        textVerticalAlignment: V_BOTTOM,
         color: COLORS.WHITE,
-        fontSize: 40,
+        fontSizeInPixels: 56,
         fontWeight: "bold",
         shadowOffsetX: 1,
         shadowOffsetY: 1,
@@ -167,14 +171,14 @@ export const POWER_UP_STYLES = {
         width: "90%",
         height: "85%",
         verticalAlignment: V_TOP,
-        top: "15%"
+        topInPixels: 29
     },
 
     powerUpLetter: {
         width: "100%",
         height: "15%",
-        paddingTop: "2%",
-        fontSize: 20,
+        paddingTopInPixels: 4,
+        fontSizeInPixels: 19,
         fontWeight: "bold",
         color: COLORS.WHITE,
         verticalAlignment: V_TOP,
@@ -186,8 +190,7 @@ export const POWER_UP_STYLES = {
         stretch: Image.STRETCH_UNIFORM,
         verticalAlignment: V_TOP,
         isVisible: false,
-        top: 100,
-        alpha: 0
+        top: 100
     }
 } as const;
 
@@ -202,8 +205,8 @@ export const PAUSE_MENU_STYLES = {
     },
 
     pauseBox: {
-        width: "50%",
-        height: "80%",
+        widthInPixels: 960,
+        heightInPixels: 864,
         cornerRadius: 12,
         thickness: 2,
     },
@@ -215,49 +218,53 @@ export const PAUSE_MENU_STYLES = {
 
     stack: {
         isVertical: true,
-        paddingTop: "30px",
-        paddingBottom: "10px",
-        spacing: 10
+        paddingTopInPixels: 20,
+        paddingBottomInPixels: 10,
+        spacing: 8
     },
 
     muteCheckbox: {
-        width: "20px",
-        height: "20px",
+        widthInPixels: 20,
+        heightInPixels: 20,
         horizontalAlignment: H_CENTER,
         color: COLORS.LIGHT_GREEN,
         background: COLORS.TRANSPARENT,
         thickness: 1,
         checkSizeRatio: 0.6
     },
-
-    gridRows: {
-        gameInstructions: 0.65,
-        exitInstruction: 0.20,
-        audio: 0.15
-    },
-
     pauseTitle: {
-        fontFamily: FONT_FAMILY,
+        fontFamily: FONT_FAMILY_SEC,
         color: COLORS.LIGHT_GREEN,
-        fontSize: 36,
+        fontSizeInPixels: 58,
         fontWeight: "bold",
-        height: "40px"
+        heightInPixels: 68,
+        paddingBottomInPixels: 15
     },
 
     pauseHeader: {
-        fontFamily: FONT_FAMILY,
+        fontFamily: FONT_FAMILY_SEC,
         color: COLORS.WHITE,
-        fontSize: 24,
+        fontSizeInPixels: 30,
         fontWeight: "bold",
-        height: "35px",
-        paddingTop: "10px"
+        heightInPixels: 38,
+        paddingTopInPixels: 8,
+        paddingBottomInPixels: 5
     },
 
     pauseDetails: {
         fontFamily: FONT_FAMILY,
         color: COLORS.WHITE,
-        fontSize: 20,
-        height: "60px",
+        fontSizeInPixels: 28,
+        heightInPixels: 80,
+        textWrapping: true,
+        paddingBottomInPixels: 8
+    },
+
+    otherDetails: {
+        fontFamily: FONT_FAMILY,
+        color: COLORS.WHITE,
+        fontSizeInPixels: 20,
+        heightInPixels: 25,
         textWrapping: true
     },
 
@@ -268,7 +275,7 @@ export const PAUSE_MENU_STYLES = {
         thickness: 3,
         color: COLORS.SPECTATOR_RED,
         cornerRadius: 12,
-        zIndex: Z_INDEX.MODAL - 1,
+        zIndex: Z_INDEX.HUD,
         isVisible: false,
         shadowBlur: 20,
         shadowColor: COLORS.SPECTATOR_RED
@@ -277,7 +284,7 @@ export const PAUSE_MENU_STYLES = {
     spectatorPauseText: {
         fontFamily: FONT_FAMILY,
         color: COLORS.WHITE,
-        fontSize: 36,
+        fontSizeInPixels: 36,
         fontWeight: "bold",
         shadowOffsetX: 1,
         shadowOffsetY: 1,
@@ -289,31 +296,48 @@ export const PAUSE_MENU_STYLES = {
 
 export const LOBBY_STYLES = {
     overlay: {
+        width: "100%",
+        height: "100%",
+        background: COLORS.DARK_BLUE,
+        zIndex: Z_INDEX.LOBBY,
+        isVisible: false,
+        thickness: 0,
+    },
+
+    box: {
         width: "50%",
         height: "80%",
         color: COLORS.LIGHT_GREEN,
         background: COLORS.DARK_BLUE,
         shadowBlur: 15,
         shadowColor: COLORS.TRANSPARENT_BLACK_DARK,
-        zIndex: Z_INDEX.LOBBY,
-        isVisible: false,
         thickness: 2,
         cornerRadius: 12
     },
+
+    grid: {
+        width: "100%",
+        height: "100%"
+    },
     
     title: {
-        fontFamily: FONT_FAMILY,
-        fontSize: 42,
+        fontFamily: FONT_FAMILY_SEC,
+        fontSizeInPixels: 56,
         color: COLORS.ORANGE,
-        height: "60px",
         fontWeight: "bold",
+        textWrapping: true
+    },
+
+    dots: {
+        fontFamily: FONT_FAMILY,
+        fontSizeInPixels: 64,
+        color: COLORS.ORANGE,
     },
     
     count: {
         fontFamily: FONT_FAMILY,
-        fontSize: 20,
+        fontSizeInPixels: 36,
         color: COLORS.WHITE,
-        height: "30px",
     },
     
     lobbyList: {
@@ -324,7 +348,7 @@ export const LOBBY_STYLES = {
     },
     
     rowRect: {
-        height: "38px",
+        height: "100%",
         width: "95%",
         thickness: 1,
         cornerRadius: 6,
@@ -334,11 +358,11 @@ export const LOBBY_STYLES = {
     rowText: {
         fontFamily: FONT_FAMILY,
         width: "90%",
-        fontSize: 22,
+        fontSizeInPixels: 23,
         alpha: 0,
-        textWrapping: true
+        clipContent: true
     },
-};
+} as const;
 
 export const COUNTDOWN_STYLES = {
     countdownContainer: {
@@ -353,7 +377,7 @@ export const COUNTDOWN_STYLES = {
     countdownText: {
         fontFamily: FONT_FAMILY,
         color: COLORS.WHITE,
-        fontSize: 72,
+        fontSizeInPixels: 100,
         shadowOffsetX: 1,
         shadowOffsetY: 1,
         shadowBlur: 5,
@@ -366,10 +390,9 @@ export const COUNTDOWN_STYLES = {
     namePlayerLeft: {
         fontFamily: FONT_FAMILY,
         color: COLORS.WHITE,
-        fontSize: 100,
-        shadowOffsetX: 6,
-        shadowOffsetY: 6,
-        shadowBlur: 0,
+        fontSizeInPixels: 130,
+        shadowOffsetX: 4,
+        shadowOffsetY: 4,
         shadowColor: COLORS.LIGHT_GREEN,
         fontWeight: "bold",
         outlineWidth: 3,
@@ -377,32 +400,30 @@ export const COUNTDOWN_STYLES = {
         leftInPixels: -300,
         topInPixels: -150,
         isVisible: false,
-        alpha: 0
+        zIndex: Z_INDEX.HUD,
     },
 
     vsText: {
         fontFamily: FONT_FAMILY,
         color: COLORS.WHITE,
-        fontSize: 60,
+        fontSizeInPixels: 65,
         shadowOffsetX: 1,
         shadowOffsetY: 1,
-        shadowBlur: 0,
         shadowColor: COLORS.SPECTATOR_RED,
         fontWeight: "bold",
         outlineWidth: 5,
         outlineColor: COLORS.BLACK,
         topInPixels: -50,
         isVisible: false,
-        alpha: 0
+        zIndex: Z_INDEX.HUD,
     },
 
     namePlayerRight: {
         fontFamily: FONT_FAMILY,
         color: COLORS.WHITE,
-        fontSize: 100,
-        shadowOffsetX: 6,
-        shadowOffsetY: 6,
-        shadowBlur: 0,
+        fontSizeInPixels: 130,
+        shadowOffsetX: 4,
+        shadowOffsetY: 4,
         shadowColor: COLORS.LIGHT_GREEN,
         fontWeight: "bold",
         outlineWidth: 3,
@@ -410,13 +431,14 @@ export const COUNTDOWN_STYLES = {
         leftInPixels: 300,
         topInPixels: 50,
         isVisible: false,
-        alpha: 0
+        zIndex: Z_INDEX.HUD,
+
     },
 
     readyText: {
         fontFamily: FONT_FAMILY,
         color: COLORS.GOLD,
-        fontSize: 120,
+        fontSizeInPixels: 162,
         shadowOffsetX: 2,
         shadowOffsetY: 2,
         shadowBlur: 0,
@@ -426,14 +448,14 @@ export const COUNTDOWN_STYLES = {
         outlineColor: COLORS.TRANSPARENT_BLACK,
         topInPixels: -50,
         isVisible: false,
-        alpha: 0
+        zIndex: Z_INDEX.HUD,
     }
 
 } as const;
 
 export const VIEW_MODE_STYLES = {
     dividerLine: {
-        width: "5px",
+        widthInPixels: 5,
         height: "100%",
         background: COLORS.BLACK,
         zIndex: Z_INDEX.GAMEPLAY,
@@ -442,85 +464,62 @@ export const VIEW_MODE_STYLES = {
 } as const;
 
 export const END_GAME_STYLES = {
-    endGameOverlay: {
+    overlay: {
         width: "100%",
         height: "100%",
         background: COLORS.TRANSPARENT_BLACK_DARK,
         isVisible: false,
         zIndex: Z_INDEX.ENDGAME,
     },
-
+    championBackground: COLORS.TRANSPARENT_BLACK_LIGHT,
     winnerGrid: {
-        width: "100%",
-        height: "90%",
+        widthInPixels: 1920,
+        heightInPixels: 972,
         verticalAlignment: V_BOTTOM
     },
-
     gridRows: {
-        label: 0.35,
-        name: 0.35,
-        continue: 0.15,
-        timer: 0.15
+        label: 340,
+        name: 292,
+        continue: 146,
+        timer: 97
     },
-
-    partialWinnerLabel: {
-        height: "20%",
+    winnerLabel: {
         fontFamily: FONT_FAMILY_SEC,
         color: COLORS.WHITE,
-        fontSize: 85,
-        outlineWidth: 2,
+        fontSizeInPixels: 70,
         alpha: 0,
     },
 
-    partialWinnerName: {
-        height: "70%",
+    winnerName: {
         fontFamily: FONT_FAMILY,
-        color: COLORS.GOLD,
-        fontSize: 120,
+        color: COLORS.WHITE,
+        fontSizeInPixels: 90,
         fontWeight: "bold",
         shadowOffsetX: 3,
         shadowOffsetY: 3,
         alpha: 0,
-        shadowBlur: 10,
-        shadowColor: COLORS.GOLD
+        shadowColor: COLORS.LIGHT_GREEN
     },
 
     continueText: {
-        height: "10%",
         fontFamily: FONT_FAMILY,
         color: COLORS.WHITE,
-        fontSize: 20,
-        shadowOffsetX: 1,
-        shadowOffsetY: 1,
-        shadowBlur: 2,
-        shadowOpacity: 0.5,
-        shadowColor: COLORS.BLACK,
+        fontSizeInPixels: 50,
         isVisible: false,
     },
-    
-    endGameWinnerText: {
-        fontFamily: FONT_FAMILY,
-        color: COLORS.WHITE,
-        fontSize: 120,
-        shadowOffsetX: 1,
-        shadowOffsetY: 1,
-        shadowBlur: 8,
-        shadowColor: COLORS.GOLD_SHADOW,
-        fontWeight: "bold"
-    }
 } as const;
 
 export const BRACKET_STYLES = {
     bracketOverlay: {
-        width: "550px",
-        height: "700px",
+        width: "45%",
+        height: "80%",
         background: COLORS.TRANSPARENT,
         horizontalAlignment: H_RIGHT,
         verticalAlignment: V_CENTER,
         cornerRadius: 12,
         isVisible: false,
         zIndex: Z_INDEX.BRACKET,
-        padding: "8px",
+        paddingInPixels: 8,
         thickness: 0
     },
 
@@ -529,64 +528,43 @@ export const BRACKET_STYLES = {
         content: 0.8
     },
 
-    headerGrid: {
-        height: "80px"
-    },
-
     gridColumns: {
         icon: 70,
         title: 1
     },
 
     bracketIcon: {
-        width: "68px",
-        height: "68px",
+        widthInPixels: 68,
+        heightInPixels: 68,
         stretch: Image.STRETCH_UNIFORM
     },
 
     bg: {
-        width: "100%", 
+        width: "100%",
         height: "100%",
         stretch: Image.STRETCH_FILL,
         isPointerBlocker: false
     },
 
     bracketTitle: {
-        fontFamily: FONT_FAMILY,
+        fontFamily: FONT_FAMILY_SEC,
         color: COLORS.WHITE,
-        fontSize: 36,
-        shadowBlur: 20,
-        fontWeight: "bold",
-        shadowColor: COLORS.GOLD
+        fontSizeInPixels: 86
     },
 
-    bracketGrid: {
+    grid: {
         width: "100%",
         height: "100%",
-        paddingLeft: "2px"
     },
 
     winnerCell: {
         background: COLORS.LIGHT_GREEN,
-        thickness: 2,
-        color: COLORS.GREEN
     },
     
     winnerText: {
         fontWeight: "bold",
-        fontSize: "18px",
+        fontSizeInPixels: 19,
         color: COLORS.WHITE,
-        // shadowOffsetX: 1,
-        // shadowOffsetY: 1,
-        // shadowBlur: 2,
-        // shadowOpacity: 0.5,
-        // shadowColor: COLORS.BLACK,
-        // outlineWidth: 2,
-        // outlineColor: COLORS.BLACK,
-        // shadowOffsetX: 2,
-        // shadowOffsetY: 2,
-        // shadowBlur: 0,
-        // shadowColor: COLORS.TRANSPARENT_BLACK
     },
     
     loserCell: {
@@ -600,27 +578,18 @@ export const BRACKET_STYLES = {
         color: COLORS.GRAY
     },
 
-    tabsRoot: {
+    stackPanel: {
         isVertical: true,
         width: "100%",
         height: "100%",
+    },
+    panelGrid: {
+        width: "100%",
     },
     
     tabsBar: {
         width: "100%",
         heightInPixels: 44,
-    },
-    
-    roundPanelsWrap: {
-        isVertical: true,
-        width: "100%",
-        height: "100%"
-    },
-    
-    roundPanel: {
-        isVertical: true,
-        width: "100%",
-        height: "100%"
     },
 
     tabHeaderRect: {
@@ -633,13 +602,13 @@ export const BRACKET_STYLES = {
     tabHeader: {
         fontFamily: FONT_FAMILY,
         color: COLORS.WHITE,
-        fontSize: 20,
+        fontSizeInPixels: 15,
         fontWeight: "bold",
         heightInPixels: 30
     },
 
     tabButton: {
-        height: "85%",
+        heightInPixels: 37,
         thickness: 0,
         background: COLORS.LIGHT_BLUE,
         cornerRadiusW: 8,
@@ -648,7 +617,7 @@ export const BRACKET_STYLES = {
     },
 
     tabButtonActive: {
-        height: "100%",
+        heightInPixels: 44,
         thickness: 0,
         background: COLORS.TRANSPARENT,
         cornerRadiusW: 8,
@@ -662,42 +631,33 @@ export const BRACKET_STYLES = {
     tabLabelInactive: {
         color: COLORS.DARK_BLUE,
         background: COLORS.TRANSPARENT,
-        fontSize: 16,
+        fontSizeInPixels: 18,
     },
 
     tabLabelActive: {
         color: COLORS.WHITE,
-        fontSize: 16,
+        fontSizeInPixels: 18,
         fontWeight: "bold",
-        // shadowOffsetX: 1,
-        // shadowOffsetY: 1,
-        // shadowBlur: 2,
-        // shadowOpacity: 0.5,
-        // shadowColor: COLORS.BLACK,
-        // outlineWidth: 1,
-        // outlineColor: COLORS.DARK_BLUE,
     },
 
     matchRowRect: {
         width: "100%",
         heightInPixels: 48,
-        paddingLeft: "4px",
-        paddingRight: "4px",
-        paddingTop: "1px",
-        paddingBottom: "1px",
+        paddingLeftInPixels: 4,
+        paddingRightInPixels: 4,
+        paddingTopInPixels: 1,
+        paddingBottomInPixels: 1,
         thickness: 0,
         alpha: 0
     },
 
-    matchRowPanel: {
-        isVertical: false,
+    matchRowGrid: {
         width: "100%",
         height: "100%",
         spacing: 8
     },
 
     matchPlayerRect: {
-        widthInPixels: 240,
         cornerRadius: 6,
         thickness: 1,
         color: COLORS.WHITE,
@@ -707,17 +667,15 @@ export const BRACKET_STYLES = {
     
     matchPlayerText: {
         color: COLORS.WHITE,
-        height: "100%",
+        heightInPixels: 48,
         resizeToFit: true,
-        fontSize: 16
+        fontSizeInPixels: 19
     },
 
     matchVsText: {
-        widthInPixels: 70,
-        height: "100%",
         text: "← vs →",
         color: COLORS.GRAY,
-        fontSize: 16,
+        fontSizeInPixels: 12,
         fontWeight: "bold",
         background: COLORS.WHITE,
         cornerRadius: 20
@@ -725,134 +683,79 @@ export const BRACKET_STYLES = {
 } as const;
 
 export const CURTAIN_STYLES = {
-    leftBackground: {
-        background: COLORS.LIGHT_GREEN,
+    background: {
+        background: COLORS.DARK_BLUE,
         height: "100%",
-        width: "100%",
+        width: "50%",
         thickness: 0,
+        alpha: 0,
         horizontalAlignment: H_LEFT,
         verticalAlignment: V_TOP,
-        isVisible: false,
         zIndex: Z_INDEX.CURTAIN
     },
 
-    leftPaddle: {
+    paddle: {
         background: COLORS.ORANGE,
         thickness: 0,
-        widthInPixels: 80,
         height: "100%",
+        widthInPixels: 40,
         horizontalAlignment: H_RIGHT,
-        verticalAlignment: V_TOP
+        verticalAlignment: V_CENTER
     }
-    
-    // rightBackground: {
-    //     background: COLORS.DARK_BLUE,
-    //     height: "100%",
-    //     width: "100%",
-    //     thickness: 0,
-    //     horizontalAlignment: H_LEFT,
-    //     verticalAlignment: V_TOP,
-    //     isVisible: false,
-    //     zIndex: Z_INDEX.CURTAIN
-    // },
-    
-    
-    
-    // rightPaddle: {
-    //     background: COLORS.ORANGE,
-    //     thickness: 0,
-    //     widthInPixels: 80,
-    //     height: "100%",
-    //     horizontalAlignment: H_LEFT,
-    //     verticalAlignment: V_TOP,
-    //     // isVisible: false,
-    //     // zIndex: Z_INDEX.CURTAIN + 1
-    // },
-
-    // spectatorWaitingBox: {
-    //     widthInPixels: 500,
-    //     heightInPixels: 120,
-    //     background: COLORS.TRANSPARENT_BLACK,
-    //     thickness: 2,
-    //     color: COLORS.SPECTATOR_RED,
-    //     cornerRadius: 12,
-    //     zIndex: Z_INDEX.CURTAIN + 2,
-    //     isVisible: false,
-    //     shadowBlur: 20,
-    //     shadowColor: COLORS.SPECTATOR_RED
-    // },
-    
-    // spectatorWaitingText: {
-    //     fontFamily: "monospace",
-    //     color: COLORS.WHITE,
-    //     fontSize: 28,
-    //     fontWeight: "bold",
-    //     // shadowOffsetX: 1,
-    //     // shadowOffsetY: 1,
-    //     // shadowBlur: 2,
-    //     // shadowOpacity: 0.5,
-    //     // shadowColor: COLORS.BLACK,
-    //     // outlineWidth: 2,
-    //     // outlineColor: COLORS.BLACK
-    // }
 } as const;
 
 export const CARD_GAME_STYLES = {
     mainContainer: {
         width: "100%",
         height: "100%",
-        background: COLORS.TRANSPARENT,
+        background: COLORS.DARK_BLUE,
         zIndex: Z_INDEX.LOBBY,
         isVisible: false,
         thickness: 0
     },
 
-    stack: {
-        width: "100%",
-        height: "95%",
-        isVertical: true,
-        spacing: 20,
+    layoutGrid: {
+        widthInPixels: 1920,
+        heightInPixels: 1026,
+        paddingTopInPixels: 20,
     },
+    
     title: {
-        fontSize: 40,
+        fontSizeInPixels: 40,
         color: COLORS.ORANGE,
-        height: "60px",
-        // top: "-300px",
+        heightInPixels: 60,
         fontWeight: "bold",
         shadowOffsetX: 1,
         shadowOffsetY: 1,
         shadowBlur: 2,
         shadowOpacity: 0.5,
         shadowColor: COLORS.BLACK,
-        // outlineWidth: 2,
-        // outlineColor: COLORS.WHITE,
     },
 
     instructions: {
-        fontSize: 20,
+        fontSizeInPixels: 20,
         color: COLORS.WHITE,
-        height: "30px"
-        // top: "-260px",
+        heightInPixels: 30,
+        paddingTopInPixels: 10,
     },
 
     cardsGrid: {
-        width: "65%",
-        height: "65%",
-        top: "20px",
+        widthInPixels: 1248,
+        heightInPixels: 702,
     },
 
     cardRect: {
-        width: `140px`,
-        height: `120px`,
-        padding: "5px",
+        widthInPixels: 195,
+        heightInPixels: 165,
+        paddingInPixels: 5,
         thickness: 0,
         cornerRadius: 8,
         background: COLORS.TRANSPARENT
     },
 
     cardBack: {
-        width: "100%",
-        height: "100%",
+        widthInPixels: 195,
+        heightInPixels: 165,
         background: COLORS.ORANGE,
         cornerRadius: 8,
         thickness: 2,
@@ -863,8 +766,8 @@ export const CARD_GAME_STYLES = {
     },
 
     cardFront: {
-        width: "100%",
-        height: "100%",
+        widthInPixels: 195,
+        heightInPixels: 165,
         background: COLORS.WHITE,
         cornerRadius: 8,
         thickness: 2,
@@ -888,7 +791,7 @@ export function createRect(name: string, styles: any): Rectangle {
     return rect;
 }
 
-export function createTextBlock(name: string, styles: any, text?: string): TextBlock {
+export function createTextBlock(name: string, styles: any, text: string): TextBlock {
     const textBlock = new TextBlock(name, text);
     applyStyles(textBlock, styles);
     return textBlock;

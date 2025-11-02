@@ -1,63 +1,33 @@
 import { Game } from '../engine/Game.js';
-import { GameConfigFactory } from '../engine/GameConfig.js';
-import { AiDifficulty, AppState, GAME_MODE_CONFIG, GameMode, GameState, TOURNAMENT_SIZES, ViewMode, BUTTON_NAV } from '../shared/constants.js';
-import { getCurrentTranslation } from '../translations/translations.js';
+import { GameInitializer } from '../engine/GameInitializer.js';
+import { AiDifficulty, GameMode, GameState } from '../shared/constants.js';
+import { getCurrentTranslation, updateLanguageDisplay } from '../translations/translations.js';
 import { EL, requireElementById } from '../ui/elements.js';
 import { uiManager } from '../ui/UIManager.js';
+import { AppState, BUTTON_NAV, GAME_MODE_CONFIG, Quality, TOURNAMENT_SIZES, ViewMode } from '../utils/constants.js';
 import { Logger } from '../utils/LogManager.js';
+import type { GameSetting } from '../utils/types.js';
 import { getMaxPlayers, getMinPlayersForCpu } from '../utils/utils.js';
 import { authManager } from './AuthManager.js';
 import { dashboardManager } from './DashboardManager.js';
-import { updateLanguageDisplay } from '../translations/translations.js';
 
-export interface Setting {
-	language: number;
-	viewMode: ViewMode;
-	scene3D: string;
-	gameMode: GameMode | null;
-	AiDifficulty: AiDifficulty;
-	musicEnabled: boolean;
-	soundEffectsEnabled: boolean;
-
-}
-
-export let currentSettings: Setting = {
+export let currentSettings: GameSetting = {
 	language: 0,
 	viewMode: ViewMode.MODE_2D,
-    scene3D: 'random',
+	scene3D: 'random',
 	gameMode: null,
 	AiDifficulty: AiDifficulty.EASY,
-    musicEnabled: true,
-    soundEffectsEnabled: true
+	musicEnabled: true,
+	soundEffectsEnabled: true,
+	offlineTournamentSize: 4,
+	onlineTournamentSize: 4,
+	quality: Quality.MEDIUM
 };
-``
+
 export function updateCurrentSettings(newSettings: Partial<typeof currentSettings>): void {
     if (newSettings) {
         currentSettings = { ...currentSettings, ...newSettings };
-        updateSettingsUI();
-    }
-}
-
-function updateSettingsUI(): void {
-    const sceneSelect = document.getElementById('map-selector') as HTMLSelectElement;
-    if (sceneSelect) {
-        sceneSelect.value = currentSettings.scene3D;
-    }
-
-    const musicToggle = document.getElementById('music-toggle') as HTMLInputElement;
-    if (musicToggle) {
-        musicToggle.checked = currentSettings.musicEnabled;
-    }
-
-    const effectsToggle = document.getElementById('sound-effect-toggle') as HTMLInputElement;
-    if (effectsToggle) {
-        effectsToggle.checked = currentSettings.soundEffectsEnabled;
-    }
-
-    const languageSelect = document.getElementById('language_select') as HTMLSelectElement;
-    if (languageSelect) {
-        languageSelect.value = ['UK', 'IT', 'FR', 'BR', 'RU'][currentSettings.language];
-        updateLanguageDisplay();
+        uiManager.updateSettings();
     }
 }
 
@@ -70,11 +40,6 @@ function updateSettingsUI(): void {
 export class AppManager {
 	currentAppState: AppState = AppState.MAIN_MENU;
 	private currentGame: Game | null = null;
-	private selectedViewMode: ViewMode = ViewMode.MODE_2D;
-	private selectedGameMode: GameMode | null = null;
-	private currentAiDifficultyIndex: AiDifficulty = AiDifficulty.EASY;
-	private currentOfflineTournamentSize: number = 4;
-	private currentOnlineTournamentSize: number = 4;
 	private isCollectingPlayerNames = false;
 	private playerIndex: number = 0;
 	private playerNames: string[] = [];
@@ -93,10 +58,10 @@ export class AppManager {
 	}
 
 	private initializeUI(): void {
-		uiManager.updateViewModeButtonStyles(this.selectedViewMode);
-		uiManager.updateAIDifficultyDisplay(this.currentAiDifficultyIndex);
-		uiManager.updateTournamentSizeDisplay(this.currentOfflineTournamentSize);
-		uiManager.updateOnlineTournamentSizeDisplay(this.currentOnlineTournamentSize);
+		uiManager.updateViewModeButtonStyles(currentSettings.viewMode);
+		uiManager.updateAIDifficultyDisplay(currentSettings.AiDifficulty);
+		uiManager.updateTournamentSizeDisplay(currentSettings.offlineTournamentSize);
+		uiManager.updateOnlineTournamentSizeDisplay(currentSettings.onlineTournamentSize);
 
 		this.navigateTo(AppState.MAIN_MENU);
 	}
@@ -267,9 +232,8 @@ export class AppManager {
 	}
 
 	private selectViewMode(mode: ViewMode): void {
-		this.selectedViewMode = mode;
 		currentSettings.viewMode = mode;
-		uiManager.updateViewModeButtonStyles(this.selectedViewMode);
+		uiManager.updateViewModeButtonStyles(mode);
 	}
 
 	private async handleGameModeClick(gameMode: GameMode, config: any): Promise<void> {
@@ -285,29 +249,27 @@ export class AppManager {
 		}
 
 		currentSettings.gameMode = gameMode;
-
-		this.selectedGameMode = gameMode;
 		await this.startGame();
 	}
 
 	private handleModeBackClick(): void {
 		this.isCollectingPlayerNames = false;
-		this.selectedGameMode = null;
+		currentSettings.gameMode = null;
 		this.navigateTo(AppState.MAIN_MENU);
 	}
 
 	private handleSetupBackClick(): void {
 		this.isCollectingPlayerNames = false;
-		this.selectedGameMode = null;
+		currentSettings.gameMode = null;
 		this.navigateTo(AppState.GAME_MODE);
 	}
 
 	private handleAddCpuClick(): void {
-		if (!this.isCollectingPlayerNames || this.selectedGameMode !== GameMode.TOURNAMENT_LOCAL) {
+		if (!this.isCollectingPlayerNames || currentSettings.gameMode !== GameMode.TOURNAMENT_LOCAL) {
 			return;
 		}
 
-		const minPlayers = getMinPlayersForCpu(this.currentOfflineTournamentSize);
+		const minPlayers = getMinPlayersForCpu(currentSettings.offlineTournamentSize);
 		if (this.playerNames.length < minPlayers) {
 			alert(`Need at least ${minPlayers} players to add CPU.`);
 			return;
@@ -324,15 +286,15 @@ export class AppManager {
 	private updateAIDifficulty(direction: BUTTON_NAV): void {
 		const len = Object.keys(AiDifficulty).length / 2;
 		if (direction === BUTTON_NAV.NEXT)
-			this.currentAiDifficultyIndex = (this.currentAiDifficultyIndex + 1) % len;
+			currentSettings.AiDifficulty = (currentSettings.AiDifficulty + 1) % len;
 		else
-			this.currentAiDifficultyIndex = (this.currentAiDifficultyIndex - 1 + len) % len;
+			currentSettings.AiDifficulty = (currentSettings.AiDifficulty - 1 + len) % len;
 
-		uiManager.updateAIDifficultyDisplay(this.currentAiDifficultyIndex);
+		uiManager.updateAIDifficultyDisplay(currentSettings.AiDifficulty);
 	}
 
 	private updateTournamentSize(isOnline: boolean, direction: BUTTON_NAV): void {
-		const currentIndex = isOnline ? this.currentOnlineTournamentSize : this.currentOfflineTournamentSize;
+		const currentIndex = isOnline ? currentSettings.onlineTournamentSize : currentSettings.offlineTournamentSize;
 		const currentSizeIndex = TOURNAMENT_SIZES.indexOf(currentIndex as 4 | 8 | 16);
 		
 		let newSizeIndex: number;
@@ -346,11 +308,11 @@ export class AppManager {
 		const newSize = TOURNAMENT_SIZES[newSizeIndex];
 		
 		if (isOnline) {
-			this.currentOnlineTournamentSize = newSize;
-			uiManager.updateOnlineTournamentSizeDisplay(this.currentOnlineTournamentSize);
+			currentSettings.onlineTournamentSize = newSize;
+			uiManager.updateOnlineTournamentSizeDisplay(currentSettings.onlineTournamentSize);
 		} else {
-			this.currentOfflineTournamentSize = newSize;
-			uiManager.updateTournamentSizeDisplay(this.currentOfflineTournamentSize);
+			currentSettings.offlineTournamentSize = newSize;
+			uiManager.updateTournamentSizeDisplay(currentSettings.offlineTournamentSize);
 		}
 	}
 
@@ -400,20 +362,20 @@ export class AppManager {
 	}
 
 	private async startGame(): Promise<void> {
-		if (!this.selectedGameMode) return;
+		if (!currentSettings.gameMode) return;
 
-		const config = GAME_MODE_CONFIG[this.selectedGameMode];
+		const config = GAME_MODE_CONFIG[currentSettings.gameMode];
 		const isAuthenticated = authManager.isUserAuthenticated();
 
 		if (config.requiresSetup && !isAuthenticated) {
 			if (!this.isCollectingPlayerNames) {
-				this.beginPlayerCollection(this.selectedGameMode);
+				this.beginPlayerCollection(currentSettings.gameMode);
 				this.navigateTo(AppState.PLAYER_SETUP);
 			} else {
 				this.handlePlayerInputSubmission();
 			}
 		} else {
-		await this.launchGame();
+			await this.launchGame();
 		}
 	}
 
@@ -452,7 +414,7 @@ export class AppManager {
 		this.playerNames = [];
 		
 		const tournamentSize = gameMode === GameMode.TOURNAMENT_LOCAL
-			? this.currentOfflineTournamentSize : this.currentOnlineTournamentSize;
+			? currentSettings.offlineTournamentSize : currentSettings.onlineTournamentSize;
 		this.maxPlayersNeeded = getMaxPlayers(gameMode, tournamentSize);
 		
 		this.updatePlayerCollectionUI();
@@ -471,8 +433,8 @@ export class AppManager {
 		label.textContent = `${t.playerName} ${currentPlayer}`;
 		nextButton.textContent = isLastPlayer ? t.startGame : t.next;
 
-		if (this.selectedGameMode === GameMode.TOURNAMENT_LOCAL) {
-			const canAddCpu = this.playerNames.length >= getMinPlayersForCpu(this.currentOfflineTournamentSize);
+		if (currentSettings.gameMode === GameMode.TOURNAMENT_LOCAL) {
+			const canAddCpu = this.playerNames.length >= getMinPlayersForCpu(currentSettings.offlineTournamentSize);
 			addCpuButton.style.display = 'block';
 			addCpuButton.style.opacity = canAddCpu ? '1' : '0.5';
 			addCpuButton.disabled = !canAddCpu;
@@ -492,31 +454,48 @@ export class AppManager {
 	}
 
 	private async finishPlayerCollection(): Promise<void> {
-		GameConfigFactory.setPlayers(this.playerNames);
+		GameInitializer.setPlayers(this.playerNames);
 		this.isCollectingPlayerNames = false;
 		await this.launchGame();
 	}
 
 	private async launchGame(): Promise<void> {
-		if (!this.selectedGameMode) return;
+		if (!currentSettings.gameMode) return;
 
 		try {
+			this.clearCanvas();
 			this.navigateTo(AppState.GAME_3D, false);
 
 			let capacity: number | undefined = undefined;
-			if (this.selectedGameMode === GameMode.TOURNAMENT_REMOTE)
-				capacity = this.currentOnlineTournamentSize;
-			else if (this.selectedGameMode === GameMode.TOURNAMENT_LOCAL)
-				capacity = this.currentOfflineTournamentSize;
+			if (currentSettings.gameMode === GameMode.TOURNAMENT_REMOTE)
+				capacity = currentSettings.onlineTournamentSize;
+			else if (currentSettings.gameMode === GameMode.TOURNAMENT_LOCAL)
+				capacity = currentSettings.offlineTournamentSize;
 
-			const config = GameConfigFactory.createWithAuthCheck(currentSettings);
+			const config = GameInitializer.createWithAuthCheck(currentSettings);
 
 			this.currentGame = new Game(config);
-			await this.currentGame.create(this.currentAiDifficultyIndex, capacity);
+			await this.currentGame.create(currentSettings.AiDifficulty, capacity);
 		} catch (error) {
 			this.currentGame = null;
 			Logger.error('Error starting game', 'AppManager', error);
 			this.navigateTo(AppState.MAIN_MENU);
+		}
+	}
+
+	getCurrentGame(): Game | null {
+		return this.currentGame;
+	}
+
+	private clearCanvas(): void {
+		const el = document.getElementById(EL.GAME.CANVAS_3D);
+		if (!(el instanceof HTMLCanvasElement)) return;
+		const canvas = el;
+
+		const gl = canvas.getContext('webgl2') || canvas.getContext('webgl');
+		if (gl) {
+			gl.clearColor(0, 0, 0, 1);
+			gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 		}
 	}
 }

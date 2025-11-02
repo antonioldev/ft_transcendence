@@ -1,8 +1,8 @@
 import { AdvancedDynamicTexture, Rectangle, Checkbox } from "@babylonjs/gui";
-import { ViewMode } from "../../shared/constants.js";
+import { ViewMode } from "../../utils/constants.js";
 import { GAME_CONFIG } from "../../shared/gameConfig.js";
 import { getCurrentTranslation } from '../../translations/translations.js';
-import { GameConfig } from "../GameConfig.js";
+import { GameConfig } from "../GameInitializer.js";
 import { AnimationManager, Motion } from "../services/AnimationManager.js";
 import { H_LEFT, PAUSE_MENU_STYLES, createGrid, createRect, createStackPanel, createTextBlock, createCheckbox } from "./GuiStyle.js";
 
@@ -26,9 +26,9 @@ export class Pause {
 		const pauseGrid = createGrid("pauseGrid", PAUSE_MENU_STYLES.grid);
 		this.pauseBox.addControl(pauseGrid);
 
-		pauseGrid.addRowDefinition(PAUSE_MENU_STYLES.gridRows.gameInstructions, false);
-		pauseGrid.addRowDefinition(PAUSE_MENU_STYLES.gridRows.exitInstruction, false);
-		pauseGrid.addRowDefinition(PAUSE_MENU_STYLES.gridRows.audio, false);
+		pauseGrid.addRowDefinition(700, true);
+		pauseGrid.addRowDefinition(70, true);
+		pauseGrid.addRowDefinition(70, true);
 
 
 		const instructionsStack = createStackPanel("instructionsStack", PAUSE_MENU_STYLES.stack);
@@ -59,20 +59,13 @@ export class Pause {
 		const objectiveDetails = createTextBlock("objectiveDetails", PAUSE_MENU_STYLES.pauseDetails, objectiveText);
 		instructionsStack.addControl(objectiveDetails);
 
-
-
-
-
-
-
 		const exitStack = createStackPanel("exitStack", PAUSE_MENU_STYLES.stack);
 		pauseGrid.addControl(exitStack, 1, 0);
 
-		const exitInstruction = createTextBlock("pauseInstruction", PAUSE_MENU_STYLES.pauseHeader, t.exitGame);
-		exitInstruction.fontSize = 24;
+		const exitInstruction = createTextBlock("pauseInstruction", PAUSE_MENU_STYLES.otherDetails, t.exitGame);
 		exitStack.addControl(exitInstruction);
 
-		const exitHint = createTextBlock("pauseHint", PAUSE_MENU_STYLES.pauseDetails, t.pauseControls);
+		const exitHint = createTextBlock("pauseHint", PAUSE_MENU_STYLES.otherDetails, t.pauseControls);
 		exitStack.addControl(exitHint);
 
 		const audioGrid = createGrid("audioGrid", PAUSE_MENU_STYLES.grid);
@@ -83,7 +76,7 @@ export class Pause {
 		const musicStack = createStackPanel("musicStack", PAUSE_MENU_STYLES.stack);
 		audioGrid.addControl(musicStack, 0, 0);
 		
-		const musicLabel = createTextBlock("musicLabel", PAUSE_MENU_STYLES.pauseDetails, t.music);
+		const musicLabel = createTextBlock("musicLabel", PAUSE_MENU_STYLES.otherDetails, t.music);
 		musicStack.addControl(musicLabel);
 
 		this.checkboxMusic = createCheckbox("musicCheckbox", PAUSE_MENU_STYLES.muteCheckbox, config.musicEnabled);
@@ -102,7 +95,7 @@ export class Pause {
 		const effectsStack = createStackPanel("effectsStack", PAUSE_MENU_STYLES.stack);
 		audioGrid.addControl(effectsStack, 0, 1);
 		
-		const effectsLabel = createTextBlock("effectsLabel", PAUSE_MENU_STYLES.pauseDetails, t.soundEffects);
+		const effectsLabel = createTextBlock("effectsLabel", PAUSE_MENU_STYLES.otherDetails, t.soundEffects);
 		effectsStack.addControl(effectsLabel);
 
 		this.checkboxEffects = createCheckbox("effectsCheckbox", PAUSE_MENU_STYLES.muteCheckbox, config.soundEffectsEnabled);
@@ -114,7 +107,7 @@ export class Pause {
 				if (this.checkboxEffects) {
 					this.animationManager?.scale(this.checkboxEffects, 1, 0.9, Motion.F.xFast, true);
 					this.checkboxEffects.isChecked = isEnabled;
-				}  
+				}
 			}
 		});
 
@@ -190,6 +183,7 @@ export class Pause {
 
 	alignLeft(): void {
 		this.pauseBox.horizontalAlignment = H_LEFT;
+		this.pauseBox.paddingLeft = 20;
 	}
 
 	dispose(): void {

@@ -1,8 +1,9 @@
-import { ConnectionStatus, ViewMode } from '../shared/constants.js';
-import { EL, getElementById, requireElementById, UI_CLASSES} from './elements.js';
-import { getCurrentTranslation } from '../translations/translations.js';
-import { webSocketClient } from '../core/WebSocketClient.js';
+import { currentSettings } from '../core/AppManager.js';
 import { authManager } from '../core/AuthManager.js';
+import { webSocketClient } from '../core/WebSocketClient.js';
+import { getCurrentTranslation, updateLanguageDisplay } from '../translations/translations.js';
+import { ConnectionStatus, ViewMode } from '../utils/constants.js';
+import { EL, getElementById, requireElementById, UI_CLASSES } from './elements.js';
 
 class UIManager {
 	showScreen(
@@ -134,9 +135,47 @@ class UIManager {
 		});
 	}
 
-	showFormValidationError(message: string): void {
-		alert(message); // TODO we can create UI instead of alert
+	showError(message: string): void {
+		const errorModal = document.getElementById('error-modal') as HTMLElement | null;
+		const errorMessage = document.getElementById('error-message') as HTMLElement | null;
+		const errorOkBtn = document.getElementById('error-ok-btn') as HTMLButtonElement | null;
+
+		if (!errorModal || !errorMessage || !errorOkBtn) {
+			alert(message);
+			return;
+		}
+		errorMessage.textContent = message;
+		errorModal.style.display = 'flex';
+		errorModal.style.opacity = '0';
+
+		requestAnimationFrame(() => {
+			errorModal.style.transition = 'opacity 0.3s ease';
+			errorModal.style.opacity = '1';
+		});
+
+		const closeModal = () => {
+			errorModal.style.opacity = '0';
+			setTimeout(() => {
+				errorModal.style.display = 'none';
+				errorModal.style.transition = '';
+				document.removeEventListener('keydown', handleKeyDown);
+			}, 300);
+		};
+
+		errorOkBtn.onclick = closeModal;
+
+		errorModal.onclick = (e) => {
+			if (e.target === errorModal) closeModal();
+		};
+
+		const handleKeyDown = (e: KeyboardEvent) => {
+			if (e.key === 'Escape') closeModal();
+		};
+		document.addEventListener('keydown', handleKeyDown);
+
+		setTimeout(() => errorOkBtn.focus(), 100);
 	}
+
 
 	// ========================================
 	// OVERLAY & MODAL MANAGEMENT
@@ -170,6 +209,29 @@ class UIManager {
 		const tournamentOnlineButton = requireElementById(EL.GAME_MODES.TOURNAMENT_ONLINE);
 		const t = getCurrentTranslation();
 		tournamentOnlineButton.textContent = `${t.tournamentOnline} (${currentOnlineTournamentSize} x 👤)`;
+	}
+
+	updateSettings(): void {
+		const sceneSelect = document.getElementById('map-selector') as HTMLSelectElement;
+		if (sceneSelect) {
+			sceneSelect.value = currentSettings.scene3D;
+		}
+	
+		const musicToggle = document.getElementById('music-toggle') as HTMLInputElement;
+		if (musicToggle) {
+			musicToggle.checked = currentSettings.musicEnabled;
+		}
+	
+		const effectsToggle = document.getElementById('sound-effect-toggle') as HTMLInputElement;
+		if (effectsToggle) {
+			effectsToggle.checked = currentSettings.soundEffectsEnabled;
+		}
+	
+		const languageSelect = document.getElementById('language_select') as HTMLSelectElement;
+		if (languageSelect) {
+			languageSelect.value = ['UK', 'IT', 'FR', 'BR', 'RU'][currentSettings.language];
+			updateLanguageDisplay();
+		}
 	}
 
 	// ========================================

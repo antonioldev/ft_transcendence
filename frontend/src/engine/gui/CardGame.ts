@@ -2,7 +2,7 @@ import { AdvancedDynamicTexture, Grid, Image, Rectangle } from "@babylonjs/gui";
 import { getCurrentTranslation } from "../../translations/translations";
 import { AnimationManager } from "../services/AnimationManager";
 import { AudioManager } from "../services/AudioManager";
-import { CARD_GAME_STYLES, COLORS, createGrid, createImage, createRect, createStackPanel, createTextBlock } from "./GuiStyle";
+import { CARD_GAME_STYLES, COLORS, createGrid, createImage, createRect, createTextBlock } from "./GuiStyle";
 
 interface CardData {
 	value: number;
@@ -23,7 +23,7 @@ export class CardGame {
 	private cards: CardElement[] = [];
 	private flippedCards: CardElement[] = [];
 	private matchedPairs: number = 0;
-	private totalPairs: number = 4;
+	private totalPairs: number = 12;
 	private isProcessing: boolean = false;
 
 	private readonly iconPaths: string[] = [
@@ -46,18 +46,20 @@ export class CardGame {
 		this.overlay = createRect("cardGameContainer", CARD_GAME_STYLES.mainContainer);
 		this.adt.addControl(this.overlay);
 
-		const stackPanel = createStackPanel("cardGameStack", CARD_GAME_STYLES.stack);
-		this.overlay.addControl(stackPanel);
+		const layoutGrid = createGrid("cardGameLayoutGrid", CARD_GAME_STYLES.layoutGrid);
+		layoutGrid.addRowDefinition(60, true);
+		layoutGrid.addRowDefinition(30, true);
+		layoutGrid.addRowDefinition(1, false);
+		this.overlay.addControl(layoutGrid);
 
 		const title = createTextBlock("cardGameTitle", CARD_GAME_STYLES.title, "MEMORY MATCH");
-		stackPanel.addControl(title);
+		layoutGrid.addControl(title, 0, 0);
 
 		const instructions = createTextBlock("instructions", CARD_GAME_STYLES.instructions, t.miniGameRules);
-		stackPanel.addControl(instructions);
+		layoutGrid.addControl(instructions, 1, 0);
 
 		this.cardsGrid = createGrid("cardsGrid", CARD_GAME_STYLES.cardsGrid);
-		stackPanel.addControl(this.cardsGrid);
-
+		layoutGrid.addControl(this.cardsGrid, 2, 0);
 		this.startGame();
 	}
 

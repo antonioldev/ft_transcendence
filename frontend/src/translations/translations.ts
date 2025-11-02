@@ -5,7 +5,7 @@ import { portuguese } from './pt-PT.js';
 import { russian } from './ru-RU.js';
 import type { Translation } from './Translation.js';
 import { EL, requireElementById } from '../ui/elements.js';
-import { TranslationKey } from './Translation.js';
+// import { TranslationKey } from './Translation.js';
 import { currentSettings } from '../core/AppManager.js';
 
 const allTranslations = [english, italian, french, portuguese, russian];
@@ -154,24 +154,24 @@ export function updateLanguageDisplay(): void {
     const playerLabel = requireElementById(EL.PLAYER_COLLECTION.LABEL);
 	playerLabel.textContent = t.playerName;
 
-    const localLabel1 = document.querySelector('#two-players-setup label[for="player1-name-local"]');
-    if (localLabel1) localLabel1.textContent = t.player1Name;
+    // const localLabel1 = document.querySelector('#two-players-setup label[for="player1-name-local"]');
+    // if (localLabel1) localLabel1.textContent = t.player1Name;
 
-    const localLabel2 = document.querySelector('#two-players-setup label[for="player2-name-local"]');
-    if (localLabel2) localLabel2.textContent = t.player2Name;
+    // const localLabel2 = document.querySelector('#two-players-setup label[for="player2-name-local"]');
+    // if (localLabel2) localLabel2.textContent = t.player2Name;
 
     // Tournament labels
-    const tournamentLabel1 = document.querySelector('#tournament-setup label[for="player1-name-tournament"]');
-    if (tournamentLabel1) tournamentLabel1.textContent = t.player1Name;
+    // const tournamentLabel1 = document.querySelector('#tournament-setup label[for="player1-name-tournament"]');
+    // if (tournamentLabel1) tournamentLabel1.textContent = t.player1Name;
 
-    const tournamentLabel2 = document.querySelector('#tournament-setup label[for="player2-name-tournament"]');
-    if (tournamentLabel2) tournamentLabel2.textContent = t.player2Name;
+    // const tournamentLabel2 = document.querySelector('#tournament-setup label[for="player2-name-tournament"]');
+    // if (tournamentLabel2) tournamentLabel2.textContent = t.player2Name;
 
-    const tournamentLabel3 = document.querySelector('#tournament-setup label[for="player3-name-tournament"]');
-    if (tournamentLabel3) tournamentLabel3.textContent = "Player 3 Name:"; // TODO: Add translation key for player3Name
+    // const tournamentLabel3 = document.querySelector('#tournament-setup label[for="player3-name-tournament"]');
+    // if (tournamentLabel3) tournamentLabel3.textContent = "Player 3 Name:";
 
-    const tournamentLabel4 = document.querySelector('#tournament-setup label[for="player4-name-tournament"]');
-    if (tournamentLabel4) tournamentLabel4.textContent = "Player 4 Name:"; // TODO: Add translation key for player4Name
+    // const tournamentLabel4 = document.querySelector('#tournament-setup label[for="player4-name-tournament"]');
+    // if (tournamentLabel4) tournamentLabel4.textContent = "Player 4 Name:";
 
 	const playerName = requireElementById<HTMLInputElement>(EL.PLAYER_COLLECTION.INPUT);
 	playerName.placeholder = t.enterName;
@@ -262,7 +262,7 @@ export function updateLanguageDisplay(): void {
 }
 
 // Retrieves a specific item based on current language
-export function getText(key: TranslationKey): string {
-	const t = getCurrentTranslation();
-	return t[key];
-}
+// export function getText(key: TranslationKey): string {
+// 	const t = getCurrentTranslation();
+// 	return t[key];
+// }

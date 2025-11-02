@@ -1,12 +1,12 @@
 import "@babylonjs/loaders";
-import { updateLanguageDisplay, getCurrentTranslation } from '../translations/translations.js';
+import { AuthCode, MessageType } from '../shared/constants.js';
+import { getCurrentTranslation, updateLanguageDisplay } from '../translations/translations.js';
 import { uiManager } from '../ui/UIManager.js';
-import { webSocketClient } from './WebSocketClient.js';
-import { authManager } from './AuthManager.js';
+import { ConnectionStatus } from "../utils/constants.js";
 import { appManager } from './AppManager.js';
-import { AuthCode, ConnectionStatus, MessageType } from '../shared/constants.js';
+import { authManager } from './AuthManager.js';
 import { getSID, sendGET } from "./HTTPRequests.js";
-// import { setupLanguageSelector } from "../translations/translations.js";
+import { webSocketClient } from './WebSocketClient.js';
 
 async function loadPage() {
     // Initialize classes

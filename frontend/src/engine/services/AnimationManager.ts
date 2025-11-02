@@ -5,8 +5,8 @@ import { Vector3 } from "@babylonjs/core/Maths/math.vector";
 import type { Scene } from "@babylonjs/core/scene";
 import type { Control } from "@babylonjs/gui/2D/controls/control";
 import { GAME_CONFIG } from "../../shared/gameConfig.js";
-import { getCamera2DPosition, getCamera3DPlayer1Position, getCamera3DPlayer2Position } from '../utils.js';
-import { ViewMode } from "../../shared/constants.js";
+import { ViewMode } from "../../utils/constants.js";
+import { getCamera2DPosition, getCamera3DPlayer1Position, getCamera3DPlayer2Position } from '../utils/utils.js';
 
 type FloatProp =
   | "alpha"
@@ -165,6 +165,57 @@ export class AnimationManager {
 			target.animations = [settleAnim, settleAnimY];
 			return this.play(target, settleFrames, false);
 		});
+	}
+
+	slideCurtain(
+		target: Control,
+		isLeft: boolean,
+		type: 'in' | 'out' = 'in',
+		frames = Motion.F.base
+	): Promise<void> {
+		target.alpha = type === 'in' ? 0 : 1;
+
+		const distance = (target.parent?.widthInPixels || 1000) / 2;
+		let start: number;
+		let end: number;
+		
+		if (type === 'in') {
+			end = 0;
+			start = isLeft ? -distance : distance;
+			target.leftInPixels = start;
+		} else {
+			start = 0;
+			end = isLeft ? -distance : distance;
+			target.leftInPixels = start;
+		}
+		
+		const alphaFrom = type === 'in' ? 0 : 1;
+		const alphaTo = type === 'in' ? 1 : 0;
+		
+		const animations: Animation[] = [
+			this.createFloat('leftInPixels', start, end, frames, false, Motion.ease.quadOut()),
+			this.createFloat("alpha", alphaFrom, alphaTo, frames, false, Motion.ease.quadOut())
+		];
+		
+		target.animations = animations;
+		return this.play(target, frames, false);
+	}
+
+	fall(
+		target: Control,
+		fallDistance: number,
+		frames = Motion.F.base
+	): Promise<void> {
+		const currentTop = target.topInPixels;
+		const endTop = currentTop + fallDistance;
+		
+		const animations: Animation[] = [
+			this.createFloat('topInPixels', currentTop, endTop, frames, false, Motion.ease.quadOut()),
+			this.createFloat('alpha', target.alpha, 0, frames, false, Motion.ease.quadOut())
+		];
+
+		target.animations = animations;
+		return this.play(target, frames, false);
 	}
 
 	slideFromDirection(

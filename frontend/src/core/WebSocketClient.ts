@@ -1,6 +1,7 @@
 import { Logger } from '../utils/LogManager.js';
-import { ConnectionStatus, MessageType, Direction, PowerupType, AppState } from '../shared/constants.js'
-import { ClientMessage, ServerMessage } from '../shared/types.js'
+import { MessageType, Direction, PowerupType } from '../shared/constants.js'
+import { ConnectionStatus, AppState } from '../utils/constants.js';
+import type { ClientMessage, ServerMessage } from '../shared/types.js'
 import { appManager } from './AppManager.js';
 
 /**
@@ -50,19 +51,29 @@ export class WebSocketClient {
         this.ws.onclose = () => {
             clearTimeout(timeout);
             Logger.warn('Disconnected from game server', 'WebSocketClient');
-            appManager.navigateTo(AppState.MAIN_MENU);
             this.connectionStatus = ConnectionStatus.FAILED;
             this.notifyStatus(ConnectionStatus.FAILED);
+            this.handleConnectionLoss();
         };
 
         this.ws.onerror = (error) => {
             clearTimeout(timeout);
             Logger.error('WebSocket error', 'WebSocketClient', error);
-            appManager.navigateTo(AppState.MAIN_MENU);
             this.connectionStatus = ConnectionStatus.FAILED;
             this.notifyStatus(ConnectionStatus.FAILED);
+            this.handleConnectionLoss();
         };
     }
+
+    private handleConnectionLoss(): void {
+
+    if (appManager.getCurrentGame()) {
+        const game = appManager.getCurrentGame()!;
+        game.requestExitToMenu();
+    } else {
+        appManager.navigateTo(AppState.MAIN_MENU);
+    }
+}
 
     // Disconnects the WebSocket connection.
     disconnect(): void {
@@ -92,7 +103,6 @@ export class WebSocketClient {
                 this.triggerCallback(MessageType.ERROR, message.message);
                 break;
             case MessageType.MATCH_ASSIGNMENT:
-                console.log("received match assignment");
                 this.triggerCallback(MessageType.MATCH_ASSIGNMENT, message);
                 break;
             case MessageType.MATCH_RESULT:
@@ -103,7 +113,6 @@ export class WebSocketClient {
                 break;
             default:
                 Logger.errorAndThrow(`Unhandled message type: ${message.type}`, 'WebSocketClient');
-                break;
         }
     }
 
@@ -148,10 +157,7 @@ export class WebSocketClient {
     }
 
     private sendMessage(type: MessageType, data: any = {}): void {
-        if (!this.isConnected()) {
-            Logger.warn(`Cannot send ${type}: WebSocket not connected`, 'WebSocketClient');
-            return;
-        }
+        if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
 
         const message: ClientMessage = { type, ...data };
 

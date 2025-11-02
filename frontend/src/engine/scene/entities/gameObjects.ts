@@ -1,6 +1,6 @@
 import { Color3, Mesh, MeshBuilder, Scene, StandardMaterial, Vector3 } from "@babylonjs/core";
 import { GridMaterial } from "@babylonjs/materials";
-import { ViewMode } from '../../../shared/constants.js';
+import { ViewMode } from '../../../utils/constants.js';
 import { GAME_CONFIG } from '../../../shared/gameConfig.js';
 import { Size } from '../../../shared/types.js';
 import { MAP_OBJECT_TYPE, MapAssetConfig, TextureSet } from "../config/sceneTypes.js";
@@ -8,7 +8,7 @@ import { createMaterial, getStandardTextureScale } from "../builders/materialsBu
 import { MAP_CONFIGS } from "../config/mapConfigs.js";
 
 // Creates the ground for the game field
-export function createGameField(scene: any, name: string, mode: ViewMode, map_asset: MapAssetConfig): any {
+export function createGameField(scene: Scene, name: string, mode: ViewMode, map_asset: MapAssetConfig): any {
 
 	const w = GAME_CONFIG.fieldWidth;
 	const h = GAME_CONFIG.fieldHeight;
@@ -36,8 +36,8 @@ export function createGameField(scene: any, name: string, mode: ViewMode, map_as
 }
 
 // Creates a player object in the scene
-export function createWalls(scene: any, name: string, mode: ViewMode, texture: TextureSet): any[] {
-	const walls: any[] = [];
+export function createWalls(scene: Scene, name: string, mode: ViewMode, texture: TextureSet): Mesh[] {
+	const walls: Mesh[] = [];
 
 	const w = GAME_CONFIG.fieldWidth;
 	const h = GAME_CONFIG.fieldHeight;

@@ -70,7 +70,7 @@ export const italian: Translation = {
     impossible: ' (Impossibile)',
     winner: 'VINCITORE',
     continue: 'Premi SPAZIO per continuare',
-	tournamentTitle: 'Classifica del Torneo',
+	tournamentTitle: 'CLASSIFICA DEL TORNEO',
 	escToClose: 'Premere ESC per chiudere',
     miniGameRules: 'Trova tutte le coppie corrispondenti! Gioca mentre gli altri finiscono le loro partite.',
     // Validation error messages

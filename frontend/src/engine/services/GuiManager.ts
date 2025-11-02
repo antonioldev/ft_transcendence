@@ -1,8 +1,9 @@
 import { Scene } from "@babylonjs/core";
-import { AdvancedDynamicTexture, TextBlock } from "@babylonjs/gui";
-import { GameMode, ViewMode } from '../../shared/constants.js';
+import { AdvancedDynamicTexture } from "@babylonjs/gui";
+import { GameMode } from '../../shared/constants.js';
+import { ViewMode } from '../../utils/constants.js';
 import { Logger } from '../../utils/LogManager.js';
-import { GameConfig } from '../GameConfig.js';
+import type { GameConfig } from '../GameInitializer.js';
 import { CardGame } from "../gui/CardGame.js";
 import { Countdown } from "../gui/Countdown.js";
 import { EndGame } from "../gui/EndGame.js";
@@ -22,7 +23,6 @@ export class GUIManager {
 	private adt: AdvancedDynamicTexture | null = null;
 	private isInitialized: boolean = false;
 	private isTournament: boolean = false;
-	isLastMatch: boolean = false;
 	countdown!: Countdown;
 	matchTree!: MatchTree;
 	hud!: Hud;
@@ -37,6 +37,10 @@ export class GUIManager {
 		try {
 			this.adt = AdvancedDynamicTexture.CreateFullscreenUI("UI", true, this.scene);
 			this.adt!.layer!.layerMask = 0x20000000;
+			this.adt.idealWidth = 1920;
+			this.adt.idealHeight = 1080;
+			this.adt.renderAtIdealSize = true;
+
 			this.isTournament = config.isTournament;
 			this.createViewModeDivider(config);
 			this.countdown = new Countdown(this.adt, this.animationManager, audioManager);
@@ -47,13 +51,14 @@ export class GUIManager {
 			this.lobby = new Lobby(this.adt, this.animationManager);
 			this.curtain = new SceneTransition(this.adt, this.animationManager);
 			this.cardGame = new CardGame(this.adt, animationManager, audioManager);
-
+			
 			this.isInitialized = true;
 		} catch (error) {
 			Logger.error('Error creating GUI', 'GUIManager', error);
 			throw error;
 		}
 	}
+
 
 	private createViewModeDivider(config: GameConfig): void {
 		if (config.viewMode === ViewMode.MODE_3D && 
@@ -71,21 +76,18 @@ export class GUIManager {
 			this.matchTree.show(visible);
 	}
 
-	async showTournamentMatchWinner(winner: string, waitForSpace: boolean): Promise<void> {
-		if (!this.isReady || this.isLastMatch) return;
+	async showTournamentMatchWinner(winner: string, waitForSpace: boolean, isLastMatch: boolean): Promise<void> {
+		if (!this.isReady || isLastMatch) return;
 		
-		this.hud.show(false);
 		await this.endGame.fadeBackground(true);
 		await this.endGame.showPartialWinner(winner, waitForSpace);
 		await this.endGame.hidePartial();
 	}
 
-	async showTournamentMatchLoser(): Promise<void> {
-		if (!this.isReady || this.isLastMatch) return;
+	async showTournamentMatchLoser(isLastMatch: boolean): Promise<void> {
+		if (!this.isReady || isLastMatch) return;
 		
-		this.hud.show(false);
 		await this.endGame.fadeBackground(true);
-		this.audioManager.playLoser();
 		await this.endGame.showPartialLoser();
 	}
 
@@ -94,51 +96,10 @@ export class GUIManager {
 	async showWinner(winner: string): Promise<void> {
 		if (!this.isReady) return;
 
-		this.hud.show(false);
 		this.audioManager.playWinner();
 		await this.endGame.showFinalWinner(winner);
-		this.hud.show(true);
 	}
 
-	updateControlVisibility(player1: boolean, player2: boolean): void {
-		if (!this.isReady) return;
-		const p1 = this.adt?.getControlByName("PlayerControls_p1") as TextBlock | null;
-		const p2 = this.adt?.getControlByName("PlayerControls_p2") as TextBlock | null;
-
-		if (p1) p1.color = player1 ? "rgba(255, 255, 255, 0.7)" : "rgba(0, 0, 0, 0)";
-		if (p2) p2.color = player2 ? "rgba(255, 255, 255, 0.7)" : "rgba(0, 0, 0, 0)";
-	}
-
-	updateTournamentRound(message: any): void {
-		console.error("test");
-		this.cardGame.hide();
-		if (message.round_index === message.round_total)
-			this.isLastMatch = true;
-		this.pause.alignLeft();
-		this.matchTree.insert(
-			message.round_index,
-			message.round_total,
-			message.match_index,
-			message.left ?? null,
-			message.right ?? null,
-			message.match_total ?? undefined
-		);
-	}
-
-	updateTournamentGame(message: any): void {
-		if (message.winner !== undefined)
-			this.matchTree.update(
-				message.winner,
-				message.round_index,
-				message.match_index
-			)
-	}
-
-	updateTournamentLobby(message: any): void {
-		const names: string[] = message.lobby ?? [""];
-		this.lobby.show(names);
-	}
-	
 	isReady(): boolean {
 		return this.isInitialized;
 	}
