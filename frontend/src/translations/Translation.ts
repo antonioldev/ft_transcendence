@@ -113,6 +113,22 @@ export interface Translation {
     music: string;
     soundEffects: string;
     backToMainMenu: string;
+
+    // Dashboard
+    userStats: string;
+    victories: string;
+    defeats: string;
+    gameHistory: string;
+    dateTime: string;
+    opponent: string;
+    score: string;
+    result: string;
+    tournament: string;
+    duration: string;
+    yes: string;
+    no: string;
+    win: string;
+    loss: string;
 }
 
 // export type TranslationKey = keyof Translation;

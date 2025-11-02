@@ -105,5 +105,21 @@ export const russian: Translation = {
     scene3d: '3D Сцена',
     music: 'Музыка',
     soundEffects: 'Звуковые Эффекты',
-    backToMainMenu: 'Вернуться в Главное Меню'
+    backToMainMenu: 'Вернуться в Главное Меню',
+
+    // Dashboard
+    userStats: 'Статистика Пользователя',
+    victories: 'Победы',
+    defeats: 'Поражения',
+    gameHistory: 'История Игр',
+    dateTime: 'Дата & Время',
+    opponent: 'Противник',
+    score: 'Счет',
+    result: 'Результат',
+    tournament: 'Турнир',
+    duration: 'Длительность',
+    yes: 'Да',
+    no: 'Нет',
+    win: 'Победа',
+    loss: 'Поражение'
 };

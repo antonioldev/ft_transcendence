@@ -105,6 +105,22 @@ export const portuguese: Translation = {
     scene3d: 'Cena 3D',
     music: 'Música',
     soundEffects: 'Efeitos Sonoros',
-    backToMainMenu: 'Voltar ao Menu Principal'
+    backToMainMenu: 'Voltar ao Menu Principal',
+
+    // Dashboard
+    userStats: 'Estatísticas do Usuário',
+    victories: 'Vitórias',
+    defeats: 'Derrotas',
+    gameHistory: 'Histórico de Jogos',
+    dateTime: 'Data & Hora',
+    opponent: 'Oponente',
+    score: 'Pontuação',
+    result: 'Resultado',
+    tournament: 'Torneio',
+    duration: 'Duração',
+    yes: 'Sim',
+    no: 'Não',
+    win: 'Vitória',
+    loss: 'Derrota'
 
 };

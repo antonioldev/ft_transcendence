@@ -2,6 +2,7 @@ import { UserStats, GameHistoryEntry } from '../shared/types.js';
 import { EL, getElementById } from '../ui/elements.js';
 import { authManager } from './AuthManager.js';
 import { sendGET } from './HTTPRequests.js';
+import { getCurrentTranslation } from '../translations/translations.js';
 
 export class DashboardManager {
 	clear(): void {
@@ -53,14 +54,16 @@ export class DashboardManager {
 		const commonTdStyle = 'text-align:center; padding:10px 15px; font-size: clamp(14px, 3vw, 18px); font-weight: 500;';
 		// const secondTdStyle = 'text-align:center; padding:5px 30px; font-size: clamp(10px, 2vw, 14px); font-weight: 400;';
 
+		const t = getCurrentTranslation();
+		const { victories, defeats } = t;
 
 		table.innerHTML = `
 			<tbody>
 				<tr>
-					<th style="${commonThStyle}">Victories</th>
+					<th style="${commonThStyle}">${victories}</th>
 					<td style="${commonTdStyle}">${stats.victories}</td>
 				<tr>
-					<th style="${commonThStyle} color: #FE5E41">Defeats</th>
+					<th style="${commonThStyle} color: #FE5E41">${defeats}</th>
 					<td style="${commonTdStyle} color: #FE5E41">${stats.defeats}</td>
 				</tr>
 			</tbody>
@@ -95,69 +98,65 @@ export class DashboardManager {
 	}
 
 	renderGameHistory(history: GameHistoryEntry[]): void {
-
-		fetch('/log', {method:'POST', body:'xxx'})
-		console.log(`### renderGameHistory ###`);
 		const container = getElementById(EL.DASHBOARD.GAME_HISTORY_TABLE);
 		if (!container) return;
-		container.innerHTML = '';
+
 		(container as HTMLElement).style.display = 'block';
 		(container as HTMLElement).style.textAlign = 'center';
 
-		// print only isTournament from history
-		history.forEach(entry => {
-			console.log(`### isTournament in history: ${entry.isTournament}`);
-		});
-
-    	const scrollWrapper = document.createElement('div');
-    	scrollWrapper.style.maxHeight = '300px';
-    	scrollWrapper.style.overflowY = 'auto';
-    	scrollWrapper.style.overflowX = 'auto';
-    	scrollWrapper.style.border = '';
-    	scrollWrapper.style.borderRadius = '6px';
-    	scrollWrapper.style.backgroundColor = 'rgba(63, 42, 43, 0.2)';
-    	scrollWrapper.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
-    	scrollWrapper.style.scrollbarWidth = 'thin';
-    	scrollWrapper.style.scrollbarColor = '#A0C878 #143D60';
-		scrollWrapper.style.maxWidth = '100%';
-
-		const table = document.createElement('table');
-		table.style.borderCollapse = 'separate';
-		table.style.width = '100%';
-		table.style.maxWidth = '900px';
-		table.style.margin = '0 auto';
-		
+		const t = getCurrentTranslation();
+		const { win, loss, yes, no } = t;
 
 		const commonThStyle = 'text-align:center; padding:6px 12px';
 
-		table.innerHTML = `
-			<thead>
-				<tr>
-					<th style="${commonThStyle}">Date & Time</th>
-					<th style="${commonThStyle}">Opponent</th>
-					<th style="${commonThStyle}">Score</th>
-					<th style="${commonThStyle}">Result</th>
-					<th style="${commonThStyle}">Tournament</th>
-					<th style="${commonThStyle}">Duration</th>
-				</tr>
-			</thead>
-			<tbody>
-				${history.map(e => `
+		const scrollWrapper = document.createElement('div');
+		scrollWrapper.style.maxHeight = '300px';
+		scrollWrapper.style.overflowY = 'auto';
+		scrollWrapper.style.overflowX = 'auto';
+		scrollWrapper.style.border = '';
+		scrollWrapper.style.borderRadius = '6px';
+		scrollWrapper.style.backgroundColor = 'rgba(63, 42, 43, 0.2)';
+		scrollWrapper.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
+		scrollWrapper.style.scrollbarWidth = 'thin';
+		scrollWrapper.style.scrollbarColor = '#A0C878 #143D60';
+		scrollWrapper.style.maxWidth = '100%';
+
+		const rowsHtml = history.map(e => `
+			<tr>
+			<td style="${commonThStyle}">${new Date(e.playedAt).toLocaleString()}</td>
+			<td style="${commonThStyle}">${e.opponent}</td>
+			<td style="${commonThStyle}">${e.score}</td>
+			<td style="${commonThStyle}">${e.result ? win : loss}</td>
+			<td style="${commonThStyle}">${e.isTournament ? yes : no}</td>
+			<td style="${commonThStyle}">${e.duration}s</td>
+			</tr>
+		`).join('');
+
+		scrollWrapper.innerHTML = `
+			<table class="min-w-full" style="border-collapse:separate; width:100%; max-width:900px; margin:0 auto;">
+				<thead>
 					<tr>
-						<td style="${commonThStyle}">${new Date(e.playedAt).toLocaleString()}</td>
-						<td style="${commonThStyle}">${e.opponent}</td>
-						<td style="${commonThStyle}">${e.score}</td>
-						<td style="${commonThStyle}">${e.result}</td>
-						<td style="${commonThStyle}">${e.isTournament}</td>
-						<td style="${commonThStyle}">${e.duration}s</td>
+						<th id="${EL.DASHBOARD.TH_DATETIME}"    style="${commonThStyle}" class="uppercase py-2">${t.dateTime}</th>
+						<th id="${EL.DASHBOARD.TH_OPPONENT}"    style="${commonThStyle}" class="uppercase py-2">${t.opponent}</th>
+						<th id="${EL.DASHBOARD.TH_SCORE}"       style="${commonThStyle}" class="uppercase py-2">${t.score}</th>
+						<th id="${EL.DASHBOARD.TH_RESULT}"      style="${commonThStyle}" class="uppercase py-2">${t.result}</th>
+						<th id="${EL.DASHBOARD.TH_TOURNAMENT}"  style="${commonThStyle}" class="uppercase py-2">${t.tournament}</th>
+						<th id="${EL.DASHBOARD.TH_DURATION}"    style="${commonThStyle}" class="uppercase py-2">${t.duration}</th>
 					</tr>
-				`).join('')}
-			</tbody>
+				</thead>
+				<tbody>${rowsHtml}</tbody>
+			</table>
 		`;
 
-		scrollWrapper.appendChild(table);
-		container.appendChild(scrollWrapper);
+		container.innerHTML = '';   
+		container.appendChild(scrollWrapper); 
+
+		const vic = document.getElementById(EL.DASHBOARD.VICTORIES_LABEL);
+		if (vic) vic.textContent = t.victories;
+		const def = document.getElementById(EL.DASHBOARD.DEFEATS_LABEL);
+		if (def) def.textContent = t.defeats;
 	}
+
 
 
 	private createPieChart(data: { label: string; value: number; color: string }[]): SVGElement {
