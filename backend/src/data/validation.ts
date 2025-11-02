@@ -149,6 +149,7 @@ export function getUserStats(username: string): UserStats | undefined {
 	const winRatio = games > 0 ? victories / games : 0;
 	const tournamentsPlayed = dbFunction.getUserNbTournament(userId);
 	const tournamentWins = dbFunction.getUserNbTournamentWin(userId);
+	const tournamentDefeats = dbFunction.getUserNbTournamentDefeat(userId);
 	const tournamentWinRatio = tournamentsPlayed > 0 ? tournamentWins / tournamentsPlayed : 0;
 
 	return {
@@ -158,6 +159,7 @@ export function getUserStats(username: string): UserStats | undefined {
 		winRatio,
 		tournamentsPlayed,
 		tournamentWins,
+		tournamentDefeats,
 		tournamentWinRatio,
 	};
 }

@@ -84,7 +84,7 @@ class GameManager {
             return ;
         }
         console.log(`Game started with ${gameSession.players.size} players`);
-        db.updateStartTime(gameSession.id);
+        gameSession.startTimestamp = Date.now(); 
         gameSession.add_CPUs(); // add CPU's if necessary
         await gameSession.start();
         gameManager.endGame(gameSession);

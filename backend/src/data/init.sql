@@ -13,7 +13,8 @@ CREATE TABLE IF NOT EXISTS users (
 	defeats INTEGER DEFAULT 0,
 	games INTEGER DEFAULT 0,
 	tournament INTEGER DEFAULT 0,
-	tournament_win INTEGER DEFAULT 0
+	tournament_win INTEGER DEFAULT 0,
+	tournament_defeat INTEGER DEFAULT 0
 );
 
 -- Empty table for game info

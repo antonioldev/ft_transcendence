@@ -149,6 +149,7 @@ export interface UserStats {
   [key: string]: number;
   tournamentsPlayed: number;
   tournamentWins: number;
+  tournamentDefeats: number; 
   tournamentWinRatio: number;
 }
 

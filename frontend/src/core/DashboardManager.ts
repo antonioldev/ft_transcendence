@@ -49,9 +49,9 @@ export class DashboardManager {
 		table.style.color = '#A0C878';
 
     	const commonThStyle = 'text-align:left; padding:10px 15px; min-width: 75px; height: 50px; line-height: 1.2; overflow: hidden; display: table-cell; vertical-align: middle; white-space: nowrap; font-size: clamp(14px, 3vw, 18px); font-weight: bold;';
-		const secondThStyle = 'text-align:left; padding:5px 30px; min-width: 50px; height: 30px; line-height: 0.5; overflow: hidden; display: table-cell; vertical-align: middle; white-space: nowrap; font-size: clamp(10px, 2vw, 14px); font-weight: light;';
+		// const secondThStyle = 'text-align:left; padding:5px 30px; min-width: 50px; height: 30px; line-height: 0.5; overflow: hidden; display: table-cell; vertical-align: middle; white-space: nowrap; font-size: clamp(10px, 2vw, 14px); font-weight: light;';
 		const commonTdStyle = 'text-align:center; padding:10px 15px; font-size: clamp(14px, 3vw, 18px); font-weight: 500;';
-		const secondTdStyle = 'text-align:center; padding:5px 30px; font-size: clamp(10px, 2vw, 14px); font-weight: 400;';
+		// const secondTdStyle = 'text-align:center; padding:5px 30px; font-size: clamp(10px, 2vw, 14px); font-weight: 400;';
 
 
 		table.innerHTML = `
@@ -59,18 +59,9 @@ export class DashboardManager {
 				<tr>
 					<th style="${commonThStyle}">Victories</th>
 					<td style="${commonTdStyle}">${stats.victories}</td>
-				</tr>
-				<tr>
-					<th style="${secondThStyle}">Tournament Victories</th>
-					<td style="${secondTdStyle}">${stats.tournamentWins}</td>
-				</tr>
 				<tr>
 					<th style="${commonThStyle} color: #FE5E41">Defeats</th>
 					<td style="${commonTdStyle} color: #FE5E41">${stats.defeats}</td>
-				</tr>
-				<tr>
-					<th style="${secondThStyle} color: #FE5E41">Tournament Defeats</th>
-					<td style="${secondTdStyle} color: #FE5E41">${stats.tournamentDefeats}</td>
 				</tr>
 			</tbody>
 		`;

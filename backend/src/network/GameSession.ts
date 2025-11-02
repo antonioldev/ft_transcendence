@@ -15,6 +15,7 @@ export abstract class AbstractGameSession {
 	clients: Set<Client> = new Set();
 	players: Set<Player | CPU> = new Set();
 	state: GameSessionState = GameSessionState.INIT;
+	public startTimestamp: number | null = null;
 
 	player_capacity: number = 2;
 	client_capacity: number = 1;
