@@ -108,14 +108,16 @@ export class AuthManager {
 		showRegister: HTMLElement | null,
 		showLogin: HTMLElement | null
 	): void {
-		showRegister?.addEventListener('click', () => {
+		showRegister?.addEventListener('click', (e) => {
+            e.preventDefault();
 			appManager.navigateTo(AppState.REGISTER);
-			this.prepareGoogleLogin();
+			// this.prepareGoogleLogin();
 		});
 
-		showLogin?.addEventListener('click', () => {
+		showLogin?.addEventListener('click', (e) => {
+            e.preventDefault();
 			appManager.navigateTo(AppState.LOGIN);
-			this.prepareGoogleLogin();
+			// this.prepareGoogleLogin();
 		});
 	}
 
@@ -234,11 +236,13 @@ export class AuthManager {
 
         registerPassword?.addEventListener('blur', () => {
             const value = (registerPassword as HTMLInputElement).value;
-            const t = getCurrentTranslation();
+            // const t = getCurrentTranslation();
             if (!value) {
-                this.showFieldError('register-password', t.errorEnterPassword);
-            } else if (value.length < 6) {
-                this.showFieldError('register-password', t.errorPasswordMinLength);
+            //     this.showFieldError('register-password', t.errorEnterPassword);
+            // } else if (value.length < 6) {
+            //     this.showFieldError('register-password', t.errorPasswordMinLength);
+            // } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s])/.test(value)) {
+            //     this.showFieldError('register-password', t.errorPasswordComplexity);
             } else {
                 this.clearValidationErrors(['register-password']);
             }
@@ -257,53 +261,6 @@ export class AuthManager {
             }
         });
     }
-
-	// ========================================
-	// AUTHENTICATION HANDLERS
-	// ========================================
-
-    // private async restoreSessionOnBoot(): Promise<void> {
-    //     try {
-    //         // 1) Try classic cookie session
-    //         const res = await fetch('/api/auth/session/me', {
-    //             method: 'GET',
-    //             credentials: 'include',
-    //             cache: 'no-store',
-    //         });
-
-    //         if (res.ok) {
-    //             const data = await res.json(); // expected: { ok: true, user: {...} }
-    //             if (data?.ok && data.user?.username) {
-    //                 this.currentUser = { username: data.user.username };
-    //                 uiManager.showUserInfo(this.currentUser.username);
-    //                 appManager.navigateTo(AppState.MAIN_MENU);
-    //                 return;
-    //             }
-    //         }
-
-    //         // 2) Fallback: try Google restore if you kept the Google token
-    //         const googleIdToken = localStorage.getItem('google_id_token'); // set this on Google login success
-    //         if (googleIdToken) {
-    //             console.log('Found Google token, attempting restore');
-    //             // Hit your Google restore endpoint that verifies the Google token
-    //             // and SETS the same 'sid' cookie as classic login
-    //             const data = await sendPOST("google", JSON.stringify({ token: googleIdToken }));
-    //             console.log(data.message);
-    //             if (!data.success) {
-    //                 localStorage.removeItem('google_id_token');
-    //             }
-    //         } 
-    //         else {
-    //             console.log('No Google token found in local storage');
-    //         }
-
-    //         console.log('No valid session found, remaining in guest mode');
-    //         this.currentUser = null;
-    //     } catch (e) {
-    //         console.log('Session restore failed (expected on first visit)');
-    //         this.currentUser = null;
-    //     }
-    // }
 
     // Handles the login form submission process. Validates input fields, processes authentication, and updates UI state.
     private async handleLoginSubmit(): Promise<void> {

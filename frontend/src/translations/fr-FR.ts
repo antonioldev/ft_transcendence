@@ -80,6 +80,7 @@ export const french: Translation = {
     errorEnterEmail: 'Veuillez entrer un email',
     errorEnterValidEmail: 'Veuillez entrer un email valide',
     errorPasswordMinLength: 'Le mot de passe doit contenir au moins 6 caractères',
+    errorPasswordComplexity: 'Le mot de passe doit contenir au moins une lettre majuscule, une lettre minuscule, un chiffre et un caractère spécial',
     errorConfirmPassword: 'Veuillez confirmer mot de passe',
     errorPasswordsDoNotMatch: 'Les mots de passe ne correspondent pas',
 	spectator: '🎮 MODE SPECTATEUR',
