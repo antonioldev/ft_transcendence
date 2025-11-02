@@ -84,6 +84,7 @@ export const english: Translation = {
     errorEnterEmail: 'Please enter an email',
     errorEnterValidEmail: 'Please enter a valid email',
     errorPasswordMinLength: 'Password must be at least 6 characters',
+    errorPasswordComplexity: 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
     errorConfirmPassword: 'Please confirm password',
     errorPasswordsDoNotMatch: 'Passwords do not match',
 

@@ -80,6 +80,7 @@ export const portuguese: Translation = {
     errorEnterEmail: 'Por favor, insira um email',
     errorEnterValidEmail: 'Por favor, insira um email válido',
     errorPasswordMinLength: 'A senha deve ter pelo menos 6 caracteres',
+    errorPasswordComplexity: 'A senha deve conter pelo menos uma letra maiúscula, uma letra minúscula, um número e um caractere especial',
     errorConfirmPassword: 'Por favor, confirme senha',
     errorPasswordsDoNotMatch: 'As senhas não coincidem',
 	spectator: '🎮 MODO ESPECTADOR',

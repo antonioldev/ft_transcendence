@@ -84,6 +84,7 @@ export interface Translation {
     errorEnterEmail: string;
     errorEnterValidEmail: string;
     errorPasswordMinLength: string;
+    errorPasswordComplexity: string;
     errorConfirmPassword: string;
     errorPasswordsDoNotMatch: string;
 	spectator: string,

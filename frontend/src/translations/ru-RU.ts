@@ -80,6 +80,7 @@ export const russian: Translation = {
     errorEnterEmail: 'Пожалуйста, введите имейл',
     errorEnterValidEmail: 'Пожалуйста, введите действительный имейл',
     errorPasswordMinLength: 'Пароль должен содержать не менее 6 символов',
+    errorPasswordComplexity: 'Пароль должен содержать как минимум одну заглавную букву, одну строчную букву, одну цифру и один специальный символ',
     errorConfirmPassword: 'Пожалуйста, подтвердите пароль',
     errorPasswordsDoNotMatch: 'Пароли не совпадают',
 	spectator: '🎮 РЕЖИМ НАБЛЮДАТЕЛЯ',

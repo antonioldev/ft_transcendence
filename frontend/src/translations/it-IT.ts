@@ -80,6 +80,7 @@ export const italian: Translation = {
     errorEnterEmail: 'Inserisci un email',
     errorEnterValidEmail: 'Inserisci un email valido',
     errorPasswordMinLength: 'La password deve contenere almeno 6 caratteri',
+    errorPasswordComplexity: 'La password deve contenere almeno una lettera maiuscola, una lettera minuscola, un numero e un carattere speciale',
     errorConfirmPassword: 'Conferma password',
     errorPasswordsDoNotMatch: 'Le password non corrispondono',
 	spectator: '🎮 MODALITÀ SPETTATORE',
