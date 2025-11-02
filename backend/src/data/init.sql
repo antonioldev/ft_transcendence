@@ -14,7 +14,12 @@ CREATE TABLE IF NOT EXISTS users (
 	games INTEGER DEFAULT 0,
 	tournament INTEGER DEFAULT 0,
 	tournament_win INTEGER DEFAULT 0,
-	tournament_defeat INTEGER DEFAULT 0
+	tournament_defeat INTEGER DEFAULT 0,
+	music_enabled INTEGER DEFAULT 1,
+    sound_effects_enabled INTEGER DEFAULT 1,
+    language INTEGER DEFAULT 0,
+    scene3D TEXT DEFAULT 'random',
+	active BOOLEAN DEFAULT 0
 );
 
 -- Empty table for game info
@@ -27,7 +32,6 @@ CREATE TABLE IF NOT EXISTS games (
 	player1_score INTEGER DEFAULT 0,
 	player2_score INTEGER DEFAULT 0,
 	played_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-	duration_seconds INTEGER,
 	tournament INTEGER DEFAULT 0,
     FOREIGN KEY (player1_id) REFERENCES users(id),
     FOREIGN KEY (player2_id) REFERENCES users(id),
@@ -35,23 +39,3 @@ CREATE TABLE IF NOT EXISTS games (
 	FOREIGN KEY (looser_id) REFERENCES users(id)
 );
 
--- sessions.sql
-CREATE TABLE IF NOT EXISTS sessions (
-  id TEXT UNIQUE PRIMARY KEY,        -- random opaque session id
-  user_id INTEGER NOT NULL,
-  created_at INTEGER NOT NULL,       -- epoch seconds
-  expires_at INTEGER NOT NULL,       -- e.g., now + 7 days
-  revoked INTEGER NOT NULL DEFAULT 0,
-  user_agent TEXT,
-  ip TEXT
-);
-
-
--- friends table 
--- CREATE TABLE IF NOT EXISTS friends (
---  user_id INTEGER NOT NULL,
---  friend_id INTEGER NOT NULL,
---  FOREIGN KEY (user_id) REFERENCES users(id),
---  FOREIGN KEY (friend_id) REFERENCES users(id),
---  UNIQUE (user_id, friend_id)
---);

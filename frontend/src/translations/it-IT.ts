@@ -30,6 +30,7 @@ export const italian: Translation = {
     login: '/ accedi',
     loginTitle: 'Accedi al Tuo Account',
     loginSubmit: 'Accedi',
+    instructions: '/ come giocare',
     greeting: 'Ciao',
     username: 'Nome utente:',
     email: 'Email:',
@@ -54,6 +55,7 @@ export const italian: Translation = {
     dontHaveAccount: 'Non hai un account?',
     alreadyHaveAccount: 'Hai già un account?',
     availableOnlyOffline: 'Disponibile solo in modalità offline',
+    unauthorizedAccess: 'Accesso non autorizzato',
     loginRequired: 'Login richiesto',
     logout: 'Disconnetti',
     tournamentOnline: 'Torneo Online',
@@ -78,6 +80,7 @@ export const italian: Translation = {
     errorEnterEmail: 'Inserisci un email',
     errorEnterValidEmail: 'Inserisci un email valido',
     errorPasswordMinLength: 'La password deve contenere almeno 6 caratteri',
+    errorPasswordComplexity: 'La password deve contenere almeno una lettera maiuscola, una lettera minuscola, un numero e un carattere speciale',
     errorConfirmPassword: 'Conferma password',
     errorPasswordsDoNotMatch: 'Le password non corrispondono',
 	spectator: '🎮 MODALITÀ SPETTATORE',
@@ -121,5 +124,23 @@ export const italian: Translation = {
     yes: 'Sì',
     no: 'No',
     win: 'Vittoria',
-    loss: 'Sconfitta'
+    loss: 'Sconfitta',
+    backToMainMenu: 'Torna al Menu Principale'
+,
+    // Instructions / How to Play
+    howToPlay: 'Come Giocare',
+    games2DTitle: 'Giochi 2D',
+    games3DTitle: 'Giochi 3D',
+    soloOnline: 'Solo | Online',
+    moveLabel: 'Muovi',
+    localLabel: 'Locale',
+    player1Label: 'giocatore_1',
+    player2Label: 'giocatore_2',
+    gameModesTitle: 'Modalità di Gioco',
+    soloVsAITitle: 'Solo vs IA',
+    difficultyInfo: '4 livelli di difficoltà disponibili',
+    shareKeyboard: 'Condividi la stessa tastiera',
+    onlineMatchTitle: 'Partita Online',
+    onlineMatchInfo: 'Gioca contro giocatori remoti',
+    tournamentInfo: '4, 8 o 16 giocatori'
 };

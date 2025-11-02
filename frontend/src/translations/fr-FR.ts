@@ -30,6 +30,7 @@ export const french: Translation = {
     login: '/ connexion',
     loginTitle: 'Connectez-vous à Votre Compte',
     loginSubmit: 'Connexion',
+    instructions: '/ comment jouer',
     greeting: 'Bonjour',
     username: "Nom d'utilisateur :",
     email: 'Email :',
@@ -54,6 +55,7 @@ export const french: Translation = {
     dontHaveAccount: "Vous n'avez pas de compte ?",
     alreadyHaveAccount: 'Vous avez déjà un compte ?',
     availableOnlyOffline: 'Disponible uniquement en mode hors ligne',
+    unauthorizedAccess: 'Acces non autorisé',
     loginRequired: 'Connexion requise',
     logout: 'Déconnexion',
     tournamentOnline: 'Tournoi en ligne',
@@ -78,6 +80,7 @@ export const french: Translation = {
     errorEnterEmail: 'Veuillez entrer un email',
     errorEnterValidEmail: 'Veuillez entrer un email valide',
     errorPasswordMinLength: 'Le mot de passe doit contenir au moins 6 caractères',
+    errorPasswordComplexity: 'Le mot de passe doit contenir au moins une lettre majuscule, une lettre minuscule, un chiffre et un caractère spécial',
     errorConfirmPassword: 'Veuillez confirmer mot de passe',
     errorPasswordsDoNotMatch: 'Les mots de passe ne correspondent pas',
 	spectator: '🎮 MODE SPECTATEUR',
@@ -121,5 +124,23 @@ export const french: Translation = {
     yes: 'Oui',
     no: 'Non',
     win: 'Gagner',
-    loss: 'Perdre'
+    loss: 'Perdre',
+    backToMainMenu: 'Retour au Menu Principal'
+,
+    // Instructions / How to Play
+    howToPlay: 'Comment Jouer',
+    games2DTitle: 'Jeux 2D',
+    games3DTitle: 'Jeux 3D',
+    soloOnline: 'Solo | En ligne',
+    moveLabel: 'Déplacer',
+    localLabel: 'Local',
+    player1Label: 'joueur_1',
+    player2Label: 'joueur_2',
+    gameModesTitle: 'Modes de Jeu',
+    soloVsAITitle: 'Solo vs IA',
+    difficultyInfo: '4 niveaux de difficulté disponibles',
+    shareKeyboard: 'Partagez le même clavier',
+    onlineMatchTitle: 'Match en Ligne',
+    onlineMatchInfo: 'Jouez contre des joueurs distants',
+    tournamentInfo: '4, 8 ou 16 joueurs'
 };

@@ -58,6 +58,7 @@ export interface Translation {
     dontHaveAccount: string;
     alreadyHaveAccount: string;
     availableOnlyOffline: string;
+    unauthorizedAccess: string;
     loginRequired: string;
     logout: string;
     tournamentOnline: string;
@@ -83,6 +84,7 @@ export interface Translation {
     errorEnterEmail: string;
     errorEnterValidEmail: string;
     errorPasswordMinLength: string;
+    errorPasswordComplexity: string;
     errorConfirmPassword: string;
     errorPasswordsDoNotMatch: string;
 	spectator: string,
@@ -129,6 +131,22 @@ export interface Translation {
     no: string;
     win: string;
     loss: string;
+    // Instructions / How to Play
+    howToPlay: string;
+    games2DTitle: string;
+    games3DTitle: string;
+    soloOnline: string;
+    moveLabel: string;
+    localLabel: string;
+    player1Label: string;
+    player2Label: string;
+    gameModesTitle: string;
+    soloVsAITitle: string;
+    difficultyInfo: string;
+    shareKeyboard: string;
+    onlineMatchTitle: string;
+    onlineMatchInfo: string;
+    tournamentInfo: string;
 }
 
 // export type TranslationKey = keyof Translation;
