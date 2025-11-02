@@ -90,8 +90,8 @@ export const SPECTATOR_STYLE = {
 
 export const HUD_STYLES = {
     hudGrid: {
-        widthInPixels: 1920,
-        heightInPixels: 216, // 20% of 1080
+        width: "100%",
+        height: "20%",
         background: COLORS.DARK_BLUE,
         verticalAlignment: V_BOTTOM,
         zIndex: Z_INDEX.HUD,
@@ -106,7 +106,7 @@ export const HUD_STYLES = {
     playerLabel: {
         fontFamily: FONT_FAMILY,
         color: COLORS.WHITE,
-        fontSizeInPixels: 56, // 40% of 216px HUD height
+        fontSizeInPixels: 56,
         fontWeight: "bold",
         shadowOffsetX: 1,
         shadowOffsetY: 1,
@@ -118,7 +118,7 @@ export const HUD_STYLES = {
     scoreText: {
         fontFamily: FONT_FAMILY,
         color: COLORS.WHITE,
-        fontSizeInPixels: 64, // 45% of 216px
+        fontSizeInPixels: 64,
         fontWeight: "bold",
         shadowOffsetX: 1,
         shadowOffsetY: 1,
@@ -131,14 +131,14 @@ export const HUD_STYLES = {
         textVerticalAlignment: V_TOP,
         fontFamily: FONT_FAMILY,
         color: COLORS.TRANSPARENT_WHITE_50,
-        fontSizeInPixels: 36, // 20% of 216px
+        fontSizeInPixels: 36,
     },
 
     rallyValue: {
         fontFamily: FONT_FAMILY,
         textVerticalAlignment: V_BOTTOM,
         color: COLORS.WHITE,
-        fontSizeInPixels: 56, // 35% of 216px
+        fontSizeInPixels: 56,
         fontWeight: "bold",
         shadowOffsetX: 1,
         shadowOffsetY: 1,
@@ -171,14 +171,14 @@ export const POWER_UP_STYLES = {
         width: "90%",
         height: "85%",
         verticalAlignment: V_TOP,
-        topInPixels: 29 // 15% of 194px
+        topInPixels: 29
     },
 
     powerUpLetter: {
         width: "100%",
         height: "15%",
-        paddingTopInPixels: 4, // 2% of 194px
-        fontSizeInPixels: 19, // 10% of 194px
+        paddingTopInPixels: 4,
+        fontSizeInPixels: 19,
         fontWeight: "bold",
         color: COLORS.WHITE,
         verticalAlignment: V_TOP,
@@ -190,8 +190,7 @@ export const POWER_UP_STYLES = {
         stretch: Image.STRETCH_UNIFORM,
         verticalAlignment: V_TOP,
         isVisible: false,
-        top: 100,
-        alpha: 0
+        top: 100
     }
 } as const;
 
@@ -358,8 +357,8 @@ export const LOBBY_STYLES = {
     
     rowText: {
         fontFamily: FONT_FAMILY,
-        width: "90%", // 90% of 816px
-        fontSizeInPixels: 23, // 60% of 38px row height
+        width: "90%",
+        fontSizeInPixels: 23,
         alpha: 0,
         clipContent: true
     },
@@ -378,7 +377,7 @@ export const COUNTDOWN_STYLES = {
     countdownText: {
         fontFamily: FONT_FAMILY,
         color: COLORS.WHITE,
-        fontSizeInPixels: 100, // 12% of 1080
+        fontSizeInPixels: 100,
         shadowOffsetX: 1,
         shadowOffsetY: 1,
         shadowBlur: 5,
@@ -391,7 +390,7 @@ export const COUNTDOWN_STYLES = {
     namePlayerLeft: {
         fontFamily: FONT_FAMILY,
         color: COLORS.WHITE,
-        fontSizeInPixels: 130, // 12% of 1080
+        fontSizeInPixels: 130,
         shadowOffsetX: 4,
         shadowOffsetY: 4,
         shadowColor: COLORS.LIGHT_GREEN,
@@ -401,14 +400,13 @@ export const COUNTDOWN_STYLES = {
         leftInPixels: -300,
         topInPixels: -150,
         isVisible: false,
-        alpha: 0,
         zIndex: Z_INDEX.HUD,
     },
 
     vsText: {
         fontFamily: FONT_FAMILY,
         color: COLORS.WHITE,
-        fontSizeInPixels: 65, // 6% of 1080
+        fontSizeInPixels: 65,
         shadowOffsetX: 1,
         shadowOffsetY: 1,
         shadowColor: COLORS.SPECTATOR_RED,
@@ -417,17 +415,15 @@ export const COUNTDOWN_STYLES = {
         outlineColor: COLORS.BLACK,
         topInPixels: -50,
         isVisible: false,
-        alpha: 0,
         zIndex: Z_INDEX.HUD,
     },
 
     namePlayerRight: {
         fontFamily: FONT_FAMILY,
         color: COLORS.WHITE,
-        fontSizeInPixels: 130, // 12% of 1080
+        fontSizeInPixels: 130,
         shadowOffsetX: 4,
         shadowOffsetY: 4,
-        shadowBlur: 0,
         shadowColor: COLORS.LIGHT_GREEN,
         fontWeight: "bold",
         outlineWidth: 3,
@@ -435,7 +431,6 @@ export const COUNTDOWN_STYLES = {
         leftInPixels: 300,
         topInPixels: 50,
         isVisible: false,
-        alpha: 0,
         zIndex: Z_INDEX.HUD,
 
     },
@@ -443,7 +438,7 @@ export const COUNTDOWN_STYLES = {
     readyText: {
         fontFamily: FONT_FAMILY,
         color: COLORS.GOLD,
-        fontSizeInPixels: 162, // 15% of 1080
+        fontSizeInPixels: 162,
         shadowOffsetX: 2,
         shadowOffsetY: 2,
         shadowBlur: 0,
@@ -453,7 +448,6 @@ export const COUNTDOWN_STYLES = {
         outlineColor: COLORS.TRANSPARENT_BLACK,
         topInPixels: -50,
         isVisible: false,
-        alpha: 0,
         zIndex: Z_INDEX.HUD,
     }
 
@@ -561,7 +555,6 @@ export const BRACKET_STYLES = {
     grid: {
         width: "100%",
         height: "100%",
-        // paddingLeftInPixels: 2
     },
 
     winnerCell: {
@@ -570,7 +563,7 @@ export const BRACKET_STYLES = {
     
     winnerText: {
         fontWeight: "bold",
-        fontSizeInPixels: 19, // 40% of 48px row height
+        fontSizeInPixels: 19,
         color: COLORS.WHITE,
     },
     
@@ -676,13 +669,13 @@ export const BRACKET_STYLES = {
         color: COLORS.WHITE,
         heightInPixels: 48,
         resizeToFit: true,
-        fontSizeInPixels: 19 // 40% of 48px
+        fontSizeInPixels: 19
     },
 
     matchVsText: {
         text: "← vs →",
         color: COLORS.GRAY,
-        fontSizeInPixels: 12, // 25% of 48px
+        fontSizeInPixels: 12,
         fontWeight: "bold",
         background: COLORS.WHITE,
         cornerRadius: 20
@@ -747,13 +740,13 @@ export const CARD_GAME_STYLES = {
     },
 
     cardsGrid: {
-        widthInPixels: 1248, // 65% of 1920
-        heightInPixels: 702, // Remaining space
+        widthInPixels: 1248,
+        heightInPixels: 702,
     },
 
     cardRect: {
-        widthInPixels: 195,  // Bigger - fits nicely in 1248/6 = 208px per column
-        heightInPixels: 165, // Bigger - fits nicely in 702/4 = 175.5px per row
+        widthInPixels: 195,
+        heightInPixels: 165,
         paddingInPixels: 5,
         thickness: 0,
         cornerRadius: 8,

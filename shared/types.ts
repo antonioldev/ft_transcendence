@@ -1,4 +1,4 @@
-import { MessageType, GameMode, Direction, ClientState, AuthState, PowerupType, AiDifficulty, PowerupState, GameState} from './constants.js';
+import { MessageType, GameMode, Direction, AuthState, PowerupType, AiDifficulty, PowerupState, GameState} from './constants.js';
 
 // ============================== SHARED TYPES  ==============================
 

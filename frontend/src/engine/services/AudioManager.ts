@@ -229,7 +229,7 @@ export class AudioManager {
 	}
 
 	resumeGameMusic(): void {
-		if (this.gameMusic?.isPlaying !== true )
+		if (this.gameMusic?.isPaused)
 			this.gameMusic?.play();
 	}
 
