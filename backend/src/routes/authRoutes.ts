@@ -32,6 +32,20 @@ export async function authGoogle(app: FastifyInstance) {
 			const user = validation.findOrCreateGoogleUser(payload as any);
 			if (!user) return reply.code(500).send({ error: 'Could not find or create user' });
 
+			const isActive = validation.isUserActive(user.username);
+			if (isActive) {
+				return reply.send({
+					success: false,
+					message: 'User already logged in from another device',
+					user: {
+						username: user.username,
+						email: user.email,
+					},
+				});
+			} else {
+				validation.setUserActiveStatus(user.username, true);
+			}
+
 			client.setInfo(user.username, user.email, '');
 			client.loggedIn = true;
 

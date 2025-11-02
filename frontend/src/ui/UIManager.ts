@@ -55,6 +55,28 @@ class UIManager {
 		userInfoContainer.style.display = 'none';
 	}
 
+	showLoginButtons(): void {
+		const loginBtn = document.getElementById(EL.BUTTONS.LOGIN);
+		const registerBtn = document.getElementById(EL.BUTTONS.REGISTER);
+		if (loginBtn) {
+			loginBtn.style.display = 'block';
+		}
+		if (registerBtn) {
+			registerBtn.style.display = 'block';
+		}
+	}
+
+	hideLoginButtons(): void {
+		const loginBtn = document.getElementById(EL.BUTTONS.LOGIN);
+		const registerBtn = document.getElementById(EL.BUTTONS.REGISTER);
+		if (loginBtn) {
+			loginBtn.style.display = 'none';
+		}
+		if (registerBtn) {
+			registerBtn.style.display = 'none';
+		}
+	}
+
 	showUserInfo(username: string): void {
 		const authButtons = requireElementById(EL.DISPLAY.AUTH_BUTTONS);
 		const userInfo = requireElementById(EL.DISPLAY.USER_INFO);

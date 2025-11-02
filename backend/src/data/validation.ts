@@ -10,6 +10,10 @@ export async function verifyLogin(username: string, password: string): Promise<n
 	let userExists = false;
 	let user_email = '';
 
+	if (username.trim() === 'CPU') {
+		return AuthCode.UNAUTHORIZED;
+	}
+
 	if (isEmail) {
 		// Check by email
 		const existsResult = dbFunction.userExist(undefined, undefined, username);
@@ -31,13 +35,16 @@ export async function verifyLogin(username: string, password: string): Promise<n
 	console.log('verifyLogin: comparing given password with stored hash', password, storedPwd);
 
 	const isMatch = await verifyPassword(storedPwd, password);
+	console.log(`isMatch = ${isMatch}`)
 	if (!isMatch) return AuthCode.BAD_CREDENTIALS;
 
-	const userId = dbFunction.retrieveUserID(username);
-	const sid = dbFunction.createSession(userId);
-	if (!sid) {
-		console.log(`verifyLogin: failed to create session, sid=${sid}`);
+	const userId = dbFunction.isActive(username);
+	if (userId) {
+		console.log("verifyLogin: user already logged in");
 		return AuthCode.ALREADY_LOGIN;
+	} else {
+		dbFunction.setActiveStatus(username, true);
+		console.log("verifyLogin: user set as active");
 	}
 
 	return AuthCode.OK;
@@ -54,15 +61,9 @@ export async function logoutUser(username: string): Promise<number> {
 		return 0;
 	}
 
-	const userId = dbFunction.retrieveUserID(username);
-	if (userId === -1) {
-		console.log('logoutUser: failed to get userId');
-		return 0;
-	}
-
 	try {
-		dbFunction.deleteSessionLogout(userId);
-		console.log('logoutUser: success');
+		dbFunction.setActiveStatus(username, false);
+		console.log('logoutUser: success and set back to inactive');
 		return 1;
 	} catch (err) {
 		console.error('logoutUser: error deleting session', err);
@@ -70,6 +71,14 @@ export async function logoutUser(username: string): Promise<number> {
 	}
 }
 
+export function isUserActive(username: string) {
+	const userId = dbFunction.isActive(username);
+	return userId !== 0;
+}
+
+export function setUserActiveStatus(username: string, status: boolean) {
+	dbFunction.setActiveStatus(username, status);
+}
 // /**
 //  * Get user info from a session id.
 //  */
@@ -149,6 +158,7 @@ export function getUserStats(username: string): UserStats | undefined {
 	const winRatio = games > 0 ? victories / games : 0;
 	const tournamentsPlayed = dbFunction.getUserNbTournament(userId);
 	const tournamentWins = dbFunction.getUserNbTournamentWin(userId);
+	const tournamentLosses = tournamentsPlayed - tournamentWins;
 	const tournamentWinRatio = tournamentsPlayed > 0 ? tournamentWins / tournamentsPlayed : 0;
 
 	return {
@@ -158,7 +168,8 @@ export function getUserStats(username: string): UserStats | undefined {
 		winRatio,
 		tournamentsPlayed,
 		tournamentWins,
-		tournamentWinRatio,
+		tournamentLosses,
+		tournamentWinRatio
 	};
 }
 
@@ -181,8 +192,7 @@ export function getGameHistoryForUser(username: string): GameHistoryEntry[] | un
 		opponent: r.opponent ?? 'error',
 		score: r.yourScore != null && r.opponentScore != null ? `${r.yourScore} - ${r.opponentScore}` : 'error',
 		result: r.didWin == null ? 'error' : r.didWin ? 'Win' : 'Loss',
-		isTournament: r.isTournament ? 'No' : 'Yes',
-		duration: r.durationSeconds ?? 999,
+		isTournament: r.isTournament ? 'Yes' : 'No',
 	}));
 }
 
@@ -221,6 +231,7 @@ export function registerNewGame(gameId: string, playerUsername: string, tourname
 	}
 
 	const dbGameId = dbFunction.createNewGame(gameId, playerId, tournament);
+	console.log(`[VALIDATION.TS] registerNewGame: Game created with id=${dbGameId} for player=${playerUsername}`);
 	return dbGameId !== -1;
 }
 
@@ -263,17 +274,16 @@ export function saveGameResult(
 	player2Name: string,
 	player1Score: number,
 	player2Score: number,
-	endTime: number
 ): boolean {
 	const player1Id = dbFunction.retrieveUserID(player1Name);
 	const player2Id = dbFunction.retrieveUserID(player2Name);
 
 	if (player1Id === -1 || player2Id === -1) {
-		console.error('saveGameResult: player1 or player2 not found');
+		console.error(`[VALIDATION.TS] saveGameResult: player1(${player1Name}) or player2(${player2Name}) not found`);
 		return false;
 	}
 	if (!dbFunction.gameExist(gameId)) {
-		console.error('saveGameResult: game not found');
+		console.error(`[VALIDATION.TS] saveGameResult: game ${gameId} not found`);
 		return false;
 	}
 
@@ -286,8 +296,7 @@ export function saveGameResult(
 		player1Score,
 		player2Score,
 		winnerId,
-		looserId,
-		endTime
+		looserId
 	);
 
 	if (!updated) {
@@ -308,6 +317,7 @@ export function saveGameResult(
  * Update stats for winner and loser.
  */
 export function updatePlayers(winnerId: number, looserId: number, tournament: number) {
+	console.log(`[VALIDATION.TS] UpdatingPlayers: winnerId=${winnerId}, looserId=${looserId}, tournament=${tournament}`);
 	dbFunction.updateUserGame(winnerId, 1);
 	dbFunction.updateUserVictory(winnerId, 1);
 	dbFunction.updateUserGame(looserId, 1);

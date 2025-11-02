@@ -55,6 +55,7 @@ export const english: Translation = {
     dontHaveAccount: "Don't have an account?",
     alreadyHaveAccount: 'Already have an account?',
     availableOnlyOffline: 'Available only in offline mode',
+    unauthorizedAccess: 'Unauthorized access attempt detected',
     loginRequired: 'Login required',
     logout: 'Logout',
     tournamentOnline: 'Tournament Online',
@@ -83,6 +84,7 @@ export const english: Translation = {
     errorEnterEmail: 'Please enter an email',
     errorEnterValidEmail: 'Please enter a valid email',
     errorPasswordMinLength: 'Password must be at least 6 characters',
+    errorPasswordComplexity: 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
     errorConfirmPassword: 'Please confirm password',
     errorPasswordsDoNotMatch: 'Passwords do not match',
 
