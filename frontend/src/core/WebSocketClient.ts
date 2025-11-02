@@ -157,10 +157,7 @@ export class WebSocketClient {
     }
 
     private sendMessage(type: MessageType, data: any = {}): void {
-        if (!this.isConnected()) {
-            Logger.warn(`Cannot send ${type}: WebSocket not connected`, 'WebSocketClient');
-            return;
-        }
+        if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
 
         const message: ClientMessage = { type, ...data };
 

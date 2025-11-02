@@ -457,7 +457,7 @@ export const COUNTDOWN_STYLES = {
 export const VIEW_MODE_STYLES = {
     dividerLine: {
         widthInPixels: 5,
-        heightInPixels: 1080,
+        height: "100%",
         background: COLORS.BLACK,
         zIndex: Z_INDEX.GAMEPLAY,
         thickness: 0

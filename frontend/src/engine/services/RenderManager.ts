@@ -57,15 +57,10 @@ export class RenderManager {
 
 // ====================			CAMERA MANAGEMENT		 ====================
 	updateActiveCameras(viewMode: ViewMode, controlledSides: number[], isLocalMultiplayer: boolean): void {
-		if (!this.scene || !this.gameObjects?.cameras || viewMode === ViewMode.MODE_2D) return;
+		if (!this.scene || !this.gameObjects?.cameras || viewMode === ViewMode.MODE_2D || isLocalMultiplayer) return;
 
 		const cameras = this.gameObjects.cameras;
 		const guiCamera = this.gameObjects.guiCamera;
-
-		if (isLocalMultiplayer) {
-			this.scene.activeCameras = [cameras[0], cameras[1], guiCamera];
-			return;
-		}
 
 		const activeGameCamera = controlledSides.includes(1) ? cameras[1] : cameras[0];
 

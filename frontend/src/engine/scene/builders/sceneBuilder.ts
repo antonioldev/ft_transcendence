@@ -79,7 +79,8 @@ async function buildCoreGameObjects(scene: Scene, gameMode: GameMode, viewMode: 
 	cameras = createCameras(scene, "camera", viewMode, gameMode);
 	const guiCamera = createGuiCamera(scene, "guiCamera");
 
-	if (viewMode === ViewMode.MODE_2D) {
+	const isLocalMultiplayer = gameMode === GameMode.TOURNAMENT_LOCAL || gameMode === GameMode.TWO_PLAYER_LOCAL;
+	if (viewMode === ViewMode.MODE_2D || isLocalMultiplayer) {
 		const allCameras = [...cameras, guiCamera];
 		scene.activeCameras = allCameras;
 	}
@@ -124,7 +125,7 @@ async function buildThematicEnvironment(
 	themeObjects: ThemeObject,
 	onProgress?: LoadingProgressCallback
 ): Promise<void> {
-	createSky(scene, map_asset.skybox);
+	await createSky(scene, map_asset.skybox);
 	if (map_asset.terrain)
 		createTerrain(scene, "terrain", map_asset.terrain, map_asset);
 
