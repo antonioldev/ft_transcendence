@@ -54,7 +54,7 @@ export const GAME_CONFIG = {
 	ballInitialSpeed: 10, // Initial speed of the ball
 	ballMaxAngle: Math.PI / 4, // Maximum angle of the ball trajectory
 	ballMinAngle: Math.PI / 12, // Minimum angle of the ball trajectory
-	ballSpeedIncrease: 0.5, // Speed step increase after paddle hit
+	ballSpeedIncrease: 0.7, // Speed step increase after paddle hit
 	maxBallSpeed: 18,	   // Maximum ball speed
 	
 	// Wall collision boundaries (accounting for ball radius)

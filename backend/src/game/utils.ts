@@ -134,5 +134,4 @@ export function rotate(vec: [number, number], angleRad: number): [number, number
 	const sin = Math.sin(angleRad);
 
 	return [(vec[0] * cos - vec[1] * sin), (vec[0] * sin + vec[1] * cos)];
-
 }
