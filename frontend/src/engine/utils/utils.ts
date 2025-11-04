@@ -67,32 +67,35 @@ export function randomFromRange(min: number, max: number): number {
 export function randomFromArray(arr: string[]): string {
 	return arr[Math.floor(Math.random() * arr.length)];
 }
-
 export function detectQuality(): Quality {
 	if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent))
 		return Quality.MEDIUM;
 
 	const canvas = document.createElement('canvas');
-	const gl = canvas.getContext('webgl') as WebGLRenderingContext | null;
+	const gl2 = canvas.getContext('webgl2') as WebGL2RenderingContext | null;
+	const gl = gl2 || (canvas.getContext('webgl') as WebGLRenderingContext | null);
 
-	if (!gl)
-		return Quality.LOW;
+	if (!gl) return Quality.LOW;
 
-	if (canvas.getContext('webgl2'))
-		return Quality.HIGH;
+	let maxTextureSize = 0;
+	// let maxVarying = 0;
+	let renderer = '';
 
-	const maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
-	const maxVaryingVectors = gl.getParameter(gl.MAX_VARYING_VECTORS);
+	try {
+		maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE) || 0;
+	} catch (e) {
+	}
 
-	if (maxTextureSize >= 8192 && maxVaryingVectors >= 8)
-		return Quality.HIGH;
-	if (maxTextureSize >= 4096 && maxVaryingVectors >= 4)
-		return Quality.MEDIUM;
+	const deviceMemory = (navigator as any).deviceMemory || 0;
+	const weakGpu = /intel|mali|powervr|mediatek|llvmpipe|softpipe|mesa|apple/i.test(renderer);
+
+	if (maxTextureSize >= 8192 && deviceMemory >= 4 && !weakGpu) return Quality.HIGH;
+	if (maxTextureSize >= 4096 && deviceMemory >= 2 && !weakGpu) return Quality.MEDIUM;
 	return Quality.LOW;
 }
 
 export function applyQualitySettings(engine: Engine, quality: Quality): void {
-	switch(quality) {
+	switch(quality){
 		case Quality.LOW:
 			engine.setHardwareScalingLevel(1.5);
 			break;

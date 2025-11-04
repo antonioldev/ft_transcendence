@@ -1,6 +1,6 @@
 import { ViewMode, Quality } from "./constants";
 import { GameMode, AiDifficulty } from "../shared/constants";
-import { Powerup } from "../shared/types";
+import type { Powerup } from "../shared/types";
 import { FreeCamera, Light, Mesh } from "@babylonjs/core";
 
 export interface GameSetting {

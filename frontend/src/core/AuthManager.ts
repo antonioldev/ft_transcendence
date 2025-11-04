@@ -319,8 +319,9 @@ export class AuthManager {
         }
 
         if (password !== confirmPassword) {
-            uiManager.showError(translation.passwordsDoNotMatch);
-            uiManager.clearForm(this.registrationFields);
+            this.showFieldError('register-password', translation.passwordsDoNotMatch);
+            // alert(translation.passwordsDoNotMatch);
+            // uiManager.clearForm(this.registrationFields);
             return;
         }
 
@@ -392,7 +393,6 @@ export class AuthManager {
             }
         }
     }
-
 
 	// Prepares and initializes Google Sign-In for the application
 	private prepareGoogleLogin(): void {

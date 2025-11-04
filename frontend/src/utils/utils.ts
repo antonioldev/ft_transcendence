@@ -15,15 +15,15 @@ export function getMinPlayersForCpu(tournamentSize: number): number {
 	return MIN_PLAYERS_FOR_CPU[tournamentSize];
 }
 
-// Returns minimum players required to start a game mode (for validation)
-export function getMinPlayersRequired(gameMode: GameMode): number {
-	switch (gameMode) {
-		case GameMode.SINGLE_PLAYER:
-			return 1;
-		case GameMode.TWO_PLAYER_LOCAL:
-		case GameMode.TOURNAMENT_LOCAL:
-			return 2;
-		default:
-			return 1;
-	}
-}
+// // Returns minimum players required to start a game mode (for validation)
+// export function getMinPlayersRequired(gameMode: GameMode): number {
+// 	switch (gameMode) {
+// 		case GameMode.SINGLE_PLAYER:
+// 			return 1;
+// 		case GameMode.TWO_PLAYER_LOCAL:
+// 		case GameMode.TOURNAMENT_LOCAL:
+// 			return 2;
+// 		default:
+// 			return 1;
+// 	}
+// }
