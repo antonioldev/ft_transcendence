@@ -65,7 +65,7 @@ export class Ball {
         
         // calculate the angle of defelction relative to the paddle intersection
         const angle_sign = (paddle_intercept >  0) ? 1 : -1;
-        const angle_magnitude = Math.max(Math.abs(normalized_intercept * GAME_CONFIG.ballMaxAngle), GAME_CONFIG.ballMinAngle);
+        const angle_magnitude = Math.min(Math.max(Math.abs(normalized_intercept * GAME_CONFIG.ballMaxAngle), GAME_CONFIG.ballMinAngle), GAME_CONFIG.ballMaxAngle);
         const deflection_angle = angle_magnitude * angle_sign;
 
         // apply the angle to the ball's direction vector
