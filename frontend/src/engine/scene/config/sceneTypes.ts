@@ -1,5 +1,6 @@
 import { Color3 } from "@babylonjs/core";
-import { ParticleEffectType } from "./effectSceneConfig";
+import { Color4, Vector3 } from "@babylonjs/core";
+import type { ParticleEffectType } from "./sceneConst";
 
 export type StaticObject = {
 	model: string;
@@ -41,10 +42,48 @@ export type MapAssetConfig = {
 	actors: ActorConfig[];
 };
 
-export enum MAP_OBJECT_TYPE {
-	GROUND,
-	WALLS,
-	TERRAIN,
-	PLAYER,
-	BALL
+export type ParticleConfig = {
+	name: string;
+	capacity: number;
+	texturePath: string;
+	emitter: {
+		position: Vector3;
+		minBox: Vector3;
+		maxBox: Vector3;
+	};
+	direction: {
+		dir1: Vector3;
+		dir2: Vector3;
+	};
+	size: {
+		min: number;
+		max: number;
+	};
+	lifetime: {
+		min: number;
+		max: number;
+	};
+	emitRate: number;
+	color: {
+		color1: Color4;
+		color2: Color4;
+		colorDead?: Color4;
+	};
+	gravity: Vector3;
+	angularSpeed?: {
+		min: number;
+		max: number;
+	};
+	blendMode?: number;
+	autoStart?: boolean;
 }
+
+type ThemeActor = { update: (dt: number) => void; dispose: () => void };
+type ThemeEffect = { dispose: () => void };
+
+export type ThemeObject = {
+  props: any[];         // static meshes
+  actors: ThemeActor[]; // moving things
+  effects: ThemeEffect[]; // glow layer, particle systems, post-process, etc.
+};
+

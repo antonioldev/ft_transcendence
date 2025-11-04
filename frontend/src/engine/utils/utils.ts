@@ -78,7 +78,6 @@ export function detectQuality(): Quality {
 	if (!gl) return Quality.LOW;
 
 	let maxTextureSize = 0;
-	// let maxVarying = 0;
 	let renderer = '';
 
 	try {
@@ -86,11 +85,13 @@ export function detectQuality(): Quality {
 	} catch (e) {
 	}
 
-	const deviceMemory = (navigator as any).deviceMemory || 0;
+	// const deviceMemory = (navigator as any).deviceMemory || 0;
 	const weakGpu = /intel|mali|powervr|mediatek|llvmpipe|softpipe|mesa|apple/i.test(renderer);
 
-	if (maxTextureSize >= 8192 && deviceMemory >= 4 && !weakGpu) return Quality.HIGH;
-	if (maxTextureSize >= 4096 && deviceMemory >= 2 && !weakGpu) return Quality.MEDIUM;
+	// if (maxTextureSize >= 8192 && deviceMemory >= 4 && !weakGpu) return Quality.HIGH;
+	// if (maxTextureSize >= 4096 && deviceMemory >= 2 && !weakGpu) return Quality.MEDIUM;
+	if (maxTextureSize >= 8192 && !weakGpu) return Quality.HIGH;
+	if (maxTextureSize >= 4096 && !weakGpu) return Quality.MEDIUM;
 	return Quality.LOW;
 }
 

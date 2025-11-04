@@ -2,7 +2,7 @@ import { Color3, Color4, Material, Mesh, MeshBuilder, Scene, StandardMaterial, V
 import { GAME_CONFIG } from '../../../shared/gameConfig.js';
 import { PlayerSide } from "../../../utils/constants.js";
 
-export function createPaddleGlow(scene: Scene, name: string, size: Vector3, parent: any): any {
+export function createPaddleGlow(scene: Scene, name: string, size: Vector3, parent: Mesh): Mesh {
 	const radius = (size.z / 2) * 1.01;
 	const height = size.x * 1.01;
 
@@ -22,7 +22,7 @@ export function createPaddleGlow(scene: Scene, name: string, size: Vector3, pare
 	return shell;
 }
 
-export function createPaddleCage(scene: Scene, name: string, size: Vector3, parent: any): any {
+export function createPaddleCage(scene: Scene, name: string, size: Vector3, parent: Mesh): Mesh {
 	const cageRadius = (size.z / 2) * 1.1;
 	const cageHeight = size.x * 1;
 
@@ -50,7 +50,7 @@ export function createPaddleCage(scene: Scene, name: string, size: Vector3, pare
 	return cage;
 }
 
-export function createBallEffects(scene: Scene, ball: any, index: number) {
+export function createBallEffects(scene: Scene, ball: Mesh, index: number) {
 	const ballGlow = createBallGlow(scene, `ball${index}Glow`);
 	ballGlow.parent = ball;
 	
@@ -82,7 +82,7 @@ function createBallCage(scene: Scene, name: string): Mesh {
 	return cage;
 }
 
-function createBallGlow(scene: Scene, name: string): any {
+function createBallGlow(scene: Scene, name: string): Mesh {
 
 	const diameter = (GAME_CONFIG.ballRadius * 2) * 1.2;
 	const cage = MeshBuilder.CreateSphere(name, {diameter}, scene);
@@ -101,7 +101,7 @@ function createBallGlow(scene: Scene, name: string): any {
 }
 
 
-export function createWallGlowEffect(scene: Scene, name: string, side: PlayerSide): any {
+export function createWallGlowEffect(scene: Scene, name: string, side: PlayerSide): Mesh {
 
 	const w = GAME_CONFIG.fieldWidth * 0.95;
 	const wall_h = GAME_CONFIG.wallHeight * 0.95;

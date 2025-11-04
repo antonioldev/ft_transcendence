@@ -29,14 +29,14 @@ export interface PlayerState {
 }
 
 export interface Effects {
-	leftGlow: any;
-	rightGlow: any;
-	leftCage: any;
-	rightCage: any;
-	ballsGlow: any[];
-	ballsFreeze: any[];
-	leftShield: any;
-	rightShield: any;
+	leftGlow: Mesh;
+	rightGlow: Mesh;
+	leftCage: Mesh;
+	rightCage: Mesh;
+	ballsGlow: Mesh[];
+	ballsFreeze: Mesh[];
+	leftShield: Mesh;
+	rightShield: Mesh;
 }
 
 export interface Players {
@@ -57,16 +57,6 @@ export interface CoreGameObjects {
 export interface GameObjects extends CoreGameObjects {
     effects: Effects;
 }
-
-type ThemeActor = { update: (dt: number) => void; dispose: () => void };
-type ThemeEffect = { dispose: () => void };
-
-export type ThemeObject = {
-  props: any[];         // static meshes (trees/bushes now; wreck/rocks later)
-  actors: ThemeActor[]; // moving things later (clouds, fish, bubbles)
-  effects: ThemeEffect[]; // glow layer, particle systems, post-process, etc.
-};
-
 
 type MoveKeys = { left: number; right: number; };
 type PowerKeys = { k1: number; k2: number; k3: number };

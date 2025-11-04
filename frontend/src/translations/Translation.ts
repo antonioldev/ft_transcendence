@@ -78,6 +78,7 @@ export interface Translation {
     miniGameRules: string;
     
     // Validation error messages
+    usernameNotValid: string;
     errorEnterEmailOrUsername: string;
     errorEnterPassword: string;
     errorEnterUsername: string;

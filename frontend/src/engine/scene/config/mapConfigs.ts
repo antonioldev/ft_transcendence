@@ -1,7 +1,7 @@
 import { Color3 } from "@babylonjs/core";
-import { MAP_OBJECT_TYPE } from "./sceneTypes.js";
+import { MAP_OBJECT_TYPE } from "./sceneConst.js";
 import type { MapAssetConfig, StaticObject } from "./sceneTypes.js";
-import { ParticleEffectType } from "./effectSceneConfig.js";
+import { ParticleEffectType } from "../config/sceneConst.js";
 
 import mapLinesRaw from "../data/staticObjects/map.json";
 const mapLines = mapLinesRaw as {

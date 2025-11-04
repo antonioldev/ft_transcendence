@@ -2,8 +2,9 @@ import { Color3, Mesh, MeshBuilder, Scene, StandardMaterial, Vector3 } from "@ba
 import { GridMaterial } from "@babylonjs/materials";
 import { ViewMode } from '../../../utils/constants.js';
 import { GAME_CONFIG } from '../../../shared/gameConfig.js';
-import { Size } from '../../../shared/types.js';
-import { MAP_OBJECT_TYPE, MapAssetConfig, TextureSet } from "../config/sceneTypes.js";
+import type { Size } from '../../../shared/types.js';
+import { MAP_OBJECT_TYPE } from "../config/sceneConst.js";
+import type { MapAssetConfig, TextureSet } from "../config/sceneTypes.js";
 import { createMaterial, getStandardTextureScale } from "../builders/materialsBuilder.js";
 import { MAP_CONFIGS } from "../config/mapConfigs.js";
 

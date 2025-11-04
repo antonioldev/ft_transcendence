@@ -1,6 +1,6 @@
 import { Color3, Color4, CreateSphere, LensFlare, LensFlareSystem, ParticleSystem, Scene, Sprite, SpriteManager, Texture, Vector3 } from "@babylonjs/core";
-import { PARTICLE_CONFIGS, ParticleEffectType, ParticleTexturePath } from "../config/effectSceneConfig.js";
-
+import { PARTICLE_CONFIGS, ParticleTexturePath } from "../config/effectSceneConfig.js";
+import { ParticleEffectType } from "../config/sceneConst.js";
 
 export function createSmokeSprite(scene: Scene): SpriteManager {
 	const smokeManager = new SpriteManager("playerManager", ParticleTexturePath.CANDLE_SMOKE, 4, {width: 1024/20, height:512/4}, scene);

@@ -4,10 +4,9 @@ import { AiDifficulty, GameMode, GameState } from '../shared/constants.js';
 import { getCurrentTranslation, updateLanguageDisplay } from '../translations/translations.js';
 import { EL, requireElementById } from '../ui/elements.js';
 import { uiManager } from '../ui/UIManager.js';
-import { AppState, BUTTON_NAV, GAME_MODE_CONFIG, Quality, TOURNAMENT_SIZES, ViewMode } from '../utils/constants.js';
+import { AppState, BUTTON_NAV, GAME_MODE_CONFIG, MIN_PLAYERS_FOR_CPU, Quality, TOURNAMENT_SIZES, ViewMode } from '../utils/constants.js';
 import { Logger } from '../utils/LogManager.js';
 import type { GameSetting } from '../utils/types.js';
-import { getMaxPlayers, getMinPlayersForCpu } from '../utils/utils.js';
 import { authManager } from './AuthManager.js';
 import { dashboardManager } from './DashboardManager.js';
 
@@ -265,11 +264,10 @@ export class AppManager {
 	}
 
 	private handleAddCpuClick(): void {
-		if (!this.isCollectingPlayerNames || currentSettings.gameMode !== GameMode.TOURNAMENT_LOCAL) {
+		if (!this.isCollectingPlayerNames || currentSettings.gameMode !== GameMode.TOURNAMENT_LOCAL)
 			return;
-		}
 
-		const minPlayers = getMinPlayersForCpu(currentSettings.offlineTournamentSize);
+		const minPlayers = MIN_PLAYERS_FOR_CPU[currentSettings.offlineTournamentSize];
 		if (this.playerNames.length < minPlayers) {
 			alert(`Need at least ${minPlayers} players to add CPU.`);
 			return;
@@ -382,6 +380,7 @@ export class AppManager {
 	private handlePlayerInputSubmission(): void {
 		const input = requireElementById<HTMLInputElement>(EL.PLAYER_COLLECTION.INPUT);
 		const name = (input?.value ?? '').trim();
+		const t = getCurrentTranslation();
 		
 		if (!name) {
 			input?.focus();
@@ -389,7 +388,7 @@ export class AppManager {
 		}
 
 		if (this.playerNames.includes(name)) {
-			alert('Name already used. Choose different name.');
+			alert(t.usernameNotValid);
 			if (input) {
 				input.value = '';
 				input.focus();
@@ -408,6 +407,14 @@ export class AppManager {
 		this.updatePlayerCollectionUI();
 	}
 
+	private getMaxPlayers(gameMode: GameMode, tournamentSize?: number): number {
+	switch (gameMode) {
+		case GameMode.TWO_PLAYER_LOCAL: return 2;
+		case GameMode.TOURNAMENT_LOCAL: return tournamentSize ?? 4;
+		default: return 1;
+	}
+}
+
 	private beginPlayerCollection(gameMode: GameMode): void {
 		this.isCollectingPlayerNames = true;
 		this.playerIndex = 0;
@@ -415,7 +422,7 @@ export class AppManager {
 		
 		const tournamentSize = gameMode === GameMode.TOURNAMENT_LOCAL
 			? currentSettings.offlineTournamentSize : currentSettings.onlineTournamentSize;
-		this.maxPlayersNeeded = getMaxPlayers(gameMode, tournamentSize);
+		this.maxPlayersNeeded = this.getMaxPlayers(gameMode, tournamentSize);
 		
 		this.updatePlayerCollectionUI();
 	}
@@ -434,7 +441,7 @@ export class AppManager {
 		nextButton.textContent = isLastPlayer ? t.startGame : t.next;
 
 		if (currentSettings.gameMode === GameMode.TOURNAMENT_LOCAL) {
-			const canAddCpu = this.playerNames.length >= getMinPlayersForCpu(currentSettings.offlineTournamentSize);
+			const canAddCpu = this.playerNames.length >= MIN_PLAYERS_FOR_CPU[currentSettings.offlineTournamentSize];
 			addCpuButton.style.display = 'block';
 			addCpuButton.style.opacity = canAddCpu ? '1' : '0.5';
 			addCpuButton.disabled = !canAddCpu;

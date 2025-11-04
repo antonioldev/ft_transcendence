@@ -1,11 +1,12 @@
 import { FreeCamera, GlowLayer, Mesh, Scene } from "@babylonjs/core";
 import { GameMode } from '../../../shared/constants.js';
 import { ViewMode } from '../../../utils/constants.js';
-import type { Effects, GameObjects, Players, ThemeObject } from '../../../utils/types.js';
+import type { Effects, GameObjects, Players } from '../../../utils/types.js';
+import type { ThemeObject } from "../config/sceneTypes.js";
 import { Logger } from '../../../utils/LogManager.js';
 import type { GameConfig } from '../../GameInitializer.js';
 import { getBallStartPosition, getPlayerLeftPosition, getPlayerRightPosition, getPlayerSize } from '../../utils/utils.js';
-import { ParticleEffectType } from "../config/effectSceneConfig.js";
+import { ParticleEffectType } from "../config/sceneConst.js";
 import { PlayerSide } from "../../../utils/constants.js";
 import { MAP_CONFIGS } from "../config/mapConfigs.js";
 import type { MapAssetConfig } from "../config/sceneTypes.js";

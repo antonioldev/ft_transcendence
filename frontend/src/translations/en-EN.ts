@@ -1,4 +1,4 @@
-import { Translation } from './Translation.js';
+import type { Translation } from './Translation.js';
 
 export const english: Translation = {
     classicMode: 'Classic 2D',
@@ -78,6 +78,7 @@ export const english: Translation = {
 	spectatorQuestion: 'Do you want to watch the rest of the tournament? Press Y, or press N to exit',
     
     // Validation error messages
+    usernameNotValid: 'Name already used. Choose different name.',
     errorEnterEmailOrUsername: 'Please enter email or username',
     errorEnterPassword: 'Please enter password',
     errorEnterUsername: 'Please enter a username',

@@ -1,4 +1,4 @@
-import { Translation } from './Translation.js';
+import type { Translation } from './Translation.js';
 
 export const italian: Translation = {
     classicMode: 'Modalità Classica',
@@ -74,6 +74,7 @@ export const italian: Translation = {
 	escToClose: 'Premere ESC per chiudere',
     miniGameRules: 'Trova tutte le coppie corrispondenti! Gioca mentre gli altri finiscono le loro partite.',
     // Validation error messages
+    usernameNotValid: 'Nome già in uso. Scegli un nome diverso.',
     errorEnterEmailOrUsername: 'Inserisci email o nome utente',
     errorEnterPassword: 'Inserisci password',
     errorEnterUsername: 'Inserisci un nome utente',

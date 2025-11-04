@@ -8,7 +8,8 @@ import type { GameStateData, PlayerInfo, ServerMessage } from '../shared/types.j
 import { uiManager } from '../ui/UIManager.js';
 import { AppState, KeyboardMode, PlayerSide } from '../utils/constants.js';
 import { Logger } from '../utils/LogManager.js';
-import type { GameObjects, PlayerState, ThemeObject } from '../utils/types.js';
+import type { GameObjects, PlayerState } from '../utils/types.js';
+import type { ThemeObject } from "./scene/config/sceneTypes.js";
 import type { GameConfig } from './GameInitializer.js';
 import { GameServices } from "./GameServices.js";
 import { startFireworks } from "./scene/builders/effectsBuilder.js";

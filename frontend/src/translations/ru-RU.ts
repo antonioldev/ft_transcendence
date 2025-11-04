@@ -1,4 +1,4 @@
-import { Translation } from './Translation.js';
+import type { Translation } from './Translation.js';
 
 export const russian: Translation = {
     classicMode: 'Классический режим',
@@ -74,6 +74,7 @@ export const russian: Translation = {
 	escToClose: 'Нажмите ESC для закрытия',
     miniGameRules: 'Найдите все подходящие пары! Играйте, пока другие заканчивают свои игры.',
     // Validation error messages
+    usernameNotValid: 'Имя уже используется. Выберите другое имя.',
     errorEnterEmailOrUsername: 'Пожалуйста, введите имейл или имя пользователя',
     errorEnterPassword: 'Пожалуйста, введите пароль',
     errorEnterUsername: 'Пожалуйста, введите имя пользователя',

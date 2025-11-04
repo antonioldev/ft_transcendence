@@ -1,7 +1,7 @@
 import { Color3, Scene, StandardMaterial, Texture } from "@babylonjs/core";
 import { ViewMode, Quality } from '../../../utils/constants.js';
 import { TEXTURE_SCALING } from '../config/mapConfigs.js';
-import { MAP_OBJECT_TYPE } from '../config/sceneTypes.js';
+import { MAP_OBJECT_TYPE } from '../config/sceneConst.js';
 import type { TextureSet } from "../config/sceneTypes.js";
 import { LavaMaterial } from "@babylonjs/materials";
 import { currentSettings } from "../../../core/AppManager.js";
