@@ -67,33 +67,31 @@ export function randomFromRange(min: number, max: number): number {
 export function randomFromArray(arr: string[]): string {
 	return arr[Math.floor(Math.random() * arr.length)];
 }
-export function detectQuality(): Quality {
-	if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent))
-		return Quality.MEDIUM;
 
-	const canvas = document.createElement('canvas');
-	const gl2 = canvas.getContext('webgl2') as WebGL2RenderingContext | null;
-	const gl = gl2 || (canvas.getContext('webgl') as WebGLRenderingContext | null);
+// export function detectQuality(): Quality {
+// 	if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent))
+// 		return Quality.MEDIUM;
 
-	if (!gl) return Quality.LOW;
+// 	const canvas = document.createElement('canvas');
+// 	const gl2 = canvas.getContext('webgl2') as WebGL2RenderingContext | null;
+// 	const gl = gl2 || (canvas.getContext('webgl') as WebGLRenderingContext | null);
 
-	let maxTextureSize = 0;
-	let renderer = '';
+// 	if (!gl) return Quality.LOW;
 
-	try {
-		maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE) || 0;
-	} catch (e) {
-	}
+// 	let maxTextureSize = 0;
+// 	let renderer = '';
 
-	// const deviceMemory = (navigator as any).deviceMemory || 0;
-	const weakGpu = /intel|mali|powervr|mediatek|llvmpipe|softpipe|mesa|apple/i.test(renderer);
+// 	try {
+// 		maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE) || 0;
+// 	} catch (e) {
+// 	}
 
-	// if (maxTextureSize >= 8192 && deviceMemory >= 4 && !weakGpu) return Quality.HIGH;
-	// if (maxTextureSize >= 4096 && deviceMemory >= 2 && !weakGpu) return Quality.MEDIUM;
-	if (maxTextureSize >= 8192 && !weakGpu) return Quality.HIGH;
-	if (maxTextureSize >= 4096 && !weakGpu) return Quality.MEDIUM;
-	return Quality.LOW;
-}
+// 	const weakGpu = /intel|mali|powervr|mediatek|llvmpipe|softpipe|mesa|apple/i.test(renderer);
+
+// 	if (maxTextureSize >= 8192 && !weakGpu) return Quality.HIGH;
+// 	if (maxTextureSize >= 4096 && !weakGpu) return Quality.MEDIUM;
+// 	return Quality.LOW;
+// }
 
 export function applyQualitySettings(engine: Engine, quality: Quality): void {
 	switch(quality){

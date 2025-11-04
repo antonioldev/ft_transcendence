@@ -16,7 +16,7 @@ import { startFireworks } from "./scene/builders/effectsBuilder.js";
 import { disposeMaterialResources } from "./scene/builders/materialsBuilder.js";
 import { buildScene } from './scene/builders/sceneBuilder.js';
 import { Motion } from "./services/AnimationManager.js";
-import { applyQualitySettings, detectQuality } from "./utils/utils.js";
+import { applyQualitySettings } from "./utils/utils.js";
 
 /**
  * The Game class serves as the core of the game engine, managing the initialization,
@@ -88,7 +88,6 @@ export class Game {
 		Logger.info('Initializing game...', 'Game');
 
 		this.engine = await this.initializeBabylonEngine();
-		// currentSettings.quality = detectQuality();
 		applyQualitySettings(this.engine, currentSettings.quality);
 		Logger.info(`Detected quality level: ${currentSettings.quality}`, 'Game');
 		this.scene = await this.createScene();
@@ -135,7 +134,6 @@ export class Game {
 	// Create scene based on view mode
 	private async  createScene(): Promise<Scene> {
 		const scene = new Scene(this.engine!);
-		// scene.createDefaultEnvironment({ createGround: false, createSkybox: false });
 		scene.clearColor = new Color4(20/255, 61/255, 96/255, 1);
 		return scene;
 	}
@@ -383,6 +381,8 @@ export class Game {
 		this.isPaused = !this.isPaused;
 		this.services?.handlePause(this.isPaused, this.isSpectator);
 
+		if (this.config.isRemoteMultiplayer) return;
+		
 		if (this.isPaused)
 			webSocketClient.sendPauseRequest();
 		else

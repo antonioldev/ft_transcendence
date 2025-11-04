@@ -268,30 +268,30 @@ export const PAUSE_MENU_STYLES = {
         textWrapping: true
     },
 
-    spectatorPauseBox: {
-        widthInPixels: 400,
-        heightInPixels: 100,
-        background: COLORS.TRANSPARENT_BLACK,
-        thickness: 3,
-        color: COLORS.SPECTATOR_RED,
-        cornerRadius: 12,
-        zIndex: Z_INDEX.HUD,
-        isVisible: false,
-        shadowBlur: 20,
-        shadowColor: COLORS.SPECTATOR_RED
-    },
+    // spectatorPauseBox: {
+    //     widthInPixels: 400,
+    //     heightInPixels: 100,
+    //     background: COLORS.TRANSPARENT_BLACK,
+    //     thickness: 3,
+    //     color: COLORS.SPECTATOR_RED,
+    //     cornerRadius: 12,
+    //     zIndex: Z_INDEX.HUD,
+    //     isVisible: false,
+    //     shadowBlur: 20,
+    //     shadowColor: COLORS.SPECTATOR_RED
+    // },
     
-    spectatorPauseText: {
-        fontFamily: FONT_FAMILY,
-        color: COLORS.WHITE,
-        fontSizeInPixels: 36,
-        fontWeight: "bold",
-        shadowOffsetX: 1,
-        shadowOffsetY: 1,
-        shadowBlur: 2,
-        shadowOpacity: 0.5,
-        shadowColor: COLORS.BLACK,
-    }
+    // spectatorPauseText: {
+    //     fontFamily: FONT_FAMILY,
+    //     color: COLORS.WHITE,
+    //     fontSizeInPixels: 36,
+    //     fontWeight: "bold",
+    //     shadowOffsetX: 1,
+    //     shadowOffsetY: 1,
+    //     shadowBlur: 2,
+    //     shadowOpacity: 0.5,
+    //     shadowColor: COLORS.BLACK,
+    // }
 } as const;
 
 export const LOBBY_STYLES = {
