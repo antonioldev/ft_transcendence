@@ -161,6 +161,9 @@ export function getUserStats(username: string): UserStats | undefined {
 	const tournamentLosses = tournamentsPlayed - tournamentWins;
 	const tournamentWinRatio = tournamentsPlayed > 0 ? tournamentWins / tournamentsPlayed : 0;
 
+	console.log(`######## of victories: =${victories}`);
+	console.log(`######## of defeats: =${defeats}`);
+
 	return {
 		victories,
 		defeats,
@@ -191,8 +194,8 @@ export function getGameHistoryForUser(username: string): GameHistoryEntry[] | un
 		playedAt: r.startedAt ?? 'error',
 		opponent: r.opponent ?? 'error',
 		score: r.yourScore != null && r.opponentScore != null ? `${r.yourScore} - ${r.opponentScore}` : 'error',
-		result: r.didWin == null ? 'error' : r.didWin ? 'Win' : 'Loss',
-		isTournament: r.isTournament ? 'Yes' : 'No',
+		result: r.didWin ?? 'error',
+		isTournament: r.isTournament,
 	}));
 }
 

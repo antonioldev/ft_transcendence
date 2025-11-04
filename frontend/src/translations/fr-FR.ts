@@ -100,8 +100,24 @@ export const french: Translation = {
     scene3d: 'Scène 3D',
     music: 'Musique',
     soundEffects: 'Effets Sonores',
-    backToMainMenu: 'Retour au Menu Principal'
-,
+    backToMainMenu: 'Retour au Menu Principal',
+
+    // Dashboard
+    userStats: 'Statistiques de l\'Utilisateur',
+    victories: 'Victoires',
+    defeats: 'Défaites',
+    gameHistory: 'Historique des Parties',
+    dateTime: 'Date & Heure',
+    opponent: 'Adversaire',
+    score: 'Score',
+    result: 'Résultat',
+    tournament: 'Tournoi',
+    duration: 'Durée',
+    yes: 'Oui',
+    no: 'Non',
+    win: 'Gagner',
+    loss: 'Perdre',
+    
     // Instructions / How to Play
     howToPlay: 'Comment Jouer',
     games2DTitle: 'Jeux 2D',
