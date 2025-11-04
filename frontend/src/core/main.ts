@@ -9,11 +9,9 @@ import { getSID, sendGET } from "./HTTPRequests.js";
 import { webSocketClient } from './WebSocketClient.js';
 
 async function loadPage() {
-    // Initialize classes
     appManager.initialize();
     authManager.initialize();
 
-	// Setup language system
 	updateLanguageDisplay();
 
 	// send "/" HTTP request and create ws
@@ -21,7 +19,6 @@ async function loadPage() {
 	console.log(data.message);
 	if (data.status === AuthCode.ALREADY_LOGIN) {
 		const userData: { username: string, email: string, password: string } = data.user;
-		// const responseData = await sendPOST("login", { username: userData.username, password: userData.password });
 		authManager.handleLoginResponse(AuthCode.OK, "Login after client refresh", userData.username, getCurrentTranslation());
 	}
 	webSocketClient.connect(`wss://${window.location.hostname}:8443/ws?sid=${getSID()}`);

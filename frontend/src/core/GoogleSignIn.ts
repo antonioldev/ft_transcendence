@@ -1,4 +1,3 @@
-// Declares global types for the Google library.
 declare global {
 	interface Window {
 		google: typeof google.accounts;

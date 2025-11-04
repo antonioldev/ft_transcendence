@@ -88,7 +88,7 @@ export class Game {
 		Logger.info('Initializing game...', 'Game');
 
 		this.engine = await this.initializeBabylonEngine();
-		currentSettings.quality = detectQuality();
+		// currentSettings.quality = detectQuality();
 		applyQualitySettings(this.engine, currentSettings.quality);
 		Logger.info(`Detected quality level: ${currentSettings.quality}`, 'Game');
 		this.scene = await this.createScene();

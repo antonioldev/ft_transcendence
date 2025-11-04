@@ -30,7 +30,6 @@ export class AuthManager {
 	// Initializes the AuthManager by setting up event listeners.
 	initialize(): void {
 		authManager.setupEventListeners();
-		// authManager.restoreSessionOnBoot();
 	}
 
 	// ========================================
@@ -111,13 +110,11 @@ export class AuthManager {
 		showRegister?.addEventListener('click', (e) => {
             e.preventDefault();
 			appManager.navigateTo(AppState.REGISTER);
-			// this.prepareGoogleLogin();
 		});
 
 		showLogin?.addEventListener('click', (e) => {
             e.preventDefault();
 			appManager.navigateTo(AppState.LOGIN);
-			// this.prepareGoogleLogin();
 		});
 	}
 
@@ -183,8 +180,6 @@ export class AuthManager {
         // Login form validation
         const loginUsername = document.getElementById('login-username');
         const loginPassword = document.getElementById('login-password');
-        // const loginSubmit = document.getElementById(EL.BUTTONS.LOGIN_SUBMIT);
-        // const registerSubmit = document.getElementById(EL.BUTTONS.REGISTER_SUBMIT);
 
         loginUsername?.addEventListener('blur', () => {
             const value = (loginUsername as HTMLInputElement).value.trim();
@@ -320,8 +315,6 @@ export class AuthManager {
 
         if (password !== confirmPassword) {
             this.showFieldError('register-password', translation.passwordsDoNotMatch);
-            // alert(translation.passwordsDoNotMatch);
-            // uiManager.clearForm(this.registrationFields);
             return;
         }
 
@@ -379,9 +372,7 @@ export class AuthManager {
 
     handleRegistrationResponse(result: AuthCode, message: string) {
         if (result === AuthCode.OK) {
-            // this.currentUser = { username };
             uiManager.clearForm(this.registrationFields);
-            // uiManager.showUserInfo(username);
             alert(message || 'Registration successful! Welcome to the game!');
             setTimeout(() => { appManager.navigateTo(AppState.LOGIN) }, 500);
         }
@@ -421,12 +412,6 @@ export class AuthManager {
                 } else if (!success) {
                     throw new Error(`Account already in use on another device.`);
                 }
-
-                
-                // // Decodes the session token and updates the current user and authentication state
-                // const decodedToken = JSON.parse(atob(sessionToken.split('.')[1]));
-                // this.currentUser = { username: decodedToken.user.username };
-                // this.authState = AuthState.LOGGED_IN;
 
                 this.currentUser = { username: user.username };
 				this.getUserSettings();

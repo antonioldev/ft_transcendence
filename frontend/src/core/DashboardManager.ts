@@ -211,7 +211,7 @@ export class DashboardManager {
 			path.setAttribute("d", dAttr);
 			path.setAttribute("fill", d.color);
 			path.setAttribute("title", d.label);
-			path.setAttribute("stroke", "#143D60");		// separators
+			path.setAttribute("stroke", "#143D60");
 			path.setAttribute("stroke-width", "0.5");
 			svg.appendChild(path);
 		});

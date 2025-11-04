@@ -41,6 +41,8 @@ class UIManager {
 		const isLoggedIn = authManager.isUserAuthenticated();
 		const isOnline = webSocketClient.isConnected();
 		uiManager.updateGameModeButtonStates(isLoggedIn, isOnline);
+		uiManager.updateTournamentSizeDisplay(currentSettings.offlineTournamentSize);
+		uiManager.updateOnlineTournamentSizeDisplay(currentSettings.onlineTournamentSize);
 	}
 
 	// ========================================

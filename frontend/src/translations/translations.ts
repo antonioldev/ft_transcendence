@@ -126,9 +126,6 @@ export function updateLanguageDisplay(): void {
 	const modeTitle = requireElementById(EL.DISPLAY.MODE_TITLE);
 	modeTitle.textContent = t.selectGameMode;
 
-	// const viewModeDisplay = requireElementById(EL.DISPLAY.VIEW_MODE_DISPLAY);
-	// viewModeDisplay.textContent = t.classicMode;
-
 	const soloBtn = requireElementById(EL.GAME_MODES.SOLO);
 	soloBtn.textContent = t.soloMode + t.easy;
 
@@ -153,25 +150,6 @@ export function updateLanguageDisplay(): void {
 
     const playerLabel = requireElementById(EL.PLAYER_COLLECTION.LABEL);
 	playerLabel.textContent = t.playerName;
-
-    // const localLabel1 = document.querySelector('#two-players-setup label[for="player1-name-local"]');
-    // if (localLabel1) localLabel1.textContent = t.player1Name;
-
-    // const localLabel2 = document.querySelector('#two-players-setup label[for="player2-name-local"]');
-    // if (localLabel2) localLabel2.textContent = t.player2Name;
-
-    // Tournament labels
-    // const tournamentLabel1 = document.querySelector('#tournament-setup label[for="player1-name-tournament"]');
-    // if (tournamentLabel1) tournamentLabel1.textContent = t.player1Name;
-
-    // const tournamentLabel2 = document.querySelector('#tournament-setup label[for="player2-name-tournament"]');
-    // if (tournamentLabel2) tournamentLabel2.textContent = t.player2Name;
-
-    // const tournamentLabel3 = document.querySelector('#tournament-setup label[for="player3-name-tournament"]');
-    // if (tournamentLabel3) tournamentLabel3.textContent = "Player 3 Name:";
-
-    // const tournamentLabel4 = document.querySelector('#tournament-setup label[for="player4-name-tournament"]');
-    // if (tournamentLabel4) tournamentLabel4.textContent = "Player 4 Name:";
 
 	const playerName = requireElementById<HTMLInputElement>(EL.PLAYER_COLLECTION.INPUT);
 	playerName.placeholder = t.enterName;

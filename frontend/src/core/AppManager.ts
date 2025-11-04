@@ -176,6 +176,27 @@ export class AppManager {
 			});
 		}
 
+		const qualitySelect = document.getElementById('quality-selector') as HTMLSelectElement;
+		if (qualitySelect) {
+			qualitySelect.value = currentSettings.quality.toString();
+
+			qualitySelect.addEventListener('change', async (event) => {
+				const target = event.target as HTMLSelectElement;
+				if (target)
+					switch (target.value) {
+						case '0':
+							currentSettings.quality = Quality.LOW;
+							break;
+						case '1':
+							currentSettings.quality = Quality.MEDIUM;
+							break;
+						case '2':
+							currentSettings.quality = Quality.HIGH;
+							break;
+					}
+			});
+		}
+
 		const musicToggle = document.getElementById('music-toggle') as HTMLInputElement;
 		if (musicToggle) {
 			musicToggle.checked = currentSettings.musicEnabled;
