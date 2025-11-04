@@ -122,13 +122,6 @@ abstract class AbstractTournament extends AbstractGameSession{
 		const matches = this.rounds.get(roundIndex);
 		if (!matches || matches.length === 0) return;
 		matches.forEach((match, i) => {
-			console.log(`Broadcasting round schedule:
-round_total: ${this.num_rounds}
-round_index: ${roundIndex}
-match_index: ${i}
-match_total: ${matches.length}
-left: ${match.players[LEFT]?.name ?? "TBD"}
-right: ${match.players[RIGHT]?.name ?? "TBD"}`);
 			this.broadcast({
 				type: MessageType.MATCH_ASSIGNMENT,
 				round_total: this.num_rounds,
@@ -150,8 +143,8 @@ right: ${match.players[RIGHT]?.name ?? "TBD"}`);
 		for (this.current_round = 1; this.current_round <= this.num_rounds; this.current_round++) {
 			if (!this.is_running()) return ;
 			
-			this.broadcastRoundSchedule(this.current_round);
 			await this.waitForClientsReady();
+			this.broadcastRoundSchedule(this.current_round);
 			
 			const matches = this.rounds.get(this.current_round);
 			if (!matches) return ; // maybe throw err

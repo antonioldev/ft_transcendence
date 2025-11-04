@@ -30,7 +30,6 @@ export class GameServices {
 			onPauseToggle: () => void;
 			onExitToMenu: () => void;
 			onSwitchGame: (direction: Direction) => void;
-			onToggleMatchTree: () => void;
 		}
 	) {
 		this.animation = new AnimationManager(scene);
@@ -123,8 +122,8 @@ export class GameServices {
 		this.audio.playScore();
 	}
 
-	handlePause(isPaused: boolean, isSpectator: boolean): void {
-		this.gui.setPauseVisible(isPaused, isSpectator);
+	handlePause(isPaused: boolean): void {
+		this.gui.setPauseVisible(isPaused);
 
 		if (isPaused) {
 			this.gui.hud.show(false);
@@ -186,7 +185,7 @@ export class GameServices {
 
 	async showMatchEndForLoser(isLastMatch: boolean): Promise<boolean> {
 		this.audio.lowerMusicVolume();
-		this.gui.setPauseVisible(false, true);
+		this.gui.setPauseVisible(false);
 		this.audio.playLoser();
 		await this.gui.showTournamentMatchLoser(isLastMatch);
 		const wantsToSpectate = await this.input.waitForSpectatorChoice();
@@ -199,17 +198,17 @@ export class GameServices {
 	async showMatchEndForWinner(winner: string, waitForSpace: boolean, showCardGame: boolean, isLastMatch: boolean): Promise<void> {
 		this.gui.hud.show(false);
 		this.audio.lowerMusicVolume();
-		this.gui.setPauseVisible(false, false);
+		this.gui.setPauseVisible(false);
 		await this.gui.showTournamentMatchWinner(winner, waitForSpace, isLastMatch);
 		
 		if (!isLastMatch && showCardGame)
 			this.gui.cardGame.show();
 	}
 
-	async handleSessionEnd(winner: string, isSpectator: boolean): Promise<void> {
+	async handleSessionEnd(winner: string): Promise<void> {
 		this.render.startRendering();
 		this.audio.lowerMusicVolume();
-		this.gui.setPauseVisible(false, isSpectator);
+		this.gui.setPauseVisible(false);
 		await this.gui.showWinner(winner);
 		this.audio.stopGameMusic();
 	}

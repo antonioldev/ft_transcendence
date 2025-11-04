@@ -17,7 +17,7 @@ export const portuguese: Translation = {
     startGame: 'Iniciar Jogo',
     gamePaused: 'JOGO PAUSADO',
     exitGame: 'Sair do jogo?',
-    pauseControls: 'Y - Sim | N - Não | ESC - Retomar',
+    pauseControls: 'Y - Sim | ESC - Retomar',
     pauseControls3D: 'Y | N',
     register: '/ registrar',
     registerTitle: 'Criar uma Nova Conta',
@@ -74,7 +74,7 @@ export const portuguese: Translation = {
     errorConfirmPassword: 'Por favor, confirme senha',
     errorPasswordsDoNotMatch: 'As senhas não coincidem',
 	spectator: '🎮 MODO ESPECTADOR',
-	spectatorInstruction: '← Partida Anterior  |  → Próxima Partida  |  Espaço: Mostrar/Ocultar Chave  |  Y: Sair',
+	spectatorInstruction: ' ← Partida Anterior  |  → Próxima Partida ',
 	spectatorQuestion: 'Quer assistir ao resto do torneio? Pressione S, ou pressione N para sair.',
 
     pauseControlsTitle: '🎮 CONTROLES',

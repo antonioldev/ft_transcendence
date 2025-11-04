@@ -36,10 +36,10 @@ export class SceneTransition {
 		]);
 	}
 
-	async hide(speed: number = Motion.F.base): Promise<void> {
+	async hide(speed: number = Motion.F.slow): Promise<void> {
 		if (!this.isActive) return;
 
-		await new Promise(resolve => setTimeout(resolve, 400));
+		await new Promise(resolve => setTimeout(resolve, 100));
 		this.isActive = false;
 		
 		await Promise.all([

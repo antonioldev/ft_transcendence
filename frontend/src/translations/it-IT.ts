@@ -17,7 +17,7 @@ export const italian: Translation = {
     startGame: 'Inizia Partita',
     gamePaused: 'GIOCO IN PAUSA',
     exitGame: 'Uscire dal gioco?',
-    pauseControls: 'Y - Sì | N - No | ESC - Riprendi',
+    pauseControls: 'Y - Sì | ESC - Riprendi',
     pauseControls3D: 'Y | N',
     register: '/ registrati',
     registerTitle: 'Crea un Nuovo Account',
@@ -74,7 +74,7 @@ export const italian: Translation = {
     errorConfirmPassword: 'Conferma password',
     errorPasswordsDoNotMatch: 'Le password non corrispondono',
 	spectator: '🎮 MODALITÀ SPETTATORE',
-	spectatorInstruction: '← Partita Precedente  |  → Partita Successiva  |  Spazio: Mostra/Nascondi Tabellone  |  Y: Esci',
+	spectatorInstruction: ' ← Partita Precedente  |  → Partita Successiva ',
 	spectatorQuestion: 'Vuoi guardere il resto del torneo? Premi Y, oppure premi N per uscire',
 
     pauseControlsTitle: '🎮 CONTROLLI',

@@ -17,7 +17,7 @@ export const english: Translation = {
     startGame: 'Start Game',
     gamePaused: 'GAME PAUSED',
     exitGame: 'Exit the game?',
-    pauseControls: 'Y - Yes | N - No | ESC - Resume',
+    pauseControls: 'Y - Yes | ESC - Resume',
     pauseControls3D: 'Y | N',
     registerTitle: 'Create a New Account',
     register: '/ register', 
@@ -63,7 +63,7 @@ export const english: Translation = {
 	escToClose: 'Press ESC to close',
     miniGameRules: 'Find all matching pairs! Play while others finish their games.',
     spectator: '🎮 SPECTATOR MODE',
-	spectatorInstruction: '← Previous Match  |  → Next Match  |  Space: Toggle Bracket  |  Y: Exit',
+	spectatorInstruction: ' ← Previous Match  |  → Next Match ',
 	spectatorQuestion: 'Do you want to watch the rest of the tournament? Press Y, or press N to exit',
     
     // Validation error messages

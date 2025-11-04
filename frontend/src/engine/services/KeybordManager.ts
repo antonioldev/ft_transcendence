@@ -27,7 +27,6 @@ export class KeyboardManager {
 			onPauseToggle: () => void;
 			onExitToMenu: () => void;
 			onSwitchGame: (direction: Direction) => void;
-			onToggleMatchTree: () => void;
 		}
 	) {
 		this.deviceSourceManager = new DeviceSourceManager(scene.getEngine());
@@ -80,7 +79,7 @@ export class KeyboardManager {
 			this.spectatorChoiceResolver?.(true);
 			this.spectatorChoiceResolver = null;
 			this.setMode(KeyboardMode.SPECTATOR);
-		} else if (key === Keys.N) {
+		} else if (key === Keys.ESC) {
 			this.spectatorChoiceResolver?.(false);
 			this.spectatorChoiceResolver = null;
 		}
@@ -112,6 +111,9 @@ export class KeyboardManager {
 
 	private handleSpectatorInteraciot(key: number): void {
 		switch (key) {
+			case Keys.ESC:
+				this.callbacks.onPauseToggle();
+				break;
 			case Keys.Y:
 				this.callbacks.onExitToMenu();
 				break;
@@ -121,9 +123,6 @@ export class KeyboardManager {
 			case Keys.RIGHT:
 				this.callbacks.onSwitchGame(Direction.RIGHT);
 				break;
-			case Keys.SPACE:
-				this.callbacks.onToggleMatchTree();
-				break;
 		}
 	}
 
@@ -132,7 +131,6 @@ export class KeyboardManager {
 			case Keys.Y:
 				this.callbacks.onExitToMenu();
 				break;
-			case Keys.N:
 			case Keys.ESC:
 				this.callbacks.onPauseToggle();
 				break;

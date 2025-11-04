@@ -101,8 +101,7 @@ export class Game {
 		this.services = new GameServices(this.engine, this.scene, this.config, this.gameObjects, this.players, {
 			onPauseToggle: () => this.togglePause(),
 			onExitToMenu: () => this.requestExitToMenu(),
-			onSwitchGame: (dir) => this.switchGame(dir),
-			onToggleMatchTree: () => this.services?.gui.matchTree.toggle(),
+			onSwitchGame: (dir) => this.switchGame(dir)
 		});
 		this.registerCallbacks();
 		this.isInitialized = true;
@@ -201,7 +200,7 @@ export class Game {
 		startFireworks(this.themeObjects?.effects || [], 250);
 		const winner = message.winner;
 		if (winner)
-			await this.services?.handleSessionEnd(winner, this.isSpectator);
+			await this.services?.handleSessionEnd(winner);
 		this.dispose();
 	}
 
@@ -379,7 +378,7 @@ export class Game {
 
 	private togglePause(): void {
 		this.isPaused = !this.isPaused;
-		this.services?.handlePause(this.isPaused, this.isSpectator);
+		this.services?.handlePause(this.isPaused);
 
 		if (this.config.isRemoteMultiplayer) return;
 		

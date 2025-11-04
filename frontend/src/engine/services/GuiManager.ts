@@ -68,12 +68,11 @@ export class GUIManager {
 		}
 	}
 
-	setPauseVisible(visible: boolean, isSpectator: boolean): void {
+	setPauseVisible(visible: boolean): void {
 		if (!this.isReady || !this.animationManager) return;
 
-		// this.pause.show(visible, isSpectator);
 		this.pause.show(visible);
-		if (this.isTournament && !isSpectator)
+		if (this.isTournament)
 			this.matchTree.show(visible);
 	}
 

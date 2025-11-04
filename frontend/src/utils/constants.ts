@@ -81,7 +81,7 @@ export const Keys = {
   W: 87, S: 83, A: 65, D: 68,
   C: 67, V: 86, B: 66, I: 73, O: 79, P: 80,
   UP: 38, DOWN: 40, LEFT: 37, RIGHT: 39,
-  ESC: 27, Y: 89, N: 78, SPACE: 32,
+  ESC: 27, Y: 89,
   ONE: 49, TWO: 50, THREE: 51
 } as const;
 

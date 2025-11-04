@@ -17,7 +17,7 @@ export const russian: Translation = {
     startGame: 'Начать игру',
     gamePaused: 'ИГРА ПРИОСТАНОВЛЕНА',
     exitGame: 'Выйти из игры?',
-    pauseControls: 'Y - Да | N - Нет | ESC - Продолжить',
+    pauseControls: 'Y - Да | ESC - Продолжить',
     pauseControls3D: 'Y | N',
     register: '/ Зарегистрироваться',
     login: '/ Войти',
@@ -74,7 +74,7 @@ export const russian: Translation = {
     errorConfirmPassword: 'Пожалуйста, подтвердите пароль',
     errorPasswordsDoNotMatch: 'Пароли не совпадают',
 	spectator: '🎮 РЕЖИМ НАБЛЮДАТЕЛЯ',
-	spectatorInstruction: '← Предыдущий Матч  |  → Следующий Матч  |  Пробел: Показать/Скрыть Сетку  |  Y: Выйти',
+	spectatorInstruction: ' ← Предыдущий Матч  |  → Следующий Матч ',
 	spectatorQuestion: 'Хотите посмотреть остаток турнира? Нажмите Д, или нажмите Н, чтобы выйти',
 
     pauseControlsTitle: '🎮 УПРАВЛЕНИЕ',

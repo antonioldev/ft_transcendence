@@ -17,7 +17,7 @@ export const french: Translation = {
     startGame: 'Commencer la Partie',
     gamePaused: 'JEU EN PAUSE',
     exitGame: 'Quitter le jeu ?',
-    pauseControls: 'Y - Oui | N - Non | ESC - Reprendre',
+    pauseControls: 'Y - Oui | ESC - Reprendre',
     pauseControls3D: 'Y | N',
     // alertPlayer1: 'Veuillez entrer un nom pour le Joueur 1',
     // alertPlayer2: 'Veuillez entrer un nom pour le Joueur 2',
@@ -76,7 +76,7 @@ export const french: Translation = {
     errorConfirmPassword: 'Veuillez confirmer mot de passe',
     errorPasswordsDoNotMatch: 'Les mots de passe ne correspondent pas',
 	spectator: '🎮 MODE SPECTATEUR',
-	spectatorInstruction: '← Match Précédent  |  → Match Suivant  |  Espace: Afficher/Masquer le Bracket  |  Y: Quitter',
+	spectatorInstruction: ' ← Match Précédent  |  → Match Suivant ',
 	spectatorQuestion: 'Veux-tu regarder le reste du tournoi ? Appuie sur O, ou appuie sur N pour quitter',
 
     pauseControlsTitle: '🎮 CONTRÔLES',

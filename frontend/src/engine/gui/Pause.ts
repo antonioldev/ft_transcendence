@@ -110,12 +110,6 @@ export class Pause {
 				}
 			}
 		});
-
-		// this.spectatorPauseBox = createRect("spectatorPauseBox", PAUSE_MENU_STYLES.spectatorPauseBox);
-		// this.adt.addControl(this.spectatorPauseBox);
-		
-		// const spectatorPauseText = createTextBlock("spectatorPauseText", PAUSE_MENU_STYLES.spectatorPauseText, t.gamePaused);
-		// this.spectatorPauseBox.addControl(spectatorPauseText);  
 	}
 
 	private getMovementText(config: GameConfig): string {
@@ -145,41 +139,6 @@ export class Pause {
 			return t.pausePowerupsSolo;
 		}
 	}
-
-	// show(show: boolean, isSpectator: boolean = false): void {
-	// 	if (show) {
-	// 		if (isSpectator) {
-	// 			if (!this.spectatorPauseBox.isVisible) {
-	// 				this.spectatorPauseBox.isVisible = true;
-	// 				this.spectatorPauseBox.alpha = 0;
-	// 				this.animationManager.fade(this.spectatorPauseBox, 'in', Motion.F.base);
-	// 			}
-	// 		} else {
-	// 			if(!this.overlay.isVisible) {
-	// 				this.overlay.isVisible = true;
-	// 				this.overlay.alpha = 0;
-	// 				this.overlay.thickness = 0;
-
-	// 				this.animationManager.fade(this.overlay, "in", Motion.F.base, true);
-	// 			}
-	// 		}
-	// 	} else {
-	// 		if (this.spectatorPauseBox.isVisible) {
-	// 			this.animationManager.fade(this.spectatorPauseBox, 'out', Motion.F.fast).then(() => {
-	// 				this.spectatorPauseBox.isVisible = false;
-	// 				this.spectatorPauseBox.alpha = 0;
-	// 			});
-	// 		}
-			
-	// 		if (this.overlay.isVisible) {
-	// 			this.animationManager.fade(this.overlay, "out", Motion.F.base, true).then(() => {
-	// 				this.overlay.isVisible = false;
-	// 				this.overlay.alpha = 0;
-	// 				this.overlay.thickness = 0;
-	// 			});
-	// 		}
-	// 	}
-	// }
 
 	show(show: boolean): void {
 		if (show) {

@@ -1,7 +1,7 @@
 import { AdvancedDynamicTexture, Grid, Image, Rectangle, TextBlock } from "@babylonjs/gui";
 import { getCurrentTranslation } from "../../translations/translations.js";
 import { AnimationManager, Motion } from "../services/AnimationManager.js";
-import { BRACKET_STYLES, COLORS, applyStyles, createGrid, createImage, createRect, createStackPanel, createTextBlock } from "./GuiStyle.js";
+import { BRACKET_STYLES, applyStyles, createGrid, createImage, createRect, createStackPanel, createTextBlock } from "./GuiStyle.js";
 export class MatchTree {
 	private playerTotal: number = 0;
 	private isCreated: boolean = false;
@@ -112,14 +112,6 @@ export class MatchTree {
 		if (nextTb) nextTb.text = winner;
 	}
 
-	toggle(): void {
-		if (this.isAnimating) return;
-		
-		this.overlay.background = COLORS.TRANSPARENT_BLACK;
-		const isCurrentlyVisible = this.overlay.isVisible;
-		this.show(!isCurrentlyVisible);
-	}
-
 	show(show: boolean): void {
 		if (!this.overlay || !this.animationManager || this.isAnimating) return;
 		this.isAnimating = true;
@@ -142,9 +134,6 @@ export class MatchTree {
 		this.playerTotal = matchTotal * 2;
 		this.roundsCount = roundsTotal;
 
-		// const tabsRoot = createStackPanel("bracketTabsRoot", BRACKET_STYLES.stackPanel);
-		// this.bracketGrid.addControl(tabsRoot, 0, 0);
-
 		const tabsRoot = createGrid("bracketTabsRoot", BRACKET_STYLES.panelGrid);
 		tabsRoot.addRowDefinition(30, true);  // headerRect
 		tabsRoot.addRowDefinition(44, true);  // tabsBar
@@ -157,13 +146,11 @@ export class MatchTree {
 		headerRect.addControl(bg);
 		
 		headerRect.addControl(roundsHeader);
-		// tabsRoot.addControl(headerRect);
 		tabsRoot.addControl(headerRect, 0, 0);
 
 		this.tabsBar = createGrid("bracketTabsBar", BRACKET_STYLES.tabsBar);
 		for (let i = 0; i < this.roundsCount; i++)
 			this.tabsBar.addColumnDefinition(1, false);
-		// tabsRoot.addControl(this.tabsBar);
 		tabsRoot.addControl(this.tabsBar, 1, 0);
 
 		const panelsWrap = createStackPanel("roundPanelsWrap", BRACKET_STYLES.stackPanel);
@@ -193,9 +180,8 @@ export class MatchTree {
 			const slots = this.playerTotal / Math.pow(2, r - 1);
 			const matches = Math.ceil(slots / 2);
 
-			for (let i = 0; i < matches; i++) {
-				panel.addRowDefinition(48, true); // Fixed 48px height per match row
-			}
+			for (let i = 0; i < matches; i++)
+				panel.addRowDefinition(48, true);
 
 			for (let i = 0; i < matches; i++) {
 				const leftSlot = i * 2;
@@ -205,7 +191,7 @@ export class MatchTree {
 				const rightId = `bracketCell_${r}_${rightSlot}`;
 
 				const rowRect = createRect(`matchRow_${r}_${i}`, BRACKET_STYLES.matchRowRect);
-				panel.addControl(rowRect, i, 0); // ✅ Add to specific row
+				panel.addControl(rowRect, i, 0);
 
 				const rowGrid = createGrid(`matchRowGrid_${r}_${i}`, BRACKET_STYLES.matchRowGrid);
 				rowGrid.addColumnDefinition(0.44, false); // 44% for left player
