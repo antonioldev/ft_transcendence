@@ -167,8 +167,26 @@ export const EL = {
 // DASHBOARD ELEMENTS
 // ========================================
 	DASHBOARD: {
+		// Charts and tables
 		USER_STATS_CHART: 'user-stats-chart',
-		GAME_HISTORY_TABLE: 'game-history-table'
+		GAME_HISTORY_TABLE: 'game-history-table',
+		
+		// Static titles
+		USER_STATS_TITLE: 'dashboard-user-stats-title',
+		GAME_HISTORY_TITLE: 'dashboard-game-history-title',
+
+		// KPI labels
+		VICTORIES_LABEL: 'dashboard-victories-label',
+		DEFEATS_LABEL: 'dashboard-defeats-label',
+
+		// Table headers
+		TH_DATETIME: 'dashboard-th-datetime',
+		TH_OPPONENT: 'dashboard-th-opponent',
+		TH_SCORE: 'dashboard-th-score',
+		TH_RESULT: 'dashboard-th-result',
+		TH_TOURNAMENT: 'dashboard-th-tournament',
+		TH_DURATION: 'dashboard-th-duration',
+
 	},
 
 // ========================================

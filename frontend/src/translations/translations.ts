@@ -169,6 +169,9 @@ export function updateLanguageDisplay(): void {
     const greeting = requireElementById(EL.DISPLAY.GREETING);
     greeting.textContent = t.greeting;
 
+    const dashboardBack = requireElementById(EL.BUTTONS.DASHBOARD_BACK);
+	dashboardBack.textContent = t.backToMainMenu;
+
     // Update error message spans with translated text
     const loginUsernameError = document.getElementById(EL.ERRORS.LOGIN_USERNAME_ERROR);
     if (loginUsernameError) loginUsernameError.textContent = t.errorEnterEmailOrUsername;
@@ -187,6 +190,26 @@ export function updateLanguageDisplay(): void {
 
     const registerConfirmPasswordError = document.getElementById(EL.ERRORS.REGISTER_CONFIRM_PASSWORD_ERROR);
     if (registerConfirmPasswordError) registerConfirmPasswordError.textContent = t.errorConfirmPassword;
+
+    // Dashboard
+    try {
+        const t = getCurrentTranslation();
+
+        // Titles
+        requireElementById(EL.DASHBOARD.USER_STATS_TITLE).textContent = t.userStats;
+        requireElementById(EL.DASHBOARD.GAME_HISTORY_TITLE).textContent = t.gameHistory;
+
+        // KPI labels
+        requireElementById(EL.DASHBOARD.VICTORIES_LABEL).textContent = t.victories;
+        requireElementById(EL.DASHBOARD.DEFEATS_LABEL).textContent = t.defeats;
+
+        // Table headers
+        requireElementById(EL.DASHBOARD.TH_DATETIME).textContent = t.dateTime;
+        requireElementById(EL.DASHBOARD.TH_OPPONENT).textContent = t.opponent;
+        requireElementById(EL.DASHBOARD.TH_SCORE).textContent = t.score;
+        requireElementById(EL.DASHBOARD.TH_RESULT).textContent = t.result;
+        requireElementById(EL.DASHBOARD.TH_TOURNAMENT).textContent = t.tournament;
+    } catch {}
 
     // Instructions modal texts
     const instructionsTitle = document.getElementById('instructions-title');

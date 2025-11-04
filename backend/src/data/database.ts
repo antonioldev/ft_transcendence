@@ -412,13 +412,14 @@ export function getUserSettings(username: string) : any | null {
 export function getUserNbVictory(id: number): number {
 	try {
 		id = nonNegInt(id, 'user id');
-
+		
 		const user = db.prepare('SELECT victories FROM users WHERE id = ?');
 		const userVictory = user.get(id) as { victories: number };
 		if (!userVictory) {
 			console.error('User not found');
 			return -1;
 		}
+		
 		return userVictory.victories;
 	} catch (err) {
 		console.error('Error in get User victory nb:', err);
