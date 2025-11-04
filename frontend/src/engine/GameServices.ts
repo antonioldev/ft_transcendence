@@ -122,16 +122,18 @@ export class GameServices {
 		this.audio.playScore();
 	}
 
-	handlePause(isPaused: boolean): void {
+	handlePause(isPaused: boolean, isSpectator: boolean): void {
 		this.gui.setPauseVisible(isPaused);
 
 		if (isPaused) {
 			this.gui.hud.show(false);
-			this.input.setMode(KeyboardMode.PAUSED);
+			if (!isSpectator) 
+				this.input.setMode(KeyboardMode.PAUSED);
 			this.audio.pauseGameMusic();
 		} else {
 			this.gui.hud.show(true);
-			this.input.setMode(KeyboardMode.NORMAL);
+			if (!isSpectator) 
+				this.input.setMode(KeyboardMode.NORMAL);
 			this.audio.resumeGameMusic();
 		}
 	}
@@ -160,7 +162,8 @@ export class GameServices {
 	}
 
 	updateTournamentGame(message: any): void {
-		if (!message || message.winner === undefined) return;
+		// if (!message || message.winner === undefined) return;
+		if (!message) return;
 		
 		this.gui.matchTree.update(
 			message.winner,

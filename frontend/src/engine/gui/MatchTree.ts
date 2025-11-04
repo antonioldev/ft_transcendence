@@ -92,6 +92,20 @@ export class MatchTree {
 
 		if (!leftTb || !rightTb || !leftRect || !rightRect) return;
 
+		if (winner === undefined) {
+			rightTb.text = "❌ " + rightTb.text;
+			applyStyles(leftRect, BRACKET_STYLES.winnerCell);
+			applyStyles(leftTb, BRACKET_STYLES.winnerText);
+			applyStyles(rightRect, BRACKET_STYLES.loserCell);
+			applyStyles(rightTb, BRACKET_STYLES.loserText);
+			leftTb.text = "❌ " + leftTb.text;
+			applyStyles(rightRect, BRACKET_STYLES.winnerCell);
+			applyStyles(rightTb, BRACKET_STYLES.winnerText);
+			applyStyles(leftRect, BRACKET_STYLES.loserCell);
+			applyStyles(leftTb, BRACKET_STYLES.loserText);
+			return;
+		}
+
 		const isLeftWinner = leftTb.text === winner;
 		const isRightWinner = rightTb.text === winner;
 

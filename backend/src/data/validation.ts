@@ -32,19 +32,19 @@ export async function verifyLogin(username: string, password: string): Promise<n
 
 	// Verify password against stored hash
 	const storedPwd = dbFunction.getUserPwd(user_email);
-	console.log('verifyLogin: comparing given password with stored hash', password, storedPwd);
+	// console.log('verifyLogin: comparing given password with stored hash', password, storedPwd);
 
 	const isMatch = await verifyPassword(storedPwd, password);
-	console.log(`isMatch = ${isMatch}`)
+	// console.log(`isMatch = ${isMatch}`)
 	if (!isMatch) return AuthCode.BAD_CREDENTIALS;
 
 	const userId = dbFunction.isActive(username);
 	if (userId) {
-		console.log("verifyLogin: user already logged in");
+		// console.log("verifyLogin: user already logged in");
 		return AuthCode.ALREADY_LOGIN;
 	} else {
 		dbFunction.setActiveStatus(username, true);
-		console.log("verifyLogin: user set as active");
+		// console.log("verifyLogin: user set as active");
 	}
 
 	return AuthCode.OK;
@@ -57,16 +57,16 @@ export async function verifyLogin(username: string, password: string): Promise<n
 export async function logoutUser(username: string): Promise<number> {
 	const check = dbFunction.userExist(undefined, username);
 	if (check === 0) {
-		console.log("logoutUser: user not found");
+		// console.log("logoutUser: user not found");
 		return 0;
 	}
 
 	try {
 		dbFunction.setActiveStatus(username, false);
-		console.log('logoutUser: success and set back to inactive');
+		// console.log('logoutUser: success and set back to inactive');
 		return 1;
 	} catch (err) {
-		console.error('logoutUser: error deleting session', err);
+		// console.error('logoutUser: error deleting session', err);
 		return 0;
 	}
 }
@@ -231,7 +231,7 @@ export function registerNewGame(gameId: string, playerUsername: string, tourname
 	}
 
 	const dbGameId = dbFunction.createNewGame(gameId, playerId, tournament);
-	console.log(`[VALIDATION.TS] registerNewGame: Game created with id=${dbGameId} for player=${playerUsername}`);
+	// console.log(`[VALIDATION.TS] registerNewGame: Game created with id=${dbGameId} for player=${playerUsername}`);
 	return dbGameId !== -1;
 }
 
@@ -300,11 +300,11 @@ export function saveGameResult(
 	);
 
 	if (!updated) {
-		console.log('saveGameResult: failed to update game');
+		// console.log('saveGameResult: failed to update game');
 		return false;
 	}
 
-	console.log('saveGameResult: saved', { gameId });
+	// console.log('saveGameResult: saved', { gameId });
 	updatePlayers(winnerId, looserId, isTournament);
 	dbFunction.displayGameInfo(gameId);
 	dbFunction.displayPlayerInfo(player1Id);
@@ -317,7 +317,7 @@ export function saveGameResult(
  * Update stats for winner and loser.
  */
 export function updatePlayers(winnerId: number, looserId: number, tournament: number) {
-	console.log(`[VALIDATION.TS] UpdatingPlayers: winnerId=${winnerId}, looserId=${looserId}, tournament=${tournament}`);
+	// console.log(`[VALIDATION.TS] UpdatingPlayers: winnerId=${winnerId}, looserId=${looserId}, tournament=${tournament}`);
 	dbFunction.updateUserGame(winnerId, 1);
 	dbFunction.updateUserVictory(winnerId, 1);
 	dbFunction.updateUserGame(looserId, 1);

@@ -378,9 +378,9 @@ export class Game {
 
 	private togglePause(): void {
 		this.isPaused = !this.isPaused;
-		this.services?.handlePause(this.isPaused);
+		this.services?.handlePause(this.isPaused, this.isSpectator);
 
-		if (this.config.isRemoteMultiplayer) return;
+		if (this.config.isRemoteMultiplayer || this.isSpectator) return;
 		
 		if (this.isPaused)
 			webSocketClient.sendPauseRequest();
@@ -412,6 +412,7 @@ export class Game {
 	}
 
 	private switchGame(direction: Direction): void {
+		this.resetForNextMatch();
 		this.services?.playCurtains(Motion.F.xFast);
 		webSocketClient.sendSwitchGame(direction);
 	}

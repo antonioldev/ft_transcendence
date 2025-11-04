@@ -8,7 +8,7 @@ import { UserProfileData, SessionUser } from '../shared/types.js';
 let db: Database.Database;
 
 export function registerDatabaseFunctions(database: Database.Database) {
-  console.log('registering db');
+//   console.log('registering db');
   db = database;
 }
 
@@ -169,7 +169,7 @@ export function updateUserVictory(id: number, victory: number): boolean {
 		}
 		let newVictoryNb = currentVictory + victory;
 		const user = db.prepare('UPDATE users SET victories = ? WHERE id = ?');
-		console.log(`database.ts -- updateUserVictory: Nb of victory after update ${currentVictory} + ${victory} = ${newVictoryNb}`);
+		// console.log(`database.ts -- updateUserVictory: Nb of victory after update ${currentVictory} + ${victory} = ${newVictoryNb}`);
 		user.run(newVictoryNb, id);
 		return true;
 	} catch (err) {
@@ -189,7 +189,7 @@ export function updateUserDefeat(id: number, Defeat: number): boolean {
 			return false;
 		}
 		let newDefeatNb = currentDefeat + Defeat;
-		console.log(`database.ts -- updateUserDefeat: Nb of defeat after update ${currentDefeat} + ${Defeat} = ${newDefeatNb}`);
+		// console.log(`database.ts -- updateUserDefeat: Nb of defeat after update ${currentDefeat} + ${Defeat} = ${newDefeatNb}`);
 		const user = db.prepare('UPDATE users SET defeats = ? WHERE id = ?');
 		user.run(newDefeatNb, id);
 		return true;
@@ -210,7 +210,7 @@ export function updateUserTournament(id: number, tournament: number): boolean {
 			return false;
 		}
 		let newTournamentNb = currentTournament + tournament;
-		console.log(`database.ts -- updateUserTournament: Nb of tournament after update ${currentTournament} + ${tournament} = ${newTournamentNb}`);
+		// console.log(`database.ts -- updateUserTournament: Nb of tournament after update ${currentTournament} + ${tournament} = ${newTournamentNb}`);
 		const user = db.prepare('UPDATE users SET tournament = ? WHERE id = ?');
 		user.run(newTournamentNb, id);
 		return true;
@@ -271,7 +271,7 @@ export function updateUserGame(id: number, Game: number): boolean {
 			return false;
 		}
 		let newGameNb = currentGame + Game;
-		console.log(`database.ts -- updateUserGame: Nb of game after update ${currentGame} + ${Game} = ${newGameNb}`);
+		// console.log(`database.ts -- updateUserGame: Nb of game after update ${currentGame} + ${Game} = ${newGameNb}`);
 		const user = db.prepare('UPDATE users SET games = ? WHERE id = ?');
 		user.run(newGameNb, id);
 		return true;
@@ -360,7 +360,7 @@ export function retrieveUserID(username: string): number {
 		username = username.trim();
 
 		if (username.includes('CPU')) {
-			console.log(`CPU user detected ${username}, returning ID 1`);
+			// console.log(`CPU user detected ${username}, returning ID 1`);
 			return 1;
 		}
 
@@ -500,13 +500,13 @@ export function getUserNbGames(id: number) {
 
 		const user = db.prepare('SELECT games FROM users WHERE id = ?');
 		const userGames = user.get(id) as { games: number };
-		console.log('[DBG][getUserNbGames] id=%s row=%s', id, JSON.stringify(userGames));
-		console.log('[DBG][getUserNbGames] games field =', (userGames as any)?.games, 'type =', typeof (userGames as any)?.games);
+		// console.log('[DBG][getUserNbGames] id=%s row=%s', id, JSON.stringify(userGames));
+		// console.log('[DBG][getUserNbGames] games field =', (userGames as any)?.games, 'type =', typeof (userGames as any)?.games);
 
 		if (!userGames) {
 			console.error('User not found');
-			console.log('[DBG] Recent users:', db.prepare('SELECT id, username, games FROM users ORDER BY id DESC LIMIT 5').all());
-  			console.log('[DBG] Sample games for id:', id, db.prepare('SELECT game_id, player1_id, player2_id, winner_id, played_at FROM games WHERE player1_id=? OR player2_id=? ORDER BY played_at DESC LIMIT 5').all(id, id));
+			// console.log('[DBG] Recent users:', db.prepare('SELECT id, username, games FROM users ORDER BY id DESC LIMIT 5').all());
+  			// console.log('[DBG] Sample games for id:', id, db.prepare('SELECT game_id, player1_id, player2_id, winner_id, played_at FROM games WHERE player1_id=? OR player2_id=? ORDER BY played_at DESC LIMIT 5').all(id, id));
 			return -1;
 		}
 		return userGames.games;
@@ -552,7 +552,7 @@ export function createNewGame(gameId: string, player1_id: number, tournament: nu
 
 		const game = db.prepare('INSERT INTO games (game_id, player1_id, tournament) VALUES (?,?, ?)');
 		const newGame = game.run(gameId, player1_id, tournament);
-		console.log(`[DATABASE.TS] createNewGame: New game created with id=${gameId}, player1_id=${player1_id}, tournament=${tournament}`);
+		// console.log(`[DATABASE.TS] createNewGame: New game created with id=${gameId}, player1_id=${player1_id}, tournament=${tournament}`);
 		return newGame.lastInsertRowid as number;
 	} catch (error) {
 		console.error("Error in createGame:", error);
@@ -563,7 +563,7 @@ export function createNewGame(gameId: string, player1_id: number, tournament: nu
 export function gameExist(id: string): boolean {
 	try {
 		id = safeGameId(id);
-		console.log(`Gameid is: ${id}`);
+		// console.log(`Gameid is: ${id}`);
 
 		const game = db.prepare('SELECT * FROM games WHERE game_id = ?').get(id);
 		if (game) return true;

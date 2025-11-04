@@ -1,4 +1,4 @@
-import { Color3, Color4 } from "@babylonjs/core";
+import { Color3, Color4, Mesh } from "@babylonjs/core";
 import { webSocketClient } from '../../core/WebSocketClient.js';
 import { PowerupState, PowerupType } from "../../shared/constants.js";
 import { GAME_CONFIG } from "../../shared/gameConfig.js";
@@ -204,7 +204,7 @@ export class PowerupManager {
 				);
 				break;
 			case PowerupType.FREEZE:
-				this.gameObjects?.effects?.ballsFreeze.forEach((ballFreeze: any) => {
+				this.gameObjects?.effects?.ballsFreeze.forEach((ballFreeze: Mesh) => {
 					this.animationManager?.stopEffect(ballFreeze);
 				});
 				break;
@@ -221,7 +221,7 @@ export class PowerupManager {
 
 			case PowerupType.POWERSHOT:
 			case PowerupType.CURVE_BALL:
-				this.gameObjects?.effects?.ballsGlow.forEach((ballGlow: any) => {
+				this.gameObjects?.effects?.ballsGlow.forEach((ballGlow: Mesh) => {
 					this.animationManager?.stopEffect(ballGlow);
 				});
 				break;

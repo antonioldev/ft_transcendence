@@ -71,7 +71,7 @@ export class CPUBot extends Paddle {
 		side: number,
 		public balls: Ball[],
 		public noiseFactor: number = 1.5, // 0=impossible, 1.5=hard, 2=medium, 3=easy
-		public speed: number = GAME_CONFIG.paddleSpeed,
+		public speed: number = 0, //GAME_CONFIG.paddleSpeed,
 		public direction: number = 0,
 		private _trigger?: (side: number, slot: number) => void,
 	) {

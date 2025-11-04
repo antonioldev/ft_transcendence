@@ -13,7 +13,6 @@ export class Match {
 	players: (Player | CPU)[] = [];
 	clients: Set<Client> = new Set();
 	game!: Game;
-	
 	index!: number;
 	left?: Match;
 	right?: Match;
@@ -271,7 +270,7 @@ export class TournamentRemote extends AbstractTournament {
 			match.index = index++;
 
 			if (match.players.length === 0) {
-				// need to handle more precisely
+				this.assign_winner(match, undefined);
 			}
 			else if (match.players.length === 1) {
 				this.assign_winner(match, match.players[0]);
@@ -306,12 +305,13 @@ export class TournamentRemote extends AbstractTournament {
 	}
 
 	handle_match_end(match: Match, winner: Player | CPU) {
+		match.game.save_to_db(1);
+		this.assign_winner(match, winner);
+
 		// remove match from active_matches[]
 		const index = this.active_matches.indexOf(match);
 		if (index !== -1) this.active_matches.splice(index, 1);
-
-		match.game.save_to_db(1);
-		this.assign_winner(match, winner);
+		if (this.active_matches.length === 0) return ;
 
 		console.log("Assigning spectators at end of match");
 		// reassign spectators to next available match
@@ -320,13 +320,15 @@ export class TournamentRemote extends AbstractTournament {
 		}
 	}
 
-	assign_winner(match: Match, winner: Player | CPU) {
+	assign_winner(match: Match, winner?: Player | CPU) {
 		if (!match.next) {
 			this.tournamentWinner = winner;
 			// save tournament winner to db
 			return ;
 		}
-		match.next.add_player(winner);
+		if (winner) {
+			match.next.add_player(winner);
+		}
 
 		if (winner instanceof Player) {
 			this.readyClients.delete(winner.client.sid);
@@ -340,14 +342,13 @@ export class TournamentRemote extends AbstractTournament {
 		}
 		this.broadcast({
 			type: MessageType.MATCH_RESULT,
-			winner: winner?.name,
+			winner: winner?.name ?? undefined,
 			round_index: match.round,
 			match_index: match.index,
 		});
 	}
 
 	/* --- Spectators --- */
-
 	assign_spectator(client: Client, match?: Match) {
 		const spectator_match = match ?? this.active_matches[0] ?? undefined;
 		if (!spectator_match) {
@@ -356,6 +357,7 @@ export class TournamentRemote extends AbstractTournament {
 		}
 		spectator_match.clients.add(client);
 		spectator_match.game?.send_side_assignment(new Set([client]));
+		console.log(`Assigned spectator ${client.username} to match ${spectator_match.id}`);
 	}
 
 	toggle_spectator_game(client: Client, data: ClientMessage) {
