@@ -17,16 +17,16 @@ pepper-env:
 		echo "PEPPER already set in .env"; \
 	fi
 
-cookie-env:
-	@if ! grep -q '^COOKIE_SECRET=' .env; then \
-		COOKIE_VALUE=$$($(COOKIE_GEN)); \
-		echo "COOKIE not found. Generating one..."; \
-		echo -n "\nCOOKIE_SECRET=\"$${COOKIE_VALUE}\"" >> .env; \
-	else \
-		echo "COOKIE already set in .env"; \
-	fi
+# cookie-env:
+# 	@if ! grep -q '^COOKIE_SECRET=' .env; then \
+# 		COOKIE_VALUE=$$($(COOKIE_GEN)); \
+# 		echo "COOKIE not found. Generating one..."; \
+# 		echo -n "\nCOOKIE_SECRET=\"$${COOKIE_VALUE}\"" >> .env; \
+# 	else \
+# 		echo "COOKIE already set in .env"; \
+# 	fi
 
-secret-env: pepper-env cookie-env
+secret-env: pepper-env 
 
 #################################################################################
 #################################     MAIN      #################################
