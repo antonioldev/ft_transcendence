@@ -3,6 +3,7 @@ import { Paddle } from './Paddle.js'
 import { CollisionDirection } from '../shared/constants.js'
 import { GAME_CONFIG, getBallStartPosition, LEFT, RIGHT } from '../shared/gameConfig.js';
 import { rotate } from './utils.js';
+import { PowerupType } from '../shared/constants.js';
 import { eventManager } from '../network/utils.js';
 
 // Represents the ball in the game, handling its movement, collisions, and scoring logic.
@@ -36,9 +37,13 @@ export class Ball {
 
     // Generates a random initial direction for the ball.
     private randomDirection(): [number, number] {
+        // create a random angle
         const angle = (Math.random() * 2 - 1) * GAME_CONFIG.ballMaxAngle;
-        const direction: [number, number] = Math.random() < 0.5 ? [0, 1] : [0, -1]
-        return (rotate(direction, angle))
+
+        // create vector with random horizontal direction
+        const x = Math.sin(angle);
+        const z = Math.random() < 0.5 ? Math.cos(angle) : -(Math.cos(angle));
+        return [x, z];
     }
 
     // Moves the ball based on its direction, speed, and elapsed time.
@@ -58,7 +63,7 @@ export class Ball {
         const paddle_intercept = Math.min(paddle.rect.centerx - this.rect.centerx, GAME_CONFIG.paddleWidth / 2);
         const normalized_intercept = paddle_intercept / (GAME_CONFIG.paddleWidth / 2)
         
-        // calculate the angle of deflection relative to the paddle intersection
+        // calculate the angle of defelction relative to the paddle intersection
         const angle_sign = (paddle_intercept >  0) ? 1 : -1;
         const angle_magnitude = Math.max(Math.abs(normalized_intercept * GAME_CONFIG.ballMaxAngle), GAME_CONFIG.ballMinAngle);
         const deflection_angle = angle_magnitude * angle_sign;

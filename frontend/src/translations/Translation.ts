@@ -3,7 +3,6 @@
  * Each property corresponds to a translatable string in the application.
  */
 export interface Translation {
-    // appTitle: string;
 	classicMode: string;
     immersiveMode: string;
     selectGameMode: string;
@@ -14,11 +13,7 @@ export interface Translation {
     back: string;
     playerSetup: string;
     playerName: string;
-    player1Name: string;
-    player2Name: string;
     enterName: string;
-    enterPlayer1Name: string;
-    enterPlayer2Name: string;
     onlineInfo: string;
 	next: string;
     startGame: string;
@@ -26,8 +21,6 @@ export interface Translation {
     exitGame: string;
     pauseControls: string;
     pauseControls3D: string;
-    alertPlayer1: string;
-    alertPlayer2: string;
     register: string;
     login: string;
     loginSubmit: string;
@@ -44,12 +37,7 @@ export interface Translation {
     confirmPassword: string;
     usernameOrEmail: string;
     createAccount: string;
-    enterUsername: string;
-    enterEmail: string;
-    enterPassword: string;
     confirmPasswordPlaceholder: string;
-    enterUsernameOrEmail: string;
-    viewMode: string;
     backToMain: string;
     pleaseFilllAllFields: string;
     passwordFormat: string,
@@ -78,6 +66,7 @@ export interface Translation {
     miniGameRules: string;
     
     // Validation error messages
+    usernameNotValid: string;
     errorEnterEmailOrUsername: string;
     errorEnterPassword: string;
     errorEnterUsername: string;

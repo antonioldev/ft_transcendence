@@ -1,4 +1,4 @@
-import { Translation } from './Translation.js';
+import type { Translation } from './Translation.js';
 
 export const italian: Translation = {
     classicMode: 'Modalità Classica',
@@ -11,11 +11,7 @@ export const italian: Translation = {
     back: 'Indietro',
     playerSetup: 'Configurazione Giocatori',
     playerName: 'Nome Giocatore:',
-    player1Name: 'Nome Giocatore 1:',
-    player2Name: 'Nome Giocatore 2:',
     enterName: 'Inserisci il tuo nome',
-    enterPlayer1Name: 'Inserisci nome Giocatore 1',
-    enterPlayer2Name: 'Inserisci nome Giocatore 2',
     onlineInfo: 'Sarai abbinato con un altro giocatore online',
 	next: "Prossimo Giocatore",
     startGame: 'Inizia Partita',
@@ -23,8 +19,6 @@ export const italian: Translation = {
     exitGame: 'Uscire dal gioco?',
     pauseControls: 'Y - Sì | N - No | ESC - Riprendi',
     pauseControls3D: 'Y | N',
-    alertPlayer1: 'Inserisci un nome per il Giocatore 1',
-    alertPlayer2: 'Inserisci un nome per il Giocatore 2',
     register: '/ registrati',
     registerTitle: 'Crea un Nuovo Account',
     login: '/ accedi',
@@ -41,12 +35,7 @@ export const italian: Translation = {
     alreadyRegistered: 'Già registrato?',
     usernameOrEmail: 'Nome utente o Email:',
     createAccount: 'Crea Account',
-    enterUsername: 'Inserisci nome utente',
-    enterEmail: 'Inserisci email',
-    enterPassword: 'Inserisci password',
     confirmPasswordPlaceholder: 'Conferma password',
-    enterUsernameOrEmail: 'Inserisci nome utente o email',
-    viewMode: 'Modalità di visualizzazione',
     backToMain: 'Torna al menu principale',
     pleaseFilllAllFields: 'Compila tutti i campi',
     alreadyLogin: 'Questo account è già connesso a un altro dispositivo',
@@ -70,10 +59,11 @@ export const italian: Translation = {
     impossible: ' (Impossibile)',
     winner: 'VINCITORE',
     continue: 'Premi SPAZIO per continuare',
-	tournamentTitle: 'Classifica del Torneo',
+	tournamentTitle: 'CLASSIFICA DEL TORNEO',
 	escToClose: 'Premere ESC per chiudere',
     miniGameRules: 'Trova tutte le coppie corrispondenti! Gioca mentre gli altri finiscono le loro partite.',
     // Validation error messages
+    usernameNotValid: 'Nome già in uso. Scegli un nome diverso.',
     errorEnterEmailOrUsername: 'Inserisci email o nome utente',
     errorEnterPassword: 'Inserisci password',
     errorEnterUsername: 'Inserisci un nome utente',

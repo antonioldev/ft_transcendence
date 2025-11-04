@@ -1,51 +1,7 @@
-import { Color4, Vector3, ParticleSystem } from "@babylonjs/core";
+import { Color4, ParticleSystem, Vector3 } from "@babylonjs/core";
+import type { ParticleConfig } from "./sceneTypes";
+import { ParticleEffectType } from "../config/sceneConst.js";
 
-interface ParticleConfig {
-	name: string;
-	capacity: number;
-	texturePath: string;
-	emitter: {
-		position: Vector3;
-		minBox: Vector3;
-		maxBox: Vector3;
-	};
-	direction: {
-		dir1: Vector3;
-		dir2: Vector3;
-	};
-	size: {
-		min: number;
-		max: number;
-	};
-	lifetime: {
-		min: number;
-		max: number;
-	};
-	emitRate: number;
-	color: {
-		color1: Color4;
-		color2: Color4;
-		colorDead?: Color4;
-	};
-	gravity: Vector3;
-	angularSpeed?: {
-		min: number;
-		max: number;
-	};
-	blendMode?: number;
-	autoStart?: boolean;
-}
-
-export enum ParticleEffectType {
-	DUST = "dust",
-	STARS = "stars",
-	SNOW = "snow",
-	RAIN = "rain",
-	UNDERWATER = "underwater",
-	SMOKE = 'smoke',
-	LENS = 'lens',
-	FIREWORK = 'firework'
-}
 
 export enum ParticleTexturePath {
 	FLARE_TRANSPARENT = "assets/textures/particle/flare_transparent.png",

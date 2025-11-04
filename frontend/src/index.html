@@ -142,6 +142,12 @@
                             <option value="map7">Hallowen</option>
                             <option value="random">Random</option>
                         </select>
+                    <label for="quality-selector" class="block mb-2 text-sm font-medium text-light-green font-sans">3D Quality</label>
+                        <select id="quality-selector" class="block w-full p-2 mb-6 text-sm sm:text-base bg-transparent border border-light-green rounded-md text-light-green focus:outline-2 focus:outline-orange font-sans">
+                            <option value="0">Low</option>
+                            <option value="1">Medium</option>
+                            <option value="2">High</option>
+                        </select>
                     <label class="inline-flex items-center cursor-pointer">
                         <input type="checkbox" id="music-toggle" value="" class="sr-only peer" checked>
                         <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange dark:peer-focus:ring-orange rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-orange dark:peer-checked:bg-orange">
@@ -561,8 +567,7 @@
     <!-- Game 3D Screen -->
     <div id="game-3d" class="fixed inset-0 bg-blue-background" style="display: none;">
         <div class="w-full h-full overflow-auto custom-scrollbar">
-            <canvas id="game-canvas-3d" class="min-w-full min-h-full" width="1400" height="700" 
-                aria-label="3D Game Canvas" tabindex="0"></canvas>
+            <canvas id="game-canvas-3d" class="w-full h-full" aria-label="3D Game Canvas" tabindex="0"></canvas>
         </div>
         
         <!-- Loading Screen -->

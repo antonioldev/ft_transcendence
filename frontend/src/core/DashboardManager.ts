@@ -1,4 +1,4 @@
-import { UserStats, GameHistoryEntry } from '../shared/types.js';
+import type { GameHistoryEntry, UserStats } from '../shared/types.js';
 import { EL, getElementById } from '../ui/elements.js';
 import { authManager } from './AuthManager.js';
 import { sendGET } from './HTTPRequests.js';
@@ -211,7 +211,7 @@ export class DashboardManager {
 			path.setAttribute("d", dAttr);
 			path.setAttribute("fill", d.color);
 			path.setAttribute("title", d.label);
-			path.setAttribute("stroke", "#143D60");		// separators
+			path.setAttribute("stroke", "#143D60");
 			path.setAttribute("stroke-width", "0.5");
 			svg.appendChild(path);
 		});

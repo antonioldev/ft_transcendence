@@ -1,7 +1,7 @@
 import { AdvancedDynamicTexture, Grid, Rectangle, StackPanel, TextBlock } from "@babylonjs/gui";
 import { getCurrentTranslation } from '../../translations/translations.js';
 import { AnimationManager } from "../services/AnimationManager.js";
-import { LOBBY_STYLES, createRect, createStackPanel, createTextBlock, } from "./GuiStyle.js";
+import { LOBBY_STYLES, createGrid, createRect, createStackPanel, createTextBlock, } from "./GuiStyle.js";
 
 export class Lobby {
 	private overlay!: Rectangle;
@@ -16,19 +16,20 @@ export class Lobby {
 		this.overlay = createRect("lobbyOverlay", LOBBY_STYLES.overlay);
 		this.adt.addControl(this.overlay);
 
-		const mainGrid = new Grid("lobbyMainGrid");
-		mainGrid.addRowDefinition(0.20, false);  // Subtitle row
-		mainGrid.addRowDefinition(0.05, false); // dots
+		const lobbyBox = createRect("lobbyRect", LOBBY_STYLES.box);
+		this.overlay.addControl(lobbyBox);
+
+		const mainGrid = createGrid("lobbyMainGrid", LOBBY_STYLES.grid);
+		mainGrid.addRowDefinition(0.15, false);  // Subtitle row
+		mainGrid.addRowDefinition(0.1, false); // dots
 		mainGrid.addRowDefinition(0.1, false); // Count row
 		mainGrid.addRowDefinition(0.65, false);  // Scroll row
-		mainGrid.width = "100%";
-		mainGrid.height = "100%";
-		this.overlay.addControl(mainGrid);
+		lobbyBox.addControl(mainGrid);
 
 		const title = createTextBlock("lobbySubtitle", LOBBY_STYLES.title, t.waiting);
 		mainGrid.addControl(title, 0, 0);
 
-		this.subtitle = createTextBlock("lobbySubtitle", LOBBY_STYLES.title);
+		this.subtitle = createTextBlock("lobbySubtitle", LOBBY_STYLES.dots, "...");
 		// this.subtitle.textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT,
 		mainGrid.addControl(this.subtitle, 1, 0);
 

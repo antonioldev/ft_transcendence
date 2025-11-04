@@ -1,8 +1,9 @@
-import { Setting } from '../core/AppManager.js';
 import { authManager } from '../core/AuthManager.js';
-import { GameMode, ViewMode } from '../shared/constants.js';
-import { PlayerInfo } from '../shared/types.js';
+import { GameMode } from '../shared/constants.js';
+import type { PlayerInfo } from '../shared/types.js';
 import { EL } from '../ui/elements.js';
+import { ViewMode } from '../utils/constants.js';
+import type { GameSetting } from '../utils/types.js';
 
 // Complete configuration for starting a game
 export interface GameConfig {
@@ -19,11 +20,11 @@ export interface GameConfig {
 }
 
 // Class for creating a complete game configuration
-export class GameConfigFactory {
+export class GameInitializer {
 	private static playerNames: string[] = [];
 
 	static createConfig(
-		settings: Setting,
+		settings: GameSetting,
 		players: PlayerInfo[]
 	): GameConfig {
 		const gameMode = settings.gameMode!;
@@ -73,30 +74,11 @@ export class GameConfigFactory {
 		}];
 	}
 
-	static createWithAuthCheck(settings: Setting): GameConfig {
+	static createWithAuthCheck(settings: GameSetting): GameConfig {
 		const players = authManager.isUserAuthenticated()
 			? this.getAuthenticatedPlayer()
 			: this.getPlayers();
 
 		return this.createConfig(settings, players);
-	}
-
-	static validatePlayerSetup(gameMode: GameMode): boolean {
-		if (authManager.isUserAuthenticated())
-			return true;
-
-		// For offline modes, check we have the minimum required players
-		const minPlayers = this.getMinPlayersRequired(gameMode);
-		return this.playerNames.length >= minPlayers && 
-			   this.playerNames.every(name => name.trim().length > 0);
-	}
-
-	private static getMinPlayersRequired(gameMode: GameMode): number {
-		switch (gameMode) {
-			case GameMode.SINGLE_PLAYER: return 1;
-			case GameMode.TWO_PLAYER_LOCAL: return 2;
-			case GameMode.TOURNAMENT_LOCAL: return 2; // Minimum 2 players for tournament
-			default: return 1;
-		}
 	}
 }

@@ -71,6 +71,7 @@ export class Countdown {
 
 	async finish(): Promise<void> {
 		this.countdownText.text = "GO!";
+		this.countdownText.fontSize = "25%";
 		this.countdownText.animations = [];
 
 		await Promise.all ([
@@ -83,5 +84,6 @@ export class Countdown {
 		this.countdownContainer.topInPixels = 0;
 		this.countdownContainer.alpha = 1;
 		this.countdownContainer.isVisible = false;
+		this.countdownText.fontSize = "12%";
 	}
 }

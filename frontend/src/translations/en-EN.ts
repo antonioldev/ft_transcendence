@@ -1,4 +1,4 @@
-import { Translation } from './Translation.js';
+import type { Translation } from './Translation.js';
 
 export const english: Translation = {
     classicMode: 'Classic 2D',
@@ -11,11 +11,7 @@ export const english: Translation = {
     back: 'Back',
     playerSetup: 'Player Setup',
     playerName: 'Player Name:',
-    player1Name: 'Player 1 Name:',
-    player2Name: 'Player 2 Name:',
     enterName: 'Enter your name',
-    enterPlayer1Name: 'Enter Player 1 name',
-    enterPlayer2Name: 'Enter Player 2 name',
     onlineInfo: "You'll be matched with another online player",
 	next: "Next Player",
     startGame: 'Start Game',
@@ -23,8 +19,6 @@ export const english: Translation = {
     exitGame: 'Exit the game?',
     pauseControls: 'Y - Yes | N - No | ESC - Resume',
     pauseControls3D: 'Y | N',
-    alertPlayer1: 'Please enter a name for Player 1',
-    alertPlayer2: 'Please enter a name for Player 2',
     registerTitle: 'Create a New Account',
     register: '/ register', 
     loginTitle: 'Sign in to Your Account',
@@ -41,12 +35,7 @@ export const english: Translation = {
     confirmPassword: 'Confirm password:',
     usernameOrEmail: 'Username or email:',
     createAccount: 'Create Account',
-    enterUsername: 'Enter username',
-    enterEmail: 'Enter email',
-    enterPassword: 'Enter password',
     confirmPasswordPlaceholder: 'Confirm password',
-    enterUsernameOrEmail: 'Enter username or email',
-    viewMode: 'View Mode',
     backToMain: 'Back to Main',
     pleaseFilllAllFields: 'Please fill in all fields',
     alreadyLogin: 'This account is already in login on another device',
@@ -70,7 +59,7 @@ export const english: Translation = {
     impossible: ' (God of War)',
     winner: 'WINNER',
     continue: 'Press SPACE to continue',
-    tournamentTitle: 'Bracket',
+    tournamentTitle: 'BRACKET',
 	escToClose: 'Press ESC to close',
     miniGameRules: 'Find all matching pairs! Play while others finish their games.',
     spectator: '🎮 SPECTATOR MODE',
@@ -78,6 +67,7 @@ export const english: Translation = {
 	spectatorQuestion: 'Do you want to watch the rest of the tournament? Press Y, or press N to exit',
     
     // Validation error messages
+    usernameNotValid: 'Name already used. Choose different name.',
     errorEnterEmailOrUsername: 'Please enter email or username',
     errorEnterPassword: 'Please enter password',
     errorEnterUsername: 'Please enter a username',
@@ -87,7 +77,6 @@ export const english: Translation = {
     errorPasswordComplexity: 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
     errorConfirmPassword: 'Please confirm password',
     errorPasswordsDoNotMatch: 'Passwords do not match',
-
 
     pauseControlsTitle: '🎮 CONTROLS',
     pauseMovementTitle: '🚀 MOVEMENT',

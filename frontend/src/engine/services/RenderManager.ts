@@ -1,8 +1,8 @@
 import { Engine, Scene, Vector3 } from "@babylonjs/core";
-import { ViewMode } from '../../shared/constants.js';
 import { GAME_CONFIG } from '../../shared/gameConfig.js';
-import { GameObjects } from "../../shared/types.js";
+import { ViewMode } from '../../utils/constants.js';
 import { Logger } from '../../utils/LogManager.js';
+import type { GameObjects } from "../../utils/types.js";
 
 /**
  * The RenderManager class is responsible for managing the rendering loop,
@@ -44,9 +44,8 @@ export class RenderManager {
 
 			if (deltaTime >= frameInterval) {
 				try {
-					if (this.scene && this.scene.activeCamera) {
+					if (this.scene && this.scene.activeCamera)
 						this.scene.render();
-					}
 					this.lastFrameTime = currentTime;
 				} catch (error) {
 					Logger.error('Error in render loop', 'RenderManager', error);
@@ -57,15 +56,10 @@ export class RenderManager {
 
 // ====================			CAMERA MANAGEMENT		 ====================
 	updateActiveCameras(viewMode: ViewMode, controlledSides: number[], isLocalMultiplayer: boolean): void {
-		if (!this.scene || !this.gameObjects?.cameras || viewMode === ViewMode.MODE_2D) return;
+		if (!this.scene || !this.gameObjects?.cameras || viewMode === ViewMode.MODE_2D || isLocalMultiplayer) return;
 
 		const cameras = this.gameObjects.cameras;
 		const guiCamera = this.gameObjects.guiCamera;
-
-		if (isLocalMultiplayer) {
-			this.scene.activeCameras = [cameras[0], cameras[1], guiCamera];
-			return;
-		}
 
 		const activeGameCamera = controlledSides.includes(1) ? cameras[1] : cameras[0];
 
@@ -74,7 +68,7 @@ export class RenderManager {
 	}
 
 	// Update 3D camera targets to follow players
-	update3DCameras(viewMode: ViewMode): void {
+	updateCamerasAngle(viewMode: ViewMode): void {
 		if (!this.isInitialized || !this.gameObjects?.cameras) return;
 
 		if (viewMode === ViewMode.MODE_2D) return;

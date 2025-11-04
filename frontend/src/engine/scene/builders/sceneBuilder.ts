@@ -1,12 +1,15 @@
-import { GlowLayer, Scene } from "@babylonjs/core";
-import { GameMode, ViewMode } from '../../../shared/constants.js';
-import { Effects, GameObjects, Players, ThemeObject } from '../../../shared/types.js';
+import { FreeCamera, GlowLayer, Mesh, Scene } from "@babylonjs/core";
+import { GameMode } from '../../../shared/constants.js';
+import { ViewMode } from '../../../utils/constants.js';
+import type { Effects, GameObjects, Players } from '../../../utils/types.js';
+import type { ThemeObject } from "../config/sceneTypes.js";
 import { Logger } from '../../../utils/LogManager.js';
-import { GameConfig } from '../../GameConfig.js';
-import { getBallStartPosition, getPlayerLeftPosition, getPlayerRightPosition, getPlayerSize, PlayerSide } from '../../utils.js';
-import { ParticleEffectType } from "../config/effectSceneConfig.js";
+import type { GameConfig } from '../../GameInitializer.js';
+import { getBallStartPosition, getPlayerLeftPosition, getPlayerRightPosition, getPlayerSize } from '../../utils/utils.js';
+import { ParticleEffectType } from "../config/sceneConst.js";
+import { PlayerSide } from "../../../utils/constants.js";
 import { MAP_CONFIGS } from "../config/mapConfigs.js";
-import { MapAssetConfig } from "../config/sceneTypes.js";
+import type { MapAssetConfig } from "../config/sceneTypes.js";
 import { createActor } from "../entities/animatedProps.js";
 import { createBall, createGameField, createPlayer, createWallLineGlowEffect, createWalls } from '../entities/gameObjects.js';
 import { createBallEffects, createPaddleCage, createPaddleGlow, createWallGlowEffect } from '../entities/gameObjectsEffects.js';
@@ -14,6 +17,7 @@ import { createStaticObject, createStaticObjects } from "../entities/staticProps
 import { createCameras, createGuiCamera } from "./camerasBuilder.js";
 import { createFireworks, createFog, createLensFlare, createParticleSystem, createSmokeSprite } from './effectsBuilder.js';
 import { createLight, createSky, createTerrain } from './enviromentBuilder.js';
+import type { CoreGameObjects } from "../../../utils/types.js";
 
 export type LoadingProgressCallback = (progress: number) => void;
 
@@ -48,7 +52,7 @@ export async function buildScene(
 	};
 }
 
-function getMap(viewMode: ViewMode, scene3D: string): any {
+function getMap(viewMode: ViewMode, scene3D: string): MapAssetConfig {
 	if (viewMode === ViewMode.MODE_2D)
 		return MAP_CONFIGS.map;
 
@@ -60,10 +64,9 @@ function getMap(viewMode: ViewMode, scene3D: string): any {
 	return MAP_CONFIGS[scene3D];
 }
 
-async function buildCoreGameObjects(scene: Scene, gameMode: GameMode, viewMode: ViewMode, map_asset: MapAssetConfig): Promise<any> {
-	let cameras: any[];
-	let players: Players = { left: undefined, right: undefined };
-	const balls: any[] = [];
+async function buildCoreGameObjects(scene: Scene, gameMode: GameMode, viewMode: ViewMode, map_asset: MapAssetConfig): Promise<CoreGameObjects> {
+	let cameras: FreeCamera[];
+	const balls: Mesh[] = [];
 
 	const lights = createLight(scene, "light1", viewMode, map_asset);
 	const gameField = createGameField(scene, "ground", viewMode, map_asset);
@@ -77,18 +80,20 @@ async function buildCoreGameObjects(scene: Scene, gameMode: GameMode, viewMode: 
 	cameras = createCameras(scene, "camera", viewMode, gameMode);
 	const guiCamera = createGuiCamera(scene, "guiCamera");
 
-	if (viewMode === ViewMode.MODE_2D) {
+	const isLocalMultiplayer = gameMode === GameMode.TOURNAMENT_LOCAL || gameMode === GameMode.TWO_PLAYER_LOCAL;
+	if (viewMode === ViewMode.MODE_2D || isLocalMultiplayer) {
 		const allCameras = [...cameras, guiCamera];
 		scene.activeCameras = allCameras;
 	}
 
-	players.left = createPlayer(scene, "player1", getPlayerLeftPosition(), getPlayerSize(), viewMode, map_asset.paddle);
-	players.right = createPlayer(scene, "player2", getPlayerRightPosition(), getPlayerSize(), viewMode, map_asset.paddle);
+	const playerLeft = createPlayer(scene, "player1", getPlayerLeftPosition(), getPlayerSize(), viewMode, map_asset.paddle);
+	const playerRight = createPlayer(scene, "player2", getPlayerRightPosition(), getPlayerSize(), viewMode, map_asset.paddle);
+	const players: Players = { left: playerLeft, right: playerRight };
 	
 	return { lights, gameField, walls, balls, players, cameras, guiCamera };
 }
 
-async function createPowerUpEffects(scene: Scene, players: Players, balls: any): Promise<Effects> {
+async function createPowerUpEffects(scene: Scene, players: Players, balls: Mesh[]): Promise<Effects> {
 
 	const ballsGlow: any[] = [];
 	const ballsFreeze: any[] = [];
@@ -121,7 +126,7 @@ async function buildThematicEnvironment(
 	themeObjects: ThemeObject,
 	onProgress?: LoadingProgressCallback
 ): Promise<void> {
-	createSky(scene, map_asset.skybox);
+	await createSky(scene, map_asset.skybox);
 	if (map_asset.terrain)
 		createTerrain(scene, "terrain", map_asset.terrain, map_asset);
 

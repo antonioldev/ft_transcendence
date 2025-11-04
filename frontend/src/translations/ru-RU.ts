@@ -1,4 +1,4 @@
-import { Translation } from './Translation.js';
+import type { Translation } from './Translation.js';
 
 export const russian: Translation = {
     classicMode: 'Классический режим',
@@ -11,11 +11,7 @@ export const russian: Translation = {
     back: 'Назад',
     playerSetup: 'Настройка игроков',
     playerName: 'Имя игрока:',
-    player1Name: 'Имя игрока 1:',
-    player2Name: 'Имя игрока 2:',
     enterName: 'Введите своё имя',
-    enterPlayer1Name: 'Введите имя игрока 1',
-    enterPlayer2Name: 'Введите имя игрока 2',
     onlineInfo: 'Вы будете подключены к другому онлайн-игроку',
 	next: "Следующий игрок",
     startGame: 'Начать игру',
@@ -23,8 +19,6 @@ export const russian: Translation = {
     exitGame: 'Выйти из игры?',
     pauseControls: 'Y - Да | N - Нет | ESC - Продолжить',
     pauseControls3D: 'Y | N',
-    alertPlayer1: 'Введите имя для игрока 1',
-    alertPlayer2: 'Введите имя для игрока 2',
     register: '/ Зарегистрироваться',
     login: '/ Войти',
     registerTitle: 'Создать новый аккаунт',
@@ -41,12 +35,7 @@ export const russian: Translation = {
     alreadyRegistered: 'Уже зарегистрированы?',
     usernameOrEmail: 'Имя пользователя или имейл:',
     createAccount: 'Создать аккаунт',
-    enterUsername: 'Введите имя пользователя',
-    enterEmail: 'Введите имейл',
-    enterPassword: 'Введите пароль',
     confirmPasswordPlaceholder: 'Подтвердите пароль',
-    enterUsernameOrEmail: 'Введите имя пользователя или имейл',
-    viewMode: 'Режим просмотра',
     backToMain: 'Назад в главное меню',
     pleaseFilllAllFields: 'Пожалуйста, заполните все поля',
     alreadyLogin: 'Эта учетная запись уже используется для входа на другом устройстве',
@@ -70,10 +59,11 @@ export const russian: Translation = {
     impossible: ' (Невозможный)',
     winner: 'ПОБЕДИТЕЛЬ МАТЧА',
     continue: 'Нажмите ПРОБЕЛ, чтобы продолжить',
-	tournamentTitle: 'Турнирное Дерево',
+	tournamentTitle: 'ТУРНИРНОЕ ДЕРЕВО',
 	escToClose: 'Нажмите ESC для закрытия',
     miniGameRules: 'Найдите все подходящие пары! Играйте, пока другие заканчивают свои игры.',
     // Validation error messages
+    usernameNotValid: 'Имя уже используется. Выберите другое имя.',
     errorEnterEmailOrUsername: 'Пожалуйста, введите имейл или имя пользователя',
     errorEnterPassword: 'Пожалуйста, введите пароль',
     errorEnterUsername: 'Пожалуйста, введите имя пользователя',

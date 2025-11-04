@@ -1,40 +1,12 @@
 import { DeviceSourceManager, DeviceType, Scene } from "@babylonjs/core";
 import { webSocketClient } from '../../core/WebSocketClient.js';
-import { Direction, ViewMode } from '../../shared/constants.js';
+import { Direction } from '../../shared/constants.js';
 import { getPlayerBoundaries } from '../../shared/gameConfig.js';
-import { GameObjects } from '../../shared/types.js';
+import { KeyboardMode, Keys, PlayerSide, PROFILES_2D, PROFILES_3D, ViewMode } from '../../utils/constants.js';
 import { Logger } from '../../utils/LogManager.js';
-import { GameConfig } from '../GameConfig.js';
-import { PlayerSide, PlayerState } from "../utils.js";
-import { GUIManager } from "./GuiManager.js";
+import type { GameObjects, KeysProfile, PlayerState } from '../../utils/types.js';
+import type { GameConfig } from '../GameInitializer.js';
 import { PowerupManager } from "./PowerUpManager.js";
-
-
-export const Keys = {
-  W: 87, S: 83, A: 65, D: 68,
-  C: 67, V: 86, B: 66, I: 73, O: 79, P: 80,
-  UP: 38, DOWN: 40, LEFT: 37, RIGHT: 39,
-  ESC: 27, Y: 89, N: 78, SPACE: 32,
-  ONE: 49, TWO: 50, THREE: 51
-} as const;
-
-export type MoveKeys = { left: number; right: number; };
-export type PowerKeys = { k1: number; k2: number; k3: number };
-export type KeysProfile = { move: MoveKeys; power: PowerKeys };
-
-export const PROFILES_2D = {
-  P1: { move: { left: Keys.W, right: Keys.S }, power: { k1: Keys.C, k2: Keys.V, k3: Keys.B } },
-  P2: { move: { left: Keys.UP, right: Keys.DOWN }, power: { k1: Keys.I, k2: Keys.O, k3: Keys.P } },
-  DEFAULT: { move: { left: Keys.UP, right: Keys.DOWN }, power: { k1: Keys.ONE, k2: Keys.TWO, k3: Keys.THREE } },
-  DEFAULT_RIGHT: { move: { left: Keys.UP, right: Keys.DOWN }, power: { k1: Keys.ONE, k2: Keys.TWO, k3: Keys.THREE } }
-} as const;
-
-export const PROFILES_3D = {
-  P1: { move: { left: Keys.A, right: Keys.D }, power: { k1: Keys.C, k2: Keys.V, k3: Keys.B } },
-  P2: { move: { left: Keys.RIGHT, right: Keys.LEFT }, power: { k1: Keys.I, k2: Keys.O, k3: Keys.P } },
-  DEFAULT: { move: { left: Keys.LEFT, right: Keys.RIGHT }, power: { k1: Keys.ONE, k2: Keys.TWO, k3: Keys.THREE } },
-  DEFAULT_RIGHT: { move: { left: Keys.RIGHT, right: Keys.LEFT }, power: { k1: Keys.ONE, k2: Keys.TWO, k3: Keys.THREE } }
-} as const;
 
 // Manages all keyboard input handling for the game
 export class KeyboardManager {
@@ -42,8 +14,7 @@ export class KeyboardManager {
 	private globalKeyDownHandler: (event: KeyboardEvent) => void;
 	private activeProfiles!: { P1: KeysProfile; P2: KeysProfile; DEFAULT: KeysProfile, DEFAULT_RIGHT: KeysProfile };
 	private isInitialized: boolean = false;
-	private isSpectator: boolean = false;
-	private isPaused: boolean = false;
+	private mode: KeyboardMode = KeyboardMode.NORMAL;
 	private spectatorChoiceResolver: ((choice: boolean) => void) | null = null;
 
 	constructor(
@@ -52,7 +23,12 @@ export class KeyboardManager {
 		private gameObjects: GameObjects,
 		private players: Map<PlayerSide, PlayerState>,
 		private powerupManager: PowerupManager,
-		private gui: GUIManager,
+		private callbacks: {
+			onPauseToggle: () => void;
+			onExitToMenu: () => void;
+			onSwitchGame: (direction: Direction) => void;
+			onToggleMatchTree: () => void;
+		}
 	) {
 		this.deviceSourceManager = new DeviceSourceManager(scene.getEngine());
 		this.globalKeyDownHandler = this.handleGlobalKeyDown.bind(this);
@@ -66,6 +42,10 @@ export class KeyboardManager {
 
 	private setupGlobalKeyboardEvents(): void {
 		document.addEventListener('keydown', this.globalKeyDownHandler);
+	}
+
+	setMode(mode: KeyboardMode): void {
+		this.mode = mode;
 	}
 
 	assignLocalControls() {
@@ -83,93 +63,78 @@ export class KeyboardManager {
 	}
 
 	waitForSpectatorChoice(): Promise<boolean> {
+		this.setMode(KeyboardMode.SPECTATOR_CHOICE);
 		return new Promise<boolean>((resolve) => {
 			this.spectatorChoiceResolver = resolve;
-
 			setTimeout(() => {
-					if (this.spectatorChoiceResolver !== null) {
-						this.gui.endGame.hidePartial();
-						this.spectatorChoiceResolver = null;
-						document.dispatchEvent(new CustomEvent('game:exitToMenu'));
-						resolve(false);
-					}
-				}, 10000);
+				if (this.spectatorChoiceResolver !== null) {
+					this.spectatorChoiceResolver = null;
+					resolve(false);
+				}
+			}, 10000);
 		});
-	}
-	
-	private handleGlobalKeyDown(event: KeyboardEvent): void {
-		const key = event.keyCode;
-		
-		if (this.spectatorChoiceResolver !== null) {
-			this.handleSpectatorChoiceKeys(key);
-			return;
-		}
-
-		if (this.isSpectator) {
-			this.handleSpectatorInteraciot(key);
-			return;
-		}
-
-		if (key === Keys.ESC) {
-			this.handleEscapeKey();
-			return;
-		}
-
-		if (this.isPaused)
-			this.handlePauseMenuKeys(key);
-		else
-			this.handlePowerupKeys(key);
 	}
 
 	private handleSpectatorChoiceKeys(key: number): void {
 		if (key === Keys.Y) {
-			this.gui.endGame.hidePartial();
-			this.isSpectator = true;
 			this.spectatorChoiceResolver?.(true);
 			this.spectatorChoiceResolver = null;
+			this.setMode(KeyboardMode.SPECTATOR);
 		} else if (key === Keys.N) {
 			this.spectatorChoiceResolver?.(false);
 			this.spectatorChoiceResolver = null;
-			document.dispatchEvent(new CustomEvent('game:exitToMenu'));
 		}
 	}
-	private handleSpectatorInteraciot(key: number) {
+
+	private handleGlobalKeyDown(event: KeyboardEvent): void {
+		const key = event.keyCode;
+		switch (this.mode) {
+			case KeyboardMode.DISABLED:
+				break;
+			case KeyboardMode.SPECTATOR_CHOICE:
+				this.handleSpectatorChoiceKeys(key);
+				break;
+			case KeyboardMode.SPECTATOR:
+				this.handleSpectatorInteraciot(key);
+				break;
+			case KeyboardMode.PAUSED:
+				this.handlePauseMenuKeys(key);
+				break;
+			case KeyboardMode.NORMAL:
+				if (key === Keys.ESC) {
+					this.callbacks.onPauseToggle();
+					return;
+				}
+				this.handlePowerupKeys(key);
+				break;
+		}
+	}
+
+	private handleSpectatorInteraciot(key: number): void {
 		switch (key) {
 			case Keys.Y:
-				document.dispatchEvent(new CustomEvent('game:exitToMenu'));
+				this.callbacks.onExitToMenu();
 				break;
 			case Keys.LEFT:
-					webSocketClient.sendSwitchGame(Direction.LEFT);
+				this.callbacks.onSwitchGame(Direction.LEFT);
 				break;
 			case Keys.RIGHT:
-					webSocketClient.sendSwitchGame(Direction.RIGHT);
+				this.callbacks.onSwitchGame(Direction.RIGHT);
 				break;
 			case Keys.SPACE:
-				this.gui.matchTree.toggle();
+				this.callbacks.onToggleMatchTree();
 				break;
 		}
-	}
-
-	private handleEscapeKey(): void {
-		this.isPaused = !this.isPaused;
-		this.gui.setPauseVisible(this.isPaused, false);
-
-		// if (!this.config.isRemoteMultiplayer) {
-			if (this.isPaused)
-				webSocketClient.sendPauseRequest();
-			else
-				webSocketClient.sendResumeRequest();
-		// }
 	}
 
 	private handlePauseMenuKeys(key: number): void {
 		switch (key) {
 			case Keys.Y:
-				document.dispatchEvent(new CustomEvent('game:exitToMenu'));
+				this.callbacks.onExitToMenu();
 				break;
 			case Keys.N:
 			case Keys.ESC:
-				webSocketClient.sendResumeRequest();
+				this.callbacks.onPauseToggle();
 				break;
 		}
 	}
@@ -196,16 +161,17 @@ export class KeyboardManager {
 	}
 
 	update(): void {
-		if (!this.isInitialized || !this.deviceSourceManager || !this.gameObjects) return;
+		if (!this.isInitialized || !this.deviceSourceManager ||
+			!this.gameObjects || this.mode === KeyboardMode.DISABLED) return;
 
 		try {
 			const keyboardSource = this.deviceSourceManager.getDeviceSource(DeviceType.Keyboard);
 			if (!keyboardSource) return;
 
 			this.players.forEach((playerState, side) => {
-				if (playerState.isControlled && playerState.keyboardProfile) {
+				if (playerState.isControlled && playerState.keyboardProfile)
 					this.handlePlayerMovement(keyboardSource, side, playerState, playerState.keyboardProfile);
-				}
+
 			});
 		} catch (error) {
 			Logger.error('Error updating player input', 'KeyboardManager', error);

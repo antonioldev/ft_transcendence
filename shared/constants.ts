@@ -108,10 +108,10 @@ export enum GameSessionState {
 }
 
 // View modes for the game
-export enum ViewMode {
-	MODE_2D = 0,		// 2D view
-	MODE_3D = 1			// 3D view
-}
+// export enum ViewMode {
+// 	MODE_2D = 0,		// 2D view
+// 	MODE_3D = 1			// 3D view
+// }
 
 // Directions of collision
 export enum CollisionDirection {
@@ -135,22 +135,22 @@ export enum AuthCode {
   UNAUTHORIZED = 4
 }
 
-export enum ConnectionStatus {
-	CONNECTING = 0,	// Attempting to connect
-	CONNECTED = 1,	 // Connected and ready
-	FAILED = 2		 // Connection failed - show error
-}
+// export enum ConnectionStatus {
+// 	CONNECTING = 0,	// Attempting to connect
+// 	CONNECTED = 1,	 // Connected and ready
+// 	FAILED = 2		 // Connection failed - show error
+// }
 
-export enum AppState {
-	MAIN_MENU ,// = 'main-menu',
-	LOGIN ,//= 'login',
-	REGISTER ,//= 'register',
-	GAME_MODE ,//= 'game-mode',
-	PLAYER_SETUP ,//= 'player-setup',
-	GAME_3D ,//= 'game-3d',
-	STATS_DASHBOARD ,//= 'stats-dashboard'
-	SETTINGS ,//= 'settings'
-}
+// export enum AppState {
+// 	MAIN_MENU ,// = 'main-menu',
+// 	LOGIN ,//= 'login',
+// 	REGISTER ,//= 'register',
+// 	GAME_MODE ,//= 'game-mode',
+// 	PLAYER_SETUP ,//= 'player-setup',
+// 	GAME_3D ,//= 'game-3d',
+// 	STATS_DASHBOARD ,//= 'stats-dashboard'
+// 	SETTINGS ,//= 'settings'
+// }
 
 export enum AiDifficulty {
 	EASY,
@@ -159,45 +159,45 @@ export enum AiDifficulty {
 	IMPOSSIBLE
 }
 
-export enum UserManagement {
-	SEND_USER_PROFILE,	  // Type for front to backend comm
-	REQUEST_USER_PROFILE,	// Type for back to frontend comm
-	UPDATE_USER_PROFILE	 // Request to update user information 
-}
+// export enum UserManagement {
+// 	SEND_USER_PROFILE,	  // Type for front to backend comm
+// 	REQUEST_USER_PROFILE,	// Type for back to frontend comm
+// 	UPDATE_USER_PROFILE	 // Request to update user information 
+// }
 
-export const TOURNAMENT_SIZES = [4, 8, 16] as const;
+// export const TOURNAMENT_SIZES = [4, 8, 16] as const;
 
-export const MIN_PLAYERS_FOR_CPU: Record<number, number> = { 4: 3, 8: 5, 16: 9 };
+// export const MIN_PLAYERS_FOR_CPU: Record<number, number> = { 4: 3, 8: 5, 16: 9 };
 
-export const GAME_MODE_CONFIG = {
-	[GameMode.SINGLE_PLAYER]: {
-		requiresAuth: false,
-		requiresSetup: true,
-		availableOfflineOnly: false
-	},
-	[GameMode.TWO_PLAYER_LOCAL]: {
-		requiresAuth: false,
-		requiresSetup: true,
-		availableOfflineOnly: true
-	},
-	[GameMode.TWO_PLAYER_REMOTE]: {
-		requiresAuth: true,
-		requiresSetup: false,
-		availableOfflineOnly: false
-	},
-	[GameMode.TOURNAMENT_LOCAL]: {
-		requiresAuth: false,
-		requiresSetup: true,
-		availableOfflineOnly: true
-	},
-	[GameMode.TOURNAMENT_REMOTE]: {
-		requiresAuth: true,
-		requiresSetup: false,
-		availableOfflineOnly: false
-	}
-} as const;
+// export const GAME_MODE_CONFIG = {
+// 	[GameMode.SINGLE_PLAYER]: {
+// 		requiresAuth: false,
+// 		requiresSetup: true,
+// 		availableOfflineOnly: false
+// 	},
+// 	[GameMode.TWO_PLAYER_LOCAL]: {
+// 		requiresAuth: false,
+// 		requiresSetup: true,
+// 		availableOfflineOnly: true
+// 	},
+// 	[GameMode.TWO_PLAYER_REMOTE]: {
+// 		requiresAuth: true,
+// 		requiresSetup: false,
+// 		availableOfflineOnly: false
+// 	},
+// 	[GameMode.TOURNAMENT_LOCAL]: {
+// 		requiresAuth: false,
+// 		requiresSetup: true,
+// 		availableOfflineOnly: true
+// 	},
+// 	[GameMode.TOURNAMENT_REMOTE]: {
+// 		requiresAuth: true,
+// 		requiresSetup: false,
+// 		availableOfflineOnly: false
+// 	}
+// } as const;
 
-export enum BUTTON_NAV {
-	PREV,
-	NEXT
-}
+// export enum BUTTON_NAV {
+// 	PREV,
+// 	NEXT
+// }

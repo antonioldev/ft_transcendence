@@ -273,11 +273,3 @@ This project is part of the 42 School curriculum.
 
 ## Roadmap (For what i remembered from the meeting :)
 
-- [ ] AI player
-- [ ] Tournament mode implementation
-- [ ] Online multiplayer with matchmaking
-- [ ] Database
-- [ ] Google Auth
-- [ ] Player statistics and leaderboards
-- [ ] Custom game configurations
-- [ ] Sound effects and music

@@ -1,7 +1,7 @@
 // !!!!!!! Please update file in the root folder if you want to change or add something
 // Shared game configuration between frontend and backend
 
-import { Position, Size } from './types.js';
+import type { Position, Size } from './types.js';
 import { AiDifficulty } from './constants.js';
 
 const fieldWidth = 20; // Width of the game field

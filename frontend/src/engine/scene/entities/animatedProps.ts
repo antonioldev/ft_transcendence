@@ -1,5 +1,5 @@
 import { Scene, SceneLoader, Vector3 } from "@babylonjs/core";
-import { ActorConfig } from "../config/sceneTypes.js";
+import type { ActorConfig } from "../config/sceneTypes.js";
 
 let cachedActorModels: Map<string, any> = new Map();
 

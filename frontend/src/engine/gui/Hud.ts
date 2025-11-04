@@ -1,10 +1,10 @@
 import { AdvancedDynamicTexture, Control, Grid, Image, Rectangle, TextBlock } from "@babylonjs/gui";
 import { PowerupState, PowerupType } from '../../shared/constants.js';
 import { getCurrentTranslation } from '../../translations/translations.js';
-import { GameConfig } from '../GameConfig.js';
+import type { GameConfig } from '../GameInitializer.js';
 import { AnimationManager, Motion } from "../services/AnimationManager.js";
-import { PlayerSide } from "../utils.js";
-import { HUD_STYLES, POWER_UP_STYLES, SPECTATOR_STYLE, createGrid, createImage, createRect, createStackPanel, createTextBlock } from "./GuiStyle.js";
+import { PlayerSide } from "../../utils/constants.js";
+import { HUD_STYLES, POWER_UP_STYLES, SPECTATOR_STYLE, createGrid, createImage, createRect, createTextBlock } from "./GuiStyle.js";
 
 export class Hud {
 	private hudGrid!: Grid;
@@ -13,15 +13,14 @@ export class Hud {
 	private player1Label!: TextBlock;
 	private player2Label!: TextBlock;
 	private rally!: TextBlock;
-	private previousRally: number = 1;
 	private spectatorOverlay!: Rectangle;
 	private spectatorBanner!: Rectangle;
 	private powerUpContainerP1!: Rectangle;
 	private powerUpContainerP2!: Rectangle;
 	private hdImagesP1: Map<PowerupType, Image> = new Map();
 	private hdImagesP2: Map<PowerupType, Image> = new Map();
-	private powerUpCellsP1: Array<{root: Rectangle; icon?: Image; letter?: TextBlock}> = [];
-	private powerUpCellsP2: Array<{root: Rectangle; icon?: Image; letter?: TextBlock}> = [];
+	private powerUpCellsP1: Array<{root: Rectangle; icon?: Image; letter: TextBlock}> = [];
+	private powerUpCellsP2: Array<{root: Rectangle; icon?: Image; letter: TextBlock}> = [];
 	
 	private POWERUP_ICON: Record<number, string> = {
 		[PowerupType.SLOW_OPPONENT]: "assets/icons/powerup/slow.png",
@@ -79,34 +78,42 @@ export class Hud {
 		this.hudGrid.addControl(p1PowerUpContainer, 0, 0);
 
 		// P1 Score Cell
-		const p1Stack = createStackPanel("player1Stack", HUD_STYLES.stack);
+		const p1Grid =  createGrid("player1Grid", HUD_STYLES.grid);
+
+		p1Grid.addRowDefinition(0.4);
+		p1Grid.addRowDefinition(0.6);
+
+		this.hudGrid.addControl(p1Grid, 0, 1);
 
 		this.player1Label = createTextBlock("player1Label", HUD_STYLES.playerLabel, "Player 1");
 		this.score1Text = createTextBlock("score1Text", HUD_STYLES.scoreText, "0");
 
-		p1Stack.addControl(this.player1Label);
-		p1Stack.addControl(this.score1Text);
-		this.hudGrid.addControl(p1Stack, 0, 1);
+		p1Grid.addControl(this.player1Label, 0, 0);
+		p1Grid.addControl(this.score1Text, 1, 0);
 
-		// Rally Cell
-		const rallyStack = createStackPanel("rallyStack", HUD_STYLES.stack);
+		// Rally Grid
+		const rallyGrid = createGrid("rallyGrid", HUD_STYLES.grid);
+		rallyGrid.addRowDefinition(0.7);
+		rallyGrid.addRowDefinition(0.3);
+		this.hudGrid.addControl(rallyGrid, 0, 2);
 
-		this.rally = createTextBlock("rallyValue", HUD_STYLES.rallyValue, "0");
+		this.rally = createTextBlock("rallyValue", HUD_STYLES.rallyValue, "1");
 		const rallyText = createTextBlock("rallyText", HUD_STYLES.rallyText, "Rally");
-		
-		rallyStack.addControl(this.rally);
-		rallyStack.addControl(rallyText);
-		this.hudGrid.addControl(rallyStack, 0, 2);
 
-		// P2 Score Cell
-		const p2Stack = createStackPanel("player2Stack", HUD_STYLES.stack);
+		rallyGrid.addControl(this.rally, 0, 0);
+		rallyGrid.addControl(rallyText, 1, 0);
+
+		// P2 Grid (converted from Stack)
+		const p2Grid = createGrid("player2Grid", HUD_STYLES.grid);
+		p2Grid.addRowDefinition(0.4);
+		p2Grid.addRowDefinition(0.6);
+		this.hudGrid.addControl(p2Grid, 0, 3);
 
 		this.player2Label = createTextBlock("player2Label", HUD_STYLES.playerLabel, "Player 2");
 		this.score2Text = createTextBlock("score2Text", HUD_STYLES.scoreText, "0");
-		
-		p2Stack.addControl(this.player2Label);
-		p2Stack.addControl(this.score2Text);
-		this.hudGrid.addControl(p2Stack, 0, 3);
+
+		p2Grid.addControl(this.player2Label, 0, 0);
+		p2Grid.addControl(this.score2Text, 1, 0);
 
 		// P2 PowerUps
 		const p2PowerUpContainer = this.createPowerUpContainer(1, config);
@@ -128,9 +135,9 @@ export class Hud {
 		return container;
 	}
 
-	private createPowerUpCell(index: number, player: PlayerSide, config: GameConfig): {root: Rectangle; icon?: Image; letter?: TextBlock} {
+	private createPowerUpCell(index: number, player: PlayerSide, config: GameConfig): {root: Rectangle; icon?: Image; letter: TextBlock} {
 		const cell = createRect(`powerUpCell_${player}_${index}`, POWER_UP_STYLES.powerUpCell);
-		cell.left = `${index * 32}%`;
+		cell.left = `${index * 33}%`;
 
 		let letterKeys = ['1', '2', '3'];
 		if (config.isLocalMultiplayer)
@@ -171,49 +178,46 @@ export class Hud {
 		this.spectatorBanner = createRect("spectatorBanner", SPECTATOR_STYLE.spectatorBanner);
 		this.spectatorOverlay.addControl(this.spectatorBanner);
 
-		const bannerContent = createStackPanel("bannerContent", SPECTATOR_STYLE.bannerContent);
-		this.spectatorBanner.addControl(bannerContent);
+		const bannerGrid = createGrid("bannerGrid", SPECTATOR_STYLE.bannerGrid);
+		bannerGrid.addColumnDefinition(0.3, false);
+		bannerGrid.addColumnDefinition(0.7, false);
+		this.spectatorBanner.addControl(bannerGrid);
 
 		const spectatorText = createTextBlock("spectatorText", SPECTATOR_STYLE.spectatorText, t.spectator);
-		bannerContent.addControl(spectatorText);
+		bannerGrid.addControl(spectatorText, 0, 0);
 
 		const spectatorControls = createTextBlock("spectatorControls", SPECTATOR_STYLE.spectatorControls, t.spectatorInstruction);
-		bannerContent.addControl(spectatorControls);
+		bannerGrid.addControl(spectatorControls, 0, 1);
 	}
 
 	show(show: boolean): void {
-		this.hudGrid.isVisible = show;
-
-		this.powerUpContainerP1.isVisible = show;
-		this.powerUpContainerP2.isVisible = show;
+		this.hudGrid.alpha = show ? 1 : 0;
+		this.powerUpContainerP1.alpha = show ? 1 : 0;
+		this.powerUpContainerP2.alpha = show ? 1 : 0;
 	}
 
-	updateRally(rally: number): boolean {
-		if (this.rally && ((this.previousRally < rally) || (rally === 1 && this.previousRally > rally))) {
-			this.rally.text = `${Math.round(rally)}`;
+	updateRally(rally: number): void {
+		if (!this.rally) return;
+		
+		this.rally.text = `${Math.round(rally)}`;
 
-			const maxRally = 10;
-			const intensity = Math.min(rally / maxRally, 1);
-			const r = 255;
-			const g = Math.round(255 * (1 - intensity));
-			const b = Math.round(255 * (1 - intensity));
-			this.rally.color = `rgb(${r}, ${g}, ${b})`;
+		const maxRally = 10;
+		const intensity = Math.min(rally / maxRally, 1);
+		const r = 255;
+		const g = Math.round(255 * (1 - intensity));
+		const b = Math.round(255 * (1 - intensity));
+		this.rally.color = `rgb(${r}, ${g}, ${b})`;
 
-			let scale = 1.4;
-			if (rally > 0 && rally % 5 === 0)
-				scale = 2;
-			this.animationManager?.scale(this.rally, 1, scale, Motion.F.base, true);
-			this.previousRally = rally;
-			return true;
-		}
-		this.previousRally = rally;
-		return false;
+		let scale = 1.4;
+		if (rally > 0 && rally % 5 === 0)
+			scale = 2;
+		this.animationManager?.scale(this.rally, 1, scale, Motion.F.base, true);
 	}
 
 	async setSpectatorMode(): Promise<void> {
 		this.spectatorOverlay.isVisible = true;
 		this.animationManager.fade(this.spectatorBanner, 'in', Motion.F.base);
-		this.animationManager.twinkle(this.spectatorOverlay, Motion.F.fast);
+		this.animationManager.twinkle(this.spectatorOverlay, Motion.F.base);
 	}
 
 	updateScores(leftScore: number, rightScore: number): void {
@@ -232,12 +236,9 @@ export class Hud {
 	updatePlayerNames(player1Name: string, player2Name: string): void {
 		this.player1Label.text = player1Name;
 		this.player2Label.text = player2Name;
-		this.hudGrid.isVisible = true;
 	}
 
 	assignPowerUp(player: PlayerSide, slotIndex: number, powerUpType: PowerupType): void {
-		this.powerUpContainerP1.isVisible = true;
-		this.powerUpContainerP2.isVisible = true;
 		const scene = this.adt.getScene();
 		const cells = player === 0 ? this.powerUpCellsP1 : this.powerUpCellsP2;
 		if (slotIndex >= 0 && slotIndex < cells.length) {
@@ -247,7 +248,9 @@ export class Hud {
 			cell.root.scaleX = 1;
 			cell.root.scaleY = 1;
 			cell.root.alpha = 0;
-			cell.root.color = "rgba(255, 255, 255, 0.5)";
+			cell.root.thickness = 0;
+			cell.root.background = "rgba(0, 0, 0, 0)";
+			cell.letter.color = "rgba(255, 255, 255, 1)";
 			
 			if (powerUpType !== null && this.POWERUP_ICON[powerUpType]) {
 				if (!cell.icon) {
@@ -264,14 +267,23 @@ export class Hud {
 				cell.root.alpha = 0;
 				const delay = slotIndex * 100;
 				setTimeout(() => {
-					this.animationManager.scale(cell.root, 1, 1.1, Motion.F.fast, true);
-					// this.animationManager.slideFromDirection(cell.root, 'up', 'in', 100, Motion.F.base)
-					// 	.then(() => {
-					// 		return this.animationManager.scale(cell.root, 1, 1.1, Motion.F.fast, true);
-					// 	});
+					this.animationManager.slideFromDirection(cell.root, 'up', 'in', 100, Motion.F.base)
+						.then(() => {
+							return this.animationManager.scale(cell.root, 1, 1.1, Motion.F.fast, true);
+						});
 				}, delay);
 			}
 		}
+	}
+
+	updateControlVisibility(leftIsControlled: boolean, rightIsControlled: boolean): void {
+		this.powerUpCellsP1.forEach(cell => {
+			cell.letter.alpha = leftIsControlled ? 1 : 0;
+		});
+
+		this.powerUpCellsP2.forEach(cell => {
+			cell.letter.alpha = rightIsControlled ? 1 : 0;
+		});
 	}
 
 	updatePowerUp(player: PlayerSide, slotIndex: number, action: PowerupState): void {
@@ -284,6 +296,7 @@ export class Hud {
 			switch (action) {
 				case PowerupState.ACTIVE:
 					cell.root.color = "rgba(255, 0, 0, 1)";
+					cell.root.thickness = 1;
 					if (cell.icon)
 						this.animationManager?.twinkle(cell.root, Motion.F.fast);
 					break;
@@ -292,8 +305,9 @@ export class Hud {
 					scene?.stopAnimation(cell.root);
 					cell.root.scaleX = 1;
 					cell.root.scaleY = 1;
-					cell.root.color = "rgba(255, 255, 255, 0.5)";
+					cell.root.thickness = 0;
 					cell.root.background = "rgba(255, 255, 255, 0.25)";
+					cell.letter.color = "rgba(255, 255, 255, 0.25)";
 					
 					if (cell.icon)
 						this.animationManager.fade(cell.icon, 'out', Motion.F.fast).then(() => {
@@ -323,7 +337,7 @@ export class Hud {
 		imageHD.isVisible = false;
 	}
 
-	resetPowerUps(): void {
+	resetPowerupVisuals(): void {
 		const scene = this.adt.getScene();
 
 		[this.powerUpCellsP1, this.powerUpCellsP2].forEach(cells => {
@@ -334,13 +348,10 @@ export class Hud {
 				cell.root.alpha = 0;
 				cell.root.topInPixels = 0;
 				cell.root.color = "rgba(255, 255, 255, 0.5)";
-				// cell.root.background = "rgba(0, 0, 0, 1)";
-				
+
 				if (cell.icon) {
 					cell.icon.alpha = 0;
-					// cell.icon.isVisible = false;
 					cell.icon.source = "";
-					// cell.icon.dispose();
 				}
 			});
 		});

@@ -2,8 +2,9 @@ import { Color3, Color4 } from "@babylonjs/core";
 import { webSocketClient } from '../../core/WebSocketClient.js';
 import { PowerupState, PowerupType } from "../../shared/constants.js";
 import { GAME_CONFIG } from "../../shared/gameConfig.js";
-import { GameObjects, Powerup } from "../../shared/types.js";
-import { PlayerSide, PlayerState } from "../utils.js";
+import type { Powerup } from "../../shared/types.js";
+import { PlayerSide } from "../../utils/constants.js";
+import type { GameObjects, PlayerState } from "../../utils/types.js";
 import { AnimationManager } from "./AnimationManager.js";
 import { GUIManager } from "./GuiManager.js";
 
@@ -26,7 +27,6 @@ export class PowerupManager {
 			return;
 
 		if (!player.powerUpsAssigned) {
-			console.error("try to assign new powerup " + serverPowerups.length);
 			player.powerUpsAssigned = true;
 			player.powerUps = [...serverPowerups];
 			for (let i = 0; i < serverPowerups.length; i++)
@@ -232,5 +232,17 @@ export class PowerupManager {
 				break;
 		}
 		this.guiManager?.hud.updatePowerUp(side, slot, PowerupState.SPENT);
+	}
+
+	resetPowerupStates(): void {
+		this.players.forEach((player, side) => {
+			if (player.powerUps && player.powerUps.length > 0) {
+				player.powerUps.forEach((powerup, index) => {
+					if (powerup.state === PowerupState.ACTIVE) {
+						this.deactivate(side, index, powerup.type);
+					}
+				});
+			}
+		});
 	}
 }

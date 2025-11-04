@@ -1,14 +1,14 @@
-import { Logger } from '../utils/LogManager.js';
-import { AppState} from '../shared/constants.js';
-import { uiManager } from '../ui/UIManager.js';
-import { getCurrentTranslation } from '../translations/translations.js';
-import { EL, requireElementById} from '../ui/elements.js';
-import { initializeGoogleSignIn, renderGoogleButton } from './GoogleSignIn.js';
-import { appManager } from './AppManager.js';
-import { sendGET, sendPOST, getSID } from './HTTPRequests.js';
 import { AuthCode } from '../shared/constants.js';
-import { Translation } from '../translations/Translation.js';
-import { updateCurrentSettings, Setting } from './AppManager.js';
+import type { Translation } from '../translations/Translation.js';
+import { getCurrentTranslation } from '../translations/translations.js';
+import { uiManager } from '../ui/UIManager.js';
+import { EL, requireElementById } from '../ui/elements.js';
+import { Logger } from '../utils/LogManager.js';
+import { AppState } from '../utils/constants.js';
+import type { GameSetting } from '../utils/types.js';
+import { appManager, updateCurrentSettings } from './AppManager.js';
+import { initializeGoogleSignIn, renderGoogleButton } from './GoogleSignIn.js';
+import { getSID, sendGET, sendPOST } from './HTTPRequests.js';
 
 // Declare the type for Google Response to avoid TypeScript errors
 type GoogleCredentialResponse = {
@@ -30,7 +30,6 @@ export class AuthManager {
 	// Initializes the AuthManager by setting up event listeners.
 	initialize(): void {
 		authManager.setupEventListeners();
-		// authManager.restoreSessionOnBoot();
 	}
 
 	// ========================================
@@ -111,13 +110,11 @@ export class AuthManager {
 		showRegister?.addEventListener('click', (e) => {
             e.preventDefault();
 			appManager.navigateTo(AppState.REGISTER);
-			// this.prepareGoogleLogin();
 		});
 
 		showLogin?.addEventListener('click', (e) => {
             e.preventDefault();
 			appManager.navigateTo(AppState.LOGIN);
-			// this.prepareGoogleLogin();
 		});
 	}
 
@@ -183,8 +180,6 @@ export class AuthManager {
         // Login form validation
         const loginUsername = document.getElementById('login-username');
         const loginPassword = document.getElementById('login-password');
-        // const loginSubmit = document.getElementById(EL.BUTTONS.LOGIN_SUBMIT);
-        // const registerSubmit = document.getElementById(EL.BUTTONS.REGISTER_SUBMIT);
 
         loginUsername?.addEventListener('blur', () => {
             const value = (loginUsername as HTMLInputElement).value.trim();
@@ -272,10 +267,10 @@ export class AuthManager {
         
         // Basic validation
         if (!username || !password) {
-            alert(translation.pleaseFilllAllFields);
+            (translation.pleaseFilllAllFields);
             uiManager.clearForm(this.loginFields);
             return;
-        }    
+        }
 
         const responseData = await sendPOST("login", { username, password });
         this.handleLoginResponse(responseData.result, responseData.message, username, translation);
@@ -319,8 +314,7 @@ export class AuthManager {
         }
 
         if (password !== confirmPassword) {
-            alert(translation.passwordsDoNotMatch);
-            uiManager.clearForm(this.registrationFields);
+            this.showFieldError('register-password', translation.passwordsDoNotMatch);
             return;
         }
 
@@ -329,7 +323,7 @@ export class AuthManager {
         this.handleRegistrationResponse(responseData.result, responseData.message);
     }
 
-    async saveUserSettings(settings: Partial<Setting>) : Promise<void> {
+    async saveUserSettings(settings: Partial<GameSetting>) : Promise<void> {
         if (!this.isUserAuthenticated()) return;
 
         const response = await sendPOST('settings', settings);
@@ -378,9 +372,7 @@ export class AuthManager {
 
     handleRegistrationResponse(result: AuthCode, message: string) {
         if (result === AuthCode.OK) {
-            // this.currentUser = { username };
             uiManager.clearForm(this.registrationFields);
-            // uiManager.showUserInfo(username);
             alert(message || 'Registration successful! Welcome to the game!');
             setTimeout(() => { appManager.navigateTo(AppState.LOGIN) }, 500);
         }
@@ -392,7 +384,6 @@ export class AuthManager {
             }
         }
     }
-
 
 	// Prepares and initializes Google Sign-In for the application
 	private prepareGoogleLogin(): void {
@@ -421,12 +412,6 @@ export class AuthManager {
                 } else if (!success) {
                     throw new Error(`Account already in use on another device.`);
                 }
-
-                
-                // // Decodes the session token and updates the current user and authentication state
-                // const decodedToken = JSON.parse(atob(sessionToken.split('.')[1]));
-                // this.currentUser = { username: decodedToken.user.username };
-                // this.authState = AuthState.LOGGED_IN;
 
                 this.currentUser = { username: user.username };
 				this.getUserSettings();

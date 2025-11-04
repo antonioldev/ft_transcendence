@@ -1,4 +1,4 @@
-import { Translation } from './Translation.js';
+import type { Translation } from './Translation.js';
 
 export const portuguese: Translation = {
     classicMode: 'Modo Clássico',
@@ -11,11 +11,7 @@ export const portuguese: Translation = {
     back: 'Voltar',
     playerSetup: 'Configuração de Jogadores',
     playerName: 'Nome do Jogador:',
-    player1Name: 'Nome Jogador 1:',
-    player2Name: 'Nome Jogador 2:',
     enterName: 'Digite seu nome',
-    enterPlayer1Name: 'Digite o nome do Jogador 1',
-    enterPlayer2Name: 'Digite o nome do Jogador 2',
     onlineInfo: 'Você será pareado com outro jogador online',
 	next: "Próximo Jogador",
     startGame: 'Iniciar Jogo',
@@ -23,8 +19,6 @@ export const portuguese: Translation = {
     exitGame: 'Sair do jogo?',
     pauseControls: 'Y - Sim | N - Não | ESC - Retomar',
     pauseControls3D: 'Y | N',
-    alertPlayer1: 'Digite um nome para o Jogador 1',
-    alertPlayer2: 'Digite um nome para o Jogador 2',
     register: '/ registrar',
     registerTitle: 'Criar uma Nova Conta',
     login: '/ entrar',
@@ -41,12 +35,7 @@ export const portuguese: Translation = {
     alreadyRegistered: 'Já é registrado?',
     usernameOrEmail: 'Nome de usuário ou Email:',
     createAccount: 'Criar Conta',
-    enterUsername: 'Digite o nome de usuário',
-    enterEmail: 'Digite o email',
-    enterPassword: 'Digite a senha',
     confirmPasswordPlaceholder: 'Confirme a senha',
-    enterUsernameOrEmail: 'Digite o nome de usuário ou email',
-    viewMode: 'Modo de visualização',
     backToMain: 'Voltar ao menu principal',
     pleaseFilllAllFields: 'Preencha todos os campos',
     alreadyLogin: 'Esta conta já está em login em outro dispositivo',
@@ -70,10 +59,11 @@ export const portuguese: Translation = {
     impossible: ' (Impossível)',
     winner: 'VENCEDOR',
     continue: 'Pressione ESPAÇO para continuar',
-	tournamentTitle: 'Classificação do Torneio de Pong',
+	tournamentTitle: 'CLASSIFICAÇÃO DO TORNEIO',
 	escToClose: 'Pressione ESC para fechar',
     miniGameRules: 'Encontre todos os pares correspondentes! Jogue enquanto outros terminam seus jogos.',
     // Validation error messages
+    usernameNotValid: 'Nome já em uso. Escolha um nome diferente.',
     errorEnterEmailOrUsername: 'Por favor, insira email ou nome de usuário',
     errorEnterPassword: 'Por favor, insira senha',
     errorEnterUsername: 'Por favor, insira um nome de usuário',

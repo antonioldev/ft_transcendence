@@ -1,6 +1,6 @@
 import { Scene, Sound } from "@babylonjs/core";
-import { GameConfig } from "../GameConfig.js";
 import { Logger } from '../../utils/LogManager.js';
+import type { GameConfig } from "../GameInitializer.js";
 
 /**
  * Manages audio playback for the game, including background music, sound effects,
@@ -9,11 +9,20 @@ import { Logger } from '../../utils/LogManager.js';
 export class AudioManager {
 	private gameMusic: Sound | null = null;
 	private gameMusicEntrance: Sound | null = null;
+	// Sound effects
+	private countdownSound: Sound | null = null;
+	private paddleHitSound: Sound | null = null;
+	private scoreSound: Sound | null = null;
+	private powerup: Sound | null = null;
+	private entrance: Sound | null = null;
+	private winner: Sound | null = null;
+	private loser: Sound | null = null;
+	private miniGameCorrect: Sound | null = null;
+	private miniGameNotCorrect: Sound | null = null;
+
 	private isInitialized: boolean = false;
-	private basePlaybackRate: number = 1.0;
-	private maxPlaybackRate: number = 1.8;
-	private maxRally: number = 50;
-	private currentRally: number = 1;
+	private readonly basePlaybackRate: number = 1.0;
+	private readonly maxPlaybackRate: number = 1.8;
 	private musicEnabled: boolean;
 	private effectsEnabled: boolean;
 	private volumes = {
@@ -30,17 +39,7 @@ export class AudioManager {
 		miniGameNotCorrect: 0.7,
 	};
 
-	// Sound effects
-	private countdownSound: Sound | null = null;
-	private paddleHitSound: Sound | null = null;
-	private scoreSound: Sound | null = null;
-	private powerup: Sound | null = null;
-	private entrance: Sound | null = null;
-	private winner: Sound | null = null;
-	private loser: Sound | null = null;
-	private miniGameCorrect: Sound | null = null;
-	private miniGameNotCorrect: Sound | null = null;
-
+	
 
 	constructor(private scene: Scene, config: GameConfig) {
 		this.musicEnabled = config.musicEnabled;
@@ -230,19 +229,17 @@ export class AudioManager {
 	}
 
 	resumeGameMusic(): void {
-		if (this.gameMusic?.isPlaying !== true )
+		if (this.gameMusic?.isPaused)
 			this.gameMusic?.play();
 	}
 
-	// Update music speed based on rally count with gentler curve and pinch effect
-	updateMusicSpeed(rallyCount: number): void {
+	updateMusicSpeed(rallyCount: number, maxRally: number = 10): void {
 		if (!this.gameMusic || !this.isInitialized) return;
 
-		if (rallyCount === this.currentRally) return;
 		this.playPaddleHit();
-		this.currentRally = rallyCount;
 
-		const speedCurve = Math.min(rallyCount / this.maxRally, 1.0);
+		const normalizedRally = Math.min(rallyCount / maxRally, 1.0);
+		const speedCurve = Math.pow(normalizedRally, 2.5);
 		const newPlaybackRate = this.basePlaybackRate + 
 			(speedCurve * (this.maxPlaybackRate - this.basePlaybackRate));
 
