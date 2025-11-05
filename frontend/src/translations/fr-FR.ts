@@ -77,7 +77,7 @@ export const french: Translation = {
     errorPasswordsDoNotMatch: 'Les mots de passe ne correspondent pas',
 	spectator: '🎮 MODE SPECTATEUR',
 	spectatorInstruction: ' ← Match Précédent  |  → Match Suivant ',
-	spectatorQuestion: 'Veux-tu regarder le reste du tournoi ? Appuie sur O, ou appuie sur N pour quitter',
+	spectatorQuestion: 'Veux-tu regarder le reste du tournoi ? Appuie sur O, ou appuie sur ESC pour quitter',
 
     pauseControlsTitle: '🎮 CONTRÔLES',
     pauseMovementTitle: '🚀 MOUVEMENT',
@@ -112,7 +112,6 @@ export const french: Translation = {
     score: 'Score',
     result: 'Résultat',
     tournament: 'Tournoi',
-    duration: 'Durée',
     yes: 'Oui',
     no: 'Non',
     win: 'Gagner',

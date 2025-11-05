@@ -75,7 +75,7 @@ export const russian: Translation = {
     errorPasswordsDoNotMatch: 'Пароли не совпадают',
 	spectator: '🎮 РЕЖИМ НАБЛЮДАТЕЛЯ',
 	spectatorInstruction: ' ← Предыдущий Матч  |  → Следующий Матч ',
-	spectatorQuestion: 'Хотите посмотреть остаток турнира? Нажмите Д, или нажмите Н, чтобы выйти',
+	spectatorQuestion: 'Хотите посмотреть остаток турнира? Нажмите Д, или нажмите ESC, чтобы выйти',
 
     pauseControlsTitle: '🎮 УПРАВЛЕНИЕ',
     pauseMovementTitle: '🚀 ДВИЖЕНИЕ',
@@ -110,7 +110,6 @@ export const russian: Translation = {
     score: 'Счет',
     result: 'Результат',
     tournament: 'Турнир',
-    duration: 'Длительность',
     yes: 'Да',
     no: 'Нет',
     win: 'Победа',

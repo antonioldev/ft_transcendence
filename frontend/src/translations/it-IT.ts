@@ -75,7 +75,7 @@ export const italian: Translation = {
     errorPasswordsDoNotMatch: 'Le password non corrispondono',
 	spectator: '🎮 MODALITÀ SPETTATORE',
 	spectatorInstruction: ' ← Partita Precedente  |  → Partita Successiva ',
-	spectatorQuestion: 'Vuoi guardere il resto del torneo? Premi Y, oppure premi N per uscire',
+	spectatorQuestion: 'Vuoi guardere il resto del torneo? Premi Y, oppure premi ESC per uscire',
 
     pauseControlsTitle: '🎮 CONTROLLI',
     pauseMovementTitle: '🚀 MOVIMENTO',
@@ -110,7 +110,6 @@ export const italian: Translation = {
     score: 'Punteggio',
     result: 'Risultato',
     tournament: 'Torneo',
-    duration: 'Durata',
     yes: 'Sì',
     no: 'No',
     win: 'Vittoria',
