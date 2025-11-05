@@ -349,6 +349,7 @@ export class TournamentRemote extends AbstractTournament {
 	}
 
 	/* --- Spectators --- */
+	
 	assign_spectator(client: Client, match?: Match) {
 		const spectator_match = match ?? this.active_matches[0] ?? undefined;
 		if (!spectator_match) {
@@ -421,6 +422,7 @@ export class TournamentRemote extends AbstractTournament {
 				else {
 					console.log(`Removed player from pending game: ${quitter.username}`)
 					match.remove_player(quitter);
+					this.defeated_clients.delete(quitter);
 				}
 			}
 			else {

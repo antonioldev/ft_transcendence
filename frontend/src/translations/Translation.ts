@@ -115,7 +115,6 @@ export interface Translation {
     score: string;
     result: string;
     tournament: string;
-    duration: string;
     yes: string;
     no: string;
     win: string;
