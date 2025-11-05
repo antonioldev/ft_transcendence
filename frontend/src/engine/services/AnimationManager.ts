@@ -404,9 +404,8 @@ export class AnimationManager {
 					lastBlink = elapsed;
 
 					setTimeout(() => {
-						if (Date.now() - start < duration) {
+						if (Date.now() - start < duration)
 							target.material.alpha = 0;
-						}
 					}, blinkDuration);
 				}
 				
