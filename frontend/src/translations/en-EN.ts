@@ -64,7 +64,7 @@ export const english: Translation = {
     miniGameRules: 'Find all matching pairs! Play while others finish their games.',
     spectator: '🎮 SPECTATOR MODE',
 	spectatorInstruction: ' ← Previous Match  |  → Next Match ',
-	spectatorQuestion: 'Do you want to watch the rest of the tournament? Press Y, or press N to exit',
+	spectatorQuestion: 'Do you want to watch the rest of the tournament? Press Y, or press ESC to exit',
     
     // Validation error messages
     usernameNotValid: 'Name already used. Choose different name.',
@@ -111,7 +111,6 @@ export const english: Translation = {
     score: 'Score',
     result: 'Result',
     tournament: 'Tournament',
-    duration: 'Duration',
     yes: 'Yes',
     no: 'No',
     win: 'Win',
