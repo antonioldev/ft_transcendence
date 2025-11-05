@@ -113,7 +113,6 @@ export class PowerupManager {
 					this.animationManager?.blinkInvisibility(ball);
 				});
 				break;
-			
 			case PowerupType.SHIELD:
 				const shieldGlow = isLeftSide ? this.gameObjects?.effects?.leftShield : this.gameObjects?.effects?.rightShield;
 				this.animationManager?.glowEffect(shieldGlow, new Color3(2, 2, 0));
@@ -157,7 +156,6 @@ export class PowerupManager {
 					}
 				});
 				break;
-			case PowerupType.INVISIBLE_BALL:
 			case PowerupType.TRIPLE_SHOT:
 			case PowerupType.RESET_RALLY:
 			case PowerupType.DOUBLE_POINTS:
