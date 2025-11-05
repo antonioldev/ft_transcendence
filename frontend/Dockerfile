@@ -9,6 +9,14 @@ COPY package*.json ./
 
 # Install dependencies
 RUN npm install
+RUN apk add --no-cache openssl neovim
+
+# Create cert dirs and generate a self-signed cert
+RUN mkdir -p /etc/ssl/certs /etc/ssl/private && \
+    openssl req -newkey rsa:4096 -x509 -sha256 -days 100 -nodes \
+      -out /etc/ssl/certs/frontend.crt \
+      -keyout /etc/ssl/private/frontend.key \
+      -subj "/C=UK/ST=ENGLAND/L=LONDON/O=42/OU=TRANSCENDENCE/CN=localhost"
 
 # Copy the entire source code to the working directory
 COPY . .
@@ -44,4 +52,4 @@ COPY --from=builder /app/env-config.js /usr/share/nginx/html/
 # COPY src/assets/images/42_favicon.ico /usr/share/nginx/html/
 COPY src/assets/ /usr/share/nginx/html/assets/
 
-EXPOSE 80
+EXPOSE 443

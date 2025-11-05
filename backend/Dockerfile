@@ -9,8 +9,15 @@ WORKDIR /app
 COPY package*.json package-lock.json ./
 
 # Install dependencies
-RUN npm install && apk add --no-cache neovim
+RUN npm install
+RUN apk add --no-cache openssl neovim
 
+# Create cert dirs and generate a self-signed cert
+RUN mkdir -p /etc/ssl/certs /etc/ssl/private && \
+    openssl req -newkey rsa:4096 -x509 -sha256 -days 100 -nodes \
+      -out /etc/ssl/certs/backend.crt \
+      -keyout /etc/ssl/private/backend.key \
+      -subj "/C=UK/ST=ENGLAND/L=LONDON/O=42/OU=TRANSCENDENCE/CN=localhost"
 
 # Copy source code
 COPY src/ ./src/

@@ -14,5 +14,5 @@ RUN mkdir -p /etc/nginx/ssl/certs /etc/nginx/ssl/private && \
       -keyout /etc/nginx/ssl/private/key.key \
       -subj "/C=UK/ST=ENGLAND/L=LONDON/O=42/OU=TRANSCENDENCE/CN=localhost"
 
-EXPOSE 80 443
+EXPOSE 443
 CMD ["nginx","-g","daemon off;"]

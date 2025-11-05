@@ -1,4 +1,5 @@
 import Fastify from 'fastify';
+import * as fs from 'fs';
 import { FastifyInstance } from 'fastify';
 import fastifyJwt from '@fastify/jwt';
 import fastifyCors from '@fastify/cors';
@@ -26,6 +27,10 @@ await setDefaultStatus();
 export const app: FastifyInstance = Fastify({
     logger: config.debug === 'yes' ? true : false,
     trustProxy: true,
+    https: {
+        key: fs.readFileSync('/etc/ssl/private/backend.key'),
+        cert: fs.readFileSync('/etc/ssl/certs/backend.crt'),
+    },
 });
 
 
