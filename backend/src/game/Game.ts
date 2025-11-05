@@ -66,6 +66,7 @@ export class Game {
 			this.stop();
 		}
 		if (this.balls.length > 1) {
+			console.log("Removing extra ball");
 			remove_elem(this.balls, ball);
 		}
 		this.powerup_manager.deactivate_all();

@@ -34,13 +34,15 @@ export class PowerupManager {
 	_init_powerups() {
 		// generates 3 random powerups in each player's slots
 		const num_powerups = Object.keys(PowerupType).length / 2;
-		this.left_slots[0] = new Slot(PowerupType.INVISIBLE_BALL, LEFT, 0);
-		this.left_slots[1] = new Slot(PowerupType.POWERSHOT, LEFT, 1);
-		this.left_slots[2] = new Slot(PowerupType.TRIPLE_SHOT, LEFT, 2);
+		// this.left_slots[0] = new Slot(PowerupType.INVISIBLE_BALL, LEFT, 0);
+		// this.left_slots[1] = new Slot(PowerupType.POWERSHOT, LEFT, 1);
+		// this.left_slots[2] = new Slot(PowerupType.TRIPLE_SHOT, LEFT, 2);
 
 		for (let i = 0; i < GAME_CONFIG.slot_count; i++) {
 			// this.left_slots[i] = new Slot(Math.floor(Math.random() * num_powerups), LEFT, i);
-			this.right_slots[i] = new Slot(Math.floor(Math.random() * num_powerups), RIGHT, i);
+			// this.right_slots[i] = new Slot(Math.floor(Math.random() * num_powerups), RIGHT, i);
+			this.left_slots[i] = new Slot(PowerupType.TRIPLE_SHOT, LEFT, i);
+			this.right_slots[i] = new Slot(PowerupType.TRIPLE_SHOT, RIGHT, i);
 		}
 	}
 
@@ -98,6 +100,7 @@ export class PowerupManager {
 				timeout = this.set_double_points(true);
 				break ;
 			case PowerupType.TRIPLE_SHOT:
+				console.log("TRIPLE SHOT CALLED");
 				timeout = await this.triple_shot(slot.side);
 				break ;
 			case PowerupType.SHIELD:
@@ -258,6 +261,7 @@ export class PowerupManager {
 		await new Promise<void>((resolve) => {
 			eventManager.once(`paddle-collision-${side}`, (ball: Ball ) => {
 				if (this.paddles[side].powershot_active) {
+					console.log("Creating new balls")
 					this.paddles[opponent_side].powershot_deactivate = true;
 					ball.speed_cache = ball.speed;
 					ball.speed = Math.max(GAME_CONFIG.ballMinPowershotSpeed, ball.speed * 1.5);
@@ -291,15 +295,17 @@ export class PowerupManager {
 		if (this.balls.length === 3) return (0);
 		await new Promise<void>(resolve => {
 			eventManager.once(`paddle-collision-${side}`, (ball: Ball ) => {
-				if (this.paddles[side].triple_shot_active) {
+				if (this.paddles[side].triple_shot_active && this.balls.length < 3) {
 					this.balls.push(ball.duplicate(ball.speed * 0.85, -Math.PI / 9));
-					if (this.balls.length !== 3) {
+					if (this.balls.length < 3) {
 						this.balls.push(ball.duplicate(ball.speed * 0.7, Math.PI / 9));
 					}
 				}
 				resolve();
 			});
 		})
+
+		this.paddles[side].triple_shot_active = false;
 		return (0);
 	}
 
