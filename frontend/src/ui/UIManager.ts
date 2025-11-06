@@ -91,7 +91,6 @@ class UIManager {
 		userInfo.style.display = 'flex';
 		userInfoContainer.style.display = 'flex';
 
-		// Setup dropdown functionality only once
 		this.setupDropdownEvents();
 	}
 
@@ -101,7 +100,6 @@ class UIManager {
 		const dropdownArrow = document.getElementById('dropdown-arrow');
 
 		if (dropdownTrigger && dropdownMenu && dropdownArrow) {
-			// Remove existing listeners to avoid duplicates
 			dropdownTrigger.replaceWith(dropdownTrigger.cloneNode(true));
 			const newTrigger = document.getElementById('user-dropdown-trigger')!;
 			
@@ -311,17 +309,11 @@ class UIManager {
 
 	setLoadingScreenVisible(visible: boolean): void {
 		const t = getCurrentTranslation();
+		this.updateLoadingProgress(0);
 		const loadingText = requireElementById(EL.GAME.LOADING_TEXT);
 		loadingText.textContent = t.loading;
 		const loadingScreen = requireElementById(EL.GAME.LOADING_SCREEN);
 		loadingScreen.style.display = visible ? 'flex' : 'none';
-		this.updateLoadingProgress(0);
-	}
-
-	updateLoadingText(): void {
-		const t = getCurrentTranslation();
-		const loadingText = requireElementById(EL.GAME.LOADING_TEXT);
-		loadingText.textContent = t.waiting;
 	}
 }
 

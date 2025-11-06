@@ -18,15 +18,12 @@ import { createCameras, createGuiCamera } from "./camerasBuilder.js";
 import { createFireworks, createFog, createLensFlare, createParticleSystem, createSmokeSprite } from './effectsBuilder.js';
 import { createLight, createSky, createTerrain } from './enviromentBuilder.js';
 import type { CoreGameObjects } from "../../../utils/types.js";
+import { uiManager } from "../../../ui/UIManager.js";
 
 export type LoadingProgressCallback = (progress: number) => void;
 
-export async function buildScene(
-	scene: Scene,
-	config: GameConfig,
-	onProgress?: LoadingProgressCallback
-): Promise<{ gameObjects: GameObjects; themeObjects: ThemeObject }> {
-	onProgress?.(0);
+export async function buildScene(scene: Scene, config: GameConfig): Promise<{ gameObjects: GameObjects; themeObjects: ThemeObject }> {
+	 uiManager.updateLoadingProgress(0);
 
 	const viewMode = config.viewMode;
 	const gameMode = config.gameMode;
@@ -35,12 +32,12 @@ export async function buildScene(
 	const map_asset = getMap(viewMode, config.scene3D);
 	
 	const coreObjects = await buildCoreGameObjects(scene, gameMode, viewMode, map_asset);
-	onProgress?.(20);
+	 uiManager.updateLoadingProgress(20);
 	const powerUpEffects = await createPowerUpEffects(scene, coreObjects.players, coreObjects.balls);
-	onProgress?.(40);
-	await buildThematicEnvironment(scene, map_asset, themeObjects, onProgress);
+	 uiManager.updateLoadingProgress(40);
+	await buildThematicEnvironment(scene, map_asset, themeObjects);
 
-	onProgress?.(100);
+	 uiManager.updateLoadingProgress(100);
 	await scene.whenReadyAsync();
 	
 	return {
@@ -120,17 +117,12 @@ async function createPowerUpEffects(scene: Scene, players: Players, balls: Mesh[
 	return effects;
 }
 
-async function buildThematicEnvironment(
-	scene: Scene,
-	map_asset: MapAssetConfig,
-	themeObjects: ThemeObject,
-	onProgress?: LoadingProgressCallback
-): Promise<void> {
+async function buildThematicEnvironment(scene: Scene, map_asset: MapAssetConfig, themeObjects: ThemeObject): Promise<void> {
 	await createSky(scene, map_asset.skybox);
 	if (map_asset.terrain)
 		createTerrain(scene, "terrain", map_asset.terrain, map_asset);
 
-	onProgress?.(60);
+	 uiManager.updateLoadingProgress(60);
 
 	if (map_asset === MAP_CONFIGS.map0 || map_asset === MAP_CONFIGS.map1 || map_asset === MAP_CONFIGS.map4 || map_asset === MAP_CONFIGS.map6) {
 		for (const propData of map_asset.staticObjects) {
@@ -142,7 +134,7 @@ async function buildThematicEnvironment(
 		themeObjects?.props.push(...staticMeshes);
 	}
 
-	onProgress?.(80);
+	 uiManager.updateLoadingProgress(80);
 	for (const actorConfig of map_asset.actors) {
 		for (let i = 0; i < actorConfig.count; i++) {
 			try {
@@ -156,7 +148,7 @@ async function buildThematicEnvironment(
 		}
 	}
 
-	onProgress?.(90);
+	 uiManager.updateLoadingProgress(90);
 	const particleType = map_asset.particleType;
 	if (particleType) {
 		let effect = null;

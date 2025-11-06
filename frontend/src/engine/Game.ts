@@ -69,6 +69,7 @@ export class Game {
 			const players: PlayerInfo[] = this.config.players;
 			const gameMode = this.config.gameMode;
 			await sendPOST("join", { gameMode, players, aiDifficulty, capacity });
+			Logger.info('Initializing game...', 'Game');
 			await this.initialize();
 			return this;
 		} catch (error) {
@@ -82,18 +83,13 @@ export class Game {
 	async initialize(): Promise<void> {
 		if (this.isInitialized) return;
 
-		uiManager.updateLoadingProgress(0);
 		SceneLoader.ShowLoadingScreen = false;
 		uiManager.setLoadingScreenVisible(true);
-		Logger.info('Initializing game...', 'Game');
 
 		this.engine = await this.initializeBabylonEngine();
-		applyQualitySettings(this.engine, currentSettings.quality);
-		Logger.info(`Detected quality level: ${currentSettings.quality}`, 'Game');
 		this.scene = await this.createScene();
 
-		const { gameObjects, themeObjects } = await buildScene(this.scene, this.config, 
-			(progress: number) => uiManager.updateLoadingProgress(progress));
+		const { gameObjects, themeObjects } = await buildScene(this.scene, this.config);
 
 		this.gameObjects = gameObjects;
 		this.themeObjects = themeObjects;
@@ -127,6 +123,7 @@ export class Game {
 			engine.resize();
 		});
 		engine.resize();
+		applyQualitySettings(engine, currentSettings.quality);
 		return engine;
 	}
 
@@ -450,7 +447,7 @@ export class Game {
 				this.engine = null;
 			}
 			this.canvas = null;
-			uiManager.setLoadingScreenVisible(false);
+			// uiManager.setLoadingScreenVisible(false);0
 			appManager.navigateTo(AppState.MAIN_MENU);
 			Logger.debug('Game disposed successfully', 'Game');
 		} catch (error) {
