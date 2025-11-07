@@ -285,7 +285,7 @@ export const MAP_CONFIGS: Record<string, MapAssetConfig> = {
 		],
 		skybox:AssetPaths.sky('map6', 'sky'),
 		fogColor: new Color3(1.0, 0.5, 0.0),
-		fogIntensity: 0.007,
+		fogIntensity: 0.005,
 		particleType: null,
 		light: 0.3,
 		glow: 0.3,

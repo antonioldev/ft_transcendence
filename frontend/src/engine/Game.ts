@@ -447,7 +447,6 @@ export class Game {
 				this.engine = null;
 			}
 			this.canvas = null;
-			// uiManager.setLoadingScreenVisible(false);0
 			appManager.navigateTo(AppState.MAIN_MENU);
 			Logger.debug('Game disposed successfully', 'Game');
 		} catch (error) {

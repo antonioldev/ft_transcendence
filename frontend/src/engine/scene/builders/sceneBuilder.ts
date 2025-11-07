@@ -13,7 +13,7 @@ import type { MapAssetConfig } from "../config/sceneTypes.js";
 import { createActor } from "../entities/animatedProps.js";
 import { createBall, createGameField, createPlayer, createWallLineGlowEffect, createWalls } from '../entities/gameObjects.js';
 import { createBallEffects, createPaddleCage, createPaddleGlow, createWallGlowEffect } from '../entities/gameObjectsEffects.js';
-import { createStaticObject, createStaticObjects } from "../entities/staticProps.js";
+import { createStaticObject } from "../entities/staticProps.js";
 import { createCameras, createGuiCamera } from "./camerasBuilder.js";
 import { createFireworks, createFog, createLensFlare, createParticleSystem, createSmokeSprite } from './effectsBuilder.js';
 import { createLight, createSky, createTerrain } from './enviromentBuilder.js';
@@ -124,15 +124,15 @@ async function buildThematicEnvironment(scene: Scene, map_asset: MapAssetConfig,
 
 	 uiManager.updateLoadingProgress(60);
 
-	if (map_asset === MAP_CONFIGS.map0 || map_asset === MAP_CONFIGS.map1 || map_asset === MAP_CONFIGS.map4 || map_asset === MAP_CONFIGS.map6) {
+	// if (map_asset === MAP_CONFIGS.map0 || map_asset === MAP_CONFIGS.map1 || map_asset === MAP_CONFIGS.map4 || map_asset === MAP_CONFIGS.map6) {
 		for (const propData of map_asset.staticObjects) {
 			const mesh = await createStaticObject(scene, propData); 
 			themeObjects?.props.push(mesh);
 		}
-	} else {
-		const staticMeshes = await createStaticObjects(scene, map_asset.staticObjects);
-		themeObjects?.props.push(...staticMeshes);
-	}
+	// } else {
+	// 	const staticMeshes = await createStaticObjects(scene, map_asset.staticObjects);
+	// 	themeObjects?.props.push(...staticMeshes);
+	// }
 
 	 uiManager.updateLoadingProgress(80);
 	for (const actorConfig of map_asset.actors) {
