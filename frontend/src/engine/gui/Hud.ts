@@ -179,8 +179,8 @@ export class Hud {
 		this.spectatorOverlay.addControl(this.spectatorBanner);
 
 		const bannerGrid = createGrid("bannerGrid", SPECTATOR_STYLE.bannerGrid);
-		bannerGrid.addColumnDefinition(0.3, false);
-		bannerGrid.addColumnDefinition(0.7, false);
+		bannerGrid.addColumnDefinition(0.4, false);
+		bannerGrid.addColumnDefinition(0.6, false);
 		this.spectatorBanner.addControl(bannerGrid);
 
 		const spectatorText = createTextBlock("spectatorText", SPECTATOR_STYLE.spectatorText, t.spectator);

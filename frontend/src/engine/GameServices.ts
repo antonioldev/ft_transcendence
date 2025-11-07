@@ -11,6 +11,7 @@ import { GUIManager } from "./services/GuiManager";
 import { KeyboardManager } from "./services/KeybordManager";
 import { PowerupManager } from "./services/PowerUpManager";
 import { RenderManager } from "./services/RenderManager";
+import { uiManager } from "../ui/UIManager.js";
 
 export class GameServices {
 	audio: AudioManager;
@@ -51,9 +52,10 @@ export class GameServices {
 		await this.gui.curtain.hide(speed);
 	}
 
-	updateGameLoop(viewMode: ViewMode): void {
+	updateGameLoop(viewMode: ViewMode, spectator: boolean): void {
 		this.input?.update();
-		this.render?.updateCamerasAngle(viewMode);
+		if (!spectator)
+			this.render?.updateCamerasAngle(viewMode);
 	}
 
 	updatePowerups(leftPowerups: Powerup[], rightPowerups: Powerup[]): void {
@@ -68,7 +70,7 @@ export class GameServices {
 		this.gui.hud.show(true);
 	}
 
-	async showPlayerIntroduction(controlledSides: PlayerSide[]): Promise<void> {
+	async showPlayerIntroduction(controlledSides: PlayerSide[], isSpectator: boolean): Promise<void> {
 		const playerLeft = this.players.get(PlayerSide.LEFT)?.name!;
 		const playerRight = this.players.get(PlayerSide.RIGHT)?.name!;
 		
@@ -80,7 +82,8 @@ export class GameServices {
 				this.gameObjects.cameras,
 				this.config.viewMode,
 				controlledSides,
-				this.config.isLocalMultiplayer
+				this.config.isLocalMultiplayer,
+				isSpectator
 			)
 		]);
 	}
@@ -174,7 +177,7 @@ export class GameServices {
 
 	updateTournamentLobby(message: any): void {
 		if (!message) return;
-		
+		uiManager.setLoadingScreenVisible(false);
 		const names: string[] = message.lobby ?? [""];
 		this.gui.lobby.show(names);
 	}

@@ -6,7 +6,7 @@ import { Direction, GameMode, GameState, MessageType } from '../shared/constants
 import { GAME_CONFIG } from '../shared/gameConfig.js';
 import type { GameStateData, PlayerInfo, ServerMessage } from '../shared/types.js';
 import { uiManager } from '../ui/UIManager.js';
-import { AppState, KeyboardMode, PlayerSide } from '../utils/constants.js';
+import { AppState, KeyboardMode, PlayerSide, ViewMode } from '../utils/constants.js';
 import { Logger } from '../utils/LogManager.js';
 import type { GameObjects, PlayerState } from '../utils/types.js';
 import type { ThemeObject } from "./scene/config/sceneTypes.js";
@@ -90,7 +90,6 @@ export class Game {
 		this.scene = await this.createScene();
 
 		const { gameObjects, themeObjects } = await buildScene(this.scene, this.config);
-
 		this.gameObjects = gameObjects;
 		this.themeObjects = themeObjects;
 
@@ -101,12 +100,10 @@ export class Game {
 		});
 		this.registerCallbacks();
 		this.isInitialized = true;
-		uiManager.setLoadingScreenVisible(false);
 		await this.services?.start();
 		if (this.config.isRemoteMultiplayer)
 			webSocketClient.requestLobby();
 		webSocketClient.sendPlayerReady();
-		
 	}
 
 	// Initialize Babylon.js engine
@@ -144,13 +141,14 @@ export class Game {
 		if (countdown === undefined || countdown === null) return;
 
 		if (!this.isCountdownStarted) {
+			uiManager.setLoadingScreenVisible(false);
 			this.isCountdownStarted = true;
 			this.services?.startCountdownSequence();
 		}
 		
 		if (countdown === GAME_CONFIG.startDelay - 1) {
 			const controlledSides = this.getControlledSides();
-			await this.services?.showPlayerIntroduction(controlledSides);
+			await this.services?.showPlayerIntroduction(controlledSides, this.isSpectator);
 		}
 		else if (countdown === 4) {
 			this.services?.hidePlayerIntroduction();
@@ -179,6 +177,8 @@ export class Game {
 			const wantsToSpectate = await this.services?.showMatchEndForLoser(this.isLastMatch);
 			if (!wantsToSpectate)
 				this.requestExitToMenu();
+			else if (this.config.viewMode === ViewMode.MODE_3D && this.gameObjects)
+				await this.services?.animation.moveToSpectatorView(this.gameObjects.cameras);
 			return;
 		}
 
@@ -207,7 +207,7 @@ export class Game {
 		this.gameLoopObserver = setInterval(() => {
 			if (!this.isInitialized) return;
 				try {
-					this.services?.updateGameLoop(this.config.viewMode);
+					this.services?.updateGameLoop(this.config.viewMode, this.isSpectator);
 				} catch (error) {
 					Logger.error('Error in game loop', 'Game', error);
 				}
@@ -242,8 +242,8 @@ export class Game {
 	private resetForNextMatch(): void {
 		if (!this.isInitialized) return;
 
-		this.stopGameLoop();
 		this.services?.resetGuiForNextMatch();
+		this.stopGameLoop();
 		this.resetPlayersState();
 
 		if (this.gameObjects) {
@@ -377,7 +377,7 @@ export class Game {
 		this.isPaused = !this.isPaused;
 		this.services?.handlePause(this.isPaused, this.isSpectator);
 
-		// if (this.config.isRemoteMultiplayer || this.isSpectator) return;
+		// if (this.config.isRemoteMultiplayer || this.isSpectator) return; // TODO must enable
 		
 		if (this.isPaused)
 			webSocketClient.sendPauseRequest();

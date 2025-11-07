@@ -1,4 +1,4 @@
-import { Color3, Color4 } from "@babylonjs/core";
+import { Color3, Color4, FreeCamera, Mesh, StandardMaterial } from "@babylonjs/core";
 import { Animation } from "@babylonjs/core/Animations/animation";
 import { EasingFunction, QuadraticEase, SineEase } from "@babylonjs/core/Animations/easing";
 import { Vector3 } from "@babylonjs/core/Maths/math.vector";
@@ -6,7 +6,7 @@ import type { Scene } from "@babylonjs/core/scene";
 import type { Control } from "@babylonjs/gui/2D/controls/control";
 import { GAME_CONFIG } from "../../shared/gameConfig.js";
 import { ViewMode } from "../../utils/constants.js";
-import { getCamera2DPosition, getCamera3DPlayer1Position, getCamera3DPlayer2Position } from '../utils/utils.js';
+import { getCamera2DPosition, getCamera3DPlayer1Position, getCamera3DPlayer2Position, getSpectatorCameraPosition } from '../utils/utils.js';
 
 type FloatProp =
   | "alpha"
@@ -270,15 +270,15 @@ export class AnimationManager {
 	}
 
 // CAMERA ANIMATION
-	startCameraAnimations(cameras: any, viewMode: ViewMode, controlledSides: number[] = [], isLocalMultiplayer: boolean = false): void {
-		if (!this.scene || !cameras || viewMode === ViewMode.MODE_2D) return;
+	startCameraAnimations(cameras: FreeCamera[], viewMode: ViewMode, controlledSides: number[] = [], isLocalMultiplayer: boolean = false, isSpectator: boolean): void {
+		if (!this.scene || !cameras || viewMode === ViewMode.MODE_2D || isSpectator) return;
 
 		this.stopCameraAnimations();
 
-		cameras.forEach((camera: any, index: number) => {
+		cameras.forEach((camera: FreeCamera, index: number) => {
 			if (!camera) return;
 
-			if (isLocalMultiplayer || controlledSides.includes(index) || controlledSides.length === 0) {
+			if (isLocalMultiplayer || controlledSides.includes(index)) {
 				const startPosition = getCamera2DPosition();
 				const endPosition = camera.name === "camera1"
 					? getCamera3DPlayer1Position()
@@ -315,8 +315,63 @@ export class AnimationManager {
 		this.activeCameraAnimations = [];
 	}
 
+	async moveToSpectatorView(cameras: FreeCamera[]): Promise<void> {
+		if (!cameras || cameras.length === 0) return;
+
+		const endPosition = getSpectatorCameraPosition();
+		const centerTarget = new Vector3(3, 0, 0);
+		const frames = 60;
+
+		const animationPromises: Promise<void>[] = [];
+
+		cameras.forEach((camera) => {
+			if (!camera) return;
+
+			const startPosition = camera.name === "camera1"
+				? getCamera3DPlayer1Position()
+				: getCamera3DPlayer2Position();
+
+			const positionAnimation = Animation.CreateAnimation(
+				"position",
+				Animation.ANIMATIONTYPE_VECTOR3,
+				Motion.fps,
+				Motion.ease.quadInOut()
+			);
+			positionAnimation.setKeys([
+				{ frame: 0, value: startPosition },
+				{ frame: frames, value: endPosition }
+			]);
+
+			const targetAnimation = Animation.CreateAnimation(
+				"target",
+				Animation.ANIMATIONTYPE_VECTOR3,
+				Motion.fps,
+				Motion.ease.quadInOut()
+			);
+			targetAnimation.setKeys([
+				{ frame: 0, value: centerTarget },
+				{ frame: frames, value: centerTarget }
+			]);
+
+			camera.animations = [positionAnimation, targetAnimation];
+
+			const promise = new Promise<void>((resolve) => {
+				const animationGroup = this.scene.beginAnimation(camera, 0, frames, false, 1, () => {
+					camera.setTarget(centerTarget);
+					this.activeAnimationGroups.delete(animationGroup);
+					resolve();
+				});
+				this.activeAnimationGroups.add(animationGroup);
+			});
+
+			animationPromises.push(promise);
+		});
+
+		await Promise.all(animationPromises);
+	}
+
 // GAME OBJECT ANIMATION
-	private animateMesh(target: any, property: string, from: number, to: number,frames: number,
+	private animateMesh(target: Mesh, property: string, from: number, to: number,frames: number,
 		ease: EasingFunction = Motion.ease.quadOut(), loop: boolean = false, pingPong: boolean = false): Promise<void> {
 
 		return new Promise((resolve) => {
@@ -346,10 +401,11 @@ export class AnimationManager {
 		});
 	}
 
-	async glowEffect(target: any, color: Color3, edgeColor?: Color4): Promise<void> {
-		if (!target.material) return;
+	async glowEffect(target: Mesh, color: Color3, edgeColor?: Color4): Promise<void> {
+		const material = target.material as StandardMaterial;
+		if (!material) return;
 
-		target.material.emissiveColor = color;
+		material.emissiveColor = color;
 		if (edgeColor)
 			target.edgesColor = edgeColor;
 		target.visibility = 0;
@@ -358,7 +414,7 @@ export class AnimationManager {
 		return this.animateMesh(target, "visibility", 1, 0.6, Motion.F.xFast, Motion.ease.sine(), true);
 	}
 
-	async stopEffect(target: any): Promise<void> {
+	async stopEffect(target: Mesh): Promise<void> {
 		if (!target.material) return;
 		
 		target.animations = [];
@@ -372,7 +428,7 @@ export class AnimationManager {
 		target.visibility = 0;
 	}
 
-	scaleWidthPaddle(target: any, from: number, to: number, frames = Motion.F.fast, ease: EasingFunction = Motion.ease.quadOut()): Promise<void> {
+	scaleWidthPaddle(target: Mesh, from: number, to: number, frames = Motion.F.fast, ease: EasingFunction = Motion.ease.quadOut()): Promise<void> {
 		const baseWidth = GAME_CONFIG.paddleWidth;
 		const fromScale = from / baseWidth;
 		const toScale = to / baseWidth;
@@ -380,10 +436,11 @@ export class AnimationManager {
 		return this.animateMesh(target, "scaling.y", fromScale, toScale, frames, ease, false);
 	}
 
-	async blinkInvisibility(target: any, duration: number = 3000, blinkInterval:number = 600): Promise<void> {
+	async blinkInvisibility(target: Mesh, duration: number = 3000, blinkInterval:number = 600): Promise<void> {
 		const blinkDuration: number = 100;
 
 		if (!target.material) return;
+		const material = target.material;
 
 		const start = Date.now();
 		let lastBlink = 0;
@@ -393,26 +450,26 @@ export class AnimationManager {
 				const elapsed = Date.now() - start;
 
 				if (elapsed >= duration) {
-					target.material.alpha = 1;
+					material.alpha = 1;
 					resolve();
 					return;
 				}
 
 				const timeSinceLastBlink = elapsed - lastBlink;
 				if (timeSinceLastBlink >= blinkInterval) {
-					target.material.alpha = 1;
+					material.alpha = 1;
 					lastBlink = elapsed;
 
 					setTimeout(() => {
 						if (Date.now() - start < duration)
-							target.material.alpha = 0;
+							material.alpha = 0;
 					}, blinkDuration);
 				}
 				
 				requestAnimationFrame(animationLoop);
 			};
 			
-			target.material.alpha = 0;
+			material.alpha = 0;
 			animationLoop();
 		});
 	}

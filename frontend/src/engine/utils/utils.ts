@@ -41,6 +41,10 @@ export function getCamera3DPlayer2Position() {
 	return new Vector3(0, GAME_CONFIG.camera3DHeight, GAME_CONFIG.fieldHeight / 2 + GAME_CONFIG.camera3DDistance);
 }
 
+export function getSpectatorCameraPosition(): Vector3 {
+	return new Vector3(13, 25, 0);
+}
+
 // Viewport utility functions
 const VIEWPORTS = {
 	FULLSCREEN: new Viewport(0, 0, 1, 1),
@@ -68,30 +72,6 @@ export function randomFromArray(arr: string[]): string {
 	return arr[Math.floor(Math.random() * arr.length)];
 }
 
-// export function detectQuality(): Quality {
-// 	if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent))
-// 		return Quality.MEDIUM;
-
-// 	const canvas = document.createElement('canvas');
-// 	const gl2 = canvas.getContext('webgl2') as WebGL2RenderingContext | null;
-// 	const gl = gl2 || (canvas.getContext('webgl') as WebGLRenderingContext | null);
-
-// 	if (!gl) return Quality.LOW;
-
-// 	let maxTextureSize = 0;
-// 	let renderer = '';
-
-// 	try {
-// 		maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE) || 0;
-// 	} catch (e) {
-// 	}
-
-// 	const weakGpu = /intel|mali|powervr|mediatek|llvmpipe|softpipe|mesa|apple/i.test(renderer);
-
-// 	if (maxTextureSize >= 8192 && !weakGpu) return Quality.HIGH;
-// 	if (maxTextureSize >= 4096 && !weakGpu) return Quality.MEDIUM;
-// 	return Quality.LOW;
-// }
 
 export function applyQualitySettings(engine: Engine, quality: Quality): void {
 	switch(quality){

@@ -56,30 +56,28 @@ export const SPECTATOR_STYLE = {
         isVisible: false
     },
     spectatorBanner: {
-        widthInPixels: 1920,
+        width: "100%",
         heightInPixels: 54,
         thickness: 0,
         background: COLORS.SPECTATOR_RED,
         verticalAlignment: V_TOP
     },
     bannerGrid: {
-        widthInPixels: 1920,
-        heightInPixels: 54,
+        width: "100%",
+        height: "100%"
     },
     spectatorText: {
         fontFamily: FONT_FAMILY,
         color: COLORS.WHITE,
         fontSizeInPixels: 27,
         fontWeight: "bold",
-        textHorizontalAlignment: H_LEFT,
-        paddingLeftInPixels: 20,
+        textHorizontalAlignment: H_CENTER,
     },
     spectatorControls: {
         fontFamily: FONT_FAMILY,
         color: COLORS.WHITE,
         fontSizeInPixels: 27,
-        textHorizontalAlignment: H_RIGHT,
-        paddingRightInPixels: 20,
+        textHorizontalAlignment: H_CENTER,
     },
     bannerContent: {
         width: "100%",

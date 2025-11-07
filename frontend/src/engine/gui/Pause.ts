@@ -9,7 +9,6 @@ import { H_LEFT, PAUSE_MENU_STYLES, createGrid, createRect, createStackPanel, cr
 export class Pause {
 	private overlay!: Rectangle;
 	private pauseBox!: Rectangle;
-	// private spectatorPauseBox!: Rectangle;
 	private checkboxMusic?: Checkbox;
 	private checkboxEffects?: Checkbox;
 
