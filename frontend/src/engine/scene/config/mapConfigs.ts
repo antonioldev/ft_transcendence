@@ -50,6 +50,7 @@ const map4Snow = map4SnowRaw as {
 import map5VolcanoRaw from "../data/staticObjects/map5.json";
 const map5Volcano = map5VolcanoRaw as {
 	stone: StaticObject[];
+	stone1: StaticObject[];
 	stone2: StaticObject[];
 	volcano: StaticObject[];
 }
@@ -235,6 +236,7 @@ export const MAP_CONFIGS: Record<string, MapAssetConfig> = {
 		terrain: simpleColor("#FF4500"),
 		staticObjects: [
 			...map5Volcano.stone,
+			...map5Volcano.stone1,
 			...map5Volcano.stone2,
 			...map5Volcano.volcano
 		],
