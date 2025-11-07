@@ -46,7 +46,7 @@ export const GAME_CONFIG = {
 	camera3DDistance: 5, // Distance of the camera in 3D mode
 	followSpeed: 0.1, // Speed at which the camera follows the paddle
 	cameraFollowLimit: fieldWidth / 4, // Max limit for camera to follow player
-	edgeBuffer: 13, // Buffer space at the edges of the field
+	minUpdateDistance: 0.1, // Buffer space at the edges of the field
 
 	// Ball settings
 	ballRadius: 0.3, // Radius of the ball

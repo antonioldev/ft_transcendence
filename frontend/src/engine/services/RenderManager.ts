@@ -67,31 +67,32 @@ export class RenderManager {
 			this.scene.activeCameras = [activeGameCamera, guiCamera];
 	}
 
-	// Update 3D camera targets to follow players
 	updateCamerasAngle(viewMode: ViewMode): void {
-		if (!this.isInitialized || !this.gameObjects?.cameras) return;
+	if (viewMode === ViewMode.MODE_2D || !this.gameObjects?.cameras) return;
 
-		if (viewMode === ViewMode.MODE_2D) return;
+	const [camera1, camera2] = this.gameObjects.cameras;
+	const limit = GAME_CONFIG.cameraFollowLimit;
+	const speed = GAME_CONFIG.followSpeed;
+	const minDist = GAME_CONFIG.minUpdateDistance;
 
-		try {
-			const [camera1, camera2] = this.gameObjects.cameras;
-			const cameraFollowLimit = GAME_CONFIG.cameraFollowLimit;
-
-			if (camera1 &&this.gameObjects.players.left) {
-				this.targetLeft.copyFrom(this.gameObjects.players.left.position);
-				this.targetLeft.x = Math.max(-cameraFollowLimit, Math.min(cameraFollowLimit, this.targetLeft.x));
-				camera1.setTarget(Vector3.Lerp(camera1.getTarget(), this.targetLeft, GAME_CONFIG.followSpeed));
-				
-			}
-			if (camera2 && this.gameObjects.players.right) {
-				this.targetRight.copyFrom(this.gameObjects.players.right.position);
-				this.targetRight.x = Math.max(-cameraFollowLimit, Math.min(cameraFollowLimit, this.targetRight.x));
-				camera2.setTarget(Vector3.Lerp(camera2.getTarget(), this.targetRight, GAME_CONFIG.followSpeed));
-			}
-		} catch (error) {
-			Logger.error('Error updating 3D cameras', 'RenderManager', error);
-		}
+	// Update left camera
+	if (camera1 && this.gameObjects.players.left) {
+		const playerX = Math.max(-limit, Math.min(limit, this.gameObjects.players.left.position.x));
+		this.targetLeft.set(playerX, this.gameObjects.players.left.position.y, this.gameObjects.players.left.position.z);
+		
+		if (Vector3.Distance(camera1.getTarget(), this.targetLeft) > minDist)
+			camera1.setTarget(Vector3.Lerp(camera1.getTarget(), this.targetLeft, speed));
 	}
+
+	// Update right camera
+	if (camera2 && this.gameObjects.players.right) {
+		const playerX = Math.max(-limit, Math.min(limit, this.gameObjects.players.right.position.x));
+		this.targetRight.set(playerX, this.gameObjects.players.right.position.y, this.gameObjects.players.right.position.z);
+		
+		if (Vector3.Distance(camera2.getTarget(), this.targetRight) > minDist)
+			camera2.setTarget(Vector3.Lerp(camera2.getTarget(), this.targetRight, speed));
+	}
+}
 
 // ====================			CLEANUP				   ====================
 	dispose(): void {
