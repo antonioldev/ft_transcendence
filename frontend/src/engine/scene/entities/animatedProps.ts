@@ -137,21 +137,21 @@ export async function createWalkingActor(scene: Scene, actor: AbstractMesh,): Pr
 }
 
 async function loadOrCloneActor(scene: Scene, modelPath: string, prefix: string): Promise<AbstractMesh> {
+	let actor: AbstractMesh;
+
 	if (cachedActorModels.has(modelPath)) {
 		const cached = cachedActorModels.get(modelPath);
-		const actor = cached!.clone(`${prefix}_${Date.now()}`, null);
+		actor = cached!.clone(`${prefix}_${Date.now()}`, null)!;
 		actor?.setEnabled(true);
-		return actor!;
 	} else {
 		const result = await SceneLoader.ImportMeshAsync("", "", modelPath, scene);
-		const actor = result.meshes[0];
-		
+		actor = result.meshes[0];
+
 		const cacheClone = actor.clone(`cache_${modelPath}`, null);
 		cacheClone?.setEnabled(false);
 		cachedActorModels.set(modelPath, cacheClone!);
-		
-		return actor;
 	}
+	return actor;
 }
 
 export async function createActor(scene: Scene, config: ActorConfig, index: number = 0): Promise<AbstractMesh> {
@@ -172,4 +172,9 @@ export async function createActor(scene: Scene, config: ActorConfig, index: numb
 		default:
 			throw new Error(`Unknown actor type: ${config.type}`);
 	}
+}
+
+export function clearAnimatedModelCache() {
+	cachedActorModels.forEach(mesh => mesh.dispose());
+	cachedActorModels.clear();
 }

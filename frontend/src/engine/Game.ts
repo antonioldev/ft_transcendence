@@ -17,6 +17,8 @@ import { disposeMaterialResources } from "./scene/builders/materialsBuilder.js";
 import { buildScene } from './scene/builders/sceneBuilder.js';
 import { Motion } from "./services/AnimationManager.js";
 import { applyQualitySettings } from "./utils/utils.js";
+import { clearAnimatedModelCache } from "./scene/entities/animatedProps.js";
+import { clearStaticModelCache } from "./scene/entities/staticProps.js";
 
 /**
  * The Game class serves as the core of the game engine, managing the initialization,
@@ -417,10 +419,8 @@ export class Game {
 // ====================			CLEANUP				  ====================
 	private async dispose(): Promise<void> {
 		try {
-			if (!this.isInitialized) {
-				Logger.debug('Dispose called but not initialized', 'Game');
-				return;
-			}
+			if (!this.isInitialized) return;
+
 			this.isInitialized = false;
 			this.stopGameLoop();
 			this.services?.dispose();
@@ -431,6 +431,8 @@ export class Game {
 				for (const m of this.themeObjects.props) m.dispose?.();
 			}
 			this.themeObjects = null;
+			clearAnimatedModelCache();
+			clearStaticModelCache();
 			disposeMaterialResources();
 			this.gameObjects = null;
 			this.players.clear();

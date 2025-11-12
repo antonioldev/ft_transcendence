@@ -46,13 +46,13 @@ export interface Players {
 
 // Represents the game objects in a Babylon.js scene
 export interface CoreGameObjects {
-    players: Players;
-    balls: Mesh[];
-    gameField: Mesh;
-    walls: Mesh[];
-    cameras: FreeCamera[];
-    guiCamera: FreeCamera;
-    lights: Light;
+	players: Players;
+	balls: Mesh[];
+	gameField: Mesh;
+	walls: Mesh[];
+	cameras: FreeCamera[];
+	guiCamera: FreeCamera;
+	lights: Light;
 }
 export interface GameObjects extends CoreGameObjects {
     effects: Effects;
