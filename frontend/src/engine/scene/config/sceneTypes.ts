@@ -1,4 +1,4 @@
-import { AbstractMesh, Color3 } from "@babylonjs/core";
+import { AbstractMesh, Color3, GlowLayer, LensFlareSystem, ParticleSystem, SpriteManager } from "@babylonjs/core";
 import { Color4, Vector3 } from "@babylonjs/core";
 import type { ParticleEffectType } from "./sceneConst";
 
@@ -78,12 +78,9 @@ export type ParticleConfig = {
 	autoStart?: boolean;
 }
 
-// export type ThemeActor = { update: (dt: number) => void; dispose: () => void };
-export type ThemeEffect = { dispose: () => void };
-
 export type ThemeObject = {
 	props: AbstractMesh[];	// static meshes
 	actors: AbstractMesh[];	// moving things
-	effects: ThemeEffect[];	// glow layer, particle systems, post-process, etc.
+	effects: Array<LensFlareSystem | ParticleSystem | SpriteManager | GlowLayer>;
 };
 
