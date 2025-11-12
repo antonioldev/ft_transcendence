@@ -234,13 +234,11 @@ export class PowerupManager {
 
 	resetPowerupStates(): void {
 		this.players.forEach((player, side) => {
-			if (player.powerUps && player.powerUps.length > 0) {
-				player.powerUps.forEach((powerup, index) => {
-					if (powerup.state === PowerupState.ACTIVE) {
-						this.deactivate(side, index, powerup.type);
-					}
-				});
-			}
+			player.powerUps.forEach((powerup, index) => {
+				if (powerup.state === PowerupState.ACTIVE) {
+					this.deactivate(side, index, powerup.type);
+				}
+			});
 		});
 	}
 }

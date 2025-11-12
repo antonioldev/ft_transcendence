@@ -33,16 +33,15 @@ export class PowerupManager {
 
 	_init_powerups() {
 		// generates 3 random powerups in each player's slots
-		const num_powerups = (Object.keys(PowerupType).length / 2) - 2;
+		const num_powerups = (Object.keys(PowerupType).length / 2);// - 2;
 		// this.left_slots[0] = new Slot(PowerupType.INVISIBLE_BALL, LEFT, 0);
 		// this.left_slots[1] = new Slot(PowerupType.POWERSHOT, LEFT, 1);
-		// this.left_slots[2] = new Slot(PowerupType.TRIPLE_SHOT, LEFT, 2);
 
 		for (let i = 0; i < GAME_CONFIG.slot_count; i++) {
-			this.left_slots[i] = new Slot(Math.floor(Math.random() * num_powerups), LEFT, i);
-			this.right_slots[i] = new Slot(Math.floor(Math.random() * num_powerups), RIGHT, i);
-			// this.left_slots[i] = new Slot(PowerupType.TRIPLE_SHOT, LEFT, i);
-			// this.right_slots[i] = new Slot(PowerupType.TRIPLE_SHOT, RIGHT, i);
+			// this.left_slots[i] = new Slot(Math.floor(Math.random() * num_powerups), LEFT, i);
+			// this.right_slots[i] = new Slot(Math.floor(Math.random() * num_powerups), RIGHT, i);
+			this.left_slots[i] = new Slot(PowerupType.TRIPLE_SHOT, LEFT, i);
+			this.right_slots[i] = new Slot(PowerupType.TRIPLE_SHOT, RIGHT, i);
 		}
 	}
 
@@ -290,9 +289,11 @@ export class PowerupManager {
 	}
 
 	async triple_shot(side: number): Promise<number> {
+		if (this.balls.length !== 1) return (0);
+		
 		this.paddles[side].triple_shot_active = true;
 
-		if (this.balls.length === 3) return (0);
+		// if (this.balls.length === 3) return (0);
 		await new Promise<void>(resolve => {
 			eventManager.once(`paddle-collision-${side}`, (ball: Ball ) => {
 				if (this.paddles[side].triple_shot_active && this.balls.length < 3) {

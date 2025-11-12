@@ -29,7 +29,7 @@ export function createTerrain(scene: Scene, name: string, texture: TextureSet, m
 	const terrainWidth = GAME_CONFIG.fieldWidth * 10;
 	const terrainHeight = GAME_CONFIG.fieldHeight * 10;
 
-	let terrain: any;
+	let terrain: GroundMesh;
 	if (texture?.height) {
 		terrain = MeshBuilder.CreateGroundFromHeightMap(name, texture.height, {
 			width: terrainWidth,
@@ -48,13 +48,9 @@ export function createTerrain(scene: Scene, name: string, texture: TextureSet, m
 
 	if (map_asset === MAP_CONFIGS.map0) {
 		terrain.material = new GridMaterial(name + "Material");
-		terrain.material.backFaceCulling = false;
 	}
 	else if (map_asset === MAP_CONFIGS.map5) {
 		terrain.material = createLavaMaterial(scene, name + "Material");
-		terrain.checkCollisions = false;
-		terrain.doNotComputeBoundingBox = true;
-		terrain.isPickable = false;
 		terrain.position.y = -0.5;
 	}
 	else if (map_asset === MAP_CONFIGS.map6) {
@@ -65,6 +61,10 @@ export function createTerrain(scene: Scene, name: string, texture: TextureSet, m
 		terrain.position.y = -0.01;
 	}
 
+	terrain.freezeWorldMatrix();
+	terrain.doNotSyncBoundingInfo = true;
+	terrain.checkCollisions = false;
+	terrain.isPickable = false;
 	return terrain;
 }
 

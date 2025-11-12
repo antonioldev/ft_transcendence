@@ -1,15 +1,15 @@
-import { Color3, Mesh, MeshBuilder, Scene, StandardMaterial, Vector3 } from "@babylonjs/core";
+import { Color3, GroundMesh, Mesh, MeshBuilder, Scene, StandardMaterial, Vector3 } from "@babylonjs/core";
 import { GridMaterial } from "@babylonjs/materials";
 import { ViewMode } from '../../../utils/constants.js';
 import { GAME_CONFIG } from '../../../shared/gameConfig.js';
 import type { Size } from '../../../shared/types.js';
 import { MAP_OBJECT_TYPE } from "../config/sceneConst.js";
-import type { MapAssetConfig, TextureSet } from "../config/sceneTypes.js";
+import type { MapAssetConfig, TextureSet, ThemeObject } from "../config/sceneTypes.js";
 import { createMaterial, getStandardTextureScale } from "../builders/materialsBuilder.js";
 import { MAP_CONFIGS } from "../config/mapConfigs.js";
 
 // Creates the ground for the game field
-export function createGameField(scene: Scene, name: string, mode: ViewMode, map_asset: MapAssetConfig): any {
+export function createGameField(scene: Scene, name: string, mode: ViewMode, map_asset: MapAssetConfig): GroundMesh {
 
 	const w = GAME_CONFIG.fieldWidth;
 	const h = GAME_CONFIG.fieldHeight;
@@ -45,13 +45,11 @@ export function createWalls(scene: Scene, name: string, mode: ViewMode, texture:
 	const wall_h = GAME_CONFIG.wallHeight
 	const wall_t = GAME_CONFIG.wallThickness; 
 
-	// Single texture scaling for all walls
 	const wallTextureScale = getStandardTextureScale(w, wall_h, MAP_OBJECT_TYPE.WALLS);
 	const material = createMaterial(scene, name + "Material", mode, texture, wallTextureScale);
 	
 	if (mode === ViewMode.MODE_3D && (!texture || texture.diffuse === null))
 		material.alpha = 0;
-
 
 	// Top wall
 	const topWall = MeshBuilder.CreateBox("topWall", {width: w, height: wall_h, depth: wall_t}, scene);
@@ -94,7 +92,7 @@ export function createWalls(scene: Scene, name: string, mode: ViewMode, texture:
 	return walls;
 }
 
-export function createPlayer(scene: any, name: string, position: any, size: Size, mode: ViewMode, texture: TextureSet): any {
+export function createPlayer(scene: Scene, name: string, position: Vector3, size: Size, mode: ViewMode, texture: TextureSet): Mesh {
 
 	const player = MeshBuilder.CreateCapsule(name, {radius: size.z / 2, height: size.x, tessellation: 16 }, scene);
 	player.rotation.z = Math.PI / 2;
@@ -107,7 +105,7 @@ export function createPlayer(scene: any, name: string, position: any, size: Size
 }
 
 // Creates a ball object in the scene
-export function createBall(scene: any, name: string, position: any, mode: ViewMode, texture: TextureSet): any {
+export function createBall(scene: Scene, name: string, position: Vector3, mode: ViewMode, texture: TextureSet): Mesh {
 
 	const diameter = GAME_CONFIG.ballRadius * 2;
 	const ball = MeshBuilder.CreateSphere(name, {diameter}, scene);
@@ -120,42 +118,19 @@ export function createBall(scene: any, name: string, position: any, mode: ViewMo
 	return ball;
 }
 
-
-// CReate children of objects to visualize the powerup
-function makeLine(
-	name: string,
-	width: number,
-	height: number,
-	pos: Vector3,
-	scene: Scene,
-	opts?: {
-		rotateX?: number;
-		rotateY?: number;
-		rotateZ?: number;
-		material?: StandardMaterial;
-	}
-	) {
+function makeLine(name: string, width: number, pos: Vector3, scene: Scene, material: StandardMaterial, rotateY: number): Mesh {
+	const height = 0.04;
 	const plane = MeshBuilder.CreatePlane(name, { width, height, sideOrientation: Mesh.DOUBLESIDE }, scene);
 	plane.isPickable = false;
 	plane.position = pos;
-
-	// defaults: keep old behavior (ground line)
-	plane.rotation.x = opts?.rotateX ?? Math.PI / 2;
-	if (opts?.rotateY !== undefined) plane.rotation.y = opts.rotateY;
-	if (opts?.rotateZ !== undefined) plane.rotation.z = opts.rotateZ;
-
-	const mat = opts?.material ?? new StandardMaterial(`${name}_mat`, scene);
-	if (!opts?.material) {
-		mat.diffuseColor = Color3.Black();
-		mat.emissiveColor = Color3.FromHexString("#00ffff");
-		mat.disableLighting = true;
-	}
-	plane.material = mat;
+	plane.rotation.x = 0;
+	plane.rotation.y = rotateY;
+	plane.material = material;
 
 	return plane;
 }
 
-export function createWallLineGlowEffect(scene: Scene, themeObjects: { props: any[]; actors: any[]; effects: any[] } ): any {
+export function createWallLineGlowEffect(scene: Scene, themeObjects: ThemeObject ): void {
 	const w = GAME_CONFIG.fieldWidth;
 	const h = GAME_CONFIG.fieldHeight;
 	const wall_h = GAME_CONFIG.wallHeight
@@ -171,7 +146,6 @@ export function createWallLineGlowEffect(scene: Scene, themeObjects: { props: an
 
 	const zLen = h * 0.98;
 	const xLen = w * 0.98;
-	const lineThickness = Math.max(0.02 * wall_h, 0.04);
 	const yHigh = wall_h * 0.75;
 	const yLow  = wall_h * 0.35;
 
@@ -180,28 +154,20 @@ export function createWallLineGlowEffect(scene: Scene, themeObjects: { props: an
 	const zTopInner   =  (h / 2) - (wall_t / 2) - eps;
 	const zBottomInner = -(h / 2) + (wall_t / 2) + eps;
 
-	const leftHigh = makeLine("leftGlowHigh", zLen, lineThickness, new Vector3(xLeftInner, yHigh, 0), scene, {
-		rotateX: 0, rotateY: -Math.PI / 2, material: whiteGlowMat});
-	const leftLow = makeLine("leftGlowLow", zLen, lineThickness, new Vector3(xLeftInner, yLow, 0), scene, {
-		rotateX: 0, rotateY: -Math.PI / 2, material: whiteGlowMat});
+	const leftHigh = makeLine("leftGlowHigh", zLen, new Vector3(xLeftInner, yHigh, 0), scene, whiteGlowMat, -Math.PI / 2);
+	const leftLow = makeLine("leftGlowLow", zLen, new Vector3(xLeftInner, yLow, 0), scene, whiteGlowMat, -Math.PI / 2);
 
-	const rightHigh = makeLine("rightGlowHigh", zLen, lineThickness, new Vector3(xRightInner, yHigh, 0), scene, {
-		rotateX: 0, rotateY:  Math.PI / 2, material: whiteGlowMat});
-	const rightLow = makeLine("rightGlowLow", zLen, lineThickness, new Vector3(xRightInner, yLow, 0), scene, {
-		rotateX: 0, rotateY:  Math.PI / 2, material: whiteGlowMat});
+	const rightHigh = makeLine("rightGlowHigh", zLen, new Vector3(xRightInner, yHigh, 0), scene, whiteGlowMat, Math.PI / 2);
+	const rightLow = makeLine("rightGlowLow", zLen, new Vector3(xRightInner, yLow, 0), scene, whiteGlowMat, Math.PI / 2);
 
-	const topHigh = makeLine("topGlowHigh", xLen, lineThickness, new Vector3(0, yHigh, zTopInner), scene, {
-		rotateX: 0, rotateY: 0, material: whiteGlowMat});
-	const topLow = makeLine("topGlowLow", xLen, lineThickness, new Vector3(0, yLow, zTopInner), scene, {
-		rotateX: 0, rotateY: 0, material: whiteGlowMat});
+	const topHigh = makeLine("topGlowHigh", xLen, new Vector3(0, yHigh, zTopInner), scene, whiteGlowMat, 0);
+	const topLow = makeLine("topGlowLow", xLen, new Vector3(0, yLow, zTopInner), scene, whiteGlowMat, 0);
 
-	const bottomHigh = makeLine("bottomGlowHigh", xLen, lineThickness, new Vector3(0, yHigh, zBottomInner), scene, {
-		rotateX: 0, rotateY: Math.PI, material: whiteGlowMat});
-	const bottomLow = makeLine("bottomGlowLow", xLen, lineThickness, new Vector3(0, yLow, zBottomInner), scene, {
-		rotateX: 0, rotateY: Math.PI, material: whiteGlowMat});
+	const bottomHigh = makeLine("bottomGlowHigh", xLen, new Vector3(0, yHigh, zBottomInner), scene, whiteGlowMat, Math.PI);
+	const bottomLow = makeLine("bottomGlowLow", xLen, new Vector3(0, yLow, zBottomInner), scene, whiteGlowMat, Math.PI);
 
 	themeObjects?.props.push(
-		leftHigh, leftLow, 
+		leftHigh, leftLow,
 		rightHigh, rightLow,
 		topHigh, topLow,
 		bottomHigh, bottomLow
