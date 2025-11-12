@@ -1,16 +1,9 @@
-import { Scene, SceneLoader, Vector3 } from "@babylonjs/core";
+import { AbstractMesh, Scene, SceneLoader, Vector3 } from "@babylonjs/core";
 import type { ActorConfig } from "../config/sceneTypes.js";
 
-let cachedActorModels: Map<string, any> = new Map();
+let cachedActorModels: Map<string, AbstractMesh> = new Map();
 
-export async function createFlyingActor(
-	scene: Scene, 
-	actor: any,
-	scale: number = 1,
-	flyForward: boolean = false
-): Promise<any> {
-	actor.scaling = new Vector3(scale, scale, scale);
-	
+export async function createFlyingActor(scene: Scene, actor: AbstractMesh, flyForward: boolean = false): Promise<AbstractMesh> {
 	const speed = 0.08 + Math.random() * 0.12;
 	const height = 3 + Math.random() * 3;
 	const sidePosition = -30 + Math.random() * 60;
@@ -45,14 +38,7 @@ export async function createFlyingActor(
 	return actor;
 }
 
-export async function createSwimmingActor(
-	scene: Scene, 
-	actor: any,
-	scale: number = 1,
-	swimLeft: boolean = false
-): Promise<any> {
-	actor.scaling = new Vector3(scale, scale, scale);
-	
+export async function createSwimmingActor(scene: Scene, actor: AbstractMesh, swimLeft: boolean = false): Promise<AbstractMesh> {
 	const speed = 0.005 + Math.random() * 0.01;
 	const height = 1 + Math.random() * 7;
 	const depth = -50 + Math.random() * 100;
@@ -84,36 +70,9 @@ export async function createSwimmingActor(
 	return actor;
 }
 
-async function loadOrCloneActor(
-	scene: Scene, 
-	modelPath: string, 
-	prefix: string
-): Promise<any> {
-	if (cachedActorModels.has(modelPath)) {
-		const cached = cachedActorModels.get(modelPath);
-		const actor = cached.clone(`${prefix}_${Date.now()}`);
-		actor.setEnabled(true);
-		return actor;
-	} else {
-		const result = await SceneLoader.ImportMeshAsync("", "", modelPath, scene);
-		const actor = result.meshes[0];
-		
-		const cacheClone = actor.clone(`cache_${modelPath}`, null);
-		cacheClone?.setEnabled(false);
-		cachedActorModels.set(modelPath, cacheClone);
-		
-		return actor;
-	}
-}
 
-export async function createFloatingActor(
-	scene: Scene,
-	actor: any,
-	scale: number = 1,
-	floatRight: boolean = false
-): Promise<any> {
-	actor.scaling = new Vector3(scale, scale, scale);
 
+export async function createFloatingActor(scene: Scene, actor: AbstractMesh, floatRight: boolean = false): Promise<AbstractMesh> {
 	const speed = 0.03 + Math.random() * 0.04;
 	const height = Math.random() * 1;
 	const positionX = floatRight ? 25 : -20;
@@ -151,13 +110,7 @@ export async function createFloatingActor(
 	return actor;
 }
 
-export async function createWalkingActor(
-	scene: Scene,
-	actor: any,
-	scale: number = 1
-): Promise<any> {
-	actor.scaling = new Vector3(scale, scale, scale);
-	
+export async function createWalkingActor(scene: Scene, actor: AbstractMesh,): Promise<AbstractMesh> {
 	const speed = 0.02 + Math.random() * 0.03;
 	const height = 0 + Math.random() * 3;
 	const depth = -18 + Math.random() * 36;
@@ -183,26 +136,39 @@ export async function createWalkingActor(
 	
 }
 
-export async function createActor(
-	scene: Scene,
-	config: ActorConfig,
-	index: number = 0
-): Promise<any> {
-	const scale = config.scale ?? 1;
+async function loadOrCloneActor(scene: Scene, modelPath: string, prefix: string): Promise<AbstractMesh> {
+	if (cachedActorModels.has(modelPath)) {
+		const cached = cachedActorModels.get(modelPath);
+		const actor = cached!.clone(`${prefix}_${Date.now()}`, null);
+		actor?.setEnabled(true);
+		return actor!;
+	} else {
+		const result = await SceneLoader.ImportMeshAsync("", "", modelPath, scene);
+		const actor = result.meshes[0];
+		
+		const cacheClone = actor.clone(`cache_${modelPath}`, null);
+		cacheClone?.setEnabled(false);
+		cachedActorModels.set(modelPath, cacheClone!);
+		
+		return actor;
+	}
+}
+
+export async function createActor(scene: Scene, config: ActorConfig, index: number = 0): Promise<AbstractMesh> {
 	const actor = await loadOrCloneActor(scene, config.model, config.type);
 	
 	switch (config.type) {
 		case 'flying':
 			const flyLeft = !config.model.includes('bird1');
-			return createFlyingActor(scene, actor, scale, flyLeft);
+			return createFlyingActor(scene, actor, flyLeft);
 		case 'swimming':
 			const swimLeft = config.model.includes('fish1');
-			return createSwimmingActor(scene, actor, scale, swimLeft);
+			return createSwimmingActor(scene, actor, swimLeft);
 		case 'floating':
 			const floatRight = index % 2 === 1;
-			return createFloatingActor(scene, actor, scale, floatRight);
+			return createFloatingActor(scene, actor, floatRight);
 		case 'walking':
-			return createWalkingActor(scene, actor, scale);
+			return createWalkingActor(scene, actor);
 		default:
 			throw new Error(`Unknown actor type: ${config.type}`);
 	}

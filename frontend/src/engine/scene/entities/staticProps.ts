@@ -1,10 +1,7 @@
 import { AbstractMesh, Scene, SceneLoader, Vector3 } from "@babylonjs/core";
 import type { StaticObject } from "../config/sceneTypes.js";
 
-export async function createStaticObject(
-	scene: Scene, 
-	propData: StaticObject
-): Promise<any> {
+export async function createStaticObject(scene: Scene, propData: StaticObject): Promise<any> {
 	const fullPath = propData.model;
 	const mesh = await SceneLoader.ImportMeshAsync("", "", fullPath, scene);
 	const obj = mesh.meshes[0];

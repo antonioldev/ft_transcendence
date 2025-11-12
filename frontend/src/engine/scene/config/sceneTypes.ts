@@ -78,12 +78,12 @@ export type ParticleConfig = {
 	autoStart?: boolean;
 }
 
-export type ThemeActor = { update: (dt: number) => void; dispose: () => void };
+// export type ThemeActor = { update: (dt: number) => void; dispose: () => void };
 export type ThemeEffect = { dispose: () => void };
 
 export type ThemeObject = {
 	props: AbstractMesh[];	// static meshes
-	actors: ThemeActor[];	// moving things
+	actors: AbstractMesh[];	// moving things
 	effects: ThemeEffect[];	// glow layer, particle systems, post-process, etc.
 };
 
