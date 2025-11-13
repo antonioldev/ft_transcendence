@@ -271,7 +271,6 @@ export class Game {
 
 		try {
 			this.handleChangeServerState(state)
-
 			this.gameObjects.players.left.position.x = state.paddleLeft.x;
 			this.gameObjects.players.right.position.x = state.paddleRight.x;
 

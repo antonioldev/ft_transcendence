@@ -220,7 +220,6 @@ export class GameServices {
 		this.audio.stopGameMusic();
 	}
 
-
 	dispose(): void {
 		this.input?.dispose();
 		this.gui?.dispose();
