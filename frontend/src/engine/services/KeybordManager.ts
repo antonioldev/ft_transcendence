@@ -196,8 +196,8 @@ export class KeyboardManager {
 		if (playerState.inverted)
 			effectiveInput = (effectiveInput === Direction.LEFT) ? Direction.RIGHT : Direction.LEFT;
 
-		if (effectiveInput === Direction.LEFT && player.position.x <= bounds.left) return;
-		if (effectiveInput === Direction.RIGHT && player.position.x >= bounds.right) return;
+		if (effectiveInput === Direction.LEFT && player.position.x < bounds.left) return;
+		if (effectiveInput === Direction.RIGHT && player.position.x > bounds.right) return;
 
 		webSocketClient.sendPlayerInput(side, input);
 	}

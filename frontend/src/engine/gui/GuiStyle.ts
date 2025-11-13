@@ -264,32 +264,7 @@ export const PAUSE_MENU_STYLES = {
         fontSizeInPixels: 20,
         heightInPixels: 25,
         textWrapping: true
-    },
-
-    // spectatorPauseBox: {
-    //     widthInPixels: 400,
-    //     heightInPixels: 100,
-    //     background: COLORS.TRANSPARENT_BLACK,
-    //     thickness: 3,
-    //     color: COLORS.SPECTATOR_RED,
-    //     cornerRadius: 12,
-    //     zIndex: Z_INDEX.HUD,
-    //     isVisible: false,
-    //     shadowBlur: 20,
-    //     shadowColor: COLORS.SPECTATOR_RED
-    // },
-    
-    // spectatorPauseText: {
-    //     fontFamily: FONT_FAMILY,
-    //     color: COLORS.WHITE,
-    //     fontSizeInPixels: 36,
-    //     fontWeight: "bold",
-    //     shadowOffsetX: 1,
-    //     shadowOffsetY: 1,
-    //     shadowBlur: 2,
-    //     shadowOpacity: 0.5,
-    //     shadowColor: COLORS.BLACK,
-    // }
+    }
 } as const;
 
 export const LOBBY_STYLES = {
@@ -713,8 +688,8 @@ export const CARD_GAME_STYLES = {
     },
 
     layoutGrid: {
-        widthInPixels: 1920,
-        heightInPixels: 1026,
+        width: "100%",
+        height: "100%",
         paddingTopInPixels: 20,
     },
     
@@ -738,22 +713,20 @@ export const CARD_GAME_STYLES = {
     },
 
     cardsGrid: {
-        widthInPixels: 1248,
-        heightInPixels: 702,
+        width: "85%",
+        height: "80%",
     },
 
     cardRect: {
-        widthInPixels: 195,
-        heightInPixels: 165,
-        paddingInPixels: 5,
+        width: "95%",
+        height: "95%",
+        padding: "2%",
         thickness: 0,
         cornerRadius: 8,
         background: COLORS.TRANSPARENT
     },
 
     cardBack: {
-        widthInPixels: 195,
-        heightInPixels: 165,
         background: COLORS.ORANGE,
         cornerRadius: 8,
         thickness: 2,
@@ -764,8 +737,6 @@ export const CARD_GAME_STYLES = {
     },
 
     cardFront: {
-        widthInPixels: 195,
-        heightInPixels: 165,
         background: COLORS.WHITE,
         cornerRadius: 8,
         thickness: 2,

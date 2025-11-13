@@ -49,7 +49,7 @@ export class CardGame {
 		const layoutGrid = createGrid("cardGameLayoutGrid", CARD_GAME_STYLES.layoutGrid);
 		layoutGrid.addRowDefinition(60, true);
 		layoutGrid.addRowDefinition(30, true);
-		layoutGrid.addRowDefinition(1, false);
+		layoutGrid.addRowDefinition(0.9, false);
 		this.overlay.addControl(layoutGrid);
 
 		const title = createTextBlock("cardGameTitle", CARD_GAME_STYLES.title, "MEMORY MATCH");
@@ -199,6 +199,7 @@ export class CardGame {
 	}
 
 	hide(): void {
+		this.resetGame();
 		this.overlay.isVisible = false;
 	}
 }

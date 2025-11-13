@@ -79,14 +79,14 @@ export class EndGame {
 				break;
 				
 			case 'champion':
-				this.winnerLabel.text = "🏆 TOURNAMENT CHAMPION 🏆";
+				this.winnerLabel.text = "🏆 CHAMPION 🏆";
 				this.winnerLabel.color = COLORS.GOLD;
 				this.winnerLabel.shadowColor = COLORS.WHITE;
-				this.winnerLabel.fontSizeInPixels = 80;
+				this.winnerLabel.fontSizeInPixels = 100;
 				
 				this.winnerName.color = COLORS.GOLD;
 				this.winnerName.shadowColor = COLORS.WHITE;
-				this.winnerName.fontSizeInPixels = 100;
+				this.winnerName.fontSizeInPixels = 120;
 				break;
 		}
 	}
@@ -210,6 +210,7 @@ export class EndGame {
 
 		const t = getCurrentTranslation();
 		this.continueText.text = t.spectatorQuestion;
+		this.continueText.fontSizeInPixels = 35;
 		this.continueText.isVisible = true;
 		this.timerText.isVisible = true;
 		this.animationManager?.twinkle(this.continueText, Motion.F.slow);

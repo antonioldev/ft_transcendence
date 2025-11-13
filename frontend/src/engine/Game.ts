@@ -163,6 +163,7 @@ export class Game {
 			this.startGameLoop();
 			this.isCountdownStarted = false;
 		}
+		this.services?.gui.cardGame.show();
 	}
 
 	private async onServerEndedGame(winner: string, loser: string): Promise<void> {
