@@ -289,18 +289,14 @@ export class PowerupManager {
 	}
 
 	async triple_shot(side: number): Promise<number> {
-		if (this.balls.length !== 1) return (0);
-		
+		if (this.balls.length > 1) return (0);
 		this.paddles[side].triple_shot_active = true;
 
-		// if (this.balls.length === 3) return (0);
 		await new Promise<void>(resolve => {
 			eventManager.once(`paddle-collision-${side}`, (ball: Ball ) => {
-				if (this.paddles[side].triple_shot_active && this.balls.length < 3) {
+				if (this.paddles[side].triple_shot_active && this.balls.length === 1) {
 					this.balls.push(ball.duplicate(ball.speed * 0.85, -Math.PI / 9));
-					if (this.balls.length < 3) {
-						this.balls.push(ball.duplicate(ball.speed * 0.7, Math.PI / 9));
-					}
+					this.balls.push(ball.duplicate(ball.speed * 0.7, Math.PI / 9));
 				}
 				resolve();
 			});
