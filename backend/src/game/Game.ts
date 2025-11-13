@@ -8,6 +8,7 @@ import { Client, Player, CPU} from '../network/Client.js'
 import { saveGameResult, registerNewGame, addPlayer2  } from '../data/validation.js';
 import { PowerupManager, Slot } from './Powerup.js';
 import { remove_elem } from './utils.js';
+import { EventEmitter } from 'events';
 
 // The Game class runs the core game logic for all game modes.
 export class Game {
@@ -21,8 +22,9 @@ export class Game {
 	paddles: (Paddle | CPUBot)[] = [new Paddle(LEFT), new Paddle(RIGHT)];
     
 	rally = { current: 1 };
-	balls: Ball[] = [ new Ball(this.paddles, this.rally, this._update_score.bind(this)) ];
-	powerup_manager: PowerupManager = new PowerupManager(this.paddles, this.balls);
+	gameEventManager = new EventEmitter();
+	balls: Ball[] = [ new Ball(this.paddles, this.rally, this.gameEventManager, this._update_score.bind(this)) ];
+	powerup_manager: PowerupManager = new PowerupManager(this.paddles, this.balls, this.gameEventManager);
 	private _broadcast: (message: ServerMessage, clients?: Set<Client>) => void;
 
 	constructor(id: string, players: (Player | CPU)[], broadcast_callback: (message: ServerMessage, clients?: Set<Client>) => void) {
