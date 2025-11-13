@@ -3,13 +3,13 @@ import { ServerMessage } from "../shared/types.js";
 
 export const sidClientMap: Map<string, Client> = new Map();
 
-export function findOrCreateClient(sid: string): Client {
-	let client: Client | undefined = sidClientMap.get(sid);
-	if (!client) {
-		client = createClientConnection(sid);
-	}
-	return client;
-}
+// export function findOrCreateClient(sid: string): Client {
+// 	let client: Client | undefined = sidClientMap.get(sid);
+// 	if (!client) {
+// 		client = createClientConnection(sid);
+// 	}
+// 	return client;
+// }
 
 export function createClientConnection(sid: string): Client {
 	console.log(`New client created, SID: ${sid}`);

@@ -4,6 +4,7 @@ import { LEFT, RIGHT, GAME_CONFIG } from '../shared/gameConfig.js';
 import { PowerupType, PowerupState} from '../shared/constants.js';
 import { Powerup } from '../shared/types.js';
 import { EventEmitter } from 'events';
+import { sleep } from './utils.js';
 
 export class Slot {
 	type: PowerupType;
@@ -42,8 +43,8 @@ export class PowerupManager {
 		for (let i = 0; i < GAME_CONFIG.slot_count; i++) {
 			// this.left_slots[i] = new Slot(Math.floor(Math.random() * num_powerups), LEFT, i);
 			// this.right_slots[i] = new Slot(Math.floor(Math.random() * num_powerups), RIGHT, i);
-			this.left_slots[i] = new Slot(PowerupType.POWERSHOT, LEFT, i);
-			this.right_slots[i] = new Slot(PowerupType.POWERSHOT, RIGHT, i);
+			this.left_slots[i] = new Slot(PowerupType.TRIPLE_SHOT, LEFT, i);
+			this.right_slots[i] = new Slot(PowerupType.TRIPLE_SHOT, RIGHT, i);
 		}
 	}
 
@@ -271,9 +272,9 @@ export class PowerupManager {
 
 	async unset_powershot(side: number, opponent_side: number) {
 		this.paddles[side].powershot_active = false;
-		
+
 		const collisonPromise = new Promise<void>(resolve => {
-			this.gameEventManager.once(`paddle-collision-${opponent_side}`, (ball: Ball ) =>{
+			this.gameEventManager.once(`paddle-collision-${opponent_side}`, (ball: Ball ) => {
 				this.paddles[side].powershot_deactivate = false;
 				ball.speed = ball.speed_cache;
 				resolve();
@@ -288,6 +289,7 @@ export class PowerupManager {
 		});
 
 		await Promise.race([collisonPromise, scorePromise]);
+		await sleep(500);
 	}
 
 	set_curve_ball(active: boolean) {
