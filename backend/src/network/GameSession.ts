@@ -6,7 +6,6 @@ import { GAME_CONFIG } from '../shared/gameConfig.js';
 import { generateGameId } from '../data/database.js';
 import { sessionEventManager } from './utils.js';
 import { ClientMessage } from '../shared/types.js';
-import { TournamentRemote } from './Tournament.js';
 import { send } from '../routes/utils.js';
 
 export abstract class AbstractGameSession {
@@ -34,7 +33,7 @@ export abstract class AbstractGameSession {
 		let deleted_clients: (Client)[] = [];
 		for (const client of targets) {
 			try {
-				client?.websocket.send(JSON.stringify(message));
+				send(client.websocket, message);
 			}
 			catch {
 				console.log(`broadcast failed for client ${client.username}`);
