@@ -221,6 +221,10 @@ export class Hud {
 	}
 
 	updateScores(leftScore: number, rightScore: number): void {
+		console.log("UPDATING SCORES");
+		console.log(`left: ${leftScore}`);
+		console.log(`right: ${rightScore}`);
+
 		const oldLeft = parseInt(this.score1Text.text);
 		const oldRight = parseInt(this.score2Text.text);
 

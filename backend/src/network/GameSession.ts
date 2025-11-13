@@ -114,7 +114,7 @@ export abstract class AbstractGameSession {
 
 	setClientReady(client: Client): void {
 		this.readyClients.add(client.sid);
-		console.log(`Client ${client.username} marked as ready\nTotal client ready: ${this.readyClients.size}\nTotal clients ${this.clients.size}`);
+		console.log(`Client ${client.username} marked as ready`);
 		
 		if (/*this.full && */this.allClientsReady()) {
 			this.sessionEventManager.emit(`all-ready-${this.id}`);

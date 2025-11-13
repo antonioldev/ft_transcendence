@@ -302,7 +302,7 @@ export class Game {
 
 			this.services?.updatePowerups(state.paddleLeft.powerups, state.paddleRight.powerups)
 
-			if (leftPlayer.score < state.paddleLeft.score || rightPlayer.score < state.paddleRight.score) {
+			if (leftPlayer.score !== state.paddleLeft.score || rightPlayer.score !== state.paddleRight.score) {
 				rightPlayer.score = state.paddleRight.score;
 				leftPlayer.score = state.paddleLeft.score;
 				this.services?.updateScore(leftPlayer.score, rightPlayer.score);
