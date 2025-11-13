@@ -139,13 +139,18 @@ export class PowerupManager {
 				);
 				break;
 			case PowerupType.POWERSHOT:
-				this.gameObjects?.balls.forEach((ball: Mesh, index: number) => {
-					if (ball.visibility > 0) {
-						const ballGlow = this.gameObjects?.effects?.ballsGlow[index];
-						if (ballGlow)
-							this.animationManager?.glowEffect(ballGlow, new Color3(2, 2, 0));
-					}
-				});
+				// this.gameObjects?.balls.forEach((ball: Mesh, index: number) => {
+				// 	if (ball.visibility > 0) {
+				// 		const ballGlow = this.gameObjects?.effects?.ballsGlow[index];
+				// 		if (ballGlow)
+				// 			this.animationManager?.glowEffect(ballGlow, new Color3(2, 2, 0));
+				// 	}
+				// });
+				this.animationManager?.glowEffect(
+					isLeftSide ? this.gameObjects?.effects?.leftCage : this.gameObjects?.effects?.rightCage, 
+					Color3.Red(),
+					new Color4(0, 1, 0, 0.5)
+				);
 				break;
 			case PowerupType.CURVE_BALL:
 				this.gameObjects?.balls.forEach((ball: Mesh, index: number) => {
@@ -218,6 +223,10 @@ export class PowerupManager {
 				break;
 
 			case PowerupType.POWERSHOT:
+				this.animationManager?.stopEffect(
+					isLeftSide ? this.gameObjects?.effects?.leftCage : this.gameObjects?.effects?.rightCage
+				);
+				break;
 			case PowerupType.CURVE_BALL:
 				this.gameObjects?.effects?.ballsGlow.forEach((ballGlow: Mesh) => {
 					this.animationManager?.stopEffect(ballGlow);
