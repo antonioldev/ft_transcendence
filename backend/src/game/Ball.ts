@@ -139,6 +139,7 @@ export class Ball {
                 this.direction[1] *= -1;
             }
             else {
+                this.gameEventManager.emit(`score`);
                 this.updateScore(RIGHT, this);
                 this.reset();
             }
@@ -148,6 +149,7 @@ export class Ball {
                 this.direction[1] *= -1;
             }
             else {
+                this.gameEventManager.emit(`score`);
                 this.updateScore(LEFT, this);
                 this.reset();
             }
