@@ -1,12 +1,11 @@
 import { FastifyInstance } from 'fastify';
 import { gameManager } from '../network/GameManager.js';
-import { Client } from '../game/Player.js';
 import { MessageType } from '../shared/constants.js';
 import { ClientMessage} from '../shared/types.js';
 import { TournamentRemote } from '../network/Tournament.js';
 import { clientManager } from '../network/ClientManager.js';
 import { ServerMessage } from "../shared/types.js";
-
+import { Client } from '../network/ClientManager.js';
 /**
  * Sets up WebSocket routes for the Fastify server.
  * @param app - The Fastify instance to configure.

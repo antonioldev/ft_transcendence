@@ -1,11 +1,12 @@
 import { AbstractGameSession } from './GameSession.js'
 import { Game } from '../game/Game.js';
-import { Client, Player, CPU } from '../game/Player.js';
+import { Player, CPU } from '../game/Player.js';
 import { GameMode, MessageType, Direction, GameSessionState } from '../shared/constants.js';
 import { LEFT, RIGHT } from '../shared/gameConfig.js';
 import { generateGameId } from '../data/database.js';
 import { randomize } from './utils.js';
 import { ClientMessage } from '../shared/types.js';
+import { Client } from './ClientManager.js';
 
 export class Match {
 	id: string = generateGameId();
@@ -424,6 +425,7 @@ export class TournamentRemote extends AbstractTournament {
 					match.remove_player(quitter);
 					this.defeated_clients.delete(quitter);
 				}
+				match.clients.delete(quitter);
 			}
 			else {
 				console.log(`Removed spectator: ${quitter.username}`)

@@ -1,5 +1,6 @@
 import { Game } from '../game/Game.js';
-import { Client, Player, CPU } from '../game/Player.js';
+import { Player, CPU } from '../game/Player.js';
+import { Client } from './ClientManager.js';
 import { MessageType, GameMode, AiDifficulty, GameSessionState } from '../shared/constants.js';
 import { PlayerInput, ServerMessage } from '../shared/types.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';

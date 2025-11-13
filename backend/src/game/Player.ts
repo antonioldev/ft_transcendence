@@ -1,8 +1,8 @@
 import { AiDifficulty } from '../shared/constants.js';
+import { Client } from '../network/ClientManager.js';
 
 /**
  * Represents an actual game participant (human or AI)
- * This is about the person playing, not the connection
  * Multiple players can be controlled by one client (local multiplayer)
  */
 export class Player {
