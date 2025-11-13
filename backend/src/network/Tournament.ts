@@ -1,6 +1,6 @@
 import { AbstractGameSession } from './GameSession.js'
 import { Game } from '../game/Game.js';
-import { Client, Player, CPU } from './Client.js';
+import { Client, Player, CPU } from '../game/Player.js';
 import { GameMode, MessageType, Direction, GameSessionState } from '../shared/constants.js';
 import { LEFT, RIGHT } from '../shared/gameConfig.js';
 import { generateGameId } from '../data/database.js';

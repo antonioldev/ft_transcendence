@@ -1,31 +1,4 @@
 import { AiDifficulty } from '../shared/constants.js';
-import { generateClientId } from '../data/database.js';
-
-/**
- * Represents a physical device/browser connection to the server
- * One client can control multiple players (e.g., local multiplayer)
- * This is about the WebSocket connection, not the game participant
- */
-export class Client {
-    // id: string = generateClientId();
-    sid: string;
-    username: string = "default";       // Username for future authentication (not used yet)
-    email: string = "default@default";          // email for future authentication (not used yet)
-    password?: string;
-    websocket?: any;        // websocket is assigned when they join their first game
-    loggedIn: boolean = false;      // Whether this client is authenticated
-    is_connected: Boolean = true;
-
-    constructor(sid: string) {
-        this.sid = sid;
-    }
-
-    setInfo(username: string, email: string, password: string) {
-        this.username = username;       // Keep for future use
-        this.email = email;       // Keep for future use
-        this.password = password
-    }
-}
 
 /**
  * Represents an actual game participant (human or AI)

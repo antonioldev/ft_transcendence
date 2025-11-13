@@ -1,13 +1,12 @@
 import { Game } from '../game/Game.js';
-import { Client, Player, CPU } from './Client.js';
+import { Client, Player, CPU } from '../game/Player.js';
 import { MessageType, GameMode, AiDifficulty, GameSessionState } from '../shared/constants.js';
 import { PlayerInput, ServerMessage } from '../shared/types.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
 import { generateGameId } from '../data/database.js';
 import { sessionEventManager } from './utils.js';
 import { ClientMessage } from '../shared/types.js';
-import { send } from '../routes/utils.js';
-
+import { send } from '../routes/Websocket.js';
 export abstract class AbstractGameSession {
 	mode: GameMode;
 	id: string = generateGameId();

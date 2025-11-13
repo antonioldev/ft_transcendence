@@ -1,11 +1,11 @@
 import { FastifyInstance } from 'fastify';
 import { gameManager } from '../network/GameManager.js';
-import { Client } from '../network/Client.js';
+import { Client } from '../game/Player.js';
 import { MessageType } from '../shared/constants.js';
 import { ClientMessage} from '../shared/types.js';
-import * as db from "../data/validation.js";
 import { TournamentRemote } from '../network/Tournament.js';
-import { getClientConnection, send, removeClientConnection } from './utils.js';
+import { clientManager } from '../network/ClientManager.js';
+import { ServerMessage } from "../shared/types.js";
 
 /**
  * Sets up WebSocket routes for the Fastify server.
@@ -20,7 +20,7 @@ export async function setupWebsocket(app: FastifyInstance): Promise<void> {
         }
         console.log(`Creating websocket for sid: ${sid}`);
 
-        const client = getClientConnection(sid);
+        const client = clientManager.getClientConnection(sid);
         if (!client) {
             console.log(`Cannot handle Websocket connection, client does not exist`);
             return ;
@@ -33,27 +33,14 @@ export async function setupWebsocket(app: FastifyInstance): Promise<void> {
     
         socket.on('close', () => {
             console.log(`WebSocket closed for client ${client.username}:`);
-            handleDisconnection(client!);
+            clientManager.handleDisconnection(client!);
         });
     
         socket.on('error', (error: any) => {
             console.error(`❌ WebSocket error for client ${client.username}:`, error);
-            handleDisconnection(client!);
+            clientManager.handleDisconnection(client!);
         });
     });
-}
-
-function handleDisconnection(client: Client) {
-    client.is_connected = false;
-    gameManager.removeClientFromGame(client);
-    setTimeout(() => { disconnectClient(client) }, 2000);
-}
-
-async function disconnectClient(client:  Client) {
-    if (!client.is_connected) {
-        removeClientConnection(client.sid);
-        await db.logoutUser(client.username); 
-    }
 }
 
 /**
@@ -107,4 +94,11 @@ async function handleMessage(client: Client, message: string) {
             message: 'Message request failed',
         });
     }
+}
+
+
+export function send(socket: any, message: ServerMessage) {
+	socket.send(JSON.stringify(message), (err?: Error) => {
+		if (err) console.error(`❌ Failed to send message: `, err.stack);
+	});
 }
