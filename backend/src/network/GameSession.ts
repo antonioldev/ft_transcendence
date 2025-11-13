@@ -5,15 +5,17 @@ import { MessageType, GameMode, AiDifficulty, GameSessionState } from '../shared
 import { PlayerInput, ServerMessage } from '../shared/types.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
 import { generateGameId } from '../data/database.js';
-import { sessionEventManager } from './utils.js';
 import { ClientMessage } from '../shared/types.js';
 import { send } from '../routes/Websocket.js';
+import { EventEmitter } from 'events';
+
 export abstract class AbstractGameSession {
 	mode: GameMode;
 	id: string = generateGameId();
 	clients: Set<Client> = new Set();
 	players: Set<Player | CPU> = new Set();
 	state: GameSessionState = GameSessionState.INIT;
+	sessionEventManager = new EventEmitter();
 
 	player_capacity: number = 2;
 	client_capacity: number = 1;
@@ -108,7 +110,7 @@ export abstract class AbstractGameSession {
 		}
 		console.log("WAITING FOR EVENT");
 		await new Promise(resolve => {
-			sessionEventManager.once(`all-ready-${this.id}`, resolve);
+			this.sessionEventManager.once(`all-ready-${this.id}`, resolve);
 		});
 		console.log(`Event triggered ALL READY`);
 	}
@@ -118,7 +120,7 @@ export abstract class AbstractGameSession {
 		console.log(`Client ${client.username} marked as ready\nTotal client ready: ${this.readyClients.size}\nTotal clients ${this.clients.size}`);
 		
 		if (/*this.full && */this.allClientsReady()) {
-			sessionEventManager.emit(`all-ready-${this.id}`);
+			this.sessionEventManager.emit(`all-ready-${this.id}`);
 			console.log(`GameSession ${this.id}: all clients ready signal emitted`);
 		}
 	}

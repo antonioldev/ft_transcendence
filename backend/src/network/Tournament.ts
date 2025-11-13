@@ -4,7 +4,7 @@ import { Player, CPU } from '../game/Player.js';
 import { GameMode, MessageType, Direction, GameSessionState } from '../shared/constants.js';
 import { LEFT, RIGHT } from '../shared/gameConfig.js';
 import { generateGameId } from '../data/database.js';
-import { randomize } from './utils.js';
+import { randomize } from '../utils.js';
 import { ClientMessage } from '../shared/types.js';
 import { Client } from './ClientManager.js';
 
@@ -410,11 +410,7 @@ export class TournamentRemote extends AbstractTournament {
 			const match = this.findMatch(quitter.sid);
 			if (match) {
 				this.client_match_map.delete(quitter.sid);
-				if (this.client_match_map.size === 0) {
-					console.log(`Last undefeated player quit tournament ${this.id}`);
-					this.stop();
-				}
-				else if (match.game?.is_running()) {
+				if (match.game?.is_running()) {
 					// The opposing player wins their current match and the tournament continues
 					console.log(`Removed player from active game: ${quitter.username}`)
 					match.game.setOtherPlayerWinner(quitter);
