@@ -1,6 +1,6 @@
 import { Logger } from '../utils/LogManager.js';
 import { MessageType, Direction, PowerupType } from '../shared/constants.js'
-import { ConnectionStatus, AppState } from '../utils/constants.js';
+import { ConnectionStatus, AppState, PlayerSide } from '../utils/constants.js';
 import type { ClientMessage, ServerMessage } from '../shared/types.js'
 import { appManager } from './AppManager.js';
 
@@ -132,7 +132,7 @@ export class WebSocketClient {
         this.sendMessage(MessageType.REQUEST_LOBBY);
     }
 
-    sendPlayerInput(side: number, direction: Direction): void {
+    sendPlayerInput(side: PlayerSide, direction: Direction): void {
         this.sendMessage(MessageType.PLAYER_INPUT, { side, direction});
     }
 
@@ -152,11 +152,11 @@ export class WebSocketClient {
         this.sendMessage(MessageType.TOGGLE_SPECTATOR_GAME, { direction })
     }
 
-    sendPowerupActivationRequest(powerup_type: PowerupType, side: number, slot: number,): void {
+    sendPowerupActivationRequest(powerup_type: PowerupType, side: PlayerSide, slot: number,): void {
         this.sendMessage(MessageType.ACTIVATE_POWERUP, { powerup_type, slot, side });
     }
 
-    private sendMessage(type: MessageType, data: any = {}): void {
+    private sendMessage(type: MessageType, data: Partial<ClientMessage> = {}): void {
         if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
 
         const message: ClientMessage = { type, ...data };

@@ -109,7 +109,7 @@ export class PowerupManager {
 					isLeftSide ? this.gameObjects?.effects?.rightGlow : this.gameObjects?.effects?.leftGlow, Color3.Yellow());
 				break;
 			case PowerupType.INVISIBLE_BALL:
-				this.gameObjects?.balls.forEach((ball: any) => {
+				this.gameObjects?.balls.forEach((ball: Mesh) => {
 					this.animationManager?.blinkInvisibility(ball);
 				});
 				break;
@@ -118,7 +118,7 @@ export class PowerupManager {
 				this.animationManager?.glowEffect(shieldGlow, new Color3(2, 2, 0));
 				break;
 			case PowerupType.FREEZE:
-				this.gameObjects?.balls.forEach((ball: any, index: number) => {
+				this.gameObjects?.balls.forEach((ball: Mesh, index: number) => {
 					if (ball.visibility > 0) {
 						const ballFreeze = this.gameObjects?.effects?.ballsFreeze[index];
 						if (ballFreeze) this.animationManager?.glowEffect(ballFreeze, new Color3(135, 206, 235));
@@ -139,7 +139,7 @@ export class PowerupManager {
 				);
 				break;
 			case PowerupType.POWERSHOT:
-				this.gameObjects?.balls.forEach((ball: any, index: number) => {
+				this.gameObjects?.balls.forEach((ball: Mesh, index: number) => {
 					if (ball.visibility > 0) {
 						const ballGlow = this.gameObjects?.effects?.ballsGlow[index];
 						if (ballGlow)
@@ -148,7 +148,7 @@ export class PowerupManager {
 				});
 				break;
 			case PowerupType.CURVE_BALL:
-				this.gameObjects?.balls.forEach((ball: any, index: number) => {
+				this.gameObjects?.balls.forEach((ball: Mesh, index: number) => {
 					if (ball.visibility > 0) {
 						const ballGlow = this.gameObjects?.effects?.ballsGlow[index];
 						if (ballGlow)
@@ -235,9 +235,9 @@ export class PowerupManager {
 	resetPowerupStates(): void {
 		this.players.forEach((player, side) => {
 			player.powerUps.forEach((powerup, index) => {
-				if (powerup.state === PowerupState.ACTIVE) {
+				// if (powerup.state === PowerupState.ACTIVE) {
 					this.deactivate(side, index, powerup.type);
-				}
+				// }
 			});
 		});
 	}

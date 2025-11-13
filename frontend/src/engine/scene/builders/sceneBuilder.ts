@@ -92,8 +92,8 @@ async function buildCoreGameObjects(scene: Scene, gameMode: GameMode, viewMode: 
 
 async function createPowerUpEffects(scene: Scene, players: Players, balls: Mesh[]): Promise<Effects> {
 
-	const ballsGlow: any[] = [];
-	const ballsFreeze: any[] = [];
+	const ballsGlow: Mesh[] = [];
+	const ballsFreeze: Mesh[] = [];
 
 	for (let i = 0; i < 3; i++){
 		const { glow, freeze } = createBallEffects(scene, balls[i], i);

@@ -1,4 +1,4 @@
-import { DeviceSourceManager, DeviceType, Scene } from "@babylonjs/core";
+import { DeviceSource, DeviceSourceManager, DeviceType, Scene } from "@babylonjs/core";
 import { webSocketClient } from '../../core/WebSocketClient.js';
 import { Direction } from '../../shared/constants.js';
 import { getPlayerBoundaries } from '../../shared/gameConfig.js';
@@ -176,7 +176,7 @@ export class KeyboardManager {
 		}
 	}
 
-	private handlePlayerMovement(keyboardSource: any, side: PlayerSide, playerState: PlayerState, profile: KeysProfile): void {
+	private handlePlayerMovement(keyboardSource: DeviceSource<DeviceType.Keyboard>, side: PlayerSide, playerState: PlayerState, profile: KeysProfile): void {
 		const bounds = getPlayerBoundaries(playerState.size);
 		const player = side === PlayerSide.LEFT ? this.gameObjects.players.left : this.gameObjects.players.right;
 

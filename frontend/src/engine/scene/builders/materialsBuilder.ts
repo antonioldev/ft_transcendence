@@ -9,7 +9,7 @@ import { currentSettings } from "../../../core/AppManager.js";
 const createdMaterials = new Set<StandardMaterial>();
 const createdTextures = new Set<Texture>();
 
-function setTextureScale(textureScale: any, texture: Texture) {
+function setTextureScale(textureScale: { u: number, v: number } | undefined, texture: Texture) {
 	if (textureScale) {
 		texture.uScale = textureScale.u;
 		texture.vScale = textureScale.v;
