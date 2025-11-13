@@ -259,7 +259,6 @@ export class PowerupManager {
 		await new Promise<void>((resolve) => {
 			this.gameEventManager.once(`paddle-collision-${side}`, (ball: Ball ) => {
 				if (this.paddles[side].powershot_active) {
-					console.log("Creating new balls")
 					this.paddles[opponent_side].powershot_deactivate = true;
 					ball.speed_cache = ball.speed;
 					ball.speed = Math.max(GAME_CONFIG.ballMinPowershotSpeed, ball.speed * 1.5);
@@ -272,13 +271,23 @@ export class PowerupManager {
 
 	async unset_powershot(side: number, opponent_side: number) {
 		this.paddles[side].powershot_active = false;
-		await new Promise<void>(resolve => {
+		
+		const collisonPromise = new Promise<void>(resolve => {
 			this.gameEventManager.once(`paddle-collision-${opponent_side}`, (ball: Ball ) =>{
 				this.paddles[side].powershot_deactivate = false;
 				ball.speed = ball.speed_cache;
 				resolve();
 			});
 		});
+
+		const scorePromise = new Promise<void>(resolve => {
+			this.gameEventManager.once(`score`, () => {
+				this.paddles[side].powershot_deactivate = false;
+				resolve();
+			});
+		});
+
+		await Promise.race([collisonPromise, scorePromise]);
 	}
 
 	set_curve_ball(active: boolean) {
