@@ -4,3 +4,7 @@ export function randomize(array: any[]) {
 		[array[i], array[j]] = [array[j], array[i]]; 
 	} 
 }
+
+export function sleep(ms: number) {
+	return new Promise(resolve => setTimeout(resolve, ms));
+}
