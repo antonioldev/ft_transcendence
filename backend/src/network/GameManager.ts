@@ -1,10 +1,9 @@
 import { OneOffGame, AbstractGameSession } from './GameSession.js';
 import { TournamentLocal, TournamentRemote } from './Tournament.js';
-import { Client } from './Client.js';
 import { GameMode } from '../shared/constants.js';
 import * as db from "../data/validation.js";
 import { GAME_CONFIG } from '../shared/gameConfig.js';
-
+import { Client } from './ClientManager.js';
 /**
  * Manages game sessions and player interactions within the game.
  */

@@ -1,10 +1,10 @@
-import { Player } from '../network/Client.js';
+import { Player } from '../game/Player.js';
 import { FastifyInstance } from 'fastify';
 import * as db from "../data/validation.js";
 import { gameManager } from '../network/GameManager.js';
 import { AuthCode, GameMode, AiDifficulty } from '../shared/constants.js';
 import { GAME_CONFIG } from '../shared/gameConfig.js';
-import { getClientConnection, createClientConnection } from './utils.js';
+import { clientManager } from '../network/ClientManager.js';
 import { updateUserSettings, getUserSettings } from '../data/database.js';
 
 /* --- HTTP Endpoints --- */
@@ -20,9 +20,9 @@ export async function APIRoutes(app: FastifyInstance) {
 			return reply.code(400).send({ status: AuthCode.BAD_CREDENTIALS, message: "Error: missing SID"} );
 		}
 		console.log(`ROOT request received from: ${sid}`);
-		let client = getClientConnection(sid);
+		let client = clientManager.getClientConnection(sid);
 		if (!client) {
-			client = createClientConnection(sid);
+			client = clientManager.createClientConnection(sid);
 		} 
 		else if (!client.is_connected && client.loggedIn) { // testing this one
 			console.log("Client refresh")
@@ -50,7 +50,7 @@ export async function APIRoutes(app: FastifyInstance) {
 			return reply.code(400).send({ message: "Error: missing SID"} );
 		}
 		console.log(`/login request received from: ${sid}`);
-		let client = getClientConnection(sid);
+		let client = clientManager.getClientConnection(sid);
 		if (!client) { // testing what happen with client connecting again
 			console.log("login failed: client not recognised");
 			return reply.code(401).send( { success: false, message: "login failed: client not recognised" });
@@ -107,7 +107,7 @@ export async function APIRoutes(app: FastifyInstance) {
 			return reply.code(400).send({ message: "Error: missing SID"} );
 		}
 		console.log(`/logout request received from: ${sid}`);
-		let client = getClientConnection(sid);
+		let client = clientManager.getClientConnection(sid);
 		if (!client) {
 			console.log("Logout failed: user not logged in");
 			return reply.code(401).send( {success: false, message: "Logout failed: user not logged in"});
@@ -173,7 +173,7 @@ export async function APIRoutes(app: FastifyInstance) {
 			return reply.code(401).send({ success: false, message: 'Missing username, email, or password' })
 		}
 
-		let client = getClientConnection(sid);
+		let client = clientManager.getClientConnection(sid);
 		if (!client) {
 			console.log("join failed: user not logged in");
 			return reply.code(401).send( {success: false, message: "join failed: user not logged in"});
@@ -239,7 +239,7 @@ export async function APIRoutes(app: FastifyInstance) {
 			return reply.code(400).send({ success: false, message: "Error: missing SID"} );
 		}
 
-		const client = getClientConnection(sid);
+		const client = clientManager.getClientConnection(sid);
 		if (!client || !client.loggedIn) {
 			console.log("Update settings failed: user not logged in");
 			return reply.code(401).send( {success: false, message: "User not authenticated"});
@@ -285,7 +285,7 @@ export async function APIRoutes(app: FastifyInstance) {
 			return reply.code(400).send({ success: false, message: "Error: missing SID"} );
 		}
 
-		const client = getClientConnection(sid);
+		const client = clientManager.getClientConnection(sid);
 		if (!client || !client.loggedIn) {
 			console.log("Get settings failed: user not logged in");
 			return reply.code(401).send( {success: false, message: "User not authenticated"});

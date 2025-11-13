@@ -2,7 +2,7 @@
 import { FastifyInstance } from 'fastify';
 import { OAuth2Client } from 'google-auth-library';
 import * as validation from '../data/validation.js';
-import { createClientConnection, getClientConnection } from './utils.js';
+import { clientManager } from '../network/ClientManager.js';
 
 // Google OAuth2 client
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
@@ -15,9 +15,9 @@ export async function authGoogle(app: FastifyInstance) {
 				return reply.code(400).send({ error: 'Missing SID' });
 			}
 		
-			let client = getClientConnection(sid);
+			let client = clientManager.getClientConnection(sid);
 			if (!client) {
-				client = createClientConnection(sid);
+				client = clientManager.createClientConnection(sid);
 			}
 			const { token } = request.body as { token: string };
 			if (!token) return reply.code(400).send({ success: false, message: 'Error: Token not provided' });
