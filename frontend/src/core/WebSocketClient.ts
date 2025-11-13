@@ -152,8 +152,8 @@ export class WebSocketClient {
         this.sendMessage(MessageType.TOGGLE_SPECTATOR_GAME, { direction })
     }
 
-    sendPowerupActivationRequest(powerup_type: PowerupType, side: PlayerSide, slot: number,): void {
-        this.sendMessage(MessageType.ACTIVATE_POWERUP, { powerup_type, slot, side });
+    sendPowerupActivationRequest(side: PlayerSide, slot: number,): void {
+        this.sendMessage(MessageType.ACTIVATE_POWERUP, { slot, side });
     }
 
     private sendMessage(type: MessageType, data: Partial<ClientMessage> = {}): void {

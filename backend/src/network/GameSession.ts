@@ -103,21 +103,18 @@ export abstract class AbstractGameSession {
 	}
 
 	async waitForClientsReady() {
-		console.log("INSIDE WAIT FOR CLIENTS READY");
 		if (this.allClientsReady()) {
 			console.log(`All clients ready: ready size: ${this.readyClients.size}`);
 			return ;
 		}
-		console.log("WAITING FOR EVENT");
 		await new Promise(resolve => {
 			this.sessionEventManager.once(`all-ready-${this.id}`, resolve);
 		});
-		console.log(`Event triggered ALL READY`);
 	}
 
 	setClientReady(client: Client): void {
 		this.readyClients.add(client.sid);
-		console.log(`Client ${client.username} marked as ready\nTotal client ready: ${this.readyClients.size}\nTotal clients ${this.clients.size}`);
+		console.log(`Client ${client.username} marked as ready`);
 		
 		if (/*this.full && */this.allClientsReady()) {
 			this.sessionEventManager.emit(`all-ready-${this.id}`);
@@ -172,9 +169,7 @@ export abstract class AbstractGameSession {
 	}
 
 	async activate_powerup(client: Client, data: ClientMessage) {
-		if (data.powerup_type === undefined || data.powerup_type === null || 
-			data.slot === undefined || data.slot === null || 
-			data.side === undefined || data.side === null) {
+		if (data.slot === undefined || data.slot === null || data.side === undefined || data.side === null ) {
 			console.error("Error: cannot activate powerup, missing data");
 			return;
 		}

@@ -409,7 +409,6 @@ export class TournamentRemote extends AbstractTournament {
 		else if (this.is_running()) {
 			const match = this.findMatch(quitter.sid);
 			if (match) {
-				this.client_match_map.delete(quitter.sid);
 				if (match.game?.is_running()) {
 					// The opposing player wins their current match and the tournament continues
 					console.log(`Removed player from active game: ${quitter.username}`)
@@ -421,6 +420,7 @@ export class TournamentRemote extends AbstractTournament {
 					match.remove_player(quitter);
 					this.defeated_clients.delete(quitter);
 				}
+				this.client_match_map.delete(quitter.sid);
 				match.clients.delete(quitter);
 			}
 			else {

@@ -58,24 +58,24 @@ export class PowerupManager {
 		if (!player?.isControlled)
 			return;
 		
-		const powerUps = player.powerUps;
+		// const powerUps = player.powerUps;
 		
-		if (!powerUps || slotIndex >= powerUps.length)
-			return;
+		// if (!powerUps || slotIndex >= powerUps.length)
+		// 	return;
 
-		const powerup = powerUps[slotIndex];
+		// const powerup = powerUps[slotIndex];
 		
-		if (!powerup || powerup.state !== PowerupState.UNUSED)
-			return;
+		// if (!powerup || powerup.state !== PowerupState.UNUSED)
+		// 	return;
 
-		const hasActivePowerupOfSameType = powerUps.some(p => 
-			p.type === powerup.type && p.state === PowerupState.ACTIVE
-		);
+		// const hasActivePowerupOfSameType = powerUps.some(p => 
+		// 	p.type === powerup.type && p.state === PowerupState.ACTIVE
+		// );
 		
-		if (hasActivePowerupOfSameType)
-			return;
+		// if (hasActivePowerupOfSameType)
+		// 	return;
 
-		webSocketClient.sendPowerupActivationRequest(powerup.type, side, slotIndex);
+		webSocketClient.sendPowerupActivationRequest(side, slotIndex);
 	}
 
 	activate(side: PlayerSide, slot: number, powerupType: PowerupType): void {
@@ -237,9 +237,9 @@ export class PowerupManager {
 	resetPowerupStates(): void {
 		this.players.forEach((player, side) => {
 			player.powerUps.forEach((powerup, index) => {
-				// if (powerup.state === PowerupState.ACTIVE) {
+				if (powerup.state === PowerupState.ACTIVE) {
 					this.deactivate(side, index, powerup.type);
-				// }
+				}
 			});
 		});
 	}

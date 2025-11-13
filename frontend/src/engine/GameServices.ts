@@ -185,7 +185,7 @@ export class GameServices {
 
 //END GAME CALLS
 	resetGuiForNextMatch(): void {
-		// this.powerup?.resetPowerupStates();
+		this.powerup?.resetPowerupStates();
 		this.gui?.hud.resetPowerupVisuals();
 		this.gui?.hud.updateScores(0, 0);
 	}

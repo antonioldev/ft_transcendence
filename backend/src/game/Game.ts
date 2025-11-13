@@ -253,10 +253,13 @@ export class Game {
 		}
 	}
 
+	// activate if a powerup of the same type is not already active
 	async activate(side: number, slot_index: number) {
 		const slot: Slot = this.powerup_manager.slots[side][slot_index];
-		await this.powerup_manager.activate(slot);
-        console.log(`Powerup ${slot.type} activated by ${this.players[side].name}`);
+		if (!this.powerup_manager.find_active_powerup(slot.type, slot.side)) {
+			await this.powerup_manager.activate(slot);
+			console.log(`Powerup ${slot.type} activated by ${this.players[side].name}`);
+		}
 	}
 
 	assign_winner(winner: Player | CPU) {
