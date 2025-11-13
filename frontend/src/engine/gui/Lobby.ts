@@ -30,7 +30,6 @@ export class Lobby {
 		mainGrid.addControl(title, 0, 0);
 
 		this.subtitle = createTextBlock("lobbySubtitle", LOBBY_STYLES.dots, "...");
-		// this.subtitle.textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT,
 		mainGrid.addControl(this.subtitle, 1, 0);
 
 		this.countText = createTextBlock("lobbyCount", LOBBY_STYLES.count, "");

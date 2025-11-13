@@ -179,12 +179,13 @@ export class GameServices {
 		if (!message) return;
 		uiManager.setLoadingScreenVisible(false);
 		const names: string[] = message.lobby ?? [""];
+
 		this.gui.lobby.show(names);
 	}
 
 //END GAME CALLS
 	resetGuiForNextMatch(): void {
-		this.powerup?.resetPowerupStates();
+		// this.powerup?.resetPowerupStates();
 		this.gui?.hud.resetPowerupVisuals();
 		this.gui?.hud.updateScores(0, 0);
 	}

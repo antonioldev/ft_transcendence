@@ -163,7 +163,6 @@ export class Game {
 			this.startGameLoop();
 			this.isCountdownStarted = false;
 		}
-		this.services?.gui.cardGame.show();
 	}
 
 	private async onServerEndedGame(winner: string, loser: string): Promise<void> {
@@ -173,7 +172,7 @@ export class Game {
 		const controlledPlayer = controlledSides.length === 1 ? this.players.get(controlledSides[0]) : null;
 		const showLoser = controlledPlayer?.name === loser;
 
-		this.resetForNextMatch();
+		// this.resetForNextMatch();
 
 		if (this.config.gameMode === GameMode.TOURNAMENT_REMOTE && showLoser) {
 			this.isSpectator = true;
@@ -330,6 +329,7 @@ export class Game {
 				const loser = state.loser;
 				if (winner && loser)
 					this.onServerEndedGame(winner, loser);
+				this.resetForNextMatch();
 				break;
 		}
 	}

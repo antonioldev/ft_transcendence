@@ -357,15 +357,12 @@ export class Hud {
 		});
 	}
 	dispose(): void {
-		// this.rallyText.dispose();
 		this.rally.dispose();
 		this.score1Text.dispose();
 		this.score2Text.dispose();
 		this.player1Label.dispose();
 		this.player2Label.dispose();
 		this.hudGrid.dispose();
-		// this.spectatorText.dispose();
-		// this.spectatorBanner.dispose();
 
 		[...this.powerUpCellsP1, ...this.powerUpCellsP2].forEach(cell => {
 			cell.icon?.dispose();

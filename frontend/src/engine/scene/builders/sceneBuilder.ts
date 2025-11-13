@@ -81,7 +81,8 @@ async function buildCoreGameObjects(scene: Scene, gameMode: GameMode, viewMode: 
 	if (viewMode === ViewMode.MODE_2D || isLocalMultiplayer) {
 		const allCameras = [...cameras, guiCamera];
 		scene.activeCameras = allCameras;
-	}
+	} else
+		scene.activeCamera = guiCamera;
 
 	const playerLeft = createPlayer(scene, "player1", getPlayerLeftPosition(), getPlayerSize(), viewMode, map_asset.paddle);
 	const playerRight = createPlayer(scene, "player2", getPlayerRightPosition(), getPlayerSize(), viewMode, map_asset.paddle);
