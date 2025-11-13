@@ -39,6 +39,7 @@ export const GAME_CONFIG = {
 	freezeDuration: 1500.0, 	// duration of ball freeze
 	powershotTimeLimit: 3000.0, // time limit to use powershot after activating
 	invisibilityTimeLimit: 5000.0, // time limit to use powershot after activating
+	powershotDelay: 500,
 
 	// Camera settings (mainly for frontend)
 	camera2DHeight: 25, // Camera height in 2D mode

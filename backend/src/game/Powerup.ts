@@ -266,7 +266,7 @@ export class PowerupManager {
 				resolve();
 			});
 		});
-		return (0);
+		return (GAME_CONFIG.powershotDelay);
 	}
 
 	async unset_powershot(side: number, opponent_side: number) {
