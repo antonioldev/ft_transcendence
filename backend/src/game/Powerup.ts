@@ -40,10 +40,10 @@ export class PowerupManager {
 		// this.left_slots[1] = new Slot(PowerupType.POWERSHOT, LEFT, 1);
 
 		for (let i = 0; i < GAME_CONFIG.slot_count; i++) {
-			// this.left_slots[i] = new Slot(Math.floor(Math.random() * num_powerups), LEFT, i);
-			// this.right_slots[i] = new Slot(Math.floor(Math.random() * num_powerups), RIGHT, i);
-			this.left_slots[i] = new Slot(PowerupType.POWERSHOT, LEFT, i);
-			this.right_slots[i] = new Slot(PowerupType.POWERSHOT, RIGHT, i);
+			this.left_slots[i] = new Slot(Math.floor(Math.random() * num_powerups), LEFT, i);
+			this.right_slots[i] = new Slot(Math.floor(Math.random() * num_powerups), RIGHT, i);
+			// this.left_slots[i] = new Slot(PowerupType.POWERSHOT, LEFT, i);
+			// this.right_slots[i] = new Slot(PowerupType.POWERSHOT, RIGHT, i);
 		}
 	}
 

@@ -169,9 +169,7 @@ export abstract class AbstractGameSession {
 	}
 
 	async activate_powerup(client: Client, data: ClientMessage) {
-		if (data.powerup_type === undefined || data.powerup_type === null || 
-			data.slot === undefined || data.slot === null || 
-			data.side === undefined || data.side === null) {
+		if (data.slot === undefined || data.slot === null || data.side === undefined || data.side === null ) {
 			console.error("Error: cannot activate powerup, missing data");
 			return;
 		}
