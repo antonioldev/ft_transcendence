@@ -30,6 +30,10 @@ export class Clock {
 	}
 }
 
+export function sleep(ms: number) {
+	return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 // The Rect class represents a rectangle and provides utilities for geometry calculations.
 export class Rect {
 	x: number;

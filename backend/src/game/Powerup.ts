@@ -4,6 +4,7 @@ import { LEFT, RIGHT, GAME_CONFIG } from '../shared/gameConfig.js';
 import { PowerupType, PowerupState} from '../shared/constants.js';
 import { Powerup } from '../shared/types.js';
 import { EventEmitter } from 'events';
+import { sleep } from './utils.js';
 
 export class Slot {
 	type: PowerupType;
@@ -273,7 +274,7 @@ export class PowerupManager {
 		this.paddles[side].powershot_active = false;
 
 		const collisonPromise = new Promise<void>(resolve => {
-			this.gameEventManager.once(`paddle-collision-${opponent_side}`, (ball: Ball ) =>{
+			this.gameEventManager.once(`paddle-collision-${opponent_side}`, (ball: Ball ) => {
 				this.paddles[side].powershot_deactivate = false;
 				ball.speed = ball.speed_cache;
 				resolve();
@@ -288,6 +289,7 @@ export class PowerupManager {
 		});
 
 		await Promise.race([collisonPromise, scorePromise]);
+		await sleep(500);
 	}
 
 	set_curve_ball(active: boolean) {
