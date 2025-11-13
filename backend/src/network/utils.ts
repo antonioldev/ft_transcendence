@@ -6,5 +6,4 @@ export function randomize(array: any[]) {
 		[array[i], array[j]] = [array[j], array[i]]; 
 	} 
 }
-
-export const eventManager = new EventEmitter();
+export const sessionEventManager = new EventEmitter();

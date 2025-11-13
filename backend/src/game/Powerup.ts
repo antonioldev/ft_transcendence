@@ -3,7 +3,7 @@ import { Paddle} from './Paddle.js';
 import { LEFT, RIGHT, GAME_CONFIG } from '../shared/gameConfig.js';
 import { PowerupType, PowerupState} from '../shared/constants.js';
 import { Powerup } from '../shared/types.js';
-import { eventManager } from '../network/utils.js';
+import { EventEmitter } from 'events';
 
 export class Slot {
 	type: PowerupType;
@@ -19,15 +19,17 @@ export class Slot {
 }
 
 export class PowerupManager {
+	paddles: Paddle[];
+	balls: Ball[];
+	gameEventManager: EventEmitter;
 	left_slots: Slot[] = [];
 	right_slots: Slot[] = [];
 	slots = [this.left_slots, this.right_slots];
-	paddles: Paddle[];
-	balls: Ball[];
 
-	constructor(paddles: Paddle[], balls: Ball[]) {
+	constructor(paddles: Paddle[], balls: Ball[], gameEventManager: EventEmitter) {
 		this.paddles = paddles;
 		this.balls = balls;
+		this.gameEventManager = gameEventManager;
 		this._init_powerups();
 	}
 
@@ -136,17 +138,14 @@ export class PowerupManager {
 				this.set_freeze(false);
 				break ;
 			case PowerupType.POWERSHOT:
-				this.paddles[slot.side].powershot_active = false;
 				this.unset_powershot(slot.side, opponent_side);
 				break ;
 			case PowerupType.INVISIBLE_BALL:
-				// nothing to handle
 				break ;
 			case PowerupType.CURVE_BALL:
 				this.set_curve_ball(false);
 				break ;
 			case PowerupType.RESET_RALLY:
-				// nothing to handle
 				break ;
 			case PowerupType.DOUBLE_POINTS:
 				this.set_double_points(false);
@@ -258,7 +257,7 @@ export class PowerupManager {
 		this.paddles[side].powershot_active = true;
 
 		await new Promise<void>((resolve) => {
-			eventManager.once(`paddle-collision-${side}`, (ball: Ball ) => {
+			this.gameEventManager.once(`paddle-collision-${side}`, (ball: Ball ) => {
 				if (this.paddles[side].powershot_active) {
 					console.log("Creating new balls")
 					this.paddles[opponent_side].powershot_deactivate = true;
@@ -272,8 +271,9 @@ export class PowerupManager {
 	}
 
 	async unset_powershot(side: number, opponent_side: number) {
+		this.paddles[side].powershot_active = false;
 		await new Promise<void>(resolve => {
-			eventManager.once(`paddle-collision-${opponent_side}`, (ball: Ball ) =>{
+			this.gameEventManager.once(`paddle-collision-${opponent_side}`, (ball: Ball ) =>{
 				this.paddles[side].powershot_deactivate = false;
 				ball.speed = ball.speed_cache;
 				resolve();
@@ -289,18 +289,14 @@ export class PowerupManager {
 	}
 
 	async triple_shot(side: number): Promise<number> {
-		if (this.balls.length !== 1) return (0);
-		
+		if (this.balls.length > 1) return (0);
 		this.paddles[side].triple_shot_active = true;
 
-		// if (this.balls.length === 3) return (0);
 		await new Promise<void>(resolve => {
-			eventManager.once(`paddle-collision-${side}`, (ball: Ball ) => {
-				if (this.paddles[side].triple_shot_active && this.balls.length < 3) {
+			this.gameEventManager.once(`paddle-collision-${side}`, (ball: Ball ) => {
+				if (this.paddles[side].triple_shot_active && this.balls.length === 1) {
 					this.balls.push(ball.duplicate(ball.speed * 0.85, -Math.PI / 9));
-					if (this.balls.length < 3) {
-						this.balls.push(ball.duplicate(ball.speed * 0.7, Math.PI / 9));
-					}
+					this.balls.push(ball.duplicate(ball.speed * 0.7, Math.PI / 9));
 				}
 				resolve();
 			});

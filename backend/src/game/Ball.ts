@@ -3,13 +3,13 @@ import { Paddle } from './Paddle.js'
 import { CollisionDirection } from '../shared/constants.js'
 import { GAME_CONFIG, getBallStartPosition, LEFT, RIGHT } from '../shared/gameConfig.js';
 import { rotate } from './utils.js';
-import { PowerupType } from '../shared/constants.js';
-import { eventManager } from '../network/utils.js';
+import { EventEmitter } from 'events';
 
 // Represents the ball in the game, handling its movement, collisions, and scoring logic.
 export class Ball {
     paddles: (Paddle)[]; // Array of players (paddles) in the game.
     rally: { current: number };
+    gameEventManager: EventEmitter;
     updateScore: (side: number, ball: Ball) => void; // Callback to update the score.
     rect: Rect; // Current position and size of the ball.
     oldRect: Rect; // Previous position and size of the ball.
@@ -24,9 +24,10 @@ export class Ball {
     curve_ball_active: boolean = false;
     
     // Initializes the ball with players and a score update callback.
-    constructor(paddles: any[], rally: any, updateScoreCallback: (side: number, ball: Ball) => void) {
+    constructor(paddles: any[], rally: any, gameEventManager: EventEmitter, updateScoreCallback: (side: number, ball: Ball) => void) {
         this.paddles = paddles;
         this.rally = rally;
+        this.gameEventManager = gameEventManager;
         this.updateScore = updateScoreCallback;
 
         const ballPos = getBallStartPosition();
@@ -116,7 +117,7 @@ export class Ball {
 
     activate_powerups_on_collision(side: number) {
         if (this.paddles[side].powershot_active || this.paddles[side].powershot_deactivate || this.paddles[side].triple_shot_active) {
-            eventManager.emit(`paddle-collision-${side}`, this);
+            this.gameEventManager.emit(`paddle-collision-${side}`, this);
         }
     }
 
@@ -172,7 +173,7 @@ export class Ball {
     }
 
     duplicate(new_speed?: number, rotation?: number): Ball {
-        let new_ball = new Ball(this.paddles, this.rally, this.updateScore);
+        let new_ball = new Ball(this.paddles, this.rally, this.gameEventManager, this.updateScore);
         
         new_ball.rect.copy(this.rect);
         new_ball.oldRect.copy(this.oldRect);
