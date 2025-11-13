@@ -329,7 +329,6 @@ export class Game {
 				const loser = state.loser;
 				if (winner && loser)
 					this.onServerEndedGame(winner, loser);
-				// this.resetForNextMatch();
 				break;
 		}
 	}
