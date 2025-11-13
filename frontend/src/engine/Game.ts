@@ -183,6 +183,7 @@ export class Game {
 				await this.services?.animation.moveToSpectatorView(this.gameObjects.cameras);
 			return;
 		}
+		//test
 
 		const waitForSpace = controlledSides.length !== 0 && this.config.gameMode !== GameMode.TOURNAMENT_REMOTE;
 		const showCardGame = this.config.isRemoteMultiplayer;
