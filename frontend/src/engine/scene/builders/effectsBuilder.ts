@@ -1,4 +1,4 @@
-import { Color3, Color4, CreateSphere, LensFlare, LensFlareSystem, ParticleSystem, Scene, Sprite, SpriteManager, Texture, Vector3 } from "@babylonjs/core";
+import { Color3, Color4, CreateSphere, DirectionalLight, LensFlare, LensFlareSystem, ParticleSystem, Scene, Sprite, SpriteManager, Texture, Vector3 } from "@babylonjs/core";
 import { PARTICLE_CONFIGS, ParticleTexturePath } from "../config/effectSceneConfig.js";
 import { ParticleEffectType } from "../config/sceneConst.js";
 
@@ -35,20 +35,45 @@ export function createFog(scene: Scene, fogColor: Color3, density: number): void
 	}
 }
 
-export function createLensFlare(scene: Scene): LensFlareSystem {
-	const emitter = CreateSphere("flareEmitter", { diameter: 0.1 }, scene);
-	emitter.position = new Vector3(5, 4, 0);
+// export function createLensFlare(scene: Scene): LensFlareSystem {
+// 	const emitter = CreateSphere("flareEmitter", { diameter: 0.1 }, scene);
+// 	emitter.position = new Vector3(-100, 100, -20);
 
-	emitter.isVisible = false;
-	const lensFlareSystem = new LensFlareSystem("lensFlareSystem", emitter, scene);
+// 	emitter.isVisible = false;
+// 	const lensFlareSystem = new LensFlareSystem("lensFlareSystem", emitter, scene);
 
-	const texture = ParticleTexturePath.FLARE_TRANSPARENT;
+// 	const texture = ParticleTexturePath.FLARE_TRANSPARENT;
 	
-	new LensFlare(0.15, 0.1, new Color3(0.6, 0.8, 1), texture, lensFlareSystem);
-	new LensFlare(0.1, 0.14, new Color3(0.61, 0.30, 0.86), texture,lensFlareSystem);
-	new LensFlare(0.05, 0.18, new Color3(1, 0.9, 0.6), texture, lensFlareSystem);
+// 	new LensFlare(0.15, 0.1, new Color3(0.6, 0.8, 1), texture, lensFlareSystem);
+// 	new LensFlare(0.1, 0.14, new Color3(0.61, 0.30, 0.86), texture,lensFlareSystem);
+// 	new LensFlare(0.05, 0.18, new Color3(1, 0.9, 0.6), texture, lensFlareSystem);
 
-	return lensFlareSystem;
+// 	return lensFlareSystem;
+// }
+export function createLensFlare(scene: Scene): LensFlareSystem {
+    let lightColor = new Color3(1, 1, 1);
+    let lightDirection = new Vector3(-0.3, -1, -0.2);
+
+    const light = new DirectionalLight("sunLight", lightDirection, scene);
+    light.position = new Vector3(40, 100, -30);
+    light.intensity = 1.0; // You can adjust this or pass as parameter
+    light.diffuse = lightColor;
+    light.specular = lightColor.scale(0.3);
+
+    // Create lens flare system using the directional light as emitter
+    const lensFlareSystem = new LensFlareSystem("lensFlareSystem", light, scene);
+    
+    const texture = ParticleTexturePath.FLARE_TRANSPARENT;
+    
+    // Create lens flares with varied positions and sizes
+    new LensFlare(0.15, 0.0, new Color3(0.6, 0.8, 1), texture, lensFlareSystem);     // At light source
+    new LensFlare(0.1, -0.2, new Color3(0.61, 0.30, 0.86), texture, lensFlareSystem); // 20% across screen
+    new LensFlare(0.08, -0.5, new Color3(1, 0.9, 0.6), texture, lensFlareSystem);     // Middle of screen
+    new LensFlare(0.06, -0.8, new Color3(1, 0.8, 0.4), texture, lensFlareSystem);     // 80% across screen
+    new LensFlare(0.04, -1.0, new Color3(1, 0.6, 0.2), texture, lensFlareSystem);     // Opposite side
+
+
+    return lensFlareSystem;
 }
 
 export function createParticleSystem(scene: Scene, type: ParticleEffectType): ParticleSystem | null {

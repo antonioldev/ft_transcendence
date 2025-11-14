@@ -1,12 +1,12 @@
-import { Color3, HDRCubeTexture, DirectionalLight, HemisphericLight, MeshBuilder, Scene, Vector3, GroundMesh, Light } from "@babylonjs/core";
+import { Color3, DirectionalLight, GroundMesh, HDRCubeTexture, HemisphericLight, Light, MeshBuilder, Scene, Vector3 } from "@babylonjs/core";
 import { GridMaterial } from "@babylonjs/materials";
-import { ViewMode } from '../../../utils/constants.js';
 import { GAME_CONFIG } from '../../../shared/gameConfig.js';
+import { ViewMode } from '../../../utils/constants.js';
 import { Logger } from '../../../utils/LogManager.js';
-import { MAP_OBJECT_TYPE } from "../config/sceneConst.js"
+import { MAP_CONFIGS } from "../config/mapConfigs.js";
+import { MAP_OBJECT_TYPE } from "../config/sceneConst.js";
 import type { MapAssetConfig, TextureSet } from "../config/sceneTypes.js";
 import { createLavaMaterial, createMaterial, getStandardTextureScale } from './materialsBuilder.js';
-import { MAP_CONFIGS } from "../config/mapConfigs.js";
 
 export async function createSky(scene: Scene, path: string | null): Promise<void> {
 	if (!path) return;

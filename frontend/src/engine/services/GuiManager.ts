@@ -69,7 +69,7 @@ export class GUIManager {
 	}
 
 	setPauseVisible(visible: boolean): void {
-		if (!this.isReady || !this.animationManager) return;
+		if (!this.isInitialized || !this.animationManager) return;
 
 		this.pause.show(visible);
 		if (this.isTournament)
@@ -77,7 +77,7 @@ export class GUIManager {
 	}
 
 	async showTournamentMatchWinner(winner: string, waitForSpace: boolean, isLastMatch: boolean): Promise<void> {
-		if (!this.isReady || isLastMatch) return;
+		if (!this.isInitialized|| isLastMatch) return;
 		
 		await this.endGame.fadeBackground(true);
 		await this.endGame.showPartialWinner(winner, waitForSpace);
@@ -85,7 +85,7 @@ export class GUIManager {
 	}
 
 	async showTournamentMatchLoser(isLastMatch: boolean): Promise<void> {
-		if (!this.isReady || isLastMatch) return;
+		if (!this.isInitialized|| isLastMatch) return;
 		
 		await this.endGame.fadeBackground(true);
 		await this.endGame.showPartialLoser();
@@ -94,18 +94,15 @@ export class GUIManager {
 	
 
 	async showWinner(winner: string): Promise<void> {
-		if (!this.isReady) return;
+		if (!this.isInitialized) return;
 
 		this.audioManager.playWinner();
 		await this.endGame.showFinalWinner(winner);
 	}
 
-	isReady(): boolean {
-		return this.isInitialized;
-	}
 
 	dispose(): void {
-		if (!this.isReady()) return;
+		if (!this.isInitialized) return;
 		
 		try {
 			this.adt?.dispose();
