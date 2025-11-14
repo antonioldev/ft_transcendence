@@ -51,7 +51,7 @@ export const GAME_CONFIG = {
 
 	// Ball settings
 	ballRadius: 0.3, // Radius of the ball
-	ballServeSpeed: 1, // Initial speed of the ball
+	ballServeSpeed: 7, // Initial speed of the ball
 	ballInitialSpeed: 10, // Initial speed of the ball
 	ballMaxAngle: Math.PI / 4, // Maximum angle of the ball trajectory
 	ballMinAngle: Math.PI / 12, // Minimum angle of the ball trajectory
@@ -71,7 +71,7 @@ export const GAME_CONFIG = {
 	},
 
 	// Game mechanics
-	scoreToWin: 1,		  // Points needed to win
+	scoreToWin: 10,		  // Points needed to win
 	
 	// Input mappings
 	input2D: {
@@ -87,7 +87,7 @@ export const GAME_CONFIG = {
 	startDelay: 8.0, // Delay before the game starts
 	maxJoinWaitTime: 6.0, // Max time the server will wait for remote players to join before starting with CPU's
 
-	minTournamentSize: 1, //3
+	minTournamentSize: 2, //3
 
 } as const;
 

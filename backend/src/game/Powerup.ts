@@ -22,9 +22,7 @@ export class PowerupManager {
 	paddles: Paddle[];
 	balls: Ball[];
 	gameEventManager: EventEmitter;
-	left_slots: Slot[] = [];
-	right_slots: Slot[] = [];
-	slots = [this.left_slots, this.right_slots];
+	slots: Slot[][] = [[], []];
 
 	constructor(paddles: Paddle[], balls: Ball[], gameEventManager: EventEmitter) {
 		this.paddles = paddles;
@@ -34,16 +32,17 @@ export class PowerupManager {
 	}
 
 	_init_powerups() {
-		// generates 3 random powerups in each player's slots
-		const num_powerups = (Object.keys(PowerupType).length / 2);// - 2;
-		// this.left_slots[0] = new Slot(PowerupType.INVISIBLE_BALL, LEFT, 0);
-		// this.left_slots[1] = new Slot(PowerupType.POWERSHOT, LEFT, 1);
+		// generates 3 random, unique powerups in each player's slots
+		const num_powerups = (Object.keys(PowerupType).length / 2);
 
 		for (let i = 0; i < GAME_CONFIG.slot_count; i++) {
-			this.left_slots[i] = new Slot(Math.floor(Math.random() * num_powerups), LEFT, i);
-			this.right_slots[i] = new Slot(Math.floor(Math.random() * num_powerups), RIGHT, i);
-			// this.left_slots[i] = new Slot(PowerupType.POWERSHOT, LEFT, i);
-			// this.right_slots[i] = new Slot(PowerupType.POWERSHOT, RIGHT, i);
+			for (const side of [LEFT, RIGHT]) {
+				let powerup  = new Slot(Math.floor(Math.random() * num_powerups), side, i);
+				while (this.slots[side].includes(powerup)) {
+					powerup = new Slot(Math.floor(Math.random() * num_powerups), side, i);
+				}
+				this.slots[side][i] = powerup;
+			}
 		}
 	}
 

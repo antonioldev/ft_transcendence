@@ -91,12 +91,6 @@ export interface PlayerInfo {
 	isGuest: boolean;   // check if player is on database or just alias
 }
 
-// Represents the input data for a specific action or event.
-// export interface InputData{
-// 	side: number;
-// 	direction: Direction;
-// }
-
 // ============================== AUTHENTIFICATION TYPES ==============================
 
 /**
@@ -135,16 +129,6 @@ export interface UserProfileData {
   scene3D: string;
 }
 
-// export interface GetUserProfile { ***** CANNOT SEE THE USE
-//   type: MessageType;
-//   data: { username: string };
-// }
-
-// export interface UserProfileMessage { ***** CANNOT SEE THE USE
-//   type: MessageType;
-//   data: UserProfileData;
-// }
-
 // ============================== DASHBOARD TYPES ==============================
 
 export interface UserStats {
@@ -166,59 +150,3 @@ export interface GameHistoryEntry {
   result: string;
   isTournament: string;
 }
-
-
-// Player control configuration (keyboard mappings)
-// export interface PlayerControls { ***** CANNOT SEE THE USE
-// 	left: number;  // Key code for left movement
-// 	right: number; // Key code for right movement
-// }
-
-// Input configuration for both players
-// export interface InputConfig { ***** CANNOT SEE THE USE
-// 	playerLeft: PlayerControls;
-// 	playerRight: PlayerControls;
-// }
-
-// State configuration for game state management
-// export interface StateConfig { ***** CANNOT SEE THE USE
-// 	dialogId?: string;	  // ID of pause dialog
-// 	controller?: any;	   // Game controller instance
-// 	oppositeState?: ClientState; // State to transition to
-// 	playingState?: ClientState;  // Playing state for this mode
-// }
-
-
-// ============================== UTILITY TYPES ==============================
-
-// Generic callback function type		***** CANNOT SEE THE USE
-// export type Callback<T = void> = (data: T) => void;
-
-// // Network callback for input events
-// export type NetworkCallback = (side: number, direction: Direction) => void;
-
-// // WebSocket event callbacks
-// export interface WebSocketCallbacks {
-// 	onGameState?: Callback<GameStateData>;
-// 	onConnection?: Callback;
-// 	onError?: Callback<string>;	
-// }
-
-// ============================== GAME CONFIGURATION TYPES ==============================
-
-// Boundary configuration for player movement
-// export interface PlayerBoundaries { ***** CANNOT SEE THE USE
-// 	left: number;
-// 	right: number;
-// }
-
-// // Wall configuration
-// export interface WallConfig { ***** CANNOT SEE THE USE
-// 	name: string;
-// 	position: Position;
-// 	size: {
-// 		width: number;
-// 		height: number;
-// 		depth: number;
-// 	};
-// }
