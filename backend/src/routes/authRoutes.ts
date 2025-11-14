@@ -15,22 +15,26 @@ export async function authGoogle(app: FastifyInstance) {
 				return reply.code(400).send({ error: 'Missing SID' });
 			}
 		
-			let client = clientManager.getClientConnection(sid);
-			if (!client) {
-				client = clientManager.createClientConnection(sid);
-			}
+			let client = clientManager.findOrCreateClient(sid);
 			const { token } = request.body as { token: string };
-			if (!token) return reply.code(400).send({ success: false, message: 'Error: Token not provided' });
+			if (!token) {
+				return reply.code(400).send({ success: false, message: 'Error: Token not provided' });
+			}
 
 			const ticket = await googleClient.verifyIdToken({
 				idToken: token,
 				audience: process.env.GOOGLE_CLIENT_ID,
 			});
-			const payload = ticket.getPayload();
-			if (!payload) return reply.code(401).send({ error: 'Invalid Google Token' });
 
+			const payload = ticket.getPayload();
+			if (!payload) {
+				return reply.code(401).send({ error: 'Invalid Google Token' });
+			}
+			
 			const user = validation.findOrCreateGoogleUser(payload as any);
-			if (!user) return reply.code(500).send({ error: 'Could not find or create user' });
+			if (!user) {
+				return reply.code(500).send({ error: 'Could not find or create user' });
+			}
 
 			const isActive = validation.isUserActive(user.username);
 			if (isActive) {

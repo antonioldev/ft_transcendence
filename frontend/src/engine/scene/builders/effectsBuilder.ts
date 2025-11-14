@@ -37,7 +37,7 @@ export function createFog(scene: Scene, fogColor: Color3, density: number): void
 
 export function createLensFlare(scene: Scene): LensFlareSystem {
 	const emitter = CreateSphere("flareEmitter", { diameter: 0.1 }, scene);
-	emitter.position = new Vector3(5, 4, 0);
+	emitter.position = new Vector3(5, 6, 0);
 
 	emitter.isVisible = false;
 	const lensFlareSystem = new LensFlareSystem("lensFlareSystem", emitter, scene);
