@@ -160,10 +160,8 @@ export class Hud {
 			letterKeys = player === 0 ? ['C', 'V', 'B'] : ['I', 'O', 'P'];
 
 		const letter = createTextBlock(`powerUpLetter_${player}_${index}`, POWER_UP_STYLES.powerUpLetter, letterKeys[index]);
-		// const icon = createImage(`powerUpIcon_${player}_${index}`, POWER_UP_STYLES.powerUpIcon, "");
 
 		cell.addControl(letter);
-		// cell.addControl(icon);
 
 		return { root: cell, icon: undefined, letter: letter };
 	}
@@ -254,11 +252,9 @@ export class Hud {
 	}
 
 	assignPowerUp(player: PlayerSide, slotIndex: number, powerUpType: PowerupType): void {
-		console.error("in");
 		const scene = this.adt.getScene();
 		const cells = player === 0 ? this.powerUpCellsP1 : this.powerUpCellsP2;
 		if (slotIndex >= 0 && slotIndex < cells.length) {
-			console.error("in 2");
 			const cell = cells[slotIndex];
 			scene?.stopAnimation(cell.root);
 
@@ -270,63 +266,35 @@ export class Hud {
 			cell.letter.color = "rgba(255, 255, 255, 1)";
 			
 			if (powerUpType !== null && this.POWERUP_ICON[powerUpType]) {
-				console.error("in 3");
-				// if (!cell.icon) {
-				// 	cell.icon = new Image(`powerUpIcon_${player}_${slotIndex}`, this.POWERUP_ICON[powerUpType]);
-				// 	cell.icon.stretch = Image.STRETCH_UNIFORM;
-				// 	cell.icon.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
-				// 	cell.icon.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
-				// 	cell.root.addControl(cell.icon);
-				// } else {
-				// 	cell.icon.source = this.POWERUP_ICON[powerUpType];
-				// }
-				// cell.icon.alpha = 1;
 				if (cell.icon) {
-					console.error("in 4");
 					cell.root.removeControl(cell.icon);
 					cell.icon.dispose();
 					cell.icon = undefined;
 				}
 
-				// const imagePath = this.POWERUP_ICON[powerUpType];
-				// console.error("Creating icon with path:", imagePath); // ADD THIS
-				
-				// cell.icon = new Image(`powerUpIcon_${player}_${slotIndex}_${Date.now()}`, imagePath);
-				// console.error("Icon created:", cell.icon.name); // ADD THIS
-				
-				// cell.icon.stretch = Image.STRETCH_UNIFORM;
-				// cell.icon.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
-				// cell.icon.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
-				// cell.icon.alpha = 1;
-				// cell.root.addControl(cell.icon);
-				
-				// console.error("Icon added to root");
 				const preloadedTexture = this.powerUpTextures.get(powerUpType);
 				if (preloadedTexture) {
-					// Clone the preloaded image for this slot
 					cell.icon = preloadedTexture.clone() as Image;
 					cell.icon.name = `powerUpIcon_${player}_${slotIndex}_${powerUpType}`;
 					cell.icon.stretch = Image.STRETCH_UNIFORM;
 					cell.icon.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
 					cell.icon.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
 					cell.icon.alpha = 1;
-					cell.icon.isVisible = true; // Make sure it's visible
+					cell.icon.isVisible = true;
 					cell.root.addControl(cell.icon);
-					
-					console.log(`✅ Assigned preloaded icon: ${this.POWERUP_ICON[powerUpType]}`);
+
 				} else {
-					console.warn(`⚠️ No preloaded texture found for power-up type: ${powerUpType}`);
+					console.warn(`No preloaded texture found for power-up type: ${powerUpType}`);
 				}
 
-				cell.root.alpha = 1;
-				// cell.root.alpha = 0;
-				// const delay = slotIndex * 100;
-				// setTimeout(() => {
-				// 	this.animationManager.slideFromDirection(cell.root, 'up', 'in', 100, Motion.F.base)
-				// 		.then(() => {
-				// 			return this.animationManager.scale(cell.root, 1, 1.1, Motion.F.fast, true);
-				// 		});
-				// }, delay);
+				cell.root.alpha = 0;
+				const delay = slotIndex * 100;
+				setTimeout(() => {
+					this.animationManager.slideFromDirection(cell.root, 'up', 'in', 100, Motion.F.base)
+						.then(() => {
+							return this.animationManager.scale(cell.root, 1, 1.1, Motion.F.fast, true);
+						});
+				}, delay);
 			}
 		}
 	}
@@ -404,12 +372,6 @@ export class Hud {
 				cell.root.alpha = 0;
 				cell.root.topInPixels = 0;
 				cell.root.color = "rgba(255, 255, 255, 0.5)";
-
-				// if (cell.icon) {
-				// 	cell.root.removeControl(cell.icon);
-				// 	cell.icon.dispose();
-				// 	cell.icon = undefined;
-				// }
 			});
 		});
 	}

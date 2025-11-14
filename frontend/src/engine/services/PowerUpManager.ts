@@ -38,15 +38,6 @@ export class PowerupManager {
 		if (player === null || player === undefined || !player.powerUpsAssigned)
 			return;
 
-		// if (!player.powerUpsAssigned) {
-			// console.log("ASSIGINING POWERUPS");
-			// player.powerUpsAssigned = true;
-			// player.powerUps = [...serverPowerups];
-			// for (let i = 0; i < serverPowerups.length; i++)
-			// 	this.guiManager?.hud.assignPowerUp(side, i, serverPowerups[i].type);
-		// 	return;
-		// }
-
 		for (let i = 0; i < serverPowerups.length; i++) {
 			const serverPowerup = serverPowerups[i];
 			const clientPowerup = player.powerUps[i];
@@ -65,31 +56,6 @@ export class PowerupManager {
 				this.guiManager?.hud.updatePowerUp(side, i, serverPowerup.state);
 		}
 	}
-
-	// requestActivatePowerup(side: PlayerSide, slotIndex: number): void {
-	// 	const player = this.players.get(side);
-	// 	if (!player?.isControlled)
-	// 		return;
-		
-		// const powerUps = player.powerUps;
-		
-		// if (!powerUps || slotIndex >= powerUps.length)
-		// 	return;
-
-		// const powerup = powerUps[slotIndex];
-		
-		// if (!powerup || powerup.state !== PowerupState.UNUSED)
-		// 	return;
-
-		// const hasActivePowerupOfSameType = powerUps.some(p => 
-		// 	p.type === powerup.type && p.state === PowerupState.ACTIVE
-		// );
-		
-		// if (hasActivePowerupOfSameType)
-		// 	return;
-
-	// 	webSocketClient.sendPowerupActivationRequest(side, slotIndex);
-	// }
 
 	activate(side: PlayerSide, slot: number, powerupType: PowerupType): void {
 		const med = GAME_CONFIG.paddleWidth;

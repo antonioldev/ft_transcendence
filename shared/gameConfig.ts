@@ -43,7 +43,7 @@ export const GAME_CONFIG = {
 
 	// Camera settings (mainly for frontend)
 	camera2DHeight: 25, // Camera height in 2D mode
-	camera3DHeight: 3, // Camera height in 3D mode
+	camera3DHeight: 5, // Camera height in 3D mode
 	camera3DDistance: 6, // Distance of the camera in 3D mode
 	followSpeed: 0.1, // Speed at which the camera follows the paddle
 	cameraFollowLimit: fieldWidth / 4, // Max limit for camera to follow player

@@ -6,7 +6,6 @@ import { KeyboardMode, Keys, PlayerSide, PROFILES_2D, PROFILES_3D, ViewMode } fr
 import { Logger } from '../../utils/LogManager.js';
 import type { GameObjects, KeysProfile, PlayerState } from '../../utils/types.js';
 import type { GameConfig } from '../GameInitializer.js';
-// import { PowerupManager } from "./PowerUpManager.js";
 
 // Manages all keyboard input handling for the game
 export class KeyboardManager {
@@ -138,7 +137,6 @@ export class KeyboardManager {
 	}
 
 	private handlePowerupKeys(key: number): void {
-		// if (!this.powerupManager) return;
 		this.players.forEach((playerState, side) => {
 			if (!playerState.isControlled || !playerState.keyboardProfile) return;
 		
@@ -147,15 +145,12 @@ export class KeyboardManager {
 			switch (key) {
 				case profile.power.k1:
 					webSocketClient.sendPowerupActivationRequest(side, 0);
-					// this.powerupManager.requestActivatePowerup(side, 0);
 					return;
 				case profile.power.k2:
 					webSocketClient.sendPowerupActivationRequest(side, 1);
-					// this.powerupManager.requestActivatePowerup(side, 1);
 					return;
 				case profile.power.k3:
 					webSocketClient.sendPowerupActivationRequest(side, 2);
-					// this.powerupManager.requestActivatePowerup(side, 2);
 					return;
 			}
 		});
