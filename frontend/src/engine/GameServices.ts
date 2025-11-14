@@ -1,7 +1,7 @@
 import { Engine, Scene } from "@babylonjs/core";
 import { Direction } from "../shared/constants.js";
 import type { Powerup } from '../shared/types.js';
-import { PlayerSide, ViewMode } from "../utils/constants.js";
+import { PlayerSide } from "../utils/constants.js";
 import type { GameObjects, PlayerState } from "../utils/types.js";
 import { KeyboardMode } from "./../utils/constants.js";
 import type { GameConfig } from './GameInitializer.js';
@@ -52,11 +52,11 @@ export class GameServices {
 		await this.gui.curtain.hide(speed);
 	}
 
-	updateGameLoop(viewMode: ViewMode, spectator: boolean): void {
-		this.input?.update();
-		if (!spectator)
-			this.render?.updateCamerasAngle(viewMode);
-	}
+	// updateGameLoop(viewMode: ViewMode, spectator: boolean): void {
+	// 	this.input?.update();
+		// if (!spectator)
+			// this.render?.updateCamerasAngle(viewMode);
+	// }
 
 	updatePowerups(leftPowerups: Powerup[], rightPowerups: Powerup[]): void {
 		this.powerup?.handleUpdates(PlayerSide.LEFT, leftPowerups);

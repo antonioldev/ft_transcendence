@@ -159,7 +159,7 @@ export async function createActor(scene: Scene, config: ActorConfig, index: numb
 	
 	switch (config.type) {
 		case 'flying':
-			const flyLeft = !config.model.includes('bird1');
+			const flyLeft = !config.model.includes('bird2');
 			return createFlyingActor(scene, actor, flyLeft);
 		case 'swimming':
 			const swimLeft = config.model.includes('fish1');

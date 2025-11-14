@@ -210,7 +210,7 @@ export class Game {
 		this.gameLoopObserver = setInterval(() => {
 			if (!this.isInitialized) return;
 				try {
-					this.services?.updateGameLoop(this.config.viewMode, this.isSpectator);
+					this.services?.input.update();
 				} catch (error) {
 					Logger.error('Error in game loop', 'Game', error);
 				}

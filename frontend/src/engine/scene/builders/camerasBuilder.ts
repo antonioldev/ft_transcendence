@@ -19,6 +19,7 @@ export function createCameras(scene: Scene, name: string, viewMode: ViewMode, ga
 			const camera = new FreeCamera(name  + "1", position, scene);
 			camera.setTarget(Vector3.Zero());
 			camera.viewport = getSoloCameraViewport();
+			camera.fov = 1.1;
 			cameras.push(camera);
 		} else {
 			const camera1 = new FreeCamera(name + "1", position, scene);
@@ -30,9 +31,13 @@ export function createCameras(scene: Scene, name: string, viewMode: ViewMode, ga
 			if (gameMode === GameMode.TOURNAMENT_LOCAL || gameMode === GameMode.TWO_PLAYER_LOCAL) {
 				camera1.viewport = get3DCamera1Viewport();
 				camera2.viewport = get3DCamera2Viewport();
+				camera1.fov = 1.8;
+				camera2.fov = 1.8;
 			} else {
-				camera1.viewport = getSoloCameraViewport()
-				camera2.viewport = getSoloCameraViewport()
+				camera1.viewport = getSoloCameraViewport();
+				camera2.viewport = getSoloCameraViewport();
+				camera1.fov = 1.4;
+				camera2.fov = 1.4;
 			}
 			cameras.push(camera1, camera2);
 		}
