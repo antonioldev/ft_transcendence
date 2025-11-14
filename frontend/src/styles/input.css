@@ -96,7 +96,7 @@
   }
 
   .key-left { transform: rotate(-90deg); }
-  .key-right { transform: rotate(90deg); }
+  .key-right { transform: rotate(-90deg) scaleY(-1); }
 }
 
 @layer utilities {
