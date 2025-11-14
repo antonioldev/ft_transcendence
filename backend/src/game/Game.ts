@@ -224,6 +224,7 @@ export class Game {
 
 	save_to_db(isTournament: number) {
 		try {
+			if (this.players[LEFT] instanceof CPU && this.players[RIGHT] instanceof CPU) return ;
 			if (registerNewGame(this.id, this.players[LEFT].name, isTournament)) {
 				addPlayer2(this.id, this.players[RIGHT].name);
 				console.log(`[Games.ts] save_to_db(isTournament: ${isTournament}): Game ${this.id} added to db: P1:${this.players[LEFT].name}, P2: ${this.players[RIGHT].name}`);

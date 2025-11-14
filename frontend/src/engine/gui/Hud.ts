@@ -287,14 +287,16 @@ export class Hud {
 					console.warn(`No preloaded texture found for power-up type: ${powerUpType}`);
 				}
 
-				cell.root.alpha = 0;
-				const delay = slotIndex * 100;
-				setTimeout(() => {
-					this.animationManager.slideFromDirection(cell.root, 'up', 'in', 100, Motion.F.base)
-						.then(() => {
-							return this.animationManager.scale(cell.root, 1, 1.1, Motion.F.fast, true);
-						});
-				}, delay);
+				cell.root.alpha = 1;
+				// cell.root.alpha = 0;
+				// const delay = slotIndex * 100;
+				// setTimeout(() => {
+				// 	this.animationManager.slideFromDirection(cell.root, 'up', 'in', 100, Motion.F.base)
+				// 		.then(() => {
+				// 			return this.animationManager.scale(cell.root, 1, 1.1, Motion.F.fast, true);
+				// 		});
+				// }, delay);
+				this.animationManager.scale(cell.root, 1, 1.1, Motion.F.fast, true);
 			}
 		}
 	}
