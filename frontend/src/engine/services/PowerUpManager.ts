@@ -16,23 +16,36 @@ export class PowerupManager {
 		private gameObjects: GameObjects
 	) {}
 
+	assignPlayerPowerups(side: PlayerSide, powerups: Powerup[]): void {
+		if (!powerups || powerups.length === 0) return;
+		
+		const player = this.players.get(side);
+
+		if (player === null || player === undefined) return;
+		player.powerUps = [...powerups];
+		for (let i = 0; i < powerups.length; i++)
+			this.guiManager?.hud.assignPowerUp(side, i, powerups[i].type);
+		player.powerUpsAssigned = true;
+		
+	}
+
 	handleUpdates(side: PlayerSide, serverPowerups: Powerup[]): void {
 		
 		if (!serverPowerups || serverPowerups.length === 0)
 			return;
 
 		const player = this.players.get(side);
-		if (player === null || player === undefined)
+		if (player === null || player === undefined || !player.powerUpsAssigned)
 			return;
 
-		if (!player.powerUpsAssigned) {
-			console.log("ASSIGINING POWERUPS");
-			player.powerUpsAssigned = true;
-			player.powerUps = [...serverPowerups];
-			for (let i = 0; i < serverPowerups.length; i++)
-				this.guiManager?.hud.assignPowerUp(side, i, serverPowerups[i].type);
-			return;
-		}
+		// if (!player.powerUpsAssigned) {
+			// console.log("ASSIGINING POWERUPS");
+			// player.powerUpsAssigned = true;
+			// player.powerUps = [...serverPowerups];
+			// for (let i = 0; i < serverPowerups.length; i++)
+			// 	this.guiManager?.hud.assignPowerUp(side, i, serverPowerups[i].type);
+		// 	return;
+		// }
 
 		for (let i = 0; i < serverPowerups.length; i++) {
 			const serverPowerup = serverPowerups[i];

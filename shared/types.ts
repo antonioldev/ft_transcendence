@@ -80,6 +80,8 @@ export interface ServerMessage {
 	round_index?: number,
 	round_total?: number,
 	lobby?: string[];
+	leftPowerups?: Powerup[];
+	rightPowerups?: Powerup[];
 }
 
 // Player information for game sessions

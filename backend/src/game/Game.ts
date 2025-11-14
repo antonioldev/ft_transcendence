@@ -144,6 +144,8 @@ export class Game {
 			type: MessageType.SIDE_ASSIGNMENT,
 			left: this.players[LEFT].name,
 			right: this.players[RIGHT].name,
+			leftPowerups: this.powerup_manager.get_state(LEFT),
+			rightPowerups: this.powerup_manager.get_state(RIGHT),
 		}, clients);
 	}
 	

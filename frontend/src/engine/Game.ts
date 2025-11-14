@@ -335,8 +335,10 @@ export class Game {
 
 // ====================			INPUT HANDLING		   ====================
 	private handlePlayerAssignment(message: ServerMessage): void {
-		const leftPlayerName = message.left;
-		const rightPlayerName = message.right;
+		const leftPlayerName = message.left || "P1";
+		const rightPlayerName = message.right || "P2";
+		const leftPowerups = message.leftPowerups || [];
+		const rightPowerups = message.rightPowerups || [];
 
 		if (!leftPlayerName || !rightPlayerName) return;
 
@@ -346,10 +348,12 @@ export class Game {
 		if (leftPlayer) {
 			leftPlayer.name = leftPlayerName;
 			leftPlayer.isControlled = this.config.players.some(player => player.name === leftPlayerName);
+			this.services?.powerup.assignPlayerPowerups(PlayerSide.LEFT, leftPowerups);
 		}
 		if (rightPlayer) {
 			rightPlayer.name = rightPlayerName;
 			rightPlayer.isControlled = this.config.players.some(player => player.name === rightPlayerName);
+			this.services?.powerup.assignPlayerPowerups(PlayerSide.RIGHT, rightPowerups);
 		}
 
 		const controlledSides = this.getControlledSides();
