@@ -127,7 +127,7 @@ export abstract class AbstractGameSession {
 			console.warn(`Client ${client.username} not authorized to resume game`);
 			return;
 		}
-		const game = this.getGame(client.sid);
+		const game = this.findGame(client);
 		if (!game) {
 			console.log(`Game ${this.id} is not running, cannot resume`);
 			return ;
@@ -150,7 +150,7 @@ export abstract class AbstractGameSession {
 			console.warn(`Client ${client.username} not authorized to pause game`);
 			return;
 		}
-		const game = this.getGame(client.sid);
+		const game = this.findGame(client);
 		if (!game || !game.is_running()) {
 			console.log(`Game ${this.id} is not running, cannot pause`);
 			return ;
@@ -182,7 +182,7 @@ export abstract class AbstractGameSession {
 			console.warn('Unable to activate powerup: game in lobby');
 			return;
 		}
-		const game = this.getGame(client.sid);
+		const game = this.findGame(client);
 		if (!game) {
 			console.error("Error: cannot activate powerup, game does not exist");
 			return ;
@@ -210,7 +210,7 @@ export abstract class AbstractGameSession {
 			side: data.side,
 			dx: data.direction
 		}
-		this.enqueue(input, client.sid);
+		this.enqueue(input, client);
 	}
 
 	send_lobby(client: Client) {
@@ -221,8 +221,8 @@ export abstract class AbstractGameSession {
 		console.log(`Lobby sent to ${client.username}`)
 	}
 
-	enqueue(input: PlayerInput, client_id?: string): void  {
-		const game = this.getGame(client_id);
+	enqueue(input: PlayerInput, client?: Client): void  {
+		const game = this.findGame(client);
 		if (!game) {
 			console.log("Cannot enqueue input: game session does nto exist");
 			return ;
@@ -244,10 +244,9 @@ export abstract class AbstractGameSession {
 
 	abstract start(): Promise<void>; 
 	abstract stop(client_id?: string): void;
-	
 	abstract handlePlayerQuit(quitter: Client): void;
 	abstract canClientControlGame(client: Client): boolean;
-	abstract getGame(client_id?: string): Game | undefined;
+	abstract findGame(client?: Client): Game | undefined;
 }
 
 export class OneOffGame extends AbstractGameSession{
@@ -295,7 +294,7 @@ export class OneOffGame extends AbstractGameSession{
 		return (this.clients.has(client))
 	}
 
-	getGame() {
+	findGame() {
 		return (this.game);
 	}
 }

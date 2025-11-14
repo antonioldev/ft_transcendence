@@ -36,13 +36,13 @@ class ClientManager {
 		return client;
 	}
 
-	//  findOrCreateClient(sid: string): Client {
-	// 	let client: Client | undefined = sidClientMap.get(sid);
-	// 	if (!client) {
-	// 		client = createClientConnection(sid);
-	// 	}
-	// 	return client;
-	// }
+	 findOrCreateClient(sid: string): Client {
+		let client: Client | undefined = this.sidClientMap.get(sid);
+		if (!client) {
+			client = this.createClientConnection(sid);
+		}
+		return client;
+	}
 
 	getClientConnection(sid: string): Client | undefined {
 		return (this.sidClientMap.get(sid));

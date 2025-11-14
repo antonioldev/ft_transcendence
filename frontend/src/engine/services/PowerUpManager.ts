@@ -20,8 +20,7 @@ export class PowerupManager {
 		if (!powerups || powerups.length === 0) return;
 		
 		const player = this.players.get(side);
-
-		if (player === null || player === undefined) return;
+		if (player === null || player === undefined || player.powerUpsAssigned) return;
 		player.powerUps = [...powerups];
 		for (let i = 0; i < powerups.length; i++)
 			this.guiManager?.hud.assignPowerUp(side, i, powerups[i].type);

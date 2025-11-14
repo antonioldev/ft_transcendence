@@ -154,7 +154,7 @@ abstract class AbstractTournament extends AbstractGameSession{
 	}
 
 	abstract run(matches: Match[]): Promise<void>;
-	abstract findMatch(client_id?: string): Match | undefined;
+	abstract findMatch(client?: Client): Match | undefined;
 }
 
 export class TournamentLocal extends AbstractTournament {
@@ -217,7 +217,7 @@ export class TournamentLocal extends AbstractTournament {
 		return (this.current_match);
 	}
 
-	getGame() {
+	findGame() {
 		return (this.current_match?.game);
 	}
 }
@@ -394,7 +394,7 @@ export class TournamentRemote extends AbstractTournament {
 	}
 
 	canClientControlGame(client: Client) {
-		const match = this.findMatch(client.sid);
+		const match = this.findMatch(client);
 		if (!match || !this.active_matches.includes(match)) {
 			console.error(`Client ${client.username} not in any active match`);
 			return false;
@@ -407,9 +407,9 @@ export class TournamentRemote extends AbstractTournament {
 			this.remove_player(quitter);
 		}
 		else if (this.is_running()) {
-			const match = this.findMatch(quitter.sid);
+			const match = this.findMatch(quitter);
 			if (match) {
-				if (match.game?.is_running()) {
+				if (match.game?.is_running() || match.game?.is_paused()) {
 					// The opposing player wins their current match and the tournament continues
 					console.log(`Removed player from active game: ${quitter.username}`)
 					match.game.setOtherPlayerWinner(quitter);
@@ -418,24 +418,24 @@ export class TournamentRemote extends AbstractTournament {
 				else {
 					console.log(`Removed player from pending game: ${quitter.username}`)
 					match.remove_player(quitter);
-					this.defeated_clients.delete(quitter);
 				}
-				this.client_match_map.delete(quitter.sid);
 				match.clients.delete(quitter);
 			}
 			else {
 				console.log(`Removed spectator: ${quitter.username}`)
-				this.defeated_clients.delete(quitter);
 			}
+			// try in all cases as a safeguard
+			this.client_match_map.delete(quitter.sid);
+			this.defeated_clients.delete(quitter);
 		}
 		this.remove_client(quitter); // at end so we can still broadcast to client if necessary
 	}
 	
-	findMatch(client_id: string): Match | undefined {
-		return (this.client_match_map.get(client_id));
+	findMatch(client: Client): Match | undefined {
+		return (this.client_match_map.get(client.sid));
 	}
 
-	getGame(client_id: string): Game | undefined {
-		return (this.findMatch(client_id)?.game);
+	findGame(client: Client): Game | undefined {
+		return (this.findMatch(client)?.game);
 	}
 }

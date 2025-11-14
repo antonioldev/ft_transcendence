@@ -40,7 +40,7 @@ await app.register(import('@fastify/websocket'), {
 		maxPayload: 1048576,        // Max bytes of single message
 		perMessageDeflate: false,   // Disable per-message compression for better performance
 		clientTracking: true,       // Enable tracking of connected clients
-		maxConnections: 100,        // max num of concurrent WebSocket connections // TODO shall we reduce this?
+		maxConnections: 1000,        // max num of concurrent WebSocket connections
 	}
 });
 

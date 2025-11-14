@@ -199,6 +199,7 @@ export class Game {
 
 		startFireworks(this.themeObjects?.effects || [], 250);
 		const winner = message.winner;
+		console.log("winner: " + winner);
 		if (winner)
 			await this.services?.handleSessionEnd(winner);
 		this.dispose();
@@ -383,7 +384,7 @@ export class Game {
 		this.isPaused = !this.isPaused;
 		this.services?.handlePause(this.isPaused, this.isSpectator);
 
-		// if (this.config.isRemoteMultiplayer || this.isSpectator) return; // TODO must enable
+		if (this.config.isRemoteMultiplayer || this.isSpectator) return;
 		
 		if (this.isPaused)
 			webSocketClient.sendPauseRequest();
