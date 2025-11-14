@@ -199,7 +199,6 @@ export class CardGame {
 	}
 
 	hide(): void {
-		this.resetGame();
 		this.overlay.isVisible = false;
 	}
 }
