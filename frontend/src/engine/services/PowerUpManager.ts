@@ -1,5 +1,4 @@
 import { Color3, Color4, Mesh } from "@babylonjs/core";
-import { webSocketClient } from '../../core/WebSocketClient.js';
 import { PowerupState, PowerupType } from "../../shared/constants.js";
 import { GAME_CONFIG } from "../../shared/gameConfig.js";
 import type { Powerup } from "../../shared/types.js";
@@ -54,10 +53,10 @@ export class PowerupManager {
 		}
 	}
 
-	requestActivatePowerup(side: PlayerSide, slotIndex: number): void {
-		const player = this.players.get(side);
-		if (!player?.isControlled)
-			return;
+	// requestActivatePowerup(side: PlayerSide, slotIndex: number): void {
+	// 	const player = this.players.get(side);
+	// 	if (!player?.isControlled)
+	// 		return;
 		
 		// const powerUps = player.powerUps;
 		
@@ -76,8 +75,8 @@ export class PowerupManager {
 		// if (hasActivePowerupOfSameType)
 		// 	return;
 
-		webSocketClient.sendPowerupActivationRequest(side, slotIndex);
-	}
+	// 	webSocketClient.sendPowerupActivationRequest(side, slotIndex);
+	// }
 
 	activate(side: PlayerSide, slot: number, powerupType: PowerupType): void {
 		const med = GAME_CONFIG.paddleWidth;

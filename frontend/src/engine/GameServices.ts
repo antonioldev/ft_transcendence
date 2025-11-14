@@ -37,7 +37,7 @@ export class GameServices {
 		this.audio = new AudioManager(scene, config);
 		this.gui = new GUIManager(scene, config, this.animation, this.audio);
 		this.powerup = new PowerupManager(players, this.animation, this.gui, gameObjects);
-		this.input = new KeyboardManager(scene, config, gameObjects, players, this.powerup, callbacks);
+		this.input = new KeyboardManager(scene, config, gameObjects, players, callbacks);
 		this.render = new RenderManager(engine, scene, gameObjects);
 	}
 

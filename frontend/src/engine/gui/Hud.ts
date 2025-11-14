@@ -19,10 +19,11 @@ export class Hud {
 	private powerUpContainerP2!: Rectangle;
 	private hdImagesP1: Map<PowerupType, Image> = new Map();
 	private hdImagesP2: Map<PowerupType, Image> = new Map();
-	private powerUpCellsP1: Array<{root: Rectangle; icon?: Image; letter: TextBlock}> = [];
-	private powerUpCellsP2: Array<{root: Rectangle; icon?: Image; letter: TextBlock}> = [];
+	private powerUpTextures: Map<PowerupType, Image> = new Map();
+	private powerUpCellsP1: Array<{root: Rectangle; icon?: Image | undefined; letter: TextBlock}> = [];
+	private powerUpCellsP2: Array<{root: Rectangle; icon?: Image | undefined; letter: TextBlock}> = [];
 	
-	private POWERUP_ICON: Record<number, string> = {
+	private POWERUP_ICON: Record<PowerupType, string> = {
 		[PowerupType.SLOW_OPPONENT]: "assets/icons/powerup/slow.png",
 		[PowerupType.SHRINK_OPPONENT]: "assets/icons/powerup/smaller.png",
 		[PowerupType.INVERT_OPPONENT]: "assets/icons/powerup/invert.png",
@@ -38,7 +39,7 @@ export class Hud {
 		[PowerupType.SHIELD]: "assets/icons/powerupHD/shield.png"
 	};
 
-	private POWERUP_ICON_HD: Record<number, string> = {
+	private POWERUP_ICON_HD: Record<PowerupType, string> = {
 		[PowerupType.SLOW_OPPONENT]: "assets/icons/powerupHD/slow.png",
 		[PowerupType.SHRINK_OPPONENT]: "assets/icons/powerupHD/smaller.png",
 		[PowerupType.INVERT_OPPONENT]: "assets/icons/powerupHD/invert.png",
@@ -56,9 +57,24 @@ export class Hud {
 	};
 
 	constructor(private adt: AdvancedDynamicTexture, private animationManager: AnimationManager, config: GameConfig) {
+		this.preloadPowerUpIcons();
 		this.createHud(config);
 		this.createSpectatorBanner();
 		this.createPowerUpHDImages();
+	}
+
+	private preloadPowerUpIcons(): void {
+		console.log('🔄 Preloading power-up icons...');
+		
+		Object.entries(this.POWERUP_ICON).forEach(([type, path]) => {
+			const texture = new Image(`preloaded_${type}`, path);
+			texture.isVisible = false;
+			this.adt.addControl(texture);
+			
+			this.powerUpTextures.set(Number(type), texture);
+		});
+		
+		console.log('✅ Power-up icons loading in background');
 	}
 
 	private createHud(config: GameConfig): void {
@@ -144,30 +160,29 @@ export class Hud {
 			letterKeys = player === 0 ? ['C', 'V', 'B'] : ['I', 'O', 'P'];
 
 		const letter = createTextBlock(`powerUpLetter_${player}_${index}`, POWER_UP_STYLES.powerUpLetter, letterKeys[index]);
-		const icon = createImage(`powerUpIcon_${player}_${index}`, POWER_UP_STYLES.powerUpIcon, "");
+		// const icon = createImage(`powerUpIcon_${player}_${index}`, POWER_UP_STYLES.powerUpIcon, "");
 
 		cell.addControl(letter);
-		cell.addControl(icon);
+		// cell.addControl(icon);
 
-		return { root: cell, icon: icon, letter: letter };
+		return { root: cell, icon: undefined, letter: letter };
 	}
 
 	private createPowerUpHDImages(): void {
-		for (const type in this.POWERUP_ICON_HD) {
-			const src = this.POWERUP_ICON_HD[type];
+		Object.entries(this.POWERUP_ICON_HD).forEach(([type, path]) => {
 			const typeNum = Number(type);
 			const isDefensivePowerup = typeNum <= 2;
 
-			const imgP1 = createImage(`hdIconP1_${type}`, POWER_UP_STYLES.powerUpHd, src);
+			const imgP1 = createImage(`hdIconP1_${type}`, POWER_UP_STYLES.powerUpHd, path);
 			imgP1.leftInPixels = isDefensivePowerup ? 250 : -250;
 			this.adt.addControl(imgP1);
 			this.hdImagesP1.set(typeNum, imgP1);
 
-			const imgP2 = createImage(`hdIconP2_${type}`, POWER_UP_STYLES.powerUpHd, src);
+			const imgP2 = createImage(`hdIconP2_${type}`, POWER_UP_STYLES.powerUpHd, path);
 			imgP2.leftInPixels = isDefensivePowerup ? -250 : 250;
 			this.adt.addControl(imgP2);
 			this.hdImagesP2.set(typeNum, imgP2);
-		}
+		});
 	}
 
 	private createSpectatorBanner(): void {
@@ -221,10 +236,6 @@ export class Hud {
 	}
 
 	updateScores(leftScore: number, rightScore: number): void {
-		console.log("UPDATING SCORES");
-		console.log(`left: ${leftScore}`);
-		console.log(`right: ${rightScore}`);
-
 		const oldLeft = parseInt(this.score1Text.text);
 		const oldRight = parseInt(this.score2Text.text);
 
@@ -243,9 +254,11 @@ export class Hud {
 	}
 
 	assignPowerUp(player: PlayerSide, slotIndex: number, powerUpType: PowerupType): void {
+		console.error("in");
 		const scene = this.adt.getScene();
 		const cells = player === 0 ? this.powerUpCellsP1 : this.powerUpCellsP2;
 		if (slotIndex >= 0 && slotIndex < cells.length) {
+			console.error("in 2");
 			const cell = cells[slotIndex];
 			scene?.stopAnimation(cell.root);
 
@@ -257,25 +270,63 @@ export class Hud {
 			cell.letter.color = "rgba(255, 255, 255, 1)";
 			
 			if (powerUpType !== null && this.POWERUP_ICON[powerUpType]) {
-				if (!cell.icon) {
-					cell.icon = new Image(`powerUpIcon_${player}_${slotIndex}`, this.POWERUP_ICON[powerUpType]);
+				console.error("in 3");
+				// if (!cell.icon) {
+				// 	cell.icon = new Image(`powerUpIcon_${player}_${slotIndex}`, this.POWERUP_ICON[powerUpType]);
+				// 	cell.icon.stretch = Image.STRETCH_UNIFORM;
+				// 	cell.icon.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
+				// 	cell.icon.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
+				// 	cell.root.addControl(cell.icon);
+				// } else {
+				// 	cell.icon.source = this.POWERUP_ICON[powerUpType];
+				// }
+				// cell.icon.alpha = 1;
+				if (cell.icon) {
+					console.error("in 4");
+					cell.root.removeControl(cell.icon);
+					cell.icon.dispose();
+					cell.icon = undefined;
+				}
+
+				// const imagePath = this.POWERUP_ICON[powerUpType];
+				// console.error("Creating icon with path:", imagePath); // ADD THIS
+				
+				// cell.icon = new Image(`powerUpIcon_${player}_${slotIndex}_${Date.now()}`, imagePath);
+				// console.error("Icon created:", cell.icon.name); // ADD THIS
+				
+				// cell.icon.stretch = Image.STRETCH_UNIFORM;
+				// cell.icon.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
+				// cell.icon.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
+				// cell.icon.alpha = 1;
+				// cell.root.addControl(cell.icon);
+				
+				// console.error("Icon added to root");
+				const preloadedTexture = this.powerUpTextures.get(powerUpType);
+				if (preloadedTexture) {
+					// Clone the preloaded image for this slot
+					cell.icon = preloadedTexture.clone() as Image;
+					cell.icon.name = `powerUpIcon_${player}_${slotIndex}_${powerUpType}`;
 					cell.icon.stretch = Image.STRETCH_UNIFORM;
 					cell.icon.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
 					cell.icon.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
+					cell.icon.alpha = 1;
+					cell.icon.isVisible = true; // Make sure it's visible
 					cell.root.addControl(cell.icon);
+					
+					console.log(`✅ Assigned preloaded icon: ${this.POWERUP_ICON[powerUpType]}`);
 				} else {
-					cell.icon.source = this.POWERUP_ICON[powerUpType];
+					console.warn(`⚠️ No preloaded texture found for power-up type: ${powerUpType}`);
 				}
-				cell.icon.alpha = 1;
 
-				cell.root.alpha = 0;
-				const delay = slotIndex * 100;
-				setTimeout(() => {
-					this.animationManager.slideFromDirection(cell.root, 'up', 'in', 100, Motion.F.base)
-						.then(() => {
-							return this.animationManager.scale(cell.root, 1, 1.1, Motion.F.fast, true);
-						});
-				}, delay);
+				cell.root.alpha = 1;
+				// cell.root.alpha = 0;
+				// const delay = slotIndex * 100;
+				// setTimeout(() => {
+				// 	this.animationManager.slideFromDirection(cell.root, 'up', 'in', 100, Motion.F.base)
+				// 		.then(() => {
+				// 			return this.animationManager.scale(cell.root, 1, 1.1, Motion.F.fast, true);
+				// 		});
+				// }, delay);
 			}
 		}
 	}
@@ -347,16 +398,18 @@ export class Hud {
 		[this.powerUpCellsP1, this.powerUpCellsP2].forEach(cells => {
 			cells.forEach((cell) => {
 				scene?.stopAnimation(cell.root);
+				scene?.stopAnimation(cell.icon);
 				cell.root.scaleX = 1;
 				cell.root.scaleY = 1;
 				cell.root.alpha = 0;
 				cell.root.topInPixels = 0;
 				cell.root.color = "rgba(255, 255, 255, 0.5)";
 
-				if (cell.icon) {
-					cell.icon.alpha = 0;
-					cell.icon.source = "";
-				}
+				// if (cell.icon) {
+				// 	cell.root.removeControl(cell.icon);
+				// 	cell.icon.dispose();
+				// 	cell.icon = undefined;
+				// }
 			});
 		});
 	}
@@ -374,6 +427,7 @@ export class Hud {
 			cell.root.dispose();
 		});
 
+		this.powerUpTextures.forEach(img => img.dispose());
 		this.hdImagesP1.forEach(img => img.dispose());
 		this.hdImagesP2.forEach(img => img.dispose());
 	}

@@ -6,7 +6,7 @@ import { KeyboardMode, Keys, PlayerSide, PROFILES_2D, PROFILES_3D, ViewMode } fr
 import { Logger } from '../../utils/LogManager.js';
 import type { GameObjects, KeysProfile, PlayerState } from '../../utils/types.js';
 import type { GameConfig } from '../GameInitializer.js';
-import { PowerupManager } from "./PowerUpManager.js";
+// import { PowerupManager } from "./PowerUpManager.js";
 
 // Manages all keyboard input handling for the game
 export class KeyboardManager {
@@ -22,7 +22,7 @@ export class KeyboardManager {
 		private config: GameConfig,
 		private gameObjects: GameObjects,
 		private players: Map<PlayerSide, PlayerState>,
-		private powerupManager: PowerupManager,
+		// private powerupManager: PowerupManager,
 		private callbacks: {
 			onPauseToggle: () => void;
 			onExitToMenu: () => void;
@@ -138,7 +138,7 @@ export class KeyboardManager {
 	}
 
 	private handlePowerupKeys(key: number): void {
-		if (!this.powerupManager) return;
+		// if (!this.powerupManager) return;
 		this.players.forEach((playerState, side) => {
 			if (!playerState.isControlled || !playerState.keyboardProfile) return;
 		
@@ -146,13 +146,16 @@ export class KeyboardManager {
 
 			switch (key) {
 				case profile.power.k1:
-					this.powerupManager.requestActivatePowerup(side, 0);
+					webSocketClient.sendPowerupActivationRequest(side, 0);
+					// this.powerupManager.requestActivatePowerup(side, 0);
 					return;
 				case profile.power.k2:
-					this.powerupManager.requestActivatePowerup(side, 1);
+					webSocketClient.sendPowerupActivationRequest(side, 1);
+					// this.powerupManager.requestActivatePowerup(side, 1);
 					return;
 				case profile.power.k3:
-					this.powerupManager.requestActivatePowerup(side, 2);
+					webSocketClient.sendPowerupActivationRequest(side, 2);
+					// this.powerupManager.requestActivatePowerup(side, 2);
 					return;
 			}
 		});
