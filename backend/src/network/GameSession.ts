@@ -244,7 +244,6 @@ export abstract class AbstractGameSession {
 
 	abstract start(): Promise<void>; 
 	abstract stop(client_id?: string): void;
-	
 	abstract handlePlayerQuit(quitter: Client): void;
 	abstract canClientControlGame(client: Client): boolean;
 	abstract getGame(client_id?: string): Game | undefined;
