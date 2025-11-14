@@ -383,7 +383,7 @@ export class Game {
 		this.isPaused = !this.isPaused;
 		this.services?.handlePause(this.isPaused, this.isSpectator);
 
-		// if (this.config.isRemoteMultiplayer || this.isSpectator) return; // TODO must enable
+		if (this.config.isRemoteMultiplayer || this.isSpectator) return;
 		
 		if (this.isPaused)
 			webSocketClient.sendPauseRequest();
