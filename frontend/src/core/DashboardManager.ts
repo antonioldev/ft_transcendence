@@ -148,11 +148,6 @@ export class DashboardManager {
 
 		container.innerHTML = '';   
 		container.appendChild(scrollWrapper); 
-
-		const vic = document.getElementById(EL.DASHBOARD.VICTORIES_LABEL);
-		if (vic) vic.textContent = t.victories;
-		const def = document.getElementById(EL.DASHBOARD.DEFEATS_LABEL);
-		if (def) def.textContent = t.defeats;
 	}
 
 

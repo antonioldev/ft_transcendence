@@ -175,10 +175,6 @@ export const EL = {
 		USER_STATS_TITLE: 'dashboard-user-stats-title',
 		GAME_HISTORY_TITLE: 'dashboard-game-history-title',
 
-		// KPI labels
-		VICTORIES_LABEL: 'dashboard-victories-label',
-		DEFEATS_LABEL: 'dashboard-defeats-label',
-
 		// Table headers
 		TH_DATETIME: 'dashboard-th-datetime',
 		TH_OPPONENT: 'dashboard-th-opponent',

@@ -192,24 +192,26 @@ export function updateLanguageDisplay(): void {
     if (registerConfirmPasswordError) registerConfirmPasswordError.textContent = t.errorConfirmPassword;
 
     // Dashboard
-    try {
-        const t = getCurrentTranslation();
+    const userStatsTitle = document.getElementById(EL.DASHBOARD.USER_STATS_TITLE);
+    if (userStatsTitle) userStatsTitle.textContent = t.userStats;
 
-        // Titles
-        requireElementById(EL.DASHBOARD.USER_STATS_TITLE).textContent = t.userStats;
-        requireElementById(EL.DASHBOARD.GAME_HISTORY_TITLE).textContent = t.gameHistory;
+    const gameHistoryTitle = document.getElementById(EL.DASHBOARD.GAME_HISTORY_TITLE);
+    if (gameHistoryTitle) gameHistoryTitle.textContent = t.gameHistory;
 
-        // KPI labels
-        requireElementById(EL.DASHBOARD.VICTORIES_LABEL).textContent = t.victories;
-        requireElementById(EL.DASHBOARD.DEFEATS_LABEL).textContent = t.defeats;
+    const thDateTime = document.getElementById(EL.DASHBOARD.TH_DATETIME);
+    if (thDateTime) thDateTime.textContent = t.dateTime;
 
-        // Table headers
-        requireElementById(EL.DASHBOARD.TH_DATETIME).textContent = t.dateTime;
-        requireElementById(EL.DASHBOARD.TH_OPPONENT).textContent = t.opponent;
-        requireElementById(EL.DASHBOARD.TH_SCORE).textContent = t.score;
-        requireElementById(EL.DASHBOARD.TH_RESULT).textContent = t.result;
-        requireElementById(EL.DASHBOARD.TH_TOURNAMENT).textContent = t.tournament;
-    } catch {}
+    const thOpponent = document.getElementById(EL.DASHBOARD.TH_OPPONENT);
+    if (thOpponent) thOpponent.textContent = t.opponent;
+
+    const thScore = document.getElementById(EL.DASHBOARD.TH_SCORE);
+    if (thScore) thScore.textContent = t.score;
+
+    const thResult = document.getElementById(EL.DASHBOARD.TH_RESULT);
+    if (thResult) thResult.textContent = t.result;
+
+    const thTournament = document.getElementById(EL.DASHBOARD.TH_TOURNAMENT);
+    if (thTournament) thTournament.textContent = t.tournament;
 
     // Instructions modal texts
     const instructionsTitle = document.getElementById('instructions-title');
