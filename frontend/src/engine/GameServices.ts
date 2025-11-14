@@ -216,6 +216,7 @@ export class GameServices {
 		this.render.startRendering();
 		this.audio.lowerMusicVolume();
 		this.gui.setPauseVisible(false);
+		this.gui.cardGame.hide();
 		await this.gui.showWinner(winner);
 		this.audio.stopGameMusic();
 	}

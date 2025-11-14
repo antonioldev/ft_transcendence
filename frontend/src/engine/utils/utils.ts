@@ -42,7 +42,7 @@ export function getCamera3DPlayer2Position() {
 }
 
 export function getSpectatorCameraPosition(): Vector3 {
-	return new Vector3(13, 25, 0);
+	return new Vector3(13, 20, 0);
 }
 
 // Viewport utility functions

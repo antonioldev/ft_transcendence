@@ -323,8 +323,8 @@ export class TournamentRemote extends AbstractTournament {
 
 	assign_winner(match: Match, winner?: Player | CPU) {
 		if (!match.next) {
+			console.log("ASSIGNING TOURNAMENT WINNER: " + winner?.name);
 			this.tournamentWinner = winner;
-			// save tournament winner to db
 			return ;
 		}
 		if (winner) {

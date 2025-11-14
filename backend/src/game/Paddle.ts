@@ -79,20 +79,6 @@ export class CPUBot extends Paddle {
 		this.ball = this.balls[0];
 	}
 
-	// private _find_closest_ball() {
-	// 	if (this.balls.length === 1) return this.balls[0];
-	// 	let shortest_distance = 10000; // maybe set to better value
-	// 	for (const ball of this.balls) {
-	// 		const dx = this.rect.x - ball.rect.x;
-	// 		const dz = this.rect.z - ball.rect.z;
-	// 		const distance = Math.sqrt((dx * dx) + (dz * dz));
-	// 		if (distance < shortest_distance) {
-	// 			shortest_distance = distance;
-	// 			this.closest_ball = ball;
-	// 		}
-	// 	}
-	// }
-
 	private _center_x(): number {
 		return (this._boundaries.left + this._boundaries.right) / 2;
 	}
@@ -180,7 +166,6 @@ export class CPUBot extends Paddle {
 		if (this.is_inverted) { this.handleInversion(dt); return; }
 
 		// refresh once per second
-		// this._find_closest_ball();
 		this.ball = this.balls[0];
 		this._view_timer += dt;
 		if (this._view_timer >= 1000.0) {
@@ -196,7 +181,7 @@ export class CPUBot extends Paddle {
 
 		if (Math.abs(this.rect.centerx - this._target_x) < 0.2) return;  // tighter dead-zone
 
-		const dx = this.rect.centerx < this._target_x ? 1 : -1;
-		this.move(dt, dx);
+		// const dx = this.rect.centerx < this._target_x ? 1 : -1;
+		// this.move(dt, dx);
 	}
 }

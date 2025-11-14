@@ -37,11 +37,11 @@ export class PowerupManager {
 
 		for (let i = 0; i < GAME_CONFIG.slot_count; i++) {
 			for (const side of [LEFT, RIGHT]) {
-				let powerup  = new Slot(Math.floor(Math.random() * num_powerups), side, i);
-				while (this.slots[side].includes(powerup)) {
-					powerup = new Slot(Math.floor(Math.random() * num_powerups), side, i);
+				let powerupType  = Math.floor(Math.random() * num_powerups);
+				while (this.slots[side].map(slot => slot.type).includes(powerupType)) {
+					powerupType  = Math.floor(Math.random() * num_powerups);
 				}
-				this.slots[side][i] = powerup;
+				this.slots[side][i] = new Slot(powerupType, side, i);
 			}
 		}
 	}
