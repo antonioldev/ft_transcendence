@@ -281,8 +281,8 @@ export class AnimationManager {
 			if (isLocalMultiplayer || controlledSides.includes(index)) {
 				const startPosition = getCamera2DPosition();
 				const endPosition = camera.name === "camera1"
-					? getCamera3DPlayer1Position()
-					: getCamera3DPlayer2Position();
+					? getCamera3DPlayer1Position(isLocalMultiplayer)
+					: getCamera3DPlayer2Position(isLocalMultiplayer);
 
 				const positionAnimation = Animation.CreateAnimation("position", Animation.ANIMATIONTYPE_VECTOR3, Motion.fps,  Motion.ease.quadOut());
 				positionAnimation.setKeys([
@@ -315,7 +315,7 @@ export class AnimationManager {
 		this.activeCameraAnimations = [];
 	}
 
-	async moveToSpectatorView(cameras: FreeCamera[]): Promise<void> {
+	async moveToSpectatorView(cameras: FreeCamera[], isLocalMultiplayer: boolean = false): Promise<void> {
 		if (!cameras || cameras.length === 0) return;
 
 		const endPosition = getSpectatorCameraPosition();
@@ -328,8 +328,8 @@ export class AnimationManager {
 			if (!camera) return;
 
 			const startPosition = camera.name === "camera1"
-				? getCamera3DPlayer1Position()
-				: getCamera3DPlayer2Position();
+				? getCamera3DPlayer1Position(isLocalMultiplayer)
+				: getCamera3DPlayer2Position(isLocalMultiplayer);
 
 			const positionAnimation = Animation.CreateAnimation(
 				"position",

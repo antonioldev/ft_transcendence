@@ -31,8 +31,8 @@ export function createCameras(scene: Scene, name: string, viewMode: ViewMode, ga
 			if (gameMode === GameMode.TOURNAMENT_LOCAL || gameMode === GameMode.TWO_PLAYER_LOCAL) {
 				camera1.viewport = get3DCamera1Viewport();
 				camera2.viewport = get3DCamera2Viewport();
-				camera1.fov = 1.8;
-				camera2.fov = 1.8;
+				camera1.fov = 1.9;
+				camera2.fov = 1.9;
 			} else {
 				camera1.viewport = getSoloCameraViewport();
 				camera2.viewport = getSoloCameraViewport();

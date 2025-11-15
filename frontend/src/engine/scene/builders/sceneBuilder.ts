@@ -15,7 +15,7 @@ import { createBall, createGameField, createPlayer, createWallLineGlowEffect, cr
 import { createBallEffects, createPaddleCage, createPaddleGlow, createWallGlowEffect } from '../entities/gameObjectsEffects.js';
 import { createStaticObject } from "../entities/staticProps.js";
 import { createCameras, createGuiCamera } from "./camerasBuilder.js";
-import { createFireworks, createFog, createLensFlare, createParticleSystem, createSmokeSprite } from './effectsBuilder.js';
+import { createFireworks, createFog, createParticleSystem, createSmokeSprite } from './effectsBuilder.js';
 import { createLight, createSky, createTerrain } from './enviromentBuilder.js';
 import type { CoreGameObjects } from "../../../utils/types.js";
 import { uiManager } from "../../../ui/UIManager.js";
@@ -155,9 +155,6 @@ async function buildThematicEnvironment(scene: Scene, map_asset: MapAssetConfig,
 		let effect = null;
 
 		switch(particleType) {
-			case ParticleEffectType.LENS: 
-				effect = createLensFlare(scene); 
-				break;
 			case ParticleEffectType.SMOKE: 
 				effect = createSmokeSprite(scene); 
 				break;

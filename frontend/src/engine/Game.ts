@@ -180,7 +180,7 @@ export class Game {
 			if (!wantsToSpectate)
 				this.requestExitToMenu();
 			else if (this.config.viewMode === ViewMode.MODE_3D && this.gameObjects)
-				await this.services?.animation.moveToSpectatorView(this.gameObjects.cameras);
+				await this.services?.animation.moveToSpectatorView(this.gameObjects.cameras, this.config.isLocalMultiplayer);
 			return;
 		}
 		//test

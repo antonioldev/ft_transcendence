@@ -31,14 +31,16 @@ export function getCamera2DPosition() {
 	return new Vector3(3, GAME_CONFIG.camera2DHeight, 0);
 }
 
-export function getCamera3DPlayer1Position() {
+export function getCamera3DPlayer1Position(isLocalMultiplayer: boolean) {
 	// Returns the position of the 3D camera for Player 1
-	return new Vector3(0, GAME_CONFIG.camera3DHeight, -(GAME_CONFIG.fieldHeight / 2 + GAME_CONFIG.camera3DDistance));
+	const distance = isLocalMultiplayer ? GAME_CONFIG.camera3DDistance : GAME_CONFIG.camera3DDistanceSolo;
+	return new Vector3(0, GAME_CONFIG.camera3DHeight, -(GAME_CONFIG.fieldHeight / 2 + distance));
 }
 
-export function getCamera3DPlayer2Position() {
+export function getCamera3DPlayer2Position(isLocalMultiplayer: boolean) {
 	// Returns the position of the 3D camera for Player 2
-	return new Vector3(0, GAME_CONFIG.camera3DHeight, GAME_CONFIG.fieldHeight / 2 + GAME_CONFIG.camera3DDistance);
+	const distance = isLocalMultiplayer ? GAME_CONFIG.camera3DDistance : GAME_CONFIG.camera3DDistanceSolo;
+	return new Vector3(0, GAME_CONFIG.camera3DHeight, GAME_CONFIG.fieldHeight / 2 + distance);
 }
 
 export function getSpectatorCameraPosition(): Vector3 {

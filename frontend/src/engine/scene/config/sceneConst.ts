@@ -13,6 +13,6 @@ export enum ParticleEffectType {
 	RAIN = "rain",
 	UNDERWATER = "underwater",
 	SMOKE = 'smoke',
-	LENS = 'lens',
+	// LENS = 'lens',
 	FIREWORK = 'firework'
 }
