@@ -36,7 +36,7 @@ export function createTerrain(scene: Scene, name: string, texture: TextureSet, m
 			height: terrainHeight,
 			subdivisions: 200,		// More subdivisions = smoother terrain
 			minHeight: 0,			 // Lowest point of terrain
-			maxHeight: 5			 // Highest point of terrain
+			maxHeight: 10			 // Highest point of terrain
 		}, scene);
 	} else {
 		terrain = MeshBuilder.CreateGround(name, { 
@@ -68,15 +68,18 @@ export function createTerrain(scene: Scene, name: string, texture: TextureSet, m
 	return terrain;
 }
 
-export function createLight(scene: Scene, name: string, viewMode: ViewMode, mapAsset: MapAssetConfig): Light {
+export function createLight(scene: Scene, name: string, viewMode: ViewMode, mapAsset: MapAssetConfig): Light[] {
 	if (viewMode === ViewMode.MODE_2D) {
 		const position = new Vector3(0, 10, 0);
 		const light = new HemisphericLight(name, position, scene);
 		light.intensity = mapAsset.light;
 		light.diffuse = new Color3(1, 1, 1);
 		light.specular = new Color3(0, 0, 0);
-		return light;
+		return [light];
 	} else {
+		const ambient = new HemisphericLight("ambient", new Vector3(0, 1, 0), scene);
+		ambient.intensity = 0.1;
+
 		let lightColor = new Color3(1, 1, 1);
 		let lightDirection = new Vector3(-0.3, -1, -0.2);
 
@@ -85,7 +88,7 @@ export function createLight(scene: Scene, name: string, viewMode: ViewMode, mapA
 		light.intensity = mapAsset.light;
 		light.diffuse = lightColor;
 		light.specular = lightColor.scale(0.3);
-		
-		return light;
+
+		return [light, ambient];
 	}
 }

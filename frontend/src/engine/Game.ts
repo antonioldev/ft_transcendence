@@ -55,6 +55,8 @@ export class Game {
 			if (element instanceof HTMLCanvasElement) {
 				this.canvas = element;
 				const gl = this.canvas.getContext('webgl') || this.canvas.getContext('webgl2');
+				if (!gl)
+					throw new Error('WebGL is not supported in your browser. Please update your browser or enable WebGL.');
 				if (gl) {
 					gl.getExtension('WEBGL_color_buffer_float');
 					gl.getExtension('EXT_color_buffer_half_float');
@@ -102,6 +104,7 @@ export class Game {
 		});
 		this.registerCallbacks();
 		this.isInitialized = true;
+		applyQualitySettings(this.engine, currentSettings.quality);
 		await this.services?.start();
 		if (this.config.isRemoteMultiplayer)
 			webSocketClient.requestLobby();
@@ -122,7 +125,7 @@ export class Game {
 			engine.resize();
 		});
 		engine.resize();
-		applyQualitySettings(engine, currentSettings.quality);
+		// applyQualitySettings(engine, currentSettings.quality);
 		return engine;
 	}
 

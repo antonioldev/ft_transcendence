@@ -52,7 +52,7 @@ export interface CoreGameObjects {
 	walls: Mesh[];
 	cameras: FreeCamera[];
 	guiCamera: FreeCamera;
-	lights: Light;
+	lights: Light[];
 }
 export interface GameObjects extends CoreGameObjects {
     effects: Effects;

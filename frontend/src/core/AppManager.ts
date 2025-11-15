@@ -1,6 +1,6 @@
 import { Game } from '../engine/Game.js';
 import { GameInitializer } from '../engine/GameInitializer.js';
-import { AiDifficulty, GameMode, GameState } from '../shared/constants.js';
+import { AiDifficulty, GameMode } from '../shared/constants.js';
 import { getCurrentTranslation, updateLanguageDisplay } from '../translations/translations.js';
 import { EL, requireElementById } from '../ui/elements.js';
 import { uiManager } from '../ui/UIManager.js';
@@ -24,10 +24,10 @@ export let currentSettings: GameSetting = {
 };
 
 export function updateCurrentSettings(newSettings: Partial<typeof currentSettings>): void {
-    if (newSettings) {
-        currentSettings = { ...currentSettings, ...newSettings };
-        uiManager.updateSettings();
-    }
+	if (newSettings) {
+		currentSettings = { ...currentSettings, ...newSettings };
+		uiManager.updateSettings();
+	}
 }
 
 /**
@@ -81,10 +81,7 @@ export class AppManager {
 		});
 
 		window.addEventListener('popstate', (event) => {
-			if (this.currentGame?.getState() === GameState.RUNNING) {
-				this.currentGame?.requestExitToMenu();
-				return;
-			} else if (this.currentGame?.getState() === GameState.PAUSED) {
+			if (this.currentGame) {
 				this.currentGame?.requestExitToMenu();
 				return;
 			}
@@ -369,9 +366,8 @@ export class AppManager {
 				break;
 			case AppState.SETTINGS:
 				uiManager.showScreen(EL.SCREENS.SETTINGS_MENU);
-				if (authManager.isUserAuthenticated()) {
+				if (authManager.isUserAuthenticated())
 					authManager.getUserSettings();
-				}
 				break;
 			default:
 				Logger.error(`Unknown state: ${state}, redirecting to main menu`, 'AppManager');

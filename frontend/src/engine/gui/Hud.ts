@@ -64,8 +64,6 @@ export class Hud {
 	}
 
 	private preloadPowerUpIcons(): void {
-		console.log('🔄 Preloading power-up icons...');
-		
 		Object.entries(this.POWERUP_ICON).forEach(([type, path]) => {
 			const texture = new Image(`preloaded_${type}`, path);
 			texture.isVisible = false;
@@ -73,8 +71,6 @@ export class Hud {
 			
 			this.powerUpTextures.set(Number(type), texture);
 		});
-		
-		console.log('✅ Power-up icons loading in background');
 	}
 
 	private createHud(config: GameConfig): void {
