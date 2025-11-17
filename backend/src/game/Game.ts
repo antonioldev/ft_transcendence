@@ -189,6 +189,7 @@ export class Game {
 				state: this.get_state()
 			});
 		}
+		console.log(`Game ${this.id} ended`);
 		return (this.winner);
 	}
 
@@ -267,6 +268,7 @@ export class Game {
 	}
 
 	assign_winner(winner: Player | CPU) {
+		console.log(`winner = ${winner.name}`);
 		this.winner = winner;
 		this.loser = this.players[LEFT] === winner ? this.players[RIGHT] : this.players[LEFT];
 	}

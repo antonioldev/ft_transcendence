@@ -39,7 +39,7 @@ export class Match {
 		const index = this.players.findIndex(
 			(p): p is Player => p instanceof Player && p.client === client
 		)
-		if (index >= 0) this.players.splice(index);
+		if (index >= 0) this.players.splice(index, 1);
 		this.clients.delete(client);
 	}
 }
@@ -193,7 +193,7 @@ export class TournamentLocal extends AbstractTournament {
 		this.readyClients.clear();
 	}
 
-	canClientControlGame(client: Client) {
+	canClientControlGame(client: Client): boolean {
 		if (!this.current_match) return false;
 		return (this.current_match.clients.has(client));
 	}
@@ -217,7 +217,7 @@ export class TournamentLocal extends AbstractTournament {
 		return (this.current_match);
 	}
 
-	findGame() {
+	findGame(): Game | undefined {
 		return (this.current_match?.game);
 	}
 }

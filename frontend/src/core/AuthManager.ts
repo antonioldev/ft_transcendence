@@ -271,9 +271,17 @@ export class AuthManager {
             uiManager.clearForm(this.loginFields);
             return;
         }
-
-        const responseData = await sendPOST("login", { username, password });
-        this.handleLoginResponse(responseData.result, responseData.message, username, translation);
+        
+        // prevent for multiple tab login
+        const loggedInUser = localStorage.getItem("activeUser");
+        if (loggedInUser && loggedInUser !== username) {
+            alert(`This device is already logged in as ${loggedInUser}`);
+        }
+        else {
+            localStorage.setItem("activeUser", username);
+            const responseData = await sendPOST("login", { username, password });
+            this.handleLoginResponse(responseData.result, responseData.message, username, translation);
+        }
 	}
 
     // Handles the registration form submission process.
@@ -501,6 +509,7 @@ export class AuthManager {
 		
 		// Clear Google token from localStorage
 		localStorage.removeItem('google_id_token');
+        localStorage.removeItem('activeUser');
 		
 		uiManager.showAuthButtons();
 		appManager.navigateTo(AppState.MAIN_MENU);
