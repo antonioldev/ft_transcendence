@@ -421,11 +421,18 @@ export class AuthManager {
                     throw new Error(`Account already in use on another device.`);
                 }
 
+                const activeUser = localStorage.getItem("activeUser");
+                if (activeUser && activeUser !== user.username) {
+                    alert(`This device is already logged in as ${activeUser}`);
+                    return 
+                }
+
                 this.currentUser = { username: user.username };
 				this.getUserSettings();
                 
                 // Store Google token for session restore if needed
                 localStorage.setItem('google_id_token', googleResponse.credential);
+                localStorage.setItem('activeUser', user.username);
                 
                 // Updates the UI to show user information and navigates to game mode selection
                 uiManager.showUserInfo(this.currentUser.username);
