@@ -89,6 +89,12 @@ export class AppManager {
 			const state = event.state?.screen || AppState.MAIN_MENU;
 			this.navigateTo(state, false);
 		});
+
+		window.addEventListener("beforeunload", () => {
+			// Remove active user when tab closes or refreshes
+			localStorage.removeItem("activeUser");
+			localStorage.removeItem('google_id_token');
+		});
 	}
 
 	private setupViewModeListeners(): void {

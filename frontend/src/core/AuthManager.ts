@@ -273,9 +273,9 @@ export class AuthManager {
         }
         
         // prevent for multiple tab login
-        const loggedInUser = localStorage.getItem("activeUser");
-        if (loggedInUser && loggedInUser !== username) {
-            alert(`This device is already logged in as ${loggedInUser}`);
+        const activeUser = localStorage.getItem("activeUser");
+        if (activeUser && activeUser !== username) {
+            alert(`This device is already logged in as ${activeUser}`);
         }
         else {
             localStorage.setItem("activeUser", username);
