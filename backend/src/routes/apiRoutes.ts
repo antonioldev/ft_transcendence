@@ -138,7 +138,7 @@ export async function APIRoutes(app: FastifyInstance) {
 		let statusCode: number;
 		switch (result) {
 			case AuthCode.OK:
-				statusCode = 201;
+				statusCode = 201;``
 				message = `User ${username} successfully registered`;
 				break;
 			case AuthCode.USER_EXISTS:

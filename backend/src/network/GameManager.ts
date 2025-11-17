@@ -78,7 +78,7 @@ class GameManager {
     async runGame(gameSession: AbstractGameSession): Promise<void> {
         if (gameSession.is_running()) return ;
         if (gameSession.mode === GameMode.TOURNAMENT_REMOTE && gameSession.players.size < GAME_CONFIG.minTournamentSize) {
-            // wait another 30 seconds for at least 3 players to be in the tournament
+            // wait another 20 seconds for at least 2 players to be in the tournament
             setTimeout(() => { this.runGame(gameSession) }, (GAME_CONFIG.maxJoinWaitTime * 1000));
             return ;
         }

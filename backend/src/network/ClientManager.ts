@@ -36,7 +36,7 @@ class ClientManager {
 		return client;
 	}
 
-	 findOrCreateClient(sid: string): Client {
+	findOrCreateClient(sid: string): Client {
 		let client: Client | undefined = this.sidClientMap.get(sid);
 		if (!client) {
 			client = this.createClientConnection(sid);

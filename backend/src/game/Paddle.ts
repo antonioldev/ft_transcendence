@@ -181,7 +181,7 @@ export class CPUBot extends Paddle {
 
 		if (Math.abs(this.rect.centerx - this._target_x) < 0.2) return;  // tighter dead-zone
 
-		// const dx = this.rect.centerx < this._target_x ? 1 : -1;
-		// this.move(dt, dx);
+		const dx = this.rect.centerx < this._target_x ? 1 : -1;
+		this.move(dt, dx);
 	}
 }

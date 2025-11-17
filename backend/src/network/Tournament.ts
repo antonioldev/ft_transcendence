@@ -285,7 +285,7 @@ export class TournamentRemote extends AbstractTournament {
 				round_winners.push(winner_promise);
 			}
 		}
-		console.log("Assigning spectators at beginning of round");
+		// console.log("Assigning spectators at beginning of round");
 		for (const client of this.defeated_clients) {
 			this.assign_spectator(client);
 		}
@@ -314,7 +314,7 @@ export class TournamentRemote extends AbstractTournament {
 		if (index !== -1) this.active_matches.splice(index, 1);
 		if (this.active_matches.length === 0) return ;
 
-		console.log("Assigning spectators at end of match");
+		// console.log("Assigning spectators at end of match");
 		// reassign spectators to next available match
 		for (const client of match.clients) {
 			this.assign_spectator(client);
@@ -323,7 +323,6 @@ export class TournamentRemote extends AbstractTournament {
 
 	assign_winner(match: Match, winner?: Player | CPU) {
 		if (!match.next) {
-			console.log("ASSIGNING TOURNAMENT WINNER: " + winner?.name);
 			this.tournamentWinner = winner;
 			return ;
 		}
@@ -339,7 +338,6 @@ export class TournamentRemote extends AbstractTournament {
 		if (match.game?.loser instanceof Player) {
 			this.client_match_map.delete(match.game.loser.client.sid);
 			this.defeated_clients.add(match.game.loser.client);
-			// match.clients.delete(match.game?.loser?.client);
 		}
 		this.broadcast({
 			type: MessageType.MATCH_RESULT,
@@ -379,7 +377,7 @@ export class TournamentRemote extends AbstractTournament {
 		if (old_index === -1) return ; 
 
 		let new_index: number = (old_index + data.direction + this.active_matches.length) % this.active_matches.length;
-		console.log("Assigning spectators after toggle called");
+		// console.log("Assigning spectators after toggle called");
 		this.assign_spectator(client, this.active_matches[new_index]);
 	}
 

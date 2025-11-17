@@ -151,6 +151,7 @@ export class Game {
 	
 	async send_countdown(): Promise<void> {
 		for (let countdown = GAME_CONFIG.startDelay; countdown >= 0; countdown--) {
+			if (this.is_ended()) return ;
 			console.log(`Sending countdown: ${countdown}`);
 
 			this._broadcast({
