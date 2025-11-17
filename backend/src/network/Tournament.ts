@@ -367,7 +367,6 @@ export class TournamentRemote extends AbstractTournament {
 			console.log("Cannot toggle spectator game, direction not specified")
 			return 
 		}
-		// if (this.active_matches.length <= 1) return ;
 
 		const old_match = this.find_spectator_match(client);
 		if (!old_match) {
