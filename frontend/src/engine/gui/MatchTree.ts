@@ -94,13 +94,9 @@ export class MatchTree {
 
 		if (winner === undefined) {
 			rightTb.text = "❌ " + rightTb.text;
-			applyStyles(leftRect, BRACKET_STYLES.winnerCell);
-			applyStyles(leftTb, BRACKET_STYLES.winnerText);
 			applyStyles(rightRect, BRACKET_STYLES.loserCell);
 			applyStyles(rightTb, BRACKET_STYLES.loserText);
-			leftTb.text = "❌ " + leftTb.text;
-			applyStyles(rightRect, BRACKET_STYLES.winnerCell);
-			applyStyles(rightTb, BRACKET_STYLES.winnerText);
+			leftTb.text = "❌ " + leftTb.text;``
 			applyStyles(leftRect, BRACKET_STYLES.loserCell);
 			applyStyles(leftTb, BRACKET_STYLES.loserText);
 			return;
