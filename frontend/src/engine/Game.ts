@@ -187,7 +187,6 @@ export class Game {
 				await this.services?.animation.moveToSpectatorView(this.gameObjects.cameras, this.config.isLocalMultiplayer);
 			return;
 		}
-		//test
 
 		const waitForSpace = controlledSides.length !== 0 && this.config.gameMode !== GameMode.TOURNAMENT_REMOTE;
 		const showCardGame = this.config.isRemoteMultiplayer;
@@ -321,19 +320,11 @@ export class Game {
 		if (this.serverState === state.state) return;
 		this.serverState = state.state;
 
-		switch (this.serverState){
-			case GameState.PAUSED:
-				// this.services?.gui?.setPauseVisible(true, this.isSpectator); //TODO we need it?
-				break;
-			case GameState.RUNNING:
-				// this.services?.gui?.setPauseVisible(false, this.isSpectator);
-				break;
-			case GameState.ENDED:
-				const winner = state.winner;
-				const loser = state.loser;
-				if (winner && loser)
-					this.onServerEndedGame(winner, loser);
-				break;
+		if (this.serverState === GameState.ENDED) {
+			const winner = state.winner;
+			const loser = state.loser;
+			if (winner && loser)
+				this.onServerEndedGame(winner, loser);
 		}
 	}
 

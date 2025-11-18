@@ -57,7 +57,7 @@ export class Countdown {
 	async hidePlayersName(): Promise<void> {
 		this.animationManager.slideFromDirection(this.leftPlayer, 'left', 'out', 400, Motion.F.base);
 		this.animationManager.slideFromDirection(this.rightPlayer, 'right', 'out', 400, Motion.F.base);
-		this.animationManager.fade(this.vsText, 'out', Motion.F.xFast);
+		await this.animationManager.fade(this.vsText, 'out', Motion.F.xFast);
 		this.leftPlayer.isVisible = false;
 		this.rightPlayer.isVisible = false;
 		this.vsText.isVisible = false;

@@ -22,7 +22,7 @@ export function getPlayerRightPosition() {
 
 export function getBallStartPosition() {
 	// Returns the starting position of the ball
-	return new Vector3(0, 0.3, 0);
+	return new Vector3(0, 0.5, 0);
 }
 
 // Camera position utility functions
