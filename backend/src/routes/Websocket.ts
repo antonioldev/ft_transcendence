@@ -31,12 +31,12 @@ export async function setupWebsocket(app: FastifyInstance): Promise<void> {
         });
     
         socket.on('close', () => {
-            console.log(`WebSocket closed for client ${client.username}:`);
+            // console.log(`WebSocket closed for client ${client.username}:`);
             clientManager.handleDisconnection(client!);
         });
     
         socket.on('error', (error: any) => {
-            console.error(`❌ WebSocket error for client ${client.username}:`, error);
+            // console.error(`❌ WebSocket error for client ${client.username}:`, error);
             clientManager.handleDisconnection(client!);
         });
     });
@@ -87,7 +87,7 @@ async function handleMessage(client: Client, message: string) {
         }
     } 
     catch (error) {
-        console.error('❌ Error parsing message:', error);
+        console.error('Error parsing message:', error);
         send(client.websocket, {
             type: MessageType.ERROR,
             message: 'Message request failed',

@@ -63,7 +63,6 @@ export abstract class AbstractGameSession {
 	
 	add_player(player: Player | CPU) {
 		if (this.players.size < this.player_capacity) {
-			console.log(`Player ${player.name} added to game ${this.id}`);
 			this.players.add(player);
 		}
 	}
@@ -104,7 +103,7 @@ export abstract class AbstractGameSession {
 
 	async waitForClientsReady() {
 		if (this.allClientsReady()) return;
-		
+
 		await new Promise(resolve => {
 			this.sessionEventManager.once(`all-ready-${this.id}`, resolve);
 		});
@@ -112,11 +111,9 @@ export abstract class AbstractGameSession {
 
 	setClientReady(client: Client): void {
 		this.readyClients.add(client.sid);
-		console.log(`Client ${client.username} marked as ready`);
 		
-		if (/*this.full && */this.allClientsReady()) {
+		if (this.allClientsReady()) {
 			this.sessionEventManager.emit(`all-ready-${this.id}`);
-			console.log(`GameSession ${this.id}: all clients ready signal emitted`);
 		}
 	}
 
@@ -216,7 +213,6 @@ export abstract class AbstractGameSession {
 			type: MessageType.TOURNAMENT_LOBBY,
 			lobby: [...this.players].map(player => player.name)
 		});
-		console.log(`Lobby sent to ${client.username}`)
 	}
 
 	enqueue(input: PlayerInput, client?: Client): void  {

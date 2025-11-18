@@ -17,7 +17,7 @@ dotenv.config();
 const db = await initialisazeDatabase('./database/transcendence.sqlite');
 registerDatabaseFunctions(db);
 await setDefaultCPU();
-await seedDefaultUsers(8);
+await seedDefaultUsers(16);
 await setDefaultStatus();
 
 

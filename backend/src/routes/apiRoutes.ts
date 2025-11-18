@@ -19,13 +19,11 @@ export async function APIRoutes(app: FastifyInstance) {
 			console.log(`ROOT request failed: missing SID`);
 			return reply.code(400).send({ status: AuthCode.BAD_CREDENTIALS, message: "Error: missing SID"} );
 		}
-		console.log(`ROOT request received from: ${sid}`);
 		let client = clientManager.getClientConnection(sid);
 		if (!client) {
 			client = clientManager.createClientConnection(sid);
 		} 
 		else if (!client.is_connected && client.loggedIn) { // testing this one
-			console.log("Client refresh")
 			reply.send({ 
 				status: AuthCode.ALREADY_LOGIN, 
 				message: "Welcome back to Battle Pong!",
@@ -49,7 +47,6 @@ export async function APIRoutes(app: FastifyInstance) {
 			console.log(`/login request failed: missing SID`);
 			return reply.code(400).send({ message: "Error: missing SID"} );
 		}
-		console.log(`/login request received from: ${sid}`);
 		let client = clientManager.getClientConnection(sid);
 		if (!client) { // testing what happen with client connecting again
 			console.log("login failed: client not recognised");
@@ -106,7 +103,6 @@ export async function APIRoutes(app: FastifyInstance) {
 			console.log(`/logout request failed: missing SID`);
 			return reply.code(400).send({ message: "Error: missing SID"} );
 		}
-		console.log(`/logout request received from: ${sid}`);
 		let client = clientManager.getClientConnection(sid);
 		if (!client) {
 			console.log("Logout failed: user not logged in");
@@ -115,7 +111,6 @@ export async function APIRoutes(app: FastifyInstance) {
 		
 		client.loggedIn = false;
 		await db.logoutUser(client.username);
-		console.log(`User ${client.username} successfully logged out`);
 		return reply.send({ success: true, message: `User '${client.username}' successfully logged out` })
 	})
 
@@ -131,7 +126,6 @@ export async function APIRoutes(app: FastifyInstance) {
 			console.log(`/register request failed: missing user info`);
 			return reply.code(401).send({ result: AuthCode.BAD_CREDENTIALS, message: 'Missing username, email, or password' })
 		}
-		console.log(`/register request received from: ${sid}`);
 
 		const result = await db.registerNewUser(username, email, password);
 		let message: string;
@@ -209,7 +203,6 @@ export async function APIRoutes(app: FastifyInstance) {
 			console.log(`Failed to send stats: user '${username}' not found`);
 			return reply.code(401).send({ success: false, message: "User not found" });
 		}
-		console.log(`User stats sent to ${username}`);
 		return reply.send({ success: true, stats: stats });
 	})
 
@@ -227,7 +220,6 @@ export async function APIRoutes(app: FastifyInstance) {
 			console.log(`Failed to send game history: user '${username}' not found`);
 			return reply.code(401).send({ success: false, message: "User not found" });
 		}
-		console.log(`User history sent to ${username}`);
 		return reply.send({ success: true, history: history });
 	})
 

@@ -88,7 +88,6 @@ export class PowerupManager {
 				break ;
 			case PowerupType.INVISIBLE_BALL:
 				timeout = GAME_CONFIG.invisibilityTimeLimit; 
-				// implementation handled on front
 				break ;
 			case PowerupType.CURVE_BALL:
 				timeout = this.set_curve_ball(true);
@@ -100,7 +99,6 @@ export class PowerupManager {
 				timeout = this.set_double_points(true);
 				break ;
 			case PowerupType.TRIPLE_SHOT:
-				console.log("TRIPLE SHOT CALLED");
 				timeout = await this.triple_shot(slot.side);
 				break ;
 			case PowerupType.SHIELD:

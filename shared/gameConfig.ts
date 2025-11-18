@@ -72,7 +72,7 @@ export const GAME_CONFIG = {
 	},
 
 	// Game mechanics
-	scoreToWin: 10,		  // Points needed to win
+	scoreToWin: 50,		  // Points needed to win
 	
 	// Input mappings
 	input2D: {
@@ -86,7 +86,7 @@ export const GAME_CONFIG = {
 	
 	// Timing
 	startDelay: 8.0, // Delay before the game starts
-	maxJoinWaitTime: 6.0, // Max time the server will wait for remote players to join before starting with CPU's
+	maxJoinWaitTime: 30.0, // Max time the server will wait for remote players to join before starting with CPU's
 
 	minTournamentSize: 2, //3
 
@@ -94,7 +94,7 @@ export const GAME_CONFIG = {
 
 // CPU Difficulty: we pass this directly as the noise factor to regualate the CPU ability
 export const CPUDifficultyMap: Record<AiDifficulty, number> = {
-	[AiDifficulty.EASY]: 2.0,
+	[AiDifficulty.EASY]: 2.5,
 	[AiDifficulty.MEDIUM]: 1.5,
 	[AiDifficulty.HARD]: 1.0,
 	[AiDifficulty.IMPOSSIBLE]: 0,
