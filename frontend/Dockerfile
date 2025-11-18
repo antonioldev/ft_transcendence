@@ -13,12 +13,6 @@ RUN npm install
 # Copy the entire source code to the working directory
 COPY . .
 
-# # Copy TypeScript source
-# COPY src/ ./src/
-# # COPY src/index.html ./
-# COPY tsconfig.json ./
-# COPY vite.config.js ./
-
 # Build TypeScript 
 RUN npm run build
 
@@ -37,11 +31,6 @@ COPY --from=builder /app/dist/ /usr/share/nginx/html/
 # Copy environment config file
 COPY --from=builder /app/env-config.js /usr/share/nginx/html/
 
-# COPY mime.types /etc/nginx/mime.types
-
-# # Copy HTML and other static files
-# COPY src/*.html /usr/share/nginx/html/
-# COPY src/assets/images/42_favicon.ico /usr/share/nginx/html/
 COPY src/assets/ /usr/share/nginx/html/assets/
 
 EXPOSE 80

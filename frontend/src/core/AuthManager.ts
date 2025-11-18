@@ -272,13 +272,13 @@ export class AuthManager {
             return;
         }
         
+        
         // prevent for multiple tab login
         const activeUser = localStorage.getItem("activeUser");
         if (activeUser && activeUser !== username) {
             alert(`This device is already logged in as ${activeUser}`);
         }
         else {
-            localStorage.setItem("activeUser", username);
             const responseData = await sendPOST("login", { username, password });
             this.handleLoginResponse(responseData.result, responseData.message, username, translation);
         }
@@ -354,6 +354,7 @@ export class AuthManager {
 
     handleLoginResponse(result: AuthCode, message: string, username: string, translation: Translation) {
         if (result === AuthCode.OK) {
+            localStorage.setItem("activeUser", username);
             this.currentUser = { username: username };
 			this.getUserSettings();
             uiManager.clearForm(this.loginFields);
