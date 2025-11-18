@@ -97,7 +97,7 @@ export class Hud {
 
 		this.hudGrid.addControl(p1Grid, 0, 1);
 
-		this.player1Label = createTextBlock("player1Label", HUD_STYLES.playerLabel, "Player 1");
+		this.player1Label = createTextBlock("player1Label", HUD_STYLES.playerLabel, "Player1");
 		this.score1Text = createTextBlock("score1Text", HUD_STYLES.scoreText, "0");
 
 		p1Grid.addControl(this.player1Label, 0, 0);
@@ -121,7 +121,7 @@ export class Hud {
 		p2Grid.addRowDefinition(0.6);
 		this.hudGrid.addControl(p2Grid, 0, 3);
 
-		this.player2Label = createTextBlock("player2Label", HUD_STYLES.playerLabel, "Player 2");
+		this.player2Label = createTextBlock("player2Label", HUD_STYLES.playerLabel, "Player2");
 		this.score2Text = createTextBlock("score2Text", HUD_STYLES.scoreText, "0");
 
 		p2Grid.addControl(this.player2Label, 0, 0);
@@ -284,14 +284,6 @@ export class Hud {
 				}
 
 				cell.root.alpha = 1;
-				// cell.root.alpha = 0;
-				// const delay = slotIndex * 100;
-				// setTimeout(() => {
-				// 	this.animationManager.slideFromDirection(cell.root, 'up', 'in', 100, Motion.F.base)
-				// 		.then(() => {
-				// 			return this.animationManager.scale(cell.root, 1, 1.1, Motion.F.fast, true);
-				// 		});
-				// }, delay);
 				this.animationManager.scale(cell.root, 1, 1.1, Motion.F.fast, true);
 			}
 		}
@@ -372,23 +364,5 @@ export class Hud {
 				cell.root.color = "rgba(255, 255, 255, 0.5)";
 			});
 		});
-	}
-	dispose(): void {
-		this.rally.dispose();
-		this.score1Text.dispose();
-		this.score2Text.dispose();
-		this.player1Label.dispose();
-		this.player2Label.dispose();
-		this.hudGrid.dispose();
-
-		[...this.powerUpCellsP1, ...this.powerUpCellsP2].forEach(cell => {
-			cell.icon?.dispose();
-			cell.letter?.dispose();
-			cell.root.dispose();
-		});
-
-		this.powerUpTextures.forEach(img => img.dispose());
-		this.hdImagesP1.forEach(img => img.dispose());
-		this.hdImagesP2.forEach(img => img.dispose());
 	}
 }

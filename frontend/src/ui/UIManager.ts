@@ -317,4 +317,4 @@ class UIManager {
 	}
 }
 
-export const uiManager = new UIManager;
+export const uiManager = new UIManager();

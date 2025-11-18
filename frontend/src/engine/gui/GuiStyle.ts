@@ -110,7 +110,8 @@ export const HUD_STYLES = {
         shadowOffsetY: 1,
         shadowBlur: 2,
         shadowOpacity: 0.5,
-        shadowColor: COLORS.BLACK
+        shadowColor: COLORS.BLACK,
+        clipContent: false
     },
 
     scoreText: {

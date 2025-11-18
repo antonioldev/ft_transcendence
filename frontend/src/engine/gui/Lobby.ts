@@ -104,4 +104,8 @@ export class Lobby {
 			this.dotsTimer = undefined;
 		}
 	}
+
+	dispose(): void {
+		this.stopDots();
+	}
 }

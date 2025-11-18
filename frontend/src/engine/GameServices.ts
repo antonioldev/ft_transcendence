@@ -165,7 +165,6 @@ export class GameServices {
 	}
 
 	updateTournamentGame(message: any): void {
-		// if (!message || message.winner === undefined) return;
 		if (!message) return;
 		
 		this.gui.matchTree.update(

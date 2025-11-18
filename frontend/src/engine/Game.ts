@@ -202,7 +202,6 @@ export class Game {
 
 		startFireworks(this.themeObjects?.effects || [], 250);
 		const winner = message.winner;
-		console.log("winner: " + winner);
 		if (winner)
 			await this.services?.handleSessionEnd(winner);
 		this.dispose();

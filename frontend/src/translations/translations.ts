@@ -5,7 +5,6 @@ import { portuguese } from './pt-PT.js';
 import { russian } from './ru-RU.js';
 import type { Translation } from './Translation.js';
 import { EL, requireElementById } from '../ui/elements.js';
-// import { TranslationKey } from './Translation.js';
 import { currentSettings } from '../core/AppManager.js';
 
 const allTranslations = [english, italian, french, portuguese, russian];
@@ -264,8 +263,3 @@ export function updateLanguageDisplay(): void {
 
 }
 
-// Retrieves a specific item based on current language
-// export function getText(key: TranslationKey): string {
-// 	const t = getCurrentTranslation();
-// 	return t[key];
-// }

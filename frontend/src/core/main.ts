@@ -20,7 +20,6 @@ async function loadPage() {
 
 	// send "/" HTTP request and create ws
 	const data = await sendGET("root");
-	console.log(data.message);
 	if (data.status === AuthCode.ALREADY_LOGIN) {
 		const userData: { username: string, email: string, password: string } = data.user;
 		authManager.handleLoginResponse(AuthCode.OK, "Login after client refresh", userData.username, getCurrentTranslation());

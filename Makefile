@@ -17,15 +17,6 @@ pepper-env:
 		echo "PEPPER already set in .env"; \
 	fi
 
-# cookie-env:
-# 	@if ! grep -q '^COOKIE_SECRET=' .env; then \
-# 		COOKIE_VALUE=$$($(COOKIE_GEN)); \
-# 		echo "COOKIE not found. Generating one..."; \
-# 		echo -n "\nCOOKIE_SECRET=\"$${COOKIE_VALUE}\"" >> .env; \
-# 	else \
-# 		echo "COOKIE already set in .env"; \
-# 	fi
-
 secret-env: pepper-env 
 
 #################################################################################
@@ -79,26 +70,6 @@ set-env-hostname:
 	mv "$$tmp" .env; \
 	printf "HOSTNAME=%s\n" "$$HOSTNAME" >> .env; \
 	echo "HOSTNAME set to $$HOSTNAME and written to .env"
-
-home:
-	@echo "Cleaning up previous containers and images..."
-	docker compose down --rmi all --volumes --remove-orphans
-	@echo "Cleaning shared directories..."
-	@if exist frontend\src\shared rmdir /s /q frontend\src\shared
-	@if exist backend\src\shared rmdir /s /q backend\src\shared
-	@if exist backend\src\database\transcendence.sqlite del /q backend\src\database\transcendence.sqlite
-	@echo "Copying shared files..."
-	@mkdir frontend\src\shared 2>nul || true
-	@xcopy /s /e /y shared\* frontend\src\shared\ >nul
-	@mkdir backend\src\shared 2>nul || true
-	@xcopy /s /e /y shared\* backend\src\shared\ >nul
-	@echo "Building and starting containers..."
-	docker compose up -d --build
-	@echo "Server is starting up..."
-	@echo "Reading IP from .env file..."
-	@for /f "tokens=2 delims==" %%i in ('findstr "LAN_IP" .env') do set LAN_IP=%%i
-	@echo Server running at https://192.168.0.17:8443
-	@echo "Run 'make logs' to see the logs once containers are up"
 
 #################################################################################
 #################################     DEV      ##################################

@@ -123,14 +123,14 @@ async function buildThematicEnvironment(scene: Scene, map_asset: MapAssetConfig,
 	if (map_asset.terrain)
 		createTerrain(scene, "terrain", map_asset.terrain, map_asset);
 
-	 uiManager.updateLoadingProgress(60);
+	uiManager.updateLoadingProgress(60);
 
 	for (const propData of map_asset.staticObjects) {
 		const mesh = await createStaticObject(scene, propData); 
 		themeObjects?.props.push(mesh);
 	}
 
-	 uiManager.updateLoadingProgress(80);
+	uiManager.updateLoadingProgress(80);
 	for (const actorConfig of map_asset.actors) {
 		for (let i = 0; i < actorConfig.count; i++) {
 			try {
@@ -143,7 +143,7 @@ async function buildThematicEnvironment(scene: Scene, map_asset: MapAssetConfig,
 		}
 	}
 
-	 uiManager.updateLoadingProgress(90);
+	uiManager.updateLoadingProgress(90);
 	const particleType = map_asset.particleType;
 	if (particleType) {
 		let effect = null;

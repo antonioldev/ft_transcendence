@@ -11,7 +11,7 @@ export function getSID() {
 
 export async function sendPOST(endpoint: string, body?: any) {
 	const URL = `${base_url}/${endpoint}?sid=${getSID()}`;
-	console.log(`Sending ${endpoint} POST request to ${URL}`);
+	// console.log(`Sending ${endpoint} POST request to ${URL}`);
 
 	const response = await fetch(URL, {
 		method: "POST",
@@ -21,7 +21,7 @@ export async function sendPOST(endpoint: string, body?: any) {
 
 	const text = await response.text();
 	const data = text ? JSON.parse(text) : {};
-	console.log(data.message);
+	// console.log(data.message);
 	return (data);
 }
 
@@ -30,11 +30,11 @@ export async function sendGET(endpoint: string, query_params?: string[]) {
 	for (const param of query_params ?? []) {
 		URL += `&${param}`;
 	}
-	console.log(`Sending ${endpoint} GET request to ${URL}`);
+	// console.log(`Sending ${endpoint} GET request to ${URL}`);
 
 	const response = await fetch(URL, { method: "GET" });
 	const text = await response.text();
 	const data = text ? JSON.parse(text) : {};
-	console.log(data.message);
+	// console.log(data.message);
 	return (data);
 }

@@ -105,6 +105,8 @@ export class GUIManager {
 		if (!this.isInitialized) return;
 		
 		try {
+			this.pause.dispose();
+			this.lobby.dispose();
 			this.adt?.dispose();
 			this.adt = null;
 
