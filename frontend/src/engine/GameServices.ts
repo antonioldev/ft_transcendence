@@ -129,12 +129,10 @@ export class GameServices {
 		this.gui.setPauseVisible(isPaused);
 
 		if (isPaused) {
-			this.gui.hud.show(false);
 			if (!isSpectator) 
 				this.input.setMode(KeyboardMode.PAUSED);
 			this.audio.pauseGameMusic();
 		} else {
-			this.gui.hud.show(true);
 			if (!isSpectator) 
 				this.input.setMode(KeyboardMode.NORMAL);
 			this.audio.resumeGameMusic();
@@ -194,6 +192,7 @@ export class GameServices {
 		this.gui.setPauseVisible(false);
 		this.audio.playLoser();
 		await this.gui.showTournamentMatchLoser(isLastMatch);
+		this.gui.pause.show(false);
 		const wantsToSpectate = await this.input.waitForSpectatorChoice();
 		if (wantsToSpectate)
 			this.gui.hud.setSpectatorMode();

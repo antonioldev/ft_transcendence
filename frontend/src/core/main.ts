@@ -7,16 +7,16 @@ import { appManager } from './AppManager.js';
 import { authManager } from './AuthManager.js';
 import { getSID, sendGET } from "./HTTPRequests.js";
 import { webSocketClient } from './WebSocketClient.js';
-import { MemoryLeakDetector } from "../utils/memory.js";
+// import { MemoryLeakDetector } from "../utils/memory.js";
 
-const memoryDetector = new MemoryLeakDetector();
+// const memoryDetector = new MemoryLeakDetector();
 
 async function loadPage() {
     appManager.initialize();
     authManager.initialize();
 
 	updateLanguageDisplay();
-	memoryDetector.startMonitoring();
+	// memoryDetector.startMonitoring();
 
 	// send "/" HTTP request and create ws
 	const data = await sendGET("root");

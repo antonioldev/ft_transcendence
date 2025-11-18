@@ -147,6 +147,7 @@ export class Game {
 
 		if (!this.isCountdownStarted) {
 			uiManager.setLoadingScreenVisible(false);
+			this.services?.gui.hud.updateScores(0, 0);
 			this.isCountdownStarted = true;
 			this.services?.startCountdownSequence();
 		}

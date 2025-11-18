@@ -103,10 +103,8 @@ export abstract class AbstractGameSession {
 	}
 
 	async waitForClientsReady() {
-		if (this.allClientsReady()) {
-			console.log(`All clients ready: ready size: ${this.readyClients.size}`);
-			return ;
-		}
+		if (this.allClientsReady()) return;
+		
 		await new Promise(resolve => {
 			this.sessionEventManager.once(`all-ready-${this.id}`, resolve);
 		});

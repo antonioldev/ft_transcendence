@@ -152,7 +152,7 @@ export class Game {
 	async send_countdown(): Promise<void> {
 		for (let countdown = GAME_CONFIG.startDelay; countdown >= 0; countdown--) {
 			if (this.is_ended()) return ;
-			console.log(`Sending countdown: ${countdown}`);
+			// console.log(`Sending countdown: ${countdown}`);
 
 			this._broadcast({
 				type: MessageType.COUNTDOWN,
@@ -263,12 +263,11 @@ export class Game {
 		const slot: Slot = this.powerup_manager.slots[side][slot_index];
 		if (!this.powerup_manager.find_active_powerup(slot.type, slot.side)) {
 			await this.powerup_manager.activate(slot);
-			console.log(`Powerup ${slot.type} activated by ${this.players[side].name}`);
+			// console.log(`Powerup ${slot.type} activated by ${this.players[side].name}`);
 		}
 	}
 
 	assign_winner(winner: Player | CPU) {
-		console.log(`winner = ${winner.name}`);
 		this.winner = winner;
 		this.loser = this.players[LEFT] === winner ? this.players[RIGHT] : this.players[LEFT];
 	}

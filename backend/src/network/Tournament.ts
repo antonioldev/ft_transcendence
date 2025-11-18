@@ -32,7 +32,6 @@ export class Match {
 		if (player instanceof Player) {
 			this.clients.add(player.client);
 		}
-		console.log(`Player ${player.name} added to match ${this.id}`)
 	}
 
 	remove_player(client: Client) {
@@ -357,7 +356,7 @@ export class TournamentRemote extends AbstractTournament {
 		}
 		spectator_match.clients.add(client);
 		spectator_match.game?.send_side_assignment(new Set([client]));
-		console.log(`Assigned spectator ${client.username} to match ${spectator_match.id}`);
+		// console.log(`Assigned spectator ${client.username} to match ${spectator_match.id}`);
 	}
 
 	toggle_spectator_game(client: Client, data: ClientMessage) {
