@@ -13,7 +13,6 @@ export class Paddle {
 
 	powershot_active = false;
 	powershot_deactivate = false;
-    // invisible_activated: boolean = false;
     triple_shot_active: boolean = false;
 	shield_activated: boolean = false;
 
