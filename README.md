@@ -1,44 +1,60 @@
 # ft_transcendence
+
 This project is about creating a website for the mighty Pong contest!
 
 ## Notion Pages
+
 https://www.notion.so/transcendence-20ed2fbe756e8096b213eaec9850f049
 https://www.notion.so/ft_transcendence-20d8ccef5a8a80d88122e5a2d67d06f0
 
 ## How to create a WebSocket in Fastify
-https://www.npmjs.com/package/@fastify/websocket
 
+https://www.npmjs.com/package/@fastify/websocket
 
 ## Features
 
 - **Dual Mode Gaming**: Classic 2D mode and immersive 3D split-screen mode
-- **Multiple Game Modes**: 
-  - Single Player (vs AI) 	----> TO IMPLENET
+- **Multiple Game Modes**:
+  - Single Player (vs AI)
   - Local 2 Players
-  - Online 2 Players 		----> TO IMPLENET
-  - Tournaments				----> TO IMPLENET
+  - Online 2 Players
+  - Tournaments
 - **Real-time Multiplayer**: WebSocket-based networking for responsive gameplay
 - **Multi-language Support**: English, Italian, French, Portuguese, Russian
-- **Responsive Design**: Optimized for different screen sizes ----> TO IMPLENET
+- **Responsive Design**: Optimized for different screen sizes
+
+<p align="center">
+  <img src="assets/home.png" alt="Home" width="45%" />
+  <img src="assets/controls.png" alt="Controls" width="45%" />
+</p>
+
+<p align="center">
+  <img src="assets/cyberpunk.png" alt="Cyberpunk" width="45%" />
+  <img src="assets/win.png" alt="Win Screen" width="45%" />
+</p>
 
 ## How to Play
 
 ### Controls
 
 **2D Classic Mode:**
+
 - Player 1: `W` (up) / `S` (down)
 - Player 2: `↑` (up) / `↓` (down)
 
 **3D Immersive Mode:**
+
 - Player 1: `A` (left) / `D` (right)
 - Player 2: `←` (left) / `→` (right)
 
 ### Game Controls
+
 - `ESC`: Pause/Resume game
 - `Y`: Confirm exit (when paused)
 - `N`: Cancel exit (when paused)
 
 ### Language Selection
+
 - Use `←` / `→` arrows in the main menu to cycle through languages
 
 ## Architecture
@@ -65,7 +81,7 @@ ft_transcendence/
 │   │   └── ui/            # UI management
 │   ├── Dockerfile
 │   └── package.json
-├── shared/                # Shared files between frontend/backend that will be copied in backend and frontend during building to avoid duplication 
+├── shared/                # Shared files between frontend/backend that will be copied in backend and frontend during building to avoid duplication
 ├── docker-compose.yml
 ├── Makefile
 └── README.md
@@ -74,11 +90,13 @@ ft_transcendence/
 ### Technology Stack
 
 **Backend:**
+
 - **Fastify**: Fast and efficient web framework
 - **@fastify/websocket**: WebSocket support for real-time communication
 - **TypeScript**: Type-safe development
 
 **Frontend:**
+
 - **Babylon.js**: 3D graphics engine for immersive mode
 - **TypeScript**: Type-safe client-side development
 - **Native WebSocket**: Real-time communication with backend
@@ -99,7 +117,7 @@ ft_transcendence/
 
 2. **Build and start the application**
 
-   make run		 ----> I'm using docker-compose. need to check if it's ok
+   make run ----> I'm using docker-compose. need to check if it's ok
 
 3. **Access the game**
    - Open your browser and navigate to: `http://localhost:8443`
@@ -108,42 +126,49 @@ ft_transcendence/
 ### Available Make Commands
 
 # Build and run
-make run                    # Build and start all services
-make build                  # Build both frontend and backend
-make build-frontend         # Build frontend only
-make build-backend          # Build backend only
+
+make run # Build and start all services
+make build # Build both frontend and backend
+make build-frontend # Build frontend only
+make build-backend # Build backend only
 
 # Container management
-make start                  # Start containers
-make stop                   # Stop containers
-make restart                # Restart containers
-make ps                     # Show container status
+
+make start # Start containers
+make stop # Stop containers
+make restart # Restart containers
+make ps # Show container status
 
 # Logs
-make logs                   # Show all logs
-make logs-frontend          # Show frontend logs
-make logs-backend           # Show backend logs
+
+make logs # Show all logs
+make logs-frontend # Show frontend logs
+make logs-backend # Show backend logs
 
 # Cleanup
-make clean                  # Stop containers and remove orphans
-make fclean                 # Remove containers, images, and volumes
-make wipe-all              # Remove all Docker artifacts
-make wipe-images           # Remove all Docker images
+
+make clean # Stop containers and remove orphans
+make fclean # Remove containers, images, and volumes
+make wipe-all # Remove all Docker artifacts
+make wipe-images # Remove all Docker images
 
 # Updates
-make update-deps           # Update npm dependencies
-make update                # Update deps and rebuild
+
+make update-deps # Update npm dependencies
+make update # Update deps and rebuild
 
 ### Environment Variables
 
-Create a `.env` file in the root directory:	   -----> for this simple setup, it should work even without as we have default numbers
+Create a `.env` file in the root directory: -----> for this simple setup, it should work even without as we have default numbers
 
 # Backend Configuration
+
 BACKEND_HOST=0.0.0.0
 BACKEND_PORT=3000
 DEBUG=no
 
-# Frontend Configuration  
+# Frontend Configuration
+
 FRONTEND_PORT=8080
 
 ### Game Logic Overview
@@ -151,36 +176,44 @@ FRONTEND_PORT=8080
 #### Backend Core Components
 
 **Ball Class** (`backend/src/core/Ball.ts`)
+
 - Handles ball physics, movement, and collision detection
 - Manages scoring and reset logic
 
 **Paddle Classes** (`backend/src/core/Paddle.ts`)
+
 - `Player`: Human-controlled paddle
 - `AIBot`: AI-controlled paddle with prediction algorithm
 
 **Game Classes** (`backend/src/core/game.ts`)
+
 - `SinglePlayer`: Game mode with AI opponent
 - `TwoPlayer`: Game mode for human vs human
 
 **WebSocket Management** (`backend/src/network/WebSocketManager.ts`)
+
 - Handles client connections and message routing
 - Manages game sessions and player input
 
 #### Frontend Core Components
 
 **BabylonEngine** (`frontend/src/engine/BabylonEngine.ts`)
+
 - Manages Babylon.js engine lifecycle
 - Handles scene creation for 2D/3D modes
 
 **Scene Builder** (`frontend/src/engine/sceneBuilder.ts`)
+
 - Creates game objects (paddles, ball, field)
 - Sets up cameras and lighting for both modes
 
 **NetworkGameManager** (`frontend/src/game/NetworkGameManager.ts`)
+
 - Manages WebSocket communication
 - Updates game objects based on server state
 
 **Input Manager** (`frontend/src/game/InputManager.ts`)
+
 - Handles keyboard input
 - Sends player actions to server
 
@@ -189,26 +222,29 @@ FRONTEND_PORT=8080
 The game uses WebSocket communication with JSON message format:
 
 ### Client Messages
+
 ```typescript
 interface ClientMessage {
-    type: MessageType;
-    gameMode?: GameMode;
-    side?: number;
-    direction?: Direction;
+  type: MessageType;
+  gameMode?: GameMode;
+  side?: number;
+  direction?: Direction;
 }
 ```
 
 ### Server Messages
+
 ```typescript
 interface ServerMessage {
-    type: MessageType;
-    state?: GameStateData;
-    side?: number;
-    message?: string;
+  type: MessageType;
+  state?: GameStateData;
+  side?: number;
+  message?: string;
 }
 ```
 
 ### Message Types
+
 - `JOIN_GAME`: Client requests to join a game
 - `PLAYER_INPUT`: Client sends player movement
 - `GAME_STATE`: Server broadcasts game state updates
@@ -220,17 +256,20 @@ interface ServerMessage {
 ### Common Issues
 
 1. **Port already in use**
+
    ```bash
    make stop
    # Or change ports in .env file
    ```
 
 2. **WebSocket connection fails**
+
    - Ensure backend is running on port 3000
    - Check browser console for connection errors
    - Verify no firewall blocking WebSocket connections
 
 3. **Frontend not loading**
+
    - Check if nginx is serving files correctly
    - Verify frontend build completed successfully
    - Check browser console for JavaScript errors
@@ -243,7 +282,8 @@ interface ServerMessage {
 
 ### Debug Mode
 
-Enable debug logging:   ------> Removed most of logs, I kept only the failing
+Enable debug logging: ------> Removed most of logs, I kept only the failing
+
 ```bash
 echo "DEBUG=yes" >> .env
 make restart
@@ -272,4 +312,3 @@ make logs-backend
 This project is part of the 42 School curriculum.
 
 ## Roadmap (For what i remembered from the meeting :)
-
