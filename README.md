@@ -2,6 +2,16 @@
 
 This project is about creating a website for the mighty Pong contest!
 
+<p align="center">
+  <img src="assets/home.png" alt="Home" width="45%" />
+  <img src="assets/controls.png" alt="Controls" width="45%" />
+</p>
+
+<p align="center">
+  <img src="assets/cyberpunk.png" alt="Cyberpunk" width="45%" />
+  <img src="assets/win.png" alt="Win Screen" width="45%" />
+</p>
+
 ## Notion Pages
 
 https://www.notion.so/transcendence-20ed2fbe756e8096b213eaec9850f049
@@ -22,16 +32,6 @@ https://www.npmjs.com/package/@fastify/websocket
 - **Real-time Multiplayer**: WebSocket-based networking for responsive gameplay
 - **Multi-language Support**: English, Italian, French, Portuguese, Russian
 - **Responsive Design**: Optimized for different screen sizes
-
-<p align="center">
-  <img src="assets/home.png" alt="Home" width="45%" />
-  <img src="assets/controls.png" alt="Controls" width="45%" />
-</p>
-
-<p align="center">
-  <img src="assets/cyberpunk.png" alt="Cyberpunk" width="45%" />
-  <img src="assets/win.png" alt="Win Screen" width="45%" />
-</p>
 
 ## How to Play
 
